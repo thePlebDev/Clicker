@@ -33,7 +33,9 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.util.findActivity
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import com.example.clicker.BuildConfig
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -43,11 +45,12 @@ fun HomeView(
     homeViewModel: HomeViewModel
 ){
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
-    val scope = rememberCoroutineScope()
+
     ModalBottom(
         bottomSheetValue,
         loginRequest={loginRequest()},
-        text = homeViewModel.state.value
+        text = homeViewModel.state.value,
+        getToken = { code->homeViewModel.makeGitHubRequest(BuildConfig.CLIENT_ID,BuildConfig.CLIENT_SECRET,code)}
     )
 
 
@@ -59,15 +62,22 @@ fun HomeView(
 fun ModalBottom(
     bottomSheetValue: ModalBottomSheetState,
     loginRequest:() -> Unit,
-    text:String,
+    getToken:(String) -> Unit,
+    text:String?,
 ){
 
     Box(modifier = Modifier.fillMaxSize()){
         ModalBottomSheetLayout(
             sheetState = bottomSheetValue,
-            sheetContent = { SheetContent(loginRequest={loginRequest()}) }
+            sheetContent = {
+                SheetContent(
+                    loginRequest={loginRequest()},
+                    getToken = {code -> getToken(code)},
+                    code = text
+                )
+            }
         ) {
-            Text(text, fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
+            Text(text.toString(), fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
 
 
         }
@@ -78,30 +88,39 @@ fun ModalBottom(
 
 
 @Composable
-fun SheetContent(loginRequest:() -> Unit){
+fun SheetContent(
+    loginRequest:() -> Unit,
+    getToken:(String) -> Unit,
+    code:String?
+){
 
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(200.dp)){
-        Button(
-            onClick ={loginRequest()},
-            modifier = Modifier.align(Alignment.Center)
+        Column(
+            modifier = Modifier.matchParentSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Login with GitHub", fontSize = 20.sp)
+            Button(
+                onClick ={loginRequest()},
+            ) {
+                Text("Login with GitHub", fontSize = 20.sp)
 
+            }
+            if(code!= null){
+                Button(
+                    onClick ={getToken(code)},
+                ) {
+                    Text("GetToken", fontSize = 20.sp)
+
+                }
+            }
         }
+
     }
 
 }
 
 
-@Composable
-fun Thingers(context:Activity){
-    val context = LocalContext.current
-    val activity = context.findActivity()
-    val uri:Uri? = activity.intent.data
-    if(uri != null){
-        Log.d("GITHUB",uri.toString())
-    }
-}
 

@@ -24,12 +24,15 @@ android {
 
         Properties properties = new Properties()
         Properties properties2 = new Properties()
+        Properties properties3 = new Properties()
 
         properties.load(project.rootProject.file("local.properties").newDataInputStream())
         properties2.load(project.rootProject.file("local.properties").newDataInputStream())
+        properties3.load(project.rootProject.file("local.properties").newDataInputStream())
 
         buildConfigField "String", "CLIENT_ID", "\"${properties.getProperty("CLIENT_ID")}\""
         buildConfigField "String", "REDIRECT_URL", "\"${properties2.getProperty("REDIRECT_URL")}\""
+        buildConfigField "String", "CLIENT_SECRET", "\"${properties3.getProperty("CLIENT_SECRET")}\""
     }
 
     buildTypes {
@@ -82,4 +85,9 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    //retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 }
