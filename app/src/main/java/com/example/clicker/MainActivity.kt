@@ -42,8 +42,9 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         val uri:Uri? = intent.data
-        if(uri != null){
-            homeViewModel.changeUiState(uri.toString())
+        if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
+            Log.d("GITHUB","stuff below")
+            homeViewModel.changeUiState(uri.getQueryParameter("code")!!)
         }
     }
 }
