@@ -1,5 +1,6 @@
 package com.example.clicker.network.repository
 
+import android.util.Log
 import com.example.clicker.network.RetrofitInstance
 import com.example.clicker.network.models.AccessToken
 import retrofit2.Call
@@ -12,6 +13,7 @@ class GItHubRepo {
         clientSecret:String,
         code:String
     ):Response<AccessToken>{
+
         return RetrofitInstance.api.getAccessToken(clientId, clientSecret, code)
     }
 }
