@@ -41,9 +41,14 @@ class HomeViewModel(
             code = code
         )
         if(data.isSuccessful){
-            Log.d("GITHUB",data.toString())
+            if(data.body() !=null){
+                Log.d("GITHUB",data.body().toString())
+            }else{
+                Log.d("GITHUB","data.body() is null")
+            }
+
         }else{
-            Log.d("GITHUB",data.toString())
+            Log.d("GITHUB", "NOT SUCCESSFUL $data")
         }
     }
 
