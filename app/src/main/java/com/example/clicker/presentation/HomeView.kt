@@ -34,8 +34,25 @@ import com.example.clicker.util.findActivity
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import com.example.clicker.BuildConfig
+import com.example.clicker.util.Response
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -70,11 +87,13 @@ fun ModalBottom(
         ModalBottomSheetLayout(
             sheetState = bottomSheetValue,
             sheetContent = {
-                SheetContent(
-                    loginRequest={loginRequest()},
-                    getToken = {code -> getToken(code)},
-                    code = text
-                )
+                //Text("another")
+//                SheetContent(
+//                    loginRequest={loginRequest()},
+//                    getToken = {code -> getToken(code)},
+//                    code = text
+//                )
+                LoadingLogin()
             }
         ) {
             Text(text.toString(), fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
@@ -119,6 +138,78 @@ fun SheetContent(
             }
         }
 
+    }
+
+}
+
+@Composable
+fun LoadingLogin(){
+    val configuration = LocalConfiguration.current
+
+    val widthInDp = configuration.screenWidthDp.dp
+    val halfScreenWidth = (widthInDp.value / 3.5).dp
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)){
+        Row(modifier =Modifier.matchParentSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
+            LoadingIcon(Response.Success(true))
+            Divider(
+                color = Color.Red,
+                thickness = 1.dp,
+                modifier = Modifier
+                    .width(halfScreenWidth)
+                    .padding(10.dp)
+            )
+            LoadingIcon(Response.Success(true))
+            Divider(
+                color = Color.Red,
+                thickness = 1.dp,
+                modifier = Modifier
+                    .width(halfScreenWidth)
+                    .padding(10.dp)
+            )
+            LoadingIcon(Response.Loading)
+        }
+        Text("Performing R&D on the Japanese crab computer", modifier = Modifier.padding(bottom = 40.dp).align(Alignment.BottomCenter))
+    }
+
+}
+
+@Composable
+fun LoadingIcon(response:Response<Boolean>?){
+    when(response){
+        is Response.Loading ->{
+            CircularProgressIndicator()
+        }
+        is Response.Success ->{
+            Icon(
+                imageVector = Icons.Default.Done,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Green,
+                modifier = Modifier.size(35.dp)
+            )
+        }
+        is Response.Failure ->{
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Red,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+
+        else -> {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Gray,
+                modifier = Modifier.size(40.dp)
+            )
+        }
     }
 
 }
