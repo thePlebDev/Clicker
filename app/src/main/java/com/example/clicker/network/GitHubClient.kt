@@ -2,7 +2,6 @@ package com.example.clicker.network
 
 import com.example.clicker.network.models.AccessToken
 import retrofit2.http.POST
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
