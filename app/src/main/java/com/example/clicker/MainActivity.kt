@@ -43,8 +43,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         val uri:Uri? = intent.data
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
-            Log.d("GITHUB","stuff below")
-            homeViewModel.changeUiState(uri.getQueryParameter("code")!!)
+
+            homeViewModel.updateAuthenticationCode(uri.getQueryParameter("code")!!)
         }
     }
 }

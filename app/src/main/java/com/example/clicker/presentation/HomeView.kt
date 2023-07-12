@@ -58,7 +58,7 @@ import com.example.clicker.util.Response
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeView(
-    loginRequest:() -> Unit ={},
+    loginRequest:() -> Unit ={}, //This will start the implicit intent and send it to the user application
     homeViewModel: HomeViewModel
 ){
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
@@ -66,8 +66,8 @@ fun HomeView(
     ModalBottom(
         bottomSheetValue,
         loginRequest={loginRequest()},
-        text = homeViewModel.state.value,
-        getToken = { code->homeViewModel.makeGitHubRequest(BuildConfig.CLIENT_ID,BuildConfig.CLIENT_SECRET,code)}
+        userIsLoggedIn = homeViewModel.state.value.userLogginIn,
+        homeViewModel = homeViewModel
     )
 
 
@@ -78,25 +78,31 @@ fun HomeView(
 @Composable
 fun ModalBottom(
     bottomSheetValue: ModalBottomSheetState,
-    loginRequest:() -> Unit,
-    getToken:(String) -> Unit,
-    text:String?,
+    loginRequest:() -> Unit, //starts the implicit intent
+    userIsLoggedIn:Boolean,
+    homeViewModel: HomeViewModel
 ){
 
     Box(modifier = Modifier.fillMaxSize()){
         ModalBottomSheetLayout(
             sheetState = bottomSheetValue,
             sheetContent = {
-                //Text("another")
-//                SheetContent(
-//                    loginRequest={loginRequest()},
-//                    getToken = {code -> getToken(code)},
-//                    code = text
-//                )
-                LoadingLogin()
+               if(userIsLoggedIn){
+                   LoadingLogin(
+                       loadingText = homeViewModel.state.value.loadingLoginText,
+                       loginStep1 = homeViewModel.state.value.loginStep1,
+                       loginStep2 = homeViewModel.state.value.loginStep2,
+                       loginStep3 = homeViewModel.state.value.loginStep3,
+                   )
+               }else{
+                   SheetContent(
+                       loginRequest={loginRequest()},
+                       homeViewModel = homeViewModel
+                   )
+               }
             }
         ) {
-            Text(text.toString(), fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
+            Text("Videos go here", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
 
 
         }
@@ -109,9 +115,10 @@ fun ModalBottom(
 @Composable
 fun SheetContent(
     loginRequest:() -> Unit,
-    getToken:(String) -> Unit,
-    code:String?
+    homeViewModel: HomeViewModel
+
 ){
+
 
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -122,20 +129,15 @@ fun SheetContent(
             verticalArrangement = Arrangement.Center
         ) {
             Button(
-                onClick ={loginRequest()},
+                onClick ={
+                    homeViewModel.userIsLogginIn()
+                    loginRequest()
+                         },
             ) {
                 Text("Login with GitHub", fontSize = 20.sp)
 
             }
-            if(code!= null){
 
-                Button(
-                    onClick ={getToken(code)},
-                ) {
-                    Text("GetToken", fontSize = 20.sp)
-
-                }
-            }
         }
 
     }
@@ -143,7 +145,13 @@ fun SheetContent(
 }
 
 @Composable
-fun LoadingLogin(){
+fun LoadingLogin(
+    loadingText:String,
+    loginStep1:Response<Boolean>?,
+    loginStep2:Response<Boolean>?,
+    loginStep3:Response<Boolean>?,
+
+){
     val configuration = LocalConfiguration.current
 
     val widthInDp = configuration.screenWidthDp.dp
@@ -156,7 +164,7 @@ fun LoadingLogin(){
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ){
-            LoadingIcon(Response.Success(true))
+            LoadingIcon(loginStep1)
             Divider(
                 color = Color.Red,
                 thickness = 1.dp,
@@ -164,7 +172,7 @@ fun LoadingLogin(){
                     .width(halfScreenWidth)
                     .padding(10.dp)
             )
-            LoadingIcon(Response.Success(true))
+            LoadingIcon(loginStep2)
             Divider(
                 color = Color.Red,
                 thickness = 1.dp,
@@ -172,9 +180,9 @@ fun LoadingLogin(){
                     .width(halfScreenWidth)
                     .padding(10.dp)
             )
-            LoadingIcon(Response.Loading)
+            LoadingIcon(loginStep3)
         }
-        Text("Performing R&D on the Japanese crab computer", modifier = Modifier.padding(bottom = 40.dp).align(Alignment.BottomCenter))
+        Text(loadingText, modifier = Modifier.padding(bottom = 40.dp).align(Alignment.BottomCenter))
     }
 
 }
