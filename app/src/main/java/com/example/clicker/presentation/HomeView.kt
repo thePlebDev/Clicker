@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import com.example.clicker.BuildConfig
@@ -61,13 +62,21 @@ fun HomeView(
     loginRequest:() -> Unit ={}, //This will start the implicit intent and send it to the user application
     homeViewModel: HomeViewModel
 ){
+    val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
+    if(hideModal){
+        LaunchedEffect(key1 = bottomSheetValue){
+            Log.d("GITHUB","LaunchedEffect RECOMP")
+            bottomSheetValue.hide()
+        }
+    }
 
     ModalBottom(
         bottomSheetValue,
         loginRequest={loginRequest()},
         userIsLoggedIn = homeViewModel.state.value.userLogginIn,
-        homeViewModel = homeViewModel
+        homeViewModel = homeViewModel,
+        profileName = homeViewModel.state.value.userProfile
     )
 
 
@@ -80,7 +89,8 @@ fun ModalBottom(
     bottomSheetValue: ModalBottomSheetState,
     loginRequest:() -> Unit, //starts the implicit intent
     userIsLoggedIn:Boolean,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    profileName:String?
 ){
 
     Box(modifier = Modifier.fillMaxSize()){
@@ -102,7 +112,12 @@ fun ModalBottom(
                }
             }
         ) {
-            Text("Videos go here", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
+            if(profileName !=null){
+                Text("Welcome $profileName", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
+            }else{
+                Text("Please login", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
+            }
+
 
 
         }
@@ -182,7 +197,9 @@ fun LoadingLogin(
             )
             LoadingIcon(loginStep3)
         }
-        Text(loadingText, modifier = Modifier.padding(bottom = 40.dp).align(Alignment.BottomCenter))
+        Text(loadingText, modifier = Modifier
+            .padding(bottom = 40.dp)
+            .align(Alignment.BottomCenter))
     }
 
 }
