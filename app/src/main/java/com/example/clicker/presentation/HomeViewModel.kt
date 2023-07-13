@@ -15,11 +15,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 data class HomeUIState(
     val userLogginIn:Boolean = false,
+    val userProfile:String? = null,
     val authenticationCode:String? = null,
-    val loadingLoginText:String ="Casting transportation spell",
+    val loadingLoginText:String ="Casting teleportation spell",
+    val hideModal:Boolean = false,
     val loginStep1:Response<Boolean>? = Response.Loading,
     val loginStep2:Response<Boolean>? = null,
     val loginStep3:Response<Boolean>? = null,
+
 
 )
 
@@ -41,7 +44,7 @@ class HomeViewModel(
         viewModelScope.launch {
             accessToken.collect{accessToken ->
                 if(accessToken != null){
-                    Log.d("GITHUB",accessToken +"CAN NOW MAKE REQUESTS ON BEHALF OF USER")
+                    getProfileData("https://api.github.com/user", "Bearer $accessToken")
                 }else{
                    // Log.d("GITHUB","NULL ACCESS TOKEN")
                 }
@@ -82,7 +85,7 @@ class HomeViewModel(
 
     }
 
-    fun makeGitHubRequest(clientId:String,clientSecret:String,code:String) = viewModelScope.launch{
+    private fun makeGitHubRequest(clientId:String, clientSecret:String, code:String) = viewModelScope.launch{
 
         gitHubRepo.getAccessToken(clientId,clientSecret,code).collect{ response ->
             when(response){
@@ -90,7 +93,7 @@ class HomeViewModel(
                 is Response.Success ->{
 
                     _uiState.value = _uiState.value.copy(
-                        loadingLoginText = "learning new spells",
+                        loadingLoginText = "Learning new spells",
                         loginStep1 = Response.Success(true),
                         loginStep2 = Response.Success(true),
                         loginStep3 = Response.Loading
@@ -100,6 +103,36 @@ class HomeViewModel(
                 is Response.Failure ->{Log.d("GITHUB","makeGitHubRequest FAILURE")}
             }
         }
+    }
+
+    private fun getProfileData(url:String,authorizationHeader:String) = viewModelScope.launch{
+        gitHubRepo.getProfileData(
+            url = url,
+            authorizationHeader = authorizationHeader
+        ).collect{ response ->
+            when(response){
+                is Response.Loading ->{
+                    Log.d("GITHUB","getProfileData LOADING")
+                }
+                is Response.Success ->{
+                    Log.d("GITHUB","getProfileData SUCCESS")
+
+                    _uiState.value = _uiState.value.copy(
+                        loadingLoginText = "Casting true invisibility",
+                        loginStep1 = Response.Success(true),
+                        loginStep2 = Response.Success(true),
+                        loginStep3 = Response.Success(true),
+                        hideModal = true,
+                        userProfile = response.data.login
+
+                    )
+                }
+                is Response.Failure ->{
+                    Log.d("GITHUB","getProfileData FAILURE")
+                }
+            }
+        }
+
     }
 
 
