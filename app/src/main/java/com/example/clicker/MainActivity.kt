@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,20 +32,30 @@ class MainActivity : ComponentActivity() {
             val intent = Intent(
                 Intent.ACTION_VIEW, Uri.parse("https://github.com/login/oauth/authorize?client_id=$clientId&scope=repo&redirect_url=$redirectUrl")
             )
+            val tokenString:String = java.util.UUID.randomUUID().toString()
+            val twitchIntent = Intent(
+                Intent.ACTION_VIEW, Uri.parse(
+                    "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows&state=c3ab8aa609ea11e793ae92361f002671")
+            )
+           // Log.d("TOKENSTRING",tokenString)
+            //20d09488-5060-41d5-b36c-01a63de4ebaa
 
                 HomeView(
                     loginRequest = {startActivity(intent)},
-                    homeViewModel = homeViewModel
+                    homeViewModel = homeViewModel,
+                    loginWithTwitch = {startActivity(twitchIntent)}
                 )
+
 
         }
     }
     override fun onResume() {
         super.onResume()
         val uri:Uri? = intent.data
-        if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
-
-            homeViewModel.updateAuthenticationCode(uri.getQueryParameter("code")!!)
-        }
+        Log.d("TWITCHSTOOF",uri.toString())
+//        if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
+//
+//            homeViewModel.updateAuthenticationCode(uri.getQueryParameter("code")!!)
+//        }
     }
 }
