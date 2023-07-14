@@ -30,8 +30,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:host="callback"
-                    android:scheme="elliottsoftware"
+                    android:host="com.example.clicker"
+                    android:scheme="https"
                     />
             </intent-filter>
         </activity>

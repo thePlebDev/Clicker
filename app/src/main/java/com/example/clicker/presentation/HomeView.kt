@@ -60,26 +60,51 @@ import com.example.clicker.util.Response
 @Composable
 fun HomeView(
     loginRequest:() -> Unit ={}, //This will start the implicit intent and send it to the user application
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    loginWithTwitch:() -> Unit
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
-    if(hideModal){
-        LaunchedEffect(key1 = bottomSheetValue){
-            Log.d("GITHUB","LaunchedEffect RECOMP")
-            bottomSheetValue.hide()
+//    if(hideModal){
+//        LaunchedEffect(key1 = bottomSheetValue){
+//            Log.d("GITHUB","LaunchedEffect RECOMP")
+//            bottomSheetValue.hide()
+//        }
+//    }
+
+//    ModalBottom(
+//        bottomSheetValue,
+//        loginRequest={loginRequest()},
+//        userIsLoggedIn = homeViewModel.state.value.userLogginIn,
+//        homeViewModel = homeViewModel,
+//        profileName = homeViewModel.state.value.userProfile
+//    )
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetValue,
+        sheetContent = {
+            TwitchLogin(
+                loginWithTwitch =loginWithTwitch
+            )
         }
+    ){
+
     }
 
-    ModalBottom(
-        bottomSheetValue,
-        loginRequest={loginRequest()},
-        userIsLoggedIn = homeViewModel.state.value.userLogginIn,
-        homeViewModel = homeViewModel,
-        profileName = homeViewModel.state.value.userProfile
-    )
+}
 
+@Composable
+fun TwitchLogin(
+    loginWithTwitch:() -> Unit
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+    ){
+        Button(onClick ={loginWithTwitch()},modifier = Modifier.align(Alignment.Center)) {
+            Text("Login with Twitch", fontSize = 30.sp)
+        }
 
+    }
 }
 
 
