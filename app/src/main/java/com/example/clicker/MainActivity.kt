@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
         val uri:Uri? = intent.data
 
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
+            Log.d("Twitchval",uri.toString())
 
             val accessToken = uri.fragment?.subSequence(13,43).toString()
 
