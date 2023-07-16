@@ -65,6 +65,7 @@ fun HomeView(
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
+    var loggedIn by remember { mutableStateOf(false) }
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
 //            Log.d("GITHUB","LaunchedEffect RECOMP")
@@ -72,115 +73,70 @@ fun HomeView(
 //        }
 //    }
 
-//    ModalBottom(
-//        bottomSheetValue,
-//        loginRequest={loginRequest()},
-//        userIsLoggedIn = homeViewModel.state.value.userLogginIn,
-//        homeViewModel = homeViewModel,
-//        profileName = homeViewModel.state.value.userProfile
-//    )
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
         sheetContent = {
-            TwitchLogin(
-                loginWithTwitch =loginWithTwitch
+            LoginView(
+                loggedIn = true,
+                loginWithTwitch = {loginWithTwitch() },
+                homeViewModel = homeViewModel
             )
+
         }
     ){
+        //THIS IS WHAT WILL GET COVERED
 
     }
 
 }
 
 @Composable
-fun TwitchLogin(
-    loginWithTwitch:() -> Unit
-){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)
-    ){
-        Button(onClick ={loginWithTwitch()},modifier = Modifier.align(Alignment.Center)) {
-            Text("Login with Twitch", fontSize = 30.sp)
-        }
-
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun ModalBottom(
-    bottomSheetValue: ModalBottomSheetState,
-    loginRequest:() -> Unit, //starts the implicit intent
-    userIsLoggedIn:Boolean,
-    homeViewModel: HomeViewModel,
-    profileName:String?
-){
-
-    Box(modifier = Modifier.fillMaxSize()){
-        ModalBottomSheetLayout(
-            sheetState = bottomSheetValue,
-            sheetContent = {
-               if(userIsLoggedIn){
-                   LoadingLogin(
-                       loadingText = homeViewModel.state.value.loadingLoginText,
-                       loginStep1 = homeViewModel.state.value.loginStep1,
-                       loginStep2 = homeViewModel.state.value.loginStep2,
-                       loginStep3 = homeViewModel.state.value.loginStep3,
-                   )
-               }else{
-                   SheetContent(
-                       loginRequest={loginRequest()},
-                       homeViewModel = homeViewModel
-                   )
-               }
-            }
-        ) {
-            if(profileName !=null){
-                Text("Welcome $profileName", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
-            }else{
-                Text("Please login", fontSize = 30.sp, modifier = Modifier.align(Alignment.Center))
-            }
-
-
-
-        }
-    }
-
-
-}
-
-
-@Composable
-fun SheetContent(
-    loginRequest:() -> Unit,
+fun LoginView(
+    loggedIn:Boolean,
+    loginWithTwitch:() -> Unit,
     homeViewModel: HomeViewModel
-
 ){
-
-
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(200.dp)){
-        Column(
-            modifier = Modifier.matchParentSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+        if(loggedIn){
+            LoadingLogin(
+                loadingText = homeViewModel.state.value.loadingLoginText,
+                loginStep1 = homeViewModel.state.value.loginStep1,
+                loginStep2 = homeViewModel.state.value.loginStep2,
+                loginStep3 = homeViewModel.state.value.loginStep3,
+            )
+
+        }else{
+            TwitchLogin(
+                loginWithTwitch ={loginWithTwitch()},
+                modifier = Modifier.matchParentSize()
+            )
+        }
+
+    }
+}
+
+
+
+@Composable
+fun TwitchLogin(
+    loginWithTwitch:() -> Unit, //THis will make the request
+    modifier: Modifier
+
+){
+    Box(modifier = modifier){
             Button(
                 onClick ={
-                    homeViewModel.userIsLogginIn()
-                    loginRequest()
+                    loginWithTwitch()
                          },
+                modifier = Modifier.align(Alignment.Center)
             ) {
-                Text("Login with GitHub", fontSize = 20.sp)
+                Text("Login with Twitch", fontSize = 20.sp)
 
             }
 
         }
-
-    }
 
 }
 
