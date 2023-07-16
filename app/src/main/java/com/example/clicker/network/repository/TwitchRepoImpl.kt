@@ -1,8 +1,11 @@
 package com.example.clicker.network.repository
 
+import android.util.Log
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.TwitchRetrofitInstance
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -10,10 +13,16 @@ class TwitchRepoImpl(
     private val twitchClient: TwitchClient = TwitchRetrofitInstance.api
 ): TwitchRepo {
 
-    override suspend fun validateToken(token:String):Flow<Boolean> = flow{
+    override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
+        emit(Response.Loading)
        val response= twitchClient.validateToken(
             authorization = "OAuth $token"
-        ).isSuccessful
-        emit(response)
+        )
+        if(response.isSuccessful){
+           emit(Response.Success(response.body()!!))
+        }else{
+            emit(Response.Failure(Exception("Error! Please login again")))
+        }
+
     }
 }

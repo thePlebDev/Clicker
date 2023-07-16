@@ -46,8 +46,19 @@ class HomeViewModel(
 
             appAccessToken.collect{token ->
                 if (token != null){
-                    twitchRepoImpl.validateToken(token).collect{
-                        Log.d("Twitchval","response " + it)
+                    twitchRepoImpl.validateToken(token).collect{response ->
+                        when(response){
+                            is Response.Loading ->{
+                                Log.d("validatingUser","LOADING")
+                            }
+                            is Response.Success ->{
+                                Log.d("validatingUser","SUCCESS")
+                                Log.d("validatingUser",response.data.userId)
+                            }
+                            is Response.Failure ->{
+                                Log.d("validatingUser","FAILURE")
+                            }
+                        }
                     }
                 }
 
