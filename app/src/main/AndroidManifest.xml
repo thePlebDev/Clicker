@@ -30,7 +30,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:host="com.example.clicker"
+                    android:host="com.example.modderz"
                     android:scheme="https"
                     />
             </intent-filter>

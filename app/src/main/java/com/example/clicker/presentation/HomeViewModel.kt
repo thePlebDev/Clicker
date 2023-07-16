@@ -11,6 +11,7 @@ import com.example.clicker.network.repository.GitHubRepoImpl
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.repository.TwitchRepoImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class HomeUIState(
@@ -28,7 +29,8 @@ data class HomeUIState(
 
 
 class HomeViewModel(
-    val gitHubRepo: GitHubRepoImpl = GitHubRepoImpl()
+    val gitHubRepo: GitHubRepoImpl = GitHubRepoImpl(),
+    val twitchRepoImpl: TwitchRepoImpl = TwitchRepoImpl()
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
@@ -37,7 +39,7 @@ class HomeViewModel(
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
 
-    private val authenticationToken:MutableStateFlow<String?> = MutableStateFlow(null) //received from GitHub login
+    private val appAccessToken:MutableStateFlow<String?> = MutableStateFlow(null) //received from GitHub login
     private val accessToken:MutableStateFlow<String?> = MutableStateFlow(null) // exchanged for authenticationToken
 
     init {
@@ -53,22 +55,21 @@ class HomeViewModel(
     }
     init {
         viewModelScope.launch {
-            authenticationToken.collect{authenticationToken ->
-                if(authenticationToken != null){
-                    makeGitHubRequest(
-                        clientId= CLIENT_ID,
-                        clientSecret = CLIENT_SECRET,
-                        code = authenticationToken
-                    )
-                }else{
-                    //Log.d("GITHUB","authenticationToken is NULL")
+
+            appAccessToken.collect{token ->
+                if (token != null){
+                    twitchRepoImpl.validateToken(token).collect{
+                        Log.d("Twitchval","response " + it)
+                    }
                 }
 
             }
         }
     }
 
-    fun updateAuthenticationCode(authenticationCode:String){
+
+    fun updateAuthenticationCode(token:String){
+        Log.d("twitch",token)
 
         _uiState.value = _uiState.value.copy(
             loadingLoginText = "Reading ancient magic tablet",
@@ -76,14 +77,9 @@ class HomeViewModel(
             loginStep1 = Response.Success(true),
             loginStep2 = Response.Loading
         )
-        authenticationToken.tryEmit(authenticationCode)
+        appAccessToken.tryEmit(token)
     }
-    fun userIsLogginIn(){
-        _uiState.value = _uiState.value.copy(
-            userLogginIn =true
-        )
 
-    }
 
     private fun makeGitHubRequest(clientId:String, clientSecret:String, code:String) = viewModelScope.launch{
 
@@ -135,7 +131,11 @@ class HomeViewModel(
 
     }
 
-
+    fun changeLoginStatus(status:Boolean){
+        _uiState.value = _uiState.value.copy(
+            userLogginIn =status
+        )
+    }
 
 
 

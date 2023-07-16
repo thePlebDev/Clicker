@@ -65,21 +65,22 @@ fun HomeView(
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
-    var loggedIn by remember { mutableStateOf(false) }
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
 //            Log.d("GITHUB","LaunchedEffect RECOMP")
 //            bottomSheetValue.hide()
 //        }
 //    }
+    Log.d("loggedIN",homeViewModel.state.value.userLogginIn.toString())
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
         sheetContent = {
             LoginView(
-                loggedIn = true,
+                loggedIn = homeViewModel.state.value.userLogginIn,
                 loginWithTwitch = {loginWithTwitch() },
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
+                changeLoginStatus = {homeViewModel.changeLoginStatus(!homeViewModel.state.value.userLogginIn)}
             )
 
         }
@@ -94,7 +95,8 @@ fun HomeView(
 fun LoginView(
     loggedIn:Boolean,
     loginWithTwitch:() -> Unit,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    changeLoginStatus:()-> Unit
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -110,6 +112,7 @@ fun LoginView(
         }else{
             TwitchLogin(
                 loginWithTwitch ={loginWithTwitch()},
+                changeLoginStatus = {changeLoginStatus()},
                 modifier = Modifier.matchParentSize()
             )
         }
@@ -122,12 +125,14 @@ fun LoginView(
 @Composable
 fun TwitchLogin(
     loginWithTwitch:() -> Unit, //THis will make the request
+    changeLoginStatus:()-> Unit,
     modifier: Modifier
 
 ){
     Box(modifier = modifier){
             Button(
                 onClick ={
+                    changeLoginStatus()
                     loginWithTwitch()
                          },
                 modifier = Modifier.align(Alignment.Center)
