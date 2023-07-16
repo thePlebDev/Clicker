@@ -59,7 +59,6 @@ import com.example.clicker.util.Response
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeView(
-    loginRequest:() -> Unit ={}, //This will start the implicit intent and send it to the user application
     homeViewModel: HomeViewModel,
     loginWithTwitch:() -> Unit
 ){

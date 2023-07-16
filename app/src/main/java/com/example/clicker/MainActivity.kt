@@ -41,15 +41,10 @@ class MainActivity : ComponentActivity() {
                 Intent.ACTION_VIEW, Uri.parse(
                     "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read")
             )
-
-
                 HomeView(
-                    loginRequest = {startActivity(intent)},
                     homeViewModel = homeViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)}
                 )
-
-
         }
     }
 
