@@ -10,6 +10,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.TwitchRepoImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -28,7 +29,7 @@ data class HomeUIState(
 
 
 class HomeViewModel(
-    val twitchRepoImpl: TwitchRepoImpl = TwitchRepoImpl()
+    val twitchRepoImpl: TwitchRepo = TwitchRepoImpl()
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
