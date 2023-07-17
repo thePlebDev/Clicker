@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
@@ -25,6 +26,7 @@ import androidx.fragment.app.activityViewModels
 
 class MainActivity : ComponentActivity() {
     private val homeViewModel:HomeViewModel by viewModels()
+
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
             val clientId =BuildConfig.CLIENT_ID
             val redirectUrl = BuildConfig.REDIRECT_URL
+
 
             val tokenString:String = java.util.UUID.randomUUID().toString()
 
@@ -51,6 +54,14 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         val uri:Uri? = intent.data
+
+        val width = Resources.getSystem().displayMetrics.widthPixels
+        val aspectHeight = (width * 0.5625).toInt()
+
+
+        val verticalHeight = (width * 1.77777777778).toInt()
+        homeViewModel.updateAspectWidthHeight(width, aspectHeight )
+
 
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
             Log.d("Twitchval",uri.toString())
