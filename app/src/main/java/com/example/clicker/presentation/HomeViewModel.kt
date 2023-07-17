@@ -3,6 +3,7 @@ package com.example.clicker.presentation
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,6 +22,8 @@ data class HomeUIState(
     val loadingLoginText:String ="Casting teleportation spell",
     val hideModal:Boolean = false,
     val loginStep1:Response<Boolean>? = Response.Loading,
+    val width:Int =0,
+    val aspectHeight:Int =0,
     val loginStep2:Response<Boolean>? = null,
     val loginStep3:Response<Boolean>? = null,
 
@@ -34,6 +37,10 @@ class HomeViewModel(
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
     private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
+
+    private val _urlList = mutableStateListOf<String>()
+    val urlList: List<String> = _urlList
+
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
@@ -53,7 +60,15 @@ class HomeViewModel(
                             }
                             is Response.Success ->{
                                 Log.d("validatingUser","SUCCESS")
-                                Log.d("validatingUser",response.data.userId)
+                                Log.d("validatingUserTOKEN",token)
+                                Log.d("validatingUserUSERID",response.data.userId)
+                                Log.d("validatingUserCLIENTID",response.data.clientId)
+                                getLiveFollowedStreams(
+                                    authorizationHeaderToken = "Bearer $token",
+                                    userId = response.data.userId,
+                                    clientId = response.data.clientId
+
+                                )
                             }
                             is Response.Failure ->{
                                 Log.d("validatingUser","FAILURE")
@@ -66,6 +81,29 @@ class HomeViewModel(
         }
     }
 
+    suspend fun getLiveFollowedStreams(authorizationHeaderToken: String,userId:String,clientId:String,){
+        twitchRepoImpl.getFollowedLiveStreams(authorizationToken = authorizationHeaderToken,clientId =clientId,userId =userId).collect{ response ->
+            when(response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+                    updateLoginUI(
+                        loginStep1Status = Response.Success(true),
+                        loginStep2Status = Response.Success(true),
+                        loginStep3Status = Response.Loading,
+                    )
+                     response.data.data.forEach { item ->
+                       //  Log.d("getLiveFollowedStreams",item.thumbNailUrl)
+                         val newStrings = item.thumbNailUrl
+                             .replace("{width}","${_uiState.value.width}")
+                             .replace("{height}","${_uiState.value.aspectHeight}")
+                         _urlList.add(newStrings)
+
+                     }
+                }
+                is Response.Failure ->{}
+            }
+        }
+    }
 
     fun updateAuthenticationCode(token:String){
 
@@ -77,6 +115,19 @@ class HomeViewModel(
         )
         appAccessToken.tryEmit(token)
     }
+    fun updateLoginUI(
+        loginStep1Status: Response<Boolean>? = null,
+        loginStep2Status: Response<Boolean>? = null,
+        loginStep3Status: Response<Boolean>? = null
+    ){
+        _uiState.value = _uiState.value.copy(
+            loadingLoginText = "Practicing spell casting",
+            loginStep1 = loginStep1Status,
+            loginStep2 = loginStep2Status,
+            loginStep3 = loginStep3Status,
+
+        )
+    }
 
 
     fun changeLoginStatus(status:Boolean){
@@ -85,6 +136,13 @@ class HomeViewModel(
         )
     }
 
+    fun updateAspectWidthHeight(width:Int, aspectHeight: Int){
+        _uiState.value = _uiState.value.copy(
+            aspectHeight = aspectHeight,
+            width = width
+            )
+
+    }
 
 
 

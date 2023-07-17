@@ -39,6 +39,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -52,6 +54,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.util.Response
 
@@ -85,6 +88,7 @@ fun HomeView(
         }
     ){
         //THIS IS WHAT WILL GET COVERED
+        UrlImages(homeViewModel.urlList)
 
     }
 
@@ -117,6 +121,21 @@ fun LoginView(
         }
 
     }
+}
+
+@Composable
+fun UrlImages(urlList:List<String>){
+
+    LazyColumn(modifier = Modifier.padding(5.dp)){
+        items(urlList){url ->
+            AsyncImage(
+                model = url,
+                contentDescription = null
+            )
+            Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
+        }
+    }
+
 }
 
 
