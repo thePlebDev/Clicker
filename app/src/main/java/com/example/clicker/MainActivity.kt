@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         val uri:Uri? = intent.data
 
-        val width = Resources.getSystem().displayMetrics.widthPixels
+        val width = Resources.getSystem().displayMetrics.widthPixels /2
         val aspectHeight = (width * 0.5625).toInt()
 
 

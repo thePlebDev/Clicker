@@ -38,8 +38,8 @@ class HomeViewModel(
     private val CLIENT_ID = BuildConfig.CLIENT_ID
     private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
 
-    private val _urlList = mutableStateListOf<String>()
-    val urlList: List<String> = _urlList
+    private val _urlList = mutableStateListOf<StreamInfo>()
+    val urlList: List<StreamInfo> = _urlList
 
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -93,10 +93,19 @@ class HomeViewModel(
                     )
                      response.data.data.forEach { item ->
                        //  Log.d("getLiveFollowedStreams",item.thumbNailUrl)
-                         val newStrings = item.thumbNailUrl
+                         val newUrl = item.thumbNailUrl
                              .replace("{width}","${_uiState.value.width}")
                              .replace("{height}","${_uiState.value.aspectHeight}")
-                         _urlList.add(newStrings)
+                         _urlList.add(
+                             StreamInfo(
+                                 streamerName = item.userName,
+                                 streamTitle = item.title,
+                                 gameTitle = item.gameName,
+                                 views = item.viewerCount,
+                                 url = newUrl
+                             )
+
+                         )
 
                      }
                 }
@@ -148,3 +157,11 @@ class HomeViewModel(
 
 
 }
+
+data class StreamInfo(
+    val streamerName:String,
+    val streamTitle: String,
+    val gameTitle:String,
+    val views:Int,
+    val url:String
+)

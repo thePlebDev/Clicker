@@ -34,6 +34,7 @@ import com.example.clicker.util.findActivity
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
@@ -52,8 +55,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.util.Response
@@ -87,8 +94,22 @@ fun HomeView(
 
         }
     ){
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {Text("Channels you moderate")},
+                    modifier = Modifier.padding(bottom =10.dp)
+                )
+            }
+        ){contentPadding->
+            UrlImages(
+                homeViewModel.urlList,
+                contentPadding
+            )
+        }
         //THIS IS WHAT WILL GET COVERED
-        UrlImages(homeViewModel.urlList)
+
 
     }
 
@@ -124,14 +145,33 @@ fun LoginView(
 }
 
 @Composable
-fun UrlImages(urlList:List<String>){
+fun UrlImages(
+    urlList:List<StreamInfo>,
+    contentPadding: PaddingValues
+){
 
-    LazyColumn(modifier = Modifier.padding(5.dp)){
-        items(urlList){url ->
-            AsyncImage(
-                model = url,
-                contentDescription = null
-            )
+    LazyColumn(modifier = Modifier.padding(contentPadding).padding(horizontal = 5.dp)){
+        items(urlList){streamItem ->
+            Row(){
+                Box() {
+
+                    AsyncImage(
+                        model = streamItem.url,
+                        contentDescription = null
+                    )
+                    Text("${streamItem.views}",
+                        style = TextStyle(color = Color.White, fontSize = 15.sp,fontWeight = FontWeight.ExtraBold),
+                        modifier = Modifier.align(Alignment.BottomStart).padding(5.dp)
+                    )
+                }
+                Column(modifier = Modifier.padding(start = 10.dp)){
+                    Text(streamItem.streamerName, fontSize = 20.sp)
+                    Text(streamItem.streamTitle, fontSize = 15.sp,modifier = Modifier.alpha(0.5f), maxLines = 1,overflow = TextOverflow.Ellipsis)
+                    Text(streamItem.gameTitle, fontSize = 15.sp,modifier = Modifier.alpha(0.5f))
+                }
+
+            }
+
             Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
         }
     }
