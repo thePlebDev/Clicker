@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.util.findActivity
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -61,8 +62,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
+import com.example.clicker.navigation.Screen
 import com.example.clicker.util.Response
 
 
@@ -70,7 +73,8 @@ import com.example.clicker.util.Response
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
-    loginWithTwitch:() -> Unit
+    loginWithTwitch:() -> Unit,
+    navController: NavController
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
@@ -105,7 +109,8 @@ fun HomeView(
         ){contentPadding->
             UrlImages(
                 homeViewModel.urlList,
-                contentPadding
+                contentPadding,
+                navController
             )
         }
         //THIS IS WHAT WILL GET COVERED
@@ -147,12 +152,13 @@ fun LoginView(
 @Composable
 fun UrlImages(
     urlList:List<StreamInfo>,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
+    navController: NavController
 ){
 
     LazyColumn(modifier = Modifier.padding(contentPadding).padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
-            Row(){
+            Row(modifier = Modifier.clickable { navController.navigate(Screen.EmbeddedScreen.route) }){
                 Box() {
 
                     AsyncImage(

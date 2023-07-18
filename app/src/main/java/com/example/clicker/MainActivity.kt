@@ -23,6 +23,7 @@ import com.example.clicker.presentation.HomeView
 import com.example.clicker.presentation.HomeViewModel
 import com.example.clicker.ui.theme.ClickerTheme
 import androidx.fragment.app.activityViewModels
+import com.example.clicker.navigation.Navigation
 
 class MainActivity : ComponentActivity() {
     private val homeViewModel:HomeViewModel by viewModels()
@@ -44,10 +45,14 @@ class MainActivity : ComponentActivity() {
                 Intent.ACTION_VIEW, Uri.parse(
                     "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read")
             )
-                HomeView(
-                    homeViewModel = homeViewModel,
-                    loginWithTwitch = {startActivity(twitchIntent)}
-                )
+//                HomeView(
+//                    homeViewModel = homeViewModel,
+//                    loginWithTwitch = {startActivity(twitchIntent)}
+//                )
+            Navigation(
+                homeViewModel = homeViewModel,
+                loginWithTwitch = {startActivity(twitchIntent)}
+            )
         }
     }
 
