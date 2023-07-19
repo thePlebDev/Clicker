@@ -103,4 +103,7 @@ dependencies {
     def nav_version = "2.6.0"
 
     implementation "androidx.navigation:navigation-compose:$nav_version"
+
+    //webview library
+    implementation 'com.google.accompanist:accompanist-webview:0.31.5-beta'
 }

@@ -158,7 +158,7 @@ fun UrlImages(
 
     LazyColumn(modifier = Modifier.padding(contentPadding).padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
-            Row(modifier = Modifier.clickable { navController.navigate(Screen.EmbeddedScreen.route) }){
+            Row(modifier = Modifier.clickable { navController.navigate(Screen.EmbeddedScreen.route+"/${streamItem.streamerName}") }){
                 Box() {
 
                     AsyncImage(
