@@ -1,4 +1,4 @@
-package com.example.clicker.presentation
+package com.example.clicker.presentation.home
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.clicker.BuildConfig
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.TwitchRepoImpl
 import kotlinx.coroutines.flow.MutableStateFlow
