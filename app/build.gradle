@@ -8,7 +8,10 @@ android {
     compileSdk 33
     buildFeatures {
         buildConfig = true
+
+        viewBinding true
     }
+
 
     defaultConfig {
         applicationId "com.example.clicker"
@@ -103,7 +106,22 @@ dependencies {
     def nav_version = "2.6.0"
 
     implementation "androidx.navigation:navigation-compose:$nav_version"
+    //above is what is already here
+
+    // Kotlin
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+
+    // Feature module Support
+    implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
+
+    // Testing Navigation
+    androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
 
     //webview library
     implementation 'com.google.accompanist:accompanist-webview:0.31.5-beta'
+
 }
