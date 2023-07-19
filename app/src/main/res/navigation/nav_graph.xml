@@ -9,5 +9,14 @@
         android:id="@+id/homeFragment"
         android:name="com.example.clicker.presentation.home.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_streamFragment"
+            app:destination="@id/streamFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/streamFragment"
+        android:name="com.example.clicker.presentation.stream.StreamFragment"
+        android:label="fragment_stream"
+        tools:layout="@layout/fragment_stream" />
 </navigation>

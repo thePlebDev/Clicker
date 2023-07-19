@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportActionBar!!.hide()
         setContentView(R.layout.activity_main)
 //        val myWebView: WebView = findViewById(R.id.webview)
 //
@@ -46,58 +47,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
-       // setContent {
-           // AnotherTesting()
-
-            //Text("hello govna", fontSize = 30.sp)
-
-//
-////                // A surface container using the 'background' color from the theme
-////            val clientId =BuildConfig.CLIENT_ID
-////            val redirectUrl = BuildConfig.REDIRECT_URL
-////
-////
-////            val tokenString:String = java.util.UUID.randomUUID().toString()
-////
-////            val twitchIntent = Intent(
-////                Intent.ACTION_VIEW, Uri.parse(
-////                    "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read")
-////            )
-//////                HomeView(
-//////                    homeViewModel = homeViewModel,
-//////                    loginWithTwitch = {startActivity(twitchIntent)}
-//////                )
-////            Navigation(
-////                homeViewModel = homeViewModel,
-////                loginWithTwitch = {startActivity(twitchIntent)}
-////            )
-////            Text("another one", fontSize = 20.sp)
-       // }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val uri:Uri? = intent.data
-
-        val width = Resources.getSystem().displayMetrics.widthPixels /2
-        val aspectHeight = (width * 0.5625).toInt()
-
-
-        val verticalHeight = (width * 1.77777777778).toInt()
-        homeViewModel.updateAspectWidthHeight(width, aspectHeight )
-
-
-        if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
-            Log.d("Twitchval",uri.toString())
-
-            val accessToken = uri.fragment?.subSequence(13,43).toString()
-
-
-
-
-            homeViewModel.updateAuthenticationCode(accessToken)
-        }
-    }
 
 
 }

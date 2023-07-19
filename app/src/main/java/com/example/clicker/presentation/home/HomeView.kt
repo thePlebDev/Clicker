@@ -42,18 +42,21 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.clicker.navigation.Screen
 import com.example.clicker.util.Response
+import com.example.clicker.R
+import com.example.clicker.presentation.stream.StreamViewModel
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
+    streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
-    navController: NavController
+    onNavigate: (Int) -> Unit
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
@@ -89,7 +92,9 @@ fun HomeView(
             UrlImages(
                 homeViewModel.urlList,
                 contentPadding,
-                navController
+                onNavigate = { des -> onNavigate(des)},
+                updateChannelName = { name -> streamViewModel.setChannelName(name)}
+
             )
         }
         //THIS IS WHAT WILL GET COVERED
@@ -104,7 +109,8 @@ fun LoginView(
     loggedIn:Boolean,
     loginWithTwitch:() -> Unit,
     homeViewModel: HomeViewModel,
-    changeLoginStatus:()-> Unit
+    changeLoginStatus:()-> Unit,
+
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -132,12 +138,19 @@ fun LoginView(
 fun UrlImages(
     urlList:List<StreamInfo>,
     contentPadding: PaddingValues,
-    navController: NavController
+    onNavigate: (Int) -> Unit,
+    updateChannelName:(String)-> Unit
 ){
 
-    LazyColumn(modifier = Modifier.padding(contentPadding).padding(horizontal = 5.dp)){
+    LazyColumn(modifier = Modifier
+        .padding(contentPadding)
+        .padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
-            Row(modifier = Modifier.clickable { navController.navigate(Screen.EmbeddedScreen.route+"/${streamItem.streamerName}") }){
+            Row(modifier = Modifier.clickable {
+                updateChannelName(streamItem.streamerName)
+                onNavigate(R.id.action_homeFragment_to_streamFragment)
+            }
+            ){
                 Box() {
 
                     AsyncImage(
@@ -146,7 +159,9 @@ fun UrlImages(
                     )
                     Text("${streamItem.views}",
                         style = TextStyle(color = Color.White, fontSize = 15.sp,fontWeight = FontWeight.ExtraBold),
-                        modifier = Modifier.align(Alignment.BottomStart).padding(5.dp)
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(5.dp)
                     )
                 }
                 Column(modifier = Modifier.padding(start = 10.dp)){
@@ -157,7 +172,9 @@ fun UrlImages(
 
             }
 
-            Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp))
         }
     }
 

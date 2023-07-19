@@ -1,15 +1,25 @@
 package com.example.clicker.presentation.home
 
+import android.content.Intent
+import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.viewModels
 import androidx.compose.material.Text
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.viewModels
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
+import androidx.navigation.fragment.findNavController
+import com.example.clicker.presentation.stream.StreamViewModel
+import androidx.fragment.app.activityViewModels
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,6 +34,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val streamViewModel: StreamViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +52,23 @@ class HomeFragment : Fragment() {
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                Text("I REALLY DO BE OUT HERE", fontSize = 30.sp)
+                val clientId =BuildConfig.CLIENT_ID
+                val redirectUrl = BuildConfig.REDIRECT_URL
+
+
+                val tokenString:String = java.util.UUID.randomUUID().toString()
+
+                val twitchIntent = Intent(
+                    Intent.ACTION_VIEW, Uri.parse(
+                        "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read")
+                )
+                HomeView(
+                    homeViewModel = homeViewModel,
+                    streamViewModel = streamViewModel,
+                    loginWithTwitch = {startActivity(twitchIntent)},
+                    onNavigate = { dest -> findNavController().navigate(dest) },
+
+                )
             }
         }
         return view
@@ -52,5 +80,30 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
+
+    override fun onResume() {
+        super.onResume()
+
+        val uri: Uri? = activity?.intent?.data
+
+        val width = Resources.getSystem().displayMetrics.widthPixels /2
+        val aspectHeight = (width * 0.5625).toInt()
+
+
+        val verticalHeight = (width * 1.77777777778).toInt()
+        homeViewModel.updateAspectWidthHeight(width, aspectHeight )
+
+
+        if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
+            Log.d("Twitchval",uri.toString())
+
+            val accessToken = uri.fragment?.subSequence(13,43).toString()
+
+
+
+
+            homeViewModel.updateAuthenticationCode(accessToken)
+        }
+    }
 
 }
