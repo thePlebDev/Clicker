@@ -12,6 +12,7 @@ import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.TwitchRepoImpl
+import com.example.clicker.network.websockets.TwitchWebSocket
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class HomeUIState(
@@ -31,7 +32,8 @@ data class HomeUIState(
 
 
 class HomeViewModel(
-    val twitchRepoImpl: TwitchRepo = TwitchRepoImpl()
+    val twitchRepoImpl: TwitchRepo = TwitchRepoImpl(),
+    val webSocket: TwitchWebSocket = TwitchWebSocket()
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
