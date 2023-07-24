@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun AnotherTesting(){
     val context = LocalContext.current
-    //val url="https://player.twitch.tv/?channel=$channelName&parent=Modderz"
     val html = "<iframe src=\"?channel=F1NN5TER&parent=Modderz\" height=\"360\" width=\"640\" allowfullscreen/>"
     AndroidView(
 
@@ -70,13 +69,10 @@ fun AnotherTesting(){
                 settings.javaScriptEnabled = true
                 settings.allowFileAccess = true
                 settings.javaScriptCanOpenWindowsAutomatically = true
-                settings.pluginState = WebSettings.PluginState.ON
                 settings.mediaPlaybackRequiresUserGesture = false
                 settings.domStorageEnabled = true
-               // settings.setAppCacheMaxSize(1024 * 8)
-                settings.setRenderPriority(WebSettings.RenderPriority.HIGH)
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
-               // settings.setAppCacheEnabled(true)
+
                 loadDataWithBaseURL("https://player.twitch.tv/", html, "text/html", "UTF-8", null)
 
             }
