@@ -39,10 +39,10 @@ class TwitchWebSocket(): WebSocketListener() {
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
-        
+        //
         //todo: add the User access tokens after oauth:
-        webSocket.send("PASS oauth:");
-        webSocket.send("NICK theplebdev");
+        webSocket.send("PASS oauth:userAccessToken");
+        webSocket.send("NICK username");
        // webSocket.send("deadbeef".decodeHex());
         //webSocket.close(1000, "Goodbye, World!");
 
