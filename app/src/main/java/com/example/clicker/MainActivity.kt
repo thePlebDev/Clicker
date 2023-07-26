@@ -16,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.presentation.home.HomeViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
 
@@ -56,13 +58,11 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun AnotherTesting(){
     val context = LocalContext.current
-    val html = "<iframe src=\"?channel=F1NN5TER&parent=Modderz\" height=\"360\" width=\"640\" allowfullscreen/>"
+    val html = "<iframe src=\"?channel=Robbaz&parent=youAppName\" height=\"360\" width=\"640\" allowfullscreen/>"
     AndroidView(
 
         factory = {
             WebView(context).apply {
-
-                //loadUrl("https://player.twitch.tv/?channel=F1NN5TER&parent=Modderz")
                 webViewClient = WebViewClient()
                 webChromeClient = WebChromeClient()
                 settings.loadsImagesAutomatically = true
@@ -72,9 +72,7 @@ fun AnotherTesting(){
                 settings.mediaPlaybackRequiresUserGesture = false
                 settings.domStorageEnabled = true
                 settings.cacheMode = WebSettings.LOAD_NO_CACHE
-
                 loadDataWithBaseURL("https://player.twitch.tv/", html, "text/html", "UTF-8", null)
-
             }
         }
     )
