@@ -56,7 +56,8 @@ fun HomeView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
-    onNavigate: (Int) -> Unit
+    onNavigate: (Int) -> Unit,
+    dataStoreViewModel:DataStoreViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
@@ -89,15 +90,41 @@ fun HomeView(
                 )
             }
         ){contentPadding->
-            UrlImages(
-                homeViewModel.urlList,
-                contentPadding,
-                onNavigate = { des -> onNavigate(des)},
-                updateChannelName = { name -> streamViewModel.setChannelName(name)}
-
+//            UrlImages(
+//                homeViewModel.urlList,
+//                contentPadding,
+//                onNavigate = { des -> onNavigate(des)},
+//                updateChannelName = { name -> streamViewModel.setChannelName(name)}
+//
+//            )
+            TestTokenButton(
+                dataStoreViewModel,
+                loginWithTwitch ={loginWithTwitch()},
+                contentPadding
             )
         }
         //THIS IS WHAT WILL GET COVERED
+
+    }
+
+}
+
+@Composable
+fun TestTokenButton(
+    dataStoreViewModel:DataStoreViewModel,
+    loginWithTwitch:() -> Unit,
+    contentPadding: PaddingValues,
+){
+    val tokenValue = dataStoreViewModel.state.value
+    Column(modifier = Modifier.padding(contentPadding)) {
+        Text(tokenValue, fontSize = 30.sp)
+        if(tokenValue.length < 2){
+            Button(onClick ={
+                loginWithTwitch()
+            }) {
+                Text("Login with Twitch")
+            }
+        }
 
 
     }

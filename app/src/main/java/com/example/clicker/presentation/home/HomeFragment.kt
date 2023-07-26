@@ -36,6 +36,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by viewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
+    private val dataStoreViewModel:DataStoreViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +68,7 @@ class HomeFragment : Fragment() {
                     streamViewModel = streamViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)},
                     onNavigate = { dest -> findNavController().navigate(dest) },
+                    dataStoreViewModel = dataStoreViewModel
 
                 )
             }
@@ -97,12 +99,13 @@ class HomeFragment : Fragment() {
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
             Log.d("Twitchval",uri.toString())
 
-            val accessToken = uri.fragment?.subSequence(13,43).toString()
+            val authCode = uri.fragment?.subSequence(13,43).toString()
 
 
 
 
-            homeViewModel.updateAuthenticationCode(accessToken)
+            dataStoreViewModel.updateAuthorizationCode(authCode)
+           // homeViewModel.updateAuthenticationCode(authCode)
         }
     }
 

@@ -14,37 +14,46 @@ import java.util.concurrent.TimeUnit
 class TwitchWebSocket(): WebSocketListener() {
 
 
-    val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
+    private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
+
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .readTimeout(1000,TimeUnit.MILLISECONDS)
+        .writeTimeout(1000,TimeUnit.MILLISECONDS)
+        .build()
+    var webSocket:WebSocket? = null
 
     init {
         run()
     }
 
+
     private fun run() {
-        val client: OkHttpClient = OkHttpClient.Builder()
-            .readTimeout(1000,TimeUnit.MILLISECONDS)
-            .writeTimeout(1000,TimeUnit.MILLISECONDS)
-            .build()
+
 
         val request: Request = Request.Builder()
             .url(webSocketURL)
             .build()
-        client.newWebSocket(request, this)
+        webSocket =client.newWebSocket(request, this)
 
+
+    }
+    fun close(){
         // Trigger shutdown of the dispatcher's executor so this process can exit cleanly.
         client.dispatcher.executorService.shutdown()
+        webSocket?.close(1009,"Manually closed ")
+
     }
 
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
-        //
-        //todo: add the User access tokens after oauth:
-        webSocket.send("PASS oauth:userAccessToken");
-        webSocket.send("NICK username");
-       // webSocket.send("deadbeef".decodeHex());
-        //webSocket.close(1000, "Goodbye, World!");
+
+        val token = "dqmrpj0i293rr5n98uof3d5l4pdwaw"
+
+        webSocket.send("PASS oauth:$token");
+        webSocket.send("NICK loggedInUsername");
+
 
     }
 
@@ -54,6 +63,7 @@ class TwitchWebSocket(): WebSocketListener() {
 
      override fun onMessage(webSocket: WebSocket, text: String) {
         //println("MESSAGE: " + bytes.hex())
+         Log.d("websocketStoof","onMessage CALLED: ${text}")
         Log.d("websocketStoof","onMessage: ${text}")
     }
 

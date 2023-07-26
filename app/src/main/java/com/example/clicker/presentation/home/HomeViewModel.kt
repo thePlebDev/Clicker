@@ -54,6 +54,7 @@ class HomeViewModel(
 
             appAccessToken.collect{token ->
                 if (token != null){
+
                     twitchRepoImpl.validateToken(token).collect{response ->
                         when(response){
                             is Response.Loading ->{
@@ -83,6 +84,7 @@ class HomeViewModel(
     }
 
     suspend fun getLiveFollowedStreams(authorizationHeaderToken: String,userId:String,clientId:String,){
+
         twitchRepoImpl.getFollowedLiveStreams(authorizationToken = authorizationHeaderToken,clientId =clientId,userId =userId).collect{ response ->
             when(response){
                 is Response.Loading ->{}
@@ -155,6 +157,11 @@ class HomeViewModel(
     }
 
 
+    override fun onCleared() {
+        super.onCleared()
+        webSocket.close()
+
+    }
 
 
 }
