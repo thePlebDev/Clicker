@@ -9,9 +9,10 @@ import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class TwitchRepoImpl(
-    private val twitchClient: TwitchClient = TwitchRetrofitInstance.api
+class TwitchRepoImpl @Inject constructor(
+    private val twitchClient: TwitchClient
 ): TwitchRepo {
 
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{

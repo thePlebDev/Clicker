@@ -32,7 +32,7 @@ data class HomeUIState(
 
 
 class HomeViewModel(
-    val twitchRepoImpl: TwitchRepo = TwitchRepoImpl(),
+    //val twitchRepoImpl: TwitchRepo = TwitchRepoImpl(),
     val webSocket: TwitchWebSocket = TwitchWebSocket()
 ): ViewModel(){
 
@@ -55,28 +55,28 @@ class HomeViewModel(
             appAccessToken.collect{token ->
                 if (token != null){
 
-                    twitchRepoImpl.validateToken(token).collect{response ->
-                        when(response){
-                            is Response.Loading ->{
-                                Log.d("validatingUser","LOADING")
-                            }
-                            is Response.Success ->{
-                                Log.d("validatingUser","SUCCESS")
-                                Log.d("validatingUserTOKEN",token)
-                                Log.d("validatingUserUSERID",response.data.userId)
-                                Log.d("validatingUserCLIENTID",response.data.clientId)
-                                getLiveFollowedStreams(
-                                    authorizationHeaderToken = "Bearer $token",
-                                    userId = response.data.userId,
-                                    clientId = response.data.clientId
-
-                                )
-                            }
-                            is Response.Failure ->{
-                                Log.d("validatingUser","FAILURE")
-                            }
-                        }
-                    }
+//                    twitchRepoImpl.validateToken(token).collect{response ->
+//                        when(response){
+//                            is Response.Loading ->{
+//                                Log.d("validatingUser","LOADING")
+//                            }
+//                            is Response.Success ->{
+//                                Log.d("validatingUser","SUCCESS")
+//                                Log.d("validatingUserTOKEN",token)
+//                                Log.d("validatingUserUSERID",response.data.userId)
+//                                Log.d("validatingUserCLIENTID",response.data.clientId)
+//                                getLiveFollowedStreams(
+//                                    authorizationHeaderToken = "Bearer $token",
+//                                    userId = response.data.userId,
+//                                    clientId = response.data.clientId
+//
+//                                )
+//                            }
+//                            is Response.Failure ->{
+//                                Log.d("validatingUser","FAILURE")
+//                            }
+//                        }
+//                    }
                 }
 
             }
@@ -84,37 +84,37 @@ class HomeViewModel(
     }
 
     suspend fun getLiveFollowedStreams(authorizationHeaderToken: String,userId:String,clientId:String,){
-
-        twitchRepoImpl.getFollowedLiveStreams(authorizationToken = authorizationHeaderToken,clientId =clientId,userId =userId).collect{ response ->
-            when(response){
-                is Response.Loading ->{}
-                is Response.Success ->{
-                    updateLoginUI(
-                        loginStep1Status = Response.Success(true),
-                        loginStep2Status = Response.Success(true),
-                        loginStep3Status = Response.Loading,
-                    )
-                     response.data.data.forEach { item ->
-                       //  Log.d("getLiveFollowedStreams",item.thumbNailUrl)
-                         val newUrl = item.thumbNailUrl
-                             .replace("{width}","${_uiState.value.width}")
-                             .replace("{height}","${_uiState.value.aspectHeight}")
-                         _urlList.add(
-                             StreamInfo(
-                                 streamerName = item.userName,
-                                 streamTitle = item.title,
-                                 gameTitle = item.gameName,
-                                 views = item.viewerCount,
-                                 url = newUrl
-                             )
-
-                         )
-
-                     }
-                }
-                is Response.Failure ->{}
-            }
-        }
+//
+//        twitchRepoImpl.getFollowedLiveStreams(authorizationToken = authorizationHeaderToken,clientId =clientId,userId =userId).collect{ response ->
+//            when(response){
+//                is Response.Loading ->{}
+//                is Response.Success ->{
+//                    updateLoginUI(
+//                        loginStep1Status = Response.Success(true),
+//                        loginStep2Status = Response.Success(true),
+//                        loginStep3Status = Response.Loading,
+//                    )
+//                     response.data.data.forEach { item ->
+//                       //  Log.d("getLiveFollowedStreams",item.thumbNailUrl)
+//                         val newUrl = item.thumbNailUrl
+//                             .replace("{width}","${_uiState.value.width}")
+//                             .replace("{height}","${_uiState.value.aspectHeight}")
+//                         _urlList.add(
+//                             StreamInfo(
+//                                 streamerName = item.userName,
+//                                 streamTitle = item.title,
+//                                 gameTitle = item.gameName,
+//                                 views = item.viewerCount,
+//                                 url = newUrl
+//                             )
+//
+//                         )
+//
+//                     }
+//                }
+//                is Response.Failure ->{}
+//            }
+//        }
     }
 
     fun updateAuthenticationCode(token:String){
