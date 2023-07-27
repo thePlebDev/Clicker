@@ -102,6 +102,7 @@ class HomeFragment : Fragment() {
             Log.d("Twitchval",uri.toString())
 
             val authCode = uri.fragment?.subSequence(13,43).toString()
+            Log.d("OAuthCode",uri.toString())
 
 
 

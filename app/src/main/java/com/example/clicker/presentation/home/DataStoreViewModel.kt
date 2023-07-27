@@ -39,43 +39,16 @@ class DataStoreViewModel @Inject constructor(
     init {
         subscribeToValidationToken()
     }
-    init {
-        authCodeForValidateToken()
-    }
+//    init {
+//        authCodeForValidateToken()
+//    }
 
 
-    private fun authCodeForValidateToken() = viewModelScope.launch{
-        authorizationCode.collect{authCode ->
-            authCode?.let{code ->
-                //validate auth code and get validation token
-                Log.d("authCodeForValidateToken()",code)
-                twitchRepoImpl.validateToken(code).collect{response ->
-                    when(response){
-                        is Response.Loading ->{
-                            Log.d("validatingUser","LOADING")
-                        }
-                        is Response.Success ->{
-                            Log.d("validatingUser","SUCCESS")
-                            Log.d("validatingUserTOKEN",code)
-                            Log.d("validatingUserUSERID",response.data.userId)
-                            Log.d("validatingUserCLIENTID",response.data.clientId)
-//                            getLiveFollowedStreams(
-//                                authorizationHeaderToken = "Bearer $token",
-//                                userId = response.data.userId,
-//                                clientId = response.data.clientId
-//
-//                            )
-                        }
-                        is Response.Failure ->{
-                            Log.d("validatingUser","FAILURE")
-                        }
+    //This should be called after the login
+    private fun authCodeForValidateToken(authCode:String) = viewModelScope.launch{
+             //need to make a call to exchange the authCode for a validationToken
+        twitchRepoImpl
 
-                        else -> {}
-                    }
-                }
-            }
-
-        }
     }
 
 
