@@ -107,7 +107,7 @@ class HomeFragment : Fragment() {
 
 
 
-            dataStoreViewModel.updateAuthorizationCode(authCode)
+            dataStoreViewModel.setOAuthToken(authCode)
            // homeViewModel.updateAuthenticationCode(authCode)
         }
     }
