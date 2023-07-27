@@ -20,6 +20,7 @@ import com.example.clicker.databinding.FragmentHomeBinding
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.presentation.stream.StreamViewModel
 import androidx.fragment.app.activityViewModels
+import dagger.hilt.android.AndroidEntryPoint
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -30,6 +31,7 @@ import androidx.fragment.app.activityViewModels
  * Use the [HomeFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null

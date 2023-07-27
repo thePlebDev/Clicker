@@ -4,11 +4,13 @@ import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.util.Response
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,13 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DataStoreViewModel(
-    application:Application,
-):AndroidViewModel(application) {
+@HiltViewModel
+class DataStoreViewModel @Inject constructor(
+    private val twitchRepoImpl: TwitchRepo,
+    private val tokenDataStore:TokenDataStore
+): ViewModel() {
 
-    private val tokenDataStore:TokenDataStore = TokenDataStore(application)
-    val twitchRepoImpl: TwitchRepo = TwitchRepoImpl()
 //
 //    private val _uiState = MutableStateFlow("")
 //    val uiState: StateFlow<String> = _uiState.as
@@ -66,6 +69,8 @@ class DataStoreViewModel(
                         is Response.Failure ->{
                             Log.d("validatingUser","FAILURE")
                         }
+
+                        else -> {}
                     }
                 }
             }

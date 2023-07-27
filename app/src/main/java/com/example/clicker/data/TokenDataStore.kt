@@ -9,11 +9,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 // At the top level of your kotlin file:
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "tokens")
 
-class TokenDataStore(private val context:Context) {
+class TokenDataStore @Inject constructor(
+    private val context:Context
+    ){
     private val TOKEN_KEY = stringPreferencesKey("login_token")
 
     fun getToken():Flow<String>{
