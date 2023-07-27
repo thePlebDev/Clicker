@@ -18,6 +18,7 @@ class TokenDataStore @Inject constructor(
     private val context:Context
     ){
     private val TOKEN_KEY = stringPreferencesKey("login_token")
+    private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
 
     fun getToken():Flow<String>{
 
@@ -37,5 +38,19 @@ class TokenDataStore @Inject constructor(
             tokens[TOKEN_KEY] = loginToken
         }
     }
+    suspend fun setOAuthToken(oAuthToken:String){
+        context.dataStore.edit { tokens ->
+            tokens[oAuthTokenKey] = oAuthToken
+        }
+
+    }
+    fun getOAuthToken():Flow<String>{
+        val oAuthToken:Flow<String> = context.dataStore.data
+            .map { preferences ->
+                preferences[oAuthTokenKey] ?: ""
+            }
+        return oAuthToken
+    }
+
 
 }

@@ -33,50 +33,65 @@ class DataStoreViewModel @Inject constructor(
     private val _uiState = mutableStateOf("")
     val state = _uiState
 
-    private val authorizationCode:MutableStateFlow<String?> = MutableStateFlow(null)
+    private val oAuthUserToken:MutableStateFlow<String?> = MutableStateFlow(null)
 
+    init{
 
+        validateOAuthUserToken()
+    }
     init {
-        subscribeToValidationToken()
-    }
-//    init {
-//        authCodeForValidateToken()
-//    }
-
-
-    //This should be called after the login
-    private fun authCodeForValidateToken(authCode:String) = viewModelScope.launch{
-             //need to make a call to exchange the authCode for a validationToken
-        twitchRepoImpl
-
+        getOAuthToken()
     }
 
 
-
-
-
-    private fun subscribeToValidationToken()= viewModelScope.launch {
-        tokenDataStore.getToken().stateIn(viewModelScope, SharingStarted.Lazily,"").collect{authCode ->
-            Log.d("DataStoreViewModel SUB",authCode)
-            if(authCode.length > 2){
-                Log.d("DataStoreViewModel SUB","validate token request")
+    private fun validateOAuthUserToken() = viewModelScope.launch{
+        oAuthUserToken.collect{oAuthUserToken ->
+            if(oAuthUserToken != null){
+                Log.d("validateOAuthUserToken", oAuthUserToken)
+                //so now we need to validate and get the client_id
+                validateOAuthToken(oAuthUserToken)
+            }else{
+                Log.d("validateOAuthUserToken", "NULL")
             }
-            _uiState.value = authCode
+        }
+    }
+
+    private suspend fun validateOAuthToken(oAuthUserToken:String){
+        twitchRepoImpl.validateToken(oAuthUserToken).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    Log.d("validateOAuthUserToken", "LOADING")
+                }
+                is Response.Success ->{
+                    Log.d("validateOAuthUserToken", "SUCCESS")
+                    Log.d("validateOAuthUserToken", "CLIENT_ID -->" +response.data.clientId)
+
+                }
+                is Response.Failure ->{
+                    Log.d("validateOAuthUserToken", "FAILURE")
+
+                }
+            }
 
         }
     }
 
-    fun getValidationToken() = viewModelScope.launch{
-        tokenDataStore.getToken().collect{token ->
-            Log.d("DataStoreViewModel getToken()",token)
+
+
+    fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
+             //need to make a call to exchange the authCode for a validationToken
+        tokenDataStore.setOAuthToken(oAuthToken)
+        oAuthUserToken.tryEmit(oAuthToken)
+
+
+    }
+    private fun getOAuthToken() = viewModelScope.launch{
+        tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
+            if(storedOAuthToken.length > 2){
+                oAuthUserToken.tryEmit(storedOAuthToken)
+            }
         }
     }
 
-    fun setToken(loginToken:String) = viewModelScope.launch{
-        tokenDataStore.updateToken(loginToken)
-    }
 
-    fun updateAuthorizationCode(authCode:String){
-        authorizationCode.tryEmit(authCode)
-    }
 }
