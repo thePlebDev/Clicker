@@ -13,10 +13,3 @@ data class ValidatedUser(
     val expiresIn:Int
 
 )
-
-//data class AccessToken(
-//    @SerializedName("access_token")
-//    val accessToken:String,
-//    @SerializedName("token_type")
-//    val tokenType:String,
-//)

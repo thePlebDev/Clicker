@@ -1,8 +1,6 @@
 package com.example.clicker.network
 
-import com.example.clicker.network.models.AccessToken
 import com.example.clicker.network.models.FollowedLiveStreams
-import com.example.clicker.network.models.GitHubProfile
 import com.example.clicker.network.models.ValidatedUser
 
 

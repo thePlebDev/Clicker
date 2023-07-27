@@ -44,8 +44,8 @@ class DataStoreViewModel @Inject constructor(
 //    }
 
 
-    //This should be called after the login
-    private fun authCodeForValidateToken(authCode:String) = viewModelScope.launch{
+
+    private fun validateOAuthToken(authCode:String) = viewModelScope.launch{
              //need to make a call to exchange the authCode for a validationToken
         twitchRepoImpl
 
