@@ -1,8 +1,6 @@
 package com.example.clicker.network.repository
 
-import android.util.Log
 import com.example.clicker.network.TwitchClient
-import com.example.clicker.network.TwitchRetrofitInstance
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
