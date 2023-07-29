@@ -38,8 +38,10 @@ class DataStoreViewModel @Inject constructor(
     val state = _uiState
 
     private val _oAuthUserToken:MutableStateFlow<String?> = MutableStateFlow(null)
-
     private val _clientId: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    private val _showLogin:MutableState<Response<Boolean>> = mutableStateOf(Response.Loading)
+    val showLogin:State<Response<Boolean>> = _showLogin
 
 
     private val authenticatedUserFlow = combine(
@@ -74,12 +76,18 @@ class DataStoreViewModel @Inject constructor(
             }
             mainState.hasClientId?.let{clientId ->
                 Log.d("validateOAuthUserToken", "clientId -> $clientId")
+                _showLogin.value = Response.Success(true)
                 // get the streams
-
             }
         }
     }
 
+
+    private fun getFollowedStreams(oAuthUserToken: String,clientId:String){
+//        twitchRepoImpl.getFollowedLiveStreams(
+//            oAuthUserToken,clientId
+//        )
+    }
 
 
 
@@ -97,6 +105,7 @@ class DataStoreViewModel @Inject constructor(
                 }
                 is Response.Failure ->{
                     Log.d("validateOAuthUserToken", "FAILURE")
+                    _showLogin.value = Response.Failure(Exception("NO OAuthToken"))
 
                 }
 
@@ -106,13 +115,6 @@ class DataStoreViewModel @Inject constructor(
         }
     }
 
-    fun getFollowedStreams() = viewModelScope.launch{
-        _clientId.collect{
-            it?.also{
-
-            }
-        }
-    }
 
 
 
@@ -127,6 +129,8 @@ class DataStoreViewModel @Inject constructor(
         tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
             if(storedOAuthToken.length > 2){
                 _oAuthUserToken.tryEmit(storedOAuthToken)
+            }else{
+                _showLogin.value = Response.Failure(Exception("NO OAuthToken"))
             }
         }
     }
