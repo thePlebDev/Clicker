@@ -68,11 +68,12 @@ fun HomeView(
 //            bottomSheetValue.hide()
 //        }
 //    }
-   // val showLogin = dataStoreViewModel.publicOAuthUserToken.collectAsState().value
-    //val clientId = dataStoreViewModel.clientId.value
+
+    val validationStatus = dataStoreViewModel.showLogin.value
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
+        //TODO: THIS sheetContent WILL GET CHANGED OUT TO BE THE STREAMING VIDEO
         sheetContent = {
             LoginView(
                 loggedIn = homeViewModel.state.value.userLogginIn,
@@ -92,22 +93,18 @@ fun HomeView(
                 )
             }
         ){contentPadding->
-            UrlImages(
-                homeViewModel.urlList,
-                contentPadding,
-                onNavigate = { des -> onNavigate(des)},
-                updateChannelName = { name -> streamViewModel.setChannelName(name)}
-
+//            UrlImages(
+//                homeViewModel.urlList,
+//                contentPadding,
+//                onNavigate = { des -> onNavigate(des)},
+//                updateChannelName = { name -> streamViewModel.setChannelName(name)}
+//
+//            )
+            ValidationStatus(
+                validationStatus = validationStatus,
+                contentPadding = contentPadding,
+                loginWithTwitch ={loginWithTwitch()}
             )
-//            if (showLogin == null){
-//                TestTokenButton(
-//                    dataStoreViewModel,
-//                    loginWithTwitch ={loginWithTwitch()},
-//                    contentPadding
-//                )
-//            }else{
-//                Text("$clientId",Modifier.padding(contentPadding), fontSize = 30.sp)
-//            }
 
         }
         //THIS IS WHAT WILL GET COVERED
@@ -117,25 +114,39 @@ fun HomeView(
 }
 
 @Composable
-fun TestTokenButton(
-    dataStoreViewModel:DataStoreViewModel,
-    loginWithTwitch:() -> Unit,
+fun ValidationStatus(
+    validationStatus:Response<Boolean>,
     contentPadding: PaddingValues,
+    loginWithTwitch:() -> Unit,
 ){
-    val tokenValue = dataStoreViewModel.state.value
     Column(modifier = Modifier.padding(contentPadding)) {
-        Text(tokenValue, fontSize = 30.sp)
-        if(tokenValue.length < 2){
-            Button(onClick ={
-                loginWithTwitch()
-            }) {
-                Text("Login with Twitch")
+        when(validationStatus){
+            is Response.Loading ->{
+                CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
+            }
+            is Response.Success ->{
+                Text(text ="SUCCESS! GET VIDS NOW", fontSize = 30.sp)
+            }
+            is Response.Failure ->{
+                LoginWithTwitch(
+                    loginWithTwitch = { loginWithTwitch() }
+                )
             }
         }
-
-
     }
 
+
+}
+
+@Composable
+fun LoginWithTwitch(
+    loginWithTwitch:() -> Unit,
+){
+    Button(onClick ={
+        loginWithTwitch()
+    }) {
+        Text("Login with Twitch")
+    }
 }
 
 @Composable
