@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -93,17 +94,12 @@ fun HomeView(
                 )
             }
         ){contentPadding->
-//            UrlImages(
-//                homeViewModel.urlList,
-//                contentPadding,
-//                onNavigate = { des -> onNavigate(des)},
-//                updateChannelName = { name -> streamViewModel.setChannelName(name)}
-//
-//            )
+
             ValidationStatus(
                 validationStatus = validationStatus,
                 contentPadding = contentPadding,
-                loginWithTwitch ={loginWithTwitch()}
+                loginWithTwitch ={loginWithTwitch()},
+                urlList = dataStoreViewModel.urlList
             )
 
         }
@@ -118,14 +114,17 @@ fun ValidationStatus(
     validationStatus:Response<Boolean>,
     contentPadding: PaddingValues,
     loginWithTwitch:() -> Unit,
+    urlList:List<StreamInfo>,
 ){
-    Column(modifier = Modifier.padding(contentPadding)) {
+    Column(modifier = Modifier.padding(contentPadding).fillMaxSize()) {
         when(validationStatus){
             is Response.Loading ->{
                 CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
             }
             is Response.Success ->{
-                Text(text ="SUCCESS! GET VIDS NOW", fontSize = 30.sp)
+                UrlImages(
+                    urlList = urlList
+                )
             }
             is Response.Failure ->{
                 LoginWithTwitch(
@@ -182,18 +181,13 @@ fun LoginView(
 @Composable
 fun UrlImages(
     urlList:List<StreamInfo>,
-    contentPadding: PaddingValues,
-    onNavigate: (Int) -> Unit,
-    updateChannelName:(String)-> Unit
 ){
 
     LazyColumn(modifier = Modifier
-        .padding(contentPadding)
+
         .padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
             Row(modifier = Modifier.clickable {
-                updateChannelName(streamItem.streamerName)
-                onNavigate(R.id.action_homeFragment_to_streamFragment)
             }
             ){
                 Box() {
