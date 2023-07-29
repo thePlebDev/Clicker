@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -67,7 +68,8 @@ fun HomeView(
 //            bottomSheetValue.hide()
 //        }
 //    }
-    Log.d("loggedIN",homeViewModel.state.value.userLogginIn.toString())
+   // val showLogin = dataStoreViewModel.publicOAuthUserToken.collectAsState().value
+    //val clientId = dataStoreViewModel.clientId.value
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
@@ -90,18 +92,23 @@ fun HomeView(
                 )
             }
         ){contentPadding->
-//            UrlImages(
-//                homeViewModel.urlList,
-//                contentPadding,
-//                onNavigate = { des -> onNavigate(des)},
-//                updateChannelName = { name -> streamViewModel.setChannelName(name)}
-//
-//            )
-            TestTokenButton(
-                dataStoreViewModel,
-                loginWithTwitch ={loginWithTwitch()},
-                contentPadding
+            UrlImages(
+                homeViewModel.urlList,
+                contentPadding,
+                onNavigate = { des -> onNavigate(des)},
+                updateChannelName = { name -> streamViewModel.setChannelName(name)}
+
             )
+//            if (showLogin == null){
+//                TestTokenButton(
+//                    dataStoreViewModel,
+//                    loginWithTwitch ={loginWithTwitch()},
+//                    contentPadding
+//                )
+//            }else{
+//                Text("$clientId",Modifier.padding(contentPadding), fontSize = 30.sp)
+//            }
+
         }
         //THIS IS WHAT WILL GET COVERED
 
