@@ -55,25 +55,4 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-@Composable
-fun AnotherTesting(){
-    val context = LocalContext.current
-    val html = "<iframe src=\"?channel=Robbaz&parent=youAppName\" height=\"360\" width=\"640\" allowfullscreen/>"
-    AndroidView(
 
-        factory = {
-            WebView(context).apply {
-                webViewClient = WebViewClient()
-                webChromeClient = WebChromeClient()
-                settings.loadsImagesAutomatically = true
-                settings.javaScriptEnabled = true
-                settings.allowFileAccess = true
-                settings.javaScriptCanOpenWindowsAutomatically = true
-                settings.mediaPlaybackRequiresUserGesture = false
-                settings.domStorageEnabled = true
-                settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                loadDataWithBaseURL("https://player.twitch.tv/", html, "text/html", "UTF-8", null)
-            }
-        }
-    )
-}
