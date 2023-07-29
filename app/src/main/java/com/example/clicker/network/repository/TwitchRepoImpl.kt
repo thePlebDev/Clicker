@@ -1,5 +1,6 @@
 package com.example.clicker.network.repository
 
+import android.util.Log
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.FollowedLiveStreams
@@ -33,7 +34,7 @@ class TwitchRepoImpl @Inject constructor(
     ): Flow<Response<FollowedLiveStreams>> = flow{
         emit(Response.Loading)
         val response = twitchClient.getFollowedStreams(
-            authorization = authorizationToken,
+            authorization = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId
         )

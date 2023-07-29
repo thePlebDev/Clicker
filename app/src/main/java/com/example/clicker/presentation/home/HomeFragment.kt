@@ -95,7 +95,7 @@ class HomeFragment : Fragment() {
 
 
         val verticalHeight = (width * 1.77777777778).toInt()
-        homeViewModel.updateAspectWidthHeight(width, aspectHeight )
+        dataStoreViewModel.updateAspectWidthHeight(width, aspectHeight )
 
 
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
