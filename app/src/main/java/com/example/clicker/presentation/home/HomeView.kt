@@ -1,6 +1,11 @@
 package com.example.clicker.presentation.home
 
 import android.util.Log
+import android.view.View
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -41,9 +46,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -62,7 +69,7 @@ fun HomeView(
     dataStoreViewModel:DataStoreViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
-    val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
+    val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
 //            Log.d("GITHUB","LaunchedEffect RECOMP")
@@ -76,12 +83,7 @@ fun HomeView(
         sheetState = bottomSheetValue,
         //TODO: THIS sheetContent WILL GET CHANGED OUT TO BE THE STREAMING VIDEO
         sheetContent = {
-            LoginView(
-                loggedIn = homeViewModel.state.value.userLogginIn,
-                loginWithTwitch = {loginWithTwitch() },
-                homeViewModel = homeViewModel,
-                changeLoginStatus = {homeViewModel.changeLoginStatus(!homeViewModel.state.value.userLogginIn)}
-            )
+
 
         }
     ){
@@ -99,7 +101,8 @@ fun HomeView(
                 validationStatus = validationStatus,
                 contentPadding = contentPadding,
                 loginWithTwitch ={loginWithTwitch()},
-                urlList = dataStoreViewModel.urlList
+                urlList = dataStoreViewModel.urlList,
+                onNavigate= {dest -> onNavigate(dest)}
             )
 
         }
@@ -115,6 +118,7 @@ fun ValidationStatus(
     contentPadding: PaddingValues,
     loginWithTwitch:() -> Unit,
     urlList:List<StreamInfo>,
+    onNavigate: (Int) -> Unit
 ){
     Column(modifier = Modifier.padding(contentPadding).fillMaxSize()) {
         when(validationStatus){
@@ -123,7 +127,8 @@ fun ValidationStatus(
             }
             is Response.Success ->{
                 UrlImages(
-                    urlList = urlList
+                    urlList = urlList,
+                    onNavigate= {dest -> onNavigate(dest)}
                 )
             }
             is Response.Failure ->{
@@ -181,6 +186,8 @@ fun LoginView(
 @Composable
 fun UrlImages(
     urlList:List<StreamInfo>,
+    onNavigate: (Int) -> Unit
+
 ){
 
     LazyColumn(modifier = Modifier
@@ -188,6 +195,7 @@ fun UrlImages(
         .padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
             Row(modifier = Modifier.clickable {
+                onNavigate(R.id.action_homeFragment_to_streamFragment)
             }
             ){
                 Box() {
@@ -324,5 +332,35 @@ fun LoadingIcon(response:Response<Boolean>?){
 
 }
 
+@Composable
+fun AnotherTesting(){
+    //TODO: THIS DOES NOT WORK, FOR THE MOMENT WE ARE MOVING BACK TO THE CLICKABLE MODIFIER
+    val context = LocalContext.current
+    val html = "<iframe src=\"https://player.twitch.tv/?channel=Sacriel&parent=com.example.modderz\" height=\"400\" width=\"330\" allowfullscreen/>"
+   val src="https://player.twitch.tv/?<channel, video, or collection>&parent=streamernews.example.com"
+   // val channelName1 = "Robbaz"
+    //Log.d("twitchNameonCreateView",channelName)
+    val url="https://player.twitch.tv/?channel=Sacriel&parent=modderz"
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(400.dp)){
+        AndroidView(
+
+            factory = {
+                WebView(context).apply {
+                    webViewClient = WebViewClient()
+                    webChromeClient = WebChromeClient()
+                    settings.javaScriptEnabled = true
+
+
+                    loadUrl(url)
+
+
+                }
+            }
+        )
+    }
+
+}
 
 

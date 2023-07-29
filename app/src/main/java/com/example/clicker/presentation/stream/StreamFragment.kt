@@ -45,10 +45,11 @@ class StreamFragment : Fragment() {
         // Inflate the layout for this fragment
 
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
-        val channelName =streamViewModel.channelName.value
-        val channelName1 = "Robbaz"
+        //val channelName =streamViewModel.channelName.value
+
+        val channelName = "Sacriel"
         Log.d("twitchNameonCreateView",channelName)
-        val url="https://player.twitch.tv/?channel=$channelName&parent=applicationName"
+        val url="https://player.twitch.tv/?channel=$channelName&muted=true&parent=modderz"
 
         val view = binding.root
         val myWebView: WebView = view.findViewById(R.id.webView)
@@ -56,8 +57,11 @@ class StreamFragment : Fragment() {
         myWebView.settings.javaScriptEnabled = true
         myWebView.loadUrl(url)
 
-        binding.composeView.apply{
 
+        binding.composeView.apply{
+            setContent {
+                Text("CHAT HERE", fontSize = 30.sp, modifier = Modifier.padding(top=200.dp))
+            }
         }
 
         return view

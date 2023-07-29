@@ -60,7 +60,7 @@ class HomeViewModel(
             }
         }
     }
-    
+
 
     fun updateAuthenticationCode(token:String){
 
