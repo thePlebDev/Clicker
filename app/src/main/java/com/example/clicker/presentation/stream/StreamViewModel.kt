@@ -8,16 +8,20 @@ import androidx.lifecycle.ViewModel
 import com.example.clicker.presentation.home.StreamInfo
 
 
-class StreamViewModel: ViewModel() {
+class StreamViewModel(
+): ViewModel() {
 
     private val _channelName = mutableStateOf("")
     val channelName:State<String> = _channelName
 
-init{
-    Log.d("twitchName",channelName.value)
-}
+    val listChats = mutableStateListOf<String>()
+
+
     fun setChannelName(channelName:String){
         _channelName.value = channelName
         Log.d("twitchNamesetChannelName",channelName)
+    }
+    fun addItem(chatText:String){
+        listChats.add(chatText)
     }
 }

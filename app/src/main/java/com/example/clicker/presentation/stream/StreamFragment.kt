@@ -28,7 +28,7 @@ class StreamFragment : Fragment() {
 
     private var _binding: FragmentStreamBinding? = null
     private val binding get() = _binding!!
-    private val streamViewModel: StreamViewModel by activityViewModels()
+    private val streamViewModel: StreamViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +62,10 @@ class StreamFragment : Fragment() {
 
         binding.composeView.apply{
             setContent {
-                Text("CHAT HERE", fontSize = 30.sp, modifier = Modifier.padding(top=200.dp))
+                StreamView(
+                    streamViewModel
+                )
+
             }
         }
 
