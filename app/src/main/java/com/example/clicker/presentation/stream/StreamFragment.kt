@@ -47,12 +47,14 @@ class StreamFragment : Fragment() {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
         //val channelName =streamViewModel.channelName.value
 
-        val channelName = "Sacriel"
+        val channelName = "A_Seagull"
         Log.d("twitchNameonCreateView",channelName)
-        val url="https://player.twitch.tv/?channel=$channelName&muted=true&parent=modderz"
+
+        val url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
 
         val view = binding.root
         val myWebView: WebView = view.findViewById(R.id.webView)
+        myWebView.settings.mediaPlaybackRequiresUserGesture = false
 
         myWebView.settings.javaScriptEnabled = true
         myWebView.loadUrl(url)

@@ -49,10 +49,11 @@ class TwitchWebSocket(): WebSocketListener() {
         super.onOpen(webSocket, response)
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
 
-        val token = "dqmrpj0i293rr5n98uof3d5l4pdwaw"
+        val token = "ez7yaqr9hm2jviay6ldubuvszl8vbb"
 
         webSocket.send("PASS oauth:$token");
-        webSocket.send("NICK loggedInUsername");
+        webSocket.send("NICK theplebdev");
+        webSocket.send("JOIN #AdmiralBahroo");
 
 
     }
@@ -63,7 +64,7 @@ class TwitchWebSocket(): WebSocketListener() {
 
      override fun onMessage(webSocket: WebSocket, text: String) {
         //println("MESSAGE: " + bytes.hex())
-         Log.d("websocketStoof","onMessage CALLED: ${text}")
+        // Log.d("websocketStoof","onMessage CALLED: ${text}")
         Log.d("websocketStoof","onMessage: ${text}")
     }
 
