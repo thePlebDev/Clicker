@@ -1,6 +1,8 @@
 package com.example.clicker.network.websockets
 
 import android.util.Log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -15,48 +17,55 @@ class TwitchWebSocket(): WebSocketListener() {
 
 
     private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
+    var streamerChannelName = ""
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .readTimeout(1000,TimeUnit.MILLISECONDS)
-        .writeTimeout(1000,TimeUnit.MILLISECONDS)
-        .build()
+
+    private val _state = MutableStateFlow("initialValue")
+    val state = _state.asStateFlow()
+
+    private lateinit var client: OkHttpClient
     var webSocket:WebSocket? = null
 
-    init {
-        run()
-    }
-//    init{
-//        val pattern ="PRIVMSG".toRegex()
-//
-//        val anotherString ="@badge-info=subscriber/77;badges=subscriber/36,sub-gifter/50;client-nonce=d7a543c7dc514886b439d55826eeeb5b;color=;display-name=marc_malabanan;emotes=;first-msg=0;flags=;id=fd594314-969b-4f5e-a83f-5e2f74261e6c;mod=0;returning-chatter=0;room-id=19070311;subscriber=1;tmi-sent-ts=1690747946900;turbo=0;user-id=144252234;user-type= :marc_malabanan!marc_malabanan@marc_malabanan.tmi.twitch.tv PRIVMSG #a_seagull :sumSmash"
-//
-//        val testing = pattern.find(anotherString)?.let {
-//            val another = it.range
-//            val substring = anotherString.substring(it.range.first,anotherString.length)
-//            findLastIndex(substring)
-//
-//        }
-////
-//
-//    }
 
 
 
-    private fun run() {
+
+     fun run(channelName:String?) {
+        if(channelName !=null){
+            streamerChannelName = channelName
+            if(webSocket != null){
+                close()
+                newWebSocket()
+            }else{
+                newWebSocket()
+            }
+        }else{
+
+        }
 
 
-        val request: Request = Request.Builder()
-            .url(webSocketURL)
-            .build()
-        webSocket =client.newWebSocket(request, this)
+
+
 
 
     }
-    fun close(){
+     fun close(){
         // Trigger shutdown of the dispatcher's executor so this process can exit cleanly.
         client.dispatcher.executorService.shutdown()
         webSocket?.close(1009,"Manually closed ")
+         webSocket = null
 
+    }
+    private fun newWebSocket(){
+        val request: Request = Request.Builder()
+            .url(webSocketURL)
+            .build()
+        client = OkHttpClient.Builder()
+            .readTimeout(1000,TimeUnit.MILLISECONDS)
+            .writeTimeout(1000,TimeUnit.MILLISECONDS)
+            .build()
+
+        webSocket =client.newWebSocket(request, this)
     }
 
 
@@ -68,7 +77,7 @@ class TwitchWebSocket(): WebSocketListener() {
 
         webSocket.send("PASS oauth:$token");
         webSocket.send("NICK theplebdev");
-        webSocket.send("JOIN #F1NN5TER");
+        webSocket.send("JOIN #$streamerChannelName");
 
 
     }
@@ -89,6 +98,7 @@ class TwitchWebSocket(): WebSocketListener() {
         val pattern = ":".toRegex()
         pattern.find(substring)?.let {
 
+            _state.tryEmit(substring.substring(it.range.first+ 1,substring.length))
             Log.d("websocketStoof","onMessage: ${substring.substring(it.range.first+ 1,substring.length)}")
         }
     }
