@@ -102,7 +102,8 @@ fun HomeView(
                 contentPadding = contentPadding,
                 loginWithTwitch ={loginWithTwitch()},
                 urlList = dataStoreViewModel.urlList,
-                onNavigate= {dest -> onNavigate(dest)}
+                onNavigate= {dest -> onNavigate(dest)},
+                updateStreamerName ={streamerName -> streamViewModel.updateChannelName(streamerName)}
             )
 
         }
@@ -118,7 +119,8 @@ fun ValidationStatus(
     contentPadding: PaddingValues,
     loginWithTwitch:() -> Unit,
     urlList:List<StreamInfo>,
-    onNavigate: (Int) -> Unit
+    onNavigate: (Int) -> Unit,
+    updateStreamerName: (String) -> Unit,
 ){
     Column(modifier = Modifier.padding(contentPadding).fillMaxSize()) {
         when(validationStatus){
@@ -128,7 +130,8 @@ fun ValidationStatus(
             is Response.Success ->{
                 UrlImages(
                     urlList = urlList,
-                    onNavigate= {dest -> onNavigate(dest)}
+                    onNavigate= {dest -> onNavigate(dest)},
+                    updateStreamerName ={streamerName -> updateStreamerName(streamerName)}
                 )
             }
             is Response.Failure ->{
@@ -186,7 +189,9 @@ fun LoginView(
 @Composable
 fun UrlImages(
     urlList:List<StreamInfo>,
-    onNavigate: (Int) -> Unit
+    onNavigate: (Int) -> Unit,
+    updateStreamerName: (String) -> Unit,
+
 
 ){
 
@@ -195,6 +200,7 @@ fun UrlImages(
         .padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
             Row(modifier = Modifier.clickable {
+                updateStreamerName(streamItem.streamerName)
                 onNavigate(R.id.action_homeFragment_to_streamFragment)
             }
             ){
