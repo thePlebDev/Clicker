@@ -16,12 +16,17 @@ class StreamViewModel(
 
     val listChats = mutableStateListOf<String>()
 
-
-    fun setChannelName(channelName:String){
-        _channelName.value = channelName
-        Log.d("twitchNamesetChannelName",channelName)
+    init{
+        Log.d("twitchNameonCreateViewVIewModel","CREATED")
     }
+
+
     fun addItem(chatText:String){
         listChats.add(chatText)
+    }
+
+    fun updateChannelName(channelName: String){
+        Log.d("twitchNameonCreateViewVIewModel",channelName)
+        _channelName.value = channelName
     }
 }

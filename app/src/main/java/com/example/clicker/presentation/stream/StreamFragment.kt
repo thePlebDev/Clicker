@@ -28,7 +28,7 @@ class StreamFragment : Fragment() {
 
     private var _binding: FragmentStreamBinding? = null
     private val binding get() = _binding!!
-    private val streamViewModel: StreamViewModel by viewModels()
+    private val streamViewModel: StreamViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +47,7 @@ class StreamFragment : Fragment() {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
         //val channelName =streamViewModel.channelName.value
 
-        val channelName = "A_Seagull"
+        val channelName = streamViewModel.channelName.value
         Log.d("twitchNameonCreateView",channelName)
 
         val url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
