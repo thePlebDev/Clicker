@@ -64,7 +64,7 @@ fun TextChat(
 
         ){
             coroutineScope.launch {
-                if(stringList.size > 10){
+                if(stringList.size > 6){
                     lazyColumnListState.scrollToItem(stringList.size)
                 }
             }

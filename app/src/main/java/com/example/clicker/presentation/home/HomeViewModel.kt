@@ -33,7 +33,7 @@ data class HomeUIState(
 
 class HomeViewModel(
     //val twitchRepoImpl: TwitchRepo = TwitchRepoImpl(),
-    //val webSocket: TwitchWebSocket = TwitchWebSocket()
+    val webSocket: TwitchWebSocket = TwitchWebSocket()
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
