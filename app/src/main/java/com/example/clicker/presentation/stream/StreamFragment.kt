@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -38,6 +39,7 @@ class StreamFragment : Fragment() {
 
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,16 +49,24 @@ class StreamFragment : Fragment() {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
         //val channelName =streamViewModel.channelName.value
 
-        val channelName = streamViewModel.channelName.value
+        val channelName = streamViewModel.channelName.value!!
         Log.d("twitchNameonCreateView",channelName)
 
-        val url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+        val url="https://player.twitch.tv/?channel=$channelName&muted=false&controls=false&parent=modderz"
 
         val view = binding.root
         val myWebView: WebView = view.findViewById(R.id.webView)
         myWebView.settings.mediaPlaybackRequiresUserGesture = false
 
         myWebView.settings.javaScriptEnabled = true
+        myWebView.isClickable = true
+        myWebView.settings.domStorageEnabled = true; //THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+        myWebView.settings.allowContentAccess = true;
+        myWebView.settings.allowFileAccess = true;
+
+        myWebView.settings.setSupportZoom(true);
+
         myWebView.loadUrl(url)
 
 

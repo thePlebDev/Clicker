@@ -103,7 +103,10 @@ fun HomeView(
                 loginWithTwitch ={loginWithTwitch()},
                 urlList = dataStoreViewModel.urlList,
                 onNavigate= {dest -> onNavigate(dest)},
-                updateStreamerName ={streamerName -> streamViewModel.updateChannelName(streamerName)}
+                updateStreamerName ={streamerName ->
+                    streamViewModel.updateChannelName(streamerName)
+                    streamViewModel.startWebSocket(streamerName)
+                }
             )
 
         }

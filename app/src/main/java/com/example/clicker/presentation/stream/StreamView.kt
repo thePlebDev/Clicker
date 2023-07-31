@@ -69,28 +69,22 @@ fun TextChat(
                 }
             }
             items(stringList){string ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(15.dp)
-                        .clickable { },
-                    elevation = 10.dp
-                ){
-                    Text(string, fontSize = 20.sp)
+                if(stringList.isNotEmpty()){
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp)
+                            .clickable { },
+                        elevation = 10.dp
+                    ){
+                        Text(string, fontSize = 20.sp)
 
+                    }
                 }
+
             }
         }
-//        Text(
-//            "CHAT HERE",modifier = Modifier
-//                .align(Alignment.BottomCenter)
-//                .background(Color.Blue)
-//                .padding(5.dp)
-//                .clickable {
-//                    addItem()
-//                    Log.d("clickablesss", stringList.size.toString())
-//                }
-//        )
+
         EnterChat(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
