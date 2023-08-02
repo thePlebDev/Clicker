@@ -1,6 +1,8 @@
 package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
@@ -54,33 +57,58 @@ class StreamFragment : Fragment() {
 
         val url="https://player.twitch.tv/?channel=$channelName&muted=false&controls=false&parent=modderz"
 
-        val view = binding.root
+       // val view = binding.root
+
+      val view =  setOrientation(
+            resources = resources,
+            binding = binding,
+            streamViewModel = streamViewModel
+        )
+
         val myWebView: WebView = view.findViewById(R.id.webView)
-        myWebView.settings.mediaPlaybackRequiresUserGesture = false
 
-        myWebView.settings.javaScriptEnabled = true
-        myWebView.isClickable = true
-        myWebView.settings.domStorageEnabled = true; //THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
-
-        myWebView.settings.allowContentAccess = true;
-        myWebView.settings.allowFileAccess = true;
-
-        myWebView.settings.setSupportZoom(true);
-
-        myWebView.loadUrl(url)
-
-
-        binding.composeView.apply{
-            setContent {
-                StreamView(
-                    streamViewModel
-                )
-
-            }
-        }
+        setWebView(
+            myWebView = myWebView,
+            url = url
+        )
 
         return view
     }
 
 
+}
+
+fun setOrientation(
+    resources:Resources,
+    binding: FragmentStreamBinding,
+    streamViewModel: StreamViewModel
+): FrameLayout {
+    if(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+        binding.composeView.apply{
+            setContent {
+                StreamView(
+                    streamViewModel
+                )
+            }
+        }
+    }
+    return binding.root
+}
+
+fun setWebView(
+    myWebView: WebView,
+    url:String
+){
+    myWebView.settings.mediaPlaybackRequiresUserGesture = false
+
+    myWebView.settings.javaScriptEnabled = true
+    myWebView.isClickable = true
+    myWebView.settings.domStorageEnabled = true; //THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+    myWebView.settings.allowContentAccess = true;
+    myWebView.settings.allowFileAccess = true;
+
+    myWebView.settings.setSupportZoom(true);
+
+    myWebView.loadUrl(url)
 }
