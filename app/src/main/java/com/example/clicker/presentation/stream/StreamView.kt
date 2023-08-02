@@ -1,9 +1,11 @@
 package com.example.clicker.presentation.stream
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,15 +19,18 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -38,12 +43,47 @@ fun StreamView(
 
     val stringList = streamViewModel.listChats.toList()
 
-    TextChat(
-        stringList = stringList,
-        addItem ={
-            string ->streamViewModel.addItem(string)
+//    TextChat(
+//        stringList = stringList,
+//        addItem ={
+//            string ->streamViewModel.addItem(string)
+//        }
+//    )
+    var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
+    val configuration = LocalConfiguration.current
+
+    LaunchedEffect(configuration) {
+        // Save any changes to the orientation value on the configuration object
+        snapshotFlow { configuration.orientation }
+            .collect { orientation = it }
+    }
+
+    when (orientation) {
+        Configuration.ORIENTATION_LANDSCAPE -> {
+
+            Column(){
+                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+            }
         }
-    )
+        else -> {
+            Column(){
+                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+            }
+        }
+    }
+
+
+
+
+
+
+
 
 
 }
@@ -55,7 +95,7 @@ fun TextChat(
 ){
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    Box(modifier = Modifier.padding(top=200.dp)){
+    Box(){
         LazyColumn(modifier = Modifier
             .padding(bottom = 60.dp)
             .fillMaxSize()

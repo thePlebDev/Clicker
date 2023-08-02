@@ -42,7 +42,7 @@ class StreamFragment : Fragment() {
 
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "SuspiciousIndentation")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -83,7 +83,7 @@ fun setOrientation(
     binding: FragmentStreamBinding,
     streamViewModel: StreamViewModel
 ): FrameLayout {
-    if(resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+
         binding.composeView.apply{
             setContent {
                 StreamView(
@@ -91,7 +91,7 @@ fun setOrientation(
                 )
             }
         }
-    }
+
     return binding.root
 }
 
@@ -100,6 +100,7 @@ fun setWebView(
     url:String
 ){
     myWebView.settings.mediaPlaybackRequiresUserGesture = false
+
 
     myWebView.settings.javaScriptEnabled = true
     myWebView.isClickable = true
