@@ -19,17 +19,20 @@ class StreamViewModel(
     private val _channelName:MutableState<String?> = mutableStateOf(null)
     val channelName:State<String?> = _channelName
 
-    val listChats = mutableStateListOf<String>()
+    val listChats = mutableStateListOf<String>(
+        "LOL GET RECKED KIK",
+        "IT DO BE LIKE THAT SOMETIMES",
+        "WHAT THE DOG DOING and more things that it do be like that and does like the thing")
 
     init{
         Log.d("twitchNameonCreateViewVIewModel","CREATED")
     }
     init {
         viewModelScope.launch{
-            webSocket.state.collect{comment ->
-                listChats.add(comment)
-
-            }
+//            webSocket.state.collect{comment ->
+//                listChats.add(comment)
+//
+//            }
         }
 
     }
@@ -47,7 +50,7 @@ class StreamViewModel(
     fun updateChannelName(channelName: String){
         Log.d("twitchNameonCreateViewVIewModel",channelName)
         _channelName.value = channelName
-        listChats.clear()
+//        listChats.clear()
     }
 
     override fun onCleared() {

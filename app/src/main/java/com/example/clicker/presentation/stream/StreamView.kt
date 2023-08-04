@@ -4,20 +4,25 @@ import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -87,6 +92,7 @@ fun TextChat(
     stringList:List<String>,
     addItem: (String) -> Unit
 ){
+   Log.d("textUIstoof",stringList.size.toString())
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     Box(){
@@ -104,6 +110,7 @@ fun TextChat(
             }
             items(stringList){string ->
                 if(stringList.isNotEmpty()){
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -111,9 +118,21 @@ fun TextChat(
                             .clickable { },
                         elevation = 10.dp
                     ){
-                        Text(string, fontSize = 20.sp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+                                Icon(imageVector = Icons.Default.Lock,
+                                    contentDescription = "Icon for Moderator",
+                                )
+                                Text(
+                                    "DISPLAY_NAME: $string"
+                                )
+                            }
+
 
                     }
+
+
                 }
 
             }
