@@ -119,6 +119,9 @@ class TwitchWebSocket(): WebSocketListener() {
                  Log.d("websocketStoof","onMessage-> ${message}")
              }
          }
+         val anotherTesting = parseStringBaby(text)
+         val mappedString = mapToTwitchUserData(anotherTesting)
+         Log.d("websocketStoofs","onMessage-> ${mappedString.displayName}")
 
     }
     private fun findLastIndex(substring:String){
