@@ -43,48 +43,42 @@ fun StreamView(
 
     val stringList = streamViewModel.listChats.toList()
 
-//    TextChat(
-//        stringList = stringList,
-//        addItem ={
-//            string ->streamViewModel.addItem(string)
-//        }
-//    )
+    TextChat(
+        stringList = stringList,
+        addItem ={
+            string ->streamViewModel.addItem(string)
+        }
+    )
+    val testingString = ""
+    val anotherThingy = testingString.indexOf("badge-info")
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
-
-    LaunchedEffect(configuration) {
-        // Save any changes to the orientation value on the configuration object
-        snapshotFlow { configuration.orientation }
-            .collect { orientation = it }
-    }
-
-    when (orientation) {
-        Configuration.ORIENTATION_LANDSCAPE -> {
-
-            Column(){
-                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-            }
-        }
-        else -> {
-            Column(){
-                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-            }
-        }
-    }
-
-
-
-
-
-
-
-
+//
+//    LaunchedEffect(configuration) {
+//        // Save any changes to the orientation value on the configuration object
+//        snapshotFlow { configuration.orientation }
+//            .collect { orientation = it }
+//    }
+//
+//    when (orientation) {
+//        Configuration.ORIENTATION_LANDSCAPE -> {
+//
+//            Column(){
+//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
+//            }
+//        }
+//        else -> {
+//            Column(){
+//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
+//            }
+//        }
+//    }
 
 }
 
