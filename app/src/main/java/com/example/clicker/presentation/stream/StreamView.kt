@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.background
@@ -55,7 +56,7 @@ fun StreamView(
     TextChat(
         stringList = stringList,
         addItem ={
-            string ->streamViewModel.addItem(string)
+            string ->streamViewModel.sendMessage(string)
         }
     )
     val testingString = ""
@@ -91,6 +92,7 @@ fun StreamView(
 
 }
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun TextChat(
     stringList:List<TwitchUserData>,

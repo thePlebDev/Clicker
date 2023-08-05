@@ -44,6 +44,10 @@ class StreamViewModel(
     fun addItem(chatText:String){
        // listChats.add(chatText)
     }
+    fun sendMessage(chatMessage:String){
+        val messageResult = webSocket.sendMessage(chatMessage)
+        Log.d("messageResult",messageResult.toString())
+    }
 
     fun updateChannelName(channelName: String){
         Log.d("twitchNameonCreateViewVIewModel",channelName)
