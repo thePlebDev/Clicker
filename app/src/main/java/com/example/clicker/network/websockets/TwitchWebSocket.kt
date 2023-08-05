@@ -29,17 +29,36 @@ data class TwitchUserData(
     val tmiSentTs: Long?,
     val turbo: Boolean,
     val userId: String?,
-    val userType: String?
+    var userType: String?
 )
 
 class TwitchWebSocket(): WebSocketListener() {
+    val initialValue =TwitchUserData(
+        badgeInfo = "subscriber/77",
+        badges = "subscriber/36,sub-gifter/50",
+        clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
+        color = "",
+        displayName = "marc_malabanan",
+        emotes = "",
+        firstMsg = "0",
+        flags = "",
+        id = "fd594314-969b-4f5e-a83f-5e2f74261e6c",
+        mod = "0",
+        returningChatter = "0",
+        roomId = "19070311",
+        subscriber = true,
+        tmiSentTs = 1690747946900L,
+        turbo = false,
+        userId = "144252234",
+        userType = "bob@bobertonsAnother"
+    )
 
 
     private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
     var streamerChannelName = ""
 
 
-    private val _state = MutableStateFlow("initialValue")
+    private val _state = MutableStateFlow(initialValue)
     val state = _state.asStateFlow()
 
     private lateinit var client: OkHttpClient
@@ -107,33 +126,32 @@ class TwitchWebSocket(): WebSocketListener() {
 
      override fun onMessage(webSocket: WebSocket, text: String) {
          val pattern ="PRIVMSG".toRegex()
-         val pattern2 = "#$streamerChannelName".toRegex()
+
 
 //         pattern.find(text)?.let{
 //             val substring = text.substring(it.range.first,text.length)
 //             findLastIndex(substring)
 //         }
-         val indexValue =text.indexOf("#$streamerChannelName").let { index ->
-             if(index != -1){
-                 val message = text.substring((index + "#$streamerChannelName".length +2),text.length)
-                 Log.d("websocketStoof","onMessage-> ${message}")
-             }
-         }
+
+
          val anotherTesting = parseStringBaby(text)
-         val mappedString = mapToTwitchUserData(anotherTesting)
-         Log.d("websocketStoofs","onMessage-> ${mappedString.displayName}")
+         val mappedString = mapToTwitchUserData(anotherTesting, channelName = streamerChannelName)
+
+
+        // Log.d("websocketStoofs","onMessageLoggers-> ${mappedString.userType.toString()}")
+
+
+
+//         if(mappedString.color == null){
+//             mappedString.color = "#000000"
+//         }
+
+
+         _state.tryEmit(mappedString)
+
 
     }
-    private fun findLastIndex(substring:String){
-        val pattern = ":".toRegex()
-        pattern.find(substring)?.let {
 
-            _state.tryEmit(substring.substring(it.range.first+ 1,substring.length))
-            Log.d("websocketStoof","onMessage: ${substring.substring(it.range.first+ 1,substring.length)}")
-        }
-
-
-    }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         webSocket.close(1000, null)
@@ -165,12 +183,12 @@ fun parseStringBaby(input: String): Map<String, String> {
     return parsedData
 }
 
-fun mapToTwitchUserData(parsedData: Map<String, String>): TwitchUserData {
+fun mapToTwitchUserData(parsedData: Map<String, String>,channelName: String): TwitchUserData {
     return TwitchUserData(
         badgeInfo = parsedData["badge-info"],
         badges = parsedData["badges"],
         clientNonce = parsedData["client-nonce"],
-        color = parsedData["color"],
+        color = parsedData["color"] ?: "#000000",
         displayName = parsedData["display-name"],
         emotes = parsedData["emotes"],
         firstMsg = parsedData["first-msg"],
@@ -182,10 +200,22 @@ fun mapToTwitchUserData(parsedData: Map<String, String>): TwitchUserData {
         roomId = parsedData["room-id"],
         tmiSentTs = parsedData["tmi-sent"]?.toLongOrNull(),
         turbo = parsedData["turbo"]?.toIntOrNull() == 1,
-        userType = parsedData["user-type"],
+        userType = filterText(parsedData["user-type"].toString(),channelName),
         userId = parsedData["user-id"],
     )
 }
 
+
+fun filterText(chatText:String,streamerName:String):String{
+
+    val regex = ":(.*?):(.*)".toRegex()
+    val matchResult = regex.find(chatText)
+    Log.d("websocketStoofs","onMessageLoggers-> $streamerName")
+
+
+
+
+    return matchResult?.groupValues?.getOrNull(2)?.trim() ?: ""
+}
 
 

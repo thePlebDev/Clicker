@@ -36,10 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
-
+import android.graphics.Color.parseColor
 
 @Composable
 fun StreamView(
@@ -89,7 +93,7 @@ fun StreamView(
 
 @Composable
 fun TextChat(
-    stringList:List<String>,
+    stringList:List<TwitchUserData>,
     addItem: (String) -> Unit
 ){
    Log.d("textUIstoof",stringList.size.toString())
@@ -108,32 +112,38 @@ fun TextChat(
                     lazyColumnListState.scrollToItem(stringList.size)
                 }
             }
-            items(stringList){string ->
-                if(stringList.isNotEmpty()){
+            items(stringList){twitchUser ->
+                val color = Color(parseColor(twitchUser.color))
+                    if(stringList.isNotEmpty()){
 
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                            .clickable { },
-                        elevation = 10.dp
-                    ){
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                                .clickable { },
+                            elevation = 10.dp
+                        ){
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ){
-                                Icon(imageVector = Icons.Default.Lock,
-                                    contentDescription = "Icon for Moderator",
+
+                                Text(buildAnnotatedString {
+                                    withStyle(style = SpanStyle(color = color)) {
+                                        append("${twitchUser.displayName}")
+                                    }
+                                    append(" ${twitchUser.userType}")
+
+                                }
                                 )
-                                Text(
-                                    "DISPLAY_NAME: $string"
-                                )
+
                             }
 
 
                     }
 
-
                 }
+
+
 
             }
         }

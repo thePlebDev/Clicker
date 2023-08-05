@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.StreamInfo
 import kotlinx.coroutines.launch
@@ -19,20 +20,17 @@ class StreamViewModel(
     private val _channelName:MutableState<String?> = mutableStateOf(null)
     val channelName:State<String?> = _channelName
 
-    val listChats = mutableStateListOf<String>(
-        "LOL GET RECKED KIK",
-        "IT DO BE LIKE THAT SOMETIMES",
-        "WHAT THE DOG DOING and more things that it do be like that and does like the thing")
+    val listChats = mutableStateListOf<TwitchUserData>()
 
     init{
         Log.d("twitchNameonCreateViewVIewModel","CREATED")
     }
     init {
         viewModelScope.launch{
-//            webSocket.state.collect{comment ->
-//                listChats.add(comment)
-//
-//            }
+            webSocket.state.collect{twitchUser ->
+                    listChats.add(twitchUser)
+
+            }
         }
 
     }
@@ -44,13 +42,13 @@ class StreamViewModel(
 
 
     fun addItem(chatText:String){
-        listChats.add(chatText)
+       // listChats.add(chatText)
     }
 
     fun updateChannelName(channelName: String){
         Log.d("twitchNameonCreateViewVIewModel",channelName)
         _channelName.value = channelName
-//        listChats.clear()
+        listChats.clear()
     }
 
     override fun onCleared() {
