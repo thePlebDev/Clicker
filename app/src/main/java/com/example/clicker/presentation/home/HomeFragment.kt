@@ -37,7 +37,7 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by viewModels()
-    private val streamViewModel: StreamViewModel by activityViewModels()
+    //private val streamViewModel: StreamViewModel by activityViewModels()
     private val dataStoreViewModel:DataStoreViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +67,7 @@ class HomeFragment : Fragment() {
                 )
                 HomeView(
                     homeViewModel = homeViewModel,
-                    streamViewModel = streamViewModel,
+              //      streamViewModel = streamViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)},
                     onNavigate = { dest -> findNavController().navigate(dest) },
                     dataStoreViewModel = dataStoreViewModel

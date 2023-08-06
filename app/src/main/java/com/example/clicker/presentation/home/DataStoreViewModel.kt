@@ -28,7 +28,8 @@ import kotlinx.coroutines.flow.combine
 
 data class DataStoreUIState(
     val width:Int =0,
-    val aspectHeight:Int =0
+    val aspectHeight:Int =0,
+    val authState:String? = null
 )
 @HiltViewModel
 class DataStoreViewModel @Inject constructor(
@@ -144,10 +145,13 @@ class DataStoreViewModel @Inject constructor(
             when(response){
                 is Response.Loading ->{
                     Log.d("validateOAuthUserToken", "LOADING")
+                    _uiState.value = _uiState.value.copy(
+                        authState = "validating OAuthToken"
+                    )
                 }
+
                 is Response.Success ->{
-//                    Log.d("validateOAuthUserToken", "SUCCESS")
-//                    Log.d("validateOAuthUserToken", "CLIENT_ID -->" +response.data.clientId)
+
                     val userId =response.data.userId
                     val clientId = response.data.clientId
                     val authenticatedUser = AuthenticatedUser(clientId = clientId,userId = userId)
@@ -157,6 +161,9 @@ class DataStoreViewModel @Inject constructor(
                 is Response.Failure ->{
                     Log.d("validateOAuthUserToken", "FAILURE")
                     _showLogin.value = Response.Failure(Exception("NO OAuthToken"))
+                    _uiState.value = _uiState.value.copy(
+                        authState = "OAuth token validation failed. Token expired or revoked"
+                    )
 
                 }
 
@@ -171,6 +178,7 @@ class DataStoreViewModel @Inject constructor(
 
     fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
              //need to make a call to exchange the authCode for a validationToken
+        Log.d("setOAuthToken","token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthUserToken.tryEmit(oAuthToken)
 
@@ -179,8 +187,13 @@ class DataStoreViewModel @Inject constructor(
     private fun getOAuthToken() = viewModelScope.launch{
         tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
             if(storedOAuthToken.length > 2){
+                Log.d("getOAuthToken",storedOAuthToken)
                 _oAuthUserToken.tryEmit(storedOAuthToken)
             }else{
+                Log.d("getOAuthToken","no token ->  $storedOAuthToken")
+                _uiState.value = _uiState.value.copy(
+                    authState = "No Authentication Token"
+                )
                 _showLogin.value = Response.Failure(Exception("NO OAuthToken"))
             }
         }

@@ -63,7 +63,7 @@ import com.example.clicker.presentation.stream.StreamViewModel
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
-    streamViewModel: StreamViewModel,
+    //streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
     dataStoreViewModel:DataStoreViewModel
@@ -78,6 +78,7 @@ fun HomeView(
 //    }
 
     val validationStatus = dataStoreViewModel.showLogin.value
+    val authState = dataStoreViewModel.state.value.authState
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
@@ -104,9 +105,10 @@ fun HomeView(
                 urlList = dataStoreViewModel.urlList,
                 onNavigate= {dest -> onNavigate(dest)},
                 updateStreamerName ={streamerName ->
-                    streamViewModel.updateChannelName(streamerName)
-                    streamViewModel.startWebSocket(streamerName)
-                }
+//                    streamViewModel.updateChannelName(streamerName)
+//                    streamViewModel.startWebSocket(streamerName)
+                },
+                authState = authState
             )
 
         }
@@ -124,11 +126,20 @@ fun ValidationStatus(
     urlList:List<StreamInfo>,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String) -> Unit,
+    authState:String?
 ){
-    Column(modifier = Modifier.padding(contentPadding).fillMaxSize()) {
+    Column(modifier = Modifier
+        .padding(contentPadding)
+        .fillMaxSize()) {
         when(validationStatus){
             is Response.Loading ->{
-                CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
+                Column(){
+                    CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
+                    authState?.let{
+                        Text(authState)
+                    }
+                }
+
             }
             is Response.Success ->{
                 UrlImages(
@@ -138,9 +149,15 @@ fun ValidationStatus(
                 )
             }
             is Response.Failure ->{
-                LoginWithTwitch(
-                    loginWithTwitch = { loginWithTwitch() }
-                )
+                Column() {
+                    LoginWithTwitch(
+                        loginWithTwitch = { loginWithTwitch() }
+                    )
+                    authState?.let{
+                        Text(authState)
+                    }
+                }
+
             }
         }
     }
