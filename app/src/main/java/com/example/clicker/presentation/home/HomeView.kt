@@ -63,7 +63,7 @@ import com.example.clicker.presentation.stream.StreamViewModel
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
-    //streamViewModel: StreamViewModel,
+    streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
     dataStoreViewModel:DataStoreViewModel
@@ -105,8 +105,8 @@ fun HomeView(
                 urlList = dataStoreViewModel.urlList,
                 onNavigate= {dest -> onNavigate(dest)},
                 updateStreamerName ={streamerName ->
-//                    streamViewModel.updateChannelName(streamerName)
-//                    streamViewModel.startWebSocket(streamerName)
+                    streamViewModel.updateChannelName(streamerName)
+                    streamViewModel.startWebSocket(streamerName)
                 },
                 authState = authState
             )
