@@ -61,7 +61,7 @@ class TwitchWebSocket(): WebSocketListener() {
     private val _state = MutableStateFlow(initialValue)
     val state = _state.asStateFlow()
 
-    private lateinit var client: OkHttpClient
+    private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket:WebSocket? = null
 
 
