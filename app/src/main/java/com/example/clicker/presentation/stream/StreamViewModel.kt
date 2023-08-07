@@ -10,11 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.StreamInfo
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class StreamViewModel(
-    val webSocket: TwitchWebSocket = TwitchWebSocket()
+@HiltViewModel
+class StreamViewModel @Inject constructor(
+    private val webSocket: TwitchWebSocket
 ): ViewModel() {
 
     private val _channelName:MutableState<String?> = mutableStateOf(null)
