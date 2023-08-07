@@ -1,8 +1,12 @@
 package com.example.clicker.network.websockets
 
 import android.util.Log
+import com.example.clicker.data.TokenDataStore
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -11,6 +15,7 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import okio.ByteString.Companion.decodeHex
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -32,12 +37,14 @@ data class TwitchUserData(
     var userType: String?
 )
 
-class TwitchWebSocket(): WebSocketListener() {
+class TwitchWebSocket @Inject constructor(
+    private val tokenDataStore: TokenDataStore
+): WebSocketListener() {
     private val initialValue =TwitchUserData(
         badgeInfo = "subscriber/77",
         badges = "subscriber/36,sub-gifter/50",
         clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
-        color = "",
+        color = "FF0000",
         displayName = "marc_malabanan",
         emotes = "",
         firstMsg = "0",
@@ -50,7 +57,7 @@ class TwitchWebSocket(): WebSocketListener() {
         tmiSentTs = 1690747946900L,
         turbo = false,
         userId = "144252234",
-        userType = "bob@bobertonsAnother"
+        userType = "Connecting to chat"
     )
 
 
@@ -102,17 +109,25 @@ class TwitchWebSocket(): WebSocketListener() {
     }
 
 
-    override fun onOpen(webSocket: WebSocket, response: Response) {
+    override fun onOpen(webSocket: WebSocket, response: Response){
         super.onOpen(webSocket, response)
+
+        //todo: I think I am going to create a custom scope tied to the lifecycle of this websocket
+        openChat(webSocket)
+
+
+
+
+    }
+
+    fun openChat(webSocket: WebSocket) = GlobalScope.launch{
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
-
-        val token = "ez7yaqr9hm2jviay6ldubuvszl8vbb"
-
-        webSocket.send("PASS oauth:$token");
-        webSocket.send("NICK theplebdev");
-        webSocket.send("JOIN #$streamerChannelName");
-
-
+        tokenDataStore.getOAuthToken().collect{oAuthToken ->
+            Log.d("OAuthtokenStoof",oAuthToken)
+            webSocket.send("PASS oauth:$oAuthToken");
+            webSocket.send("NICK theplebdev");
+            webSocket.send("JOIN #$streamerChannelName");
+        }
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
