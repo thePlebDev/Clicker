@@ -2,11 +2,16 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -16,6 +21,7 @@ import okio.ByteString
 import okio.ByteString.Companion.decodeHex
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -40,6 +46,9 @@ data class TwitchUserData(
 class TwitchWebSocket @Inject constructor(
     private val tokenDataStore: TokenDataStore
 ): WebSocketListener() {
+
+    private val webSocketScope = CoroutineScope(Dispatchers.Default + CoroutineName("webSocketScope"))
+
     private val initialValue =TwitchUserData(
         badgeInfo = "subscriber/77",
         badges = "subscriber/36,sub-gifter/50",
@@ -94,6 +103,7 @@ class TwitchWebSocket @Inject constructor(
         client.dispatcher.executorService.shutdown()
         webSocket?.close(1009,"Manually closed ")
          webSocket = null
+
 
     }
     private fun newWebSocket(){
