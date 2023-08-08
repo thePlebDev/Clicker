@@ -80,6 +80,8 @@ class TwitchWebSocket @Inject constructor(
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket:WebSocket? = null
 
+    var sentMessageString:String = ""
+
 
 
 
@@ -116,6 +118,7 @@ class TwitchWebSocket @Inject constructor(
             .build()
 
         webSocket =client.newWebSocket(request, this)
+
     }
 
 
@@ -149,7 +152,7 @@ class TwitchWebSocket @Inject constructor(
 
          Log.d("websocketStoofs","onMessage(): $text")
          val anotherTesting = parseStringBaby(text)
-         val mappedString = mapToTwitchUserData(anotherTesting, channelName = streamerChannelName)
+         val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
          _state.tryEmit(mappedString)
 
 
@@ -164,14 +167,15 @@ class TwitchWebSocket @Inject constructor(
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         //t.printStackTrace()
-        Log.d("websocketStoof","onFailure: ${t.printStackTrace()}")
-        Log.d("websocketStoof","onFailure: ${t.message.toString()}")
-        Log.d("websocketStoof","onFailure: ${webSocket.toString()}")
+        Log.d("websocketStooffail","onFailure: ${t.printStackTrace()}")
+        Log.d("websocketStooffail","onFailure: ${t.message.toString()}")
+        Log.d("websocketStooffail","onFailure: ${webSocket.toString()}")
     }
 
 
     fun sendMessage(chatMessage:String):Boolean{
        val sendingText = webSocket?.send("PRIVMSG #$streamerChannelName :$chatMessage")
+        sentMessageString = chatMessage
        // 'PRIVMSG #$channelName :$message'
         return sendingText ?: false
     }
@@ -195,7 +199,7 @@ fun parseStringBaby(input: String): Map<String, String> {
     return parsedData
 }
 
-fun mapToTwitchUserData(parsedData: Map<String, String>,channelName: String): TwitchUserData {
+fun mapToTwitchUserData(parsedData: Map<String, String>,sentMessage: String): TwitchUserData {
     return TwitchUserData(
         badgeInfo = parsedData["badge-info"],
         badges = parsedData["badges"],
@@ -212,13 +216,21 @@ fun mapToTwitchUserData(parsedData: Map<String, String>,channelName: String): Tw
         roomId = parsedData["room-id"],
         tmiSentTs = parsedData["tmi-sent"]?.toLongOrNull(),
         turbo = parsedData["turbo"]?.toIntOrNull() == 1,
-        userType = filterText(parsedData["user-type"].toString(),channelName),
+        userType = checkStrings(filterText(parsedData["user-type"].toString()),sentMessage),
         userId = parsedData["user-id"],
     )
 }
 
+fun checkStrings(parsedText:String,sentMessage:String):String{
+    if(parsedText.isEmpty()){
+        return sentMessage
+    }else{
+        return parsedText
+    }
+}
 
-fun filterText(chatText:String,streamerName:String):String{
+
+fun filterText(chatText:String):String{
 
     val regex = ":(.*?):(.*)".toRegex()
     val matchResult = regex.find(chatText)
