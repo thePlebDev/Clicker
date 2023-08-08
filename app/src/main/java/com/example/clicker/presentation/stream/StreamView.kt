@@ -45,6 +45,10 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.material.DrawerState
+import androidx.compose.material.DrawerValue
+import androidx.compose.material.rememberDrawerState
+import androidx.compose.material.ModalDrawer
 
 @Composable
 fun StreamView(
@@ -52,13 +56,23 @@ fun StreamView(
 ){
 
     val stringList = streamViewModel.listChats.toList()
+    val drawerState = rememberDrawerState(DrawerValue.Open)
 
-    TextChat(
-        stringList = stringList,
-        addItem ={
-            string ->streamViewModel.sendMessage(string)
-        }
-    )
+
+    ModalDrawer(
+        drawerState = drawerState,
+        drawerContent = { Text(text ="THE DRAWER", fontSize = 30.sp)}
+    ){
+        TextChat(
+            stringList = stringList,
+            addItem ={
+                    string ->streamViewModel.sendMessage(string)
+            },
+            drawerState=drawerState
+        )
+    }
+
+
     val testingString = ""
     val anotherThingy = testingString.indexOf("badge-info")
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
@@ -96,11 +110,13 @@ fun StreamView(
 @Composable
 fun TextChat(
     stringList:List<TwitchUserData>,
-    addItem: (String) -> Unit
+    addItem: (String) -> Unit,
+    drawerState: DrawerState
 ){
    Log.d("textUIstoof",stringList.size.toString())
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
     Box(){
         LazyColumn(modifier = Modifier
             .padding(bottom = 60.dp)
@@ -122,7 +138,11 @@ fun TextChat(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(15.dp)
-                                .clickable { },
+                                .clickable {
+                                    coroutineScope.launch {
+                                        drawerState.open()
+                                    }
+                                },
                             elevation = 10.dp
                         ){
                             Row(
