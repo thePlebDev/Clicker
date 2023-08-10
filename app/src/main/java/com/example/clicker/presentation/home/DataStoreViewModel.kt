@@ -7,9 +7,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.AuthenticatedUser
@@ -36,6 +38,7 @@ class DataStoreViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
     private val tokenDataStore:TokenDataStore
 ): ViewModel() {
+
 
 
     private var _uiState: MutableState<DataStoreUIState> = mutableStateOf(DataStoreUIState())
