@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import com.example.clicker.workManager.OAuthTokeValidationWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -19,6 +22,15 @@ class TokenDataStore @Inject constructor(
     ){
     private val TOKEN_KEY = stringPreferencesKey("login_token")
     private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
+
+
+
+    init{
+         val workManager = WorkManager.getInstance(context)
+        workManager.enqueue(OneTimeWorkRequest.from(OAuthTokeValidationWorker::class.java))
+
+
+    }
 
     fun getToken():Flow<String>{
 

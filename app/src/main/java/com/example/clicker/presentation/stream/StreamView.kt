@@ -150,8 +150,8 @@ fun TextChat(
                             ){
 
                                 Text(buildAnnotatedString {
-                                    withStyle(style = SpanStyle(color = color)) {
-                                        append("${twitchUser.displayName}")
+                                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                        append("${twitchUser.displayName} :")
                                     }
                                     append(" ${twitchUser.userType}")
 
