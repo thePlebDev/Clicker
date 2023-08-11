@@ -76,6 +76,8 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.44"
     kapt "com.google.dagger:hilt-compiler:2.44"
 
+    implementation 'androidx.hilt:hilt-work:1.0.0'
+
     // Kotlin
     implementation "androidx.fragment:fragment-ktx:$fragment_version"
 
