@@ -3,6 +3,8 @@ package com.example.clicker.di.modules
 import android.content.Context
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.repository.TwitchRepoImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,4 +36,10 @@ object SingletonModule {
     ): TokenDataStore {
         return TokenDataStore(appContext)
     }
+
+    @Provides
+    fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
+        return twitchRepoImpl
+    }
+
 }
