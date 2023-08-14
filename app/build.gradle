@@ -73,6 +73,9 @@ dependencies {
     // Kotlin + coroutines work manager
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
+    //livedata
+    implementation 'androidx.compose.runtime:runtime-livedata:1.0.0-beta01'
+
     implementation "com.google.dagger:hilt-android:2.44"
     kapt "com.google.dagger:hilt-compiler:2.44"
 

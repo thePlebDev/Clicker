@@ -39,6 +39,7 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by viewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val dataStoreViewModel:DataStoreViewModel by activityViewModels()
+    private val workerViewModel:WorkerViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +71,8 @@ class HomeFragment : Fragment() {
                     streamViewModel = streamViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)},
                     onNavigate = { dest -> findNavController().navigate(dest) },
-                    dataStoreViewModel = dataStoreViewModel
+                    dataStoreViewModel = dataStoreViewModel,
+                    workerViewModel = workerViewModel
 
                 )
             }

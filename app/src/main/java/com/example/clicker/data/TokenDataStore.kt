@@ -1,16 +1,19 @@
 package com.example.clicker.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.Observer
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.Operation
 import androidx.work.WorkManager
-import com.example.clicker.workManager.OAuthTokeValidationWorker
+import com.example.clicker.data.workManager.OAuthTokeValidationWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -26,13 +29,6 @@ class TokenDataStore @Inject constructor(
 
 
 
-    init{
-         val workManager = WorkManager.getInstance(context)
-        val workRequest = OneTimeWorkRequestBuilder<OAuthTokeValidationWorker>().build()
-        workManager.enqueue(workRequest)
-
-
-    }
 
     fun getToken():Flow<String>{
 
