@@ -1,4 +1,4 @@
-package com.example.clicker.workManager
+package com.example.clicker.data.workManager
 
 import android.content.Context
 import android.util.Log
@@ -27,16 +27,28 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
 
+
         val response = twitchRepoImpl.validateToken("FAILED TOKEN")
           .drop(1) // skip the first emission of LOADING
           .firstOrNull() // will catch either SUCCESS OF FAILURE
 
-        return when(response){
-            is Response.Loading -> Result.success()
-            is Response.Success -> Result.success()
-            is Response.Failure -> Result.failure()
-            else -> Result.failure()
-        }
+
+//        return when(response){
+//            is Response.Loading -> {
+//                Log.d("observeForeversWorker","LOADING")
+//                Result.success()
+//            }
+//            is Response.Success -> {
+//                Log.d("observeForeversWorker","SUCCESS")
+//                Result.success()
+//            }
+//            is Response.Failure -> {
+//                Log.d("observeForeversWorker","FAILED")
+//                Result.failure()
+//            }
+//            else -> Result.failure()
+//        }
+        return Result.success()
     }
 
 }

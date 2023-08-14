@@ -42,7 +42,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -53,6 +55,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.work.Operation
+import androidx.work.WorkInfo
 import coil.compose.AsyncImage
 import com.example.clicker.util.Response
 import com.example.clicker.R
@@ -66,9 +70,13 @@ fun HomeView(
     streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
-    dataStoreViewModel:DataStoreViewModel
+    dataStoreViewModel:DataStoreViewModel,
+    workerViewModel:WorkerViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
+   // val stating = workerViewModel.another.observeAsState().value
+    val stating = workerViewModel.validationWorker.observeAsState().value
+    ObserveAsState(stating)
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
@@ -114,6 +122,37 @@ fun HomeView(
         }
         //THIS IS WHAT WILL GET COVERED
 
+    }
+
+}
+
+@Composable
+fun ObserveAsState(stating: WorkInfo?){
+
+    when(stating?.state){
+        WorkInfo.State.SUCCEEDED ->{
+            Log.d("ObserveAsStateModel","SUCCEEDED")
+        }
+        WorkInfo.State.ENQUEUED ->{
+            Log.d("ObserveAsStateModel","ENQUEUED")
+        }
+        WorkInfo.State.RUNNING ->{
+            Log.d("ObserveAsStateModel","RUNNING")
+        }
+        WorkInfo.State.FAILED ->{
+            Log.d("ObserveAsStateModel","FAILED")
+        }
+        WorkInfo.State.CANCELLED ->{
+
+        }
+        WorkInfo.State.BLOCKED ->{
+
+        }
+
+        else -> {
+            //this runs when WorkInfo is null
+
+        }
     }
 
 }

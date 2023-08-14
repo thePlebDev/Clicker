@@ -8,7 +8,7 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.workManager.OAuthTokeValidationWorker
+import com.example.clicker.data.workManager.OAuthTokeValidationWorker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
