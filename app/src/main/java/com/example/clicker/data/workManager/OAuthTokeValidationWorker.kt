@@ -11,6 +11,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.util.Response
+import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.collect
@@ -48,8 +49,9 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
                 Log.d("observeForeversWorker","SUCCESS")
                 Log.d("observeForeversWorker",response.data.toString())
 
+                val serializedValue = Gson().toJson(response.data)
                 val outputData = Data.Builder()
-                    .putString("result_key", response.data.toString())
+                    .putString("result_key", serializedValue)
                     .build()
 
                 Result.success(outputData)

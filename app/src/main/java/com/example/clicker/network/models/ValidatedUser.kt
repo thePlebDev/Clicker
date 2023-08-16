@@ -2,6 +2,9 @@ package com.example.clicker.network.models
 
 import com.google.gson.annotations.SerializedName
 
+
+
+
 data class ValidatedUser(
     @SerializedName("client_id")
     val clientId:String,

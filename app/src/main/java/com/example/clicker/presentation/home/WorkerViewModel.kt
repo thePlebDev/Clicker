@@ -12,7 +12,9 @@ import androidx.work.WorkManager
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.data.workManager.OAuthTokeValidationWorker
+import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.util.Response
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -64,7 +66,15 @@ class WorkerViewModel @Inject constructor(
         tokenValidationWorker.enqueueRequest(oAuthToken).observeForever{
 
 
-            Log.d("OAuthTokenThingy","WorkInfo -->  ${it.outputData.getString("result_key")}")
+
+            if(it.outputData.getString("result_key") != null){
+                val serializedValue = it.outputData.getString("result_key")
+                val customObject = Gson().fromJson(serializedValue, ValidatedUser::class.java)
+                Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.userId}")
+                Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.clientId}")
+                Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.login}") // this is the user's username
+                Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.scopes}")
+            }
         }
 
     }
