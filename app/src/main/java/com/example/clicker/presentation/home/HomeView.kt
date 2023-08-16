@@ -75,8 +75,8 @@ fun HomeView(
 ){
     val hideModal = homeViewModel.state.value.hideModal
    // val stating = workerViewModel.another.observeAsState().value
-    val stating = workerViewModel.validationWorker.observeAsState().value
-    ObserveAsState(stating)
+//    val stating = workerViewModel.validationWorker.observeAsState().value
+//    ObserveAsState(stating)
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
