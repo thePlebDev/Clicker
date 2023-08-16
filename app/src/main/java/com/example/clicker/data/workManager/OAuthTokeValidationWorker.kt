@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.util.Response
 import dagger.assisted.Assisted
@@ -28,27 +30,37 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
 
 
-        val response = twitchRepoImpl.validateToken("FAILED TOKEN")
+
+        val token =  inputData.getString("token")
+        Log.d("doWorkToken"," doWorkToken --> $token")
+        val response = twitchRepoImpl.validateToken(token!!)
           .drop(1) // skip the first emission of LOADING
           .firstOrNull() // will catch either SUCCESS OF FAILURE
 
 
-//        return when(response){
-//            is Response.Loading -> {
-//                Log.d("observeForeversWorker","LOADING")
-//                Result.success()
-//            }
-//            is Response.Success -> {
-//                Log.d("observeForeversWorker","SUCCESS")
-//                Result.success()
-//            }
-//            is Response.Failure -> {
-//                Log.d("observeForeversWorker","FAILED")
-//                Result.failure()
-//            }
-//            else -> Result.failure()
-//        }
-        return Result.success()
+        return when(response){
+            is Response.Loading -> {
+                Log.d("observeForeversWorker","LOADING")
+
+                Result.success()
+            }
+            is Response.Success -> {
+                Log.d("observeForeversWorker","SUCCESS")
+                Log.d("observeForeversWorker",response.data.toString())
+
+                val outputData = Data.Builder()
+                    .putString("result_key", response.data.toString())
+                    .build()
+
+                Result.success(outputData)
+            }
+            is Response.Failure -> {
+                Log.d("observeForeversWorker","FAILED")
+                Result.failure()
+            }
+            else -> Result.failure()
+        }
+
     }
 
 }
