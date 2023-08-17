@@ -60,7 +60,11 @@ import androidx.work.WorkInfo
 import coil.compose.AsyncImage
 import com.example.clicker.util.Response
 import com.example.clicker.R
+import com.example.clicker.network.models.AuthenticatedUser
+import com.example.clicker.network.models.StreamData
+import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.google.gson.Gson
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -74,7 +78,16 @@ fun HomeView(
     workerViewModel:WorkerViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
+
    // val stating = workerViewModel.another.observeAsState().value
+    workerViewModel.liveDataWork?.let {
+        val response =it.observeAsState().value
+        ObserveAsState(
+            response,
+            setAuthenticatedUser = {authUser:AuthenticatedUser -> workerViewModel.setAuthenticatedUser(authUser)},
+            failedManagerValidation = {workerViewModel.oAuthTokenValidationFailed()}
+        )
+    }
 //    val stating = workerViewModel.validationWorker.observeAsState().value
 //    ObserveAsState(stating)
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -106,9 +119,22 @@ fun HomeView(
             }
         ){contentPadding->
 
-            ValidationStatus(
-                validationStatus = validationStatus,
+//            ValidationStatus(
+//                validationStatus = validationStatus,
+//                contentPadding = contentPadding,
+//                loginWithTwitch ={loginWithTwitch()},
+//                urlList = dataStoreViewModel.urlList,
+//                onNavigate= {dest -> onNavigate(dest)},
+//                updateStreamerName ={streamerName ->
+//                    streamViewModel.updateChannelName(streamerName)
+//                    streamViewModel.startWebSocket(streamerName)
+//                },
+//                authState = authState
+//            )
+            ValidationState(
                 contentPadding = contentPadding,
+                status = workerViewModel.state.value.authStatus,
+                validationStatus = workerViewModel.state.value.streamStatus,
                 loginWithTwitch ={loginWithTwitch()},
                 urlList = dataStoreViewModel.urlList,
                 onNavigate= {dest -> onNavigate(dest)},
@@ -116,7 +142,6 @@ fun HomeView(
                     streamViewModel.updateChannelName(streamerName)
                     streamViewModel.startWebSocket(streamerName)
                 },
-                authState = authState
             )
 
         }
@@ -127,10 +152,64 @@ fun HomeView(
 }
 
 @Composable
-fun ObserveAsState(stating: WorkInfo?){
+fun ValidationState(
+    status:String,
+    contentPadding: PaddingValues,
+    validationStatus: Response<List<StreamData>>,
+    loginWithTwitch:() -> Unit,
+    urlList:List<StreamInfo>,
+    onNavigate: (Int) -> Unit,
+    updateStreamerName: (String) -> Unit,
+){
+    when(validationStatus){
+        is Response.Loading ->{
+            Column(){
+                CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
+                Text(text = status, fontSize = 30.sp,modifier = Modifier.padding(contentPadding))
+            }
 
-    when(stating?.state){
+        }
+        is Response.Success ->{
+            
+            UrlImages(
+                urlList = urlList,
+                onNavigate= {dest -> onNavigate(dest)},
+                updateStreamerName ={streamerName -> updateStreamerName(streamerName)}
+            )
+        }
+        is Response.Failure ->{
+            Column(){
+                Text(text = status, fontSize = 30.sp,modifier = Modifier.padding(contentPadding))
+                LoginWithTwitch(
+                    loginWithTwitch = { loginWithTwitch() }
+                )
+            }
+        }
+    }
+
+}
+
+
+
+@Composable
+fun ObserveAsState(
+    workInfo: WorkInfo?,
+    setAuthenticatedUser: (AuthenticatedUser) -> Unit,
+    failedManagerValidation:()-> Unit
+){
+
+    when(workInfo?.state){
         WorkInfo.State.SUCCEEDED ->{
+            val serializedValue = workInfo.outputData.getString("result_key")
+            val customObject = Gson().fromJson(serializedValue, ValidatedUser::class.java)
+            Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.login}")
+            setAuthenticatedUser(
+                AuthenticatedUser(
+                    customObject.clientId,
+                    customObject.userId,
+                    customObject.login
+                )
+            )
             Log.d("ObserveAsStateModel","SUCCEEDED")
         }
         WorkInfo.State.ENQUEUED ->{
@@ -141,6 +220,7 @@ fun ObserveAsState(stating: WorkInfo?){
         }
         WorkInfo.State.FAILED ->{
             Log.d("ObserveAsStateModel","FAILED")
+            failedManagerValidation()
         }
         WorkInfo.State.CANCELLED ->{
 
