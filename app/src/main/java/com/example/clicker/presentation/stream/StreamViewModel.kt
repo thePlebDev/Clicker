@@ -7,16 +7,19 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.StreamInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
-    private val webSocket: TwitchWebSocket
+    private val webSocket: TwitchWebSocket,
+    private val tokenDataStore: TokenDataStore
 ): ViewModel() {
 
     private val _channelName:MutableState<String?> = mutableStateOf(null)
@@ -37,8 +40,14 @@ class StreamViewModel @Inject constructor(
 
     }
 
-    fun startWebSocket(channelName: String){
-        webSocket.run(channelName)
+    fun startWebSocket(channelName: String) = viewModelScope.launch{
+        tokenDataStore.getUsername().collect{username ->
+            if(username.isNotEmpty()){
+//                Log.d("startWebSocket","username --->$it")
+                webSocket.run(channelName,username)
+            }
+        }
+
 
     }
 

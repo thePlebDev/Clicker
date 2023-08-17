@@ -121,12 +121,7 @@ class WorkerViewModel @Inject constructor(
                 Log.d("getOAuthToken",storedOAuthToken)
                 _oAuthUserToken.tryEmit(storedOAuthToken)
             }else{
-                //todo: THIS NEEDS TO BE ADDRESSED EVENTUALLY
-//                Log.d("getOAuthToken","no token ->  $storedOAuthToken")
-//                _uiState.value = _uiState.value.copy(
-//                    authState = "No Authentication Token"
-//                )
-//                _showLogin.value = Response.Failure(Exception("NO OAuthToken"))
+
                 _uiState.value = _uiState.value.copy(
                     authStatus = "No OAuthToken. Please login",
                     streamStatus = Response.Failure(Exception("No token found"))
@@ -143,6 +138,10 @@ class WorkerViewModel @Inject constructor(
 
     fun setAuthenticatedUser(authenticatedUser: AuthenticatedUser){
         _AuthenticatedUser.tryEmit(authenticatedUser)
+        setUsername(authenticatedUser.userName)
+    }
+     private fun setUsername(username:String) = viewModelScope.launch{
+        tokenDataStore.setUsername(username)
     }
 
     fun oAuthTokenValidationFailed(){

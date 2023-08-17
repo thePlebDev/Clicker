@@ -170,7 +170,7 @@ fun ValidationState(
 
         }
         is Response.Success ->{
-            
+
             UrlImages(
                 urlList = urlList,
                 onNavigate= {dest -> onNavigate(dest)},
