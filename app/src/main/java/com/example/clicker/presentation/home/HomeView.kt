@@ -6,6 +6,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -33,10 +34,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -44,7 +50,13 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -65,9 +77,11 @@ import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.google.gson.Gson
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
@@ -100,6 +114,10 @@ fun HomeView(
 
     val validationStatus = dataStoreViewModel.showLogin.value
     val authState = dataStoreViewModel.state.value.authState
+    var state by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = {
+        2
+    })
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetValue,
@@ -112,16 +130,20 @@ fun HomeView(
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {Text("Channels you moderate")},
-                    modifier = Modifier.padding(bottom =10.dp)
+                CustomTopBar(
+                    state = state,
+                    { index -> state = index},
+                    pagerState = pagerState
                 )
             }
         ){contentPadding->
 
-//            ValidationStatus(
-//                validationStatus = validationStatus,
+
+
+//            ValidationState(
 //                contentPadding = contentPadding,
+//                status = workerViewModel.state.value.authStatus,
+//                validationStatus = workerViewModel.state.value.streamStatus,
 //                loginWithTwitch ={loginWithTwitch()},
 //                urlList = dataStoreViewModel.urlList,
 //                onNavigate= {dest -> onNavigate(dest)},
@@ -129,25 +151,89 @@ fun HomeView(
 //                    streamViewModel.updateChannelName(streamerName)
 //                    streamViewModel.startWebSocket(streamerName)
 //                },
-//                authState = authState
 //            )
-            ValidationState(
-                contentPadding = contentPadding,
-                status = workerViewModel.state.value.authStatus,
-                validationStatus = workerViewModel.state.value.streamStatus,
-                loginWithTwitch ={loginWithTwitch()},
-                urlList = dataStoreViewModel.urlList,
-                onNavigate= {dest -> onNavigate(dest)},
-                updateStreamerName ={streamerName ->
-                    streamViewModel.updateChannelName(streamerName)
-                    streamViewModel.startWebSocket(streamerName)
-                },
+
+            TestingPager(
+                contentPadding,
+                pagerState = pagerState,
+                { index -> state = index},
             )
 
         }
         //THIS IS WHAT WILL GET COVERED
 
     }
+
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TestingPager(
+    contentPadding: PaddingValues,
+    pagerState: PagerState,
+    changeState: (Int) -> Unit,
+
+
+){
+    HorizontalPager(
+        beyondBoundsPageCount =1,
+        state = pagerState,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)) { page ->
+        // Our page content
+
+        when(page){
+             0 ->{
+
+                 HomeTesting()
+             }
+             1 ->{
+
+                 SecondTesting()
+             }
+        }
+
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CustomTopBar(
+    state:Int,
+    changeState: (Int) -> Unit,
+    pagerState: PagerState
+){
+
+    val scope = rememberCoroutineScope()
+
+
+    val titles = listOf("Live", "Mods")
+    TabRow(selectedTabIndex = pagerState.currentPage) {
+        titles.forEachIndexed { index, title ->
+            Tab(
+                text = { Text(title) },
+                selected = state == index,
+                onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                    changeState(index)
+                }
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun HomeTesting(){
+    Text("HOME", fontSize = 30.sp)
+}
+@Composable
+fun SecondTesting(){
+    Text("SECOND", fontSize = 30.sp)
 
 }
 
