@@ -26,6 +26,7 @@ class TokenDataStore @Inject constructor(
     ){
     private val TOKEN_KEY = stringPreferencesKey("login_token")
     private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
+    private val usernameKey = stringPreferencesKey("username_value")
 
 
 
@@ -60,6 +61,20 @@ class TokenDataStore @Inject constructor(
                 preferences[oAuthTokenKey] ?: ""
             }
         return oAuthToken
+    }
+
+    suspend fun setUsername(username:String){
+        context.dataStore.edit { database ->
+            database[usernameKey] = username
+        }
+    }
+
+    fun getUsername():Flow<String>{
+        val username:Flow<String> = context.dataStore.data
+            .map { preferences ->
+                preferences[usernameKey] ?: ""
+            }
+        return username
     }
 
 

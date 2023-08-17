@@ -54,7 +54,7 @@ class TwitchWebSocket @Inject constructor(
         badges = "subscriber/36,sub-gifter/50",
         clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
         color = "FF0000",
-        displayName = "marc_malabanan",
+        displayName = "verifying data",
         emotes = "",
         firstMsg = "0",
         flags = "",
@@ -72,6 +72,7 @@ class TwitchWebSocket @Inject constructor(
 
     private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
     var streamerChannelName = ""
+    private var loggedInUsername = ""
 
 
     private val _state = MutableStateFlow(initialValue)
@@ -86,7 +87,8 @@ class TwitchWebSocket @Inject constructor(
 
 
 
-     fun run(channelName:String?) {
+     fun run(channelName:String?,username:String) {
+         loggedInUsername = username
         if(channelName !=null){
             streamerChannelName = channelName
             if(webSocket != null){
@@ -138,7 +140,7 @@ class TwitchWebSocket @Inject constructor(
         tokenDataStore.getOAuthToken().collect{oAuthToken ->
             Log.d("OAuthtokenStoof",oAuthToken)
             webSocket.send("PASS oauth:$oAuthToken");
-            webSocket.send("NICK theplebdev");
+            webSocket.send("NICK $loggedInUsername");
             webSocket.send("JOIN #$streamerChannelName");
         }
     }
