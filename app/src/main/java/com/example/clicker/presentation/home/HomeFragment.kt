@@ -109,7 +109,7 @@ class HomeFragment : Fragment() {
 
 
 
-            dataStoreViewModel.setOAuthToken(authCode)
+            workerViewModel.setOAuthToken(authCode)
         }
     }
 

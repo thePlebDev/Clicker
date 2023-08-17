@@ -157,7 +157,12 @@ class DataStoreViewModel @Inject constructor(
 
                     val userId =response.data.userId
                     val clientId = response.data.clientId
-                    val authenticatedUser = AuthenticatedUser(clientId = clientId,userId = userId)
+                    val userName = response.data.login
+                    val authenticatedUser = AuthenticatedUser(
+                        clientId = clientId,
+                        userId = userId,
+                        userName = userName
+                    )
                     _clientId.tryEmit(authenticatedUser)
 
                 }
