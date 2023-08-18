@@ -24,6 +24,7 @@ import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.util.Response
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -34,7 +35,8 @@ import javax.inject.Inject
 data class WorkerUIState(
 
     val streamStatus:Response<List<StreamData>> = Response.Loading,
-    val authStatus:String = "Checking if token is available"
+    val authStatus:String = "Checking if token is available",
+    val testingState:Response<String> = Response.Loading
 )
 @HiltViewModel
 class WorkerViewModel @Inject constructor(
@@ -150,6 +152,7 @@ class WorkerViewModel @Inject constructor(
             streamStatus = Response.Failure(Exception("oAuthToken validation failed"))
         )
     }
+
 
     fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
         //need to make a call to exchange the authCode for a validationToken
