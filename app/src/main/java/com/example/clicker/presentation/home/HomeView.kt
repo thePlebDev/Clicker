@@ -7,6 +7,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -37,17 +38,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
+import androidx.compose.material.DrawerValue
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.rememberDrawerState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -92,6 +101,7 @@ fun HomeView(
     workerViewModel:WorkerViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
+    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
 
    // val stating = workerViewModel.another.observeAsState().value
     workerViewModel.liveDataWork?.let {
@@ -129,11 +139,15 @@ fun HomeView(
     ){
 
         Scaffold(
+            scaffoldState = scaffoldState,
+            drawerContent = { ScaffoldDrawer() },
             topBar = {
                 CustomTopBar(
                     state = state,
                     { index -> state = index},
-                    pagerState = pagerState
+                    pagerState = pagerState,
+                    scaffoldState = scaffoldState
+
                 )
             }
         ){contentPadding->
@@ -202,27 +216,68 @@ fun TestingPager(
 fun CustomTopBar(
     state:Int,
     changeState: (Int) -> Unit,
-    pagerState: PagerState
+    pagerState: PagerState,
+    scaffoldState: ScaffoldState
 ){
 
     val scope = rememberCoroutineScope()
 
 
+
     val titles = listOf("Live", "Mods")
-    TabRow(selectedTabIndex = pagerState.currentPage) {
-        titles.forEachIndexed { index, title ->
-            Tab(
-                text = { Text(title) },
-                selected = state == index,
-                onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(index)
+    Row(
+        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Icon(
+            Icons.Filled.Menu,
+            "menu",
+            modifier = Modifier.size(35.dp)
+                .clickable { scope.launch { scaffoldState.drawerState.open()  }},
+            tint = Color.White)
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            titles.forEachIndexed { index, title ->
+                Tab(
+                    text = { Text(title, fontSize = 20.sp) },
+                    selected = state == index,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                        changeState(index)
                     }
-                    changeState(index)
-                }
-            )
+                )
+            }
         }
     }
+
+}
+
+@Composable
+fun ScaffoldDrawer(){
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable{ },
+        elevation = 10.dp
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ){
+            Text("Logout", fontSize = 20.sp)
+            Icon(
+                Icons.Default.ExitToApp,
+                "Logout",
+                modifier = Modifier.size(35.dp))
+
+        }
+    }
+
+
 }
 
 
