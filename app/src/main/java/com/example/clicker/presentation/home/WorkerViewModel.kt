@@ -36,7 +36,8 @@ data class WorkerUIState(
 
     val streamStatus:Response<List<StreamData>> = Response.Loading,
     val authStatus:String = "Checking if token is available",
-    val testingState:Response<String> = Response.Loading
+    val testingState:Response<String> = Response.Loading,
+    val loggingOut:Response<Boolean>? = null
 )
 @HiltViewModel
 class WorkerViewModel @Inject constructor(
@@ -44,6 +45,8 @@ class WorkerViewModel @Inject constructor(
     private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchRepo,
 ): ViewModel() {
+
+    //TODO: MAKE THIS A DO NOTHING CLASS THAT WILL JUST KEEP RUNNING EVER HOUR. TO SATISFY THE TWITCH DOCS
 
     private var _uiState: MutableState<WorkerUIState> = mutableStateOf(WorkerUIState())
     val state: State<WorkerUIState> = _uiState
@@ -65,12 +68,7 @@ class WorkerViewModel @Inject constructor(
         MainStates(oAuthToken = null,authUser = null)
     )
 
-    init {
-        getOAuthToken()
-    }
-    init{
-        registerSubscribers()
-    }
+
 
     private fun registerSubscribers() = viewModelScope.launch{
         authenticatedUserFlow.collect{mainState ->
@@ -161,6 +159,14 @@ class WorkerViewModel @Inject constructor(
         _oAuthUserToken.tryEmit(oAuthToken)
 
 
+    }
+    fun beginLogout() = viewModelScope.launch{
+        _uiState.value = _uiState.value.copy(
+            loggingOut = Response.Loading
+        )
+        twitchRepoImpl.logout(clientId = "_AuthenticatedUser.value?.clientId!!","token = _oAuthUserToken.value!!").collect{
+            Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
+        }
     }
 
 }

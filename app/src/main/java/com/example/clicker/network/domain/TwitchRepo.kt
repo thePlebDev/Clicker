@@ -14,5 +14,7 @@ interface TwitchRepo {
         userId:String
     ):Flow<Response<FollowedLiveStreams>>
 
+    fun logout(clientId:String,token:String):Flow<Response<Boolean>>
+
 
 }

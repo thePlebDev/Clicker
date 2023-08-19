@@ -1,11 +1,10 @@
 package com.example.clicker.presentation.home
 
 import android.util.Log
-import android.view.View
 import android.webkit.WebChromeClient
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -26,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,7 +49,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -57,8 +57,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,17 +64,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.work.Operation
 import androidx.work.WorkInfo
 import coil.compose.AsyncImage
 import com.example.clicker.util.Response
@@ -86,7 +83,6 @@ import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.google.gson.Gson
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -103,17 +99,8 @@ fun HomeView(
     val hideModal = homeViewModel.state.value.hideModal
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
 
-   // val stating = workerViewModel.another.observeAsState().value
-    workerViewModel.liveDataWork?.let {
-        val response =it.observeAsState().value
-        ObserveAsState(
-            response,
-            setAuthenticatedUser = {authUser:AuthenticatedUser -> workerViewModel.setAuthenticatedUser(authUser)},
-            failedManagerValidation = {workerViewModel.oAuthTokenValidationFailed()}
-        )
-    }
-//    val stating = workerViewModel.validationWorker.observeAsState().value
-//    ObserveAsState(stating)
+
+
     val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 //    if(hideModal){
 //        LaunchedEffect(key1 = bottomSheetValue){
@@ -125,66 +112,216 @@ fun HomeView(
     val validationStatus = dataStoreViewModel.showLogin.value
     val authState = dataStoreViewModel.state.value.authState
     var state by remember { mutableIntStateOf(0) }
+
     val pagerState = rememberPagerState(pageCount = {
         2
     })
 
-    ModalBottomSheetLayout(
-        sheetState = bottomSheetValue,
-        //TODO: THIS sheetContent WILL GET CHANGED OUT TO BE THE STREAMING VIDEO
-        sheetContent = {
+    Box(modifier = Modifier.fillMaxSize()){
+
+        ModalBottomSheetLayout(
+            sheetState = bottomSheetValue,
+            //TODO: THIS sheetContent WILL GET CHANGED OUT TO BE THE STREAMING VIDEO
+            sheetContent = {
 
 
-        }
-    ){
-
-        Scaffold(
-            scaffoldState = scaffoldState,
-            drawerContent = { ScaffoldDrawer() },
-            topBar = {
-                CustomTopBar(
-                    state = state,
-                    { index -> state = index},
-                    pagerState = pagerState,
-                    scaffoldState = scaffoldState
-
-                )
             }
-        ){contentPadding->
+        ){
+
+            Scaffold(
+                scaffoldState = scaffoldState,
+                drawerContent = {
+                    ScaffoldDrawer(
+                        logout ={ workerViewModel.beginLogout() },
+                        scaffoldState = scaffoldState
+                    )
+                                },
+                topBar = {
+                    CustomTopBar(
+                        state = state,
+                        { index -> state = index},
+                        pagerState = pagerState,
+                        scaffoldState = scaffoldState,
+
+
+                    )
+                }
+            ){contentPadding->
 
 
 
-//            ValidationState(
-//                contentPadding = contentPadding,
-//                status = workerViewModel.state.value.authStatus,
-//                validationStatus = workerViewModel.state.value.streamStatus,
-//                loginWithTwitch ={loginWithTwitch()},
-//                urlList = dataStoreViewModel.urlList,
-//                onNavigate= {dest -> onNavigate(dest)},
-//                updateStreamerName ={streamerName ->
-//                    streamViewModel.updateChannelName(streamerName)
-//                    streamViewModel.startWebSocket(streamerName)
-//                },
-//            )
+                TestingPager(
+                    contentPadding,
+                    pagerState = pagerState,
+                    { index -> state = index},
+                ){
+                    //todo: home pager page goes here
 
-            TestingPager(
-                contentPadding,
-                pagerState = pagerState,
-                { index -> state = index},
+
+                }
+
+            }
+            //THIS IS WHAT WILL GET COVERED
+        }
+
+
+        if(homeViewModel.loginState.value.showLoginModal){
+            LoginModal(
+                modifier = Modifier.matchParentSize(),
+                align = Modifier.align(Alignment.Center),
+                loginWithTwitch = { loginWithTwitch() },
+                loginStatusText = homeViewModel.loginState.value.loginStatusText,
+                loginStep1 = homeViewModel.loginState.value.loginStep1,
+                loginStep2 = homeViewModel.loginState.value.loginStep2,
+                loginStep3 = homeViewModel.loginState.value.loginStep3,
+            )
+        }
+
+
+
+
+
+} // end of the box
+
+}// END OF THE HOME VIEW
+
+//full screen loading animation
+@Composable
+fun LoginModal(
+    modifier: Modifier,
+    align: Modifier,
+    loginWithTwitch:() -> Unit,
+    loginStatusText:String,
+    loginStep1:Response<Boolean>?,
+    loginStep2:Response<Boolean>?,
+    loginStep3:Response<Boolean>?
+
+) {
+            Spacer(
+                modifier = modifier
+                    .disableClickAndRipple()
+                    .background(
+                        color = Color.Gray.copy(alpha = .7f)
+                    )
             )
 
-        }
-        //THIS IS WHAT WILL GET COVERED
+        LoginCard(
+            modifier = align,
+            loginWithTwitch,
+            loginStatusText,
+            loginStep1,
+            loginStep2,
+            loginStep3
 
+
+        )
+
+
+
+}
+
+@Composable
+fun LoginCard(
+    modifier:Modifier,
+    loginWithTwitch:() -> Unit,
+    statusText:String,
+    loginStep1:Response<Boolean>?,
+    loginStep2:Response<Boolean>?,
+    loginStep3:Response<Boolean>?
+){
+    val configuration = LocalConfiguration.current
+
+    val widthInDp = configuration.screenWidthDp.dp
+    val halfScreenWidth = (widthInDp.value / 3.5).dp
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        elevation = 10.dp
+    ) {
+
+        Column(modifier = Modifier
+            .fillMaxWidth().height(220.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                LoadingIcon(loginStep1)
+                Divider(
+                    color = Color.Red,
+                    thickness = 1.dp,
+                    modifier = Modifier
+                        .width(halfScreenWidth)
+                        .padding(10.dp)
+                )
+                LoadingIcon(loginStep2)
+                Divider(
+                    color = Color.Red,
+                    thickness = 1.dp,
+                    modifier = Modifier
+                        .width(halfScreenWidth)
+                        .padding(10.dp)
+                )
+                LoadingIcon(loginStep3)
+            }
+            Text(statusText, modifier = Modifier
+                .padding(bottom = 10.dp),
+                textAlign = TextAlign.Center
+            )
+            Button(onClick = { loginWithTwitch() }) {
+                Text("Login with Twitch")
+            }
+        }
+
+
+    }
+}
+
+@Composable
+fun LoadingIcon(response:Response<Boolean>?){
+    when(response){
+        is Response.Loading ->{
+            CircularProgressIndicator()
+        }
+        is Response.Success ->{
+            Icon(
+                imageVector = Icons.Default.Done,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Green,
+                modifier = Modifier.size(35.dp)
+            )
+        }
+        is Response.Failure ->{
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Red,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+
+        else -> {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription ="Circle with checkmark indicating a process is complete",
+                tint = Color.Gray,
+                modifier = Modifier.size(40.dp)
+            )
+        }
     }
 
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TestingPager(
     contentPadding: PaddingValues,
     pagerState: PagerState,
     changeState: (Int) -> Unit,
+    pageOne: @Composable () -> Unit
 
 
 ){
@@ -199,7 +336,7 @@ fun TestingPager(
         when(page){
              0 ->{
 
-                 HomeTesting()
+                 pageOne()
              }
              1 ->{
 
@@ -214,10 +351,11 @@ fun TestingPager(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CustomTopBar(
-    state:Int,
+    state: Int,
     changeState: (Int) -> Unit,
     pagerState: PagerState,
-    scaffoldState: ScaffoldState
+    scaffoldState: ScaffoldState,
+
 ){
 
     val scope = rememberCoroutineScope()
@@ -226,14 +364,17 @@ fun CustomTopBar(
 
     val titles = listOf("Live", "Mods")
     Row(
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.primary),
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(
             Icons.Filled.Menu,
             "menu",
-            modifier = Modifier.size(35.dp)
-                .clickable { scope.launch { scaffoldState.drawerState.open()  }},
+            modifier = Modifier
+                .size(35.dp)
+                .clickable { scope.launch { scaffoldState.drawerState.open() } },
             tint = Color.White)
         TabRow(selectedTabIndex = pagerState.currentPage) {
             titles.forEachIndexed { index, title ->
@@ -254,13 +395,22 @@ fun CustomTopBar(
 }
 
 @Composable
-fun ScaffoldDrawer(){
+fun ScaffoldDrawer(
+    logout: () -> Unit,
+    scaffoldState: ScaffoldState,
+){
+    val scope = rememberCoroutineScope()
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp)
-            .clickable{ },
+            .clickable {
+                scope.launch {
+                    scaffoldState.drawerState.close()
+                }
+                logout()
+            },
         elevation = 10.dp
     ){
         Row(
@@ -292,179 +442,11 @@ fun SecondTesting(){
 
 }
 
-@Composable
-fun ValidationState(
-    status:String,
-    contentPadding: PaddingValues,
-    validationStatus: Response<List<StreamData>>,
-    loginWithTwitch:() -> Unit,
-    urlList:List<StreamInfo>,
-    onNavigate: (Int) -> Unit,
-    updateStreamerName: (String) -> Unit,
-){
-    when(validationStatus){
-        is Response.Loading ->{
-            Column(){
-                CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
-                Text(text = status, fontSize = 30.sp,modifier = Modifier.padding(contentPadding))
-            }
-
-        }
-        is Response.Success ->{
-
-            UrlImages(
-                urlList = urlList,
-                onNavigate= {dest -> onNavigate(dest)},
-                updateStreamerName ={streamerName -> updateStreamerName(streamerName)}
-            )
-        }
-        is Response.Failure ->{
-            Column(){
-                Text(text = status, fontSize = 30.sp,modifier = Modifier.padding(contentPadding))
-                LoginWithTwitch(
-                    loginWithTwitch = { loginWithTwitch() }
-                )
-            }
-        }
-    }
-
-}
 
 
 
-@Composable
-fun ObserveAsState(
-    workInfo: WorkInfo?,
-    setAuthenticatedUser: (AuthenticatedUser) -> Unit,
-    failedManagerValidation:()-> Unit
-){
-
-    when(workInfo?.state){
-        WorkInfo.State.SUCCEEDED ->{
-            val serializedValue = workInfo.outputData.getString("result_key")
-            val customObject = Gson().fromJson(serializedValue, ValidatedUser::class.java)
-            Log.d("OAuthTokenThingy","WorkInfo -->  ${customObject.login}")
-            setAuthenticatedUser(
-                AuthenticatedUser(
-                    customObject.clientId,
-                    customObject.userId,
-                    customObject.login
-                )
-            )
-            Log.d("ObserveAsStateModel","SUCCEEDED")
-        }
-        WorkInfo.State.ENQUEUED ->{
-            Log.d("ObserveAsStateModel","ENQUEUED")
-        }
-        WorkInfo.State.RUNNING ->{
-            Log.d("ObserveAsStateModel","RUNNING")
-        }
-        WorkInfo.State.FAILED ->{
-            Log.d("ObserveAsStateModel","FAILED")
-            failedManagerValidation()
-        }
-        WorkInfo.State.CANCELLED ->{
-
-        }
-        WorkInfo.State.BLOCKED ->{
-
-        }
-
-        else -> {
-            //this runs when WorkInfo is null
-
-        }
-    }
-
-}
-
-@Composable
-fun ValidationStatus(
-    validationStatus:Response<Boolean>,
-    contentPadding: PaddingValues,
-    loginWithTwitch:() -> Unit,
-    urlList:List<StreamInfo>,
-    onNavigate: (Int) -> Unit,
-    updateStreamerName: (String) -> Unit,
-    authState:String?
-){
-    Column(modifier = Modifier
-        .padding(contentPadding)
-        .fillMaxSize()) {
-        when(validationStatus){
-            is Response.Loading ->{
-                Column(){
-                    CircularProgressIndicator(modifier = Modifier.then(Modifier.size(62.dp)))
-                    authState?.let{
-                        Text(authState)
-                    }
-                }
-
-            }
-            is Response.Success ->{
-                UrlImages(
-                    urlList = urlList,
-                    onNavigate= {dest -> onNavigate(dest)},
-                    updateStreamerName ={streamerName -> updateStreamerName(streamerName)}
-                )
-            }
-            is Response.Failure ->{
-                Column() {
-                    LoginWithTwitch(
-                        loginWithTwitch = { loginWithTwitch() }
-                    )
-                    authState?.let{
-                        Text(authState)
-                    }
-                }
-
-            }
-        }
-    }
 
 
-}
-
-@Composable
-fun LoginWithTwitch(
-    loginWithTwitch:() -> Unit,
-){
-    Button(onClick ={
-        loginWithTwitch()
-    }) {
-        Text("Login with Twitch")
-    }
-}
-
-@Composable
-fun LoginView(
-    loggedIn:Boolean,
-    loginWithTwitch:() -> Unit,
-    homeViewModel: HomeViewModel,
-    changeLoginStatus:()-> Unit,
-
-){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)){
-        if(loggedIn){
-            LoadingLogin(
-                loadingText = homeViewModel.state.value.loadingLoginText,
-                loginStep1 = homeViewModel.state.value.loginStep1,
-                loginStep2 = homeViewModel.state.value.loginStep2,
-                loginStep3 = homeViewModel.state.value.loginStep3,
-            )
-
-        }else{
-            TwitchLogin(
-                loginWithTwitch ={loginWithTwitch()},
-                changeLoginStatus = {changeLoginStatus()},
-                modifier = Modifier.matchParentSize()
-            )
-        }
-
-    }
-}
 
 @Composable
 fun UrlImages(
@@ -515,138 +497,13 @@ fun UrlImages(
 
 
 
-@Composable
-fun TwitchLogin(
-    loginWithTwitch:() -> Unit, //THis will make the request
-    changeLoginStatus:()-> Unit,
-    modifier: Modifier
 
-){
-    Box(modifier = modifier){
-            Button(
-                onClick ={
-                    changeLoginStatus()
-                    loginWithTwitch()
-                         },
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Text("Login with Twitch", fontSize = 20.sp)
-
-            }
-
-        }
-
+fun Modifier.disableClickAndRipple(): Modifier = composed {
+    clickable(
+        enabled = false,
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() },
+        onClick = { },
+    )
 }
-
-@Composable
-fun LoadingLogin(
-    loadingText:String,
-    loginStep1:Response<Boolean>?,
-    loginStep2:Response<Boolean>?,
-    loginStep3:Response<Boolean>?,
-
-){
-    val configuration = LocalConfiguration.current
-
-    val widthInDp = configuration.screenWidthDp.dp
-    val halfScreenWidth = (widthInDp.value / 3.5).dp
-
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)){
-        Row(modifier =Modifier.matchParentSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ){
-            LoadingIcon(loginStep1)
-            Divider(
-                color = Color.Red,
-                thickness = 1.dp,
-                modifier = Modifier
-                    .width(halfScreenWidth)
-                    .padding(10.dp)
-            )
-            LoadingIcon(loginStep2)
-            Divider(
-                color = Color.Red,
-                thickness = 1.dp,
-                modifier = Modifier
-                    .width(halfScreenWidth)
-                    .padding(10.dp)
-            )
-            LoadingIcon(loginStep3)
-        }
-        Text(loadingText, modifier = Modifier
-            .padding(bottom = 40.dp)
-            .align(Alignment.BottomCenter))
-    }
-
-}
-
-@Composable
-fun LoadingIcon(response:Response<Boolean>?){
-    when(response){
-        is Response.Loading ->{
-            CircularProgressIndicator()
-        }
-        is Response.Success ->{
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Green,
-                modifier = Modifier.size(35.dp)
-            )
-        }
-        is Response.Failure ->{
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Red,
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        else -> {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Gray,
-                modifier = Modifier.size(40.dp)
-            )
-        }
-    }
-
-}
-
-@Composable
-fun AnotherTesting(){
-    //TODO: THIS DOES NOT WORK, FOR THE MOMENT WE ARE MOVING BACK TO THE CLICKABLE MODIFIER
-    val context = LocalContext.current
-    val html = "<iframe src=\"https://player.twitch.tv/?channel=Sacriel&parent=com.example.modderz\" height=\"400\" width=\"330\" allowfullscreen/>"
-   val src="https://player.twitch.tv/?<channel, video, or collection>&parent=streamernews.example.com"
-   // val channelName1 = "Robbaz"
-    //Log.d("twitchNameonCreateView",channelName)
-    val url="https://player.twitch.tv/?channel=Sacriel&parent=modderz"
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(400.dp)){
-        AndroidView(
-
-            factory = {
-                WebView(context).apply {
-                    webViewClient = WebViewClient()
-                    webChromeClient = WebChromeClient()
-                    settings.javaScriptEnabled = true
-
-
-                    loadUrl(url)
-
-
-                }
-            }
-        )
-    }
-
-}
-
 
