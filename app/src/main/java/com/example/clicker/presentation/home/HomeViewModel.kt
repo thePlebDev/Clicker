@@ -8,31 +8,48 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.BuildConfig
+import com.example.clicker.data.TokenDataStore
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.models.AuthenticatedUser
+import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.TwitchWebSocket
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
 data class HomeUIState(
     val userLogginIn:Boolean = false,
     val userProfile:String? = null,
     val authenticationCode:String? = null,
-    val loadingLoginText:String ="Casting teleportation spell",
     val hideModal:Boolean = false,
-    val loginStep1:Response<Boolean>? = Response.Loading,
+
     val width:Int =0,
     val aspectHeight:Int =0,
-    val loginStep2:Response<Boolean>? = null,
-    val loginStep3:Response<Boolean>? = null,
 
+    val loadingLoginText:String ="Getting authentication token",
+    val loginStep:Response<Boolean>? = Response.Loading,
+
+
+
+)
+data class LoginStatus(
+    val showLoginModal:Boolean = true,
+    val showLoginButton:Boolean = true,
+    val loginStatusText:String = "Retrieving authentication token",
+    val loginStep1: Response<Boolean>? = Response.Loading,
+    val loginStep2: Response<Boolean>? = null,
+    val loginStep3: Response<Boolean>? = null,
 
 )
 
 
-class HomeViewModel(
-    //val twitchRepoImpl: TwitchRepo = TwitchRepoImpl(),
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val tokenDataStore: TokenDataStore,
+    private val twitchRepoImpl: TwitchRepo,
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
@@ -45,52 +62,66 @@ class HomeViewModel(
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
 
-    private val appAccessToken:MutableStateFlow<String?> = MutableStateFlow(null) //received from Twitch OAuth login
+    private var _loginUIState: MutableState<LoginStatus> = mutableStateOf(LoginStatus())
+    val loginState:State<LoginStatus> = _loginUIState
+
+    private val oAuthAuthenticationToken:MutableStateFlow<String?> = MutableStateFlow(null) //received from Twitch OAuth login
+    private val validatedUser:MutableStateFlow<ValidatedUser?> = MutableStateFlow(null)
 
 
     init {
+        getOAuthToken()
+    }
+    init{
         viewModelScope.launch {
-
-            appAccessToken.collect{token ->
-                if (token != null){
-
+            oAuthAuthenticationToken.collect{oAuthToken ->
+                Log.d("oAuthAuthenticationTokenFound","token -> $oAuthToken")
+                oAuthToken?.let{notNullToken ->
+                    validateOAuthToken(notNullToken)
                 }
+            }
+        }
 
+    }
+    init{
+
+        viewModelScope.launch{
+            validatedUser.collect{user ->
+                user?.let {
+                    getLiveStreams(validatedUser = user,oAuthAuthenticationToken.value!!)
+                }
             }
         }
     }
 
 
-    fun updateAuthenticationCode(token:String){
 
-        _uiState.value = _uiState.value.copy(
-            loadingLoginText = "Reading ancient magic tablet",
-            userLogginIn =true,
-            loginStep1 = Response.Success(true),
-            loginStep2 = Response.Loading
-        )
-        appAccessToken.tryEmit(token)
+    private suspend fun getLiveStreams(validatedUser: ValidatedUser, oAuthToken:String){
+        twitchRepoImpl.getFollowedLiveStreams(
+            authorizationToken = oAuthToken,
+            clientId = validatedUser.clientId,
+            userId = validatedUser.userId
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText ="Success!!!",
+                        loginStep3 = Response.Success(true),
+                        showLoginModal = false,
+                    )
+                }
+                is Response.Failure ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText ="Error occurred!! Please try logging in again",
+                        loginStep3 = Response.Failure(Exception("Unable to getStream")),
+                    )
+                }
+            }
+
+        }
     }
-    fun updateLoginUI(
-        loginStep1Status: Response<Boolean>? = null,
-        loginStep2Status: Response<Boolean>? = null,
-        loginStep3Status: Response<Boolean>? = null
-    ){
-        _uiState.value = _uiState.value.copy(
-            loadingLoginText = "Practicing spell casting",
-            loginStep1 = loginStep1Status,
-            loginStep2 = loginStep2Status,
-            loginStep3 = loginStep3Status,
 
-        )
-    }
-
-
-    fun changeLoginStatus(status:Boolean){
-        _uiState.value = _uiState.value.copy(
-            userLogginIn =status
-        )
-    }
 
     fun updateAspectWidthHeight(width:Int, aspectHeight: Int){
         _uiState.value = _uiState.value.copy(
@@ -100,6 +131,59 @@ class HomeViewModel(
 
     }
 
+    private fun getOAuthToken() = viewModelScope.launch{
+        tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
+
+            if(storedOAuthToken.length > 2){
+
+                _loginUIState.value = _loginUIState.value.copy(
+                    loginStatusText ="Validating Authentication token",
+                    loginStep1 = Response.Success(true),
+                    loginStep2 = Response.Loading
+                )
+                oAuthAuthenticationToken.tryEmit(storedOAuthToken)
+            }else{
+
+                _loginUIState.value = _loginUIState.value.copy(
+                    loginStatusText ="Looks like you are new here. Please login with Twitch to be give a authentication token",
+                    loginStep1 = Response.Failure(Exception("No authentication token found"))
+                )
+            }
+        }
+    }
+    private fun validateOAuthToken(oAuthenticationToken:String) = viewModelScope.launch{
+        twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
+            when(response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText ="Retrieving live streams",
+                        loginStep2 = Response.Success(true),
+                        loginStep3 = Response.Loading,
+                    )
+                    validatedUser.tryEmit(response.data)
+                }
+                is Response.Failure ->{
+
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText ="Please login with Twitch to be issued a new authentication token",
+                        loginStep2 = Response.Failure(Exception("failed to validate authentication token"))
+                    )
+                }
+            }
+        }
+
+    }
+
+
+    fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
+        //need to make a call to exchange the authCode for a validationToken
+        Log.d("setOAuthToken","token -> $oAuthToken")
+        tokenDataStore.setOAuthToken(oAuthToken)
+        oAuthAuthenticationToken.tryEmit(oAuthToken)
+
+
+    }
 
     override fun onCleared() {
         super.onCleared()
