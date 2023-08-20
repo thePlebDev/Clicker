@@ -185,6 +185,33 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    fun beginLogout() = viewModelScope.launch{
+        _loginUIState.value = _loginUIState.value.copy(
+            showLoginModal = true,
+            loginStatusText = "Logging out",
+            loginStep1 = Response.Success(true),
+            loginStep2 = Response.Loading,
+            loginStep3 = null,
+        )
+        twitchRepoImpl.logout(clientId = validatedUser.value?.clientId!!,token = oAuthAuthenticationToken.value!!)
+            .collect{response ->
+           // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
+            when(response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText = "Success!! Please log in with Twitch",
+                        loginStep1 = Response.Success(true),
+                        loginStep2 = Response.Success(true),
+                        loginStep3 = null,
+                    )
+                }
+                is Response.Failure ->{}
+            }
+        }
+
+}
+
     override fun onCleared() {
         super.onCleared()
         //webSocket.close()

@@ -48,12 +48,12 @@ class TwitchRepoImpl @Inject constructor(
         }
     }
 
-    override fun logout(clientId:String,token:String): Flow<Response<Boolean>> = flow{
+    override fun logout(clientId:String,token:String): Flow<Response<String>> = flow{
         emit(Response.Loading)
         val response = twitchClient.logout(clientId = clientId, token = token)
         if (response.isSuccessful){
             Log.d("logoutResponse", "SUCCESS ->${response.message()}")
-            emit(Response.Success(true))
+            emit(Response.Success("true"))
         }else{
 
             Log.d("logoutResponse", "FAILED ->${response.message()}")
