@@ -156,6 +156,11 @@ fun HomeView(
                     { index -> state = index},
                 ){
                     //todo: home pager page goes here
+                    UrlImages(
+                        urlList =homeViewModel.urlList,
+                        onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
+                        updateStreamerName={streamerName -> streamViewModel.updateChannelName(streamerName)}
+                    )
 
 
                 }
@@ -457,10 +462,13 @@ fun UrlImages(
 
 ){
 
+
+
     LazyColumn(modifier = Modifier
 
         .padding(horizontal = 5.dp)){
         items(urlList){streamItem ->
+            Log.d("urlListImageUrl",streamItem.url)
             Row(modifier = Modifier.clickable {
                 updateStreamerName(streamItem.streamerName)
                 onNavigate(R.id.action_homeFragment_to_streamFragment)

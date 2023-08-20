@@ -45,10 +45,14 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
 
 @Composable
 fun StreamView(
@@ -56,7 +60,7 @@ fun StreamView(
 ){
 
     val stringList = streamViewModel.listChats.toList()
-    val drawerState = rememberDrawerState(DrawerValue.Open)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
 
     ModalDrawer(
@@ -175,7 +179,8 @@ fun TextChat(
                 .align(Alignment.BottomCenter)
                 .padding(5.dp)
                 .fillMaxWidth(),
-            chat = {text -> addItem(text)}
+            chat = {text -> addItem(text)},
+            showModal = {coroutineScope.launch { drawerState.open() }}
         )
     }
 }
@@ -183,10 +188,17 @@ fun TextChat(
 @Composable
 fun EnterChat(
     modifier: Modifier,
-    chat: (String) -> Unit
+    chat: (String) -> Unit,
+    showModal:()->Unit
 ){
         var text by remember { mutableStateOf("") }
-    Row(modifier){
+    Row(modifier, verticalAlignment = Alignment.CenterVertically){
+
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription ="Chat settings",
+            modifier = Modifier.size(35.dp).clickable {showModal() }.padding(end = 5.dp)
+        )
         TextField(
             modifier = Modifier.weight(2f),
             value = text,
@@ -194,12 +206,12 @@ fun EnterChat(
                 text = newText
             }
         )
-        Button(
-            modifier = Modifier.weight(1f),
-            onClick = { chat(text) }
-        ) {
-            Text(text = "Chat")
-        }
+
+        Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription ="Send chat",
+            modifier = Modifier.size(35.dp).clickable {chat(text)  }.padding(start = 5.dp)
+        )
     }
         
 }

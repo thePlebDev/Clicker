@@ -59,6 +59,7 @@ class HomeViewModel @Inject constructor(
     val urlList: List<StreamInfo> = _urlList
 
 
+
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
 
@@ -105,6 +106,22 @@ class HomeViewModel @Inject constructor(
             when(response){
                 is Response.Loading ->{}
                 is Response.Success ->{
+
+
+                    for(item in response.data.data){
+                        val newUrl = item.thumbNailUrl
+                            .replace("{width}","${_uiState.value.width}")
+                            .replace("{height}","${_uiState.value.aspectHeight}")
+                        _urlList.add(
+                            StreamInfo(
+                                streamerName = item.userName,
+                                streamTitle = item.title,
+                                gameTitle = item.gameName,
+                                views = item.viewerCount,
+                                url = newUrl
+                        )
+                        )
+                    }
                     _loginUIState.value = _loginUIState.value.copy(
                         loginStatusText ="Success!!!",
                         loginStep3 = Response.Success(true),
