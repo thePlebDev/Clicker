@@ -132,7 +132,7 @@ fun HomeView(
                 scaffoldState = scaffoldState,
                 drawerContent = {
                     ScaffoldDrawer(
-                        logout ={ workerViewModel.beginLogout() },
+                        logout ={ homeViewModel.beginLogout() },
                         scaffoldState = scaffoldState
                     )
                                 },

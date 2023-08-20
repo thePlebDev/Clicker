@@ -39,7 +39,7 @@ interface TwitchClient {
         @Url url: String = "https://id.twitch.tv/oauth2/revoke",
         @Field("client_id") clientId:String,
         @Field("token") token:String
-    ):Response<String>
+    ):Response<Void>
 
 }
 
