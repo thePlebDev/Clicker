@@ -34,6 +34,7 @@ data class HomeUIState(
 
     val loadingLoginText:String ="Getting authentication token",
     val loginStep:Response<Boolean>? = Response.Loading,
+    val clientId:String = ""
 
 
 
@@ -97,6 +98,9 @@ class HomeViewModel @Inject constructor(
                 validateOAuthToken(notNullToken)
             }
             mainState.authUser?.let {user ->
+                _uiState.value = _uiState.value.copy(
+                    clientId = user.clientId
+                )
                 getLiveStreams(validatedUser = user,mainState.oAuthToken!!)
             }
         }

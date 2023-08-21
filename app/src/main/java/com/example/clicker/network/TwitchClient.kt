@@ -1,5 +1,6 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
 
@@ -40,6 +41,13 @@ interface TwitchClient {
         @Field("client_id") clientId:String,
         @Field("token") token:String
     ):Response<Void>
+
+    @GET("chat/settings")
+    suspend fun getChatSettings(
+        @Header("Authorization") authorization:String,
+        @Header("Client-Id") clientId:String,
+        @Query("broadcaster_id") broadcasterId:String
+    ):Response<ChatSettings>
 
 }
 
