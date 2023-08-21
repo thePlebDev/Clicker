@@ -459,7 +459,6 @@ fun UrlImages(
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String) -> Unit,
 
-
 ){
 
 
@@ -470,6 +469,7 @@ fun UrlImages(
         items(urlList){streamItem ->
             Log.d("urlListImageUrl",streamItem.url)
             Row(modifier = Modifier.clickable {
+                Log.d("broadcasterId",streamItem.broadcasterId)
                 updateStreamerName(streamItem.streamerName)
                 onNavigate(R.id.action_homeFragment_to_streamFragment)
             }
