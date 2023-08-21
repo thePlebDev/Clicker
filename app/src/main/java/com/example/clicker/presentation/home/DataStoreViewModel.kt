@@ -88,11 +88,7 @@ class DataStoreViewModel @Inject constructor(
             }
             mainState.hasClientId?.let{authenticatedUser ->
                 Log.d("validateOAuthUserTokens", "AuthUser -> $authenticatedUser")
-                getFollowedStreams(
-                    oAuthUserToken = _oAuthUserToken.value!!,
-                    authUser = authenticatedUser
 
-                )
 
                 // get the streams
             }
@@ -100,46 +96,6 @@ class DataStoreViewModel @Inject constructor(
     }
 
 
-    private fun getFollowedStreams(oAuthUserToken: String,authUser:AuthenticatedUser) = viewModelScope.launch{
-        twitchRepoImpl.getFollowedLiveStreams(
-            authorizationToken = oAuthUserToken,
-            clientId = authUser.clientId,
-            userId = authUser.userId
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("validateOAuthUserTokens", "getFollowedStreams -> LOADING")
-                }
-                is Response.Success ->{
-                    Log.d("validateOAuthUserTokens", "getFollowedStreams -> SUCCESS")
-                    _showLogin.value = Response.Success(true)
-                    response.data.data.forEach {item ->
-
-                         val newUrl = item.thumbNailUrl
-                             .replace("{width}","${_uiState.value.width}")
-                             .replace("{height}","${_uiState.value.aspectHeight}")
-                        _urlList.add(
-                            StreamInfo(
-                                streamerName = item.userName,
-                                streamTitle = item.title,
-                                gameTitle = item.gameName,
-                                views = item.viewerCount,
-                                url = newUrl
-                            )
-
-                        )
-
-                    }
-
-
-                }
-                is Response.Failure ->{
-                    Log.d("validateOAuthUserTokens", "getFollowedStreams -> FAILURE")
-                }
-            }
-
-        }
-    }
 
 
 
@@ -220,11 +176,4 @@ class DataStoreViewModel @Inject constructor(
 data class MainState(
     val hasOAuthToken:String? = null,
     val hasClientId:AuthenticatedUser? = null,
-)
-data class StreamInfo(
-    val streamerName:String,
-    val streamTitle: String,
-    val gameTitle:String,
-    val views:Int,
-    val url:String
 )

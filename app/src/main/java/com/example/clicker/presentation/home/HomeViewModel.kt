@@ -88,7 +88,9 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch{
             validatedUser.collect{user ->
+
                 user?.let {
+                    Log.d("clientId",it.clientId)
                     getLiveStreams(validatedUser = user,oAuthAuthenticationToken.value!!)
                 }
             }
@@ -118,7 +120,8 @@ class HomeViewModel @Inject constructor(
                                 streamTitle = item.title,
                                 gameTitle = item.gameName,
                                 views = item.viewerCount,
-                                url = newUrl
+                                url = newUrl,
+                                broadcasterId = item.userId
                         )
                         )
                     }
@@ -237,3 +240,11 @@ class HomeViewModel @Inject constructor(
 
 
 }
+data class StreamInfo(
+    val streamerName:String,
+    val streamTitle: String,
+    val gameTitle:String,
+    val views:Int,
+    val url:String,
+    val broadcasterId:String,
+)
