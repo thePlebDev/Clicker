@@ -18,6 +18,9 @@ import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.TwitchWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 data class HomeUIState(
@@ -66,33 +69,35 @@ class HomeViewModel @Inject constructor(
     private var _loginUIState: MutableState<LoginStatus> = mutableStateOf(LoginStatus())
     val loginState:State<LoginStatus> = _loginUIState
 
-    private val oAuthAuthenticationToken:MutableStateFlow<String?> = MutableStateFlow(null) //received from Twitch OAuth login
-    private val validatedUser:MutableStateFlow<ValidatedUser?> = MutableStateFlow(null)
+
+    //todo: THIS COULD ALL BE MOVED TO ITS OWN STATE MANAGEMENT CLASS
+    private val authenticatedUserFlow = combine(
+        flow =MutableStateFlow<String?>(null),
+        flow2 =MutableStateFlow<ValidatedUser?>(null)
+    ){
+        oAuthToken,validatedUser ->
+        MainBusState(oAuthToken,validatedUser)
+
+    }.stateIn(viewModelScope, SharingStarted.Lazily,
+        MainBusState(oAuthToken = null, authUser = null)
+    )
+    private val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
 
 
     init {
         getOAuthToken()
     }
     init{
-        viewModelScope.launch {
-            oAuthAuthenticationToken.collect{oAuthToken ->
-                Log.d("oAuthAuthenticationTokenFound","token -> $oAuthToken")
-                oAuthToken?.let{notNullToken ->
-                    validateOAuthToken(notNullToken)
-                }
-            }
-        }
-
+        collectAuthenticatedUserFlow()
     }
-    init{
 
-        viewModelScope.launch{
-            validatedUser.collect{user ->
-
-                user?.let {
-                    Log.d("clientId",it.clientId)
-                    getLiveStreams(validatedUser = user,oAuthAuthenticationToken.value!!)
-                }
+    private fun collectAuthenticatedUserFlow() =viewModelScope.launch {
+        mutableAuthenticatedUserFlow.collect{mainState ->
+            mainState.oAuthToken?.let{notNullToken ->
+                validateOAuthToken(notNullToken)
+            }
+            mainState.authUser?.let {user ->
+                getLiveStreams(validatedUser = user,mainState.oAuthToken!!)
             }
         }
     }
@@ -161,7 +166,11 @@ class HomeViewModel @Inject constructor(
                     loginStep1 = Response.Success(true),
                     loginStep2 = Response.Loading
                 )
-                oAuthAuthenticationToken.tryEmit(storedOAuthToken)
+                mutableAuthenticatedUserFlow.tryEmit(
+                    mutableAuthenticatedUserFlow.value.copy(
+                        oAuthToken = storedOAuthToken
+                    )
+                )
             }else{
 
                 _loginUIState.value = _loginUIState.value.copy(
@@ -181,7 +190,11 @@ class HomeViewModel @Inject constructor(
                         loginStep2 = Response.Success(true),
                         loginStep3 = Response.Loading,
                     )
-                    validatedUser.tryEmit(response.data)
+                    mutableAuthenticatedUserFlow.tryEmit(
+                        mutableAuthenticatedUserFlow.value.copy(
+                            authUser = response.data
+                        )
+                    )
                 }
                 is Response.Failure ->{
 
@@ -200,8 +213,11 @@ class HomeViewModel @Inject constructor(
         //need to make a call to exchange the authCode for a validationToken
         Log.d("setOAuthToken","token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
-        oAuthAuthenticationToken.tryEmit(oAuthToken)
-
+        mutableAuthenticatedUserFlow.tryEmit(
+            mutableAuthenticatedUserFlow.value.copy(
+                oAuthToken = oAuthToken
+            )
+        )
 
     }
 
@@ -213,7 +229,7 @@ class HomeViewModel @Inject constructor(
             loginStep2 = Response.Loading,
             loginStep3 = null,
         )
-        twitchRepoImpl.logout(clientId = validatedUser.value?.clientId!!,token = oAuthAuthenticationToken.value!!)
+        twitchRepoImpl.logout(clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
             .collect{response ->
            // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
             when(response){
@@ -227,6 +243,7 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 is Response.Failure ->{}
+                else -> {}
             }
         }
 
@@ -247,4 +264,9 @@ data class StreamInfo(
     val views:Int,
     val url:String,
     val broadcasterId:String,
+)
+
+data class MainBusState(
+    val oAuthToken:String? = null,
+    val authUser:ValidatedUser? = null,
 )
