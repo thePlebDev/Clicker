@@ -46,6 +46,7 @@ import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.rememberDrawerState
@@ -53,6 +54,8 @@ import androidx.compose.material.ModalDrawer
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.util.Response
 
 @Composable
 fun StreamView(
@@ -61,11 +64,12 @@ fun StreamView(
 
     val stringList = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val chatSettingData = streamViewModel.state.value.chatSettings
 
 
     ModalDrawer(
         drawerState = drawerState,
-        drawerContent = { Text(text ="THE DRAWER", fontSize = 30.sp)}
+        drawerContent = { DrawerContent(chatSettingData)}
     ){
         TextChat(
             stringList = stringList,
@@ -107,6 +111,71 @@ fun StreamView(
 //            }
 //        }
 //    }
+
+}
+
+@Composable
+fun DrawerContent(
+     chatSettingsData: Response<ChatSettingsData>
+){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Chat settings", fontSize = 30.sp)
+        when(chatSettingsData){
+            is Response.Loading ->{
+                CircularProgressIndicator()
+            }
+            is Response.Success ->{
+                ChatSettingsDataUI(chatSettingsData.data)
+            }
+            is Response.Failure ->{
+                Text("FAILED TO FETCH DATA")
+            }
+        }
+    }
+
+
+}
+@Composable
+fun ChatSettingsDataUI(
+    chatSettingsData: ChatSettingsData
+){
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(text = "Slow mode: ",fontSize = 25.sp)
+            Text(chatSettingsData.slowMode.toString(),fontSize = 25.sp)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(text = "Follower mode: ",fontSize = 25.sp)
+            Text(chatSettingsData.followerMode.toString(),fontSize = 25.sp)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(text = "Subscriber mode: ",fontSize = 25.sp)
+            Text(chatSettingsData.subscriberMode.toString(),fontSize = 25.sp)
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(text = "Emote mode: ",fontSize = 25.sp)
+            Text(chatSettingsData.emoteMode.toString(),fontSize = 25.sp)
+        }
+
+    }
 
 }
 
@@ -197,7 +266,10 @@ fun EnterChat(
         Icon(
             imageVector = Icons.Default.Info,
             contentDescription ="Chat settings",
-            modifier = Modifier.size(35.dp).clickable {showModal() }.padding(end = 5.dp)
+            modifier = Modifier
+                .size(35.dp)
+                .clickable { showModal() }
+                .padding(end = 5.dp)
         )
         TextField(
             modifier = Modifier.weight(2f),
@@ -210,7 +282,10 @@ fun EnterChat(
         Icon(
             imageVector = Icons.Default.ArrowForward,
             contentDescription ="Send chat",
-            modifier = Modifier.size(35.dp).clickable {chat(text)  }.padding(start = 5.dp)
+            modifier = Modifier
+                .size(35.dp)
+                .clickable { chat(text) }
+                .padding(start = 5.dp)
         )
     }
         

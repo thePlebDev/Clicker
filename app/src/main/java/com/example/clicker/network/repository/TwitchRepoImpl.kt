@@ -3,6 +3,7 @@ package com.example.clicker.network.repository
 import android.util.Log
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.util.Response
@@ -61,5 +62,25 @@ class TwitchRepoImpl @Inject constructor(
 
         }
     }
+
+    override suspend fun getChatSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String
+    )= flow {
+        emit(Response.Loading)
+         val response = twitchClient.getChatSettings(
+            authorization = oAuthToken,
+            clientId = clientId,
+            broadcasterId = broadcasterId
+        )
+        if (response.isSuccessful){
+            emit(Response.Success(response.body()!!))
+        }else{
+
+            emit(Response.Failure(Exception(response.message())))
+        }
+    }
+
 
 }

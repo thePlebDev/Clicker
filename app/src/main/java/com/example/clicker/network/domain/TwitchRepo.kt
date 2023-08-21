@@ -1,5 +1,6 @@
 package com.example.clicker.network.domain
 
+import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.util.Response
@@ -15,6 +16,8 @@ interface TwitchRepo {
     ):Flow<Response<FollowedLiveStreams>>
 
     fun logout(clientId:String,token:String):Flow<Response<String>>
+
+    suspend fun getChatSettings(oAuthToken:String,clientId: String,broadcasterId:String):Flow<Response<ChatSettings>>
 
 
 }
