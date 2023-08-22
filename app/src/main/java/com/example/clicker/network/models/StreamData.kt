@@ -1,5 +1,6 @@
 package com.example.clicker.network.models
 
+import com.example.clicker.presentation.home.StreamInfo
 import com.google.gson.annotations.SerializedName
 
 data class StreamData(
@@ -30,6 +31,17 @@ data class StreamData(
     val isMature:Boolean
 
 )
+fun StreamData.toStreamInfo():StreamInfo{
+    return StreamInfo(
+        streamerName = this.userName,
+        streamTitle = this.title,
+        gameTitle = this.gameName,
+        views = this.viewerCount,
+        url = this.thumbNailUrl,
+        broadcasterId = this.userId
+    )
+
+}
 
 
 

@@ -3,6 +3,7 @@ package com.example.clicker.network.domain
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
@@ -13,7 +14,7 @@ interface TwitchRepo {
         authorizationToken:String,
         clientId:String,
         userId:String
-    ):Flow<Response<FollowedLiveStreams>>
+    ):Flow<Response<List<StreamInfo>>>
 
     fun logout(clientId:String,token:String):Flow<Response<String>>
 
