@@ -13,7 +13,9 @@ import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.AuthenticatedUser
+import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.TwitchWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -119,21 +121,14 @@ class HomeViewModel @Inject constructor(
                 is Response.Success ->{
 
 
-                    for(item in response.data.data){
-                        val newUrl = item.thumbNailUrl
-                            .replace("{width}","${_uiState.value.width}")
-                            .replace("{height}","${_uiState.value.aspectHeight}")
-                        _urlList.add(
-                            StreamInfo(
-                                streamerName = item.userName,
-                                streamTitle = item.title,
-                                gameTitle = item.gameName,
-                                views = item.viewerCount,
-                                url = newUrl,
-                                broadcasterId = item.userId
-                        )
-                        )
+                    val replacedWidthHeight =response.data.map{
+                        it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
                     }
+                    Log.d("getLiveStreamsUrl",replacedWidthHeight[0].url)
+                    val myCollection:Collection<StreamInfo> = replacedWidthHeight
+                    _urlList.addAll(myCollection)
+
+
                     _loginUIState.value = _loginUIState.value.copy(
                         loginStatusText ="Success!!!",
                         loginStep3 = Response.Success(true),
@@ -269,6 +264,16 @@ data class StreamInfo(
     val url:String,
     val broadcasterId:String,
 )
+fun StreamInfo.changeUrlWidthHeight(aspectWidth:Int,aspectHeight: Int):StreamInfo{
+    return StreamInfo(
+        streamerName = this.streamerName,
+        streamTitle = this.streamTitle,
+        gameTitle = this.gameTitle,
+        views = this.views,
+        url = this.url.replace("{width}","${aspectWidth}").replace("{height}","${aspectHeight}"),
+        broadcasterId = this.broadcasterId
+    )
+}
 
 data class MainBusState(
     val oAuthToken:String? = null,

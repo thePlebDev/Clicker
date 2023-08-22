@@ -6,6 +6,8 @@ import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.network.models.toStreamInfo
+import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -32,7 +34,7 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<FollowedLiveStreams>> = flow{
+    ): Flow<Response<List<StreamInfo>>> = flow{
         emit(Response.Loading)
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
@@ -41,7 +43,8 @@ class TwitchRepoImpl @Inject constructor(
         )
         if (response.isSuccessful){
 
-            emit(Response.Success(response.body()!!))
+            val transformedData = response.body()!!.data.map { it.toStreamInfo() }
+            emit(Response.Success(transformedData))
         }else{
 
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))

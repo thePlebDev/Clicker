@@ -97,11 +97,11 @@ class WorkerViewModel @Inject constructor(
                     Log.d("workerGetFollowedLiveStreams","LOADING")
                 }
                 is Response.Success ->{
-                    Log.d("workerGetFollowedLiveStreams",response.data.data.toString())
-                    _uiState.value = _uiState.value.copy(
-                        streamStatus = Response.Success(response.data.data),
-                        authStatus = "This many streams -----> ${response.data.data.size}"
-                    )
+//                    Log.d("workerGetFollowedLiveStreams",response.data.data.toString())
+//                    _uiState.value = _uiState.value.copy(
+//                        streamStatus = Response.Success(response.data.data),
+//                        authStatus = "This many streams -----> ${response.data.data.size}"
+//                    )
                 }
                 is Response.Failure ->{
                     Log.d("workerGetFollowedLiveStreams","FAILED")
