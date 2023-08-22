@@ -57,6 +57,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -157,7 +158,7 @@ fun HomeView(
                 ){
                     //todo: home pager page goes here
                     UrlImages(
-                        urlList =homeViewModel.urlList,
+                        urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
                                 streamerName,clientId,broadcasterId -> streamViewModel.updateChannelNameAndClientId(
@@ -456,61 +457,82 @@ fun SecondTesting(){
 
 
 
-
-
-
 @Composable
 fun UrlImages(
-    urlList:List<StreamInfo>,
+    urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String) -> Unit,
     clientId:String
 
 ){
 
-    if(urlList.isEmpty()){
-        EmptyFollowingList()
-    }
 
 
-    LazyColumn(modifier = Modifier
-
-        .padding(horizontal = 5.dp)){
-        items(urlList){streamItem ->
-            Log.d("urlListImageUrl",streamItem.url)
-            Row(modifier = Modifier.clickable {
-                Log.d("broadcasterId",streamItem.broadcasterId)
-                updateStreamerName(
-                    streamItem.streamerName,clientId,streamItem.broadcasterId
-                )
-                onNavigate(R.id.action_homeFragment_to_streamFragment)
-            }
-            ){
-                Box() {
-
-                    AsyncImage(
-                        model = streamItem.url,
-                        contentDescription = null
-                    )
-                    Text("${streamItem.views}",
-                        style = TextStyle(color = Color.White, fontSize = 15.sp,fontWeight = FontWeight.ExtraBold),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(5.dp)
-                    )
-                }
-                Column(modifier = Modifier.padding(start = 10.dp)){
-                    Text(streamItem.streamerName, fontSize = 20.sp)
-                    Text(streamItem.streamTitle, fontSize = 15.sp,modifier = Modifier.alpha(0.5f), maxLines = 1,overflow = TextOverflow.Ellipsis)
-                    Text(streamItem.gameTitle, fontSize = 15.sp,modifier = Modifier.alpha(0.5f))
-                }
-
-            }
-
-            Spacer(modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp))
+    if(urlList != null) {
+        if (urlList.isEmpty()){
+            EmptyFollowingList()
         }
+
+
+        Log.d("UrlImagesListSize", urlList.size.toString())
+        LazyColumn(
+            modifier = Modifier
+
+                .padding(horizontal = 5.dp)
+        ) {
+            items(urlList) { streamItem ->
+                Log.d("urlListImageUrl", streamItem.url)
+                Row(modifier = Modifier.clickable {
+                    Log.d("broadcasterId", streamItem.broadcasterId)
+                    updateStreamerName(
+                        streamItem.streamerName, clientId, streamItem.broadcasterId
+                    )
+                    onNavigate(R.id.action_homeFragment_to_streamFragment)
+                }
+                ) {
+                    Box() {
+
+                        AsyncImage(
+                            model = streamItem.url,
+                            contentDescription = null
+                        )
+                        Text(
+                            "${streamItem.views}",
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(5.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(streamItem.streamerName, fontSize = 20.sp)
+                        Text(
+                            streamItem.streamTitle,
+                            fontSize = 15.sp,
+                            modifier = Modifier.alpha(0.5f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            streamItem.gameTitle,
+                            fontSize = 15.sp,
+                            modifier = Modifier.alpha(0.5f)
+                        )
+                    }
+
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                )
+            }
+        }// end of the lazy column
     }
 
 }
