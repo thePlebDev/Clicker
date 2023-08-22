@@ -21,6 +21,7 @@ import com.example.clicker.network.websockets.TwitchWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -61,8 +62,9 @@ class HomeViewModel @Inject constructor(
     private val CLIENT_ID = BuildConfig.CLIENT_ID
     private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
 
-    private val _urlList = mutableStateListOf<StreamInfo>()
-    val urlList: List<StreamInfo> = _urlList
+
+    private val _newUrlList =MutableStateFlow<List<StreamInfo>?>(null)
+    val newUrlList:StateFlow<List<StreamInfo>?> = _newUrlList
 
 
 
@@ -71,6 +73,21 @@ class HomeViewModel @Inject constructor(
 
     private var _loginUIState: MutableState<LoginStatus> = mutableStateOf(LoginStatus())
     val loginState:State<LoginStatus> = _loginUIState
+
+    init{
+        viewModelScope.launch {
+            _newUrlList.collect{streamInfoList ->
+                streamInfoList?.let{list ->
+                    for (item in list){
+                        Log.d("URLLISTREQUEST","WILL MAKE REQUEST SINGLE REQUEST!!")
+                    }
+                }
+
+            }
+        }
+
+    }
+
 
 
     //todo: THIS COULD ALL BE MOVED TO ITS OWN STATE MANAGEMENT CLASS
@@ -125,8 +142,7 @@ class HomeViewModel @Inject constructor(
                         it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
                     }
 
-                    val myCollection:Collection<StreamInfo> = replacedWidthHeight
-                    _urlList.addAll(myCollection)
+                    _newUrlList.tryEmit(replacedWidthHeight)
 
 
                     _loginUIState.value = _loginUIState.value.copy(
