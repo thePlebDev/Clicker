@@ -124,7 +124,7 @@ class HomeViewModel @Inject constructor(
                     val replacedWidthHeight =response.data.map{
                         it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
                     }
-                    Log.d("getLiveStreamsUrl",replacedWidthHeight[0].url)
+
                     val myCollection:Collection<StreamInfo> = replacedWidthHeight
                     _urlList.addAll(myCollection)
 
