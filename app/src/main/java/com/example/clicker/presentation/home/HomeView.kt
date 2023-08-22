@@ -251,7 +251,8 @@ fun LoginCard(
     ) {
 
         Column(modifier = Modifier
-            .fillMaxWidth().height(220.dp),
+            .fillMaxWidth()
+            .height(220.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ){
@@ -467,6 +468,9 @@ fun UrlImages(
 
 ){
 
+    if(urlList.isEmpty()){
+        EmptyFollowingList()
+    }
 
 
     LazyColumn(modifier = Modifier
@@ -509,6 +513,29 @@ fun UrlImages(
         }
     }
 
+}
+
+@Composable
+fun EmptyFollowingList(){
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(15.dp)
+            .clickable { },
+        elevation = 10.dp
+    ) {
+        Column(modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Text("No live followed channels", fontSize = 30.sp, textAlign = TextAlign.Center)
+            Button(onClick = { /*TODO*/ }) {
+                Text("Click to reload", textAlign = TextAlign.Center)
+            }
+        }
+
+    }
 }
 
 
