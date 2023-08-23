@@ -49,6 +49,14 @@ interface TwitchClient {
         @Query("broadcaster_id") broadcasterId:String
     ):Response<ChatSettings>
 
+    @GET("moderation/moderators")
+    suspend fun checkModerators(
+        @Header("Authorization") authorizationToken:String,
+        @Header("Client-Id") clientId:String,
+        @Query("broadcaster_id") broadcasterId:String,
+        @Query("user_id") userId:String
+    )
+
 
 
 }

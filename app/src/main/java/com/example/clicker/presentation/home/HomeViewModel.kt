@@ -128,6 +128,8 @@ class HomeViewModel @Inject constructor(
 
 
     private suspend fun getLiveStreams(validatedUser: ValidatedUser, oAuthToken:String){
+        Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
+        Log.d("ValidatedUserUserId","client_id -> ${validatedUser.clientId}")
         twitchRepoImpl.getFollowedLiveStreams(
             authorizationToken = oAuthToken,
             clientId = validatedUser.clientId,

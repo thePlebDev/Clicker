@@ -149,15 +149,9 @@ fun HomeView(
                 }
             ){contentPadding->
 
-
-
-                TestingPager(
-                    contentPadding,
-                    pagerState = pagerState,
-                    { index -> state = index},
-                ){
                     //todo: home pager page goes here
                     UrlImages(
+                        contentPadding = contentPadding,
                         urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
@@ -168,8 +162,6 @@ fun HomeView(
                         clientId = homeViewModel.state.value.clientId
                     )
 
-
-                }
 
             }
             //THIS IS WHAT WILL GET COVERED
@@ -374,11 +366,12 @@ fun CustomTopBar(
 
 
 
-    val titles = listOf("Live", "Mods")
+    val titles = listOf("Live", "Mods")// I WAS USING A TABBED ROW FOR THIS
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colors.primary),
+            .background(MaterialTheme.colors.primary)
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(
@@ -388,20 +381,7 @@ fun CustomTopBar(
                 .size(35.dp)
                 .clickable { scope.launch { scaffoldState.drawerState.open() } },
             tint = Color.White)
-        TabRow(selectedTabIndex = pagerState.currentPage) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    text = { Text(title, fontSize = 20.sp) },
-                    selected = state == index,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                        changeState(index)
-                    }
-                )
-            }
-        }
+        Text("Live followed channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
     }
 
 }
@@ -459,6 +439,7 @@ fun SecondTesting(){
 
 @Composable
 fun UrlImages(
+    contentPadding: PaddingValues,
     urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String) -> Unit,
@@ -478,7 +459,7 @@ fun UrlImages(
         LazyColumn(
             modifier = Modifier
 
-                .padding(horizontal = 5.dp)
+                .padding(contentPadding)
         ) {
             items(urlList) { streamItem ->
                 Log.d("urlListImageUrl", streamItem.url)
