@@ -17,6 +17,8 @@ import com.example.clicker.presentation.home.HomeUIState
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,8 +34,8 @@ class StreamViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
 ): ViewModel() {
 
-    private val _channelName:MutableState<String?> = mutableStateOf(null)
-    val channelName:State<String?> = _channelName
+    private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)
+    val channelName: StateFlow<String?> = _channelName
 
     private val _clientId:MutableState<String?> = mutableStateOf(null)
     val clientId:State<String?> = _clientId
@@ -58,6 +60,17 @@ class StreamViewModel @Inject constructor(
         }
 
     }
+    init{
+        viewModelScope.launch {
+            _channelName.collect{channelName ->
+                channelName?.let{
+                    startWebSocket(channelName)
+                }
+            }
+        }
+    }
+
+
 
     fun startWebSocket(channelName: String) = viewModelScope.launch{
         tokenDataStore.getUsername().collect{username ->
@@ -84,13 +97,11 @@ class StreamViewModel @Inject constructor(
         clientId:String,
         broadcasterId:String
     ){
-//        Log.d("twitchNameonCreateViewVIewModel","channelName -> $channelName")
-//        Log.d("twitchNameonCreateViewVIewModel","clientId -> $clientId")
-//        Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
-        _channelName.value = channelName
+        _channelName.tryEmit(channelName)
 
         getChatSettings(clientId, broadcasterId)
         listChats.clear()
+
     }
 
     private fun getChatSettings(
