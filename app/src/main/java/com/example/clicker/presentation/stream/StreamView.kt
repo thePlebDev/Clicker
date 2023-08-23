@@ -54,7 +54,9 @@ import androidx.compose.material.ModalDrawer
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.util.Response
 
 @Composable
@@ -62,9 +64,12 @@ fun StreamView(
     streamViewModel: StreamViewModel
 ){
 
-    val stringList = streamViewModel.listChats.toList()
+    val twitchUserChat = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val chatSettingData = streamViewModel.state.value.chatSettings
+    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
+   // val modStatus = false
+    Log.d("loggedInUserUiState","modStatus --->   $modStatus")
 
 
     ModalDrawer(
@@ -72,11 +77,12 @@ fun StreamView(
         drawerContent = { DrawerContent(chatSettingData)}
     ){
         TextChat(
-            stringList = stringList,
+            twitchUserChat = twitchUserChat,
             addItem ={
                     string ->streamViewModel.sendMessage(string)
             },
-            drawerState=drawerState
+            drawerState=drawerState,
+            modStatus  =modStatus
         )
     }
 
@@ -182,11 +188,12 @@ fun ChatSettingsDataUI(
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun TextChat(
-    stringList:List<TwitchUserData>,
+    twitchUserChat:List<TwitchUserData>,
     addItem: (String) -> Unit,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    modStatus:Boolean?
 ){
-   Log.d("textUIstoof",stringList.size.toString())
+
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -199,13 +206,13 @@ fun TextChat(
 
         ){
             coroutineScope.launch {
-                if(stringList.size > 6){
-                    lazyColumnListState.scrollToItem(stringList.size)
+                if(twitchUserChat.size > 6){
+                    lazyColumnListState.scrollToItem(twitchUserChat.size)
                 }
             }
-            items(stringList){twitchUser ->
+            items(twitchUserChat){twitchUser ->
                 val color = Color(parseColor(twitchUser.color))
-                    if(stringList.isNotEmpty()){
+                    if(twitchUserChat.isNotEmpty()){
 
                         Card(
                             modifier = Modifier
@@ -249,7 +256,8 @@ fun TextChat(
                 .padding(5.dp)
                 .fillMaxWidth(),
             chat = {text -> addItem(text)},
-            showModal = {coroutineScope.launch { drawerState.open() }}
+            showModal = {coroutineScope.launch { drawerState.open() }},
+            modStatus = modStatus
         )
     }
 }
@@ -258,19 +266,19 @@ fun TextChat(
 fun EnterChat(
     modifier: Modifier,
     chat: (String) -> Unit,
-    showModal:()->Unit
+    showModal:()->Unit,
+    modStatus:Boolean?
 ){
         var text by remember { mutableStateOf("") }
+
     Row(modifier, verticalAlignment = Alignment.CenterVertically){
 
-        Icon(
-            imageVector = Icons.Default.Info,
-            contentDescription ="Chat settings",
-            modifier = Modifier
-                .size(35.dp)
-                .clickable { showModal() }
-                .padding(end = 5.dp)
-        )
+        if(modStatus != null && modStatus == true){
+            AsyncImage(
+                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                contentDescription = "Moderator badge"
+            )
+        }
         TextField(
             modifier = Modifier.weight(2f),
             value = text,
