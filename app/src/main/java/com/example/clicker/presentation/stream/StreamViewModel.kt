@@ -11,6 +11,7 @@ import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.HomeUIState
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class StreamUIState(
-    val chatSettings: Response<ChatSettingsData> = Response.Loading
+    val chatSettings: Response<ChatSettingsData> = Response.Loading,
+    val loggedInUserData: LoggedInUserData? = null
 )
 
 @HiltViewModel
@@ -48,13 +50,28 @@ class StreamViewModel @Inject constructor(
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
 
+    val testingThings = webSocket.loggedInUserUiState
+    init{
+        //todo: NEED TO COPY THIS VALUE OVER TO THE loggedInUserData
+        viewModelScope.launch {
+            webSocket.loggedInUserUiState.collect{
+                it?.let {
+                    _uiState.value = _uiState.value.copy(
+                        loggedInUserData = it
+                    )
+                    Log.d("loggedInUserUiStateViewModel","$it")
+                }
+            }
+        }
+    }
+
     init{
         Log.d("twitchNameonCreateViewVIewModel","CREATED")
     }
     init {
         viewModelScope.launch{
-            webSocket.state.collect{twitchUser ->
-                    listChats.add(twitchUser)
+            webSocket.state.collect{twitchUserMessage ->
+                    listChats.add(twitchUserMessage)
 
             }
         }

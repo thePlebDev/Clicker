@@ -42,6 +42,12 @@ data class TwitchUserData(
     val userId: String?,
     var userType: String?
 )
+data class LoggedInUserData(
+    val color:String?,
+    val displayName: String,
+    val sub:Boolean,
+    val mod:Boolean
+)
 
 class TwitchWebSocket @Inject constructor(
     private val tokenDataStore: TokenDataStore
@@ -76,7 +82,10 @@ class TwitchWebSocket @Inject constructor(
 
 
     private val _state = MutableStateFlow(initialValue)
-    val state = _state.asStateFlow()
+    val state = _state.asStateFlow() //this is the text data shown to the user
+
+    private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
+    val loggedInUserUiState = _loggedInUserUiState
 
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket:WebSocket? = null
@@ -151,8 +160,15 @@ class TwitchWebSocket @Inject constructor(
 
      override fun onMessage(webSocket: WebSocket, text: String) {
 
+         if(text.contains(" USERSTATE ")){
+             Log.d("loggedInDataOnMessage","USERSTATE --> $text")
+             _loggedInUserUiState.tryEmit(
+                 getLoggedInUserInfo(text)
+             )
 
-         Log.d("websocketStoofs","onMessage(): $text")
+         }
+
+
          val anotherTesting = parseStringBaby(text)
          val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
          _state.tryEmit(mappedString)
@@ -239,6 +255,38 @@ fun filterText(chatText:String):String{
     //Log.d("websocketStoofs","onMessageLoggers-> $streamerName")
 
     return matchResult?.groupValues?.getOrNull(2)?.trim() ?: ""
+}
+fun getLoggedInUserInfo(text:String):LoggedInUserData{
+    val colorPattern = "color=([^;]+)".toRegex()
+    val displayNamePattern = "display-name=([^;]+)".toRegex()
+    val modStatusPattern = "mod=([^;]+)".toRegex()
+    val subStatusPattern = "subscriber=([^;]+)".toRegex()
+
+
+    val colorMatch = colorPattern.find(text)
+    val displayNameMatch = displayNamePattern.find(text)
+    val modStatusMatch = modStatusPattern.find(text)
+    val subStatusMatch = subStatusPattern.find(text)
+
+
+
+    val loggedData =LoggedInUserData(
+        color =colorMatch?.groupValues?.get(1),
+        displayName = displayNameMatch?.groupValues?.get(1)!!,
+        mod = stringToBoolean(modStatusMatch?.groupValues?.get(1)!!),
+        sub = stringToBoolean(subStatusMatch?.groupValues?.get(1)!!)
+
+    )
+    Log.d("loggedData","loggedDataObject --> $loggedData")
+
+
+    return loggedData
+}
+fun stringToBoolean( subOrModText:String):Boolean{
+    val convertedString = subOrModText.toInt()
+
+    return convertedString ==1
+
 }
 
 
