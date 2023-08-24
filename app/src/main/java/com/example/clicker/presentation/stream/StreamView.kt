@@ -45,12 +45,14 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
+import androidx.compose.material.Switch
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
@@ -137,7 +139,7 @@ fun DrawerContent(
                 ChatSettingsDataUI(chatSettingsData.data)
             }
             is Response.Failure ->{
-                Text("FAILED TO FETCH DATA")
+                Text("FAILED TO FETCH CHAT SETTINGS")
             }
         }
     }
@@ -148,6 +150,12 @@ fun DrawerContent(
 fun ChatSettingsDataUI(
     chatSettingsData: ChatSettingsData
 ){
+    val slowMode = chatSettingsData.slowMode
+    val followerMode = chatSettingsData.followerMode
+    val subscriberMode = chatSettingsData.subscriberMode
+    val emoteMode = chatSettingsData.emoteMode
+
+    val checkedState = remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth().padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
@@ -156,21 +164,36 @@ fun ChatSettingsDataUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Slow mode: ",fontSize = 25.sp)
-            Text(chatSettingsData.slowMode.toString(),fontSize = 25.sp)
+            //Text(chatSettingsData.slowMode.toString(),fontSize = 25.sp)
+            Switch(
+                checked = slowMode,
+                onCheckedChange = { checkedState.value = it },
+                modifier = Modifier.size(40.dp)
+            )
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Follower mode: ",fontSize = 25.sp)
-            Text(chatSettingsData.followerMode.toString(),fontSize = 25.sp)
+            //Text(chatSettingsData.followerMode.toString(),fontSize = 25.sp)
+            Switch(
+                checked = followerMode,
+                onCheckedChange = { checkedState.value = it },
+                modifier = Modifier.size(40.dp)
+            )
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Subscriber mode: ",fontSize = 25.sp)
-            Text(chatSettingsData.subscriberMode.toString(),fontSize = 25.sp)
+           // Text(chatSettingsData.subscriberMode.toString(),fontSize = 25.sp)
+            Switch(
+                checked = subscriberMode,
+                onCheckedChange = { checkedState.value = it },
+                modifier = Modifier.size(40.dp)
+            )
         }
 
         Row(
@@ -178,7 +201,12 @@ fun ChatSettingsDataUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Emote mode: ",fontSize = 25.sp)
-            Text(chatSettingsData.emoteMode.toString(),fontSize = 25.sp)
+           // Text(chatSettingsData.emoteMode.toString(),fontSize = 25.sp)
+            Switch(
+                checked = emoteMode,
+                onCheckedChange = { checkedState.value = it },
+                modifier = Modifier.size(40.dp)
+            )
         }
 
     }
@@ -246,7 +274,6 @@ fun TextChat(
                 }
 
 
-
             }
         }
 
@@ -256,17 +283,40 @@ fun TextChat(
                 .padding(5.dp)
                 .fillMaxWidth(),
             chat = {text -> addItem(text)},
-            showModal = {coroutineScope.launch { drawerState.open() }},
             modStatus = modStatus
         )
+        SettingsTab(showModal = {coroutineScope.launch { drawerState.open() }})
+
+    }// end of the Box scope
+}
+
+@Composable
+fun SettingsTab(
+    showModal:()->Unit,
+){
+    Box(modifier = Modifier.fillMaxWidth().height(275.dp)) {
+        Card(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            elevation = 10.dp
+        ){
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Send chat",
+                modifier = Modifier
+                    .size(35.dp)
+                    .clickable {showModal() },
+
+            )
+        }
+
     }
+
 }
 
 @Composable
 fun EnterChat(
     modifier: Modifier,
     chat: (String) -> Unit,
-    showModal:()->Unit,
     modStatus:Boolean?
 ){
         var text by remember { mutableStateOf("") }
