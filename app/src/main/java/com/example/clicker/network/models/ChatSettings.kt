@@ -27,6 +27,7 @@ data class ChatSettingsData(
 )
 
 
+
 // The data ChatSettingsData is representing
 //{
 //    "broadcaster_id": "26610234",
