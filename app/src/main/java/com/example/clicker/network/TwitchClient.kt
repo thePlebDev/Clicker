@@ -1,6 +1,8 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.models.ChatSetting
 import com.example.clicker.network.models.ChatSettings
+import com.example.clicker.network.models.ChatSettingsResponse
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.ValidatedUser
 
@@ -14,6 +16,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -49,14 +52,24 @@ interface TwitchClient {
         @Query("broadcaster_id") broadcasterId:String
     ):Response<ChatSettings>
 
-    @GET("moderation/moderators")
-    suspend fun checkModerators(
+    @Headers("Content-Type: application/json")
+    @PATCH("chat/settings")
+    suspend fun updateChatSettings(
         @Header("Authorization") authorizationToken:String,
         @Header("Client-Id") clientId:String,
         @Query("broadcaster_id") broadcasterId:String,
-        @Query("user_id") userId:String
-    )
+        @Query("moderator_id") moderatorId:String,
 
+    ):Response<ChatSettingsResponse>
+
+//    @Headers("Content-Type: application/json")
+//    @PATCH("chat/settings")
+//    suspend fun updateChatSettings(
+//        @Header("Authorization") authorizationToken: String,
+//        @Header("Client-Id") clientId: String,
+//        @Query("broadcaster_id") broadcasterId: String,
+//        @Query("moderator_id") moderatorId: String
+//    ): Response<Void>
 
 
 }

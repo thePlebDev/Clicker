@@ -85,5 +85,29 @@ class TwitchRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateChatSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String
+    ): Flow<Response<Boolean>>  = flow{
+        emit(Response.Loading)
+        val response =twitchClient.updateChatSettings(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId= moderatorId
+        )
+        Log.d("changeChatSettings","FAILEDimplBBB -> ${response.raw()}")
+        if (response.isSuccessful){
+            emit(Response.Success(true))
+        }else{
+            Log.d("changeChatSettings","FAILEDimpl -> ${response.message()}")
+            Log.d("changeChatSettings","FAILEDimpl -> ${response.code()}")
+            Log.d("changeChatSettings","FAILEDimpl -> ${response.errorBody()}")
+            emit(Response.Failure(Exception(response.message())))
+        }
+    }
+
 
 }

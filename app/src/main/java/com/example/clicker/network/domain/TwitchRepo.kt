@@ -20,5 +20,12 @@ interface TwitchRepo {
 
     suspend fun getChatSettings(oAuthToken:String,clientId: String,broadcasterId:String):Flow<Response<ChatSettings>>
 
+    suspend fun updateChatSettings(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId:String,
+        moderatorId:String
+    ):Flow<Response<Boolean>>
+
 
 }

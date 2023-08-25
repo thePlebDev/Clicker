@@ -45,8 +45,11 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
@@ -54,8 +57,11 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Switch
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.LoggedInUserData
@@ -76,7 +82,16 @@ fun StreamView(
 
     ModalDrawer(
         drawerState = drawerState,
-        drawerContent = { DrawerContent(chatSettingData)}
+        drawerContent = {
+            DrawerContent(
+                chatSettingData,
+                showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
+                slowModeToggle = {chatSettingsData -> streamViewModel.slowModeChatSettings(chatSettingsData) },
+                followerModeToggle = {chatSettingsData -> streamViewModel.followerModeToggle(chatSettingsData) },
+                subscriberModeToggle = {chatSettingsData -> streamViewModel.subscriberModeToggle(chatSettingsData) },
+                emoteModeToggle = {chatSettingsData -> streamViewModel.emoteModeToggle(chatSettingsData) },
+            )
+        }
     ){
         TextChat(
             twitchUserChat = twitchUserChat,
@@ -124,7 +139,13 @@ fun StreamView(
 
 @Composable
 fun DrawerContent(
-     chatSettingsData: Response<ChatSettingsData>
+     chatSettingsData: Response<ChatSettingsData>,
+     showChatSettingAlert:Boolean,
+
+     slowModeToggle:(ChatSettingsData) -> Unit,
+     followerModeToggle:(ChatSettingsData) -> Unit,
+     subscriberModeToggle:(ChatSettingsData) -> Unit,
+     emoteModeToggle:(ChatSettingsData) -> Unit,
 ){
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -136,7 +157,14 @@ fun DrawerContent(
                 CircularProgressIndicator()
             }
             is Response.Success ->{
-                ChatSettingsDataUI(chatSettingsData.data)
+                ChatSettingsDataUI(
+                    chatSettingsData.data,
+                    showChatSettingAlert = showChatSettingAlert,
+                    slowModeToggle = {chatSettingsData -> slowModeToggle(chatSettingsData) },
+                    followerModeToggle = {chatSettingsData -> followerModeToggle(chatSettingsData) },
+                    subscriberModeToggle = {chatSettingsData -> subscriberModeToggle(chatSettingsData) },
+                    emoteModeToggle = {chatSettingsData -> emoteModeToggle(chatSettingsData) },
+                )
             }
             is Response.Failure ->{
                 Text("FAILED TO FETCH CHAT SETTINGS")
@@ -148,7 +176,13 @@ fun DrawerContent(
 }
 @Composable
 fun ChatSettingsDataUI(
-    chatSettingsData: ChatSettingsData
+    chatSettingsData: ChatSettingsData,
+    showChatSettingAlert:Boolean,
+    slowModeToggle:(ChatSettingsData) -> Unit,
+    followerModeToggle:(ChatSettingsData) -> Unit,
+    subscriberModeToggle:(ChatSettingsData) -> Unit,
+    emoteModeToggle:(ChatSettingsData) -> Unit,
+
 ){
     val slowMode = chatSettingsData.slowMode
     val followerMode = chatSettingsData.followerMode
@@ -156,18 +190,34 @@ fun ChatSettingsDataUI(
     val emoteMode = chatSettingsData.emoteMode
 
     val checkedState = remember { mutableStateOf(false) }
+
     Column(
-        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Slow mode: ",fontSize = 25.sp)
-            //Text(chatSettingsData.slowMode.toString(),fontSize = 25.sp)
             Switch(
                 checked = slowMode,
-                onCheckedChange = { checkedState.value = it },
+                onCheckedChange = {
+                    slowModeToggle(
+                        ChatSettingsData(
+                            broadcasterId = chatSettingsData.broadcasterId,
+                            slowMode = it,
+                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                            followerMode = chatSettingsData.followerMode,
+                            followerModeDuration = chatSettingsData.followerModeDuration,
+                            subscriberMode = chatSettingsData.subscriberMode,
+                            emoteMode = chatSettingsData.emoteMode,
+                            uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                        )
+                )
+                                  },
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -176,10 +226,24 @@ fun ChatSettingsDataUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Follower mode: ",fontSize = 25.sp)
-            //Text(chatSettingsData.followerMode.toString(),fontSize = 25.sp)
+
             Switch(
                 checked = followerMode,
-                onCheckedChange = { checkedState.value = it },
+                onCheckedChange = {
+                    followerModeToggle(
+                        ChatSettingsData(
+                            broadcasterId = chatSettingsData.broadcasterId,
+                            slowMode = chatSettingsData.slowMode,
+                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                            followerMode = it,
+                            followerModeDuration = chatSettingsData.followerModeDuration,
+                            subscriberMode = chatSettingsData.subscriberMode,
+                            emoteMode = chatSettingsData.emoteMode,
+                            uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                        )
+                    )
+                                  },
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -188,10 +252,24 @@ fun ChatSettingsDataUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Subscriber mode: ",fontSize = 25.sp)
-           // Text(chatSettingsData.subscriberMode.toString(),fontSize = 25.sp)
+
             Switch(
                 checked = subscriberMode,
-                onCheckedChange = { checkedState.value = it },
+                onCheckedChange = {
+                    subscriberModeToggle(
+                        ChatSettingsData(
+                            broadcasterId = chatSettingsData.broadcasterId,
+                            slowMode = chatSettingsData.slowMode,
+                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                            followerMode = chatSettingsData.followerMode,
+                            followerModeDuration = chatSettingsData.followerModeDuration,
+                            subscriberMode = it,
+                            emoteMode = chatSettingsData.emoteMode,
+                            uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                        )
+                    )
+                },
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -201,17 +279,73 @@ fun ChatSettingsDataUI(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(text = "Emote mode: ",fontSize = 25.sp)
-           // Text(chatSettingsData.emoteMode.toString(),fontSize = 25.sp)
+
             Switch(
                 checked = emoteMode,
-                onCheckedChange = { checkedState.value = it },
+                onCheckedChange = {
+                    emoteModeToggle(
+                        ChatSettingsData(
+                            broadcasterId = chatSettingsData.broadcasterId,
+                            slowMode = chatSettingsData.slowMode,
+                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                            followerMode = chatSettingsData.followerMode,
+                            followerModeDuration = chatSettingsData.followerModeDuration,
+                            subscriberMode = chatSettingsData.subscriberMode,
+                            emoteMode = it,
+                            uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                        )
+                    )
+                },
                 modifier = Modifier.size(40.dp)
             )
         }
 
-    }
+
+
+        AnimatedVisibility(visible = showChatSettingAlert) {
+            MessageAlertText()
+        }
+
+
+
+    }// end of the Column
 
 }
+
+//TODO: MAKE IT SO THE X CLICK REMOVES THE REQUEST MESSAGE
+@Composable
+fun MessageAlertText(){
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable { },
+        border = BorderStroke(2.dp,Color.Red),
+        elevation = 10.dp
+    ) {
+        Box(){
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Send chat",
+                modifier = Modifier
+                    .clickable { }
+                    .padding(2.dp)
+                    .size(25.dp)
+                    .align(Alignment.TopEnd),
+                tint = Color.Red
+                )
+            Text(
+                "Request failed",
+                textAlign = TextAlign.Center,
+                fontSize = 30.sp,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+    }
+}
+
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -294,7 +428,9 @@ fun TextChat(
 fun SettingsTab(
     showModal:()->Unit,
 ){
-    Box(modifier = Modifier.fillMaxWidth().height(275.dp)) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(275.dp)) {
         Card(
             modifier = Modifier.align(Alignment.BottomEnd),
             elevation = 10.dp
@@ -304,7 +440,7 @@ fun SettingsTab(
                 contentDescription = "Send chat",
                 modifier = Modifier
                     .size(35.dp)
-                    .clickable {showModal() },
+                    .clickable { showModal() },
 
             )
         }

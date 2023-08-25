@@ -64,7 +64,7 @@ class HomeFragment : Fragment() {
 
                 val twitchIntent = Intent(
                     Intent.ACTION_VIEW, Uri.parse(
-                        "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors")
+                        "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings")
                 )
                 HomeView(
                     homeViewModel = homeViewModel,

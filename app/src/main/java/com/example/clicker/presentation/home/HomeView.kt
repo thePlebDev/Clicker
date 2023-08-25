@@ -155,11 +155,12 @@ fun HomeView(
                         urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
-                                streamerName,clientId,broadcasterId -> streamViewModel.updateChannelNameAndClientId(
-                            streamerName,clientId,broadcasterId
+                                streamerName,clientId,broadcasterId,userId -> streamViewModel.updateChannelNameAndClientIdAndUserId(
+                            streamerName,clientId,broadcasterId,userId
                             )
                         },
-                        clientId = homeViewModel.state.value.clientId
+                        clientId = homeViewModel.state.value.clientId,
+                        userId = homeViewModel.state.value.userId
                     )
 
 
@@ -442,8 +443,9 @@ fun UrlImages(
     contentPadding: PaddingValues,
     urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
-    updateStreamerName: (String,String,String) -> Unit,
+    updateStreamerName: (String,String,String,String) -> Unit,
     clientId:String,
+    userId:String
 ){
 
 
@@ -464,8 +466,9 @@ fun UrlImages(
                 Log.d("urlListImageUrl", streamItem.url)
                 Row(modifier = Modifier.clickable {
 
+                    Log.d("broadcasterIdClicked", "broadcasterIdClicked -->  ${streamItem.broadcasterId }")
                     updateStreamerName(
-                        streamItem.streamerName, clientId, streamItem.broadcasterId
+                        streamItem.streamerName, clientId, streamItem.broadcasterId,userId
                     )
                     onNavigate(R.id.action_homeFragment_to_streamFragment)
                 }
