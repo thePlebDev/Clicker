@@ -194,7 +194,21 @@ class StreamViewModel @Inject constructor(
                     Log.d("changeChatSettings","LOADING")
                 }
                 is Response.Success ->{
-                    Log.d("changeChatSettings","SUCCESS")
+                    val newChatSettingsData = ChatSettingsData(
+                        slowMode = chatSettings.slowMode,
+                        broadcasterId = chatSettings.broadcasterId,
+                        slowModeWaitTime = chatSettings.slowModeWaitTime,
+                        followerMode = chatSettings.followerMode,
+                        followerModeDuration = chatSettings.followerModeDuration,
+                        subscriberMode = chatSettings.subscriberMode,
+                        emoteMode = chatSettings.emoteMode,
+                        uniqueChatMode = chatSettings.uniqueChatMode
+
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        chatSettings = Response.Success(newChatSettingsData),
+                        enableSlowMode = true
+                    )
                 }
                 is Response.Failure ->{
                     Log.d("changeChatSettings","FAILED -> ${response.e.message}")
@@ -207,7 +221,6 @@ class StreamViewModel @Inject constructor(
                         subscriberMode = chatSettings.subscriberMode,
                         emoteMode = chatSettings.emoteMode,
                         uniqueChatMode = chatSettings.uniqueChatMode
-
 
                     )
                     _uiState.value = _uiState.value.copy(
@@ -246,6 +259,22 @@ class StreamViewModel @Inject constructor(
                 }
                 is Response.Success ->{
                     Log.d("changeChatSettings","SUCCESS")
+                    val newChatSettingsData = ChatSettingsData(
+                        slowMode = chatSettings.slowMode,
+                        broadcasterId = chatSettings.broadcasterId,
+                        slowModeWaitTime = chatSettings.slowModeWaitTime,
+                        followerMode = chatSettings.followerMode,
+                        followerModeDuration = chatSettings.followerModeDuration,
+                        subscriberMode = chatSettings.subscriberMode,
+                        emoteMode = chatSettings.emoteMode,
+                        uniqueChatMode = chatSettings.uniqueChatMode
+
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        chatSettings = Response.Success(newChatSettingsData),
+                        enableFollowerMode = true
+                    )
+
                 }
                 is Response.Failure ->{
                     Log.d("changeChatSettings","FAILED -> ${response.e.message}")
@@ -296,7 +325,21 @@ class StreamViewModel @Inject constructor(
                     Log.d("changeChatSettings","LOADING")
                 }
                 is Response.Success ->{
-                    Log.d("changeChatSettings","SUCCESS")
+                    val newChatSettingsData = ChatSettingsData(
+                        slowMode = chatSettings.slowMode,
+                        broadcasterId = chatSettings.broadcasterId,
+                        slowModeWaitTime = chatSettings.slowModeWaitTime,
+                        followerMode = chatSettings.followerMode,
+                        followerModeDuration = chatSettings.followerModeDuration,
+                        subscriberMode = chatSettings.subscriberMode,
+                        emoteMode = chatSettings.emoteMode,
+                        uniqueChatMode = chatSettings.uniqueChatMode
+
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        chatSettings = Response.Success(newChatSettingsData),
+                        enableSubscriberMode = true
+                    )
                 }
                 is Response.Failure ->{
                     Log.d("changeChatSettings","FAILED -> ${response.e.message}")
@@ -347,7 +390,21 @@ class StreamViewModel @Inject constructor(
                     Log.d("changeChatSettings","LOADING")
                 }
                 is Response.Success ->{
-                    Log.d("changeChatSettings","SUCCESS")
+                    val newChatSettingsData = ChatSettingsData(
+                        slowMode = chatSettings.slowMode,
+                        broadcasterId = chatSettings.broadcasterId,
+                        slowModeWaitTime = chatSettings.slowModeWaitTime,
+                        followerMode = chatSettings.followerMode,
+                        followerModeDuration = chatSettings.followerModeDuration,
+                        subscriberMode = chatSettings.subscriberMode,
+                        emoteMode = chatSettings.emoteMode,
+                        uniqueChatMode = chatSettings.uniqueChatMode
+
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        chatSettings = Response.Success(newChatSettingsData),
+                        enableEmoteMode = true
+                    )
                 }
                 is Response.Failure ->{
                     Log.d("changeChatSettings","FAILED -> ${response.e.message}")
