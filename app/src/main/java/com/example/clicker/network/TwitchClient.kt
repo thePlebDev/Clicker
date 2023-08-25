@@ -4,11 +4,13 @@ import com.example.clicker.network.models.ChatSetting
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsResponse
 import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.models.ValidatedUser
 
 
 
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 
@@ -59,6 +61,7 @@ interface TwitchClient {
         @Header("Client-Id") clientId:String,
         @Query("broadcaster_id") broadcasterId:String,
         @Query("moderator_id") moderatorId:String,
+        @Body body: UpdateChatSettings
 
     ):Response<ChatSettingsResponse>
 

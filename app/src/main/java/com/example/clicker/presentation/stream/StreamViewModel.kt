@@ -11,6 +11,7 @@ import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
@@ -31,7 +32,12 @@ data class StreamUIState(
     val broadcasterId: String ="",
     val userId:String ="",
     val oAuthToken:String="",
-    val showChatSettingAlert:Boolean = false
+    val showChatSettingAlert:Boolean = false,
+
+    val enableSlowMode:Boolean = true,
+    val enableFollowerMode:Boolean = true,
+    val enableSubscriberMode:Boolean = true,
+    val enableEmoteMode:Boolean = true,
 
 )
 
@@ -167,15 +173,21 @@ class StreamViewModel @Inject constructor(
 
     fun slowModeChatSettings(chatSettings:ChatSettingsData) = viewModelScope.launch{
         _uiState.value = _uiState.value.copy(
-            chatSettings = Response.Success(chatSettings),
-            showChatSettingAlert = false
+            showChatSettingAlert = false,
+            enableSlowMode = false
         )
 
         twitchRepoImpl.updateChatSettings(
             oAuthToken = _uiState.value.oAuthToken,
             clientId = _uiState.value.clientId,
             moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId
+            broadcasterId = _uiState.value.broadcasterId,
+            body = UpdateChatSettings(
+                emote_mode = chatSettings.emoteMode,
+                follower_mode = chatSettings.followerMode,
+                slow_mode = chatSettings.slowMode,
+                subscriber_mode = chatSettings.subscriberMode
+            )
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
@@ -200,7 +212,8 @@ class StreamViewModel @Inject constructor(
                     )
                     _uiState.value = _uiState.value.copy(
                         chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true
+                        showChatSettingAlert = true,
+                        enableSlowMode = true
                     )
 
                 }
@@ -211,14 +224,21 @@ class StreamViewModel @Inject constructor(
 
     fun followerModeToggle(chatSettings:ChatSettingsData) = viewModelScope.launch{
         _uiState.value = _uiState.value.copy(
-            chatSettings = Response.Success(chatSettings),
-            showChatSettingAlert = false
+            showChatSettingAlert = false,
+            enableFollowerMode = false
         )
         twitchRepoImpl.updateChatSettings(
             oAuthToken = _uiState.value.oAuthToken,
             clientId = _uiState.value.clientId,
             moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId
+            broadcasterId = _uiState.value.broadcasterId,
+            body = UpdateChatSettings(
+                emote_mode = chatSettings.emoteMode,
+                follower_mode = chatSettings.followerMode,
+                slow_mode = chatSettings.slowMode,
+                subscriber_mode = chatSettings.subscriberMode
+            )
+
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
@@ -243,7 +263,8 @@ class StreamViewModel @Inject constructor(
                     )
                     _uiState.value = _uiState.value.copy(
                         chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true
+                        showChatSettingAlert = true,
+                        enableFollowerMode = true
                     )
 
                 }
@@ -255,14 +276,20 @@ class StreamViewModel @Inject constructor(
 
     fun subscriberModeToggle(chatSettings:ChatSettingsData) = viewModelScope.launch{
         _uiState.value = _uiState.value.copy(
-            chatSettings = Response.Success(chatSettings),
-            showChatSettingAlert = false
+            showChatSettingAlert = false,
+            enableSubscriberMode = false
         )
         twitchRepoImpl.updateChatSettings(
             oAuthToken = _uiState.value.oAuthToken,
             clientId = _uiState.value.clientId,
             moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId
+            broadcasterId = _uiState.value.broadcasterId,
+            body = UpdateChatSettings(
+                emote_mode = chatSettings.emoteMode,
+                follower_mode = chatSettings.followerMode,
+                slow_mode = chatSettings.slowMode,
+                subscriber_mode = chatSettings.subscriberMode
+            )
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
@@ -287,7 +314,9 @@ class StreamViewModel @Inject constructor(
                     )
                     _uiState.value = _uiState.value.copy(
                         chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true
+                        showChatSettingAlert = true,
+                        enableSubscriberMode = true
+
                     )
 
                 }
@@ -298,14 +327,20 @@ class StreamViewModel @Inject constructor(
 
     fun emoteModeToggle(chatSettings:ChatSettingsData) = viewModelScope.launch{
         _uiState.value = _uiState.value.copy(
-            chatSettings = Response.Success(chatSettings),
-            showChatSettingAlert = false
+            showChatSettingAlert = false,
+            enableEmoteMode = false
         )
         twitchRepoImpl.updateChatSettings(
             oAuthToken = _uiState.value.oAuthToken,
             clientId = _uiState.value.clientId,
             moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId
+            broadcasterId = _uiState.value.broadcasterId,
+            body = UpdateChatSettings(
+                emote_mode = chatSettings.emoteMode,
+                follower_mode = chatSettings.followerMode,
+                slow_mode = chatSettings.slowMode,
+                subscriber_mode = chatSettings.subscriberMode
+            )
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
@@ -330,7 +365,8 @@ class StreamViewModel @Inject constructor(
                     )
                     _uiState.value = _uiState.value.copy(
                         chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true
+                        showChatSettingAlert = true,
+                        enableEmoteMode = true
                     )
 
                 }

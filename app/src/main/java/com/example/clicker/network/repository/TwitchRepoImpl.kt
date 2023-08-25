@@ -5,6 +5,7 @@ import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.presentation.home.StreamInfo
@@ -89,22 +90,21 @@ class TwitchRepoImpl @Inject constructor(
         oAuthToken: String,
         clientId: String,
         broadcasterId: String,
-        moderatorId: String
+        moderatorId: String,
+        body: UpdateChatSettings
     ): Flow<Response<Boolean>>  = flow{
         emit(Response.Loading)
         val response =twitchClient.updateChatSettings(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
             broadcasterId = broadcasterId,
-            moderatorId= moderatorId
+            moderatorId= moderatorId,
+            body = body
         )
-        Log.d("changeChatSettings","FAILEDimplBBB -> ${response.raw()}")
+        Log.d("changeChatSettingsUpdate","REQUEST MADE")
         if (response.isSuccessful){
             emit(Response.Success(true))
         }else{
-            Log.d("changeChatSettings","FAILEDimpl -> ${response.message()}")
-            Log.d("changeChatSettings","FAILEDimpl -> ${response.code()}")
-            Log.d("changeChatSettings","FAILEDimpl -> ${response.errorBody()}")
             emit(Response.Failure(Exception(response.message())))
         }
     }

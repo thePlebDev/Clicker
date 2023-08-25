@@ -2,6 +2,7 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
@@ -24,7 +25,8 @@ interface TwitchRepo {
         oAuthToken:String,
         clientId: String,
         broadcasterId:String,
-        moderatorId:String
+        moderatorId:String,
+        body: UpdateChatSettings
     ):Flow<Response<Boolean>>
 
 
