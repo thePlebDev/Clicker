@@ -90,6 +90,10 @@ fun StreamView(
                 followerModeToggle = {chatSettingsData -> streamViewModel.followerModeToggle(chatSettingsData) },
                 subscriberModeToggle = {chatSettingsData -> streamViewModel.subscriberModeToggle(chatSettingsData) },
                 emoteModeToggle = {chatSettingsData -> streamViewModel.emoteModeToggle(chatSettingsData) },
+                enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
+                enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
+                enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
+                enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
             )
         }
     ){
@@ -146,6 +150,11 @@ fun DrawerContent(
      followerModeToggle:(ChatSettingsData) -> Unit,
      subscriberModeToggle:(ChatSettingsData) -> Unit,
      emoteModeToggle:(ChatSettingsData) -> Unit,
+
+     enableSlowModeSwitch:Boolean,
+     enableFollowerModeSwitch:Boolean,
+     enableSubscriberSwitch:Boolean,
+     enableEmoteModeSwitch:Boolean,
 ){
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -164,6 +173,10 @@ fun DrawerContent(
                     followerModeToggle = {chatSettingsData -> followerModeToggle(chatSettingsData) },
                     subscriberModeToggle = {chatSettingsData -> subscriberModeToggle(chatSettingsData) },
                     emoteModeToggle = {chatSettingsData -> emoteModeToggle(chatSettingsData) },
+                    enableSlowModeSwitch = enableSlowModeSwitch,
+                    enableFollowerModeSwitch = enableFollowerModeSwitch,
+                    enableSubscriberSwitch = enableSubscriberSwitch,
+                    enableEmoteModeSwitch = enableEmoteModeSwitch
                 )
             }
             is Response.Failure ->{
@@ -183,13 +196,18 @@ fun ChatSettingsDataUI(
     subscriberModeToggle:(ChatSettingsData) -> Unit,
     emoteModeToggle:(ChatSettingsData) -> Unit,
 
+    enableSlowModeSwitch:Boolean,
+    enableFollowerModeSwitch:Boolean,
+    enableSubscriberSwitch:Boolean,
+    enableEmoteModeSwitch:Boolean,
+
+
 ){
     val slowMode = chatSettingsData.slowMode
     val followerMode = chatSettingsData.followerMode
     val subscriberMode = chatSettingsData.subscriberMode
     val emoteMode = chatSettingsData.emoteMode
 
-    val checkedState = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -202,6 +220,7 @@ fun ChatSettingsDataUI(
         ){
             Text(text = "Slow mode: ",fontSize = 25.sp)
             Switch(
+                enabled = enableSlowModeSwitch,
                 checked = slowMode,
                 onCheckedChange = {
                     slowModeToggle(
@@ -228,6 +247,7 @@ fun ChatSettingsDataUI(
             Text(text = "Follower mode: ",fontSize = 25.sp)
 
             Switch(
+                enabled=enableFollowerModeSwitch,
                 checked = followerMode,
                 onCheckedChange = {
                     followerModeToggle(
@@ -254,6 +274,7 @@ fun ChatSettingsDataUI(
             Text(text = "Subscriber mode: ",fontSize = 25.sp)
 
             Switch(
+                enabled=enableSubscriberSwitch,
                 checked = subscriberMode,
                 onCheckedChange = {
                     subscriberModeToggle(
@@ -281,6 +302,7 @@ fun ChatSettingsDataUI(
             Text(text = "Emote mode: ",fontSize = 25.sp)
 
             Switch(
+                enabled = enableEmoteModeSwitch,
                 checked = emoteMode,
                 onCheckedChange = {
                     emoteModeToggle(
