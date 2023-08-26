@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.LoggedInUserData
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.util.Response
 
 @Composable
@@ -397,35 +398,47 @@ fun TextChat(
             items(twitchUserChat){twitchUser ->
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(15.dp)
-                                .clickable {
-                                    coroutineScope.launch {
-                                        drawerState.open()
-                                    }
-                                },
-                            elevation = 10.dp
-                        ){
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
+                        if(twitchUser.messageType == MessageType.USER){
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(15.dp)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            drawerState.open()
+                                        }
+                                    },
+                                elevation = 10.dp
                             ){
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
 
-                                Text(buildAnnotatedString {
-                                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                        append("${twitchUser.displayName} :")
+                                    Text(buildAnnotatedString {
+                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                            append("${twitchUser.displayName} :")
+                                        }
+                                        append(" ${twitchUser.userType}")
+
                                     }
-                                    append(" ${twitchUser.userType}")
+                                    )
 
                                 }
-                                )
-
-                            }
 
 
-                    }
+                            }// end of the Card
+                        }
+                        if(twitchUser.messageType == MessageType.NOTICE){
+                            Text(buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                    append("${twitchUser.displayName} :")
+                                }
+                                append(" ${twitchUser.userType}")
+
+                            },
+                                modifier = Modifier.fillMaxWidth().padding(15.dp)
+                            )
+                        }
 
                 }
 
