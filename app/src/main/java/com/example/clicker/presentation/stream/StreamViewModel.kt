@@ -13,6 +13,7 @@ import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.websockets.LoggedInUserData
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.HomeUIState
@@ -59,6 +60,8 @@ class StreamViewModel @Inject constructor(
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
 
+    private var currentUsername:String = ""
+
     val testingThings = webSocket.loggedInUserUiState
     init{
         //todo: NEED TO COPY THIS VALUE OVER TO THE loggedInUserData
@@ -98,9 +101,10 @@ class StreamViewModel @Inject constructor(
 
 
 
-    fun startWebSocket(channelName: String) = viewModelScope.launch{
+    private fun startWebSocket(channelName: String) = viewModelScope.launch{
         tokenDataStore.getUsername().collect{username ->
             if(username.isNotEmpty()){
+                currentUsername = username
 //                Log.d("startWebSocket","username --->$it")
                 webSocket.run(channelName,username)
             }
@@ -115,6 +119,28 @@ class StreamViewModel @Inject constructor(
     }
     fun sendMessage(chatMessage:String){
         val messageResult = webSocket.sendMessage(chatMessage)
+        listChats.add(
+            TwitchUserData(
+                badgeInfo = null,
+                badges = null,
+                clientNonce = null,
+                color = "#000000",
+                displayName = currentUsername,
+                emotes = null,
+                firstMsg = null,
+                flags = null,
+                id = null,
+                mod = "mod",
+                returningChatter = null,
+                roomId = null,
+                subscriber = false,
+                tmiSentTs = null,
+                turbo = false,
+                userId = null,
+                userType = chatMessage,
+                messageType = MessageType.USER
+            )
+        )
         Log.d("messageResult",messageResult.toString())
     }
 
