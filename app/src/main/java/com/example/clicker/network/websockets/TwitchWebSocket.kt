@@ -211,6 +211,10 @@ class TwitchWebSocket @Inject constructor(
              _state.tryEmit(mappedString)
          }
 
+         if(text.contains("USERSTATE")){
+             Log.d("onMessageSocketUSERSTATE","USERSTATE --> $text")
+         }
+
     }
 
 

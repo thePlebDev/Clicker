@@ -100,7 +100,7 @@ fun StreamView(
     ){
         TextChat(
             twitchUserChat = twitchUserChat,
-            addItem ={
+            sendMessageToWebSocket ={
                     string ->streamViewModel.sendMessage(string)
             },
             drawerState=drawerState,
@@ -374,7 +374,7 @@ fun MessageAlertText(){
 @Composable
 fun TextChat(
     twitchUserChat:List<TwitchUserData>,
-    addItem: (String) -> Unit,
+    sendMessageToWebSocket: (String) -> Unit,
     drawerState: DrawerState,
     modStatus:Boolean?
 ){
@@ -451,7 +451,7 @@ fun TextChat(
                 .align(Alignment.BottomCenter)
                 .padding(5.dp)
                 .fillMaxWidth(),
-            chat = {text -> addItem(text)},
+            chat = {text -> sendMessageToWebSocket(text)},
             modStatus = modStatus
         )
         SettingsTab(showModal = {coroutineScope.launch { drawerState.open() }})
