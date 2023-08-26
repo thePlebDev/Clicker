@@ -23,6 +23,9 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
+enum class MessageType {
+    USER, NOTICE
+}
 data class TwitchUserData(
     val badgeInfo: String?,
     val badges: String?,
@@ -40,7 +43,8 @@ data class TwitchUserData(
     val tmiSentTs: Long?,
     val turbo: Boolean,
     val userId: String?,
-    var userType: String?
+    var userType: String?,
+    val messageType: MessageType
 )
 data class LoggedInUserData(
     val color:String?,
@@ -72,7 +76,8 @@ class TwitchWebSocket @Inject constructor(
         tmiSentTs = 1690747946900L,
         turbo = false,
         userId = "144252234",
-        userType = "Connecting to chat"
+        userType = "Connecting to chat",
+        messageType = MessageType.USER
     )
 
 
@@ -83,6 +88,9 @@ class TwitchWebSocket @Inject constructor(
 
     private val _state = MutableStateFlow(initialValue)
     val state = _state.asStateFlow() //this is the text data shown to the user
+
+    private val _NOTICE = MutableStateFlow<String?>(null)
+    val NOTICE = _NOTICE.asStateFlow()
 
     private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
     val loggedInUserUiState = _loggedInUserUiState
@@ -159,6 +167,7 @@ class TwitchWebSocket @Inject constructor(
     }
 
      override fun onMessage(webSocket: WebSocket, text: String) {
+         Log.d("onMessageSocket","state --> $text")
 
          if(text.contains(" USERSTATE ")){
              Log.d("loggedInDataOnMessage","USERSTATE --> $text")
@@ -167,12 +176,40 @@ class TwitchWebSocket @Inject constructor(
              )
 
          }
+         if(text.contains("NOTICE")){
+             Log.d("NOTICE","NOTICE --> $text")
+             val pattern = "#theplebdev\\s*:(.+)".toRegex()
+             val matchResult = pattern.find(text)
+             val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
 
+             val userData = TwitchUserData(
+                 badgeInfo = null,
+                 badges = null,
+                 clientNonce = null,
+                 color = "#000000",
+                 displayName = "Room update",
+                 emotes = null,
+                 firstMsg = null,
+                 flags = null,
+                 id = null,
+                 mod = null,
+                 returningChatter = null,
+                 roomId = null,
+                 subscriber = false,
+                 tmiSentTs = null,
+                 turbo = false,
+                 userId = null,
+                 userType = extractedInfo,
+                 messageType = MessageType.NOTICE
+             )
+             _state.tryEmit(userData)
 
-         val anotherTesting = parseStringBaby(text)
-         val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
-         _state.tryEmit(mappedString)
-
+         }
+         if(text.contains("PRIVMSG")){
+             val anotherTesting = parseStringBaby(text)
+             val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
+             _state.tryEmit(mappedString)
+         }
 
     }
 
@@ -236,6 +273,7 @@ fun mapToTwitchUserData(parsedData: Map<String, String>,sentMessage: String): Tw
         turbo = parsedData["turbo"]?.toIntOrNull() == 1,
         userType = checkStrings(filterText(parsedData["user-type"].toString()),sentMessage),
         userId = parsedData["user-id"],
+        messageType = MessageType.USER
     )
 }
 
