@@ -98,6 +98,45 @@ class StreamViewModel @Inject constructor(
             }
         }
     }
+    init{
+        viewModelScope.launch {
+            webSocket.roomState.collect{nullableRoomState ->
+                nullableRoomState?.let {roomState ->
+                    //todo: update the _uiState chatSettings with these values
+                    when(val response =_uiState.value.chatSettings){
+                        is Response.Success ->{
+                            val slowMode = roomState.slowMode ?: response.data.slowMode
+                            val emoteMode = roomState.emoteMode ?: response.data.emoteMode
+                            val followerMode = roomState.followerMode ?: response.data.followerMode
+                            val subMode = roomState.subMode ?: response.data.subscriberMode
+
+                            _uiState.value = _uiState.value.copy(
+                                chatSettings = Response.Success(
+                                    ChatSettingsData(
+                                        broadcasterId = response.data.broadcasterId,
+                                        slowMode = slowMode,
+                                        slowModeWaitTime = response.data.slowModeWaitTime,
+                                        followerMode = followerMode,
+                                        followerModeDuration = response.data.followerModeDuration,
+                                        subscriberMode = subMode,
+                                        emoteMode = emoteMode,
+                                        uniqueChatMode = response.data.uniqueChatMode
+                                    )
+                                )
+                            )
+
+                        }
+                        else->{
+
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+    }
 
 
 
