@@ -53,6 +53,14 @@ data class LoggedInUserData(
     val mod:Boolean
 )
 
+
+data class RoomState(
+    val emoteMode:Boolean?,
+    val followerMode:Boolean?,
+    val slowMode:Boolean?,
+    val subMode:Boolean?
+)
+
 class TwitchWebSocket @Inject constructor(
     private val tokenDataStore: TokenDataStore
 ): WebSocketListener() {
@@ -89,9 +97,6 @@ class TwitchWebSocket @Inject constructor(
     private val _state = MutableStateFlow(initialValue)
     val state = _state.asStateFlow() //this is the text data shown to the user
 
-    private val _NOTICE = MutableStateFlow<String?>(null)
-    val NOTICE = _NOTICE.asStateFlow()
-
     private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
     val loggedInUserUiState = _loggedInUserUiState
 
@@ -99,6 +104,9 @@ class TwitchWebSocket @Inject constructor(
     var webSocket:WebSocket? = null
 
     var sentMessageString:String = ""
+
+    private val _roomState = MutableStateFlow<RoomState?>(null)
+    val roomState = _roomState.asStateFlow()
 
 
 
@@ -214,6 +222,26 @@ class TwitchWebSocket @Inject constructor(
          if(text.contains("USERSTATE")){
              Log.d("onMessageSocketUSERSTATE","USERSTATE --> $text")
          }
+         if(text.contains("ROOMSTATE")){
+             Log.d("onMessageSocketROOMSTATE","ROOMSTATE --> $text")
+            val slowMode= getValueFromInput(text,"slow")
+
+             val emoteMode = getValueFromInput(text,"emote-only")
+             val followersMode = getValueFromInput(text,"followers-only")
+
+
+             val subMode = getValueFromInput(text,"subs-only")
+             val roomState = RoomState(
+                 emoteMode=emoteMode,
+                 followerMode = followersMode,
+                 slowMode = slowMode,
+                 subMode = subMode
+             )
+             Log.d("onMessageSocketROOMSTATE","ROOMSTATE --> $roomState")
+             _roomState.tryEmit(roomState)
+
+
+         }
 
     }
 
@@ -328,6 +356,22 @@ fun stringToBoolean( subOrModText:String):Boolean{
     val convertedString = subOrModText.toInt()
 
     return convertedString ==1
+
+}
+
+fun getValueFromInput(input: String, key: String): Boolean? {
+    val pattern = "$key=([^;:\\s]+)".toRegex()
+    val match = pattern.find(input)
+    val returnedValue = match?.groupValues?.get(1) ?: return null
+        if( returnedValue == "-1"){
+        return false
+    }
+    if(key == "followers-only" && returnedValue == "0"){
+        return true
+    }
+    else{
+        return returnedValue != "0"
+    }
 
 }
 
