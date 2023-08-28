@@ -204,125 +204,80 @@ fun ChatSettingsDataUI(
 
 
 ){
+
+    ChatSettings(
+        chatSettingsData =chatSettingsData,
+        showChatSettingAlert =showChatSettingAlert,
+        slowModeToggle = {chatSettingsInfo -> slowModeToggle(chatSettingsInfo)  },
+        followerModeToggle = {chatSettingsInfo -> followerModeToggle(chatSettingsInfo)  },
+        subscriberModeToggle = {chatSettingsInfo -> subscriberModeToggle(chatSettingsInfo)  },
+        emoteModeToggle = {chatSettingsInfo -> emoteModeToggle(chatSettingsInfo)  },
+        
+        enableSlowModeSwitch =enableSlowModeSwitch,
+        enableFollowerModeSwitch =enableFollowerModeSwitch,
+        enableSubscriberSwitch =enableSubscriberSwitch,
+        enableEmoteModeSwitch =enableEmoteModeSwitch
+    )
+
+
+
+}
+
+@Composable
+fun ChatSettings(
+    chatSettingsData: ChatSettingsData,
+    showChatSettingAlert:Boolean,
+    slowModeToggle:(ChatSettingsData) -> Unit,
+    followerModeToggle:(ChatSettingsData) -> Unit,
+    subscriberModeToggle:(ChatSettingsData) -> Unit,
+    emoteModeToggle:(ChatSettingsData) -> Unit,
+
+    enableSlowModeSwitch:Boolean,
+    enableFollowerModeSwitch:Boolean,
+    enableSubscriberSwitch:Boolean,
+    enableEmoteModeSwitch:Boolean,
+){
     val slowMode = chatSettingsData.slowMode
     val followerMode = chatSettingsData.followerMode
     val subscriberMode = chatSettingsData.subscriberMode
     val emoteMode = chatSettingsData.emoteMode
-
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Text(text = "Slow mode: ",fontSize = 25.sp)
-            Switch(
-                enabled = enableSlowModeSwitch,
-                checked = slowMode,
-                onCheckedChange = {
-                    slowModeToggle(
-                        ChatSettingsData(
-                            broadcasterId = chatSettingsData.broadcasterId,
-                            slowMode = it,
-                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                            followerMode = chatSettingsData.followerMode,
-                            followerModeDuration = chatSettingsData.followerModeDuration,
-                            subscriberMode = chatSettingsData.subscriberMode,
-                            emoteMode = chatSettingsData.emoteMode,
-                            uniqueChatMode = chatSettingsData.uniqueChatMode
+        SlowSwitchRow(
+            switchLabel = "Slow mode: ",
+            enableSwitch = enableSlowModeSwitch,
+            switchCheck = slowMode,
+            chatSettingsData = chatSettingsData,
+            slowModeToggle = {chatSettingsData -> slowModeToggle(chatSettingsData)}
+        )
 
-                        )
-                )
-                                  },
-                modifier = Modifier.size(40.dp)
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Text(text = "Follower mode: ",fontSize = 25.sp)
+        FollowerSwitchRow(
+            switchLabel = "Follower mode: ",
+            enableSwitch = enableFollowerModeSwitch,
+            switchCheck = followerMode,
+            chatSettingsData = chatSettingsData,
+            followerModeToggle = {chatSettingsData -> followerModeToggle(chatSettingsData)}
+        )
 
-            Switch(
-                enabled=enableFollowerModeSwitch,
-                checked = followerMode,
-                onCheckedChange = {
-                    followerModeToggle(
-                        ChatSettingsData(
-                            broadcasterId = chatSettingsData.broadcasterId,
-                            slowMode = chatSettingsData.slowMode,
-                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                            followerMode = it,
-                            followerModeDuration = chatSettingsData.followerModeDuration,
-                            subscriberMode = chatSettingsData.subscriberMode,
-                            emoteMode = chatSettingsData.emoteMode,
-                            uniqueChatMode = chatSettingsData.uniqueChatMode
+        SubscriberSwitchRow(
+            switchLabel = "Subscriber mode: ",
+            enableSwitch = enableSubscriberSwitch,
+            switchCheck = subscriberMode,
+            chatSettingsData = chatSettingsData,
+            subscriberModeToggle = {chatSettingsData -> subscriberModeToggle(chatSettingsData)}
+        )
 
-                        )
-                    )
-                                  },
-                modifier = Modifier.size(40.dp)
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Text(text = "Subscriber mode: ",fontSize = 25.sp)
+        EmoteSwitchRow(
+            switchLabel = "Emote mode: ",
+            enableSwitch = enableEmoteModeSwitch,
+            switchCheck = emoteMode,
+            chatSettingsData = chatSettingsData,
+            emoteModeToggle = {chatSettingsData -> emoteModeToggle(chatSettingsData) }
 
-            Switch(
-                enabled=enableSubscriberSwitch,
-                checked = subscriberMode,
-                onCheckedChange = {
-                    subscriberModeToggle(
-                        ChatSettingsData(
-                            broadcasterId = chatSettingsData.broadcasterId,
-                            slowMode = chatSettingsData.slowMode,
-                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                            followerMode = chatSettingsData.followerMode,
-                            followerModeDuration = chatSettingsData.followerModeDuration,
-                            subscriberMode = it,
-                            emoteMode = chatSettingsData.emoteMode,
-                            uniqueChatMode = chatSettingsData.uniqueChatMode
-
-                        )
-                    )
-                },
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Text(text = "Emote mode: ",fontSize = 25.sp)
-
-            Switch(
-                enabled = enableEmoteModeSwitch,
-                checked = emoteMode,
-                onCheckedChange = {
-                    emoteModeToggle(
-                        ChatSettingsData(
-                            broadcasterId = chatSettingsData.broadcasterId,
-                            slowMode = chatSettingsData.slowMode,
-                            slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                            followerMode = chatSettingsData.followerMode,
-                            followerModeDuration = chatSettingsData.followerModeDuration,
-                            subscriberMode = chatSettingsData.subscriberMode,
-                            emoteMode = it,
-                            uniqueChatMode = chatSettingsData.uniqueChatMode
-
-                        )
-                    )
-                },
-                modifier = Modifier.size(40.dp)
-            )
-        }
+        )
 
 
 
@@ -333,7 +288,141 @@ fun ChatSettingsDataUI(
 
 
     }// end of the Column
+}
 
+@Composable
+fun SlowSwitchRow(
+    switchLabel:String,
+    enableSwitch:Boolean,
+    switchCheck:Boolean,
+    chatSettingsData: ChatSettingsData,
+    slowModeToggle:(ChatSettingsData) -> Unit
+){
+    Row(modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween){
+        Text(text = switchLabel,fontSize = 25.sp)
+        Switch(
+            checked = switchCheck,
+            enabled = enableSwitch,
+            modifier = Modifier.size(40.dp),
+            onCheckedChange = {
+                slowModeToggle(
+                    ChatSettingsData(
+                        broadcasterId = chatSettingsData.broadcasterId,
+                        slowMode = it,
+                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                        followerMode = chatSettingsData.followerMode,
+                        followerModeDuration = chatSettingsData.followerModeDuration,
+                        subscriberMode = chatSettingsData.subscriberMode,
+                        emoteMode = chatSettingsData.emoteMode,
+                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                    )
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun EmoteSwitchRow(
+    switchLabel:String,
+    enableSwitch:Boolean,
+    switchCheck:Boolean,
+    chatSettingsData: ChatSettingsData,
+    emoteModeToggle:(ChatSettingsData) -> Unit
+){
+    Row(modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween){
+        Text(text = switchLabel,fontSize = 25.sp)
+        Switch(
+            checked = switchCheck,
+            enabled = enableSwitch,
+            modifier = Modifier.size(40.dp),
+            onCheckedChange = {
+                emoteModeToggle(
+                    ChatSettingsData(
+                        broadcasterId = chatSettingsData.broadcasterId,
+                        slowMode = chatSettingsData.slowMode,
+                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                        followerMode = chatSettingsData.followerMode,
+                        followerModeDuration = chatSettingsData.followerModeDuration,
+                        subscriberMode = chatSettingsData.subscriberMode,
+                        emoteMode = it,
+                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                    )
+                )
+            }
+        )
+    }
+}
+@Composable
+fun SubscriberSwitchRow(
+    switchLabel:String,
+    enableSwitch:Boolean,
+    switchCheck:Boolean,
+    chatSettingsData: ChatSettingsData,
+    subscriberModeToggle:(ChatSettingsData) -> Unit
+){
+    Row(modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween){
+        Text(text = switchLabel,fontSize = 25.sp)
+        Switch(
+            checked = switchCheck,
+            enabled = enableSwitch,
+            modifier = Modifier.size(40.dp),
+            onCheckedChange = {
+                subscriberModeToggle(
+                    ChatSettingsData(
+                        broadcasterId = chatSettingsData.broadcasterId,
+                        slowMode = chatSettingsData.slowMode,
+                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                        followerMode = chatSettingsData.followerMode,
+                        followerModeDuration = chatSettingsData.followerModeDuration,
+                        subscriberMode = it,
+                        emoteMode = chatSettingsData.emoteMode,
+                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                    )
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun FollowerSwitchRow(
+    switchLabel:String,
+    enableSwitch:Boolean,
+    switchCheck:Boolean,
+    chatSettingsData: ChatSettingsData,
+    followerModeToggle:(ChatSettingsData) -> Unit
+){
+    Row(modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween){
+        Text(text = switchLabel,fontSize = 25.sp)
+        Switch(
+            checked = switchCheck,
+            enabled = enableSwitch,
+            modifier = Modifier.size(40.dp),
+            onCheckedChange = {
+                followerModeToggle(
+                    ChatSettingsData(
+                        broadcasterId = chatSettingsData.broadcasterId,
+                        slowMode = chatSettingsData.slowMode,
+                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                        followerMode = it,
+                        followerModeDuration = chatSettingsData.followerModeDuration,
+                        subscriberMode = chatSettingsData.subscriberMode,
+                        emoteMode = chatSettingsData.emoteMode,
+                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
+                    )
+                )
+            }
+        )
+    }
 }
 
 //TODO: MAKE IT SO THE X CLICK REMOVES THE REQUEST MESSAGE
@@ -436,7 +525,9 @@ fun TextChat(
                                 append(" ${twitchUser.userType}")
 
                             },
-                                modifier = Modifier.fillMaxWidth().padding(15.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(15.dp)
                             )
                         }
 
