@@ -53,9 +53,12 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Switch
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -205,19 +208,57 @@ fun ChatSettingsDataUI(
 
 ){
 
-    ChatSettings(
-        chatSettingsData =chatSettingsData,
-        showChatSettingAlert =showChatSettingAlert,
-        slowModeToggle = {chatSettingsInfo -> slowModeToggle(chatSettingsInfo)  },
-        followerModeToggle = {chatSettingsInfo -> followerModeToggle(chatSettingsInfo)  },
-        subscriberModeToggle = {chatSettingsInfo -> subscriberModeToggle(chatSettingsInfo)  },
-        emoteModeToggle = {chatSettingsInfo -> emoteModeToggle(chatSettingsInfo)  },
-        
-        enableSlowModeSwitch =enableSlowModeSwitch,
-        enableFollowerModeSwitch =enableFollowerModeSwitch,
-        enableSubscriberSwitch =enableSubscriberSwitch,
-        enableEmoteModeSwitch =enableEmoteModeSwitch
-    )
+//    ChatSettings(
+//        chatSettingsData =chatSettingsData,
+//        showChatSettingAlert =showChatSettingAlert,
+//        slowModeToggle = {chatSettingsInfo -> slowModeToggle(chatSettingsInfo)  },
+//        followerModeToggle = {chatSettingsInfo -> followerModeToggle(chatSettingsInfo)  },
+//        subscriberModeToggle = {chatSettingsInfo -> subscriberModeToggle(chatSettingsInfo)  },
+//        emoteModeToggle = {chatSettingsInfo -> emoteModeToggle(chatSettingsInfo)  },
+//
+//        enableSlowModeSwitch =enableSlowModeSwitch,
+//        enableFollowerModeSwitch =enableFollowerModeSwitch,
+//        enableSubscriberSwitch =enableSubscriberSwitch,
+//        enableEmoteModeSwitch =enableEmoteModeSwitch
+//    )
+
+    var tabIndex by remember { mutableStateOf(0) }
+    val titles = listOf("Settings", "Whispers", "Bonker")
+    Column {
+        TabRow(selectedTabIndex = tabIndex) {
+            titles.forEachIndexed { index, title ->
+                Tab(
+                    text = { Text(title) },
+                    selected = tabIndex == index,
+                    onClick = { tabIndex = index }
+                )
+            }
+        }
+        when (tabIndex) {
+            0 -> {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = "ROOM SETTINGS ",
+                    style = MaterialTheme.typography.body1
+                )
+            }
+            1 -> {
+                Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = "WHISPERS",
+                style = MaterialTheme.typography.body1
+            )
+            }
+            2 -> {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = "Bonker",
+                    style = MaterialTheme.typography.body1
+                )
+            }
+        }
+
+    }
 
 
 
