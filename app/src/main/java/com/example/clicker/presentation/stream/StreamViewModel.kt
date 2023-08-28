@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
@@ -56,6 +57,8 @@ class StreamViewModel @Inject constructor(
     val clientId:State<String?> = _clientId
 
     val listChats = mutableStateListOf<TwitchUserData>()
+    val listChatsFlow = MutableStateFlow(listChats)
+
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
@@ -63,6 +66,20 @@ class StreamViewModel @Inject constructor(
     private var currentUsername:String = ""
 
     val testingThings = webSocket.loggedInUserUiState
+
+    val filteredChatList = mutableStateListOf<String>()
+
+
+    fun mostRecentChats(username:String){
+        val recentChats = listChats.toList().filter { it.displayName == username }
+        filteredChatList.clear()
+        for(item in recentChats){
+            Log.d("mostRecentChats","${item.userType}")
+            filteredChatList.add(item.userType.toString())
+        }
+    }
+
+
     init{
         //todo: NEED TO COPY THIS VALUE OVER TO THE loggedInUserData
         viewModelScope.launch {
@@ -84,6 +101,7 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch{
             webSocket.state.collect{twitchUserMessage ->
                     listChats.add(twitchUserMessage)
+
 
             }
         }
@@ -503,3 +521,4 @@ class StreamViewModel @Inject constructor(
         webSocket.close()
     }
 }
+

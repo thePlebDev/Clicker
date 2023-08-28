@@ -47,13 +47,19 @@ import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Switch
@@ -63,6 +69,8 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
@@ -71,45 +79,82 @@ import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.util.Response
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StreamView(
     streamViewModel: StreamViewModel
-){
+) {
 
     val twitchUserChat = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-   // val modStatus = false
-    Log.d("loggedInUserUiState","modStatus --->   $modStatus")
+    val filteredChat = streamViewModel.filteredChatList
+    // val modStatus = false
 
 
-    ModalDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            DrawerContent(
-                chatSettingData,
-                showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
-                slowModeToggle = {chatSettingsData -> streamViewModel.slowModeChatSettings(chatSettingsData) },
-                followerModeToggle = {chatSettingsData -> streamViewModel.followerModeToggle(chatSettingsData) },
-                subscriberModeToggle = {chatSettingsData -> streamViewModel.subscriberModeToggle(chatSettingsData) },
-                emoteModeToggle = {chatSettingsData -> streamViewModel.emoteModeToggle(chatSettingsData) },
-                enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
-                enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
-                enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-                enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
+            val bottomModalState = rememberModalBottomSheetState(
+                initialValue = ModalBottomSheetValue.Hidden,
+                skipHalfExpanded = true
             )
+
+
+            ModalBottomSheetLayout(
+                sheetState = bottomModalState,
+                sheetContent = {
+                    BottomModalContent(
+                        filteredChatList = filteredChat
+                    )
+
+                }
+            ) {
+
+                    ModalDrawer(
+                        drawerState = drawerState,
+                        drawerContent = {
+                            DrawerContent(
+                                chatSettingData,
+                                showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
+                                slowModeToggle = { chatSettingsData ->
+                                    streamViewModel.slowModeChatSettings(
+                                        chatSettingsData
+                                    )
+                                },
+                                followerModeToggle = { chatSettingsData ->
+                                    streamViewModel.followerModeToggle(
+                                        chatSettingsData
+                                    )
+                                },
+                                subscriberModeToggle = { chatSettingsData ->
+                                    streamViewModel.subscriberModeToggle(
+                                        chatSettingsData
+                                    )
+                                },
+                                emoteModeToggle = { chatSettingsData ->
+                                    streamViewModel.emoteModeToggle(
+                                        chatSettingsData
+                                    )
+                                },
+                                enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
+                                enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
+                                enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
+                                enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
+                            )
+                        }
+                    ) {
+                        TextChat(
+                            twitchUserChat = twitchUserChat,
+                            sendMessageToWebSocket = { string ->
+                                streamViewModel.sendMessage(string)
+                            },
+                            drawerState = drawerState,
+                            modStatus = modStatus,
+                            bottomModalState = bottomModalState,
+                            mostRecentChats = {username ->streamViewModel.mostRecentChats(username)},
+
+                        )
+                    }
         }
-    ){
-        TextChat(
-            twitchUserChat = twitchUserChat,
-            sendMessageToWebSocket ={
-                    string ->streamViewModel.sendMessage(string)
-            },
-            drawerState=drawerState,
-            modStatus  =modStatus
-        )
-    }
 
 
     val testingString = ""
@@ -142,6 +187,65 @@ fun StreamView(
 //            }
 //        }
 //    }
+
+}
+
+@Composable
+fun BottomModalContent(
+    filteredChatList:List<String>
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(20.dp)) {
+        Row(modifier= Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Send chat",
+                    modifier = Modifier
+                        .clickable { }
+                        .padding(2.dp)
+                        .size(25.dp),
+                    tint = Color.Red
+                )
+                Text("Username")
+            }
+
+            Button(onClick = { /*TODO*/ }) {
+                Text("Reply")
+            }
+
+        }
+        Row(modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween){
+            Text("Recent Messages")
+            Row(){
+                Button(onClick ={},modifier= Modifier.padding(end = 20.dp)) {
+                    Text("Timeout",)
+                }
+                Button(onClick ={}) {
+                    Text("Ban")
+                }
+            }
+        }
+
+    }//END OF THE COLUMN
+
+    Spacer(modifier = Modifier.height(10.dp))
+    Log.d("LazyColumnFilter","${filteredChatList.size}")
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(20.dp)
+    ){
+        items(filteredChatList){
+            Text(it,modifier=Modifier.fillMaxWidth())
+        }
+
+    }
 
 }
 
@@ -500,17 +604,22 @@ fun MessageAlertText(){
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun TextChat(
     twitchUserChat:List<TwitchUserData>,
     sendMessageToWebSocket: (String) -> Unit,
     drawerState: DrawerState,
-    modStatus:Boolean?
+    modStatus:Boolean?,
+    bottomModalState: ModalBottomSheetState,
+    mostRecentChats:(String) -> Unit,
+
 ){
 
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
 
     Box(){
         LazyColumn(modifier = Modifier
@@ -526,6 +635,7 @@ fun TextChat(
                 }
             }
             items(twitchUserChat){twitchUser ->
+
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
                         if(twitchUser.messageType == MessageType.USER){
@@ -534,8 +644,9 @@ fun TextChat(
                                     .fillMaxWidth()
                                     .padding(15.dp)
                                     .clickable {
+                                        mostRecentChats(twitchUser.displayName.toString())
                                         coroutineScope.launch {
-                                            drawerState.open()
+                                            bottomModalState.show()
                                         }
                                     },
                                 elevation = 10.dp
