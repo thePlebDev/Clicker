@@ -83,18 +83,22 @@ class StreamViewModel @Inject constructor(
 
     )
 
-    val allChatters = mutableStateListOf<String>(
-        "URKETY",
-        "ANOTHER",
-        "IT-DO-BE-LIKE-THAT","timtheban","ANOTHERPLACENTIME","meatNcheese"
-    )
+    val map = hashMapOf<String, String>()
+    private val allChatters = mutableStateListOf<String>()
+
+    fun addChatter(chatter:String){
+        if(!allChatters.contains(chatter)){
+            allChatters.add(chatter)
+        }
+
+    }
 
 
 
     var atIndex:Int? = null
     fun filterChatters(username:String,text:String){
         Log.d("mostRecentChats",text)
-        if(!text.isBlank()){
+        if(text.isNotBlank()){
              //TODO: MAKE THIS A GLOBAL VARIABLE
             val lastCharacter = text[text.length - 1].toString()
 //
@@ -110,7 +114,7 @@ class StreamViewModel @Inject constructor(
 
             if(atIndex != null && lastCharacter != "@"){
 
-                val substring = text.subSequence(atIndex!!,text.lastIndex +1)
+                val substring = text.subSequence(atIndex!!,text.lastIndex)
 
 
 
@@ -121,8 +125,8 @@ class StreamViewModel @Inject constructor(
 
             }
 
-
-
+        }else{
+            filteredChatList.clear()
         }
 
 
@@ -141,7 +145,7 @@ class StreamViewModel @Inject constructor(
 
         val newerString = fullText.removeRange(range)
         Log.d("FOUNDLASTONE","$newerString")
-        val newString =newerString + "@$clickedText"
+        val newString =newerString + "@$clickedText "
 
         return newString
 
