@@ -63,6 +63,9 @@ class StreamViewModel @Inject constructor(
     val listChats = mutableStateListOf<TwitchUserData>()
     val listChatsFlow = MutableStateFlow(listChats)
 
+    private val _clickedUsername:MutableState<String> = mutableStateOf("")
+    val clickedUsername:State<String> = _clickedUsername
+
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
@@ -91,6 +94,9 @@ class StreamViewModel @Inject constructor(
             allChatters.add(chatter)
         }
 
+    }
+    fun updateClickedChat(clickedUsername:String){
+        _clickedUsername.value = clickedUsername
     }
 
 
