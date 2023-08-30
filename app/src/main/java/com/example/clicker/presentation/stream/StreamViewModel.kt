@@ -67,16 +67,53 @@ class StreamViewModel @Inject constructor(
 
     val testingThings = webSocket.loggedInUserUiState
 
-    val filteredChatList = mutableStateListOf<String>()
+    var filteredChatList = mutableStateListOf<String>(
+
+    )
+
+    val allChatters = mutableStateListOf<String>(
+        "URKETY",
+        "ANOTHER",
+        "IT-DO-BE-LIKE-THAT","timtheban","ANOTHERPLACENTIME","meatNcheese"
+    )
 
 
-    fun mostRecentChats(username:String){
-        val recentChats = listChats.toList().filter { it.displayName == username }
-        filteredChatList.clear()
-        for(item in recentChats){
-            Log.d("mostRecentChats","${item.userType}")
-            filteredChatList.add(item.userType.toString())
+
+    var atIndex:Int? = null
+    fun filterChatters(username:String,text:String){
+        if(!text.isBlank()){
+             //TODO: MAKE THIS A GLOBAL VARIABLE
+            val lastCharacter = text[text.length - 1].toString()
+//
+            if(lastCharacter == " "){
+                filteredChatList.clear()
+                atIndex = null
+            }
+//
+            if(lastCharacter == "@"){
+                atIndex = text.length
+               filteredChatList.addAll(allChatters.toList())
+            }
+
+            if(atIndex != null && lastCharacter != "@"){
+
+                val substring = text.subSequence(atIndex!!,text.lastIndex +1)
+
+                Log.d("mostRecentChats",substring.toString())
+
+                val newList = mutableStateListOf<String>()
+                newList.addAll(allChatters.filter { it.contains(substring) })
+                filteredChatList.clear()
+                filteredChatList.addAll(newList.toList())
+
+            }
+
+
+
         }
+
+
+
     }
 
 
