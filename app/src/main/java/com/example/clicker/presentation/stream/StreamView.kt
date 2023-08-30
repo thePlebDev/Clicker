@@ -51,6 +51,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerState
@@ -90,6 +92,7 @@ fun StreamView(
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
     val filteredChat = streamViewModel.filteredChatList
+
     // val modStatus = false
 
 
@@ -150,7 +153,9 @@ fun StreamView(
                             drawerState = drawerState,
                             modStatus = modStatus,
                             bottomModalState = bottomModalState,
-                            mostRecentChats = {username ->streamViewModel.mostRecentChats(username)},
+                            mostRecentChats = {},
+                            filteredChatList = filteredChat,
+                            filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
 
                         )
                     }
@@ -239,7 +244,9 @@ fun BottomModalContent(
     Log.d("LazyColumnFilter","${filteredChatList.size}")
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(20.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
     ){
         items(filteredChatList){
             Text(it,modifier=Modifier.fillMaxWidth())
@@ -614,6 +621,8 @@ fun TextChat(
     modStatus:Boolean?,
     bottomModalState: ModalBottomSheetState,
     mostRecentChats:(String) -> Unit,
+    filteredChatList:List<String>,
+    filterMethod:(String,String) ->Unit
 
 ){
 
@@ -692,10 +701,11 @@ fun TextChat(
         EnterChat(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(5.dp)
                 .fillMaxWidth(),
             chat = {text -> sendMessageToWebSocket(text)},
-            modStatus = modStatus
+            modStatus = modStatus,
+            filteredChatList = filteredChatList,
+            filterMethod ={username,newText -> filterMethod(username,newText)}
         )
         SettingsTab(showModal = {coroutineScope.launch { drawerState.open() }})
 
@@ -731,35 +741,58 @@ fun SettingsTab(
 fun EnterChat(
     modifier: Modifier,
     chat: (String) -> Unit,
-    modStatus:Boolean?
+    modStatus:Boolean?,
+    filteredChatList: List<String>,
+    filterMethod:(String,String) ->Unit
 ){
         var text by remember { mutableStateOf("") }
 
-    Row(modifier, verticalAlignment = Alignment.CenterVertically){
+    Column(modifier = modifier.background(Color.Black)){
+            LazyRow(modifier = Modifier.padding(vertical = 10.dp)){
 
-        if(modStatus != null && modStatus == true){
-            AsyncImage(
-                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                contentDescription = "Moderator badge"
+                items(filteredChatList){
+                    Text(it,modifier=Modifier.padding(5.dp),color = Color.White)
+                }
+        }
+
+
+        Row( verticalAlignment = Alignment.CenterVertically){
+
+            if(modStatus != null && modStatus == true){
+                AsyncImage(
+                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                    contentDescription = "Moderator badge"
+                )
+            }
+            TextField(
+                modifier = Modifier.weight(2f),
+                value = text,
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { newText ->
+                    filterMethod("username",newText)
+                    text = newText
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Blue,
+                    cursorColor = Color.Black,
+                    disabledLabelColor = Color.Blue,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+            )
+
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription ="Send chat",
+                modifier = Modifier
+                    .size(35.dp)
+                    .clickable { chat(text) }
+                    .padding(start = 5.dp),
+                tint = Color.White
             )
         }
-        TextField(
-            modifier = Modifier.weight(2f),
-            value = text,
-            onValueChange = { newText ->
-                text = newText
-            }
-        )
-
-        Icon(
-            imageVector = Icons.Default.ArrowForward,
-            contentDescription ="Send chat",
-            modifier = Modifier
-                .size(35.dp)
-                .clickable { chat(text) }
-                .padding(start = 5.dp)
-        )
     }
+
         
 }
 
