@@ -110,7 +110,8 @@ fun StreamView(
                 sheetState = bottomModalState,
                 sheetContent = {
                     BottomModalContent(
-                        filteredChatList = filteredChat
+                        filteredChatList = filteredChat,
+                        clickedUsername = streamViewModel.clickedUsername.value
                     )
 
                 }
@@ -162,7 +163,8 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             textFieldValue = streamViewModel.textFieldValue,
-                            addChatter = {username -> streamViewModel.addChatter(username)}
+                            addChatter = {username -> streamViewModel.addChatter(username)},
+                            updateClickedUser = {username -> streamViewModel.updateClickedChat(username)}
 
                         )
                     }
@@ -204,7 +206,8 @@ fun StreamView(
 
 @Composable
 fun BottomModalContent(
-    filteredChatList:List<String>
+    filteredChatList:List<String>,
+    clickedUsername:String
 ){
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -223,7 +226,7 @@ fun BottomModalContent(
                         .size(25.dp),
                     tint = Color.Red
                 )
-                Text("Username")
+                Text(clickedUsername)
             }
 
             Button(onClick = { /*TODO*/ }) {
@@ -632,7 +635,8 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     textFieldValue: MutableState<TextFieldValue>,
-    addChatter:(String) -> Unit
+    addChatter:(String) -> Unit,
+    updateClickedUser:(String) -> Unit
 
 ){
 
@@ -666,6 +670,7 @@ fun TextChat(
                                     .padding(15.dp)
                                     .clickable {
                                         mostRecentChats(twitchUser.displayName.toString())
+                                        updateClickedUser(twitchUser.displayName.toString())
                                         coroutineScope.launch {
                                             bottomModalState.show()
                                         }
