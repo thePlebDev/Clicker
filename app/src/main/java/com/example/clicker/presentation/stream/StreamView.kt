@@ -161,7 +161,8 @@ fun StreamView(
                             filteredChatList = filteredChat,
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
-                            textFieldValue = streamViewModel.textFieldValue
+                            textFieldValue = streamViewModel.textFieldValue,
+                            addChatter = {username -> streamViewModel.addChatter(username)}
 
                         )
                     }
@@ -630,7 +631,8 @@ fun TextChat(
     filteredChatList:List<String>,
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
-    textFieldValue: MutableState<TextFieldValue>
+    textFieldValue: MutableState<TextFieldValue>,
+    addChatter:(String) -> Unit
 
 ){
 
@@ -653,9 +655,11 @@ fun TextChat(
             }
             items(twitchUserChat){twitchUser ->
 
+
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
                         if(twitchUser.messageType == MessageType.USER){
+                            addChatter(twitchUser.displayName!!)
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
