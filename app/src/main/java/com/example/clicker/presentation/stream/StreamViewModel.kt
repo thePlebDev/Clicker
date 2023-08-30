@@ -5,6 +5,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 import javax.inject.Inject
 
 data class StreamUIState(
@@ -65,6 +69,14 @@ class StreamViewModel @Inject constructor(
 
     private var currentUsername:String = ""
 
+    val textFieldValue = mutableStateOf(
+            TextFieldValue(
+                text = "",
+                selection = TextRange(0)
+            )
+        )
+
+
     val testingThings = webSocket.loggedInUserUiState
 
     var filteredChatList = mutableStateListOf<String>(
@@ -81,6 +93,7 @@ class StreamViewModel @Inject constructor(
 
     var atIndex:Int? = null
     fun filterChatters(username:String,text:String){
+        Log.d("mostRecentChats",text)
         if(!text.isBlank()){
              //TODO: MAKE THIS A GLOBAL VARIABLE
             val lastCharacter = text[text.length - 1].toString()
@@ -99,7 +112,7 @@ class StreamViewModel @Inject constructor(
 
                 val substring = text.subSequence(atIndex!!,text.lastIndex +1)
 
-                Log.d("mostRecentChats",substring.toString())
+
 
                 val newList = mutableStateListOf<String>()
                 newList.addAll(allChatters.filter { it.contains(substring) })
@@ -113,6 +126,24 @@ class StreamViewModel @Inject constructor(
         }
 
 
+
+    }
+
+    fun autoTextChange(fullText:String,clickedText:String):String{
+        val pattern = Pattern.compile("\\s|@")
+        val pattern2 = Regex("@(\\s)|@")
+        val lastFind = pattern2.findAll(fullText).last()
+
+        val foundOne = lastFind.value
+        val range = lastFind.range
+
+
+
+        val newerString = fullText.removeRange(range)
+        Log.d("FOUNDLASTONE","$newerString")
+        val newString =newerString + "@$clickedText"
+
+        return newString
 
     }
 

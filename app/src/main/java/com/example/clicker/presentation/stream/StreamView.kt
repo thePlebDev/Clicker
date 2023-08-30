@@ -74,6 +74,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
@@ -156,6 +160,8 @@ fun StreamView(
                             mostRecentChats = {},
                             filteredChatList = filteredChat,
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
+                            clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
+                            textFieldValue = streamViewModel.textFieldValue
 
                         )
                     }
@@ -622,7 +628,9 @@ fun TextChat(
     bottomModalState: ModalBottomSheetState,
     mostRecentChats:(String) -> Unit,
     filteredChatList:List<String>,
-    filterMethod:(String,String) ->Unit
+    filterMethod:(String,String) ->Unit,
+    clickedAutoCompleteText:(String,String) -> String,
+    textFieldValue: MutableState<TextFieldValue>
 
 ){
 
@@ -705,7 +713,9 @@ fun TextChat(
             chat = {text -> sendMessageToWebSocket(text)},
             modStatus = modStatus,
             filteredChatList = filteredChatList,
-            filterMethod ={username,newText -> filterMethod(username,newText)}
+            filterMethod ={username,newText -> filterMethod(username,newText)},
+            clickedAutoCompleteText ={fullText,clickedText -> clickedAutoCompleteText(fullText,clickedText) },
+            textFieldValue = textFieldValue
         )
         SettingsTab(showModal = {coroutineScope.launch { drawerState.open() }})
 
@@ -743,15 +753,32 @@ fun EnterChat(
     chat: (String) -> Unit,
     modStatus:Boolean?,
     filteredChatList: List<String>,
-    filterMethod:(String,String) ->Unit
+    filterMethod:(String,String) ->Unit,
+    clickedAutoCompleteText:(String,String) -> String,
+    textFieldValue: MutableState<TextFieldValue>
 ){
-        var text by remember { mutableStateOf("") }
+        //todo: I think we can move this to the viewModel
+
+
 
     Column(modifier = modifier.background(Color.Black)){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)){
 
                 items(filteredChatList){
-                    Text(it,modifier=Modifier.padding(5.dp),color = Color.White)
+                    Text(
+                        it,
+                        modifier=Modifier
+                            .padding(5.dp)
+                            .clickable{
+
+                                textFieldValue.value = TextFieldValue(
+                                    text = clickedAutoCompleteText(textFieldValue.value.text, it),
+                                    selection = TextRange((textFieldValue.value.text + "$it ").length)
+                                )
+
+                            },
+                        color = Color.White
+                    )
                 }
         }
 
@@ -766,11 +793,15 @@ fun EnterChat(
             }
             TextField(
                 modifier = Modifier.weight(2f),
-                value = text,
+                value = textFieldValue.value,
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
-                    filterMethod("username",newText)
-                    text = newText
+                    filterMethod("username",newText.text)
+                    textFieldValue.value = TextFieldValue(
+                        text = newText.text,
+                        selection = TextRange(newText.text.length)
+                    )
+                    //text = newText
                 },
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.Blue,
@@ -786,7 +817,7 @@ fun EnterChat(
                 contentDescription ="Send chat",
                 modifier = Modifier
                     .size(35.dp)
-                    .clickable { chat(text) }
+                    .clickable { chat(textFieldValue.value.text ) }
                     .padding(start = 5.dp),
                 tint = Color.White
             )
