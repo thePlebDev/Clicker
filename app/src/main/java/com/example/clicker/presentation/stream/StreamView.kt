@@ -113,7 +113,9 @@ fun StreamView(
                     BottomModalContent(
                         //TODO: this should 100% not be filteredChat. Need to create new variable
                         clickedUsernameChats = clickedUsernameChats,
-                        clickedUsername = streamViewModel.clickedUsername.value
+                        clickedUsername = streamViewModel.clickedUsername.value,
+                        bottomModalState = bottomModalState,
+                        textFieldValue = streamViewModel.textFieldValue
                     )
 
                 }
@@ -164,7 +166,8 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                            updateClickedUser = {username -> streamViewModel.updateClickedChat(username)}
+                            updateClickedUser = {username -> streamViewModel.updateClickedChat(username)},
+                            textFieldValue = streamViewModel.textFieldValue
 
                         )
                     }
@@ -204,11 +207,15 @@ fun StreamView(
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BottomModalContent(
     clickedUsernameChats:List<String>,
-    clickedUsername:String
+    clickedUsername:String,
+    bottomModalState: ModalBottomSheetState,
+    textFieldValue: MutableState<TextFieldValue>
 ){
+    val scope = rememberCoroutineScope()
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(20.dp)) {
@@ -229,7 +236,16 @@ fun BottomModalContent(
                 Text(clickedUsername)
             }
 
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = {
+                Log.d("THEUSERNAMETHATWASCLICKED",clickedUsername)
+                scope.launch {
+                     textFieldValue.value = TextFieldValue(
+                        text = "@$clickedUsername ",
+                        selection = TextRange("@$clickedUsername ".length)
+                    )
+                    bottomModalState.hide()
+                }
+            }) {
                 Text("Reply")
             }
 
@@ -256,12 +272,16 @@ fun BottomModalContent(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
+            .height(100.dp)
+            .background(Color.Blue)
     ){
         items(clickedUsernameChats){
             Text(it,modifier=Modifier.fillMaxWidth())
         }
 
     }
+
+
 
 }
 
@@ -633,7 +653,8 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     addChatter:(String,String) -> Unit,
-    updateClickedUser:(String) -> Unit
+    updateClickedUser:(String) -> Unit,
+    textFieldValue: MutableState<TextFieldValue>
 
 ){
 
@@ -711,14 +732,7 @@ fun TextChat(
             }
         }
 
-        val textFieldValue = remember { //TODO: THIS IS HERE TO AVOID RECOMPOSITION ON EVER TYPE
-            mutableStateOf(
-                TextFieldValue(
-                    text = "",
-                    selection = TextRange(0)
-                )
-            )
-        }
+
 
         EnterChat(
             modifier = Modifier
