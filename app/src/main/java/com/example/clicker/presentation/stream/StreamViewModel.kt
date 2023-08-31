@@ -95,27 +95,29 @@ class StreamViewModel @Inject constructor(
 
 
 
-    fun addChatter(chattingUser: ChattingUser){
-        if(!allChatters.contains(chattingUser.username)){
-            allChatters.add(chattingUser.username)
+    fun addChatter(username:String, message:String){
+        if(!allChatters.contains(username)){
+            allChatters.add(username)
         }
-        updateClickedUsernameChats(chattingUser)
+        //updateClickedUsernameChats(username,message)
 
     }
     fun updateClickedChat(clickedUsername:String){
         _clickedUsername.value = clickedUsername
         clickedUsernameChats.clear()
-//        val messages = listChats.filter { it.displayName == currentUsername }.map { it.userType!! }
-//        clickedUsernameChats.addAll(messages)
+        val messages = listChats.filter { it.displayName == clickedUsername }.map { it.userType!! }
+
+        clickedUsernameChats.addAll(messages)
 
     }
-    private fun updateClickedUsernameChats(chattingUser: ChattingUser){
+    private fun updateClickedUsernameChats(username:String, message:String){
+        //clickedUsernameChats.clear()
+        if(username == _clickedUsername.value){
+            Log.d("mostRecentChats",message)
 
-//        if(chattingUser.username == currentUsername){
-//            Log.d("updateClickedUsernameChats",chattingUser.message)
-//            clickedUsernameChats.clear()
-//            clickedUsernameChats.add(chattingUser.message)
-//        }
+
+            //clickedUsernameChats.add(message)
+        }
     }
 
 

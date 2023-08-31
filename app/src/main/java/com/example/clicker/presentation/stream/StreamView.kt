@@ -160,12 +160,10 @@ fun StreamView(
                             drawerState = drawerState,
                             modStatus = modStatus,
                             bottomModalState = bottomModalState,
-                            mostRecentChats = {},
                             filteredChatList = filteredChat,
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
-                            textFieldValue = streamViewModel.textFieldValue,
-                            addChatter = {ChattingUser -> streamViewModel.addChatter(ChattingUser)},
+                            addChatter = {username,message -> streamViewModel.addChatter(username,message)},
                             updateClickedUser = {username -> streamViewModel.updateClickedChat(username)}
 
                         )
@@ -631,12 +629,10 @@ fun TextChat(
     drawerState: DrawerState,
     modStatus:Boolean?,
     bottomModalState: ModalBottomSheetState,
-    mostRecentChats:(String) -> Unit,
     filteredChatList:List<String>,
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
-    textFieldValue: MutableState<TextFieldValue>,
-    addChatter:(ChattingUser) -> Unit,
+    addChatter:(String,String) -> Unit,
     updateClickedUser:(String) -> Unit
 
 ){
@@ -664,18 +660,12 @@ fun TextChat(
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
                         if(twitchUser.messageType == MessageType.USER){
-                            addChatter(
-                                ChattingUser(
-                                    username = twitchUser.displayName!!,
-                                    message = twitchUser.userType!!
-                                )
-                            )
+                            addChatter(twitchUser.displayName!!, twitchUser.userType!!)
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(15.dp)
                                     .clickable {
-                                        mostRecentChats(twitchUser.displayName.toString())
                                         updateClickedUser(twitchUser.displayName.toString())
                                         coroutineScope.launch {
                                             bottomModalState.show()
@@ -721,6 +711,14 @@ fun TextChat(
             }
         }
 
+        val textFieldValue = remember { //TODO: THIS IS HERE TO AVOID RECOMPOSITION ON EVER TYPE
+            mutableStateOf(
+                TextFieldValue(
+                    text = "",
+                    selection = TextRange(0)
+                )
+            )
+        }
 
         EnterChat(
             modifier = Modifier
@@ -774,8 +772,6 @@ fun EnterChat(
     textFieldValue: MutableState<TextFieldValue>
 ){
         //todo: I think we can move this to the viewModel
-
-
 
     Column(modifier = modifier.background(Color.Black)){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)){
