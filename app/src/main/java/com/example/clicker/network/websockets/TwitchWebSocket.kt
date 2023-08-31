@@ -163,6 +163,7 @@ class TwitchWebSocket @Inject constructor(
     fun openChat(webSocket: WebSocket) = GlobalScope.launch{
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
         tokenDataStore.getOAuthToken().collect{oAuthToken ->
+            Log.d("NICKUSERNAME","state --> $loggedInUsername")
             Log.d("OAuthtokenStoof",oAuthToken)
             webSocket.send("PASS oauth:$oAuthToken");
             webSocket.send("NICK $loggedInUsername");
@@ -178,7 +179,7 @@ class TwitchWebSocket @Inject constructor(
          Log.d("onMessageSocket","state --> $text")
 
          if(text.contains(" USERSTATE ")){
-             Log.d("loggedInDataOnMessage","USERSTATE --> $text")
+             Log.d("loggedInDataOnMessage","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
              _loggedInUserUiState.tryEmit(
                  getLoggedInUserInfo(text)
              )
@@ -362,10 +363,10 @@ fun stringToBoolean( subOrModText:String):Boolean{
 fun getValueFromInput(input: String, key: String): Boolean? {
     val pattern = "$key=([^;:\\s]+)".toRegex()
     val match = pattern.find(input)
-    val returnedValue = match?.groupValues?.get(1) ?: return null
-        if( returnedValue == "-1"){
-        return false
-    }
+        val returnedValue = match?.groupValues?.get(1) ?: return null
+            if( returnedValue == "-1"){
+            return false
+        }
     if(key == "followers-only" && returnedValue == "0"){
         return true
     }

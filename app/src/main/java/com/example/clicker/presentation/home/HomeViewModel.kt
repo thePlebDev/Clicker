@@ -122,6 +122,7 @@ class HomeViewModel @Inject constructor(
                     clientId = user.clientId,
                     userId = user.userId
                 )
+               // tokenDataStore.setUsername()
                 getLiveStreams(validatedUser = user,mainState.oAuthToken!!)
             }
         }
@@ -214,6 +215,7 @@ class HomeViewModel @Inject constructor(
                             authUser = response.data
                         )
                     )
+                    tokenDataStore.setUsername(response.data.login)
                 }
                 is Response.Failure ->{
 
