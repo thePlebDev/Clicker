@@ -96,6 +96,7 @@ fun StreamView(
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
     val filteredChat = streamViewModel.filteredChatList
+    val clickedUsernameChats = streamViewModel.clickedUsernameChats
 
     // val modStatus = false
 
@@ -110,7 +111,8 @@ fun StreamView(
                 sheetState = bottomModalState,
                 sheetContent = {
                     BottomModalContent(
-                        filteredChatList = filteredChat,
+                        //TODO: this should 100% not be filteredChat. Need to create new variable
+                        clickedUsernameChats = clickedUsernameChats,
                         clickedUsername = streamViewModel.clickedUsername.value
                     )
 
@@ -163,7 +165,7 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             textFieldValue = streamViewModel.textFieldValue,
-                            addChatter = {username -> streamViewModel.addChatter(username)},
+                            addChatter = {ChattingUser -> streamViewModel.addChatter(ChattingUser)},
                             updateClickedUser = {username -> streamViewModel.updateClickedChat(username)}
 
                         )
@@ -206,7 +208,7 @@ fun StreamView(
 
 @Composable
 fun BottomModalContent(
-    filteredChatList:List<String>,
+    clickedUsernameChats:List<String>,
     clickedUsername:String
 ){
     Column(modifier = Modifier
@@ -251,14 +253,13 @@ fun BottomModalContent(
     }//END OF THE COLUMN
 
     Spacer(modifier = Modifier.height(10.dp))
-    Log.d("LazyColumnFilter","${filteredChatList.size}")
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ){
-        items(filteredChatList){
+        items(clickedUsernameChats){
             Text(it,modifier=Modifier.fillMaxWidth())
         }
 
@@ -635,7 +636,7 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     textFieldValue: MutableState<TextFieldValue>,
-    addChatter:(String) -> Unit,
+    addChatter:(ChattingUser) -> Unit,
     updateClickedUser:(String) -> Unit
 
 ){
@@ -646,7 +647,7 @@ fun TextChat(
 
     Box(){
         LazyColumn(modifier = Modifier
-            .padding(bottom = 60.dp)
+            .padding(bottom = 70.dp)
             .fillMaxSize()
             .background(Color.Red),
             state = lazyColumnListState
@@ -663,7 +664,12 @@ fun TextChat(
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
                         if(twitchUser.messageType == MessageType.USER){
-                            addChatter(twitchUser.displayName!!)
+                            addChatter(
+                                ChattingUser(
+                                    username = twitchUser.displayName!!,
+                                    message = twitchUser.userType!!
+                                )
+                            )
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -714,6 +720,7 @@ fun TextChat(
 
             }
         }
+
 
         EnterChat(
             modifier = Modifier
@@ -776,9 +783,9 @@ fun EnterChat(
                 items(filteredChatList){
                     Text(
                         it,
-                        modifier=Modifier
+                        modifier= Modifier
                             .padding(5.dp)
-                            .clickable{
+                            .clickable {
 
                                 textFieldValue.value = TextFieldValue(
                                     text = clickedAutoCompleteText(textFieldValue.value.text, it),
@@ -826,7 +833,7 @@ fun EnterChat(
                 contentDescription ="Send chat",
                 modifier = Modifier
                     .size(35.dp)
-                    .clickable { chat(textFieldValue.value.text ) }
+                    .clickable { chat(textFieldValue.value.text) }
                     .padding(start = 5.dp),
                 tint = Color.White
             )

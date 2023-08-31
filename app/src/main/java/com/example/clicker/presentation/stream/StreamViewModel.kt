@@ -31,6 +31,10 @@ import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 import javax.inject.Inject
 
+data class ChattingUser(
+    val username:String,
+    val message:String
+)
 data class StreamUIState(
     val chatSettings: Response<ChatSettingsData> = Response.Loading,
     val loggedInUserData: LoggedInUserData? = null,
@@ -61,7 +65,7 @@ class StreamViewModel @Inject constructor(
     val clientId:State<String?> = _clientId
 
     val listChats = mutableStateListOf<TwitchUserData>()
-    val listChatsFlow = MutableStateFlow(listChats)
+
 
     private val _clickedUsername:MutableState<String> = mutableStateOf("")
     val clickedUsername:State<String> = _clickedUsername
@@ -85,18 +89,33 @@ class StreamViewModel @Inject constructor(
     var filteredChatList = mutableStateListOf<String>(
 
     )
+    val clickedUsernameChats = mutableStateListOf<String>()
 
-    val map = hashMapOf<String, String>()
     private val allChatters = mutableStateListOf<String>()
 
-    fun addChatter(chatter:String){
-        if(!allChatters.contains(chatter)){
-            allChatters.add(chatter)
+
+
+    fun addChatter(chattingUser: ChattingUser){
+        if(!allChatters.contains(chattingUser.username)){
+            allChatters.add(chattingUser.username)
         }
+        updateClickedUsernameChats(chattingUser)
 
     }
     fun updateClickedChat(clickedUsername:String){
         _clickedUsername.value = clickedUsername
+        clickedUsernameChats.clear()
+//        val messages = listChats.filter { it.displayName == currentUsername }.map { it.userType!! }
+//        clickedUsernameChats.addAll(messages)
+
+    }
+    private fun updateClickedUsernameChats(chattingUser: ChattingUser){
+
+//        if(chattingUser.username == currentUsername){
+//            Log.d("updateClickedUsernameChats",chattingUser.message)
+//            clickedUsernameChats.clear()
+//            clickedUsernameChats.add(chattingUser.message)
+//        }
     }
 
 
@@ -240,7 +259,7 @@ class StreamViewModel @Inject constructor(
         tokenDataStore.getUsername().collect{username ->
             if(username.isNotEmpty()){
                 currentUsername = username
-//                Log.d("startWebSocket","username --->$it")
+                Log.d("startWebSocket","username --->$username")
                 webSocket.run(channelName,username)
             }
         }
@@ -249,9 +268,7 @@ class StreamViewModel @Inject constructor(
     }
 
 
-    fun addItem(chatText:String){
-       // listChats.add(chatText)
-    }
+
     fun sendMessage(chatMessage:String){
         val messageResult = webSocket.sendMessage(chatMessage)
         listChats.add(
