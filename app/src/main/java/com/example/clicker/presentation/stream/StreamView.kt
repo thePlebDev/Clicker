@@ -51,10 +51,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
@@ -64,6 +67,8 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Switch
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
@@ -79,6 +84,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.LoggedInUserData
@@ -216,6 +222,23 @@ fun BottomModalContent(
     textFieldValue: MutableState<TextFieldValue>
 ){
     val scope = rememberCoroutineScope()
+    val openTimeoutDialog = remember { mutableStateOf(false) }
+    val openBanDialog = remember { mutableStateOf(false) }
+
+    if(openTimeoutDialog.value){
+        TimeoutDialog(
+            onDismissRequest = {openTimeoutDialog.value = false},
+            username = clickedUsername
+        )
+    }
+    if(openBanDialog.value){
+        BanDialog(
+            onDismissRequest = {openBanDialog.value = false},
+            username = clickedUsername
+        )
+    }
+
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(20.dp)) {
@@ -255,10 +278,16 @@ fun BottomModalContent(
             horizontalArrangement = Arrangement.SpaceBetween){
             Text("Recent Messages")
             Row(){
-                Button(onClick ={},modifier= Modifier.padding(end = 20.dp)) {
+                Button(
+                    onClick ={
+                        openTimeoutDialog.value = true
+                },
+                    modifier= Modifier.padding(end = 20.dp)) {
                     Text("Timeout",)
                 }
-                Button(onClick ={}) {
+                Button(onClick ={
+                    openBanDialog.value = true
+                }) {
                     Text("Ban")
                 }
             }
@@ -853,3 +882,152 @@ fun EnterChat(
         
 }
 
+
+@Composable
+fun TimeoutDialog(
+    onDismissRequest: () -> Unit,
+    username:String
+) {
+    var isSelected by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                ,
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(modifier = Modifier
+                .padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
+                ){
+                    Text("Timeout: ",fontSize = 22.sp)
+                    Text(username,fontSize = 22.sp)
+                }
+                Divider(color = Color.Red, thickness = 1.dp,modifier = Modifier.fillMaxWidth())
+                Text("Duration :")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly){
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("10sec")
+                    }
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("1min")
+                    }
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("10min")
+                    }
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("30min")
+                    }
+                }
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Reason") }
+                )
+                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                    Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
+                        Text("Cancel")
+                    }
+                    Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                        Text("Timeout")
+                    }
+                }
+
+
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun BanDialog(
+    onDismissRequest: () -> Unit,
+    username:String
+) {
+    var isSelected by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+            ,
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(modifier = Modifier
+                .padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
+                ){
+                    Text("Ban: ",fontSize = 22.sp)
+                    Text(username,fontSize = 22.sp)
+                }
+                Divider(color = Color.Red, thickness = 1.dp,modifier = Modifier.fillMaxWidth())
+                Text("Duration :")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly){
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("1 week")
+                    }
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("2 weeks")
+                    }
+                    Column {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { isSelected = !isSelected }
+                        )
+                        Text("Indefinitely")
+                    }
+                }
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Reason") }
+                )
+                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                    Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
+                        Text("Cancel")
+                    }
+                    Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                        Text("Ban")
+                    }
+                }
+
+
+            }
+
+
+        }
+    }
+}
