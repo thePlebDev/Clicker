@@ -98,6 +98,7 @@ fun StreamView(
     streamViewModel: StreamViewModel
 ) {
 
+
     val twitchUserChat = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val chatSettingData = streamViewModel.state.value.chatSettings
@@ -719,6 +720,8 @@ fun TextChat(
 
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
 
 
     Box(){
@@ -741,6 +744,11 @@ fun TextChat(
                     if(twitchUserChat.isNotEmpty()){
                         if(twitchUser.messageType == MessageType.USER){
                             addChatter(twitchUser.displayName!!, twitchUser.userType!!)
+
+
+                            if(twitchUser.mod == "1"){
+                                Log.d("CHATTERSUB", "${twitchUser.displayName}")
+                            }
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -754,8 +762,23 @@ fun TextChat(
                                 elevation = 10.dp
                             ){
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.Top
                                 ){
+                                    if(twitchUser.subscriber == true){
+                                        AsyncImage(
+                                            model = subBadge,
+                                            contentDescription = "Subscriber badge",
+                                            modifier = Modifier.padding(5.dp)
+                                        )
+                                    }
+                                    if(twitchUser.mod == "1"){
+                                        AsyncImage(
+                                            model = modBadge,
+                                            contentDescription = "Moderator badge",
+                                            modifier = Modifier.padding(5.dp)
+                                        )
+                                    }
+
 
                                     Text(buildAnnotatedString {
                                         withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
