@@ -79,6 +79,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
@@ -121,7 +122,16 @@ fun StreamView(
                         clickedUsernameChats = clickedUsernameChats,
                         clickedUsername = streamViewModel.clickedUsername.value,
                         bottomModalState = bottomModalState,
-                        textFieldValue = streamViewModel.textFieldValue
+                        textFieldValue = streamViewModel.textFieldValue,
+
+                        timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                        timeoutReason = streamViewModel.state.value.timeoutReason,
+                        banDuration = streamViewModel.state.value.banDuration,
+                        banReason = streamViewModel.state.value.banReason,
+                        changeTimeoutReason = {reason -> streamViewModel.changeTimeoutReason(reason)},
+                        changeTimeoutDuration = {duration -> streamViewModel.changeTimeoutDuration(duration)},
+                        changeBanDuration = {duration -> streamViewModel.changeBanDuration(duration)},
+                        changeBanReason = {reason -> streamViewModel.changeBanReason(reason)}
                     )
 
                 }
@@ -219,7 +229,18 @@ fun BottomModalContent(
     clickedUsernameChats:List<String>,
     clickedUsername:String,
     bottomModalState: ModalBottomSheetState,
-    textFieldValue: MutableState<TextFieldValue>
+    textFieldValue: MutableState<TextFieldValue>,
+
+    timeoutDuration:Int,
+    timeoutReason:String,
+    banDuration:Int,
+    banReason:String,
+
+    changeTimeoutDuration: (Int) -> Unit,
+    changeTimeoutReason: (String) -> Unit,
+
+    changeBanDuration: (Int) -> Unit,
+    changeBanReason: (String) -> Unit
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -228,13 +249,22 @@ fun BottomModalContent(
     if(openTimeoutDialog.value){
         TimeoutDialog(
             onDismissRequest = {openTimeoutDialog.value = false},
-            username = clickedUsername
+            username = clickedUsername,
+            timeoutDuration = timeoutDuration,
+            timeoutReason = timeoutReason,
+            changeTimeoutDuration = {duration -> changeTimeoutDuration(duration)},
+            changeTimeoutReason = {reason -> changeTimeoutReason(reason)}
         )
     }
     if(openBanDialog.value){
         BanDialog(
             onDismissRequest = {openBanDialog.value = false},
-            username = clickedUsername
+            username = clickedUsername,
+            banDuration = banDuration,
+            banReason = banReason,
+            changeBanDuration ={duration -> changeBanDuration(duration)},
+            changeBanReason ={reason -> changeBanReason(reason)}
+
         )
     }
 
@@ -886,15 +916,19 @@ fun EnterChat(
 @Composable
 fun TimeoutDialog(
     onDismissRequest: () -> Unit,
-    username:String
+    username:String,
+
+    timeoutDuration:Int,
+    timeoutReason:String,
+    changeTimeoutDuration:(Int) ->Unit,
+    changeTimeoutReason:(String) ->Unit,
 ) {
-    var isSelected by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+
+
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                ,
+                .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(modifier = Modifier
@@ -912,36 +946,36 @@ fun TimeoutDialog(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly){
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = timeoutDuration == 10,
+                            onClick = { changeTimeoutDuration(10) }
                         )
                         Text("10sec")
                     }
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = timeoutDuration == 60,
+                            onClick = { changeTimeoutDuration(60)  }
                         )
                         Text("1min")
                     }
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = timeoutDuration == 600,
+                            onClick = { changeTimeoutDuration(600) }
                         )
                         Text("10min")
                     }
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = timeoutDuration == 1800,
+                            onClick = { changeTimeoutDuration(1800) }
                         )
                         Text("30min")
                     }
                 }
                 OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = timeoutReason,
+                    onValueChange = { changeTimeoutReason(it) },
                     label = { Text("Reason") }
                 )
                 Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
@@ -964,10 +998,15 @@ fun TimeoutDialog(
 @Composable
 fun BanDialog(
     onDismissRequest: () -> Unit,
-    username:String
+    username:String,
+
+    banDuration:Int,
+    banReason:String,
+    changeBanDuration:(Int) ->Unit,
+    changeBanReason:(String) ->Unit,
 ) {
-    var isSelected by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+
+
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
@@ -990,29 +1029,29 @@ fun BanDialog(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly){
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = banDuration == 604800,
+                            onClick = { changeBanDuration(604800) }
                         )
                         Text("1 week")
                     }
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = banDuration == 1209600,
+                            onClick = { changeBanDuration(1209600) }
                         )
                         Text("2 weeks")
                     }
                     Column {
                         RadioButton(
-                            selected = isSelected,
-                            onClick = { isSelected = !isSelected }
+                            selected = banDuration == 0,
+                            onClick = { changeBanDuration(0) }
                         )
-                        Text("Indefinitely")
+                        Text("Permanently")
                     }
                 }
                 OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = banReason,
+                    onValueChange = { changeBanReason(it) },
                     label = { Text("Reason") }
                 )
                 Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){

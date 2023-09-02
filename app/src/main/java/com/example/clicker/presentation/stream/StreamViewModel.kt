@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -48,6 +49,12 @@ data class StreamUIState(
     val enableFollowerMode:Boolean = true,
     val enableSubscriberMode:Boolean = true,
     val enableEmoteMode:Boolean = true,
+
+    val banDuration: Int = 0,
+    val banReason:String ="",
+    val timeoutDuration: Int =10,
+    val timeoutReason:String ="",
+
 
 )
 
@@ -94,6 +101,26 @@ class StreamViewModel @Inject constructor(
     private val allChatters = mutableStateListOf<String>()
 
 
+    fun changeTimeoutDuration(duration:Int){
+        _uiState.value = _uiState.value.copy(
+            timeoutDuration = duration
+        )
+    }
+    fun changeTimeoutReason(reason:String){
+        _uiState.value = _uiState.value.copy(
+            timeoutReason = reason
+        )
+    }
+    fun changeBanDuration(duration:Int){
+        _uiState.value = _uiState.value.copy(
+            banDuration = duration
+        )
+    }
+    fun changeBanReason(reason:String){
+        _uiState.value = _uiState.value.copy(
+            banReason = reason
+        )
+    }
 
     fun addChatter(username:String, message:String){
         if(!allChatters.contains(username)){
