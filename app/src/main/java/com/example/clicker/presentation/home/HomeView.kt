@@ -99,6 +99,7 @@ fun HomeView(
 ){
     val hideModal = homeViewModel.state.value.hideModal
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+    val scope = rememberCoroutineScope()
 
 
 
@@ -140,7 +141,7 @@ fun HomeView(
                 topBar = {
                     CustomTopBar(
                         state = state,
-                        { index -> state = index},
+                        { index -> scope.launch {pagerState.scrollToPage(index)  } },
                         pagerState = pagerState,
                         scaffoldState = scaffoldState,
 
@@ -150,18 +151,23 @@ fun HomeView(
             ){contentPadding->
 
                     //todo: home pager page goes here
+                FilterPager(
+                    contentPadding,
+                    pagerState
+                ){
                     UrlImages(
-                        contentPadding = contentPadding,
                         urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
                                 streamerName,clientId,broadcasterId,userId -> streamViewModel.updateChannelNameAndClientIdAndUserId(
                             streamerName,clientId,broadcasterId,userId
-                            )
+                        )
                         },
                         clientId = homeViewModel.state.value.clientId,
                         userId = homeViewModel.state.value.userId
                     )
+                }
+
 
 
             }
@@ -188,6 +194,35 @@ fun HomeView(
 } // end of the box
 
 }// END OF THE HOME VIEW
+//BUILDING THE PAGER
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun FilterPager(
+    contentPadding: PaddingValues,
+    pagerState: PagerState,
+    pageOne: @Composable () -> Unit
+){
+
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.padding(contentPadding)
+
+    ) { page ->
+        // Our page content
+
+
+        when(page){
+            0 ->{
+
+                pageOne()
+            }
+            1 ->{
+
+                SecondTesting()
+            }
+        }
+    }
+}
 
 //full screen loading animation
 @Composable
@@ -320,37 +355,6 @@ fun LoadingIcon(response:Response<Boolean>?){
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun TestingPager(
-    contentPadding: PaddingValues,
-    pagerState: PagerState,
-    changeState: (Int) -> Unit,
-    pageOne: @Composable () -> Unit
-
-
-){
-    HorizontalPager(
-        beyondBoundsPageCount =1,
-        state = pagerState,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)) { page ->
-        // Our page content
-
-        when(page){
-             0 ->{
-
-                 pageOne()
-             }
-             1 ->{
-
-                 SecondTesting()
-             }
-        }
-
-    }
-}
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -364,26 +368,39 @@ fun CustomTopBar(
 ){
 
     val scope = rememberCoroutineScope()
-
-
+   // var state by remember { mutableStateOf(0) }
+    Log.d("pagerStateCurrentPage",pagerState.currentPage.toString())
 
     val titles = listOf("Live", "Mods")// I WAS USING A TABBED ROW FOR THIS
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colors.primary)
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Icon(
-            Icons.Filled.Menu,
-            "menu",
-            modifier = Modifier
-                .size(35.dp)
-                .clickable { scope.launch { scaffoldState.drawerState.open() } },
-            tint = Color.White)
-        Text("Live followed channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colors.primary)
+        .padding(vertical = 10.dp)){
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Icon(
+                Icons.Filled.Menu,
+                "menu",
+                modifier = Modifier
+                    .size(35.dp)
+                    .clickable { scope.launch { scaffoldState.drawerState.open() } },
+                tint = Color.White)
+            Text("Live followed channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
+        }
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            titles.forEachIndexed { index, title ->
+                Tab(
+                    text = { Text(title) },
+                    selected = pagerState.currentPage == index,
+                    onClick = { changeState(index) }
+                )
+            }
+        }
+
+
     }
+
 
 }
 
@@ -425,13 +442,30 @@ fun ScaffoldDrawer(
 
 
 
-@Composable
-fun HomeTesting(){
-    Text("HOME", fontSize = 30.sp)
-}
+
 @Composable
 fun SecondTesting(){
-    Text("SECOND", fontSize = 30.sp)
+    Row(){
+        Box(modifier = Modifier.width(120.dp).height(80.dp).background(Color.Red)){
+
+        }
+        Column(modifier = Modifier.padding(start = 10.dp)) {
+            Text("CohhCarnage", fontSize = 20.sp)
+            Text(
+                "streamItem.streamTitle",
+                fontSize = 15.sp,
+                modifier = Modifier.alpha(0.5f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                "streamItem.gameTitle",
+                fontSize = 15.sp,
+                modifier = Modifier.alpha(0.5f)
+            )
+        }
+    }
+
 
 }
 
@@ -440,7 +474,7 @@ fun SecondTesting(){
 
 @Composable
 fun UrlImages(
-    contentPadding: PaddingValues,
+
     urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String,String) -> Unit,
@@ -459,8 +493,6 @@ fun UrlImages(
         Log.d("UrlImagesListSize", urlList.size.toString())
         LazyColumn(
             modifier = Modifier
-
-                .padding(contentPadding)
         ) {
             items(urlList) { streamItem ->
                 Log.d("urlListImageUrl", streamItem.url)
