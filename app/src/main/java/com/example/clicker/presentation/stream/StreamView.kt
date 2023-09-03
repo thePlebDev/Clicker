@@ -114,7 +114,6 @@ fun StreamView(
     val filteredChat = streamViewModel.filteredChatList
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
 
-    // val modStatus = false
 
 
             val bottomModalState = rememberModalBottomSheetState(
