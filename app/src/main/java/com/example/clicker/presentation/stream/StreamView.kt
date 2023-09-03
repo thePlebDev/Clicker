@@ -47,12 +47,16 @@ import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -72,15 +76,19 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.Switch
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -408,22 +416,10 @@ fun ChatSettingsDataUI(
 
 ){
 
-//    ChatSettings(
-//        chatSettingsData =chatSettingsData,
-//        showChatSettingAlert =showChatSettingAlert,
-//        slowModeToggle = {chatSettingsInfo -> slowModeToggle(chatSettingsInfo)  },
-//        followerModeToggle = {chatSettingsInfo -> followerModeToggle(chatSettingsInfo)  },
-//        subscriberModeToggle = {chatSettingsInfo -> subscriberModeToggle(chatSettingsInfo)  },
-//        emoteModeToggle = {chatSettingsInfo -> emoteModeToggle(chatSettingsInfo)  },
-//
-//        enableSlowModeSwitch =enableSlowModeSwitch,
-//        enableFollowerModeSwitch =enableFollowerModeSwitch,
-//        enableSubscriberSwitch =enableSubscriberSwitch,
-//        enableEmoteModeSwitch =enableEmoteModeSwitch
-//    )
 
-    var tabIndex by remember { mutableStateOf(0) }
-    val titles = listOf("Settings", "Whispers", "Bonker")
+
+    var tabIndex by remember { mutableIntStateOf(0) }
+    val titles = listOf("Settings", "Bonker")
     Column {
         TabRow(selectedTabIndex = tabIndex) {
             titles.forEachIndexed { index, title ->
@@ -436,26 +432,28 @@ fun ChatSettingsDataUI(
         }
         when (tabIndex) {
             0 -> {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    text = "ROOM SETTINGS ",
-                    style = MaterialTheme.typography.body1
+                ChatSettings(
+                    chatSettingsData =chatSettingsData,
+                    showChatSettingAlert =showChatSettingAlert,
+                    slowModeToggle = {chatSettingsInfo -> slowModeToggle(chatSettingsInfo)  },
+                    followerModeToggle = {chatSettingsInfo -> followerModeToggle(chatSettingsInfo)  },
+                    subscriberModeToggle = {chatSettingsInfo -> subscriberModeToggle(chatSettingsInfo)  },
+                    emoteModeToggle = {chatSettingsInfo -> emoteModeToggle(chatSettingsInfo)  },
+
+                    enableSlowModeSwitch =enableSlowModeSwitch,
+                    enableFollowerModeSwitch =enableFollowerModeSwitch,
+                    enableSubscriberSwitch =enableSubscriberSwitch,
+                    enableEmoteModeSwitch =enableEmoteModeSwitch
                 )
             }
             1 -> {
                 Text(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = "WHISPERS",
+                text = "Bonker Settings",
                 style = MaterialTheme.typography.body1
             )
             }
-            2 -> {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    text = "Bonker",
-                    style = MaterialTheme.typography.body1
-                )
-            }
+
         }
 
     }
@@ -699,6 +697,7 @@ fun MessageAlertText(){
     }
 }
 
+fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("SuspiciousIndentation")
@@ -720,25 +719,70 @@ fun TextChat(
 
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
-    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    var autoscroll by remember { mutableStateOf(true) }
+
+    // Add a gesture listener to detect upward scroll
+
+    val testingStuff = lazyColumnListState.interactionSource
+    LaunchedEffect(testingStuff){
+        testingStuff.interactions.collect{interaction ->
+            when(interaction){
+                is DragInteraction.Start -> {
+                    autoscroll = false
+                }
+                is PressInteraction.Press ->{
+                    autoscroll = false
+                }
+            }
+        }
+    }
+    // observer when reached end of list
+    val endOfListReached by remember {
+        derivedStateOf {
+            lazyColumnListState.isScrolledToEnd()
+        }
+    }
+
+    // act when end of list reached
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if(endOfListReached){
+            autoscroll = true
+        }
+    }
 
 
-    Box(){
-        LazyColumn(modifier = Modifier
-            .padding(bottom = 70.dp)
-            .fillMaxSize()
-            .background(Color.Red),
-            state = lazyColumnListState
+
+    Box(
+        modifier = Modifier
+    ){
+        LazyColumn(
+            state = lazyColumnListState,
+            modifier = Modifier
+                .padding(bottom = 70.dp)
+                .fillMaxSize()
+                .background(Color.Red)
+               ,
 
         ){
+
+
+
+
             coroutineScope.launch {
-                if(twitchUserChat.size > 6){
+                if(autoscroll){
                     lazyColumnListState.scrollToItem(twitchUserChat.size)
                 }
             }
+
+
             items(twitchUserChat){twitchUser ->
 
+                SwipeToDeleteTextCard(
+                    twitchUser = twitchUser,
+                    bottomModalState = bottomModalState,
+                    updateClickedUser ={user -> updateClickedUser(user)}
+                )
 
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
@@ -749,50 +793,7 @@ fun TextChat(
                             if(twitchUser.mod == "1"){
                                 Log.d("CHATTERSUB", "${twitchUser.displayName}")
                             }
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(15.dp)
-                                    .clickable {
-                                        updateClickedUser(twitchUser.displayName.toString())
-                                        coroutineScope.launch {
-                                            bottomModalState.show()
-                                        }
-                                    },
-                                elevation = 10.dp
-                            ){
-                                Row(
-                                    verticalAlignment = Alignment.Top
-                                ){
-                                    if(twitchUser.subscriber == true){
-                                        AsyncImage(
-                                            model = subBadge,
-                                            contentDescription = "Subscriber badge",
-                                            modifier = Modifier.padding(5.dp)
-                                        )
-                                    }
-                                    if(twitchUser.mod == "1"){
-                                        AsyncImage(
-                                            model = modBadge,
-                                            contentDescription = "Moderator badge",
-                                            modifier = Modifier.padding(5.dp)
-                                        )
-                                    }
 
-
-                                    Text(buildAnnotatedString {
-                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                            append("${twitchUser.displayName} :")
-                                        }
-                                        append(" ${twitchUser.userType}")
-
-                                    }
-                                    )
-
-                                }
-
-
-                            }// end of the Card
                         }
                         if(twitchUser.messageType == MessageType.NOTICE){
                             Text(buildAnnotatedString {
@@ -827,31 +828,126 @@ fun TextChat(
             clickedAutoCompleteText ={fullText,clickedText -> clickedAutoCompleteText(fullText,clickedText) },
             textFieldValue = textFieldValue
         )
-        SettingsTab(showModal = {coroutineScope.launch { drawerState.open() }})
+        SettingsTab(
+            showModal = {coroutineScope.launch { drawerState.open() }},
+            scrollingPaused = !autoscroll,
+            enableAutoScroll = {autoscroll = true}
+        )
 
     }// end of the Box scope
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SwipeToDeleteTextCard(
+    twitchUser: TwitchUserData,
+    bottomModalState: ModalBottomSheetState,
+    updateClickedUser:(String) -> Unit,
+
+){
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    val coroutineScope = rememberCoroutineScope()
+    val color = Color(parseColor(twitchUser.color))
+
+
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable {
+                updateClickedUser(twitchUser.displayName.toString())
+                coroutineScope.launch {
+                    bottomModalState.show()
+                }
+            },
+        elevation = 10.dp
+    ){
+        Row(
+            verticalAlignment = Alignment.Top
+        ){
+            if(twitchUser.subscriber == true){
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = "Subscriber badge",
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
+            if(twitchUser.mod == "1"){
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = "Moderator badge",
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
+
+
+            Text(buildAnnotatedString {
+                withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                    append("${twitchUser.displayName} :")
+                }
+                append(" ${twitchUser.userType}")
+
+            }
+            )
+
+        }
+
+
+    }// end of the Card
+
 }
 
 @Composable
 fun SettingsTab(
     showModal:()->Unit,
+    scrollingPaused:Boolean,
+    enableAutoScroll:() -> Unit
 ){
     Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(275.dp)) {
-        Card(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            elevation = 10.dp
+        .fillMaxSize()
+        .padding(bottom = 77.dp)
+    ) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .align(Alignment.BottomEnd)
+            .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
         ){
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = "Send chat",
-                modifier = Modifier
-                    .size(35.dp)
-                    .clickable { showModal() },
+            if(scrollingPaused){
 
-            )
+                    Button(onClick = { enableAutoScroll() }, modifier = Modifier.padding(end = 45.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Send chat",
+                            modifier = Modifier
+                        )
+                        Text("Scroll to bottom")
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Send chat",
+                            modifier = Modifier
+                        )
+                    }
+
+            }
+
+            Card(
+                elevation = 10.dp
+            ){
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Send chat",
+                    modifier = Modifier
+                        .size(35.dp)
+                        .clickable { showModal() },
+
+                    )
+            }
         }
+
 
     }
 
