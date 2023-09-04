@@ -1,10 +1,6 @@
 package com.example.clicker.presentation.home
 
 import android.util.Log
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -59,9 +55,7 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -69,21 +63,14 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.work.WorkInfo
 import coil.compose.AsyncImage
 import com.example.clicker.util.Response
 import com.example.clicker.R
-import com.example.clicker.network.models.AuthenticatedUser
-import com.example.clicker.network.models.StreamData
-import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.stream.StreamViewModel
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 
@@ -110,6 +97,8 @@ fun HomeView(
 //            bottomSheetValue.hide()
 //        }
 //    }
+
+
 
     val validationStatus = dataStoreViewModel.showLogin.value
     val authState = dataStoreViewModel.state.value.authState
@@ -151,11 +140,13 @@ fun HomeView(
             ){contentPadding->
 
                     //todo: home pager page goes here
-                FilterPager(
-                    contentPadding,
-                    pagerState
-                ){
+//                FilterPager(
+//                    contentPadding,
+//                    pagerState,
+//                    filteredModList = streamViewModel.exposedModList
+//                ){
                     UrlImages(
+                        contentPadding = contentPadding,
                         urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
@@ -166,7 +157,7 @@ fun HomeView(
                         clientId = homeViewModel.state.value.clientId,
                         userId = homeViewModel.state.value.userId
                     )
-                }
+//                }
 
 
 
@@ -200,8 +191,10 @@ fun HomeView(
 fun FilterPager(
     contentPadding: PaddingValues,
     pagerState: PagerState,
+    filteredModList:List<String?>,
     pageOne: @Composable () -> Unit
 ){
+
 
     HorizontalPager(
         state = pagerState,
@@ -218,7 +211,9 @@ fun FilterPager(
             }
             1 ->{
 
-                SecondTesting()
+                SecondTesting(
+                    filteredModList =filteredModList
+                )
             }
         }
     }
@@ -371,7 +366,7 @@ fun CustomTopBar(
    // var state by remember { mutableStateOf(0) }
     Log.d("pagerStateCurrentPage",pagerState.currentPage.toString())
 
-    val titles = listOf("Live", "Mods")// I WAS USING A TABBED ROW FOR THIS
+    val titles = listOf("Followed", "Mods")// I WAS USING A TABBED ROW FOR THIS
     Column(modifier = Modifier
         .fillMaxWidth()
         .background(MaterialTheme.colors.primary)
@@ -386,17 +381,17 @@ fun CustomTopBar(
                     .size(35.dp)
                     .clickable { scope.launch { scaffoldState.drawerState.open() } },
                 tint = Color.White)
-            Text("Live followed channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
+            Text("Live channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
         }
-        TabRow(selectedTabIndex = pagerState.currentPage) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    text = { Text(title) },
-                    selected = pagerState.currentPage == index,
-                    onClick = { changeState(index) }
-                )
-            }
-        }
+//        TabRow(selectedTabIndex = pagerState.currentPage) {
+//            titles.forEachIndexed { index, title ->
+//                Tab(
+//                    text = { Text(title) },
+//                    selected = pagerState.currentPage == index,
+//                    onClick = { changeState(index) }
+//                )
+//            }
+//        }
 
 
     }
@@ -444,27 +439,49 @@ fun ScaffoldDrawer(
 
 
 @Composable
-fun SecondTesting(){
-    Row(){
-        Box(modifier = Modifier.width(120.dp).height(80.dp).background(Color.Red)){
-
-        }
-        Column(modifier = Modifier.padding(start = 10.dp)) {
-            Text("CohhCarnage", fontSize = 20.sp)
-            Text(
-                "streamItem.streamTitle",
-                fontSize = 15.sp,
-                modifier = Modifier.alpha(0.5f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                "streamItem.gameTitle",
-                fontSize = 15.sp,
-                modifier = Modifier.alpha(0.5f)
-            )
-        }
+fun SecondTesting(
+    filteredModList: List<String?>
+) {
+    for(item in filteredModList){
+        Log.d("loggedInUserUiStateViewModel","homeViewList --> ${item}")
     }
+    if(filteredModList.isNotEmpty()){
+        for(items in filteredModList){
+            items?.let{channelTitle ->
+                Row(){
+                    Box(modifier = Modifier
+                        .width(120.dp)
+                        .height(80.dp)
+                        .background(Color.Red)){
+
+                    }
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(channelTitle, fontSize = 20.sp)
+                        Text(
+                            "streamItem.streamTitle",
+                            fontSize = 15.sp,
+                            modifier = Modifier.alpha(0.5f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            "streamItem.gameTitle",
+                            fontSize = 15.sp,
+                            modifier = Modifier.alpha(0.5f)
+                        )
+                    }
+                }
+            }
+        }
+
+    }else{
+        Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.padding(10.dp)){
+            Text("No live mod channels.", fontSize = 25.sp)
+            Text("If you see channels you mod for in the followed section, please click on them. They will then be automatically added to your mod list",fontSize = 20.sp)
+        }
+
+    }
+
 
 
 }
@@ -475,13 +492,13 @@ fun SecondTesting(){
 @Composable
 fun UrlImages(
 
+    contentPadding: PaddingValues,
     urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String,String) -> Unit,
     clientId:String,
     userId:String
 ){
-
 
 
     if(urlList != null) {
@@ -492,7 +509,7 @@ fun UrlImages(
 
         Log.d("UrlImagesListSize", urlList.size.toString())
         LazyColumn(
-            modifier = Modifier
+            modifier = Modifier.padding(contentPadding)
         ) {
             items(urlList) { streamItem ->
                 Log.d("urlListImageUrl", streamItem.url)

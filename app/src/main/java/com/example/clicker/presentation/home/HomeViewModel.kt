@@ -17,6 +17,7 @@ import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.network.repository.TwitchRepoImpl
+import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,6 +69,13 @@ class HomeViewModel @Inject constructor(
     val newUrlList:StateFlow<List<StreamInfo>?> = _newUrlList
 
 
+    private val _modStreamList  = mutableStateListOf<StreamInfo?>(null)
+    val exposedModList get() = _modStreamList.toList()
+    // Private mutable list
+
+
+
+
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
@@ -89,6 +97,11 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    fun filterChannelList(channelName:String){
+        val listItem = _newUrlList.value?.firstOrNull { it.streamerName == channelName }
+        _modStreamList.add(listItem)
+
+    }
 
 
     //todo: THIS COULD ALL BE MOVED TO ITS OWN STATE MANAGEMENT CLASS

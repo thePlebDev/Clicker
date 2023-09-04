@@ -363,10 +363,10 @@ fun stringToBoolean( subOrModText:String):Boolean{
 fun getValueFromInput(input: String, key: String): Boolean? {
     val pattern = "$key=([^;:\\s]+)".toRegex()
     val match = pattern.find(input)
-        val returnedValue = match?.groupValues?.get(1) ?: return null
-            if( returnedValue == "-1"){
-            return false
-        }
+            val returnedValue = match?.groupValues?.get(1) ?: return null
+                if( returnedValue == "-1"){
+                return false
+            }
     if(key == "followers-only" && returnedValue == "0"){
         return true
     }

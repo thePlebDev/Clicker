@@ -85,6 +85,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.focus.FocusDirection
@@ -98,13 +99,16 @@ import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.util.Response
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StreamView(
-    streamViewModel: StreamViewModel
+    streamViewModel: StreamViewModel,
+    homeViewModel: HomeViewModel
 ) {
+
 
 
     val twitchUserChat = streamViewModel.listChats.toList()
@@ -191,7 +195,8 @@ fun StreamView(
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
                             updateClickedUser = {username -> streamViewModel.updateClickedChat(username)},
-                            textFieldValue = streamViewModel.textFieldValue
+                            textFieldValue = streamViewModel.textFieldValue,
+                            channelName = streamViewModel.channelName.collectAsState().value
 
                         )
                     }
@@ -712,7 +717,8 @@ fun TextChat(
     clickedAutoCompleteText:(String,String) -> String,
     addChatter:(String,String) -> Unit,
     updateClickedUser:(String) -> Unit,
-    textFieldValue: MutableState<TextFieldValue>
+    textFieldValue: MutableState<TextFieldValue>,
+    channelName: String?
 
 ){
 
@@ -760,8 +766,7 @@ fun TextChat(
             modifier = Modifier
                 .padding(bottom = 70.dp)
                 .fillMaxSize()
-                .background(Color.Red)
-               ,
+                .background(Color.Red),
 
         ){
 
@@ -825,7 +830,8 @@ fun TextChat(
             filteredChatList = filteredChatList,
             filterMethod ={username,newText -> filterMethod(username,newText)},
             clickedAutoCompleteText ={fullText,clickedText -> clickedAutoCompleteText(fullText,clickedText) },
-            textFieldValue = textFieldValue
+            textFieldValue = textFieldValue,
+            channelName = channelName
         )
         SettingsTab(
             showModal = {coroutineScope.launch { drawerState.open() }},
@@ -960,9 +966,11 @@ fun EnterChat(
     filteredChatList: List<String>,
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
-    textFieldValue: MutableState<TextFieldValue>
+    textFieldValue: MutableState<TextFieldValue>,
+    channelName:String?
 ){
         //todo: I think we can move this to the viewModel
+    Log.d("currentStreamChannelName","NAME --> $channelName")
 
     Column(modifier = modifier.background(Color.Black)){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)){

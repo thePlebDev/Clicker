@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val homeViewModel: HomeViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val dataStoreViewModel:DataStoreViewModel by activityViewModels()
     private val workerViewModel:WorkerViewModel by activityViewModels()

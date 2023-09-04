@@ -21,6 +21,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentStreamBinding
 import androidx.fragment.app.activityViewModels
+import com.example.clicker.presentation.home.HomeViewModel
 
 
 /**
@@ -33,6 +34,7 @@ class StreamFragment : Fragment() {
     private var _binding: FragmentStreamBinding? = null
     private val binding get() = _binding!!
     private val streamViewModel: StreamViewModel by activityViewModels()
+    private val homeViewModel: HomeViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +64,8 @@ class StreamFragment : Fragment() {
       val view =  setOrientation(
             resources = resources,
             binding = binding,
-            streamViewModel = streamViewModel
+            streamViewModel = streamViewModel,
+            homeViewModel = homeViewModel
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
@@ -81,13 +84,15 @@ class StreamFragment : Fragment() {
 fun setOrientation(
     resources:Resources,
     binding: FragmentStreamBinding,
-    streamViewModel: StreamViewModel
+    streamViewModel: StreamViewModel,
+    homeViewModel:HomeViewModel
 ): FrameLayout {
 
         binding.composeView.apply{
             setContent {
                 StreamView(
-                    streamViewModel
+                    streamViewModel,
+                    homeViewModel
                 )
             }
         }
