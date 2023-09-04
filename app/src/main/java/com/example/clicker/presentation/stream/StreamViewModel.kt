@@ -81,6 +81,9 @@ class StreamViewModel @Inject constructor(
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
 
+    private val _modStreamList  = mutableStateListOf<String?>(null)
+    val exposedModList:List<String?> get() = _modStreamList
+
     private var currentUsername:String = ""
 
     val textFieldValue = mutableStateOf(
@@ -214,7 +217,10 @@ class StreamViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         loggedInUserData = it
                     )
-                    Log.d("loggedInUserUiStateViewModel","$it")
+
+                  //  Log.d("loggedInUserUiStateViewModel","mod --> ${it.mod}")
+
+
                 }
             }
         }
