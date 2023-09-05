@@ -45,14 +45,23 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.calculateTargetValue
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -61,6 +70,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
 import androidx.compose.material.Divider
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
@@ -73,6 +84,7 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.RadioButton
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.Switch
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
@@ -84,6 +96,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.swipeable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -101,6 +114,23 @@ import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.util.Response
+import androidx.compose.material.DismissValue.Default
+import androidx.compose.material.FractionalThreshold
+import androidx.compose.material.ThresholdConfig
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.rememberSwipeableState
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.coroutines.coroutineScope
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -850,59 +880,120 @@ fun SwipeToDeleteTextCard(
     updateClickedUser:(String) -> Unit,
 
 ){
+
+
+    
+
+        ChatCard(
+            twitchUser = twitchUser,
+            bottomModalState = bottomModalState,
+            updateClickedUser ={user -> updateClickedUser(user)}
+        )
+
+
+}
+@Composable
+fun SwipeBackground(chatData:String?){
+
+        Card(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .background(Color.Blue),
+            elevation = 10.dp
+        ){
+            Row(
+                verticalAlignment = Alignment.Top
+            ){
+                Text(chatData ?: "",fontSize = 17.sp)
+            }
+        }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ChatCard(
+    twitchUser: TwitchUserData,
+    bottomModalState: ModalBottomSheetState,
+    updateClickedUser:(String) -> Unit,
+){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val coroutineScope = rememberCoroutineScope()
     val color = Color(parseColor(twitchUser.color))
 
 
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp)){
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .clickable {
-                updateClickedUser(twitchUser.displayName.toString())
-                coroutineScope.launch {
-                    bottomModalState.show()
-                }
-            },
-        elevation = 10.dp
-    ){
-        Row(
-            verticalAlignment = Alignment.Top
+        Card(
+            modifier = Modifier.fillMaxWidth()
+                .clickable {
+                    updateClickedUser(twitchUser.displayName.toString())
+                    coroutineScope.launch {
+                        bottomModalState.show()
+                    }
+                },
+
         ){
-            if(twitchUser.subscriber == true){
-                AsyncImage(
-                    model = subBadge,
-                    contentDescription = "Subscriber badge",
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-            if(twitchUser.mod == "1"){
-                AsyncImage(
-                    model = modBadge,
-                    contentDescription = "Moderator badge",
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-
-
-            Text(buildAnnotatedString {
-                withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                    append("${twitchUser.displayName} :")
+            Row(
+                verticalAlignment = Alignment.Top
+            ){
+                if(twitchUser.subscriber == true){
+                    AsyncImage(
+                        model = subBadge,
+                        contentDescription = "Subscriber badge",
+                        modifier = Modifier.padding(5.dp)
+                    )
                 }
-                append(" ${twitchUser.userType}")
+                if(twitchUser.mod == "1"){
+                    AsyncImage(
+                        model = modBadge,
+                        contentDescription = "Moderator badge",
+                        modifier = Modifier.padding(5.dp)
+                    )
+                }
+
+
+                Text(buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                        append("${twitchUser.displayName} :")
+                    }
+                    append(" ${twitchUser.userType}")
+
+                },
+                    modifier = Modifier.padding(5.dp)
+                )
 
             }
-            )
 
+        }// end of the Card
+
+        Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp), horizontalArrangement = Arrangement.End){
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Delete chat",
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.White),
+            )
+            Spacer(modifier = Modifier.size(30.dp))
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete chat",
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.White),
+            )
         }
 
 
-    }// end of the Card
+    }
+
+
 
 }
+
+
+
 
 @Composable
 fun SettingsTab(
@@ -939,18 +1030,7 @@ fun SettingsTab(
 
             }
 
-            Card(
-                elevation = 10.dp
-            ){
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Send chat",
-                    modifier = Modifier
-                        .size(35.dp)
-                        .clickable { showModal() },
 
-                    )
-            }
         }
 
 
@@ -1194,5 +1274,25 @@ fun BanDialog(
 
 
         }
+    }
+}
+
+private fun getDismissDirection(from: DismissValue, to: DismissValue): DismissDirection? {
+    return when {
+        // settled at the default state
+        from == to && from == Default -> null
+        // has been dismissed to the end
+        from == to && from == DismissValue.DismissedToEnd -> DismissDirection.StartToEnd
+        // has been dismissed to the start
+        from == to && from == DismissValue.DismissedToStart -> DismissDirection.EndToStart
+        // is currently being dismissed to the end
+        from == Default && to == DismissValue.DismissedToEnd -> DismissDirection.StartToEnd
+        // is currently being dismissed to the start
+        from == Default && to == DismissValue.DismissedToStart -> DismissDirection.EndToStart
+        // has been dismissed to the end but is now animated back to default
+        from == DismissValue.DismissedToEnd && to == Default -> DismissDirection.StartToEnd
+        // has been dismissed to the start but is now animated back to default
+        from == DismissValue.DismissedToStart && to == Default -> DismissDirection.EndToStart
+        else -> null
     }
 }
