@@ -226,7 +226,8 @@ fun StreamView(
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
                             updateClickedUser = {username -> streamViewModel.updateClickedChat(username)},
                             textFieldValue = streamViewModel.textFieldValue,
-                            channelName = streamViewModel.channelName.collectAsState().value
+                            channelName = streamViewModel.channelName.collectAsState().value,
+                            deleteMessage = {streamViewModel.deleteChatMessage()}
 
                         )
                     }
@@ -748,7 +749,8 @@ fun TextChat(
     addChatter:(String,String) -> Unit,
     updateClickedUser:(String) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
-    channelName: String?
+    channelName: String?,
+    deleteMessage: () -> Unit
 
 ){
 
@@ -815,33 +817,38 @@ fun TextChat(
                 SwipeToDeleteTextCard(
                     twitchUser = twitchUser,
                     bottomModalState = bottomModalState,
-                    updateClickedUser ={user -> updateClickedUser(user)}
+                    updateClickedUser ={user -> updateClickedUser(user)},
+                    deleteMessage ={deleteMessage()}
                 )
 
                 val color = Color(parseColor(twitchUser.color))
                     if(twitchUserChat.isNotEmpty()){
-                        if(twitchUser.messageType == MessageType.USER){
-                            addChatter(twitchUser.displayName!!, twitchUser.userType!!)
+                        when(twitchUser.messageType){
+                            MessageType.NOTICE ->{
+                                Text(buildAnnotatedString {
+                                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                        append("${twitchUser.displayName} :")
+                                    }
+                                    append(" ${twitchUser.userType}")
 
-
-                            if(twitchUser.mod == "1"){
-                                Log.d("CHATTERSUB", "${twitchUser.displayName}")
+                                },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                )
                             }
 
-                        }
-                        if(twitchUser.messageType == MessageType.NOTICE){
-                            Text(buildAnnotatedString {
-                                withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                    append("${twitchUser.displayName} :")
-                                }
-                                append(" ${twitchUser.userType}")
+                            MessageType.USER ->{
+                                addChatter(twitchUser.displayName!!, twitchUser.userType!!)
 
-                            },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(15.dp)
-                            )
-                        }
+
+                                if(twitchUser.mod == "1"){
+                                    Log.d("CHATTERSUB", "${twitchUser.displayName}")
+                                }
+                            }
+                        } // end of the WHEN BLOCK
+
+
 
                 }
 
@@ -878,6 +885,7 @@ fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser:(String) -> Unit,
+    deleteMessage:()-> Unit
 
 ){
 
@@ -887,7 +895,8 @@ fun SwipeToDeleteTextCard(
         ChatCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
-            updateClickedUser ={user -> updateClickedUser(user)}
+            updateClickedUser ={user -> updateClickedUser(user)},
+            deleteMessage = {deleteMessage()}
         )
 
 
@@ -915,11 +924,17 @@ fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser:(String) -> Unit,
+    deleteMessage:()-> Unit
 ){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val coroutineScope = rememberCoroutineScope()
-    val color = Color(parseColor(twitchUser.color))
+    //val color = Color(parseColor(twitchUser.color))
+
+    var color by remember { mutableStateOf(Color(parseColor(twitchUser.color))) }
+    var displayName by remember { mutableStateOf(twitchUser.displayName) }
+    var comment by remember { mutableStateOf(twitchUser.userType) }
+    var showIcons by remember { mutableStateOf(true) }
 
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp)){
@@ -937,27 +952,30 @@ fun ChatCard(
             Row(
                 verticalAlignment = Alignment.Top
             ){
-                if(twitchUser.subscriber == true){
-                    AsyncImage(
-                        model = subBadge,
-                        contentDescription = "Subscriber badge",
-                        modifier = Modifier.padding(5.dp)
-                    )
+                if (showIcons){
+                    if(twitchUser.subscriber == true){
+                        AsyncImage(
+                            model = subBadge,
+                            contentDescription = "Subscriber badge",
+                            modifier = Modifier.padding(5.dp)
+                        )
+                    }
+                    if(twitchUser.mod == "1"){
+                        AsyncImage(
+                            model = modBadge,
+                            contentDescription = "Moderator badge",
+                            modifier = Modifier.padding(5.dp)
+                        )
+                    }
                 }
-                if(twitchUser.mod == "1"){
-                    AsyncImage(
-                        model = modBadge,
-                        contentDescription = "Moderator badge",
-                        modifier = Modifier.padding(5.dp)
-                    )
-                }
+
 
 
                 Text(buildAnnotatedString {
                     withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                        append("${twitchUser.displayName} :")
+                        append("${displayName} :")
                     }
-                    append(" ${twitchUser.userType}")
+                    append(" ${comment}")
 
                 },
                     modifier = Modifier.padding(5.dp)
@@ -967,29 +985,33 @@ fun ChatCard(
 
         }// end of the Card
 
-        Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp), horizontalArrangement = Arrangement.End){
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Delete chat",
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color.White),
-            )
-            Spacer(modifier = Modifier.size(30.dp))
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete chat",
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color.White),
-            )
+        if(showIcons){
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp), horizontalArrangement = Arrangement.End){
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Delete chat",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(Color.White),
+                )
+                Spacer(modifier = Modifier.size(30.dp))
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete chat",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(Color.White)
+                        .clickable {
+                            displayName = "Moderator action"
+                            comment = "Removed by moderator"
+                            color = Color.Red
+                            showIcons = false
+                        }
+                    ,
+                )
+            }
         }
-
-
     }
-
-
-
 }
 
 
@@ -999,7 +1021,8 @@ fun ChatCard(
 fun SettingsTab(
     showModal:()->Unit,
     scrollingPaused:Boolean,
-    enableAutoScroll:() -> Unit
+    enableAutoScroll:() -> Unit,
+
 ){
     Box(modifier = Modifier
         .fillMaxSize()
@@ -1030,7 +1053,18 @@ fun SettingsTab(
 
             }
 
+            Card(
+                elevation = 10.dp
+            ){
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Send chat",
+                    modifier = Modifier
+                        .size(35.dp)
+                        .clickable { showModal() },
 
+                    )
+            }
         }
 
 

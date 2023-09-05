@@ -125,6 +125,34 @@ class StreamViewModel @Inject constructor(
         )
     }
 
+    fun deleteChatMessage(){
+        val twitchUserData = TwitchUserData(
+            badgeInfo = "SomeBadgeInfo",
+            badges = "SomeBadges",
+            clientNonce = "SomeClientNonce",
+            color = "#636161",
+            displayName = "Moderator action",
+            emotes = "SomeEmotes",
+            firstMsg = "SomeFirstMsg",
+            flags = "SomeFlags",
+            id = "SomeId",
+            mod = "mod",
+            returningChatter = "SomeReturningChatter",
+            roomId = "SomeRoomId",
+            subscriber = false,
+            tmiSentTs = null,
+            turbo = true,
+            userId = "SomeUserId",
+            userType = "Message deleted by user",
+            messageType =  MessageType.NOTICE
+        )
+        listChats.removeRange(0,1)
+
+        listChats[0] = twitchUserData
+
+
+    }
+
     fun addChatter(username:String, message:String){
         if(!allChatters.contains(username)){
             allChatters.add(username)
