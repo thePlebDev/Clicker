@@ -7,6 +7,8 @@ import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import retrofit2.http.Header
+import retrofit2.http.Query
 
 interface TwitchRepo {
     suspend fun validateToken(token:String): Flow<Response<ValidatedUser>>
@@ -27,6 +29,15 @@ interface TwitchRepo {
         broadcasterId:String,
         moderatorId:String,
         body: UpdateChatSettings
+    ):Flow<Response<Boolean>>
+
+    suspend fun deleteChatMessage(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId:String,
+        moderatorId:String,
+        messageId:String,
+
     ):Flow<Response<Boolean>>
 
 

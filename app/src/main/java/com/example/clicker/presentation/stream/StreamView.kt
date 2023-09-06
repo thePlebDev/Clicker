@@ -227,7 +227,7 @@ fun StreamView(
                             updateClickedUser = {username -> streamViewModel.updateClickedChat(username)},
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
-                            deleteMessage = {streamViewModel.deleteChatMessage()}
+                            deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)}
 
                         )
                     }
@@ -750,7 +750,7 @@ fun TextChat(
     updateClickedUser:(String) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
-    deleteMessage: () -> Unit
+    deleteMessage: (String) -> Unit
 
 ){
 
@@ -818,7 +818,7 @@ fun TextChat(
                     twitchUser = twitchUser,
                     bottomModalState = bottomModalState,
                     updateClickedUser ={user -> updateClickedUser(user)},
-                    deleteMessage ={deleteMessage()}
+                    deleteMessage ={messageId -> deleteMessage(messageId)}
                 )
 
                 val color = Color(parseColor(twitchUser.color))
@@ -885,7 +885,7 @@ fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser:(String) -> Unit,
-    deleteMessage:()-> Unit
+    deleteMessage:(String)-> Unit
 
 ){
 
@@ -896,7 +896,7 @@ fun SwipeToDeleteTextCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
             updateClickedUser ={user -> updateClickedUser(user)},
-            deleteMessage = {deleteMessage()}
+            deleteMessage = {messageId -> deleteMessage(messageId)}
         )
 
 
@@ -924,7 +924,7 @@ fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser:(String) -> Unit,
-    deleteMessage:()-> Unit
+    deleteMessage:(String)-> Unit
 ){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
@@ -1002,12 +1002,13 @@ fun ChatCard(
                         .size(30.dp)
                         .background(Color.White)
                         .clickable {
+                            Log.d("MESSAGEIDTESTING", "-->  ${twitchUser.id}")
+                            deleteMessage(twitchUser.id!!)
                             displayName = "Moderator action"
                             comment = "Removed by moderator"
                             color = Color.Red
                             showIcons = false
-                        }
-                    ,
+                        },
                 )
             }
         }

@@ -109,5 +109,29 @@ class TwitchRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteChatMessage(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        messageId: String
+    ): Flow<Response<Boolean>> = flow {
+        emit(Response.Loading)
+        val response = twitchClient.deleteChatMessage(
+            authorizationToken = oAuthToken,
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId = moderatorId,
+            messageId = messageId
+        )
+        if(response.isSuccessful){
+            emit(Response.Success(true))
+        }else{
+            Log.d("deleteChatMessageException",response.message())
+            Log.d("deleteChatMessageException",response.code().toString())
+            emit(Response.Failure(Exception("MESSAGE NOT DELETED")))
+        }
+    }
+
 
 }

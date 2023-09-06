@@ -39,10 +39,13 @@ data class ChattingUser(
 data class StreamUIState(
     val chatSettings: Response<ChatSettingsData> = Response.Loading,
     val loggedInUserData: LoggedInUserData? = null,
+
+
     val clientId:String = "",
     val broadcasterId: String ="",
     val userId:String ="",
     val oAuthToken:String="",
+
     val showChatSettingAlert:Boolean = false,
 
     val enableSlowMode:Boolean = true,
@@ -125,30 +128,56 @@ class StreamViewModel @Inject constructor(
         )
     }
 
-    fun deleteChatMessage(){
-        val twitchUserData = TwitchUserData(
-            badgeInfo = "SomeBadgeInfo",
-            badges = "SomeBadges",
-            clientNonce = "SomeClientNonce",
-            color = "#636161",
-            displayName = "Moderator action",
-            emotes = "SomeEmotes",
-            firstMsg = "SomeFirstMsg",
-            flags = "SomeFlags",
-            id = "SomeId",
-            mod = "mod",
-            returningChatter = "SomeReturningChatter",
-            roomId = "SomeRoomId",
-            subscriber = false,
-            tmiSentTs = null,
-            turbo = true,
-            userId = "SomeUserId",
-            userType = "Message deleted by user",
-            messageType =  MessageType.NOTICE
-        )
-        listChats.removeRange(0,1)
+    fun deleteChatMessage(messageId:String) = viewModelScope.launch{
+        twitchRepoImpl.deleteChatMessage(
+            oAuthToken =_uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            broadcasterId = _uiState.value.broadcasterId,
+            moderatorId = _uiState.value.userId,
+            messageId = messageId
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    Log.d("deleteChatMessage","LOADING")
+                }
+                is Response.Success ->{
+                    Log.d("deleteChatMessage","SUCCESS")
+                }
+                is Response.Failure ->{
+                    Log.d("deleteChatMessage","FAILURE")
+                }
+            }
 
-        listChats[0] = twitchUserData
+        }
+
+//        oAuthToken: String,
+//        clientId: String,
+//        broadcasterId: String,
+//        moderatorId: String,
+//        messageId: String
+//        val twitchUserData = TwitchUserData(
+//            badgeInfo = "SomeBadgeInfo",
+//            badges = "SomeBadges",
+//            clientNonce = "SomeClientNonce",
+//            color = "#636161",
+//            displayName = "Moderator action",
+//            emotes = "SomeEmotes",
+//            firstMsg = "SomeFirstMsg",
+//            flags = "SomeFlags",
+//            id = "SomeId",
+//            mod = "mod",
+//            returningChatter = "SomeReturningChatter",
+//            roomId = "SomeRoomId",
+//            subscriber = false,
+//            tmiSentTs = null,
+//            turbo = true,
+//            userId = "SomeUserId",
+//            userType = "Message deleted by user",
+//            messageType =  MessageType.NOTICE
+//        )
+//        listChats.removeRange(0,1)
+//
+//        listChats[0] = twitchUserData
 
 
     }
@@ -367,6 +396,7 @@ class StreamViewModel @Inject constructor(
     ){
         _channelName.tryEmit(channelName)
 
+
         _uiState.value = _uiState.value.copy(
             clientId = clientId,
             broadcasterId = broadcasterId,
@@ -382,10 +412,13 @@ class StreamViewModel @Inject constructor(
         clientId: String,
         broadcasterId: String
     ) = viewModelScope.launch{
+//        tokenDataStore.getClientId().collect{
+//            Log.d("twitchNameonCreateViewVIewModel","tokenDataStoreclientId ->$clientId")
+//        }
         tokenDataStore.getOAuthToken().collect{oAuthToken ->
             Log.d("twitchNameonCreateViewVIewModel","clientId ->$clientId")
-            Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
-            Log.d("twitchNameonCreateViewVIewModel","oAuthToken ->$oAuthToken")
+//            Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
+//            Log.d("twitchNameonCreateViewVIewModel","oAuthToken ->$oAuthToken")
             if(oAuthToken.isNotEmpty()){
                 _uiState.value = _uiState.value.copy(
                     oAuthToken = oAuthToken
