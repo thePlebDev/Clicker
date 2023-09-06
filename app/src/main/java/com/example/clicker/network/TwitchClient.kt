@@ -11,6 +11,7 @@ import com.example.clicker.network.models.ValidatedUser
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 
@@ -65,14 +66,15 @@ interface TwitchClient {
 
     ):Response<ChatSettingsResponse>
 
-//    @Headers("Content-Type: application/json")
-//    @PATCH("chat/settings")
-//    suspend fun updateChatSettings(
-//        @Header("Authorization") authorizationToken: String,
-//        @Header("Client-Id") clientId: String,
-//        @Query("broadcaster_id") broadcasterId: String,
-//        @Query("moderator_id") moderatorId: String
-//    ): Response<Void>
+
+    @DELETE("moderation/chat")
+    suspend fun deleteChatMessage(
+        @Header("Authorization") authorizationToken:String,
+        @Header("Client-Id") clientId:String,
+        @Query("broadcaster_id") broadcasterId:String,
+        @Query("moderator_id") moderatorId:String,
+        @Query("message_id") messageId:String,
+    ):Response<Void>
 
 
 }
