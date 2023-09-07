@@ -130,11 +130,13 @@ import androidx.compose.material.DismissValue.Default
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.positionChange
@@ -887,10 +889,11 @@ fun TextChat(
             filterMethod ={username,newText -> filterMethod(username,newText)},
             clickedAutoCompleteText ={fullText,clickedText -> clickedAutoCompleteText(fullText,clickedText) },
             textFieldValue = textFieldValue,
-            channelName = channelName
+            channelName = channelName,
+            showModal = {coroutineScope.launch { drawerState.open() }}
         )
-        SettingsTab(
-            showModal = {coroutineScope.launch { drawerState.open() }},
+        ScrollToBottom(
+
             scrollingPaused = !autoscroll,
             enableAutoScroll = {autoscroll = true}
         )
@@ -907,18 +910,12 @@ fun SwipeToDeleteTextCard(
     deleteMessage:(String)-> Unit
 
 ){
-
-
-    
-
         ChatCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
             updateClickedUser ={user -> updateClickedUser(user)},
             deleteMessage = {messageId -> deleteMessage(messageId)}
         )
-
-
 }
 
 @Composable
@@ -1046,7 +1043,7 @@ fun ChatCard(
         ){
 
             Card(
-                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 65.dp)
+                modifier = Modifier.fillMaxWidth()
                     .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                     .combinedClickable(
                         onClick = {
@@ -1055,9 +1052,7 @@ fun ChatCard(
                                 bottomModalState.show()
                             }
                         },
-
                     )
-
                 ){
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -1108,8 +1103,7 @@ fun ChatCard(
 
 
 @Composable
-fun SettingsTab(
-    showModal:()->Unit,
+fun ScrollToBottom(
     scrollingPaused:Boolean,
     enableAutoScroll:() -> Unit,
 
@@ -1143,18 +1137,6 @@ fun SettingsTab(
 
             }
 
-            Card(
-                elevation = 10.dp
-            ){
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Send chat",
-                    modifier = Modifier
-                        .size(35.dp)
-                        .clickable { showModal() },
-
-                    )
-            }
         }
 
 
@@ -1171,7 +1153,8 @@ fun EnterChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     textFieldValue: MutableState<TextFieldValue>,
-    channelName:String?
+    channelName:String?,
+    showModal: () -> Unit
 ){
         //todo: I think we can move this to the viewModel
     Log.d("currentStreamChannelName","NAME --> $channelName")
@@ -1198,35 +1181,59 @@ fun EnterChat(
         }
 
 
-        Row( verticalAlignment = Alignment.CenterVertically){
+        TextFieldChat(
+            textFieldValue = textFieldValue,
+            modStatus = modStatus,
+            filterMethod = {username,text -> filterMethod(username,text)},
+            chat ={chatMessage -> chat(chatMessage)},
+            showModal = {showModal()}
+        )
 
-            if(modStatus != null && modStatus == true){
-                AsyncImage(
-                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                    contentDescription = "Moderator badge"
-                )
-            }
-            TextField(
-                modifier = Modifier.weight(2f),
-                value = textFieldValue.value,
-                shape = RoundedCornerShape(8.dp),
-                onValueChange = { newText ->
-                    filterMethod("username",newText.text)
-                    textFieldValue.value = TextFieldValue(
-                        text = newText.text,
-                        selection = TextRange(newText.text.length)
-                    )
-                    //text = newText
-                },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Blue,
-                    cursorColor = Color.Black,
-                    disabledLabelColor = Color.Blue,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
+    }
+
+
+}
+
+@Composable
+fun TextFieldChat(
+    textFieldValue: MutableState<TextFieldValue>,
+    modStatus:Boolean?,
+    filterMethod:(String,String) ->Unit,
+    chat: (String) -> Unit,
+    showModal: () -> Unit
+){
+    Row( verticalAlignment = Alignment.CenterVertically){
+
+        if(modStatus != null && modStatus == true){
+            AsyncImage(
+                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                contentDescription = "Moderator badge"
             )
+        }
+        TextField(
+            modifier = Modifier
+                .weight(2f)
 
+            ,
+            value = textFieldValue.value,
+            shape = RoundedCornerShape(8.dp),
+            onValueChange = { newText ->
+                filterMethod("username",newText.text)
+                textFieldValue.value = TextFieldValue(
+                    text = newText.text,
+                    selection = TextRange(newText.text.length)
+                )
+                //text = newText
+            },
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Blue,
+                cursorColor = Color.Black,
+                disabledLabelColor = Color.Blue,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+        )
+        if(textFieldValue.value.text.length >0){
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription ="Send chat",
@@ -1236,10 +1243,20 @@ fun EnterChat(
                     .padding(start = 5.dp),
                 tint = Color.White
             )
+        }else{
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription ="Show side modal",
+                modifier = Modifier
+                    .size(35.dp)
+                    .clickable { showModal()}
+                    .padding(start = 5.dp),
+                tint = Color.White
+            )
         }
-    }
 
-        
+
+    }
 }
 
 

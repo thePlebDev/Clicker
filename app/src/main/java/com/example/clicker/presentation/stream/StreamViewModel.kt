@@ -363,6 +363,10 @@ class StreamViewModel @Inject constructor(
 
     fun sendMessage(chatMessage:String){
         val messageResult = webSocket.sendMessage(chatMessage)
+        textFieldValue.value = TextFieldValue(
+            text = "",
+            selection = TextRange(0)
+        )
         listChats.add(
             TwitchUserData(
                 badgeInfo = null,
