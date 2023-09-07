@@ -24,7 +24,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class MessageType {
-    USER, NOTICE
+    USER, NOTICE,USERNOTICE
 }
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -185,9 +185,9 @@ class TwitchWebSocket @Inject constructor(
              )
 
          }
-         if(text.contains("NOTICE")){
+         if(text.contains(" NOTICE ")){
              Log.d("NOTICE","NOTICE --> $text")
-             val pattern = "#theplebdev\\s*:(.+)".toRegex()
+             val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
              val matchResult = pattern.find(text)
              val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
 
@@ -214,17 +214,47 @@ class TwitchWebSocket @Inject constructor(
              _state.tryEmit(userData)
 
          }
+         if(text.contains(" USERNOTICE ")){
+             val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
+             val matchResult = pattern.find(text)
+             val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
+             Log.d("USERNOTICESTOOF","USERNOTICE --> $text")
+
+             val userData = TwitchUserData(
+                 badgeInfo = null,
+                 badges = null,
+                 clientNonce = null,
+                 color = "#000000",
+                 displayName = "Room update",
+                 emotes = null,
+                 firstMsg = null,
+                 flags = null,
+                 id = null,
+                 mod = null,
+                 returningChatter = null,
+                 roomId = null,
+                 subscriber = false,
+                 tmiSentTs = null,
+                 turbo = false,
+                 userId = null,
+                 userType = extractedInfo,
+                 messageType = MessageType.USERNOTICE
+             )
+             _state.tryEmit(userData)
+
+         }
+
          if(text.contains("PRIVMSG")){
+             Log.d("loggedInDataOnMessage","PRIVMSG --> $text")
              val anotherTesting = parseStringBaby(text)
              val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
              _state.tryEmit(mappedString)
          }
 
-         if(text.contains("USERSTATE")){
-             Log.d("onMessageSocketUSERSTATE","USERSTATE --> $text")
-         }
+
          if(text.contains("ROOMSTATE")){
-             Log.d("onMessageSocketROOMSTATE","ROOMSTATE --> $text")
+
+             Log.d("loggedInDataOnMessage","ROOMSTATE --> $text")
             val slowMode= getValueFromInput(text,"slow")
 
              val emoteMode = getValueFromInput(text,"emote-only")
@@ -363,10 +393,10 @@ fun stringToBoolean( subOrModText:String):Boolean{
 fun getValueFromInput(input: String, key: String): Boolean? {
     val pattern = "$key=([^;:\\s]+)".toRegex()
     val match = pattern.find(input)
-            val returnedValue = match?.groupValues?.get(1) ?: return null
-                if( returnedValue == "-1"){
-                return false
-            }
+    val returnedValue = match?.groupValues?.get(1) ?: return null
+    if( returnedValue == "-1"){
+        return false
+    }
     if(key == "followers-only" && returnedValue == "0"){
         return true
     }

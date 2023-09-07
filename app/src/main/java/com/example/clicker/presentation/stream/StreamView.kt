@@ -753,7 +753,7 @@ fun MessageAlertText(){
 
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun TextChat(
@@ -816,7 +816,7 @@ fun TextChat(
             state = lazyColumnListState,
             modifier = Modifier
                 .padding(bottom = 70.dp)
-                .background(Color.Black)
+                .background(Color.Red)
                 .fillMaxSize(),
 
         ){
@@ -833,18 +833,15 @@ fun TextChat(
 
             items(twitchUserChat){twitchUser ->
 
-                SwipeToDeleteTextCard(
-                    twitchUser = twitchUser,
-                    bottomModalState = bottomModalState,
-                    updateClickedUser ={user -> updateClickedUser(user)},
-                    deleteMessage ={messageId -> deleteMessage(messageId)}
-                )
+
+
 
                 val color = Color(parseColor(twitchUser.color))
 
                 //TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
                     if(twitchUserChat.isNotEmpty()){
                         when(twitchUser.messageType){
+
                             MessageType.NOTICE ->{
                                 Text(buildAnnotatedString {
                                     withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
@@ -861,12 +858,37 @@ fun TextChat(
 
                             MessageType.USER ->{
                                 addChatter(twitchUser.displayName!!, twitchUser.userType!!)
+                                SwipeToDeleteTextCard(
+                                    twitchUser = twitchUser,
+                                    bottomModalState = bottomModalState,
+                                    updateClickedUser ={user -> updateClickedUser(user)},
+                                    deleteMessage ={messageId -> deleteMessage(messageId)}
+                                )
 
 
-                                if(twitchUser.mod == "1"){
-                                    Log.d("CHATTERSUB", "${twitchUser.displayName}")
-                                }
+
                             }
+                            MessageType.USERNOTICE ->{
+                                Row(modifier = Modifier.fillMaxWidth()){
+                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                    Text(buildAnnotatedString {
+                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                            append("${twitchUser.displayName} :")
+                                        }
+                                        append(" ${twitchUser.userType}")
+
+                                    },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                }
+
+                            }
+
+
+
                         } // end of the WHEN BLOCK
 
 

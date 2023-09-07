@@ -289,6 +289,7 @@ class StreamViewModel @Inject constructor(
     init {
         viewModelScope.launch{
             webSocket.state.collect{twitchUserMessage ->
+                Log.d("loggedMessage","${twitchUserMessage}")
                     listChats.add(twitchUserMessage)
 
 
