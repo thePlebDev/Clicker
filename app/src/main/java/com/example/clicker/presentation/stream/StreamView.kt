@@ -984,7 +984,7 @@ fun ChatCard(
     val state = rememberSwipeableActionsState()
 
     val offset = state.offset.value
-    val swipeThreshold = 100.dp
+    val swipeThreshold = 130.dp
     val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
 
     val thresholdCrossed = abs(offset) > swipeThresholdPx
@@ -999,6 +999,14 @@ fun ChatCard(
     }
 
 
+    val modDragState = DraggableState { delta ->
+
+    }
+
+    var dragState = state.draggableState
+    if(twitchUser.mod == "1"){
+        dragState = modDragState
+    }
 
 
 
@@ -1016,7 +1024,7 @@ fun ChatCard(
         .draggable(
             orientation = Orientation.Horizontal,
             enabled = true,
-            state = state.draggableState,
+            state = dragState,
             onDragStopped = {
                 scope.launch {
                     if(thresholdCrossed){
