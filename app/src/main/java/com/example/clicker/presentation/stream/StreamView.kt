@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,20 +46,31 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
+import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.calculateTargetValue
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -119,15 +131,20 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberSwipeableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.coroutineScope
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -797,8 +814,8 @@ fun TextChat(
             state = lazyColumnListState,
             modifier = Modifier
                 .padding(bottom = 70.dp)
-                .fillMaxSize()
-                .background(Color.Red),
+                .background(Color.Black)
+                .fillMaxSize(),
 
         ){
 
@@ -822,6 +839,8 @@ fun TextChat(
                 )
 
                 val color = Color(parseColor(twitchUser.color))
+
+                //TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
                     if(twitchUserChat.isNotEmpty()){
                         when(twitchUser.messageType){
                             MessageType.NOTICE ->{
@@ -901,24 +920,51 @@ fun SwipeToDeleteTextCard(
 
 
 }
-@Composable
-fun SwipeBackground(chatData:String?){
 
-        Card(modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .background(Color.Blue),
-            elevation = 10.dp
-        ){
-            Row(
-                verticalAlignment = Alignment.Top
-            ){
-                Text(chatData ?: "",fontSize = 17.sp)
+@Composable
+fun rememberSwipeableActionsState(): SwipeableActionsState {
+    return remember { SwipeableActionsState() }
+}
+@Stable
+class SwipeableActionsState internal constructor() {
+    /**
+     * The current position (in pixels) of a [SwipeableActionsBox].
+     */
+    val offset: State<Float> get() = offsetState
+    private var offsetState = mutableStateOf(0f)
+    private var canSwipeTowardsRight =false
+    private var canSwipeTowardsLeft= true
+
+    internal val draggableState = DraggableState { delta ->
+
+        val targetOffset = offsetState.value + delta
+        val isAllowed = isResettingOnRelease
+                || targetOffset > 0f && canSwipeTowardsRight
+                || targetOffset < 0f && canSwipeTowardsLeft
+        // Add some resistance if needed
+        offsetState.value += if (isAllowed) delta else delta / 10
+    }
+    /**
+     * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
+     */
+    var isResettingOnRelease: Boolean by mutableStateOf(false)
+        private set
+    internal suspend fun resetOffset() {
+        draggableState.drag(MutatePriority.PreventUserInput) {
+            isResettingOnRelease = true
+            try {
+                Animatable(offsetState.value).animateTo(targetValue = 0f, tween(durationMillis = 300)) {
+                    dragBy(value - offsetState.value)
+                }
+            } finally {
+                isResettingOnRelease = false
             }
         }
+    }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ChatCard(
     twitchUser: TwitchUserData,
@@ -935,84 +981,119 @@ fun ChatCard(
     var displayName by remember { mutableStateOf(twitchUser.displayName) }
     var comment by remember { mutableStateOf(twitchUser.userType) }
     var showIcons by remember { mutableStateOf(true) }
+    val state = rememberSwipeableActionsState()
+
+    val offset = state.offset.value
+    val swipeThreshold = 100.dp
+    val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
+
+    val thresholdCrossed = abs(offset) > swipeThresholdPx
+
+   // val backgroundColor = Color.Black
+    var backgroundColor by remember { mutableStateOf(Color.Black) }
+
+    if(thresholdCrossed){
+        backgroundColor = Color.Red
+    }else{
+        backgroundColor = Color.Black
+    }
 
 
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp)){
 
-        Card(
-            modifier = Modifier.fillMaxWidth()
-                .clickable {
-                    updateClickedUser(twitchUser.displayName.toString())
-                    coroutineScope.launch {
-                        bottomModalState.show()
+
+
+
+    val swipeableState = rememberSwipeableState(0)
+    val cardWidth = Resources.getSystem().displayMetrics.widthPixels.dp //width of what will be moving
+    val sizePx = with(LocalDensity.current) { (cardWidth/8).toPx() }
+    val anchors = mapOf(0f to 0, -sizePx to 1) // Maps anchor points (in px) to states
+    val scope = rememberCoroutineScope()
+
+    Box(Modifier
+        .fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp)
+        .clip(shape = RoundedCornerShape(10.dp))
+        .background(backgroundColor)
+        .draggable(
+            orientation = Orientation.Horizontal,
+            enabled = true,
+            state = state.draggableState,
+            onDragStopped = {
+                scope.launch {
+                    if(thresholdCrossed){
+
+                        state.resetOffset()
+                    }else{
+                        state.resetOffset()
                     }
-                },
+
+                }
+            },
+
+        )
+
+    ){
+        Column(
+            verticalArrangement = Arrangement.Center,
 
         ){
-            Row(
-                verticalAlignment = Alignment.Top
-            ){
-                if (showIcons){
-                    if(twitchUser.subscriber == true){
-                        AsyncImage(
-                            model = subBadge,
-                            contentDescription = "Subscriber badge",
-                            modifier = Modifier.padding(5.dp)
-                        )
+
+            Card(
+                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 65.dp)
+                    .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+                    .combinedClickable(
+                        onClick = {
+                            updateClickedUser(twitchUser.displayName.toString())
+                            coroutineScope.launch {
+                                bottomModalState.show()
+                            }
+                        },
+
+                    )
+
+                ){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    if (showIcons){
+                        if(twitchUser.subscriber == true){
+                            AsyncImage(
+                                model = subBadge,
+                                contentDescription = "Subscriber badge",
+                                modifier = Modifier.padding(5.dp)
+                            )
+                        }
+                        if(twitchUser.mod == "1"){
+                            AsyncImage(
+                                model = modBadge,
+                                contentDescription = "Moderator badge",
+                                modifier = Modifier.padding(5.dp)
+                            )
+                        }
                     }
-                    if(twitchUser.mod == "1"){
-                        AsyncImage(
-                            model = modBadge,
-                            contentDescription = "Moderator badge",
-                            modifier = Modifier.padding(5.dp)
-                        )
-                    }
+
+
+
+                    Text(buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                            append("${displayName} :")
+                        }
+                        append(" ${comment}")
+
+                    },
+                        modifier = Modifier.padding(5.dp)
+                    )
+
                 }
 
+            }// end of the Card
 
 
-                Text(buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                        append("${displayName} :")
-                    }
-                    append(" ${comment}")
-
-                },
-                    modifier = Modifier.padding(5.dp)
-                )
-
-            }
-
-        }// end of the Card
-
-        if(showIcons){
-            Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp), horizontalArrangement = Arrangement.End){
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Delete chat",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.White),
-                )
-                Spacer(modifier = Modifier.size(30.dp))
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete chat",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(Color.White)
-                        .clickable {
-                            Log.d("MESSAGEIDTESTING", "-->  ${twitchUser.id}")
-                            deleteMessage(twitchUser.id!!)
-                            displayName = "Moderator action"
-                            comment = "Removed by moderator"
-                            color = Color.Red
-                            showIcons = false
-                        },
-                )
-            }
         }
+
+
     }
+
+
 }
 
 
