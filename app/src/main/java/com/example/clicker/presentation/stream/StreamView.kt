@@ -131,9 +131,11 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.runtime.Stable
@@ -973,6 +975,119 @@ fun TextChat(
                                     }
 
                                 }
+                            }
+                            MessageType.SUB ->{
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.6f))){
+
+                                    Column(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                    ) {
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ){
+                                            Icon(
+                                                imageVector = Icons.Default.Lock,
+                                                contentDescription ="Sub",
+                                                modifier = Modifier
+                                                    .size(30.dp)
+                                                ,
+                                                tint = Color.White
+                                            )
+                                            Text("SUB",color = Color.White, fontSize = 20.sp)
+                                        }
+
+                                        Text(buildAnnotatedString {
+//
+                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                                append(" ${twitchUser.userType}")
+                                            }
+                                        }
+                                        )
+                                    }
+
+                                }
+                            }
+                            //MYSTERYGIFTSUB,GIFTSUB
+                            MessageType.GIFTSUB ->{
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.6f))){
+
+                                    Column(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                    ) {
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ){
+                                            Icon(
+                                                imageVector = Icons.Default.Favorite,
+                                                contentDescription ="GIFTED SUB",
+                                                modifier = Modifier
+                                                    .size(30.dp)
+                                                ,
+                                                tint = Color.White
+                                            )
+                                            Text("GIFTED SUB",color = Color.White, fontSize = 20.sp)
+                                        }
+
+                                        Text(buildAnnotatedString {
+//
+                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                                append(" ${twitchUser.userType}")
+                                            }
+                                        }
+                                        )
+                                    }
+
+                                }
+                            }
+                            MessageType.MYSTERYGIFTSUB ->{
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.6f))){
+
+                                    Column(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                    ) {
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ){
+                                            Icon(
+                                                imageVector = Icons.Default.ShoppingCart,
+                                                contentDescription ="RANDOM GIFTED SUB",
+                                                modifier = Modifier
+                                                    .size(30.dp)
+                                                ,
+                                                tint = Color.White
+                                            )
+                                            Text("RANDOM GIFTED SUB",color = Color.White, fontSize = 20.sp)
+                                        }
+
+                                        Text(buildAnnotatedString {
+//
+                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                                append(" ${twitchUser.userType}")
+                                            }
+                                        }
+                                        )
+                                    }
+
+                                }
+
                             }
 
 
