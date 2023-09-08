@@ -886,9 +886,26 @@ fun TextChat(
                                 }
 
                             }
+                            MessageType.ANNOUNCEMENT ->{
+                                Row(modifier = Modifier.fillMaxWidth()){
+                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                    Text(buildAnnotatedString {
+                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                                            append("${twitchUser.displayName} :")
+                                        }
+                                        append(" ${twitchUser.userType}")
+
+                                    },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                }
+                            }
 
 
-
+                            else -> {}
                         } // end of the WHEN BLOCK
 
 
