@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class MessageType {
-    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB
+    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB
 }
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -298,6 +298,8 @@ class TwitchWebSocket @Inject constructor(
                 "announcement" ->{}
                  "resub" ->{messageType = MessageType.RESUB}
                  "sub" ->{messageType = MessageType.SUB}
+                 "submysterygift" ->{messageType = MessageType.MYSTERYGIFTSUB}
+                 "subgift" ->{messageType = MessageType.GIFTSUB}
                  else ->{}
 
              }
