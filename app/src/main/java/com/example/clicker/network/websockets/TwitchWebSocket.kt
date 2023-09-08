@@ -301,9 +301,9 @@ class TwitchWebSocket @Inject constructor(
                  else ->{}
 
              }
-             messageData += text.substring(startIndex+1, endIndex).trim()
-             Log.d("MESSAGINGWEBSOCKETSTOOF","MESSAGEDATA --> ${messageData}")
-             Log.d("MESSAGINGWEBSOCKETSTOOF","SUBSTRING -> ${text.substring(startIndex+1, endIndex).trim()}")
+             messageData += " ${text.substring(startIndex + 1, endIndex).trim()}"
+//             Log.d("MESSAGINGWEBSOCKETSTOOF","MESSAGEDATA --> ${messageData}")
+//             Log.d("MESSAGINGWEBSOCKETSTOOF","SUBSTRING -> ${text.substring(startIndex+1, endIndex).trim()}")
              val userStateData = TwitchUserData(
                  badgeInfo = null,
                  badges = null,
