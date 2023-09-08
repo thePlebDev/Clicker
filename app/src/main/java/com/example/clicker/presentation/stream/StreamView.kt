@@ -129,9 +129,12 @@ import com.example.clicker.util.Response
 import androidx.compose.material.DismissValue.Default
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -926,11 +929,48 @@ fun TextChat(
                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
                                                append(" ${twitchUser.userType}")
                                            }
-
-
                                        }
                                        )
                                    }
+
+                                }
+                            }
+                            MessageType.RESUB ->{
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.6f))){
+
+                                    Column(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                    ) {
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Start,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ){
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription ="resub icon",
+                                                modifier = Modifier
+                                                    .size(30.dp)
+                                                ,
+                                                tint = Color.White
+                                            )
+                                            Text("RESUB",color = Color.White, fontSize = 20.sp)
+                                        }
+
+                                        Text(buildAnnotatedString {
+//                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+//                                                append("${twitchUser.displayName} :")
+//                                            }
+                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                                append(" ${twitchUser.userType}")
+                                            }
+                                        }
+                                        )
+                                    }
 
                                 }
                             }
