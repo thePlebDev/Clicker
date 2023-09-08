@@ -131,6 +131,7 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -816,7 +817,7 @@ fun TextChat(
             state = lazyColumnListState,
             modifier = Modifier
                 .padding(bottom = 70.dp)
-                .background(Color.Red)
+                .background(Color.DarkGray)
                 .fillMaxSize(),
 
         ){
@@ -870,7 +871,10 @@ fun TextChat(
                             }
                             MessageType.USERNOTICE ->{
                                 Row(modifier = Modifier.fillMaxWidth()){
-                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                    Spacer(modifier = Modifier
+                                        .height(20.dp)
+                                        .width(5.dp)
+                                        .background(Color.Red))
                                     Text(buildAnnotatedString {
                                         withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
                                             append("${twitchUser.displayName} :")
@@ -882,25 +886,52 @@ fun TextChat(
                                             .fillMaxWidth()
                                             .padding(15.dp)
                                     )
-                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                    Spacer(modifier = Modifier
+                                        .height(20.dp)
+                                        .width(5.dp)
+                                        .background(Color.Red))
                                 }
 
                             }
                             MessageType.ANNOUNCEMENT ->{
-                                Row(modifier = Modifier.fillMaxWidth()){
-                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
-                                    Text(buildAnnotatedString {
-                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                            append("${twitchUser.displayName} :")
-                                        }
-                                        append(" ${twitchUser.userType}")
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Black.copy(alpha = 0.6f))){
 
-                                    },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(15.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp).width(5.dp).background(Color.Red))
+                                   Column(modifier = Modifier
+                                       .fillMaxWidth()
+                                       .padding(15.dp)
+                                   ) {
+
+                                       Row(
+                                           verticalAlignment = Alignment.CenterVertically,
+                                           horizontalArrangement = Arrangement.Start,
+                                           modifier = Modifier.fillMaxWidth()
+                                       ){
+                                           Icon(
+                                               imageVector = Icons.Default.Notifications,
+                                               contentDescription ="Send chat",
+                                               modifier = Modifier
+                                                   .size(30.dp)
+                                                   ,
+                                               tint = Color.White
+                                           )
+                                           Text("ANNOUNCEMENT",color = Color.White, fontSize = 20.sp)
+                                       }
+
+                                       Text(buildAnnotatedString {
+                                           withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                               append("${twitchUser.displayName} :")
+                                           }
+                                           withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                                               append(" ${twitchUser.userType}")
+                                           }
+
+
+                                       }
+                                       )
+                                   }
+
                                 }
                             }
 
@@ -1053,27 +1084,29 @@ fun ChatCard(
     val anchors = mapOf(0f to 0, -sizePx to 1) // Maps anchor points (in px) to states
     val scope = rememberCoroutineScope()
 
-    Box(Modifier
-        .fillMaxWidth().padding(vertical = 10.dp, horizontal = 10.dp)
-        .clip(shape = RoundedCornerShape(10.dp))
-        .background(backgroundColor)
-        .draggable(
-            orientation = Orientation.Horizontal,
-            enabled = true,
-            state = dragState,
-            onDragStopped = {
-                scope.launch {
-                    if(thresholdCrossed){
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .clip(shape = RoundedCornerShape(10.dp))
+            .background(backgroundColor)
+            .draggable(
+                orientation = Orientation.Horizontal,
+                enabled = true,
+                state = dragState,
+                onDragStopped = {
+                    scope.launch {
+                        if (thresholdCrossed) {
 
-                        state.resetOffset()
-                    }else{
-                        state.resetOffset()
+                            state.resetOffset()
+                        } else {
+                            state.resetOffset()
+                        }
+
                     }
+                },
 
-                }
-            },
-
-        )
+                )
 
     ){
         Column(
@@ -1082,7 +1115,8 @@ fun ChatCard(
         ){
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                     .combinedClickable(
                         onClick = {
@@ -1288,7 +1322,7 @@ fun TextFieldChat(
                 contentDescription ="Show side modal",
                 modifier = Modifier
                     .size(35.dp)
-                    .clickable { showModal()}
+                    .clickable { showModal() }
                     .padding(start = 5.dp),
                 tint = Color.White
             )
