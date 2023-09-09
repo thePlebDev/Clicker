@@ -849,16 +849,10 @@ fun TextChat(
                         when(twitchUser.messageType){
 
                             MessageType.NOTICE ->{
-                                Text(buildAnnotatedString {
-                                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                        append("${twitchUser.displayName} :")
-                                    }
-                                    append(" ${twitchUser.userType}")
-
-                                },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
+                                NoticeMessage(
+                                    color = color,
+                                    displayName = twitchUser.displayName,
+                                    message = twitchUser.userType
                                 )
                             }
 
@@ -870,223 +864,36 @@ fun TextChat(
                                     updateClickedUser ={user -> updateClickedUser(user)},
                                     deleteMessage ={messageId -> deleteMessage(messageId)}
                                 )
-
-
-
+                                
                             }
-                            MessageType.USERNOTICE ->{
-                                Row(modifier = Modifier.fillMaxWidth()){
-                                    Spacer(modifier = Modifier
-                                        .height(20.dp)
-                                        .width(5.dp)
-                                        .background(Color.Red))
-                                    Text(buildAnnotatedString {
-                                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                                            append("${twitchUser.displayName} :")
-                                        }
-                                        append(" ${twitchUser.userType}")
 
-                                    },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(15.dp)
-                                    )
-                                    Spacer(modifier = Modifier
-                                        .height(20.dp)
-                                        .width(5.dp)
-                                        .background(Color.Red))
-                                }
-
-                            }
                             MessageType.ANNOUNCEMENT ->{
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.6f))){
-
-                                   Column(modifier = Modifier
-                                       .fillMaxWidth()
-                                       .padding(15.dp)
-                                   ) {
-
-                                       Row(
-                                           verticalAlignment = Alignment.CenterVertically,
-                                           horizontalArrangement = Arrangement.Start,
-                                           modifier = Modifier.fillMaxWidth()
-                                       ){
-                                           Icon(
-                                               imageVector = Icons.Default.Notifications,
-                                               contentDescription ="Send chat",
-                                               modifier = Modifier
-                                                   .size(30.dp)
-                                                   ,
-                                               tint = Color.White
-                                           )
-                                           Text("ANNOUNCEMENT",color = Color.White, fontSize = 20.sp)
-                                       }
-
-                                       Text(buildAnnotatedString {
-                                           withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                               append("${twitchUser.displayName} :")
-                                           }
-                                           withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                               append(" ${twitchUser.userType}")
-                                           }
-                                       }
-                                       )
-                                   }
-
-                                }
+                                AnnouncementMessage(
+                                    displayName = twitchUser.displayName,
+                                    message = twitchUser.userType
+                                )
                             }
                             MessageType.RESUB ->{
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.6f))){
+                                ResubMessage(
+                                    message = twitchUser.userType
+                                )
 
-                                    Column(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
-                                    ) {
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Start,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ){
-                                            Icon(
-                                                imageVector = Icons.Default.Star,
-                                                contentDescription ="resub icon",
-                                                modifier = Modifier
-                                                    .size(30.dp)
-                                                ,
-                                                tint = Color.White
-                                            )
-                                            Text("RESUB",color = Color.White, fontSize = 20.sp)
-                                        }
-
-                                        Text(buildAnnotatedString {
-//                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-//                                                append("${twitchUser.displayName} :")
-//                                            }
-                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                                append(" ${twitchUser.userType}")
-                                            }
-                                        }
-                                        )
-                                    }
-
-                                }
                             }
                             MessageType.SUB ->{
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.6f))){
-
-                                    Column(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
-                                    ) {
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Start,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ){
-                                            Icon(
-                                                imageVector = Icons.Default.Lock,
-                                                contentDescription ="Sub",
-                                                modifier = Modifier
-                                                    .size(30.dp)
-                                                ,
-                                                tint = Color.White
-                                            )
-                                            Text("SUB",color = Color.White, fontSize = 20.sp)
-                                        }
-
-                                        Text(buildAnnotatedString {
-//
-                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                                append(" ${twitchUser.userType}")
-                                            }
-                                        }
-                                        )
-                                    }
-
-                                }
+                                SubMessage(
+                                    message = twitchUser.userType
+                                )
                             }
                             //MYSTERYGIFTSUB,GIFTSUB
                             MessageType.GIFTSUB ->{
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.6f))){
-
-                                    Column(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
-                                    ) {
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Start,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ){
-                                            Icon(
-                                                imageVector = Icons.Default.Favorite,
-                                                contentDescription ="GIFTED SUB",
-                                                modifier = Modifier
-                                                    .size(30.dp)
-                                                ,
-                                                tint = Color.White
-                                            )
-                                            Text("GIFTED SUB",color = Color.White, fontSize = 20.sp)
-                                        }
-
-                                        Text(buildAnnotatedString {
-//
-                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                                append(" ${twitchUser.userType}")
-                                            }
-                                        }
-                                        )
-                                    }
-
-                                }
+                                GiftSubMessage(
+                                    message = twitchUser.userType
+                                )
                             }
                             MessageType.MYSTERYGIFTSUB ->{
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Black.copy(alpha = 0.6f))){
-
-                                    Column(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
-                                    ) {
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Start,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ){
-                                            Icon(
-                                                imageVector = Icons.Default.ShoppingCart,
-                                                contentDescription ="RANDOM GIFTED SUB",
-                                                modifier = Modifier
-                                                    .size(30.dp)
-                                                ,
-                                                tint = Color.White
-                                            )
-                                            Text("RANDOM GIFTED SUB",color = Color.White, fontSize = 20.sp)
-                                        }
-
-                                        Text(buildAnnotatedString {
-//
-                                            withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                                                append(" ${twitchUser.userType}")
-                                            }
-                                        }
-                                        )
-                                    }
-
-                                }
+                                MysteryGiftSubMessage(
+                                    message = twitchUser.userType
+                                )
 
                             }
 
@@ -1125,6 +932,232 @@ fun TextChat(
 
     }// end of the Box scope
 }
+
+@Composable
+fun MysteryGiftSubMessage(
+    message:String?
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Black.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription ="RANDOM GIFTED SUB",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text("RANDOM GIFTED SUB",color = Color.White, fontSize = 20.sp)
+            }
+
+            Text(buildAnnotatedString {
+//
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+
+    }
+}
+
+@Composable
+fun GiftSubMessage(
+    message:String?
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Black.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription ="GIFTED SUB",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text("GIFTED SUB",color = Color.White, fontSize = 20.sp)
+            }
+
+            Text(buildAnnotatedString {
+//
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+
+    }
+}
+@Composable
+fun SubMessage(
+    message:String?
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Black.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription ="Sub",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text("SUB",color = Color.White, fontSize = 20.sp)
+            }
+
+            Text(buildAnnotatedString {
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+    }
+}
+
+@Composable
+fun ResubMessage(
+    message:String?
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Black.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription ="resub icon",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text("RESUB",color = Color.White, fontSize = 20.sp)
+            }
+
+            Text(buildAnnotatedString {
+
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+
+    }
+}
+
+@Composable
+fun NoticeMessage(
+    color: Color,
+    displayName:String?,
+    message:String?
+){
+    Text(buildAnnotatedString {
+        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+            append("${displayName} :")
+        }
+        append(" ${message}")
+
+    },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+    )
+}
+
+@Composable
+fun AnnouncementMessage(
+    displayName:String?,
+    message:String?
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Black.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription ="Send chat",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text("ANNOUNCEMENT",color = Color.White, fontSize = 20.sp)
+            }
+
+            Text(buildAnnotatedString {
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append("${displayName} :")
+                }
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
