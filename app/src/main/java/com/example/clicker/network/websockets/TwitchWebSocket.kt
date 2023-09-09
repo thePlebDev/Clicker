@@ -204,7 +204,7 @@ class TwitchWebSocket @Inject constructor(
     }
 
      override fun onMessage(webSocket: WebSocket, text: String) {
-         Log.d("onMessageSocket","state --> $text")
+         Log.d("onMessageSocketStoof","state --> $text")
 
          if(text.contains(" USERSTATE ")){
              Log.d("loggedInDataOnMessage","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
