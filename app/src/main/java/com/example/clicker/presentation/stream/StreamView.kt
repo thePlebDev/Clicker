@@ -864,7 +864,7 @@ fun TextChat(
                                     updateClickedUser ={user -> updateClickedUser(user)},
                                     deleteMessage ={messageId -> deleteMessage(messageId)}
                                 )
-                                
+
                             }
 
                             MessageType.ANNOUNCEMENT ->{
@@ -1266,10 +1266,8 @@ fun ChatCard(
 
 
 
-    val swipeableState = rememberSwipeableState(0)
+
     val cardWidth = Resources.getSystem().displayMetrics.widthPixels.dp //width of what will be moving
-    val sizePx = with(LocalDensity.current) { (cardWidth/8).toPx() }
-    val anchors = mapOf(0f to 0, -sizePx to 1) // Maps anchor points (in px) to states
     val scope = rememberCoroutineScope()
 
     Box(
@@ -1285,6 +1283,9 @@ fun ChatCard(
                 onDragStopped = {
                     scope.launch {
                         if (thresholdCrossed) {
+                            displayName = "Moderator Action"
+                            comment = "Comment removed my moderator"
+                            color = Color.Red
 
                             state.resetOffset()
                         } else {
