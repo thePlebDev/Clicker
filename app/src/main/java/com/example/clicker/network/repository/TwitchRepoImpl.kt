@@ -118,7 +118,7 @@ class TwitchRepoImpl @Inject constructor(
     ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
         val response = twitchClient.deleteChatMessage(
-            authorizationToken = oAuthToken,
+            authorizationToken = "Bearer ${oAuthToken}",
             clientId = clientId,
             broadcasterId = broadcasterId,
             moderatorId = moderatorId,

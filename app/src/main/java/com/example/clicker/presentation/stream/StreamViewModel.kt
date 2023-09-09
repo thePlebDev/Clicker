@@ -136,6 +136,11 @@ class StreamViewModel @Inject constructor(
             moderatorId = _uiState.value.userId,
             messageId = messageId
         ).collect{response ->
+            Log.d("deleteChatMessageStoof",_uiState.value.oAuthToken)
+            Log.d("deleteChatMessageStoof",_uiState.value.clientId)
+            Log.d("deleteChatMessageStoof",_uiState.value.broadcasterId)
+            Log.d("deleteChatMessageStoof",_uiState.value.userId)
+            Log.d("deleteChatMessageStoof",messageId)
             when(response){
                 is Response.Loading ->{
                     Log.d("deleteChatMessage","LOADING")

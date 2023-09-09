@@ -1246,6 +1246,7 @@ fun ChatCard(
 
    // val backgroundColor = Color.Black
     var backgroundColor by remember { mutableStateOf(Color.Black) }
+    var deleted by remember { mutableStateOf(false) }
 
     if(thresholdCrossed){
         backgroundColor = Color.Red
@@ -1260,6 +1261,9 @@ fun ChatCard(
 
     var dragState = state.draggableState
     if(twitchUser.mod == "1"){
+        dragState = modDragState
+    }
+    if(deleted){
         dragState = modDragState
     }
 
@@ -1286,8 +1290,9 @@ fun ChatCard(
                             displayName = "Moderator Action"
                             comment = "Comment removed my moderator"
                             color = Color.Red
-
                             state.resetOffset()
+                            deleted = true
+                            deleteMessage(twitchUser.id!!)
                         } else {
                             state.resetOffset()
                         }
