@@ -1246,7 +1246,7 @@ fun ChatCard(
 
    // val backgroundColor = Color.Black
     var backgroundColor by remember { mutableStateOf(Color.Black) }
-    var deleted by remember { mutableStateOf(false) }
+
 
     if(thresholdCrossed){
         backgroundColor = Color.Red
@@ -1263,8 +1263,9 @@ fun ChatCard(
     if(twitchUser.mod == "1"){
         dragState = modDragState
     }
-    if(deleted){
+    if(twitchUser.deleted){
         dragState = modDragState
+        backgroundColor = Color.Red
     }
 
 
@@ -1287,11 +1288,7 @@ fun ChatCard(
                 onDragStopped = {
                     scope.launch {
                         if (thresholdCrossed) {
-                            displayName = "Moderator Action"
-                            comment = "Comment removed my moderator"
-                            color = Color.Red
                             state.resetOffset()
-                            deleted = true
                             deleteMessage(twitchUser.id!!)
                         } else {
                             state.resetOffset()
@@ -1345,9 +1342,9 @@ fun ChatCard(
 
                     Text(buildAnnotatedString {
                         withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                            append("${displayName} :")
+                            append("${twitchUser.displayName} :")
                         }
-                        append(" ${comment}")
+                        append(" ${twitchUser.userType}")
 
                     },
                         modifier = Modifier.padding(5.dp)
