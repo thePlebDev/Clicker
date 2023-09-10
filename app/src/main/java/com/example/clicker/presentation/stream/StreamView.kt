@@ -1246,6 +1246,7 @@ fun ChatCard(
 
    // val backgroundColor = Color.Black
     var backgroundColor by remember { mutableStateOf(Color.Black) }
+    var fontSize = 17.sp
 
 
     if(thresholdCrossed){
@@ -1266,6 +1267,7 @@ fun ChatCard(
     if(twitchUser.deleted){
         dragState = modDragState
         backgroundColor = Color.Red
+        fontSize = 14.sp
     }
 
 
@@ -1289,7 +1291,7 @@ fun ChatCard(
                     scope.launch {
                         if (thresholdCrossed) {
                             state.resetOffset()
-                            deleteMessage(twitchUser.id!!)
+                            deleteMessage(twitchUser.id?:"")
                         } else {
                             state.resetOffset()
                         }
@@ -1318,39 +1320,46 @@ fun ChatCard(
                         },
                     )
                 ){
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    if (showIcons){
-                        if(twitchUser.subscriber == true){
-                            AsyncImage(
-                                model = subBadge,
-                                contentDescription = "Subscriber badge",
-                                modifier = Modifier.padding(5.dp)
-                            )
-                        }
-                        if(twitchUser.mod == "1"){
-                            AsyncImage(
-                                model = modBadge,
-                                contentDescription = "Moderator badge",
-                                modifier = Modifier.padding(5.dp)
-                            )
-                        }
+                Column() {
+                    if(twitchUser.deleted){
+                        Text("Moderator deleted Comment", fontSize = 20.sp,modifier = Modifier.padding(start = 5.dp))
                     }
-
-
-
-                    Text(buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
-                            append("${twitchUser.displayName} :")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        if (showIcons){
+                            if(twitchUser.subscriber == true){
+                                AsyncImage(
+                                    model = subBadge,
+                                    contentDescription = "Subscriber badge",
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            if(twitchUser.mod == "1"){
+                                AsyncImage(
+                                    model = modBadge,
+                                    contentDescription = "Moderator badge",
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
                         }
-                        append(" ${twitchUser.userType}")
 
-                    },
-                        modifier = Modifier.padding(5.dp)
-                    )
 
+
+
+                        Text(buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
+                                append("${twitchUser.displayName} :")
+                            }
+                            append(" ${twitchUser.userType}")
+
+                        },
+                            modifier = Modifier.padding(5.dp)
+                        )
+
+                    }// end of the row
                 }
+
 
             }// end of the Card
 

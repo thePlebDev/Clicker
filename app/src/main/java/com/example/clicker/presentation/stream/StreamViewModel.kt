@@ -144,8 +144,6 @@ class StreamViewModel @Inject constructor(
         val found =listChats.first { it.id == messageId}
         val foundIndex = listChats.indexOf(found)
         listChats[foundIndex] = found.copy(
-            displayName = "Moderator action",
-            userType = "comment removed by moderator",
             deleted = true
         )
     }
