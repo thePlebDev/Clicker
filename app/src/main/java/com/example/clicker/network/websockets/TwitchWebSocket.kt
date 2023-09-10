@@ -45,7 +45,8 @@ data class TwitchUserData(
     val turbo: Boolean,
     val userId: String?,
     var userType: String?,
-    val messageType: MessageType
+    val messageType: MessageType,
+    val deleted:Boolean = false
 )
 data class TwitchUserAnnouncement(
     val badgeInfo: String,
@@ -136,6 +137,11 @@ class TwitchWebSocket @Inject constructor(
     private val _roomState = MutableStateFlow<RoomState?>(null)
     val roomState = _roomState.asStateFlow()
 
+    private val _messageToDeleteId:MutableStateFlow<String?> = MutableStateFlow(null)
+    val messageToDeleteId = _messageToDeleteId.asStateFlow() //this is the text data shown to the user
+
+
+
 
 
 
@@ -211,6 +217,18 @@ class TwitchWebSocket @Inject constructor(
              _loggedInUserUiState.tryEmit(
                  getLoggedInUserInfo(text)
              )
+
+         }
+         if(text.contains(" CLEARMSG ")){
+
+
+// Define the regex pattern to match "target-msg-id"
+             val pattern = "target-msg-id=([^;]+)".toRegex()
+
+// Use a Matcher to find the pattern in the input string
+             val messageId = pattern.find(text)?.groupValues?.get(1)
+            // Log.d("onMessageSocketStoofPasred","MSGID --> $messageId")
+             _messageToDeleteId.tryEmit(messageId)
 
          }
          if(text.contains(" NOTICE ")){

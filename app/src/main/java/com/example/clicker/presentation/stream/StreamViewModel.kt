@@ -106,6 +106,16 @@ class StreamViewModel @Inject constructor(
 
     private val allChatters = mutableStateListOf<String>()
 
+    init{
+        viewModelScope.launch {
+            webSocket.messageToDeleteId.collect{nullableMsgId ->
+                nullableMsgId?.let{nonNullMsgId ->
+                    filterMessages(nonNullMsgId)
+                }
+            }
+        }
+    }
+
 
     fun changeTimeoutDuration(duration:Int){
         _uiState.value = _uiState.value.copy(
@@ -125,6 +135,18 @@ class StreamViewModel @Inject constructor(
     fun changeBanReason(reason:String){
         _uiState.value = _uiState.value.copy(
             banReason = reason
+        )
+    }
+
+    //TODO: NOTES FOR WHEN I COME BACK
+    // this should be hooked up to a hot flow and run eachtime a new messageId is sent to it
+    fun filterMessages(messageId:String){
+        val found =listChats.first { it.id == messageId}
+        val foundIndex = listChats.indexOf(found)
+        listChats[foundIndex] = found.copy(
+            displayName = "Moderator action",
+            userType = "comment removed by moderator",
+            deleted = true
         )
     }
 
