@@ -46,7 +46,7 @@ data class TwitchUserData(
     val userId: String?,
     var userType: String?,
     val messageType: MessageType,
-    val deleted:Boolean = false
+    val deleted:Boolean = false,
 )
 data class TwitchUserAnnouncement(
     val badgeInfo: String,
