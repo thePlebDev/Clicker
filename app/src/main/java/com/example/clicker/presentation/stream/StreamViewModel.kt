@@ -184,7 +184,6 @@ class StreamViewModel @Inject constructor(
         if(!allChatters.contains(username)){
             allChatters.add(username)
         }
-        //updateClickedUsernameChats(username,message)
 
     }
     fun updateClickedChat(clickedUsername:String){
@@ -195,15 +194,7 @@ class StreamViewModel @Inject constructor(
         clickedUsernameChats.addAll(messages)
 
     }
-    private fun updateClickedUsernameChats(username:String, message:String){
-        //clickedUsernameChats.clear()
-        if(username == _clickedUsername.value){
-            Log.d("mostRecentChats",message)
 
-
-            //clickedUsernameChats.add(message)
-        }
-    }
 
 
 

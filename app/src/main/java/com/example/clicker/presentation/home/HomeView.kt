@@ -601,7 +601,7 @@ fun EmptyFollowingList(){
             verticalArrangement = Arrangement.Center
         ){
             Text("No live followed channels", fontSize = 30.sp, textAlign = TextAlign.Center)
-            
+
         }
 
     }

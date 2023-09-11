@@ -137,6 +137,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -896,6 +897,13 @@ fun TextChat(
                                 )
 
                             }
+                            MessageType.ERROR ->{
+                                ErrorMessage(
+                                    message = twitchUser.userType!!,
+                                    user = twitchUser.displayName!!
+                                )
+
+                            }
 
 
                             else -> {}
@@ -933,6 +941,52 @@ fun TextChat(
     }// end of the Box scope
 }
 
+@Composable
+fun ErrorMessage(message:String,user:String){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Red.copy(alpha = 0.6f))){
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription ="Error has occured",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+                Text(user,color = Color.White, fontSize = 20.sp)
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription ="Error has occured",
+                    modifier = Modifier
+                        .size(30.dp)
+                    ,
+                    tint = Color.White
+                )
+            }
+
+            Text(buildAnnotatedString {
+//
+                withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    append(" ${message}")
+                }
+            }
+            )
+        }
+
+    }
+}
 @Composable
 fun MysteryGiftSubMessage(
     message:String?
@@ -1230,7 +1284,7 @@ fun ChatCard(
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val coroutineScope = rememberCoroutineScope()
-    //val color = Color(parseColor(twitchUser.color))
+
 
     var color by remember { mutableStateOf(Color(parseColor(twitchUser.color))) }
     var displayName by remember { mutableStateOf(twitchUser.displayName) }
