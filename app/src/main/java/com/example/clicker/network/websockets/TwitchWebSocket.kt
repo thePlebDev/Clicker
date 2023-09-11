@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class MessageType {
-    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR
+    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN
 }
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -185,6 +185,7 @@ class TwitchWebSocket @Inject constructor(
 
     override fun onOpen(webSocket: WebSocket, response: Response){
         super.onOpen(webSocket, response)
+        
 
         //todo: I think I am going to create a custom scope tied to the lifecycle of this websocket
         openChat(webSocket)
@@ -196,6 +197,7 @@ class TwitchWebSocket @Inject constructor(
 
     fun openChat(webSocket: WebSocket) = GlobalScope.launch{
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
+
         tokenDataStore.getOAuthToken().collect{oAuthToken ->
             Log.d("NICKUSERNAME","state --> $loggedInUsername")
             Log.d("OAuthtokenStoof",oAuthToken)
@@ -230,6 +232,31 @@ class TwitchWebSocket @Inject constructor(
             // Log.d("onMessageSocketStoofPasred","MSGID --> $messageId")
              _messageToDeleteId.tryEmit(messageId)
 
+         }
+
+         if(text.contains(" JOIN ")){
+             Log.d("joiningTheDatabase","JOIN --> $text")
+             val userData = TwitchUserData(
+                 badgeInfo = null,
+                 badges = null,
+                 clientNonce = null,
+                 color = "#000000",
+                 displayName = "Room update",
+                 emotes = null,
+                 firstMsg = null,
+                 flags = null,
+                 id = null,
+                 mod = null,
+                 returningChatter = null,
+                 roomId = null,
+                 subscriber = false,
+                 tmiSentTs = null,
+                 turbo = false,
+                 userId = null,
+                 userType = "Connected to chat!",
+                 messageType = MessageType.JOIN
+             )
+             _state.tryEmit(userData)
          }
          if(text.contains(" NOTICE ")){
              Log.d("NOTICE","NOTICE --> $text")
