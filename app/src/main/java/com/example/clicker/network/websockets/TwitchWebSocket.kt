@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class MessageType {
-    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB
+    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR
 }
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -392,8 +392,28 @@ class TwitchWebSocket @Inject constructor(
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         //t.printStackTrace()
         Log.d("websocketStooffail","onFailure: ${t.printStackTrace()}")
-        Log.d("websocketStooffail","onFailure: ${t.message.toString()}")
-        Log.d("websocketStooffail","onFailure: ${webSocket.toString()}")
+         val errorValue =TwitchUserData(
+            badgeInfo = "subscriber/77",
+            badges = "subscriber/36,sub-gifter/50",
+            clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
+            color = "#FF0000",
+            displayName = "Connection Error",
+            emotes = "",
+            firstMsg = "0",
+            flags = "",
+            id = "fd594314-969b-4f5e-a83f-5e2f74261e6c",
+            mod = "0",
+            returningChatter = "0",
+            roomId = "19070311",
+            subscriber = true,
+            tmiSentTs = 1690747946900L,
+            turbo = false,
+            userId = "144252234",
+            userType = "Disconnected from chat. Check internet connection. If issues persists, your authentication may be expired. Log out and back in to be issued a new one",
+            messageType = MessageType.ERROR
+        )
+
+        _state.tryEmit(errorValue)
     }
 
 
@@ -401,6 +421,7 @@ class TwitchWebSocket @Inject constructor(
        val sendingText = webSocket?.send("PRIVMSG #$streamerChannelName :$chatMessage")
         sentMessageString = chatMessage
        // 'PRIVMSG #$channelName :$message'
+        Log.d("websocketStooffail","sendMessageResult:--> $sendingText")
         return sendingText ?: false
     }
 
