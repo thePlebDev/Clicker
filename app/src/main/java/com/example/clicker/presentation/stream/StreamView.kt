@@ -904,6 +904,12 @@ fun TextChat(
                                 )
 
                             }
+                            MessageType.JOIN ->{
+
+                                JoinMessage(
+                                    message = twitchUser.userType!!
+                                )
+                            }
 
 
                             else -> {}
@@ -939,6 +945,11 @@ fun TextChat(
         )
 
     }// end of the Box scope
+}
+
+@Composable
+fun JoinMessage(message:String){
+    Text(message, fontSize = 17.sp,color = Color.White,modifier = Modifier.padding(start =5.dp))
 }
 
 @Composable
