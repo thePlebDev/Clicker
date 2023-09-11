@@ -51,11 +51,15 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -489,6 +493,7 @@ fun SecondTesting(
 
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UrlImages(
 
@@ -500,71 +505,83 @@ fun UrlImages(
     userId:String
 ){
 
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(isRefreshing, { Log.d("refressingThings","REFRESHPULL") })
 
-    if(urlList != null) {
+    Box(modifier = Modifier.fillMaxSize()) {
+
+
+
+        if (urlList != null) {
         if (urlList.isEmpty()){
+            //TODO: IMPLEMENT THE CLICK TO REFRESH
             EmptyFollowingList()
         }
 
 
-        Log.d("UrlImagesListSize", urlList.size.toString())
-        LazyColumn(
-            modifier = Modifier.padding(contentPadding)
-        ) {
-            items(urlList) { streamItem ->
-                Log.d("urlListImageUrl", streamItem.url)
-                Row(modifier = Modifier.clickable {
+            Log.d("UrlImagesListSize", urlList.size.toString())
+            LazyColumn(
+                modifier = Modifier.padding(contentPadding)
+            ) {
+                items(urlList) { streamItem ->
+                    Log.d("urlListImageUrl", streamItem.url)
+                    Row(modifier = Modifier.clickable {
 
-                    Log.d("broadcasterIdClicked", "broadcasterIdClicked -->  ${streamItem.broadcasterId }")
-                    updateStreamerName(
-                        streamItem.streamerName, clientId, streamItem.broadcasterId,userId
-                    )
-                    onNavigate(R.id.action_homeFragment_to_streamFragment)
-                }
-                ) {
-                    Box() {
-
-                        AsyncImage(
-                            model = streamItem.url,
-                            contentDescription = null
+                        Log.d(
+                            "broadcasterIdClicked",
+                            "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
                         )
-                        Text(
-                            "${streamItem.views}",
-                            style = TextStyle(
-                                color = Color.White,
+                        updateStreamerName(
+                            streamItem.streamerName, clientId, streamItem.broadcasterId, userId
+                        )
+                        onNavigate(R.id.action_homeFragment_to_streamFragment)
+                    }
+                    ) {
+                        Box() {
+
+                            AsyncImage(
+                                model = streamItem.url,
+                                contentDescription = null
+                            )
+                            Text(
+                                "${streamItem.views}",
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.ExtraBold
+                                ),
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(5.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.padding(start = 10.dp)) {
+                            Text(streamItem.streamerName, fontSize = 20.sp)
+                            Text(
+                                streamItem.streamTitle,
                                 fontSize = 15.sp,
-                                fontWeight = FontWeight.ExtraBold
-                            ),
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(5.dp)
-                        )
-                    }
-                    Column(modifier = Modifier.padding(start = 10.dp)) {
-                        Text(streamItem.streamerName, fontSize = 20.sp)
-                        Text(
-                            streamItem.streamTitle,
-                            fontSize = 15.sp,
-                            modifier = Modifier.alpha(0.5f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            streamItem.gameTitle,
-                            fontSize = 15.sp,
-                            modifier = Modifier.alpha(0.5f)
-                        )
+                                modifier = Modifier.alpha(0.5f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                streamItem.gameTitle,
+                                fontSize = 15.sp,
+                                modifier = Modifier.alpha(0.5f)
+                            )
+                        }
+
                     }
 
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                    )
                 }
-
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                )
-            }
-        }// end of the lazy column
+            }// end of the lazy column
+        }
+        PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
 
 }
@@ -584,9 +601,7 @@ fun EmptyFollowingList(){
             verticalArrangement = Arrangement.Center
         ){
             Text("No live followed channels", fontSize = 30.sp, textAlign = TextAlign.Center)
-            Button(onClick = { /*TODO*/ }) {
-                Text("Click to reload", textAlign = TextAlign.Center)
-            }
+            
         }
 
     }
