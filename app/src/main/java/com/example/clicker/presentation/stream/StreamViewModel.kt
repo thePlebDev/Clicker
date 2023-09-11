@@ -175,34 +175,7 @@ class StreamViewModel @Inject constructor(
 
         }
 
-//        oAuthToken: String,
-//        clientId: String,
-//        broadcasterId: String,
-//        moderatorId: String,
-//        messageId: String
-//        val twitchUserData = TwitchUserData(
-//            badgeInfo = "SomeBadgeInfo",
-//            badges = "SomeBadges",
-//            clientNonce = "SomeClientNonce",
-//            color = "#636161",
-//            displayName = "Moderator action",
-//            emotes = "SomeEmotes",
-//            firstMsg = "SomeFirstMsg",
-//            flags = "SomeFlags",
-//            id = "SomeId",
-//            mod = "mod",
-//            returningChatter = "SomeReturningChatter",
-//            roomId = "SomeRoomId",
-//            subscriber = false,
-//            tmiSentTs = null,
-//            turbo = true,
-//            userId = "SomeUserId",
-//            userType = "Message deleted by user",
-//            messageType =  MessageType.NOTICE
-//        )
-//        listChats.removeRange(0,1)
-//
-//        listChats[0] = twitchUserData
+
 
 
     }
@@ -217,7 +190,7 @@ class StreamViewModel @Inject constructor(
     fun updateClickedChat(clickedUsername:String){
         _clickedUsername.value = clickedUsername
         clickedUsernameChats.clear()
-        val messages = listChats.filter { it.displayName == clickedUsername }.map { it.userType!! }
+        val messages = listChats.filter { it.displayName == clickedUsername }.map { if(it.deleted) it.userType!! +" (deleted by mod)" else it.userType!! }
 
         clickedUsernameChats.addAll(messages)
 
@@ -316,6 +289,11 @@ class StreamViewModel @Inject constructor(
             webSocket.state.collect{twitchUserMessage ->
                 Log.d("loggedMessage","${twitchUserMessage}")
                     listChats.add(twitchUserMessage)
+                if(twitchUserMessage.displayName == _clickedUsername.value){
+
+                    clickedUsernameChats.add(twitchUserMessage.userType!!)
+
+                }
 
 
             }
