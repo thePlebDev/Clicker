@@ -1,6 +1,8 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import com.example.clicker.network.BanUser
+import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
@@ -130,6 +132,41 @@ class TwitchRepoImpl @Inject constructor(
             Log.d("deleteChatMessageException",response.message())
             Log.d("deleteChatMessageException",response.code().toString())
             emit(Response.Failure(Exception("MESSAGE NOT DELETED")))
+        }
+    }
+
+    override suspend fun banUser(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        body:BanUser
+    ): Flow<Response<BanUserResponse>> = flow{
+        emit(Response.Loading)
+        val response = twitchClient.banUser(
+            authorizationToken = "Bearer ${oAuthToken}",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId = moderatorId,
+            body = body
+        )
+        Log.d("BANUSERRESPONSE","moderatorId --> ${moderatorId}")
+        Log.d("BANUSERRESPONSE","oAuthToken --> ${oAuthToken}")
+        Log.d("BANUSERRESPONSE","clientId --> ${clientId}")
+        Log.d("BANUSERRESPONSE","broadcasterId --> ${broadcasterId}")
+        Log.d("BANUSERRESPONSE","body.data --> ${body.data}")
+        Log.d("BANUSERRESPONSE","message --> ${response.message()}")
+
+
+        if(response.isSuccessful){
+            val data = response.body()
+            data?.let{
+                emit(Response.Success(it))
+            }
+        }else{
+            Log.d("BANUSERRESPONSE","code --> ${response.message()}")
+            Log.d("BANUSERRESPONSE","message --> ${response.message()}")
+            emit(Response.Failure(Exception("Ban User exception")))
         }
     }
 

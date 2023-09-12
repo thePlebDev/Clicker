@@ -76,8 +76,42 @@ interface TwitchClient {
         @Query("message_id") messageId:String,
     ):Response<Void>
 
+    @Headers("Content-Type: application/json")
+    @POST("moderation/bans")
+    suspend fun banUser(
+        @Header("Authorization") authorizationToken:String,
+        @Header("Client-Id") clientId:String,
+        @Query("broadcaster_id") broadcasterId:String,
+        @Query("moderator_id") moderatorId:String,
+        @Body body: BanUser
+    ):Response<BanUserResponse>
+
 
 }
+
+
+
+data class BanUser(
+    val data: BanUserData
+)
+
+
+data class BanUserData(
+    val user_id: String,
+    val reason: String
+)
+
+data class BanUserResponse(
+    val data: List<BanUserResponseData>
+)
+
+data class BanUserResponseData(
+    val broadcaster_id: String,
+    val moderator_id: String,
+    val user_id: String,
+    val created_at: String,
+    val end_time: String? // Note that end_time can be null
+)
 
 
 
