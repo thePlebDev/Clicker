@@ -185,7 +185,7 @@ class TwitchWebSocket @Inject constructor(
 
     override fun onOpen(webSocket: WebSocket, response: Response){
         super.onOpen(webSocket, response)
-        
+
 
         //todo: I think I am going to create a custom scope tied to the lifecycle of this websocket
         openChat(webSocket)

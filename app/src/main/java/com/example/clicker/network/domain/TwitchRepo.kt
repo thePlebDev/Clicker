@@ -1,5 +1,7 @@
 package com.example.clicker.network.domain
 
+import com.example.clicker.network.BanUser
+import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.UpdateChatSettings
@@ -39,6 +41,15 @@ interface TwitchRepo {
         messageId:String,
 
     ):Flow<Response<Boolean>>
+
+    suspend fun banUser(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId:String,
+        moderatorId:String,
+        body:BanUser
+    ):Flow<Response<BanUserResponse>>
+
 
 
 }

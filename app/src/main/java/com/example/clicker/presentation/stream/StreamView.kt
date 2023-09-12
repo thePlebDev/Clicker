@@ -134,6 +134,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
@@ -152,6 +153,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
+import com.example.clicker.network.BanUser
+import com.example.clicker.network.BanUserData
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.abs
 import kotlin.math.absoluteValue
@@ -199,7 +202,9 @@ fun StreamView(
                         changeTimeoutReason = {reason -> streamViewModel.changeTimeoutReason(reason)},
                         changeTimeoutDuration = {duration -> streamViewModel.changeTimeoutDuration(duration)},
                         changeBanDuration = {duration -> streamViewModel.changeBanDuration(duration)},
-                        changeBanReason = {reason -> streamViewModel.changeBanReason(reason)}
+                        changeBanReason = {reason -> streamViewModel.changeBanReason(reason)},
+                        banUser = {banUser -> streamViewModel.banUser(banUser)},
+                        clickedUserId = streamViewModel.clickedUserId.value
                     )
 
                 }
@@ -250,7 +255,7 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                            updateClickedUser = {username -> streamViewModel.updateClickedChat(username)},
+                            updateClickedUser = {username,userId -> streamViewModel.updateClickedChat(username,userId)},
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
                             deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)}
@@ -310,7 +315,10 @@ fun BottomModalContent(
     changeTimeoutReason: (String) -> Unit,
 
     changeBanDuration: (Int) -> Unit,
-    changeBanReason: (String) -> Unit
+    changeBanReason: (String) -> Unit,
+
+    banUser:(BanUser) ->Unit,
+    clickedUserId:String,
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -333,7 +341,9 @@ fun BottomModalContent(
             banDuration = banDuration,
             banReason = banReason,
             changeBanDuration ={duration -> changeBanDuration(duration)},
-            changeBanReason ={reason -> changeBanReason(reason)}
+            changeBanReason ={reason -> changeBanReason(reason)},
+            banUser = {bannedUser ->  banUser(bannedUser)},
+            clickedUserId = clickedUserId
 
         )
     }
@@ -773,7 +783,7 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     addChatter:(String,String) -> Unit,
-    updateClickedUser:(String) -> Unit,
+    updateClickedUser:(String,String) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
     deleteMessage: (String) -> Unit
@@ -862,7 +872,7 @@ fun TextChat(
                                 SwipeToDeleteTextCard(
                                     twitchUser = twitchUser,
                                     bottomModalState = bottomModalState,
-                                    updateClickedUser ={user -> updateClickedUser(user)},
+                                    updateClickedUser ={username,userId -> updateClickedUser(username,userId)},
                                     deleteMessage ={messageId -> deleteMessage(messageId)}
                                 )
 
@@ -943,6 +953,8 @@ fun TextChat(
             scrollingPaused = !autoscroll,
             enableAutoScroll = {autoscroll = true}
         )
+
+
 
     }// end of the Box scope
 }
@@ -1229,14 +1241,14 @@ fun AnnouncementMessage(
 fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String) -> Unit,
+    updateClickedUser:(String,String) -> Unit,
     deleteMessage:(String)-> Unit
 
 ){
         ChatCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
-            updateClickedUser ={user -> updateClickedUser(user)},
+            updateClickedUser ={username,userId -> updateClickedUser(username,userId)},
             deleteMessage = {messageId -> deleteMessage(messageId)}
         )
 }
@@ -1289,7 +1301,7 @@ class SwipeableActionsState internal constructor() {
 fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String) -> Unit,
+    updateClickedUser:(String,String) -> Unit,
     deleteMessage:(String)-> Unit
 ){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
@@ -1356,7 +1368,7 @@ fun ChatCard(
                     scope.launch {
                         if (thresholdCrossed) {
                             state.resetOffset()
-                            deleteMessage(twitchUser.id?:"")
+                            deleteMessage(twitchUser.id ?: "")
                         } else {
                             state.resetOffset()
                         }
@@ -1378,7 +1390,11 @@ fun ChatCard(
                     .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                     .combinedClickable(
                         onClick = {
-                            updateClickedUser(twitchUser.displayName.toString())
+
+                            updateClickedUser(
+                                twitchUser.displayName.toString(),
+                                twitchUser.userId.toString()
+                            )
                             coroutineScope.launch {
                                 bottomModalState.show()
                             }
@@ -1476,6 +1492,20 @@ fun ScrollToBottom(
             }
 
         }
+        Icon(
+            imageVector = Icons.Default.Refresh,
+            contentDescription ="Send chat",
+            modifier = Modifier
+                .clip(RoundedCornerShape(5.dp))
+                .size(50.dp)
+                .clickable {  }
+                .align(Alignment.BottomEnd)
+                .background(Color.White)
+            ,
+            tint = Color.Magenta
+        )
+
+
 
 
     }
@@ -1684,11 +1714,12 @@ fun TimeoutDialog(
 fun BanDialog(
     onDismissRequest: () -> Unit,
     username:String,
-
     banDuration:Int,
     banReason:String,
     changeBanDuration:(Int) ->Unit,
     changeBanReason:(String) ->Unit,
+    banUser:(BanUser) -> Unit,
+    clickedUserId: String
 ) {
 
 
@@ -1743,7 +1774,17 @@ fun BanDialog(
                     Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
                         Text("Cancel")
                     }
-                    Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                    Button(
+                        onClick = { banUser(
+                            BanUser(
+                                data = BanUserData(
+                                    user_id = clickedUserId,
+                                    reason = "stinky"
+                                )
+                            )
+                        )
+                                  },
+                        modifier = Modifier.padding(10.dp)) {
                         Text("Ban")
                     }
                 }

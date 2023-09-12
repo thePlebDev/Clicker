@@ -12,6 +12,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.network.BanUser
+import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsData
@@ -79,6 +81,9 @@ class StreamViewModel @Inject constructor(
 
     private val _clickedUsername:MutableState<String> = mutableStateOf("")
     val clickedUsername:State<String> = _clickedUsername
+
+    private val _clickedUserId:MutableState<String> = mutableStateOf("")
+    val clickedUserId:State<String> = _clickedUsername
 
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
@@ -186,8 +191,9 @@ class StreamViewModel @Inject constructor(
         }
 
     }
-    fun updateClickedChat(clickedUsername:String){
+    fun updateClickedChat(clickedUsername:String,clickedUserId:String){
         _clickedUsername.value = clickedUsername
+        _clickedUserId.value = clickedUserId
         clickedUsernameChats.clear()
         val messages = listChats.filter { it.displayName == clickedUsername }.map { if(it.deleted) it.userType!! +" (deleted by mod)" else it.userType!! }
 
@@ -638,6 +644,33 @@ class StreamViewModel @Inject constructor(
                 }
             }
 
+        }
+    }
+
+    fun banUser(banUser: BanUser) = viewModelScope.launch{
+        val banUserNew = BanUser(
+            data = BanUserData(_clickedUserId.value,reason="stinky")
+        )
+        Log.d("deleteChatMessageException", "banUser.user_id ${banUserNew.data.user_id}")
+       // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
+        twitchRepoImpl.banUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            body = banUserNew
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    Log.d("BANUSERRESPONSE","LOADING")
+                }
+                is Response.Success ->{
+                    Log.d("BANUSERRESPONSE","SUCCESS")
+                }
+                is Response.Failure ->{
+                    Log.d("BANUSERRESPONSE","FAILED")
+                }
+            }
         }
     }
 
