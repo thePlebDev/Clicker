@@ -176,6 +176,7 @@ fun StreamView(
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
     val filteredChat = streamViewModel.filteredChatList
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
+    val scope = rememberCoroutineScope()
 
 
 
@@ -183,6 +184,7 @@ fun StreamView(
                 initialValue = ModalBottomSheetValue.Hidden,
                 skipHalfExpanded = true
             )
+
 
 
             ModalBottomSheetLayout(
@@ -204,7 +206,8 @@ fun StreamView(
                         changeBanDuration = {duration -> streamViewModel.changeBanDuration(duration)},
                         changeBanReason = {reason -> streamViewModel.changeBanReason(reason)},
                         banUser = {banUser -> streamViewModel.banUser(banUser)},
-                        clickedUserId = streamViewModel.clickedUserId.value
+                        clickedUserId = streamViewModel.clickedUserId.value,
+                        closeBottomModal ={scope.launch { bottomModalState.hide() }}
                     )
 
                 }
@@ -259,7 +262,7 @@ fun StreamView(
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
                             deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
-                            
+
                             undoBanResponse = streamViewModel.state.value.banResponse,
                             undoBan = {streamViewModel.unBanUser()}
 
@@ -322,6 +325,7 @@ fun BottomModalContent(
 
     banUser:(BanUser) ->Unit,
     clickedUserId:String,
+    closeBottomModal: () -> Unit
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -346,7 +350,9 @@ fun BottomModalContent(
             changeBanDuration ={duration -> changeBanDuration(duration)},
             changeBanReason ={reason -> changeBanReason(reason)},
             banUser = {bannedUser ->  banUser(bannedUser)},
-            clickedUserId = clickedUserId
+            clickedUserId = clickedUserId,
+            closeDialog = {openBanDialog.value = false},
+            closeBottomModal = {closeBottomModal()}
 
         )
     }
@@ -1512,7 +1518,7 @@ fun ScrollToBottom(
                         modifier = Modifier
                             .clip(RoundedCornerShape(5.dp))
                             .size(50.dp)
-                            .clickable { undoBan() }
+                            .clickable { undoBan() } //todo: WHEN CLICKED WE NEED TO CLOSE ALL THE MODAL
                             .align(Alignment.BottomEnd)
                             .background(Color.White)
                         ,
@@ -1739,7 +1745,9 @@ fun BanDialog(
     changeBanDuration:(Int) ->Unit,
     changeBanReason:(String) ->Unit,
     banUser:(BanUser) -> Unit,
-    clickedUserId: String
+    clickedUserId: String,
+    closeDialog:() ->Unit,
+    closeBottomModal: ()->Unit
 ) {
 
 
@@ -1795,14 +1803,17 @@ fun BanDialog(
                         Text("Cancel")
                     }
                     Button(
-                        onClick = { banUser(
-                            BanUser(
-                                data = BanUserData(
-                                    user_id = clickedUserId,
-                                    reason = "stinky"
-                                )
-                            )
-                        )
+                        onClick = {
+                            closeDialog()
+                            closeBottomModal()
+//                            banUser(
+//                            BanUser(
+//                                data = BanUserData(
+//                                    user_id = clickedUserId,
+//                                    reason = "stinky"
+//                                )
+//                            )
+//                        )
                                   },
                         modifier = Modifier.padding(10.dp)) {
                         Text("Ban")
