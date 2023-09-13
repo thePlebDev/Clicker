@@ -263,8 +263,10 @@ fun StreamView(
                             channelName = streamViewModel.channelName.collectAsState().value,
                             deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
 
-                            undoBanResponse = streamViewModel.state.value.banResponse,
-                            undoBan = {streamViewModel.unBanUser()}
+                            banResponse = streamViewModel.state.value.banResponse,
+                            undoBan = {streamViewModel.unBanUser()},
+                            undoBanResponse = streamViewModel.state.value.undoBanResponse
+
 
                         )
                     }
@@ -796,8 +798,8 @@ fun TextChat(
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
     deleteMessage: (String) -> Unit,
-
-    undoBanResponse:Response<Boolean>,
+    banResponse:Response<Boolean>,
+    undoBanResponse: Boolean,
     undoBan:()->Unit
 
 ){
@@ -963,8 +965,9 @@ fun TextChat(
         ScrollToBottom(
             scrollingPaused = !autoscroll,
             enableAutoScroll = {autoscroll = true},
-            undoBanResponse = undoBanResponse,
-            undoBan = {undoBan()}
+            banResponse = banResponse,
+            undoBan = {undoBan()},
+            undoBanResponse = undoBanResponse
         )
 
 
@@ -1473,7 +1476,8 @@ fun ChatCard(
 fun ScrollToBottom(
     scrollingPaused:Boolean,
     enableAutoScroll:() -> Unit,
-    undoBanResponse:Response<Boolean>,
+    banResponse:Response<Boolean>,
+    undoBanResponse: Boolean,
     undoBan:()->Unit
 
 
@@ -1508,10 +1512,13 @@ fun ScrollToBottom(
             }
 
         }
-        when(val response =undoBanResponse){
+        when(val response =banResponse){
             is Response.Loading ->{}
             is Response.Success ->{
-                if(response.data){
+                if(response.data && undoBanResponse){
+
+                }
+                if(response.data && !undoBanResponse){
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription ="undo ban button",
@@ -1806,14 +1813,14 @@ fun BanDialog(
                         onClick = {
                             closeDialog()
                             closeBottomModal()
-//                            banUser(
-//                            BanUser(
-//                                data = BanUserData(
-//                                    user_id = clickedUserId,
-//                                    reason = "stinky"
-//                                )
-//                            )
-//                        )
+                            banUser(
+                            BanUser(
+                                data = BanUserData(
+                                    user_id = clickedUserId,
+                                    reason = "stinky"
+                                )
+                            )
+                        )
                                   },
                         modifier = Modifier.padding(10.dp)) {
                         Text("Ban")

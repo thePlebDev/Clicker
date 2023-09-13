@@ -62,7 +62,7 @@ data class StreamUIState(
 
 
     val banResponse:Response<Boolean> = Response.Success(false),
-    val undoBanResponse:Response<Boolean> = Response.Success(false)
+    val undoBanResponse:Boolean = false
 )
 
 @HiltViewModel
@@ -669,7 +669,8 @@ class StreamViewModel @Inject constructor(
                 is Response.Success ->{
                     Log.d("BANUSERRESPONSE","SUCCESS")
                     _uiState.value = _uiState.value.copy(
-                        banResponse = Response.Success(true)
+                        banResponse = Response.Success(true),
+                        undoBanResponse = false
                     )
                 }
                 is Response.Failure ->{
@@ -686,7 +687,17 @@ class StreamViewModel @Inject constructor(
             broadcasterId = _uiState.value.broadcasterId,
             userId = _clickedUserId.value
 
-        ).collect{
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+                    _uiState.value = _uiState.value.copy(
+                        banResponse = Response.Success(true),
+                        undoBanResponse = true
+                    )
+                }
+                is Response.Failure ->{}
+            }
 
         }
     }
