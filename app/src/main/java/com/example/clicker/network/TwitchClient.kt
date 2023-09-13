@@ -86,6 +86,15 @@ interface TwitchClient {
         @Body body: BanUser
     ):Response<BanUserResponse>
 
+    @DELETE("moderation/bans")
+    suspend fun unBanUser(
+        @Header("Authorization") authorizationToken:String,
+        @Header("Client-Id") clientId:String,
+        @Query("broadcaster_id") broadcasterId:String,
+        @Query("moderator_id") moderatorId:String,
+        @Query("user_id") userId:String,
+    ):Response<Void>
+
 
 }
 

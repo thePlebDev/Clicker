@@ -170,5 +170,32 @@ class TwitchRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun unBanUser(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        userId: String
+    ): Flow<Response<Boolean>> = flow{
+        emit(Response.Loading)
+        val response = twitchClient.unBanUser(
+            authorizationToken = "Bearer ${oAuthToken}",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId = moderatorId,
+            userId = userId
+        )
+        if(response.isSuccessful){
+            emit(Response.Success(true))
+            Log.d("UNBANUSERRESPONSE","code --> ${response.message()}")
+        }else{
+            Log.d("UNBANUSERRESPONSE","code --> ${response.code()}")
+            Log.d("UNBANUSERRESPONSE","code --> ${response.body()}")
+            Log.d("UNBANUSERRESPONSE","code --> ${response.errorBody()}")
+
+            emit(Response.Failure(Exception("ERROR BANNING USER")))
+        }
+    }
+
 
 }

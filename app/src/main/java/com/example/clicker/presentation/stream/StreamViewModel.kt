@@ -61,6 +61,8 @@ data class StreamUIState(
     val timeoutReason:String ="",
 
 
+    val banResponse:Response<Boolean> = Response.Success(false),
+    val undoBanResponse:Response<Boolean> = Response.Success(false)
 )
 
 @HiltViewModel
@@ -666,11 +668,26 @@ class StreamViewModel @Inject constructor(
                 }
                 is Response.Success ->{
                     Log.d("BANUSERRESPONSE","SUCCESS")
+                    _uiState.value = _uiState.value.copy(
+                        banResponse = Response.Success(true)
+                    )
                 }
                 is Response.Failure ->{
                     Log.d("BANUSERRESPONSE","FAILED")
                 }
             }
+        }
+    }
+    fun unBanUser() = viewModelScope.launch{
+        twitchRepoImpl.unBanUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            userId = _clickedUserId.value
+
+        ).collect{
+
         }
     }
 
