@@ -50,6 +50,15 @@ interface TwitchRepo {
         body:BanUser
     ):Flow<Response<BanUserResponse>>
 
+    suspend fun unBanUser(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId:String,
+        moderatorId:String,
+        userId: String
+
+    ):Flow<Response<Boolean>>
+
 
 
 }

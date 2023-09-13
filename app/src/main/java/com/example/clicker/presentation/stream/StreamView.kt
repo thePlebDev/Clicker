@@ -258,7 +258,10 @@ fun StreamView(
                             updateClickedUser = {username,userId -> streamViewModel.updateClickedChat(username,userId)},
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
-                            deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)}
+                            deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
+                            
+                            undoBanResponse = streamViewModel.state.value.banResponse,
+                            undoBan = {streamViewModel.unBanUser()}
 
                         )
                     }
@@ -786,7 +789,10 @@ fun TextChat(
     updateClickedUser:(String,String) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
-    deleteMessage: (String) -> Unit
+    deleteMessage: (String) -> Unit,
+
+    undoBanResponse:Response<Boolean>,
+    undoBan:()->Unit
 
 ){
 
@@ -949,9 +955,10 @@ fun TextChat(
             showModal = {coroutineScope.launch { drawerState.open() }}
         )
         ScrollToBottom(
-
             scrollingPaused = !autoscroll,
-            enableAutoScroll = {autoscroll = true}
+            enableAutoScroll = {autoscroll = true},
+            undoBanResponse = undoBanResponse,
+            undoBan = {undoBan()}
         )
 
 
@@ -1460,6 +1467,9 @@ fun ChatCard(
 fun ScrollToBottom(
     scrollingPaused:Boolean,
     enableAutoScroll:() -> Unit,
+    undoBanResponse:Response<Boolean>,
+    undoBan:()->Unit
+
 
 ){
     Box(modifier = Modifier
@@ -1492,18 +1502,28 @@ fun ScrollToBottom(
             }
 
         }
-        Icon(
-            imageVector = Icons.Default.Refresh,
-            contentDescription ="Send chat",
-            modifier = Modifier
-                .clip(RoundedCornerShape(5.dp))
-                .size(50.dp)
-                .clickable {  }
-                .align(Alignment.BottomEnd)
-                .background(Color.White)
-            ,
-            tint = Color.Magenta
-        )
+        when(val response =undoBanResponse){
+            is Response.Loading ->{}
+            is Response.Success ->{
+                if(response.data){
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription ="undo ban button",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .size(50.dp)
+                            .clickable { undoBan() }
+                            .align(Alignment.BottomEnd)
+                            .background(Color.White)
+                        ,
+                        tint = Color.Magenta
+                    )
+                }
+
+            }
+            is Response.Failure ->{}
+        }
+
 
 
 
