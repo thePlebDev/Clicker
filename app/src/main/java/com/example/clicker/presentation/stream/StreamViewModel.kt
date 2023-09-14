@@ -59,11 +59,8 @@ data class StreamUIState(
     val banReason:String ="",
     val timeoutDuration: Int =10,
     val timeoutReason:String ="",
-
-
     val banResponse:Response<Boolean> = Response.Success(false),
     val undoBanResponse:Boolean = false,
-
     val showStickyHeader:Boolean = false
 )
 
@@ -675,7 +672,12 @@ class StreamViewModel @Inject constructor(
 
     fun banUser(banUser: BanUser) = viewModelScope.launch{
         val banUserNew = BanUser(
-            data = BanUserData(_clickedUserId.value,reason="stinky")
+            data = BanUserData(
+                user_id = _clickedUserId.value,
+                reason = banUser.data.reason,
+                duration = _uiState.value.banDuration
+
+            )
         )
         Log.d("deleteChatMessageException", "banUser.user_id ${banUserNew.data.user_id}")
        // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
@@ -694,6 +696,7 @@ class StreamViewModel @Inject constructor(
                     Log.d("BANUSERRESPONSE","SUCCESS")
                     _uiState.value = _uiState.value.copy(
                         banResponse = Response.Success(true),
+                        banReason = "",
                         undoBanResponse = false
                     )
                 }
