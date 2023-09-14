@@ -343,7 +343,11 @@ fun BottomModalContent(
             timeoutDuration = timeoutDuration,
             timeoutReason = timeoutReason,
             changeTimeoutDuration = {duration -> changeTimeoutDuration(duration)},
-            changeTimeoutReason = {reason -> changeTimeoutReason(reason)}
+            changeTimeoutReason = {reason -> changeTimeoutReason(reason)},
+            closeDialog = {
+                openTimeoutDialog.value = false
+                closeBottomModal()
+            }
         )
     }
     if(openBanDialog.value){
@@ -1724,6 +1728,7 @@ fun TimeoutDialog(
     timeoutReason:String,
     changeTimeoutDuration:(Int) ->Unit,
     changeTimeoutReason:(String) ->Unit,
+    closeDialog: () -> Unit
 ) {
 
 
@@ -1784,7 +1789,10 @@ fun TimeoutDialog(
                     Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
                         Text("Cancel")
                     }
-                    Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                    //todo: Implement the details of the timeout implementation
+                    Button(onClick = {
+                        closeDialog()
+                    }, modifier = Modifier.padding(10.dp)) {
                         Text("Timeout")
                     }
                 }
