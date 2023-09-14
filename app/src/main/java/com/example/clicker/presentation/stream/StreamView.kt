@@ -156,6 +156,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -807,6 +808,7 @@ fun TextChat(
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var autoscroll by remember { mutableStateOf(true) }
+    var showStickyHeader by remember { mutableStateOf(true) }
 
     // Add a gesture listener to detect upward scroll
 
@@ -837,6 +839,12 @@ fun TextChat(
             autoscroll = true
         }
     }
+    if(showStickyHeader){
+        LaunchedEffect(key1 = Unit){
+            delay(2000)
+            showStickyHeader = false
+        }
+    }
 
 
 
@@ -852,6 +860,45 @@ fun TextChat(
 
         ){
 
+            stickyHeader {
+                if(showStickyHeader){
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding( 5.dp)
+                            .clip(shape = RoundedCornerShape(10.dp))
+                            .background(Color.Red.copy(alpha = 0.6f)).clickable{
+                                showStickyHeader = false
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription ="Error has occured",
+                            modifier = Modifier
+                                .size(30.dp)
+                            ,
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "Ban attempt unsuccessful",
+                            color = Color.White,
+                            fontSize = 25.sp
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription ="Error has occured",
+                            modifier = Modifier
+                                .size(30.dp)
+                            ,
+                            tint = Color.White
+                        )
+                    }
+                }else{
+
+                }
+
+
+            }
 
 
 
@@ -863,6 +910,7 @@ fun TextChat(
 
 
             items(twitchUserChat){twitchUser ->
+
 
 
 
