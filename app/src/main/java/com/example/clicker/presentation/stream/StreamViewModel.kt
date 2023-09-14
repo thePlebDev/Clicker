@@ -124,6 +124,7 @@ class StreamViewModel @Inject constructor(
     }
 
 
+
     fun changeTimeoutDuration(duration:Int){
         _uiState.value = _uiState.value.copy(
             timeoutDuration = duration
@@ -153,6 +154,16 @@ class StreamViewModel @Inject constructor(
         listChats[foundIndex] = found.copy(
             deleted = true
         )
+    }
+    private fun banUserFilter(username:String){
+
+        listChats.filter { it.displayName == username }.forEach{
+            val index = listChats.indexOf(it)
+            listChats[index] = it.copy(
+                banned = true
+            )
+
+        }
     }
 
     fun deleteChatMessage(messageId:String) = viewModelScope.launch{
@@ -292,6 +303,12 @@ class StreamViewModel @Inject constructor(
 
                     clickedUsernameChats.add(twitchUserMessage.userType!!)
 
+                }
+                if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null){
+                    listChats.clear()
+                }
+                if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
+                    banUserFilter(twitchUserMessage.displayName)
                 }
 
 
