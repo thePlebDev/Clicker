@@ -1871,7 +1871,7 @@ fun BanDialog(
                             BanUser(
                                 data = BanUserData(
                                     user_id = clickedUserId,
-                                    reason = "stinky"
+                                    reason = banReason
                                 )
                             )
                         )

@@ -107,7 +107,8 @@ data class BanUser(
 
 data class BanUserData(
     val user_id: String,
-    val reason: String
+    val reason: String,
+    val duration:Int? = null
 )
 
 data class BanUserResponse(
