@@ -266,7 +266,9 @@ fun StreamView(
 
                             banResponse = streamViewModel.state.value.banResponse,
                             undoBan = {streamViewModel.unBanUser()},
-                            undoBanResponse = streamViewModel.state.value.undoBanResponse
+                            undoBanResponse = streamViewModel.state.value.undoBanResponse,
+                            showStickyHeader = streamViewModel.state.value.showStickyHeader,
+                            closeStickyHeader = {streamViewModel.closeStickyHeader()}
 
 
                         )
@@ -801,14 +803,15 @@ fun TextChat(
     deleteMessage: (String) -> Unit,
     banResponse:Response<Boolean>,
     undoBanResponse: Boolean,
-    undoBan:()->Unit
+    undoBan:()->Unit,
+    showStickyHeader:Boolean,
+    closeStickyHeader:()->Unit
 
 ){
 
     val lazyColumnListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var autoscroll by remember { mutableStateOf(true) }
-    var showStickyHeader by remember { mutableStateOf(true) }
 
     // Add a gesture listener to detect upward scroll
 
@@ -842,7 +845,7 @@ fun TextChat(
     if(showStickyHeader){
         LaunchedEffect(key1 = Unit){
             delay(2000)
-            showStickyHeader = false
+            closeStickyHeader()
         }
     }
 
@@ -866,7 +869,7 @@ fun TextChat(
                         modifier = Modifier.fillMaxWidth().padding( 5.dp)
                             .clip(shape = RoundedCornerShape(10.dp))
                             .background(Color.Red.copy(alpha = 0.6f)).clickable{
-                                showStickyHeader = false
+                                closeStickyHeader()
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically

@@ -62,7 +62,9 @@ data class StreamUIState(
 
 
     val banResponse:Response<Boolean> = Response.Success(false),
-    val undoBanResponse:Boolean = false
+    val undoBanResponse:Boolean = false,
+
+    val showStickyHeader:Boolean = false
 )
 
 @HiltViewModel
@@ -123,6 +125,11 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    fun closeStickyHeader(){
+        _uiState.value = _uiState.value.copy(
+            showStickyHeader = false
+        )
+    }
 
 
     fun changeTimeoutDuration(duration:Int){
@@ -692,6 +699,10 @@ class StreamViewModel @Inject constructor(
                 }
                 is Response.Failure ->{
                     Log.d("BANUSERRESPONSE","FAILED")
+                    _uiState.value = _uiState.value.copy(
+                        showStickyHeader = true,
+                        undoBanResponse = false
+                    )
                 }
             }
         }
