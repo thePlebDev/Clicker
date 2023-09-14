@@ -1421,6 +1421,9 @@ fun ChatCard(
                     if(twitchUser.deleted){
                         Text("Moderator deleted Comment", fontSize = 20.sp,modifier = Modifier.padding(start = 5.dp))
                     }
+                    if(twitchUser.banned){
+                        Text("Banned by moderator", fontSize = 20.sp,modifier = Modifier.padding(start = 5.dp))
+                    }
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ){

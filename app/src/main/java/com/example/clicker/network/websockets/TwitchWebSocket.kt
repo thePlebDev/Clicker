@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 enum class MessageType {
-    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN
+    USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN,CLEARCHAT
 }
 data class TwitchUserData(
     val badgeInfo: String?,
@@ -47,6 +47,7 @@ data class TwitchUserData(
     var userType: String?,
     val messageType: MessageType,
     val deleted:Boolean = false,
+    val banned:Boolean = false
 )
 data class TwitchUserAnnouncement(
     val badgeInfo: String,
@@ -140,6 +141,9 @@ class TwitchWebSocket @Inject constructor(
     private val _messageToDeleteId:MutableStateFlow<String?> = MutableStateFlow(null)
     val messageToDeleteId = _messageToDeleteId.asStateFlow() //this is the text data shown to the user
 
+    private val _bannedUsername:MutableStateFlow<String?> = MutableStateFlow(null)
+    val bannedUsername = _bannedUsername.asStateFlow() //this is the text data shown to the user
+
 
 
 
@@ -213,6 +217,66 @@ class TwitchWebSocket @Inject constructor(
 
      override fun onMessage(webSocket: WebSocket, text: String) {
          Log.d("onMessageSocketStoof","state --> $text")
+
+
+         if(text.contains(" CLEARCHAT ")){
+
+
+             val pattern2 = "#$streamerChannelName$".toRegex()
+             val matcher2 = pattern2.find(text)
+             val found = matcher2?.value
+             if(found !=null){
+                 val userData = TwitchUserData(
+                     badgeInfo = null,
+                     badges = null,
+                     clientNonce = null,
+                     color = "#000000",
+                     displayName = null,
+                     emotes = null,
+                     firstMsg = null,
+                     flags = null,
+                     id = null,
+                     mod = null,
+                     returningChatter = null,
+                     roomId = null,
+                     subscriber = false,
+                     tmiSentTs = null,
+                     turbo = false,
+                     userId = null,
+                     userType = "Connected to chat!",
+                     messageType = MessageType.CLEARCHAT
+                 )
+                 _state.tryEmit(userData)
+             }else{
+                 val pattern3 = ":(\\w+)\\s*$".toRegex()
+
+// Use a Matcher to find the pattern in the input string
+                 val matcher3 = pattern3.find(text)
+                 val username = matcher3?.groupValues?.last()
+                 val userData = TwitchUserData(
+                     badgeInfo = null,
+                     badges = null,
+                     clientNonce = null,
+                     color = "#000000",
+                     displayName = username,
+                     emotes = null,
+                     firstMsg = null,
+                     flags = null,
+                     id = null,
+                     mod = null,
+                     returningChatter = null,
+                     roomId = null,
+                     subscriber = false,
+                     tmiSentTs = null,
+                     turbo = false,
+                     userId = null,
+                     userType = "Connected to chat!",
+                     messageType = MessageType.CLEARCHAT
+                 )
+                 _state.tryEmit(userData)
+             }
+
+         }
 
          if(text.contains(" USERSTATE ")){
              Log.d("loggedInDataOnMessage","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
