@@ -208,7 +208,8 @@ fun StreamView(
                         changeBanReason = {reason -> streamViewModel.changeBanReason(reason)},
                         banUser = {banUser -> streamViewModel.banUser(banUser)},
                         clickedUserId = streamViewModel.clickedUserId.value,
-                        closeBottomModal ={scope.launch { bottomModalState.hide() }}
+                        closeBottomModal ={scope.launch { bottomModalState.hide() }},
+                        timeOutUser = {streamViewModel.timeoutUser()}
                     )
 
                 }
@@ -330,7 +331,9 @@ fun BottomModalContent(
 
     banUser:(BanUser) ->Unit,
     clickedUserId:String,
-    closeBottomModal: () -> Unit
+    closeBottomModal: () -> Unit,
+
+    timeOutUser:()->Unit
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -347,7 +350,9 @@ fun BottomModalContent(
             closeDialog = {
                 openTimeoutDialog.value = false
                 closeBottomModal()
-            }
+            },
+            timeOutUser ={timeOutUser()}
+
         )
     }
     if(openBanDialog.value){
@@ -1728,7 +1733,8 @@ fun TimeoutDialog(
     timeoutReason:String,
     changeTimeoutDuration:(Int) ->Unit,
     changeTimeoutReason:(String) ->Unit,
-    closeDialog: () -> Unit
+    closeDialog: () -> Unit,
+    timeOutUser:()->Unit
 ) {
 
 
@@ -1792,6 +1798,7 @@ fun TimeoutDialog(
                     //todo: Implement the details of the timeout implementation
                     Button(onClick = {
                         closeDialog()
+                        timeOutUser()
                     }, modifier = Modifier.padding(10.dp)) {
                         Text("Timeout")
                     }

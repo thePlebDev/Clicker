@@ -483,6 +483,8 @@ class TwitchWebSocket @Inject constructor(
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         //t.printStackTrace()
         Log.d("websocketStooffail","onFailure: ${t.printStackTrace()}")
+        Log.d("websocketStooffail","onFailure: ${t.message}")
+        Log.d("websocketStooffail","onFailure: ${t.cause}")
          val errorValue =TwitchUserData(
             badgeInfo = "subscriber/77",
             badges = "subscriber/36,sub-gifter/50",

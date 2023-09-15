@@ -669,6 +669,38 @@ class StreamViewModel @Inject constructor(
 
         }
     }
+    fun timeoutUser() = viewModelScope.launch{
+        val timeoutUser = BanUser(
+            data = BanUserData(
+                user_id = _clickedUserId.value,
+                reason = _uiState.value.timeoutReason,
+                duration = _uiState.value.timeoutDuration
+            )
+        )
+        twitchRepoImpl.banUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            body = timeoutUser
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    Log.d("TIMEOUTUSERRESPONSE","LOADING")
+                }
+                is Response.Success ->{
+                    Log.d("TIMEOUTUSERRESPONSE","SUCCESS")
+
+                }
+                is Response.Failure ->{
+                    Log.d("TIMEOUTUSERRESPONSE","FAILED")
+
+                }
+            }
+
+        }
+
+    }
 
     fun banUser(banUser: BanUser) = viewModelScope.launch{
         val banUserNew = BanUser(
