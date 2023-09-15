@@ -47,7 +47,8 @@ data class TwitchUserData(
     var userType: String?,
     val messageType: MessageType,
     val deleted:Boolean = false,
-    val banned:Boolean = false
+    val banned:Boolean = false,
+    val bannedDuration:Int? = null
 )
 data class TwitchUserAnnouncement(
     val badgeInfo: String,
@@ -221,6 +222,12 @@ class TwitchWebSocket @Inject constructor(
 
          if(text.contains(" CLEARCHAT ")){
 
+             val banDurationPattern = "ban-duration=(\\d+)".toRegex()
+
+             val banDurationMatch = banDurationPattern.find(text)
+             val foundDuration = banDurationMatch?.groupValues?.last()?.toInt()
+             Log.d("WEBSOCKETBANDURATION","foundDuration --> $foundDuration")
+
 
              val pattern2 = "#$streamerChannelName$".toRegex()
              val matcher2 = pattern2.find(text)
@@ -244,7 +251,8 @@ class TwitchWebSocket @Inject constructor(
                      turbo = false,
                      userId = null,
                      userType = "Connected to chat!",
-                     messageType = MessageType.CLEARCHAT
+                     messageType = MessageType.CLEARCHAT,
+                     bannedDuration = foundDuration
                  )
                  _state.tryEmit(userData)
              }else{
@@ -271,7 +279,8 @@ class TwitchWebSocket @Inject constructor(
                      turbo = false,
                      userId = null,
                      userType = "Connected to chat!",
-                     messageType = MessageType.CLEARCHAT
+                     messageType = MessageType.CLEARCHAT,
+                     bannedDuration = foundDuration
                  )
                  _state.tryEmit(userData)
              }
