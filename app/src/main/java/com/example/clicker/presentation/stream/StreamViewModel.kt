@@ -60,6 +60,7 @@ data class StreamUIState(
     val timeoutDuration: Int =10,
     val timeoutReason:String ="",
     val banResponse:Response<Boolean> = Response.Success(false),
+    val banResponseMessage:String = "",
     val undoBanResponse:Boolean = false,
     val showStickyHeader:Boolean = false
 )
@@ -313,7 +314,7 @@ class StreamViewModel @Inject constructor(
                     listChats.clear()
                 }
                 if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
-                    Log.d("collectingdatathingy","foundDuration --> ${twitchUserMessage.bannedDuration}")
+                    Log.d("collectingdatathingy","foundDuration --> $twitchUserMessage.bannedDuration")
                     banUserFilter(
                        username= twitchUserMessage.displayName,
                         banDuration = twitchUserMessage.bannedDuration
@@ -695,10 +696,20 @@ class StreamViewModel @Inject constructor(
                 }
                 is Response.Success ->{
                     Log.d("TIMEOUTUSERRESPONSE","SUCCESS")
+                    _uiState.value = _uiState.value.copy(
+                        banResponse = Response.Success(true),
+                        timeoutReason = "",
+                        undoBanResponse = false
+                    )
 
                 }
                 is Response.Failure ->{
                     Log.d("TIMEOUTUSERRESPONSE","FAILED")
+                    _uiState.value = _uiState.value.copy(
+                        showStickyHeader = true,
+                        undoBanResponse = false,
+                        banResponseMessage = "Timeout attempt unsuccessful"
+                    )
 
                 }
             }
@@ -741,7 +752,8 @@ class StreamViewModel @Inject constructor(
                     Log.d("BANUSERRESPONSE","FAILED")
                     _uiState.value = _uiState.value.copy(
                         showStickyHeader = true,
-                        undoBanResponse = false
+                        undoBanResponse = false,
+                        banResponseMessage = "ban attempt unsuccessful"
                     )
                 }
             }
@@ -757,14 +769,19 @@ class StreamViewModel @Inject constructor(
 
         ).collect{response ->
             when(response){
-                is Response.Loading ->{}
+                is Response.Loading ->{
+                    Log.d("unBanUserRESPONSE","LOADING")
+                }
                 is Response.Success ->{
                     _uiState.value = _uiState.value.copy(
                         banResponse = Response.Success(true),
                         undoBanResponse = true
                     )
+                    Log.d("unBanUserRESPONSE","SUCCESS")
                 }
-                is Response.Failure ->{}
+                is Response.Failure ->{
+                    Log.d("unBanUserRESPONSE","FAILED")
+                }
             }
 
         }
