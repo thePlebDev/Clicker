@@ -159,12 +159,13 @@ class StreamViewModel @Inject constructor(
             deleted = true
         )
     }
-    private fun banUserFilter(username:String){
+    private fun banUserFilter(username:String,banDuration:Int?){
 
         listChats.filter { it.displayName == username }.forEach{
             val index = listChats.indexOf(it)
             listChats[index] = it.copy(
-                banned = true
+                banned = true,
+                bannedDuration = banDuration
             )
 
         }
@@ -312,7 +313,11 @@ class StreamViewModel @Inject constructor(
                     listChats.clear()
                 }
                 if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
-                    banUserFilter(twitchUserMessage.displayName)
+                    Log.d("collectingdatathingy","foundDuration --> ${twitchUserMessage.bannedDuration}")
+                    banUserFilter(
+                       username= twitchUserMessage.displayName,
+                        banDuration = twitchUserMessage.bannedDuration
+                    )
                 }
 
 
