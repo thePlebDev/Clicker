@@ -269,7 +269,8 @@ fun StreamView(
                             undoBan = {streamViewModel.unBanUser()},
                             undoBanResponse = streamViewModel.state.value.undoBanResponse,
                             showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                            closeStickyHeader = {streamViewModel.closeStickyHeader()}
+                            closeStickyHeader = {streamViewModel.closeStickyHeader()},
+                            banResponseMessage = streamViewModel.state.value.banResponseMessage
 
 
                         )
@@ -814,7 +815,8 @@ fun TextChat(
     undoBanResponse: Boolean,
     undoBan:()->Unit,
     showStickyHeader:Boolean,
-    closeStickyHeader:()->Unit
+    closeStickyHeader:()->Unit,
+    banResponseMessage:String,
 
 ){
 
@@ -885,7 +887,7 @@ fun TextChat(
                     ){
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription ="Error has occured",
+                            contentDescription =banResponseMessage,
                             modifier = Modifier
                                 .size(30.dp)
                             ,
