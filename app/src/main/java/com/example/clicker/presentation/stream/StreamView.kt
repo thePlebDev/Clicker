@@ -211,7 +211,8 @@ fun StreamView(
                         closeBottomModal ={scope.launch { bottomModalState.hide() }},
                         timeOutUser = {streamViewModel.timeoutUser()},
                         banned = streamViewModel.clickedUsernameBanned.value,
-                        unbanUser = {streamViewModel.unBanUser()}
+                        unbanUser = {streamViewModel.unBanUser()},
+                        isMod = streamViewModel.clickedUsernameIsMod.value
                     )
 
                 }
@@ -262,7 +263,7 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                            updateClickedUser = {username,userId,banned -> streamViewModel.updateClickedChat(username,userId,banned)},
+                            updateClickedUser = {username,userId,banned,isMod -> streamViewModel.updateClickedChat(username,userId,banned,isMod)},
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
                             deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
@@ -333,6 +334,7 @@ fun BottomModalContent(
 
     banUser:(BanUser) ->Unit,
     banned:Boolean,
+    isMod:Boolean,
     clickedUserId:String,
     closeBottomModal: () -> Unit,
 
@@ -416,40 +418,42 @@ fun BottomModalContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween){
             Text("Recent Messages")
-            Row(){
-                Button(
-                    onClick ={
-                        openTimeoutDialog.value = true
-                },
-                    modifier= Modifier.padding(end = 20.dp)) {
-                    Text("Timeout",)
-                }
-                if(banned){
-                    Button(onClick ={
-                        closeBottomModal()
-                        unbanUser()
-                    }) {
-                        Text("Unban")
+            if(isMod){
+                Row(){
+                    Button(
+                        onClick ={
+                            openTimeoutDialog.value = true
+                        },
+                        modifier= Modifier.padding(end = 20.dp)) {
+                        Text("Timeout",)
                     }
-                }else{
-                    Button(onClick ={
-                        openBanDialog.value = true
-                    }) {
-                        Text("Ban")
+                    if(banned){
+                        Button(onClick ={
+                            closeBottomModal()
+                            unbanUser()
+                        }) {
+                            Text("Unban")
+                        }
+                    }else{
+                        Button(onClick ={
+                            openBanDialog.value = true
+                        }) {
+                            Text("Ban")
+                        }
                     }
-                }
 
+                }
             }
+
         }
 
     }//END OF THE COLUMN
 
-    Spacer(modifier = Modifier.height(10.dp))
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .padding(horizontal =20.dp)
             .height(100.dp)
             .background(Color.Blue)
     ){
@@ -822,7 +826,7 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     addChatter:(String,String) -> Unit,
-    updateClickedUser:(String,String,Boolean) -> Unit,
+    updateClickedUser:(String,String,Boolean,Boolean) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
     deleteMessage: (String) -> Unit,
@@ -967,7 +971,7 @@ fun TextChat(
                                 SwipeToDeleteTextCard(
                                     twitchUser = twitchUser,
                                     bottomModalState = bottomModalState,
-                                    updateClickedUser ={username,userId,banned -> updateClickedUser(username,userId,banned)},
+                                    updateClickedUser ={username,userId,banned,isMod -> updateClickedUser(username,userId,banned,isMod)},
                                     deleteMessage ={messageId -> deleteMessage(messageId)}
                                 )
 
@@ -1339,14 +1343,14 @@ fun AnnouncementMessage(
 fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String,String,Boolean) -> Unit,
+    updateClickedUser:(String,String,Boolean,Boolean) -> Unit,
     deleteMessage:(String)-> Unit
 
 ){
         ChatCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
-            updateClickedUser ={username,userId,banned -> updateClickedUser(username,userId,banned)},
+            updateClickedUser ={username,userId,banned,isMod -> updateClickedUser(username,userId,banned,isMod)},
             deleteMessage = {messageId -> deleteMessage(messageId)}
         )
 }
@@ -1399,7 +1403,7 @@ class SwipeableActionsState internal constructor() {
 fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String,String,Boolean) -> Unit,
+    updateClickedUser:(String,String,Boolean,Boolean) -> Unit,
     deleteMessage:(String)-> Unit
 ){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
@@ -1492,7 +1496,8 @@ fun ChatCard(
                             updateClickedUser(
                                 twitchUser.displayName.toString(),
                                 twitchUser.userId.toString(),
-                                twitchUser.banned
+                                twitchUser.banned,
+                                twitchUser.mod != "1"
                             )
                             coroutineScope.launch {
                                 bottomModalState.show()
