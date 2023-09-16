@@ -90,6 +90,9 @@ class StreamViewModel @Inject constructor(
     private val _clickedUsernameBanned:MutableState<Boolean> = mutableStateOf(false)
     val clickedUsernameBanned:State<Boolean> =_clickedUsernameBanned
 
+    private val _clickedUsernameIsMod:MutableState<Boolean> = mutableStateOf(false)
+    val clickedUsernameIsMod:State<Boolean> =_clickedUsernameIsMod
+
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
@@ -213,7 +216,7 @@ class StreamViewModel @Inject constructor(
         }
 
     }
-    fun updateClickedChat(clickedUsername:String,clickedUserId:String,banned:Boolean){
+    fun updateClickedChat(clickedUsername:String,clickedUserId:String,banned:Boolean,isMod:Boolean){
         _clickedUsername.value = clickedUsername
         _clickedUserId.value = clickedUserId
         clickedUsernameChats.clear()
@@ -221,6 +224,7 @@ class StreamViewModel @Inject constructor(
 
         clickedUsernameChats.addAll(messages)
         _clickedUsernameBanned.value = banned
+        _clickedUsernameIsMod.value = isMod
 
     }
 
