@@ -210,7 +210,8 @@ fun StreamView(
                         clickedUserId = streamViewModel.clickedUserId.value,
                         closeBottomModal ={scope.launch { bottomModalState.hide() }},
                         timeOutUser = {streamViewModel.timeoutUser()},
-                        banned = streamViewModel.clickedUsernameBanned.value
+                        banned = streamViewModel.clickedUsernameBanned.value,
+                        unbanUser = {streamViewModel.unBanUser()}
                     )
 
                 }
@@ -336,7 +337,8 @@ fun BottomModalContent(
     clickedUserId:String,
     closeBottomModal: () -> Unit,
 
-    timeOutUser:()->Unit
+    timeOutUser:()->Unit,
+    unbanUser:()->Unit
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -398,7 +400,7 @@ fun BottomModalContent(
             }
 
             Button(onClick = {
-                Log.d("THEUSERNAMETHATWASCLICKED",clickedUsername)
+
                 scope.launch {
                      textFieldValue.value = TextFieldValue(
                         text = "@$clickedUsername ",
@@ -426,6 +428,7 @@ fun BottomModalContent(
                 if(banned){
                     Button(onClick ={
                         closeBottomModal()
+                        unbanUser()
                     }) {
                         Text("Unban")
                     }
