@@ -272,9 +272,8 @@ fun StreamView(
                             undoBanResponse = streamViewModel.state.value.undoBanResponse,
                             showStickyHeader = streamViewModel.state.value.showStickyHeader,
                             closeStickyHeader = {streamViewModel.closeStickyHeader()},
-                            banResponseMessage = streamViewModel.state.value.banResponseMessage
-
-
+                            banResponseMessage = streamViewModel.state.value.banResponseMessage,
+                            removeUnBanButton = { streamViewModel.removeUnBanButton() }
                         )
                     }
         }
@@ -833,6 +832,7 @@ fun TextChat(
     showStickyHeader:Boolean,
     closeStickyHeader:()->Unit,
     banResponseMessage:String,
+    removeUnBanButton:()->Unit
 
 ){
 
@@ -893,9 +893,12 @@ fun TextChat(
             stickyHeader {
                 if(showStickyHeader){
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding( 5.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
                             .clip(shape = RoundedCornerShape(10.dp))
-                            .background(Color.Red.copy(alpha = 0.6f)).clickable{
+                            .background(Color.Red.copy(alpha = 0.6f))
+                            .clickable {
                                 closeStickyHeader()
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1045,7 +1048,8 @@ fun TextChat(
             enableAutoScroll = {autoscroll = true},
             banResponse = banResponse,
             undoBan = {undoBan()},
-            undoBanResponse = undoBanResponse
+            undoBanResponse = undoBanResponse,
+            removeUndoButton = {removeUnBanButton()}
         )
 
 
@@ -1562,7 +1566,8 @@ fun ScrollToBottom(
     enableAutoScroll:() -> Unit,
     banResponse:Response<Boolean>,
     undoBanResponse: Boolean,
-    undoBan:()->Unit
+    undoBan:()->Unit,
+    removeUndoButton:()->Unit
 
 
 ){
@@ -1603,6 +1608,8 @@ fun ScrollToBottom(
 
                 }
                 if(response.data && !undoBanResponse){
+
+
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription ="undo ban button",
@@ -1615,6 +1622,12 @@ fun ScrollToBottom(
                         ,
                         tint = Color.Magenta
                     )
+                    LaunchedEffect(key1 = Unit){
+                        delay(10000)
+                        //todo: reset the response.data && !undoBanResponse
+                        removeUndoButton()
+
+                    }
                 }
 
             }

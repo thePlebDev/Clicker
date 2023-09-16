@@ -795,6 +795,12 @@ class StreamViewModel @Inject constructor(
 
         }
     }
+    fun removeUnBanButton(){
+        _uiState.value = _uiState.value.copy(
+            banResponse = Response.Success(true),
+            undoBanResponse = true
+        )
+    }
 
     fun emoteModeToggle(chatSettings:ChatSettingsData) = viewModelScope.launch{
         _uiState.value = _uiState.value.copy(
