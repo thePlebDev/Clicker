@@ -209,7 +209,8 @@ fun StreamView(
                         banUser = {banUser -> streamViewModel.banUser(banUser)},
                         clickedUserId = streamViewModel.clickedUserId.value,
                         closeBottomModal ={scope.launch { bottomModalState.hide() }},
-                        timeOutUser = {streamViewModel.timeoutUser()}
+                        timeOutUser = {streamViewModel.timeoutUser()},
+                        banned = streamViewModel.clickedUsernameBanned.value
                     )
 
                 }
@@ -260,7 +261,7 @@ fun StreamView(
                             filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
                             clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
                             addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                            updateClickedUser = {username,userId -> streamViewModel.updateClickedChat(username,userId)},
+                            updateClickedUser = {username,userId,banned -> streamViewModel.updateClickedChat(username,userId,banned)},
                             textFieldValue = streamViewModel.textFieldValue,
                             channelName = streamViewModel.channelName.collectAsState().value,
                             deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
@@ -331,6 +332,7 @@ fun BottomModalContent(
     changeBanReason: (String) -> Unit,
 
     banUser:(BanUser) ->Unit,
+    banned:Boolean,
     clickedUserId:String,
     closeBottomModal: () -> Unit,
 
@@ -339,6 +341,8 @@ fun BottomModalContent(
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
     val openBanDialog = remember { mutableStateOf(false) }
+
+
 
     if(openTimeoutDialog.value){
         TimeoutDialog(
@@ -367,7 +371,7 @@ fun BottomModalContent(
             banUser = {bannedUser ->  banUser(bannedUser)},
             clickedUserId = clickedUserId,
             closeDialog = {openBanDialog.value = false},
-            closeBottomModal = {closeBottomModal()}
+            closeBottomModal = {closeBottomModal()},
 
         )
     }
@@ -419,11 +423,20 @@ fun BottomModalContent(
                     modifier= Modifier.padding(end = 20.dp)) {
                     Text("Timeout",)
                 }
-                Button(onClick ={
-                    openBanDialog.value = true
-                }) {
-                    Text("Ban")
+                if(banned){
+                    Button(onClick ={
+                        closeBottomModal()
+                    }) {
+                        Text("Unban")
+                    }
+                }else{
+                    Button(onClick ={
+                        openBanDialog.value = true
+                    }) {
+                        Text("Ban")
+                    }
                 }
+
             }
         }
 
@@ -807,7 +820,7 @@ fun TextChat(
     filterMethod:(String,String) ->Unit,
     clickedAutoCompleteText:(String,String) -> String,
     addChatter:(String,String) -> Unit,
-    updateClickedUser:(String,String) -> Unit,
+    updateClickedUser:(String,String,Boolean) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
     channelName: String?,
     deleteMessage: (String) -> Unit,
@@ -887,16 +900,16 @@ fun TextChat(
                     ){
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription =banResponseMessage,
+                            contentDescription ="Error has occured",
                             modifier = Modifier
                                 .size(30.dp)
                             ,
                             tint = Color.White
                         )
                         Text(
-                            text = "Ban attempt unsuccessful",
+                            text = banResponseMessage,
                             color = Color.White,
-                            fontSize = 25.sp
+                            fontSize = 20.sp
                         )
                         Icon(
                             imageVector = Icons.Default.Close,
@@ -948,7 +961,7 @@ fun TextChat(
                                 SwipeToDeleteTextCard(
                                     twitchUser = twitchUser,
                                     bottomModalState = bottomModalState,
-                                    updateClickedUser ={username,userId -> updateClickedUser(username,userId)},
+                                    updateClickedUser ={username,userId,banned -> updateClickedUser(username,userId,banned)},
                                     deleteMessage ={messageId -> deleteMessage(messageId)}
                                 )
 
@@ -1319,14 +1332,14 @@ fun AnnouncementMessage(
 fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String,String) -> Unit,
+    updateClickedUser:(String,String,Boolean) -> Unit,
     deleteMessage:(String)-> Unit
 
 ){
         ChatCard(
             twitchUser = twitchUser,
             bottomModalState = bottomModalState,
-            updateClickedUser ={username,userId -> updateClickedUser(username,userId)},
+            updateClickedUser ={username,userId,banned -> updateClickedUser(username,userId,banned)},
             deleteMessage = {messageId -> deleteMessage(messageId)}
         )
 }
@@ -1379,7 +1392,7 @@ class SwipeableActionsState internal constructor() {
 fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
-    updateClickedUser:(String,String) -> Unit,
+    updateClickedUser:(String,String,Boolean) -> Unit,
     deleteMessage:(String)-> Unit
 ){
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
@@ -1471,7 +1484,8 @@ fun ChatCard(
 
                             updateClickedUser(
                                 twitchUser.displayName.toString(),
-                                twitchUser.userId.toString()
+                                twitchUser.userId.toString(),
+                                twitchUser.banned
                             )
                             coroutineScope.launch {
                                 bottomModalState.show()
@@ -1827,7 +1841,7 @@ fun BanDialog(
     banUser:(BanUser) -> Unit,
     clickedUserId: String,
     closeDialog:() ->Unit,
-    closeBottomModal: ()->Unit
+    closeBottomModal: ()->Unit,
 ) {
 
 
@@ -1878,26 +1892,29 @@ fun BanDialog(
                     onValueChange = { changeBanReason(it) },
                     label = { Text("Reason") }
                 )
-                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
                         Text("Cancel")
                     }
+
+
                     Button(
-                        onClick = {
-                            closeDialog()
-                            closeBottomModal()
-                            banUser(
-                            BanUser(
-                                data = BanUserData(
-                                    user_id = clickedUserId,
-                                    reason = banReason
+                            onClick = {
+                                closeDialog()
+                                closeBottomModal()
+                                banUser(
+                                    BanUser(
+                                        data = BanUserData(
+                                            user_id = clickedUserId,
+                                            reason = banReason
+                                        )
+                                    )
                                 )
-                            )
-                        )
-                                  },
-                        modifier = Modifier.padding(10.dp)) {
-                        Text("Ban")
-                    }
+                            },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text("Ban")
+                        }
                 }
 
 
