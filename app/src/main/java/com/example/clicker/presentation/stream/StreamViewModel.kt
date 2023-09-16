@@ -87,6 +87,9 @@ class StreamViewModel @Inject constructor(
     private val _clickedUserId:MutableState<String> = mutableStateOf("")
     val clickedUserId:State<String> = _clickedUsername
 
+    private val _clickedUsernameBanned:MutableState<Boolean> = mutableStateOf(false)
+    val clickedUsernameBanned:State<Boolean> =_clickedUsernameBanned
+
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state:State<StreamUIState> = _uiState
@@ -210,13 +213,14 @@ class StreamViewModel @Inject constructor(
         }
 
     }
-    fun updateClickedChat(clickedUsername:String,clickedUserId:String){
+    fun updateClickedChat(clickedUsername:String,clickedUserId:String,banned:Boolean){
         _clickedUsername.value = clickedUsername
         _clickedUserId.value = clickedUserId
         clickedUsernameChats.clear()
         val messages = listChats.filter { it.displayName == clickedUsername }.map { if(it.deleted) it.userType!! +" (deleted by mod)" else it.userType!! }
 
         clickedUsernameChats.addAll(messages)
+        _clickedUsernameBanned.value = banned
 
     }
 
@@ -770,17 +774,22 @@ class StreamViewModel @Inject constructor(
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
-                    Log.d("unBanUserRESPONSE","LOADING")
+                    Log.d("TESTINGTHEUNBANRESPONSE","LOADING")
                 }
                 is Response.Success ->{
                     _uiState.value = _uiState.value.copy(
                         banResponse = Response.Success(true),
                         undoBanResponse = true
                     )
-                    Log.d("unBanUserRESPONSE","SUCCESS")
+                    Log.d("TESTINGTHEUNBANRESPONSE","SUCCESS")
                 }
                 is Response.Failure ->{
-                    Log.d("unBanUserRESPONSE","FAILED")
+                    Log.d("TESTINGTHEUNBANRESPONSE","FAILED")
+                    _uiState.value = _uiState.value.copy(
+                        showStickyHeader = true,
+                        undoBanResponse = false,
+                        banResponseMessage = "Fail. User may be unbanned"
+                    )
                 }
             }
 
