@@ -384,6 +384,10 @@ class StreamViewModel @Inject constructor(
     }
 
 
+    fun restartWebSocket(){
+       val channelName = _channelName.value ?: ""
+        startWebSocket(channelName)
+    }
 
     private fun startWebSocket(channelName: String) = viewModelScope.launch{
         tokenDataStore.getUsername().collect{username ->

@@ -81,6 +81,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
@@ -274,7 +275,8 @@ fun StreamView(
                             showStickyHeader = streamViewModel.state.value.showStickyHeader,
                             closeStickyHeader = {streamViewModel.closeStickyHeader()},
                             banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                            removeUnBanButton = { streamViewModel.removeUnBanButton() }
+                            removeUnBanButton = { streamViewModel.removeUnBanButton() },
+                            restartWebSocket ={streamViewModel.restartWebSocket()}
                         )
                     }
         }
@@ -453,12 +455,14 @@ fun BottomModalContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal =20.dp)
+            .padding(horizontal = 20.dp)
             .height(100.dp)
             .background(Color.DarkGray)
     ){
         items(clickedUsernameChats){
-            Text(it,modifier=Modifier.fillMaxWidth().padding(horizontal = 5.dp),color =Color.White)
+            Text(it,modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp),color =Color.White)
         }
 
     }
@@ -836,7 +840,8 @@ fun TextChat(
     showStickyHeader:Boolean,
     closeStickyHeader:()->Unit,
     banResponseMessage:String,
-    removeUnBanButton:()->Unit
+    removeUnBanButton:()->Unit,
+    restartWebSocket:() -> Unit
 
 ){
 
@@ -1009,7 +1014,8 @@ fun TextChat(
                             MessageType.ERROR ->{
                                 ErrorMessage(
                                     message = twitchUser.userType!!,
-                                    user = twitchUser.displayName!!
+                                    user = twitchUser.displayName!!,
+                                    restartWebSocket ={restartWebSocket()}
                                 )
 
                             }
@@ -1068,7 +1074,11 @@ fun JoinMessage(message:String){
 }
 
 @Composable
-fun ErrorMessage(message:String,user:String){
+fun ErrorMessage(
+    message:String,
+    user:String,
+    restartWebSocket:() ->Unit
+){
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Red.copy(alpha = 0.6f))){
@@ -1109,6 +1119,9 @@ fun ErrorMessage(message:String,user:String){
                 }
             }
             )
+            Button(onClick = { restartWebSocket() }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)) {
+                Text("Click to reconnect",color = Color.White)
+            }
         }
 
     }

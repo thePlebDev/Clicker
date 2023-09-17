@@ -511,7 +511,7 @@ class TwitchWebSocket @Inject constructor(
             tmiSentTs = 1690747946900L,
             turbo = false,
             userId = "144252234",
-            userType = "Disconnected from chat. Check internet connection. If issues persists, your authentication may be expired. Log out and back in to be issued a new one",
+            userType = "Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one",
             messageType = MessageType.ERROR
         )
 
