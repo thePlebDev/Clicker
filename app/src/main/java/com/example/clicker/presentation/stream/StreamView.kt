@@ -189,6 +189,26 @@ fun StreamView(
 
 
 
+
+
+
+    val testingString = ""
+    val anotherThingy = testingString.indexOf("badge-info")
+    var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
+    val configuration = LocalConfiguration.current
+//
+    LaunchedEffect(configuration) {
+        // Save any changes to the orientation value on the configuration object
+        snapshotFlow { configuration.orientation }
+            .collect { orientation = it }
+    }
+
+    when (orientation) {
+        Configuration.ORIENTATION_LANDSCAPE -> {
+
+
+        }
+        else -> {
             ModalBottomSheetLayout(
                 sheetState = bottomModalState,
                 sheetContent = {
@@ -219,99 +239,69 @@ fun StreamView(
                 }
             ) {
 
-                    ModalDrawer(
-                        drawerState = drawerState,
-                        drawerContent = {
-                            DrawerContent(
-                                chatSettingData,
-                                showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
-                                slowModeToggle = { chatSettingsData ->
-                                    streamViewModel.slowModeChatSettings(
-                                        chatSettingsData
-                                    )
-                                },
-                                followerModeToggle = { chatSettingsData ->
-                                    streamViewModel.followerModeToggle(
-                                        chatSettingsData
-                                    )
-                                },
-                                subscriberModeToggle = { chatSettingsData ->
-                                    streamViewModel.subscriberModeToggle(
-                                        chatSettingsData
-                                    )
-                                },
-                                emoteModeToggle = { chatSettingsData ->
-                                    streamViewModel.emoteModeToggle(
-                                        chatSettingsData
-                                    )
-                                },
-                                enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
-                                enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
-                                enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-                                enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
-                            )
-                        }
-                    ) {
-                        TextChat(
-                            twitchUserChat = twitchUserChat,
-                            sendMessageToWebSocket = { string ->
-                                streamViewModel.sendMessage(string)
+                ModalDrawer(
+                    drawerState = drawerState,
+                    drawerContent = {
+                        DrawerContent(
+                            chatSettingData,
+                            showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
+                            slowModeToggle = { chatSettingsData ->
+                                streamViewModel.slowModeChatSettings(
+                                    chatSettingsData
+                                )
                             },
-                            drawerState = drawerState,
-                            modStatus = modStatus,
-                            bottomModalState = bottomModalState,
-                            filteredChatList = filteredChat,
-                            filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
-                            clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
-                            addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                            updateClickedUser = {username,userId,banned,isMod -> streamViewModel.updateClickedChat(username,userId,banned,isMod)},
-                            textFieldValue = streamViewModel.textFieldValue,
-                            channelName = streamViewModel.channelName.collectAsState().value,
-                            deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
-
-                            banResponse = streamViewModel.state.value.banResponse,
-                            undoBan = {streamViewModel.unBanUser()},
-                            undoBanResponse = streamViewModel.state.value.undoBanResponse,
-                            showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                            closeStickyHeader = {streamViewModel.closeStickyHeader()},
-                            banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                            removeUnBanButton = { streamViewModel.removeUnBanButton() },
-                            restartWebSocket ={streamViewModel.restartWebSocket()}
+                            followerModeToggle = { chatSettingsData ->
+                                streamViewModel.followerModeToggle(
+                                    chatSettingsData
+                                )
+                            },
+                            subscriberModeToggle = { chatSettingsData ->
+                                streamViewModel.subscriberModeToggle(
+                                    chatSettingsData
+                                )
+                            },
+                            emoteModeToggle = { chatSettingsData ->
+                                streamViewModel.emoteModeToggle(
+                                    chatSettingsData
+                                )
+                            },
+                            enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
+                            enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
+                            enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
+                            enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
                         )
                     }
+                ) {
+                    TextChat(
+                        twitchUserChat = twitchUserChat,
+                        sendMessageToWebSocket = { string ->
+                            streamViewModel.sendMessage(string)
+                        },
+                        drawerState = drawerState,
+                        modStatus = modStatus,
+                        bottomModalState = bottomModalState,
+                        filteredChatList = filteredChat,
+                        filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
+                        clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
+                        addChatter = {username,message -> streamViewModel.addChatter(username,message)},
+                        updateClickedUser = {username,userId,banned,isMod -> streamViewModel.updateClickedChat(username,userId,banned,isMod)},
+                        textFieldValue = streamViewModel.textFieldValue,
+                        channelName = streamViewModel.channelName.collectAsState().value,
+                        deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
+
+                        banResponse = streamViewModel.state.value.banResponse,
+                        undoBan = {streamViewModel.unBanUser()},
+                        undoBanResponse = streamViewModel.state.value.undoBanResponse,
+                        showStickyHeader = streamViewModel.state.value.showStickyHeader,
+                        closeStickyHeader = {streamViewModel.closeStickyHeader()},
+                        banResponseMessage = streamViewModel.state.value.banResponseMessage,
+                        removeUnBanButton = { streamViewModel.removeUnBanButton() },
+                        restartWebSocket ={streamViewModel.restartWebSocket()}
+                    )
+                }
+            }
         }
-
-
-    val testingString = ""
-    val anotherThingy = testingString.indexOf("badge-info")
-    var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
-    val configuration = LocalConfiguration.current
-//
-//    LaunchedEffect(configuration) {
-//        // Save any changes to the orientation value on the configuration object
-//        snapshotFlow { configuration.orientation }
-//            .collect { orientation = it }
-//    }
-//
-//    when (orientation) {
-//        Configuration.ORIENTATION_LANDSCAPE -> {
-//
-//            Column(){
-//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-//                Text("LANDSCAPE",fontSize=30.sp,color= Color.Red)
-//            }
-//        }
-//        else -> {
-//            Column(){
-//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-//                Text("PORTRAIT",fontSize=30.sp,color= Color.Red)
-//            }
-//        }
-//    }
+    }
 
 }
 
