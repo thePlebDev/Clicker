@@ -455,10 +455,10 @@ fun BottomModalContent(
             .fillMaxSize()
             .padding(horizontal =20.dp)
             .height(100.dp)
-            .background(Color.Blue)
+            .background(Color.DarkGray)
     ){
         items(clickedUsernameChats){
-            Text(it,modifier=Modifier.fillMaxWidth())
+            Text(it,modifier=Modifier.fillMaxWidth().padding(horizontal = 5.dp),color =Color.White)
         }
 
     }
@@ -1037,7 +1037,8 @@ fun TextChat(
         EnterChat(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+            ,
             chat = {text -> sendMessageToWebSocket(text)},
             modStatus = modStatus,
             filteredChatList = filteredChatList,
@@ -1460,7 +1461,6 @@ fun ChatCard(
         Modifier
             .fillMaxWidth()
             .padding(vertical = 10.dp, horizontal = 10.dp)
-            .clip(shape = RoundedCornerShape(10.dp))
             .background(backgroundColor)
             .draggable(
                 orientation = Orientation.Horizontal,
@@ -1489,6 +1489,7 @@ fun ChatCard(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+
                     .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                     .combinedClickable(
                         onClick = {
@@ -1503,7 +1504,10 @@ fun ChatCard(
                                 bottomModalState.show()
                             }
                         },
-                    )
+                    ),
+                backgroundColor = Color.DarkGray,
+                border = BorderStroke(2.dp,Color.White),
+
                 ){
                 Column() {
                     if(twitchUser.deleted){
@@ -1535,13 +1539,14 @@ fun ChatCard(
                         }
 
 
-
-
                         Text(buildAnnotatedString {
                             withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
                                 append("${twitchUser.displayName} :")
                             }
-                            append(" ${twitchUser.userType}")
+                            withStyle(style = SpanStyle(color = Color.White)) {
+                                append(" ${twitchUser.userType}")
+                            }
+
 
                         },
                             modifier = Modifier.padding(5.dp)
@@ -1582,14 +1587,14 @@ fun ScrollToBottom(
     ) {
         Row(modifier = Modifier
             .fillMaxWidth()
-            .align(Alignment.BottomEnd)
+            .align(Alignment.BottomCenter)
             .padding(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement =Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ){
             if(scrollingPaused){
 
-                    Button(onClick = { enableAutoScroll() }, modifier = Modifier.padding(end = 45.dp)) {
+                    Button(onClick = { enableAutoScroll() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = "Send chat",
