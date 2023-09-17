@@ -1680,7 +1680,7 @@ fun EnterChat(
         //todo: I think we can move this to the viewModel
     Log.d("currentStreamChannelName","NAME --> $channelName")
 
-    Column(modifier = modifier.background(Color.Black)){
+    Column(modifier = modifier.background(Color.DarkGray)){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)){
 
                 items(filteredChatList){
@@ -1747,12 +1747,16 @@ fun TextFieldChat(
                 //text = newText
             },
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Blue,
-                cursorColor = Color.Black,
-                disabledLabelColor = Color.Blue,
+                textColor = Color.White,
+                backgroundColor = Color.Black,
+                cursorColor = Color.White,
+                disabledLabelColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            placeholder = {
+                Text("Send a message",color = Color.White)
+            }
         )
         if(textFieldValue.value.text.length >0){
             Icon(
