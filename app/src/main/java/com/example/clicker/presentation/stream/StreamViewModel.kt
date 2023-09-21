@@ -385,6 +385,12 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    fun closeChatSettingAlert(){
+        _uiState.value = _uiState.value.copy(
+            showChatSettingAlert = false
+        )
+
+    }
 
     fun restartWebSocket(){
        val channelName = _channelName.value ?: ""

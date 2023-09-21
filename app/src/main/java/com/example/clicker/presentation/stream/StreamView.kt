@@ -270,7 +270,8 @@ fun StreamView(
                             enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
                             enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
                             chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
-                            fetchChatSettings = {streamViewModel.retryGettingChatSetting()}
+                            fetchChatSettings = {streamViewModel.retryGettingChatSetting()},
+                            closeChatSettingAlter = {streamViewModel.closeChatSettingAlert()}
                         )
                     }
                 ) {
@@ -467,7 +468,7 @@ fun BottomModalContent(
 fun DrawerContent(
      chatSettingsData: Response<ChatSettingsData>,
      showChatSettingAlert:Boolean,
-
+     closeChatSettingAlter:()->Unit,
      slowModeToggle:(ChatSettingsData) -> Unit,
      followerModeToggle:(ChatSettingsData) -> Unit,
      subscriberModeToggle:(ChatSettingsData) -> Unit,
@@ -502,7 +503,8 @@ fun DrawerContent(
                     enableFollowerModeSwitch = enableFollowerModeSwitch,
                     enableSubscriberSwitch = enableSubscriberSwitch,
                     enableEmoteModeSwitch = enableEmoteModeSwitch,
-                    chatSettingsFailedMessage = chatSettingsFailedMessage
+                    chatSettingsFailedMessage = chatSettingsFailedMessage,
+                    closeChatSettingAlter = {closeChatSettingAlter()}
                 )
             }
             is Response.Failure ->{
@@ -525,6 +527,7 @@ fun DrawerContent(
 fun ChatSettingsDataUI(
     chatSettingsData: ChatSettingsData,
     showChatSettingAlert:Boolean,
+    closeChatSettingAlter:()->Unit,
     slowModeToggle:(ChatSettingsData) -> Unit,
     followerModeToggle:(ChatSettingsData) -> Unit,
     subscriberModeToggle:(ChatSettingsData) -> Unit,
@@ -567,7 +570,8 @@ fun ChatSettingsDataUI(
                     enableFollowerModeSwitch =enableFollowerModeSwitch,
                     enableSubscriberSwitch =enableSubscriberSwitch,
                     enableEmoteModeSwitch =enableEmoteModeSwitch,
-                    chatSettingsFailedMessage = chatSettingsFailedMessage
+                    chatSettingsFailedMessage = chatSettingsFailedMessage,
+                    closeChatSettingsAlert = {closeChatSettingAlter()}
                 )
             }
             1 -> {
@@ -590,6 +594,7 @@ fun ChatSettingsDataUI(
 fun ChatSettings(
     chatSettingsData: ChatSettingsData,
     showChatSettingAlert:Boolean,
+    closeChatSettingsAlert:()->Unit,
     slowModeToggle:(ChatSettingsData) -> Unit,
     followerModeToggle:(ChatSettingsData) -> Unit,
     subscriberModeToggle:(ChatSettingsData) -> Unit,
@@ -647,7 +652,8 @@ fun ChatSettings(
 
         AnimatedVisibility(visible = showChatSettingAlert) {
             MessageAlertText(
-                message = chatSettingsFailedMessage
+                message = chatSettingsFailedMessage,
+                closeChatSettingsAlert ={closeChatSettingsAlert()}
             )
         }
 
@@ -793,7 +799,10 @@ fun FollowerSwitchRow(
 
 //TODO: MAKE IT SO THE X CLICK REMOVES THE REQUEST MESSAGE
 @Composable
-fun MessageAlertText(message: String){
+fun MessageAlertText(
+    message: String,
+    closeChatSettingsAlert: ()->Unit
+){
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -807,7 +816,7 @@ fun MessageAlertText(message: String){
                 imageVector = Icons.Default.Close,
                 contentDescription = "Send chat",
                 modifier = Modifier
-                    .clickable { }
+                    .clickable { closeChatSettingsAlert()}
                     .padding(2.dp)
                     .size(25.dp)
                     .align(Alignment.TopEnd),
