@@ -42,7 +42,7 @@ class TwitchRepoImpl @Inject constructor(
             emit(Response.Failure(Exception("Error! Please try again")))
         }
 
-       
+
     }
 
     override suspend fun getFollowedLiveStreams(
@@ -51,6 +51,8 @@ class TwitchRepoImpl @Inject constructor(
         userId: String
     ): Flow<Response<List<StreamInfo>>> = flow{
         emit(Response.Loading)
+        Log.d("GETTINGLIVESTREAMS","getFollowedLiveStreams() IS RUN")
+        
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
             clientId = clientId,
@@ -65,6 +67,16 @@ class TwitchRepoImpl @Inject constructor(
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
 
         }
+    }.catch { cause ->
+        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
+        }else{
+            emit(Response.Failure(Exception("Error getting streams! Please try again")))
+        }
+
+
     }
 
     override fun logout(clientId:String,token:String): Flow<Response<String>> = flow{
