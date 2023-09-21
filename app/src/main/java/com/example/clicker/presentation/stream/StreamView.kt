@@ -527,7 +527,7 @@ fun ChatSettingsDataUI(
 
 
     var tabIndex by remember { mutableIntStateOf(0) }
-    val titles = listOf("Settings", "Bonker")
+    val titles = listOf("Chat room Settings")
     Column {
         TabRow(selectedTabIndex = tabIndex) {
             titles.forEachIndexed { index, title ->
