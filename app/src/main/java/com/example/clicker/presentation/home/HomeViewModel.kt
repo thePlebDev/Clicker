@@ -51,6 +51,8 @@ data class LoginStatus(
     val loginStep1: Response<Boolean>? = Response.Loading,
     val loginStep2: Response<Boolean>? = null,
     val loginStep3: Response<Boolean>? = null,
+    val logoutError:Boolean = false
+
 
 )
 
@@ -279,9 +281,18 @@ class HomeViewModel @Inject constructor(
                         loginStep1 = Response.Success(true),
                         loginStep2 = Response.Success(true),
                         loginStep3 = null,
+                        logoutError = false
                     )
                 }
-                is Response.Failure ->{}
+                is Response.Failure ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStatusText = response.e.message ?: "Logout Error! Please try again",
+                        loginStep1 = Response.Success(true),
+                        loginStep2 = Response.Failure(Exception("failed to Logout")),
+                        loginStep3 = null,
+                        logoutError = true
+                    )
+                }
                 else -> {}
             }
         }
