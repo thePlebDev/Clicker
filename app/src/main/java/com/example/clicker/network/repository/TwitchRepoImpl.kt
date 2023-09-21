@@ -13,6 +13,7 @@ import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -22,6 +23,7 @@ class TwitchRepoImpl @Inject constructor(
 
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
         emit(Response.Loading)
+        Log.d("VALIDATINGTHETOKEN","LOADING")
        val response= twitchClient.validateToken(
             authorization = "OAuth $token"
         )
@@ -29,8 +31,11 @@ class TwitchRepoImpl @Inject constructor(
            emit(Response.Success(response.body()!!))
         }else{
             emit(Response.Failure(Exception("Error! Please login again")))
+            Log.d("VALIDATINGTHETOKEN","ERROR")
         }
 
+    }.catch { error ->
+        Log.d("VALIDATINGTHETOKEN","ERROR FOUND --> ${error}")
     }
 
     override suspend fun getFollowedLiveStreams(
