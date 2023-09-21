@@ -15,6 +15,7 @@ import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 class TwitchRepoImpl @Inject constructor(
@@ -34,8 +35,14 @@ class TwitchRepoImpl @Inject constructor(
             Log.d("VALIDATINGTHETOKEN","ERROR")
         }
 
-    }.catch { error ->
-        Log.d("VALIDATINGTHETOKEN","ERROR FOUND --> ${error}")
+    }.catch { cause ->
+        if(cause is UnknownHostException){
+            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
+        }else{
+            emit(Response.Failure(Exception("Error! Please try again")))
+        }
+
+       
     }
 
     override suspend fun getFollowedLiveStreams(
