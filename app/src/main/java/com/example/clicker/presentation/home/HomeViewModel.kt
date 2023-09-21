@@ -233,7 +233,7 @@ class HomeViewModel @Inject constructor(
                 is Response.Failure ->{
 
                     _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText ="Please login with Twitch to be issued a new authentication token",
+                        loginStatusText =response.e.message ?: "Error! Please login and try again",
                         loginStep2 = Response.Failure(Exception("failed to validate authentication token"))
                     )
                 }
