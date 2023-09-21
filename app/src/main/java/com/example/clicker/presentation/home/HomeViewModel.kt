@@ -136,6 +136,7 @@ class HomeViewModel @Inject constructor(
                     userId = user.userId
                 )
                // tokenDataStore.setUsername()
+
                 getLiveStreams(validatedUser = user,mainState.oAuthToken!!)
             }
         }
@@ -152,7 +153,12 @@ class HomeViewModel @Inject constructor(
             userId = validatedUser.userId
         ).collect{response ->
             when(response){
-                is Response.Loading ->{}
+                is Response.Loading ->{
+                    _loginUIState.value = _loginUIState.value.copy(
+                        loginStep3 = Response.Loading,
+                        loginStatusText ="Retrieving live streams",
+                    )
+                }
                 is Response.Success ->{
 
 
@@ -171,7 +177,7 @@ class HomeViewModel @Inject constructor(
                 }
                 is Response.Failure ->{
                     _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText ="Error occurred!! Please try logging in again",
+                        loginStatusText =response.e.message ?: "Error! Please login and try again",
                         loginStep3 = Response.Failure(Exception("Unable to getStream")),
                     )
                 }
@@ -219,9 +225,8 @@ class HomeViewModel @Inject constructor(
                 is Response.Loading ->{}
                 is Response.Success ->{
                     _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText ="Retrieving live streams",
+
                         loginStep2 = Response.Success(true),
-                        loginStep3 = Response.Loading,
                     )
                     mutableAuthenticatedUserFlow.tryEmit(
                         mutableAuthenticatedUserFlow.value.copy(
