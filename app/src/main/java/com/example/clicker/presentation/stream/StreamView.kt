@@ -814,7 +814,7 @@ fun MessageAlertText(message: String){
                 tint = Color.Red
                 )
             Text(
-                message,
+                "Request failed",
                 textAlign = TextAlign.Center,
                 fontSize = 30.sp,
                 modifier = Modifier.align(Alignment.Center)

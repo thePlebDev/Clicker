@@ -142,6 +142,7 @@ class TwitchRepoImpl @Inject constructor(
         body: UpdateChatSettings
     ): Flow<Response<Boolean>>  = flow{
         emit(Response.Loading)
+        throw Exception("IT DO BE LIKE THAT SOMETIMES")
         val response =twitchClient.updateChatSettings(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
@@ -155,6 +156,16 @@ class TwitchRepoImpl @Inject constructor(
         }else{
             emit(Response.Failure(Exception(response.message())))
         }
+    }.catch { cause ->
+        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+            emit(Response.Failure(Exception("response.message()")))
+        }else{
+            emit(Response.Failure(Exception("response.message()")))
+        }
+
+
     }
 
     override suspend fun deleteChatMessage(
