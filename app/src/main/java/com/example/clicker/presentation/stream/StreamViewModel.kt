@@ -62,7 +62,9 @@ data class StreamUIState(
     val banResponse:Response<Boolean> = Response.Success(false),
     val banResponseMessage:String = "",
     val undoBanResponse:Boolean = false,
-    val showStickyHeader:Boolean = false
+    val showStickyHeader:Boolean = false,
+
+    val chatSettingsFailedMessage:String =""
 )
 
 @HiltViewModel
@@ -453,6 +455,13 @@ class StreamViewModel @Inject constructor(
         listChats.clear()
 
     }
+    fun retryGettingChatSetting(){
+
+        getChatSettings(
+            clientId = _uiState.value.clientId,
+            broadcasterId = _uiState.value.broadcasterId
+        )
+    }
 
     private fun getChatSettings(
         clientId: String,
@@ -472,7 +481,10 @@ class StreamViewModel @Inject constructor(
                 twitchRepoImpl.getChatSettings("Bearer $oAuthToken",clientId,broadcasterId).collect{response ->
                     when(response){
                         is Response.Loading ->{
-                            Log.d("twitchNameonCreateViewVIewModel","LOADING")
+                            _uiState.value = _uiState.value.copy(
+                                chatSettings = Response.Loading
+                            )
+
                         }
                         is Response.Success ->{
                             Log.d("twitchNameonCreateViewVIewModel","SUCCESS -> ${response.data.data}")
@@ -482,6 +494,10 @@ class StreamViewModel @Inject constructor(
                         }
                         is Response.Failure ->{
                             Log.d("twitchNameonCreateViewVIewModel","FAILED -> ${response.e.message}")
+                            _uiState.value = _uiState.value.copy(
+//
+                                chatSettings = Response.Failure(response.e)
+                            )
                         }
                     }
                 }

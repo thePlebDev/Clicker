@@ -268,7 +268,9 @@ fun StreamView(
                             enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
                             enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
                             enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-                            enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode
+                            enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
+                            chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
+                            fetchChatSettings = {streamViewModel.retryGettingChatSetting()}
                         )
                     }
                 ) {
@@ -475,6 +477,9 @@ fun DrawerContent(
      enableFollowerModeSwitch:Boolean,
      enableSubscriberSwitch:Boolean,
      enableEmoteModeSwitch:Boolean,
+
+     chatSettingsFailedMessage:String,
+     fetchChatSettings:()-> Unit
 ){
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -496,11 +501,20 @@ fun DrawerContent(
                     enableSlowModeSwitch = enableSlowModeSwitch,
                     enableFollowerModeSwitch = enableFollowerModeSwitch,
                     enableSubscriberSwitch = enableSubscriberSwitch,
-                    enableEmoteModeSwitch = enableEmoteModeSwitch
+                    enableEmoteModeSwitch = enableEmoteModeSwitch,
+                    chatSettingsFailedMessage = chatSettingsFailedMessage
                 )
             }
             is Response.Failure ->{
-                Text("FAILED TO FETCH CHAT SETTINGS")
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally){
+                    Text("FAILED TO FETCH CHAT SETTINGS")
+                    Button(onClick = {
+                        fetchChatSettings()
+                    }) {
+                        Text("Get Chat settings")
+                    }
+                }
+
             }
         }
     }
@@ -520,6 +534,7 @@ fun ChatSettingsDataUI(
     enableFollowerModeSwitch:Boolean,
     enableSubscriberSwitch:Boolean,
     enableEmoteModeSwitch:Boolean,
+    chatSettingsFailedMessage:String
 
 
 ){
@@ -551,7 +566,8 @@ fun ChatSettingsDataUI(
                     enableSlowModeSwitch =enableSlowModeSwitch,
                     enableFollowerModeSwitch =enableFollowerModeSwitch,
                     enableSubscriberSwitch =enableSubscriberSwitch,
-                    enableEmoteModeSwitch =enableEmoteModeSwitch
+                    enableEmoteModeSwitch =enableEmoteModeSwitch,
+                    chatSettingsFailedMessage = chatSettingsFailedMessage
                 )
             }
             1 -> {
@@ -583,6 +599,7 @@ fun ChatSettings(
     enableFollowerModeSwitch:Boolean,
     enableSubscriberSwitch:Boolean,
     enableEmoteModeSwitch:Boolean,
+    chatSettingsFailedMessage:String,
 ){
     val slowMode = chatSettingsData.slowMode
     val followerMode = chatSettingsData.followerMode
@@ -629,7 +646,9 @@ fun ChatSettings(
 
 
         AnimatedVisibility(visible = showChatSettingAlert) {
-            MessageAlertText()
+            MessageAlertText(
+                message = chatSettingsFailedMessage
+            )
         }
 
 
@@ -774,7 +793,7 @@ fun FollowerSwitchRow(
 
 //TODO: MAKE IT SO THE X CLICK REMOVES THE REQUEST MESSAGE
 @Composable
-fun MessageAlertText(){
+fun MessageAlertText(message: String){
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -795,7 +814,7 @@ fun MessageAlertText(){
                 tint = Color.Red
                 )
             Text(
-                "Request failed",
+                message,
                 textAlign = TextAlign.Center,
                 fontSize = 30.sp,
                 modifier = Modifier.align(Alignment.Center)

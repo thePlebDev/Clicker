@@ -81,7 +81,7 @@ class TwitchRepoImpl @Inject constructor(
 
     override fun logout(clientId:String,token:String): Flow<Response<String>> = flow{
         emit(Response.Loading)
-        
+
         val response = twitchClient.logout(clientId = clientId, token = token)
         if (response.isSuccessful){
             Log.d("logoutResponse", "SUCCESS ->${response.message()}")
@@ -110,6 +110,7 @@ class TwitchRepoImpl @Inject constructor(
         broadcasterId: String
     )= flow {
         emit(Response.Loading)
+
          val response = twitchClient.getChatSettings(
             authorization = oAuthToken,
             clientId = clientId,
@@ -121,6 +122,16 @@ class TwitchRepoImpl @Inject constructor(
 
             emit(Response.Failure(Exception(response.message())))
         }
+    }.catch { cause ->
+        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
+        }else{
+            emit(Response.Failure(Exception("Logout Error! Please try again")))
+        }
+
+
     }
 
     override suspend fun updateChatSettings(
