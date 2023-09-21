@@ -179,6 +179,8 @@ fun HomeView(
                 loginStep1 = homeViewModel.loginState.value.loginStep1,
                 loginStep2 = homeViewModel.loginState.value.loginStep2,
                 loginStep3 = homeViewModel.loginState.value.loginStep3,
+                logoutError = homeViewModel.loginState.value.logoutError,
+                logout = {homeViewModel.beginLogout()}
             )
         }
 
@@ -232,7 +234,9 @@ fun LoginModal(
     loginStatusText:String,
     loginStep1:Response<Boolean>?,
     loginStep2:Response<Boolean>?,
-    loginStep3:Response<Boolean>?
+    loginStep3:Response<Boolean>?,
+    logoutError:Boolean,
+    logout:()-> Unit
 
 ) {
             Spacer(
@@ -249,7 +253,9 @@ fun LoginModal(
             loginStatusText,
             loginStep1,
             loginStep2,
-            loginStep3
+            loginStep3,
+            logoutError,
+            logout = {logout()}
 
 
         )
@@ -265,7 +271,9 @@ fun LoginCard(
     statusText:String,
     loginStep1:Response<Boolean>?,
     loginStep2:Response<Boolean>?,
-    loginStep3:Response<Boolean>?
+    loginStep3:Response<Boolean>?,
+    logoutError:Boolean,
+    logout:()-> Unit
 ){
     val configuration = LocalConfiguration.current
 
@@ -310,9 +318,16 @@ fun LoginCard(
                 .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
-            Button(onClick = { loginWithTwitch() }) {
-                Text("Login with Twitch")
+            if(logoutError){
+                Button(onClick = { logout() }) {
+                    Text("Attempt logout again")
+                }
+            }else{
+                Button(onClick = { loginWithTwitch() }) {
+                    Text("Login with Twitch")
+                }
             }
+
         }
 
 
