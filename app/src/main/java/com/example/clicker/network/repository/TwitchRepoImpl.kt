@@ -176,6 +176,7 @@ class TwitchRepoImpl @Inject constructor(
         messageId: String
     ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
+        
         val response = twitchClient.deleteChatMessage(
             authorizationToken = "Bearer ${oAuthToken}",
             clientId = clientId,
@@ -186,10 +187,21 @@ class TwitchRepoImpl @Inject constructor(
         if(response.isSuccessful){
             emit(Response.Success(true))
         }else{
-            Log.d("deleteChatMessageException",response.message())
-            Log.d("deleteChatMessageException",response.code().toString())
-            emit(Response.Failure(Exception("MESSAGE NOT DELETED")))
+
+            emit(Response.Failure(Exception("Unable to delete message")))
         }
+    }.catch { cause ->
+
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+
+            emit(Response.Failure(Exception("Failed. Network connection error")))
+        }else{
+
+            emit(Response.Failure(Exception("Unable to delete message")))
+        }
+
+
     }
 
     override suspend fun banUser(
