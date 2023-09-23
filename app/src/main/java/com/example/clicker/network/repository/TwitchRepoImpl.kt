@@ -176,7 +176,7 @@ class TwitchRepoImpl @Inject constructor(
         messageId: String
     ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
-        
+
         val response = twitchClient.deleteChatMessage(
             authorizationToken = "Bearer ${oAuthToken}",
             clientId = clientId,
@@ -267,6 +267,18 @@ class TwitchRepoImpl @Inject constructor(
 
             emit(Response.Failure(Exception("ERROR BANNING USER")))
         }
+    }.catch { cause ->
+
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+            Log.d("BANUSEREXCEPTION","UnknownHostException")
+            emit(Response.Failure(Exception("Network connection error")))
+        }else{
+            Log.d("BANUSEREXCEPTION","Exception Happened")
+            emit(Response.Failure(Exception("Unable to ban user")))
+        }
+
+
     }
 
 
