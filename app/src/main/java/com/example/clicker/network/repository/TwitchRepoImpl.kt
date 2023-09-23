@@ -142,7 +142,7 @@ class TwitchRepoImpl @Inject constructor(
         body: UpdateChatSettings
     ): Flow<Response<Boolean>>  = flow{
         emit(Response.Loading)
-        throw Exception("IT DO BE LIKE THAT SOMETIMES")
+
         val response =twitchClient.updateChatSettings(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
@@ -207,12 +207,6 @@ class TwitchRepoImpl @Inject constructor(
             moderatorId = moderatorId,
             body = body
         )
-//        Log.d("BANUSERRESPONSE","moderatorId --> ${moderatorId}")
-//        Log.d("BANUSERRESPONSE","oAuthToken --> ${oAuthToken}")
-//        Log.d("BANUSERRESPONSE","clientId --> ${clientId}")
-//        Log.d("BANUSERRESPONSE","broadcasterId --> ${broadcasterId}")
-//        Log.d("BANUSERRESPONSE","body.data --> ${body.data}")
-//        Log.d("BANUSERRESPONSE","message --> ${response.message()}")
 
 
         if(response.isSuccessful){
@@ -221,12 +215,21 @@ class TwitchRepoImpl @Inject constructor(
                 emit(Response.Success(it))
             }
         }else{
-            Log.d("BANUSERRESPONSE","code --> ${response.code()}")
-            Log.d("BANUSERRESPONSE","message --> ${response.message()}")
-            Log.d("BANUSERRESPONSE","body --> ${response.body()}")
-            Log.d("BANUSERRESPONSE","errorBody --> ${response.errorBody()}")
-            emit(Response.Failure(Exception("Ban User exception")))
+
+            emit(Response.Failure(Exception("Unable to ban user")))
         }
+    }.catch { cause ->
+
+        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if(cause is UnknownHostException){
+            Log.d("BANUSEREXCEPTION","UnknownHostException")
+            emit(Response.Failure(Exception("Network connection error")))
+        }else{
+            Log.d("BANUSEREXCEPTION","Exception Happened")
+            emit(Response.Failure(Exception("Unable to ban user")))
+        }
+
+
     }
 
     override suspend fun unBanUser(
@@ -246,12 +249,9 @@ class TwitchRepoImpl @Inject constructor(
         )
         if(response.isSuccessful){
             emit(Response.Success(true))
-            Log.d("UNBANUSERRESPONSE","code --> ${response.message()}")
+
         }else{
-            Log.d("UNBANUSERRESPONSE","code --> ${response.code()}")
-            Log.d("UNBANUSERRESPONSE","headers --> ${response.headers()}")
-            Log.d("UNBANUSERRESPONSE","body --> ${response.body()}")
-            Log.d("UNBANUSERRESPONSE","errorBody --> ${response.errorBody()}")
+
 
             emit(Response.Failure(Exception("ERROR BANNING USER")))
         }

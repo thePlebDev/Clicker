@@ -742,7 +742,7 @@ class StreamViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         showStickyHeader = true,
                         undoBanResponse = false,
-                        banResponseMessage = "Timeout attempt unsuccessful"
+                        banResponseMessage = "${response.e.message}"
                     )
 
                 }
