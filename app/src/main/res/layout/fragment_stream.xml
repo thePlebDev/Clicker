@@ -9,15 +9,70 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+           <androidx.constraintlayout.widget.ConstraintLayout
+               android:layout_width="0dp"
+               android:layout_height="40dp"
+               app:layout_constraintBottom_toTopOf="@+id/webView"
+               app:layout_constraintEnd_toEndOf="parent"
+               app:layout_constraintStart_toStartOf="parent"
+               app:layout_constraintTop_toTopOf="parent"
+               android:background="?attr/colorPrimaryDark"
+               >
 
-                <WebView
-                    android:id="@+id/webView"
-                    android:layout_width="0.dp"
-                    android:layout_height="0.dp"
-                    app:layout_constraintDimensionRatio="16:9"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+               <androidx.appcompat.widget.Toolbar
+                   android:id="@+id/streamToolBar"
+                   android:layout_width="0dp"
+                   android:layout_height="0dp"
+                   android:background="?attr/colorPrimaryDark"
+                   android:minHeight="?attr/actionBarSize"
+                   android:theme="?attr/actionBarTheme"
+                   app:layout_constraintBottom_toTopOf="parent"
+                   app:layout_constraintEnd_toEndOf="parent"
+                   app:layout_constraintStart_toStartOf="parent"
+                   app:layout_constraintTop_toTopOf="parent" />
+
+<!--               <ImageView-->
+<!--                   android:id="@+id/backButton"-->
+<!--                   android:layout_width="60dp"-->
+<!--                   android:layout_height="40dp"-->
+<!--                   android:layout_marginEnd="776dp"-->
+<!--                   android:layout_marginBottom="26dp"-->
+<!--                   android:src="@drawable/back_arrow"-->
+<!--                   app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                   app:layout_constraintEnd_toEndOf="parent"-->
+<!--                   app:layout_constraintHorizontal_bias="0.0"-->
+<!--                   app:layout_constraintStart_toStartOf="parent"-->
+<!--                   app:layout_constraintTop_toTopOf="parent"-->
+<!--                   app:layout_constraintVertical_bias="0.0" />-->
+               <ImageButton
+                   android:id="@+id/backButton"
+                   android:layout_width="60dp"
+                   android:layout_height="40dp"
+                   android:layout_marginEnd="776dp"
+                   android:layout_marginBottom="26dp"
+                   android:src="@drawable/back_arrow"
+                   app:layout_constraintBottom_toBottomOf="parent"
+                   app:layout_constraintEnd_toEndOf="parent"
+                   app:layout_constraintHorizontal_bias="0.0"
+                   app:layout_constraintStart_toStartOf="parent"
+                   app:layout_constraintTop_toTopOf="parent"
+                   app:layout_constraintVertical_bias="0.0"/>
+
+
+           </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="0.dp"
+                android:layout_height="0.dp"
+                android:layout_marginTop="40dp"
+                app:layout_constraintDimensionRatio="16:9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/compose_view"
@@ -28,6 +83,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/webView" />
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

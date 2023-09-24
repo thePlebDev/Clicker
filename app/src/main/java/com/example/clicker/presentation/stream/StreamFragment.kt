@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.ImageView
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
@@ -21,6 +23,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentStreamBinding
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.clicker.presentation.home.HomeViewModel
 
 
@@ -29,7 +32,7 @@ import com.example.clicker.presentation.home.HomeViewModel
  * Use the [StreamFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class StreamFragment : Fragment() {
+class StreamFragment : Fragment(),View.OnClickListener {
 
     private var _binding: FragmentStreamBinding? = null
     private val binding get() = _binding!!
@@ -74,8 +77,17 @@ class StreamFragment : Fragment() {
             myWebView = myWebView,
             url = url
         )
+        val backButton:ImageButton? = view.findViewById(R.id.backButton)
+        backButton?.setOnClickListener(this)
+
+
 
         return view
+    }
+
+    override fun onClick(p0: View?) {
+        Log.d("CLICKEDNLOADED","IT DO BE CLICKING SOMETHING FIERCE")
+        findNavController().popBackStack()
     }
 
 
