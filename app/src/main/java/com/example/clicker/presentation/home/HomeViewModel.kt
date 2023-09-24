@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.BuildConfig
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
@@ -61,6 +62,7 @@ data class LoginStatus(
 class HomeViewModel @Inject constructor(
     private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchRepo,
+    private val tokenValidationWorker: TokenValidationWorker,
 ): ViewModel(){
 
     private val CLIENT_ID = BuildConfig.CLIENT_ID
@@ -127,10 +129,15 @@ class HomeViewModel @Inject constructor(
         collectAuthenticatedUserFlow()
     }
 
+
+
     private fun collectAuthenticatedUserFlow() =viewModelScope.launch {
         mutableAuthenticatedUserFlow.collect{mainState ->
             mainState.oAuthToken?.let{notNullToken ->
                 validateOAuthToken(notNullToken)
+                //todo:send off the worker request
+                tokenValidationWorker.enqueueRequest(notNullToken)
+
             }
             mainState.authUser?.let {user ->
                 _uiState.value = _uiState.value.copy(

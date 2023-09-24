@@ -56,118 +56,18 @@ class WorkerViewModel @Inject constructor(
     private val _AuthenticatedUser: MutableStateFlow<AuthenticatedUser?> = MutableStateFlow(null)
     var liveDataWork: LiveData<WorkInfo>? = null
 
-    private val authenticatedUserFlow = combine(_oAuthUserToken,_AuthenticatedUser){
-        _oAuthUserToken,
-        authenticatedUser
-        ->
-        MainStates(
-            oAuthToken = _oAuthUserToken,
-            authUser = authenticatedUser
-        )
-    }.stateIn(viewModelScope, SharingStarted.Lazily,
-        MainStates(oAuthToken = null,authUser = null)
-    )
 
 
 
-    private fun registerSubscribers() = viewModelScope.launch{
-        authenticatedUserFlow.collect{mainState ->
-
-            mainState.oAuthToken?.let{token ->
-                _uiState.value = _uiState.value.copy(
-                    authStatus = "validating OAuthToken"
-                )
-                runWorkManager(token)
-            }
-            mainState.authUser?.let {authUser ->
-                getLiveStreams(authUser)
-            }
-
-        }
-    }
-
-    private suspend fun getLiveStreams( authUser: AuthenticatedUser){
-        twitchRepoImpl.getFollowedLiveStreams(
-            authorizationToken = _oAuthUserToken.value!!,
-            clientId = authUser.clientId,
-            userId = authUser.userId
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("workerGetFollowedLiveStreams","LOADING")
-                }
-                is Response.Success ->{
-//                    Log.d("workerGetFollowedLiveStreams",response.data.data.toString())
-//                    _uiState.value = _uiState.value.copy(
-//                        streamStatus = Response.Success(response.data.data),
-//                        authStatus = "This many streams -----> ${response.data.data.size}"
-//                    )
-                }
-                is Response.Failure ->{
-                    Log.d("workerGetFollowedLiveStreams","FAILED")
-                    _uiState.value = _uiState.value.copy(
-                        streamStatus = Response.Failure(Exception("getting live streams failed"))
-                    )
-                }
-            }
-        }
-    }
 
 
 
-    private fun getOAuthToken() = viewModelScope.launch{
-        tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
-            if(storedOAuthToken.length > 2){
-                Log.d("getOAuthToken",storedOAuthToken)
-                _oAuthUserToken.tryEmit(storedOAuthToken)
-            }else{
-
-                _uiState.value = _uiState.value.copy(
-                    authStatus = "No OAuthToken. Please login",
-                    streamStatus = Response.Failure(Exception("No token found"))
-                )
-            }
-        }
-    }
     private fun runWorkManager(oAuthToken:String){
 
         liveDataWork= tokenValidationWorker.enqueueRequest(oAuthToken)
 
-
     }
 
-    fun setAuthenticatedUser(authenticatedUser: AuthenticatedUser){
-        _AuthenticatedUser.tryEmit(authenticatedUser)
-        setUsername(authenticatedUser.userName)
-    }
-     private fun setUsername(username:String) = viewModelScope.launch{
-        tokenDataStore.setUsername(username)
-    }
-
-    fun oAuthTokenValidationFailed(){
-        _uiState.value = _uiState.value.copy(
-            authStatus = "OAuthToken validation failed",
-            streamStatus = Response.Failure(Exception("oAuthToken validation failed"))
-        )
-    }
-
-
-    fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
-        //need to make a call to exchange the authCode for a validationToken
-        Log.d("setOAuthToken","token -> $oAuthToken")
-        tokenDataStore.setOAuthToken(oAuthToken)
-        _oAuthUserToken.tryEmit(oAuthToken)
-
-
-    }
-    fun beginLogout() = viewModelScope.launch{
-        _uiState.value = _uiState.value.copy(
-            loggingOut = Response.Loading
-        )
-        twitchRepoImpl.logout(clientId = "_AuthenticatedUser.value?.clientId!!","token = _oAuthUserToken.value!!").collect{
-            Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
-        }
-    }
 
 }
 
