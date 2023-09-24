@@ -1,6 +1,7 @@
 package com.example.clicker.data
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -37,6 +38,7 @@ class TokenValidationWorker @Inject constructor(
             ExistingPeriodicWorkPolicy.KEEP,
             builtWorkRequest
         )
+        Log.d("ENQUEDID","IT DO BE LIKE THAT SOMETIMES")
         return workManager.getWorkInfoByIdLiveData(builtWorkRequest.id)
     }
 
