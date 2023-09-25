@@ -65,8 +65,7 @@ class HomeViewModel @Inject constructor(
     private val tokenValidationWorker: TokenValidationWorker,
 ): ViewModel(){
 
-    private val CLIENT_ID = BuildConfig.CLIENT_ID
-    private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
+
 
 
     private val _newUrlList =MutableStateFlow<List<StreamInfo>?>(null)
