@@ -11,6 +11,7 @@ import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -24,11 +25,12 @@ class TwitchRepoImpl @Inject constructor(
 
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
         emit(Response.Loading)
-        Log.d("VALIDATINGTHETOKEN","LOADING")
+        LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
        val response= twitchClient.validateToken(
             authorization = "OAuth $token"
         )
         if(response.isSuccessful){
+            LogWrap.d("VALIDATINGTHETOKEN","LOGWRAP SUCCESS")
            emit(Response.Success(response.body()!!))
         }else{
             emit(Response.Failure(Exception("Error! Please login again")))
