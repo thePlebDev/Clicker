@@ -16,7 +16,7 @@ android {
 
 
     defaultConfig {
-        applicationId "com.example.clicker"
+        applicationId "elliott.software.clicker"
         minSdk 24
         targetSdk 33
         versionCode 1
@@ -143,6 +143,17 @@ dependencies {
     //DATA STORE
 
     implementation "androidx.datastore:datastore-preferences:1.0.0"
+
+    testImplementation "org.mockito:mockito-core:3.+"
+
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
+
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-test
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+
+
+
+
 
 }
 kapt {

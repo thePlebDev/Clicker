@@ -52,15 +52,17 @@ class TwitchRepoImpl @Inject constructor(
         clientId: String,
         userId: String
     ): Flow<Response<List<StreamInfo>>> = flow{
-        emit(Response.Loading)
-        Log.d("GETTINGLIVESTREAMS","getFollowedLiveStreams() IS RUN")
+
 
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId
         )
+        //emit(Response.Loading)
+
         if (response.isSuccessful){
+
 
             val transformedData = response.body()!!.data.map { it.toStreamInfo() }
             emit(Response.Success(transformedData))
@@ -69,9 +71,10 @@ class TwitchRepoImpl @Inject constructor(
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
 
         }
+
     }.catch { cause ->
-        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+
+
         if(cause is UnknownHostException){
             emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
         }else{
