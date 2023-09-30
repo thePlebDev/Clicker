@@ -227,6 +227,11 @@ class TwitchWebSocket @Inject constructor(
              val banDurationMatch = banDurationPattern.find(text)
              val foundDuration = banDurationMatch?.groupValues?.last()?.toInt()
              Log.d("WEBSOCKETBANDURATION","foundDuration --> $foundDuration")
+             val userData: TwitchUserData
+             // todo: should go like this
+             // todo: val userData: TwitchUserData = ParsingEngine().clearChat(text)
+             //todo: _state.tryEmit(userData)
+
 
 
              val pattern2 = "#$streamerChannelName$".toRegex()
