@@ -76,22 +76,87 @@ class ParsingEngine {
 
     }
 
-    fun clearChatTesting(text:String,streamerName:String):String?{
+    fun clearChatTesting(text:String,streamerName:String):TwitchUserData{
+
         //THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
     //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
-        val clearChatPattern = "$streamerName$".toRegex()
-        val banUserPattern = "[a-zA-Z0-9_]+$".toRegex()
+        val streamerNamePattern = "$streamerName$".toRegex()
 
-        val clearChat = clearChatPattern.find(text)
-        val foundPattern = clearChat?.value
 
-        if(foundPattern == null){
-            val bannedUserUsername = banUserPattern.find(text)
-            return bannedUserUsername?.value
+        val clearChat = streamerNamePattern.find(text)
+        val channelNameFound = clearChat?.value
+
+        if(channelNameFound == null){
+            return banUserParsing(text)
 
         }else{
-            return foundPattern
+            //todo: this should return a TwitchUserData object
+            //todo: 1) Basically I want this to send a message to clear the chat
+            //todo: 2) Basically I want this to display a message stating that the chat was cleared
+            return clearChatParsing(channelNameFound)
         }
+
+
+    }
+    fun banUserParsing(text: String):TwitchUserData{
+        //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
+        //todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
+        //todo: I need to parse out the userId. target-user-id=949335660
+        val banUserPattern = "[a-zA-Z0-9_]+$".toRegex()
+        val bannedUserIdPattern = "target-user-id=(\\d+)".toRegex()
+
+        val bannedUserUsername = banUserPattern.find(text)
+        val bannedUserId = bannedUserIdPattern.find(text)
+
+
+        val usernameFound = bannedUserUsername?.value ?: "User"
+        val bannedUserIdFound = bannedUserId?.value
+
+        return TwitchUserData(
+            badgeInfo = null,
+            badges = null,
+            clientNonce = null,
+            color = "#000000",
+            displayName = null,
+            emotes = null,
+            firstMsg = null,
+            flags = null,
+            id = bannedUserIdFound,
+            mod = null,
+            returningChatter = null,
+            roomId = null,
+            subscriber = false,
+            tmiSentTs = null,
+            turbo = false,
+            userId = null,
+            userType = "$usernameFound banned by moderator",
+            messageType = MessageType.CLEARCHAT,
+            bannedDuration = null
+        )
+
+    }
+    fun clearChatParsing(channelName:String):TwitchUserData{
+        return TwitchUserData(
+            badgeInfo = null,
+            badges = null,
+            clientNonce = null,
+            color = "#000000",
+            displayName = channelName,
+            emotes = null,
+            firstMsg = null,
+            flags = null,
+            id = null,
+            mod = null,
+            returningChatter = null,
+            roomId = null,
+            subscriber = false,
+            tmiSentTs = null,
+            turbo = false,
+            userId = null,
+            userType = "Chat cleared by moderator",
+            messageType = MessageType.CLEARCHAT,
+            bannedDuration = null
+        )
 
 
     }

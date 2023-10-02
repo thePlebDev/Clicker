@@ -220,6 +220,7 @@ class TwitchWebSocket @Inject constructor(
          Log.d("onMessageSocketStoof","state --> $text")
 
 
+
          if(text.contains(" CLEARCHAT ")){
 
              val banDurationPattern = "ban-duration=(\\d+)".toRegex()
