@@ -53,4 +53,23 @@ class ParsingEngineTest {
 
 
     }
+    //TODO: TEST USERNAME PARSING WITH NON LATIN BASED ALPHABETS
+    // 板橋小結巴 THIS IS A MANDARIN BASED USER NAME
+
+    @Test
+    fun ban_user_parsing_with_non_latin_alphabet(){
+        val EXPECTED_BANNEDUSERID = "949335660"
+        val EXPECTED_USERNAME = "板橋小結巴"
+
+        val BAN_USER_TEXT = "@room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :板橋小結巴"
+        val STREAMER_NAME = "theplebdev"
+
+        /* When */
+        val result = underTest.clearChatTesting(text = BAN_USER_TEXT, streamerName = STREAMER_NAME)
+
+
+        /* Then */
+        Assert.assertEquals(EXPECTED_USERNAME, result.displayName )
+
+    }
 }

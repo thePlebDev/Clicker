@@ -102,7 +102,7 @@ class ParsingEngine {
         //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
         //todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
         //todo: I need to parse out the userId. target-user-id=949335660
-        val banUserPattern = "[a-zA-Z0-9_]+$".toRegex()
+        val banUserPattern = "([^:]+)$".toRegex()
         val bannedUserIdPattern = "target-user-id=(\\d+)".toRegex()
 
         val bannedUserUsername = banUserPattern.find(text)
