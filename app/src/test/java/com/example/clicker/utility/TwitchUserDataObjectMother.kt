@@ -8,7 +8,7 @@ class TwitchUserDataObjectMother private constructor() {
 
     companion object{
 
-        private val twitchUserData: TwitchUserData =TwitchUserData(
+        private var twitchUserData: TwitchUserData =TwitchUserData(
             badgeInfo = null,
             badges = null,
             clientNonce = null,
@@ -34,32 +34,32 @@ class TwitchUserDataObjectMother private constructor() {
             return twitchUserData
         }
         fun addBadgeInfo(badgeInfo:String)=apply{
-            twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 badgeInfo = badgeInfo
             )
         }
         fun addBadges(badges:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 badges = badges
             )
         }
         fun addClientNonce(clientNonce:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 clientNonce = clientNonce
             )
         }
         fun addColor(color:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 color = color
             )
         }
         fun addDisplayName(displayName:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 displayName = displayName
             )
         }
         fun addEmotes(emotes:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 emotes = emotes
             )
         }
@@ -69,62 +69,62 @@ class TwitchUserDataObjectMother private constructor() {
             )
         }
         fun addFlags(flags:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 flags = flags
             )
         }
         fun addId(id:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 id = id
             )
         }
         fun addMod(mod:String)=apply{
-            twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 mod = mod
             )
         }
         fun addReturningChatter(returningChatter:String)=apply{
-            twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 returningChatter = returningChatter
             )
         }
         fun addRoomId(roomId:String)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 roomId = roomId
             )
         }
         fun addSubscriber(subscriber:Boolean)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 subscriber = subscriber
             )
         }
         fun addTmiSentTs(tmiSentTs:Long)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 tmiSentTs = tmiSentTs
             )
         }
         fun addTurbo(turbo:Boolean)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 turbo = turbo
             )
         }
         fun addUserId(userId:String)=apply{
-            twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 userId = userId
             )
         }
         fun addUserType(userType:String)=apply{
-            twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 userType = userType
             )
         }
         fun addMessageType(messageType:MessageType)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 messageType = messageType
             )
         }
         fun addBannedDuration(bannedDuration:Int)=apply{
-            twitchUserData.copy(
+            twitchUserData =twitchUserData.copy(
                 bannedDuration = bannedDuration
             )
         }

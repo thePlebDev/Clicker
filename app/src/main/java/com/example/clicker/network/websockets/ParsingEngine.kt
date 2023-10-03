@@ -110,7 +110,7 @@ class ParsingEngine {
 
 
         val usernameFound = bannedUserUsername?.value ?: "User"
-        val bannedUserIdFound = bannedUserId?.value
+        val bannedUserIdFound = bannedUserId?.groupValues?.get(1)
 
         return TwitchUserData(
             badgeInfo = null,
