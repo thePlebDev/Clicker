@@ -1,4 +1,4 @@
-package com.example.clicker.utility
+package com.example.clicker.util
 
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchUserData
@@ -39,27 +39,27 @@ class TwitchUserDataObjectMother private constructor() {
             )
         }
         fun addBadges(badges:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 badges = badges
             )
         }
         fun addClientNonce(clientNonce:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 clientNonce = clientNonce
             )
         }
         fun addColor(color:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 color = color
             )
         }
         fun addDisplayName(displayName:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 displayName = displayName
             )
         }
         fun addEmotes(emotes:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 emotes = emotes
             )
         }
@@ -69,12 +69,12 @@ class TwitchUserDataObjectMother private constructor() {
             )
         }
         fun addFlags(flags:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 flags = flags
             )
         }
         fun addId(id:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 id = id
             )
         }
@@ -89,22 +89,22 @@ class TwitchUserDataObjectMother private constructor() {
             )
         }
         fun addRoomId(roomId:String)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 roomId = roomId
             )
         }
         fun addSubscriber(subscriber:Boolean)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 subscriber = subscriber
             )
         }
         fun addTmiSentTs(tmiSentTs:Long)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 tmiSentTs = tmiSentTs
             )
         }
         fun addTurbo(turbo:Boolean)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 turbo = turbo
             )
         }
@@ -119,12 +119,12 @@ class TwitchUserDataObjectMother private constructor() {
             )
         }
         fun addMessageType(messageType:MessageType)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 messageType = messageType
             )
         }
         fun addBannedDuration(bannedDuration:Int)=apply{
-            twitchUserData =twitchUserData.copy(
+            twitchUserData = twitchUserData.copy(
                 bannedDuration = bannedDuration
             )
         }

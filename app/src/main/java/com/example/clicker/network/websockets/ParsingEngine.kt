@@ -98,7 +98,7 @@ class ParsingEngine {
 
 
     }
-    fun banUserParsing(text: String):TwitchUserData{
+    private fun banUserParsing(text: String):TwitchUserData{
         //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
         //todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
         //todo: I need to parse out the userId. target-user-id=949335660
@@ -117,7 +117,7 @@ class ParsingEngine {
             badges = null,
             clientNonce = null,
             color = "#000000",
-            displayName = null,
+            displayName = usernameFound,
             emotes = null,
             firstMsg = null,
             flags = null,
@@ -135,13 +135,13 @@ class ParsingEngine {
         )
 
     }
-    fun clearChatParsing(channelName:String):TwitchUserData{
+    private fun clearChatParsing(channelName:String):TwitchUserData{
         return TwitchUserData(
             badgeInfo = null,
             badges = null,
             clientNonce = null,
             color = "#000000",
-            displayName = channelName,
+            displayName = null,
             emotes = null,
             firstMsg = null,
             flags = null,
