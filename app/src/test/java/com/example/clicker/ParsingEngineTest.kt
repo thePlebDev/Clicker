@@ -1,8 +1,7 @@
 package com.example.clicker
 
 import com.example.clicker.network.websockets.ParsingEngine
-import com.example.clicker.util.Response
-import com.example.clicker.utility.TwitchUserDataObjectMother
+import com.example.clicker.util.TwitchUserDataObjectMother
 import org.junit.Assert
 import org.junit.Test
 
@@ -34,7 +33,7 @@ class ParsingEngineTest {
         //BELOW IS WRONG, REDO TO TEST THE BAN USER FUNCTIONALITY
         val EXPECTED_BANNEDUSERID = "949335660"
         val EXPECTED_USERNAME = "meanermeeny"
-        val expectedTwitchUserData =TwitchUserDataObjectMother
+        val expectedTwitchUserData = TwitchUserDataObjectMother
            .addUserType("$EXPECTED_USERNAME banned by moderator")
            .addUserId(EXPECTED_BANNEDUSERID)
            .build()

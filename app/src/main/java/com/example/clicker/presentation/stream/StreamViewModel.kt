@@ -25,6 +25,7 @@ import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.presentation.home.HomeUIState
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
+import com.example.clicker.util.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -323,6 +324,13 @@ class StreamViewModel @Inject constructor(
                 }
                 if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null){
                     listChats.clear()
+                    //todo: add the ability to send a little message saying that the chat was cleard by a mod
+                    val data =TwitchUserDataObjectMother
+                        .addMessageType(MessageType.JOIN)
+                        .addUserType("Chat cleared by moderator")
+                        .addColor("#000000")
+                        .build()
+                    listChats.add(data)
                 }
                 if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
                     Log.d("collectingdatathingy","foundDuration --> $twitchUserMessage.bannedDuration")
@@ -330,6 +338,12 @@ class StreamViewModel @Inject constructor(
                        username= twitchUserMessage.displayName,
                         banDuration = twitchUserMessage.bannedDuration
                     )
+                    val data =TwitchUserDataObjectMother
+                        .addMessageType(MessageType.JOIN)
+                        .addUserType("${twitchUserMessage.displayName} banned by moderators")
+                        .addColor("#000000")
+                        .build()
+                    listChats.add(data)
                 }
 
 

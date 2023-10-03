@@ -222,74 +222,8 @@ class TwitchWebSocket @Inject constructor(
 
 
          if(text.contains(" CLEARCHAT ")){
-
-             val banDurationPattern = "ban-duration=(\\d+)".toRegex()
-
-             val banDurationMatch = banDurationPattern.find(text)
-             val foundDuration = banDurationMatch?.groupValues?.last()?.toInt()
-             Log.d("WEBSOCKETBANDURATION","foundDuration --> $foundDuration")
-             val userData: TwitchUserData
-             // todo: should go like this
-             // todo: val userData: TwitchUserData = ParsingEngine().clearChat(text)
-             //todo: _state.tryEmit(userData)
-
-
-
-             val pattern2 = "#$streamerChannelName$".toRegex()
-             val matcher2 = pattern2.find(text)
-             val found = matcher2?.value
-             if(found !=null){
-                 val userData = TwitchUserData(
-                     badgeInfo = null,
-                     badges = null,
-                     clientNonce = null,
-                     color = "#000000",
-                     displayName = null,
-                     emotes = null,
-                     firstMsg = null,
-                     flags = null,
-                     id = null,
-                     mod = null,
-                     returningChatter = null,
-                     roomId = null,
-                     subscriber = false,
-                     tmiSentTs = null,
-                     turbo = false,
-                     userId = null,
-                     userType = "Connected to chat!",
-                     messageType = MessageType.CLEARCHAT,
-                     bannedDuration = foundDuration
-                 )
-                 _state.tryEmit(userData)
-             }else{
-                 val pattern3 = ":(\\w+)\\s*$".toRegex()
-
-// Use a Matcher to find the pattern in the input string
-                 val matcher3 = pattern3.find(text)
-                 val username = matcher3?.groupValues?.last()
-                 val userData = TwitchUserData(
-                     badgeInfo = null,
-                     badges = null,
-                     clientNonce = null,
-                     color = "#000000",
-                     displayName = username,
-                     emotes = null,
-                     firstMsg = null,
-                     flags = null,
-                     id = null,
-                     mod = null,
-                     returningChatter = null,
-                     roomId = null,
-                     subscriber = false,
-                     tmiSentTs = null,
-                     turbo = false,
-                     userId = null,
-                     userType = "Connected to chat!",
-                     messageType = MessageType.CLEARCHAT,
-                     bannedDuration = foundDuration
-                 )
-                 _state.tryEmit(userData)
-             }
+              val  parsedTwitchUserData = ParsingEngine().clearChatTesting(text,streamerChannelName)
+             _state.tryEmit(parsedTwitchUserData)
 
          }
 
