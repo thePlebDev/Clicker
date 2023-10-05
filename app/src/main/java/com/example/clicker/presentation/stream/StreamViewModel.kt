@@ -5,33 +5,26 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.websockets.LoggedInUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
-import com.example.clicker.presentation.home.HomeUIState
-import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
-import com.example.clicker.util.TwitchUserDataObjectMother
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.time.Duration
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -325,7 +318,7 @@ class StreamViewModel @Inject constructor(
                 if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null){
                     listChats.clear()
                     //todo: add the ability to send a little message saying that the chat was cleard by a mod
-                    val data =TwitchUserDataObjectMother
+                    val data = TwitchUserDataObjectMother
                         .addMessageType(MessageType.JOIN)
                         .addUserType("Chat cleared by moderator")
                         .addColor("#000000")
@@ -338,7 +331,7 @@ class StreamViewModel @Inject constructor(
                        username= twitchUserMessage.displayName,
                         banDuration = twitchUserMessage.bannedDuration
                     )
-                    val data =TwitchUserDataObjectMother
+                    val data = TwitchUserDataObjectMother
                         .addMessageType(MessageType.JOIN)
                         .addUserType("${twitchUserMessage.displayName} banned by moderators")
                         .addColor("#000000")

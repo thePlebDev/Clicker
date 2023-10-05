@@ -1,7 +1,8 @@
 package com.example.clicker
 
 import com.example.clicker.network.websockets.ParsingEngine
-import com.example.clicker.util.TwitchUserDataObjectMother
+import com.example.clicker.util.objectMothers.LoggedInUserDataObjectMother
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import org.junit.Assert
 import org.junit.Test
 
@@ -58,6 +59,7 @@ class ParsingEngineTest {
 
     @Test
     fun ban_user_parsing_with_non_latin_alphabet(){
+        /* Given */
         val EXPECTED_BANNEDUSERID = "949335660"
         val EXPECTED_USERNAME = "板橋小結巴"
 
@@ -70,6 +72,18 @@ class ParsingEngineTest {
 
         /* Then */
         Assert.assertEquals(EXPECTED_USERNAME, result.displayName )
+
+    }
+
+    @Test
+    fun user_state_parsing(){
+        /* Given */
+        val EXPECTED_LOGGEDIN_USER_STATE = LoggedInUserDataObjectMother
+            .addColor("#000000")
+            .addDisplayName("bobber-micky54$")
+            .addMod(true)
+            .addSub(true)
+            .build()
 
     }
 }
