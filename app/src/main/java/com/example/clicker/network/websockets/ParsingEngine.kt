@@ -1,6 +1,8 @@
 package com.example.clicker.network.websockets
 
 import android.util.Log
+import com.example.clicker.network.websockets.models.LoggedInUserData
+
 
 class ParsingEngine {
 //THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
@@ -157,6 +159,36 @@ class ParsingEngine {
             messageType = MessageType.CLEARCHAT,
             bannedDuration = null
         )
+
+
+    }
+
+
+    /**
+     * Parses the websocket data sent from twitch. should run when a USERSTATE command is sent
+     * @return [LoggedInUserData] Which represents the state of the current logged in user
+     */
+    fun userStateParsing(text:String): LoggedInUserData {
+        val colorPattern = "color=([^;]+)".toRegex()
+        val displayNamePattern = "display-name=([^;]+)".toRegex()
+        val modStatusPattern = "mod=([^;]+)".toRegex()
+        val subStatusPattern = "subscriber=([^;]+)".toRegex()
+
+        val colorMatch = colorPattern.find(text)
+        val displayNameMatch = displayNamePattern.find(text)
+        val modStatusMatch = modStatusPattern.find(text)
+        val subStatusMatch = subStatusPattern.find(text)
+
+        val loggedData =LoggedInUserData(
+            color =colorMatch?.groupValues?.get(1),
+            displayName = displayNameMatch?.groupValues?.get(1)!!,
+            mod = stringToBoolean(modStatusMatch?.groupValues?.get(1)!!),
+            sub = stringToBoolean(subStatusMatch?.groupValues?.get(1)!!)
+
+        )
+
+
+        return loggedData
 
 
     }

@@ -2,6 +2,7 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.network.websockets.models.LoggedInUserData
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,12 +78,7 @@ data class TwitchUserAnnouncement(
     val userId: Long,
     val userType: String
 )
-data class LoggedInUserData(
-    val color:String?,
-    val displayName: String,
-    val sub:Boolean,
-    val mod:Boolean
-)
+
 
 
 data class RoomState(
@@ -526,7 +522,7 @@ fun filterText(chatText:String):String{
 
     return matchResult?.groupValues?.getOrNull(2)?.trim() ?: ""
 }
-fun getLoggedInUserInfo(text:String):LoggedInUserData{
+fun getLoggedInUserInfo(text:String): LoggedInUserData {
     val colorPattern = "color=([^;]+)".toRegex()
     val displayNamePattern = "display-name=([^;]+)".toRegex()
     val modStatusPattern = "mod=([^;]+)".toRegex()

@@ -1,4 +1,4 @@
-package com.example.clicker.util
+package com.example.clicker.util.objectMothers
 
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchUserData
@@ -12,7 +12,7 @@ class TwitchUserDataObjectMother private constructor() {
             badgeInfo = null,
             badges = null,
             clientNonce = null,
-            color =null,
+            color ="#000000",
             displayName = null,
             emotes = null,
             firstMsg = null,
