@@ -224,9 +224,11 @@ class TwitchWebSocket @Inject constructor(
          }
 
          if(text.contains(" USERSTATE ")){
-             Log.d("loggedInDataOnMessage","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
+             Log.d("USERSTATESTUFF","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
+             val parsedTwitchInUserData = ParsingEngine().userStateParsing(text)
+
              _loggedInUserUiState.tryEmit(
-                 getLoggedInUserInfo(text)
+                 parsedTwitchInUserData
              )
 
          }
@@ -522,38 +524,8 @@ fun filterText(chatText:String):String{
 
     return matchResult?.groupValues?.getOrNull(2)?.trim() ?: ""
 }
-fun getLoggedInUserInfo(text:String): LoggedInUserData {
-    val colorPattern = "color=([^;]+)".toRegex()
-    val displayNamePattern = "display-name=([^;]+)".toRegex()
-    val modStatusPattern = "mod=([^;]+)".toRegex()
-    val subStatusPattern = "subscriber=([^;]+)".toRegex()
 
 
-    val colorMatch = colorPattern.find(text)
-    val displayNameMatch = displayNamePattern.find(text)
-    val modStatusMatch = modStatusPattern.find(text)
-    val subStatusMatch = subStatusPattern.find(text)
-
-
-
-    val loggedData =LoggedInUserData(
-        color =colorMatch?.groupValues?.get(1),
-        displayName = displayNameMatch?.groupValues?.get(1)!!,
-        mod = stringToBoolean(modStatusMatch?.groupValues?.get(1)!!),
-        sub = stringToBoolean(subStatusMatch?.groupValues?.get(1)!!)
-
-    )
-    Log.d("loggedData","loggedDataObject --> $loggedData")
-
-
-    return loggedData
-}
-fun stringToBoolean( subOrModText:String):Boolean{
-    val convertedString = subOrModText.toInt()
-
-    return convertedString ==1
-
-}
 
 fun getValueFromInput(input: String, key: String): Boolean? {
     val pattern = "$key=([^;:\\s]+)".toRegex()
