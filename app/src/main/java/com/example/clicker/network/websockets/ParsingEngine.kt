@@ -2,7 +2,9 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
+import java.util.regex.Pattern
 
 
 class ParsingEngine {
@@ -233,6 +235,43 @@ class ParsingEngine {
             .addUserType(extractedInfo)
             .addMessageType(MessageType.NOTICE)
             .build()
+    }
+
+    fun userNoticeParsing(text: String,streamerChannelName: String): TwitchUserData {
+
+        val displayNamePattern = "display-name=([^;]+)".toRegex()
+        val messageIdPattern ="msg-id=([^;]+)".toRegex()
+        val systemMessagePattern ="system-msg=([^;]+)".toRegex()
+        val personalMessagePattern = "#$streamerChannelName :([^;]+)".toRegex()
+
+        val displayNameMatch = displayNamePattern.find(text)
+        val messageIdMatch = messageIdPattern.find(text)
+        val systemMessageMatch = systemMessagePattern.find(text)
+        val personalMessageMatch = personalMessagePattern.find(text)
+
+
+
+        val displayName =displayNameMatch?.groupValues?.get(1) ?: "username"
+
+        val messageType:MessageType = when(messageIdMatch?.groupValues?.get(1) ?: "announcement"){
+            "announcement" ->{MessageType.ANNOUNCEMENT}
+            "resub" ->MessageType.RESUB
+            "sub" -> MessageType.SUB
+            "submysterygift" ->MessageType.MYSTERYGIFTSUB
+            "subgift" ->MessageType.GIFTSUB
+            else ->MessageType.ANNOUNCEMENT
+
+        }
+        val systemMessage = systemMessageMatch?.groupValues?.get(1)?.replace("\\s"," ") ?: "Announcement!"
+        val personalMessage = personalMessageMatch?.groupValues?.get(1)
+
+        return TwitchUserDataObjectMother
+            .addDisplayName(displayName)
+            .addMessageType(messageType)
+            .addUserType(personalMessage)
+            .addSystemMessage(systemMessage)
+            .build()
+
     }
 
 }

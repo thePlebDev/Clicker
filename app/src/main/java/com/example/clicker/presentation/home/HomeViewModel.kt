@@ -18,7 +18,6 @@ import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.network.repository.TwitchRepoImpl
-import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

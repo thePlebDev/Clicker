@@ -3,6 +3,7 @@ package com.example.clicker.network.websockets
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.network.websockets.models.TwitchUserData
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,29 +29,7 @@ import kotlin.coroutines.CoroutineContext
 enum class MessageType {
     USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN,CLEARCHAT
 }
-data class TwitchUserData(
-    val badgeInfo: String?,
-    val badges: String?,
-    val clientNonce: String?,
-    val color: String?,
-    val displayName: String?,
-    val emotes: String?,
-    val firstMsg: String?,
-    val flags: String?,
-    val id: String?,
-    val mod: String?,
-    val returningChatter: String?,
-    val roomId: String?,
-    val subscriber: Boolean,
-    val tmiSentTs: Long?,
-    val turbo: Boolean,
-    val userId: String?,
-    var userType: String?,
-    val messageType: MessageType,
-    val deleted:Boolean = false,
-    val banned:Boolean = false,
-    val bannedDuration:Int? = null
-)
+
 data class TwitchUserAnnouncement(
     val badgeInfo: String,
     val badges: String,
@@ -94,7 +73,7 @@ class TwitchWebSocket @Inject constructor(
 
     private val webSocketScope = CoroutineScope(Dispatchers.Default + CoroutineName("webSocketScope"))
 
-    private val initialValue =TwitchUserData(
+    private val initialValue = TwitchUserData(
         badgeInfo = "subscriber/77",
         badges = "subscriber/36,sub-gifter/50",
         clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
@@ -253,88 +232,7 @@ class TwitchWebSocket @Inject constructor(
          }
          if(text.contains(" USERNOTICE ")){
 
-             val pattern = Pattern.compile("([^=;]+)=([^=;]*)")
-             val matcher = pattern.matcher(text)
-             val userInfoMap = mutableMapOf<String, String>()
-
-             val messagePattern = "#$streamerChannelName\\s*:(.+)".toRegex()
-             val matchResult = messagePattern.find(text)
-
-             val startIndex = text.lastIndexOf(":")
-             val endIndex = text.length
-
-
-             while (matcher.find()) {
-                 userInfoMap[matcher.group(1)] = matcher.group(2)
-             }
-             Log.d("USERNOTICESTOOF","USERNOTICE --> $text")
-             val userData = TwitchUserAnnouncement(
-                 badgeInfo = userInfoMap["@badge-info"] ?: "",
-                 badges = userInfoMap["badges"] ?: "",
-                 color = userInfoMap["color"] ?: "",
-                 displayName = userInfoMap["display-name"] ?: "",
-                 emotes = userInfoMap["emotes"] ?: "",
-                 flags = userInfoMap["flags"] ?: "",
-                 id = userInfoMap["id"] ?: "",
-                 login = userInfoMap["login"] ?: "",
-                 mod = (userInfoMap["mod"] ?: "0").toInt(),
-                 msgId = userInfoMap["msg-id"] ?: "",
-                 msgParamCumulativeMonths = (userInfoMap["msg-param-cumulative-months"] ?: "0").toInt(),
-                 msgParamMonths = (userInfoMap["msg-param-months"] ?: "0").toInt(),
-                 msgParamMultimonthDuration = (userInfoMap["msg-param-multimonth-duration"] ?: "0").toInt(),
-                 msgParamMultimonthTenure = (userInfoMap["msg-param-multimonth-tenure"] ?: "0").toInt(),
-                 msgParamShouldShareStreak = (userInfoMap["msg-param-should-share-streak"] ?: "0").toInt(),
-                 msgParamStreakMonths = (userInfoMap["msg-param-streak-months"] ?: "0").toInt(),
-                 msgParamSubPlanName = userInfoMap["msg-param-sub-plan-name"] ?: "",
-                 msgParamSubPlan = userInfoMap["msg-param-sub-plan"] ?: "",
-                 msgParamWasGifted = (userInfoMap["msg-param-was-gifted"] ?: "false").toBoolean(),
-                 roomId = (userInfoMap["room-id"] ?: "0").toLong(),
-                 subscriber = (userInfoMap["subscriber"] ?: "0").toInt(),
-                 systemMsg = userInfoMap["system-msg"] ?: "",
-                 tmiSentTs = (userInfoMap["tmi-sent-ts"] ?: "0").toLong(),
-                 userId = (userInfoMap["user-id"] ?: "0").toLong(),
-                 userType = userInfoMap["user-type"] ?: ""
-             )
-
-             var messageData = ""
-             var messageType = MessageType.ANNOUNCEMENT
-             if( userData.systemMsg.length >1){
-                 val cleanedString = userData.systemMsg.replace("\\", " ")
-                 val finalCleanedString = cleanedString.replace("\\s+s".toRegex(), " ")
-                 messageData += finalCleanedString
-             }
-             when(userInfoMap["msg-id"]){
-                "announcement" ->{}
-                 "resub" ->{messageType = MessageType.RESUB}
-                 "sub" ->{messageType = MessageType.SUB}
-                 "submysterygift" ->{messageType = MessageType.MYSTERYGIFTSUB}
-                 "subgift" ->{messageType = MessageType.GIFTSUB}
-                 else ->{}
-
-             }
-             messageData += " ${text.substring(startIndex + 1, endIndex).trim()}"
-//             Log.d("MESSAGINGWEBSOCKETSTOOF","MESSAGEDATA --> ${messageData}")
-//             Log.d("MESSAGINGWEBSOCKETSTOOF","SUBSTRING -> ${text.substring(startIndex+1, endIndex).trim()}")
-             val userStateData = TwitchUserData(
-                 badgeInfo = null,
-                 badges = null,
-                 clientNonce = null,
-                 color = "#000000",
-                 displayName = userInfoMap["display-name"],
-                 emotes = null,
-                 firstMsg = null,
-                 flags = null,
-                 id = null,
-                 mod = null,
-                 returningChatter = null,
-                 roomId = null,
-                 subscriber = false,
-                 tmiSentTs = null,
-                 turbo = false,
-                 userId = null,
-                 userType = messageData,
-                 messageType = messageType
-             )
+            val userStateData = ParsingEngine().userNoticeParsing(text, streamerChannelName)
 
 
              _state.tryEmit(userStateData)

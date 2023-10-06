@@ -1,5 +1,6 @@
 package com.example.clicker
 
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.util.objectMothers.LoggedInUserDataObjectMother
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -8,6 +9,7 @@ import org.junit.Test
 
 class ParsingEngineTest {
     val underTest:ParsingEngine = ParsingEngine()
+    val EXPECTED_NON_LATIN_BASED_USERNAME = "不橋小結"
 
     @Test
     fun testing_clear_chat_parsing_clear_chat_command(){
@@ -110,5 +112,48 @@ class ParsingEngineTest {
 
         /* Then */
         Assert.assertEquals(EXPECTED_MSG_ID, result )
+    }
+
+    @Test
+    fun user_notice_parsing_no_personal_message(){
+        /* Given */
+        val streamerName ="hasanabi"
+        val EXPECTED_USERNAME = "Bob34t4"
+        val EXPECTED_SYSTEM_MESSAGE ="CoalTheTroll subscribed with Prime. They've subscribed for 25 months!"
+        val EXPECTED_MESSAGE_ID = "submysterygift"
+        val parsingString ="@badge-info=subscriber/25;badges=subscriber/24,premium/1;color=#008000;display-name=$EXPECTED_USERNAME;emotes=;flags=;id=3ceab6bd-de3f-4d05-8038-5cebdb2af1c7;login=coalthetroll;mod=0;msg-id=$EXPECTED_MESSAGE_ID;msg-param-cumulative-months=25;msg-param-months=0;msg-param-multimonth-duration=0;msg-param-multimonth-tenure=0;msg-param-should-share-streak=0;msg-param-sub-plan-name=Woke\\sBeys\\s(hasanpiker):\\s\$4.99\\sSub;msg-param-sub-plan=Prime;msg-param-was-gifted=false;room-id=207813352;subscriber=1;system-msg=CoalTheTroll\\ssubscribed\\swith\\sPrime.\\sThey've\\ssubscribed\\sfor\\s25\\smonths!;tmi-sent-ts=1696621315536;user-id=73777153;user-type=;vip=0 :tmi.twitch.tv USERNOTICE #hasanabi"
+
+        /* Given */
+        val result = underTest.userNoticeParsing(parsingString,streamerName)
+
+        /* Then */
+        Assert.assertEquals(MessageType.MYSTERYGIFTSUB, result.messageType )
+        Assert.assertEquals(EXPECTED_USERNAME, result.displayName )
+        Assert.assertEquals(EXPECTED_SYSTEM_MESSAGE, result.userType )
+
+
+    }
+
+    @Test
+    fun user_notice_parsing_with_personal_message(){
+        /* Given */
+        val streamerName ="hasanabi"
+        val EXPECTED_MESSAGE ="yo <3"
+        val EXPECTED_USERNAME = "Bob34t4"
+        val EXPECTED_SYSTEM_MESSAGE ="CoalTheTroll subscribed with Prime. They've subscribed for 25 months!"
+        val EXPECTED_MESSAGE_ID = "submysterygift"
+        val parsingString ="@badge-info=subscriber/25;badges=subscriber/24,premium/1;color=#008000;display-name=$EXPECTED_USERNAME;emotes=;flags=;id=3ceab6bd-de3f-4d05-8038-5cebdb2af1c7;login=coalthetroll;mod=0;msg-id=$EXPECTED_MESSAGE_ID;msg-param-cumulative-months=25;msg-param-months=0;msg-param-multimonth-duration=0;msg-param-multimonth-tenure=0;msg-param-should-share-streak=0;msg-param-sub-plan-name=Woke\\sBeys\\s(hasanpiker):\\s\$4.99\\sSub;msg-param-sub-plan=Prime;msg-param-was-gifted=false;room-id=207813352;subscriber=1;system-msg=CoalTheTroll\\ssubscribed\\swith\\sPrime.\\sThey've\\ssubscribed\\sfor\\s25\\smonths!;tmi-sent-ts=1696621315536;user-id=73777153;user-type=;vip=0 :tmi.twitch.tv USERNOTICE #$streamerName :$EXPECTED_MESSAGE"
+
+        /* Given */
+        val result = underTest.userNoticeParsing(parsingString,streamerName)
+
+        /* Then */
+        Assert.assertEquals(MessageType.MYSTERYGIFTSUB, result.messageType )
+        Assert.assertEquals(EXPECTED_USERNAME, result.displayName )
+        Assert.assertEquals(EXPECTED_MESSAGE, result.userType )
+        Assert.assertEquals(EXPECTED_SYSTEM_MESSAGE, result.systemMessage )
+
+
+
     }
 }
