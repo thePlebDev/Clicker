@@ -97,4 +97,18 @@ class ParsingEngineTest {
 
 
     }
+
+    @Test
+    fun clear_message_parsing(){
+        /* Given */
+        val EXPECTED_MSG_ID ="94e6c7ff-bf98-4faa-af5d-7ad633a158a9"
+        val parsingString ="@login=foo;room-id=;target-msg-id=$EXPECTED_MSG_ID;tmi-sent-ts=1642720582342 :tmi.twitch.tv CLEARMSG #bar :what a great day"
+
+        /* When */
+        val result = underTest.clearMsgParsing(parsingString)
+
+
+        /* Then */
+        Assert.assertEquals(EXPECTED_MSG_ID, result )
+    }
 }
