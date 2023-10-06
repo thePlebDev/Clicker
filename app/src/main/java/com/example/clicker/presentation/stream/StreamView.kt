@@ -43,7 +43,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.clicker.network.websockets.TwitchUserData
 import kotlinx.coroutines.launch
 import android.graphics.Color.parseColor
 import androidx.compose.animation.Animatable
@@ -156,6 +155,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
+import com.example.clicker.network.websockets.models.TwitchUserData
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -1003,29 +1003,34 @@ fun TextChat(
                             MessageType.ANNOUNCEMENT ->{
                                 AnnouncementMessage(
                                     displayName = twitchUser.displayName,
-                                    message = twitchUser.userType
+                                    message = twitchUser.userType,
+                                    systemMessage = twitchUser.systemMessage
                                 )
                             }
                             MessageType.RESUB ->{
                                 ResubMessage(
-                                    message = twitchUser.userType
+                                    message = twitchUser.userType,
+                                    systemMessage = twitchUser.systemMessage
                                 )
 
                             }
                             MessageType.SUB ->{
                                 SubMessage(
-                                    message = twitchUser.userType
+                                    message = twitchUser.userType,
+                                    systemMessage = twitchUser.systemMessage
                                 )
                             }
                             //MYSTERYGIFTSUB,GIFTSUB
                             MessageType.GIFTSUB ->{
                                 GiftSubMessage(
-                                    message = twitchUser.userType
+                                    message = twitchUser.userType,
+                                    systemMessage = twitchUser.systemMessage
                                 )
                             }
                             MessageType.MYSTERYGIFTSUB ->{
                                 MysteryGiftSubMessage(
-                                    message = twitchUser.userType
+                                    message = twitchUser.userType,
+                                    systemMessage = twitchUser.systemMessage
                                 )
 
                             }
@@ -1146,8 +1151,11 @@ fun ErrorMessage(
 }
 @Composable
 fun MysteryGiftSubMessage(
-    message:String?
+    message:String?,
+    systemMessage: String?
 ){
+    val personalMessage = message ?: ""
+    val twitchIRCMessage = systemMessage ?:""
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Black.copy(alpha = 0.6f))){
@@ -1176,7 +1184,8 @@ fun MysteryGiftSubMessage(
             Text(buildAnnotatedString {
 //
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                    append(" ${message}")
+                    append(" ${twitchIRCMessage}")
+                    append(" ${personalMessage}")
                 }
             }
             )
@@ -1187,8 +1196,11 @@ fun MysteryGiftSubMessage(
 
 @Composable
 fun GiftSubMessage(
-    message:String?
+    message:String?,
+    systemMessage: String?
 ){
+    val personalMessage = message ?:""
+    val twitchIRCMessage = systemMessage ?:""
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Black.copy(alpha = 0.6f))){
@@ -1217,7 +1229,8 @@ fun GiftSubMessage(
             Text(buildAnnotatedString {
 //
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                    append(" ${message}")
+                    append(" ${twitchIRCMessage}")
+                    append(" ${personalMessage}")
                 }
             }
             )
@@ -1227,8 +1240,11 @@ fun GiftSubMessage(
 }
 @Composable
 fun SubMessage(
-    message:String?
+    message:String?,
+    systemMessage: String?
 ){
+    val TwitchIRCMessage = systemMessage ?:""
+    val personalMessage = message?:""
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Black.copy(alpha = 0.6f))){
@@ -1256,7 +1272,8 @@ fun SubMessage(
 
             Text(buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                    append(" ${message}")
+                    append(" ${TwitchIRCMessage}")
+                    append(" ${personalMessage}")
                 }
             }
             )
@@ -1266,8 +1283,10 @@ fun SubMessage(
 
 @Composable
 fun ResubMessage(
-    message:String?
+    message:String?,
+    systemMessage:String?
 ){
+    val personalMessage = message ?:""
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Black.copy(alpha = 0.6f))){
@@ -1296,7 +1315,8 @@ fun ResubMessage(
             Text(buildAnnotatedString {
 
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                    append(" ${message}")
+                    append(" $systemMessage")
+                    append(" $personalMessage")
                 }
             }
             )
@@ -1327,8 +1347,11 @@ fun NoticeMessage(
 @Composable
 fun AnnouncementMessage(
     displayName:String?,
-    message:String?
+    message:String?,
+    systemMessage: String?
 ){
+    val personalMessage = message ?: ""
+    val twitchIRCMessage = systemMessage ?: ""
     Row(modifier = Modifier
         .fillMaxWidth()
         .background(Color.Black.copy(alpha = 0.6f))){
@@ -1359,7 +1382,8 @@ fun AnnouncementMessage(
                     append("${displayName} :")
                 }
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
-                    append(" ${message}")
+                    append(" ${twitchIRCMessage}")
+                    append(" ${personalMessage}")
                 }
             }
             )

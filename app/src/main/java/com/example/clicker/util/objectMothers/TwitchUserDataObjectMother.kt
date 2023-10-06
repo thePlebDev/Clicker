@@ -1,14 +1,14 @@
 package com.example.clicker.util.objectMothers
 
 import com.example.clicker.network.websockets.MessageType
-import com.example.clicker.network.websockets.TwitchUserData
+import com.example.clicker.network.websockets.models.TwitchUserData
 
 class TwitchUserDataObjectMother private constructor() {
 
 
     companion object{
 
-        private var twitchUserData: TwitchUserData =TwitchUserData(
+        private var twitchUserData: TwitchUserData = TwitchUserData(
             badgeInfo = null,
             badges = null,
             clientNonce = null,
@@ -27,7 +27,8 @@ class TwitchUserDataObjectMother private constructor() {
             userId = null,
             userType = null,
             messageType = MessageType.CLEARCHAT,
-            bannedDuration = null
+            bannedDuration = null,
+            systemMessage = null
         )
 
         fun build():TwitchUserData{
@@ -113,7 +114,7 @@ class TwitchUserDataObjectMother private constructor() {
                 userId = userId
             )
         }
-        fun addUserType(userType:String)=apply{
+        fun addUserType(userType:String?)=apply{
             twitchUserData = twitchUserData.copy(
                 userType = userType
             )
@@ -126,6 +127,11 @@ class TwitchUserDataObjectMother private constructor() {
         fun addBannedDuration(bannedDuration:Int)=apply{
             twitchUserData = twitchUserData.copy(
                 bannedDuration = bannedDuration
+            )
+        }
+        fun addSystemMessage(systemMessage:String)= apply{
+            twitchUserData = twitchUserData.copy(
+                systemMessage = systemMessage
             )
         }
 
