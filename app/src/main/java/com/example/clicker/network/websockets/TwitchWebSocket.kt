@@ -224,7 +224,7 @@ class TwitchWebSocket @Inject constructor(
          }
 
          if(text.contains(" USERSTATE ")){
-             Log.d("USERSTATESTUFF","USERSTATE --> $text") //TODO: I THINK THIS IS WHERE THE BUG IS
+
              val parsedTwitchInUserData = ParsingEngine().userStateParsing(text)
 
              _loggedInUserUiState.tryEmit(
@@ -234,13 +234,7 @@ class TwitchWebSocket @Inject constructor(
          }
          if(text.contains(" CLEARMSG ")){
 
-
-// Define the regex pattern to match "target-msg-id"
-             val pattern = "target-msg-id=([^;]+)".toRegex()
-
-// Use a Matcher to find the pattern in the input string
-             val messageId = pattern.find(text)?.groupValues?.get(1)
-            // Log.d("onMessageSocketStoofPasred","MSGID --> $messageId")
+             val messageId = ParsingEngine().clearMsgParsing(text)
              _messageToDeleteId.tryEmit(messageId)
 
          }

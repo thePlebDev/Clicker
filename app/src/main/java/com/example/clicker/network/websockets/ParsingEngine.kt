@@ -193,5 +193,17 @@ class ParsingEngine {
 
 
     }
+    /**
+     * Parses the websocket data sent from twitch. Will run when a CLEARMSG command is sent
+     * @property text the string to be parsed
+     * @return a nullable string containing the id of the message to be deleted
+     */
+    fun clearMsgParsing(text:String):String?{
+        val pattern = "target-msg-id=([^;]+)".toRegex()
+
+        val messageId = pattern.find(text)?.groupValues?.get(1)
+        return messageId
+
+    }
 
 }
