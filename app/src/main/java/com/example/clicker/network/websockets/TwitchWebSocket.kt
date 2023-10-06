@@ -240,28 +240,8 @@ class TwitchWebSocket @Inject constructor(
          }
 
          if(text.contains(" JOIN ")){
-             Log.d("joiningTheDatabase","JOIN --> $text")
-             val userData = TwitchUserData(
-                 badgeInfo = null,
-                 badges = null,
-                 clientNonce = null,
-                 color = "#000000",
-                 displayName = "Room update",
-                 emotes = null,
-                 firstMsg = null,
-                 flags = null,
-                 id = null,
-                 mod = null,
-                 returningChatter = null,
-                 roomId = null,
-                 subscriber = false,
-                 tmiSentTs = null,
-                 turbo = false,
-                 userId = null,
-                 userType = "Connected to chat!",
-                 messageType = MessageType.JOIN
-             )
-             _state.tryEmit(userData)
+             val joinObject = ParsingEngine().createJoinObject()
+             _state.tryEmit(joinObject)
          }
          if(text.contains(" NOTICE ")){
              Log.d("NOTICE","NOTICE --> $text")
