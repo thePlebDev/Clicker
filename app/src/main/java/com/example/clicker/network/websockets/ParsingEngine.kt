@@ -2,6 +2,7 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 
 
 class ParsingEngine {
@@ -203,6 +204,21 @@ class ParsingEngine {
 
         val messageId = pattern.find(text)?.groupValues?.get(1)
         return messageId
+
+    }
+
+    /**
+     * Creates a [TwitchUserData] that will be sent when a JOIN command is sent
+     *
+     * @return a [TwitchUserData] used to notify the user that they have connected to a streamer's chat room
+     */
+    fun createJoinObject():TwitchUserData{
+
+        return TwitchUserDataObjectMother.addColor("#000000")
+            .addDisplayName("Room update")
+            .addUserType("Connected to chat!")
+            .addMessageType(MessageType.JOIN)
+            .build()
 
     }
 
