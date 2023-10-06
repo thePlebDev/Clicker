@@ -15,10 +15,11 @@ import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.models.UpdateChatSettings
-import com.example.clicker.network.websockets.LoggedInUserData
+
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchWebSocket
+import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel

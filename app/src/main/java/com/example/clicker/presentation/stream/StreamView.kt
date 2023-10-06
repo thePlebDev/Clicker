@@ -123,7 +123,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.clicker.network.models.ChatSettingsData
-import com.example.clicker.network.websockets.LoggedInUserData
+
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.util.Response

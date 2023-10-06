@@ -78,12 +78,23 @@ class ParsingEngineTest {
     @Test
     fun user_state_parsing(){
         /* Given */
-        val EXPECTED_LOGGEDIN_USER_STATE = LoggedInUserDataObjectMother
-            .addColor("#000000")
-            .addDisplayName("bobber-micky54$")
-            .addMod(true)
-            .addSub(true)
-            .build()
+        val EXPECTED_COLOR = "#000000"
+        val EXPECTED_DISPLAYNAME="bobber-micky54$"
+        val EXPECTED_MOD = 0
+        val EXPECTED_SUB = 0
+        val givenString = "@badge-info=;badges=staff/1;color=$EXPECTED_COLOR;display-name=$EXPECTED_DISPLAYNAME;emote-sets=0,33,50,237,793,2126,3517,4578,5569,9400,10337,12239;mod=$EXPECTED_MOD;subscriber=$EXPECTED_SUB;turbo=1;user-type=staff :tmi.twitch.tv USERSTATE #dallas"
+
+
+        /* When */
+        val result = underTest.userStateParsing(givenString)
+
+        /* Then */
+        Assert.assertEquals(EXPECTED_COLOR, result.color )
+        Assert.assertEquals(EXPECTED_DISPLAYNAME, result.displayName )
+        Assert.assertEquals(false, result.mod )
+        Assert.assertEquals(false, result.sub )
+
+
 
     }
 }

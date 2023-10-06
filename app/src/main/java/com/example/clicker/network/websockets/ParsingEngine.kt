@@ -179,11 +179,12 @@ class ParsingEngine {
         val modStatusMatch = modStatusPattern.find(text)
         val subStatusMatch = subStatusPattern.find(text)
 
+
         val loggedData =LoggedInUserData(
             color =colorMatch?.groupValues?.get(1),
             displayName = displayNameMatch?.groupValues?.get(1)!!,
-            mod = stringToBoolean(modStatusMatch?.groupValues?.get(1)!!),
-            sub = stringToBoolean(subStatusMatch?.groupValues?.get(1)!!)
+            mod = modStatusMatch?.groupValues?.get(1)!! == "1",
+            sub = subStatusMatch?.groupValues?.get(1)!! == "1"
 
         )
 
