@@ -222,4 +222,17 @@ class ParsingEngine {
 
     }
 
+    fun noticeParsing(text:String,streamerChannelName: String):TwitchUserData{
+        val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
+        val matchResult = pattern.find(text)
+        val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
+
+        return TwitchUserDataObjectMother
+            .addColor("#000000")
+            .addDisplayName("Room update")
+            .addUserType(extractedInfo)
+            .addMessageType(MessageType.NOTICE)
+            .build()
+    }
+
 }
