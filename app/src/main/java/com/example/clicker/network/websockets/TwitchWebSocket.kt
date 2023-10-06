@@ -244,32 +244,11 @@ class TwitchWebSocket @Inject constructor(
              _state.tryEmit(joinObject)
          }
          if(text.contains(" NOTICE ")){
-             Log.d("NOTICE","NOTICE --> $text")
-             val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
-             val matchResult = pattern.find(text)
-             val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
+             Log.d("NOTICETriggered","NOTICE --> $text")
 
-             val userData = TwitchUserData(
-                 badgeInfo = null,
-                 badges = null,
-                 clientNonce = null,
-                 color = "#000000",
-                 displayName = "Room update",
-                 emotes = null,
-                 firstMsg = null,
-                 flags = null,
-                 id = null,
-                 mod = null,
-                 returningChatter = null,
-                 roomId = null,
-                 subscriber = false,
-                 tmiSentTs = null,
-                 turbo = false,
-                 userId = null,
-                 userType = extractedInfo,
-                 messageType = MessageType.NOTICE
+             _state.tryEmit(
+                 ParsingEngine().noticeParsing(text,streamerChannelName)
              )
-             _state.tryEmit(userData)
 
          }
          if(text.contains(" USERNOTICE ")){
