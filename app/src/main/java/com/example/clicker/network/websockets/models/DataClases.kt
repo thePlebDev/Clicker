@@ -78,3 +78,37 @@ data class TwitchUserData(
     val bannedDuration:Int? = null,
     val systemMessage:String? = null
 )
+
+/**
+ * DEPRECIATED
+ *
+ * This was originally used for parsing a USERNOTICE message. However, I no longer user it and I
+ * don't want to delete it encase I have to use it again
+ */
+data class TwitchUserAnnouncement(
+    val badgeInfo: String,
+    val badges: String,
+    val color: String,
+    val displayName: String,
+    val emotes: String,
+    val flags: String,
+    val id: String,
+    val login: String,
+    val mod: Int,
+    val msgId: String,
+    val msgParamCumulativeMonths: Int,
+    val msgParamMonths: Int,
+    val msgParamMultimonthDuration: Int,
+    val msgParamMultimonthTenure: Int,
+    val msgParamShouldShareStreak: Int,
+    val msgParamStreakMonths: Int,
+    val msgParamSubPlanName: String,
+    val msgParamSubPlan: String,
+    val msgParamWasGifted: Boolean,
+    val roomId: Long,
+    val subscriber: Int,
+    val systemMsg: String,
+    val tmiSentTs: Long,
+    val userId: Long,
+    val userType: String
+)

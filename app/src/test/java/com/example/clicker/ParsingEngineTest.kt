@@ -156,4 +156,25 @@ class ParsingEngineTest {
 
 
     }
+    @Test
+    fun private_message_parsing(){
+        /* Given */
+
+        val EXPECTED_MESSAGE ="GIGACHAD"
+        val LONGER_EXPECTED_MESSAGE="@NotTooBadAye same was just thinking the same thing"
+
+        val parsingString ="@badge-info=;badges=premium/1;client-nonce=3630d7e4c765758191175beaf3929b33;color=;display-name=FemboyQtx;emotes=;first-msg=1;flags=;id=d2c1740e-aab5-4428-9b45-5ca049e7e669;mod=0;returning-chatter=0;room-id=26610234;subscriber=0;tmi-sent-ts=1696686131397;turbo=0;user-id=816961592;user-type= :femboyqtx!femboyqtx@femboyqtx.tmi.twitch.tv PRIVMSG #cohhcarnage :$EXPECTED_MESSAGE"
+        val longerParsingString ="@badge-info=;badges=premium/1;client-nonce=3110c13339efbb8bf9e2c10c9951de6d;color=#8A2BE2;display-name=PixelWhip;emotes=;first-msg=0;flags=;id=1df2a3a7-7ab7-42a3-882c-836cea92f377;mod=0;reply-parent-display-name=NotTooBadAye;reply-parent-msg-body=this\\sgame\\sreminds\\sme\\sof\\sNeopets;reply-parent-msg-id=43eb8d7d-4584-4777-9b14-fc6479637b20;reply-parent-user-id=72807154;reply-parent-user-login=nottoobadaye;reply-thread-parent-msg-id=43eb8d7d-4584-4777-9b14-fc6479637b20;reply-thread-parent-user-login=nottoobadaye;returning-chatter=0;room-id=26610234;subscriber=0;tmi-sent-ts=1696686129437;turbo=0;user-id=66065436;user-type= :pixelwhip!pixelwhip@pixelwhip.tmi.twitch.tv PRIVMSG #cohhcarnage :$LONGER_EXPECTED_MESSAGE"
+
+        /* Given */
+        val result = underTest.privateMessageParsing(longerParsingString)
+
+        /* Then */
+        Assert.assertEquals(LONGER_EXPECTED_MESSAGE, result.userType )
+
+
+
+
+    }
+
 }
