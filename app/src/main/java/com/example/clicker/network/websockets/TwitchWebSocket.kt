@@ -3,7 +3,9 @@ package com.example.clicker.network.websockets
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,17 +31,6 @@ import kotlin.coroutines.CoroutineContext
 enum class MessageType {
     USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN,CLEARCHAT
 }
-
-
-
-
-
-data class RoomState(
-    val emoteMode:Boolean?,
-    val followerMode:Boolean?,
-    val slowMode:Boolean?,
-    val subMode:Boolean?
-)
 
 class TwitchWebSocket @Inject constructor(
     private val tokenDataStore: TokenDataStore
@@ -215,10 +206,9 @@ class TwitchWebSocket @Inject constructor(
 
          if(text.contains("PRIVMSG")){
              Log.d("loggedInDataOnMessage","PRIVMSG --> $text")
-//             val anotherTesting = parseStringBaby(text)
-//             val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
-              val mappedString = ParsingEngine().privateMessageParsing(text)
-             _state.tryEmit(mappedString)
+
+              val parsedPRIVMSG = ParsingEngine().privateMessageParsing(text)
+             _state.tryEmit(parsedPRIVMSG)
          }
 
 
@@ -244,27 +234,13 @@ class TwitchWebSocket @Inject constructor(
         Log.d("websocketStooffail","onFailure: ${t.printStackTrace()}")
         Log.d("websocketStooffail","onFailure: ${t.message}")
         Log.d("websocketStooffail","onFailure: ${t.cause}")
-         val errorValue =TwitchUserData(
-            badgeInfo = "subscriber/77",
-            badges = "subscriber/36,sub-gifter/50",
-            clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
-            color = "#FF0000",
-            displayName = "Connection Error",
-            emotes = "",
-            firstMsg = "0",
-            flags = "",
-            id = "fd594314-969b-4f5e-a83f-5e2f74261e6c",
-            mod = "0",
-            returningChatter = "0",
-            roomId = "19070311",
-            subscriber = true,
-            tmiSentTs = 1690747946900L,
-            turbo = false,
-            userId = "144252234",
-            userType = "Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one",
-            messageType = MessageType.ERROR
-        )
 
+        val errorValue = TwitchUserDataObjectMother
+            .addColor("#FF0000")
+            .addDisplayName("Connection Error")
+            .addMessageType(MessageType.ERROR)
+            .addUserType("Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one")
+            .build()
         _state.tryEmit(errorValue)
     }
 

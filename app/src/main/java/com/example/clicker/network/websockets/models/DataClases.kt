@@ -112,3 +112,24 @@ data class TwitchUserAnnouncement(
     val userId: Long,
     val userType: String
 )
+
+
+
+
+/**
+ * Represents the state of the current chat rooms state
+ *
+ * This class is used primarily to notify the user of what the rules of the chat are
+ *
+ * @property emoteMode   representing if chatters are only restricted to emotes
+ * @property followerMode  representing if only followers are allowed to follow or not
+ * @property slowMode representing if the chat room is in slow mode or not
+ * @property subMode  representing if only subscribers are allowed to chat or not
+ * @constructor Creates the state for the current state of the chat room.
+ */
+data class RoomState(
+    val emoteMode:Boolean?,
+    val followerMode:Boolean?,
+    val slowMode:Boolean?,
+    val subMode:Boolean?
+)
