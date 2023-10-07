@@ -224,7 +224,7 @@ class TwitchWebSocket @Inject constructor(
 
          if(text.contains("ROOMSTATE")){
 
-             Log.d("loggedInDataOnMessage","ROOMSTATE --> $text")
+             Log.d("ROOMSTATEMessage","ROOMSTATE --> $text")
             val slowMode= getValueFromInput(text,"slow")
 
              val emoteMode = getValueFromInput(text,"emote-only")

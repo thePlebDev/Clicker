@@ -280,6 +280,11 @@ class ParsingEngine {
 
     }
 
+    /**
+     * Parses the websocket data sent from twitch. Should run when a PRIVMSG command is sent
+     * @property text the string to be parsed
+     * @return a [TwitchUserData] representing all the meta data from an individual chatter
+     */
     fun privateMessageParsing(text:String):TwitchUserData{
         val pattern = "([^;@]+)=([^;]+)".toRegex()
         val privateMsgPattern = "([^:]+)$".toRegex()
