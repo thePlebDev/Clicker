@@ -323,5 +323,42 @@ class ParsingEngine {
         )
 
     }
+    /**
+     * Parses the information relate to the chat rooms state. Should be run when ROOMSTATE is sent
+     * @property text the string to be parsed
+     * @return a [RoomState] representing the current state of the chat room
+     */
+    fun roomStateParsing(text: String):RoomState{
+        val slowMode= getValueFromInput(text,"slow")
+
+        val emoteMode = getValueFromInput(text,"emote-only")
+        val followersMode = getValueFromInput(text,"followers-only")
+
+
+        val subMode = getValueFromInput(text,"subs-only")
+        return RoomState(
+            emoteMode=emoteMode,
+            followerMode = followersMode,
+            slowMode = slowMode,
+            subMode = subMode
+        )
+
+    }
+    private fun getValueFromInput(input: String, key: String): Boolean? {
+        val pattern = "$key=([^;:\\s]+)".toRegex()
+        val match = pattern.find(input)
+        val returnedValue = match?.groupValues?.get(1) ?: return null
+        if( returnedValue == "-1"){
+            return false
+        }
+        if(key == "followers-only" && returnedValue == "0"){
+            return true
+        }
+        else{
+            return returnedValue != "0"
+        }
+
+    }
+
 
 }

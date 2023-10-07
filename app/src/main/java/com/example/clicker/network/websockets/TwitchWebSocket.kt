@@ -224,21 +224,7 @@ class TwitchWebSocket @Inject constructor(
 
          if(text.contains("ROOMSTATE")){
 
-             Log.d("ROOMSTATEMessage","ROOMSTATE --> $text")
-            val slowMode= getValueFromInput(text,"slow")
-
-             val emoteMode = getValueFromInput(text,"emote-only")
-             val followersMode = getValueFromInput(text,"followers-only")
-
-
-             val subMode = getValueFromInput(text,"subs-only")
-             val roomState = RoomState(
-                 emoteMode=emoteMode,
-                 followerMode = followersMode,
-                 slowMode = slowMode,
-                 subMode = subMode
-             )
-             Log.d("onMessageSocketROOMSTATE","ROOMSTATE --> $roomState")
+            val roomState = ParsingEngine().roomStateParsing(text)
              _roomState.tryEmit(roomState)
 
 
@@ -297,20 +283,5 @@ class TwitchWebSocket @Inject constructor(
 
 
 
-fun getValueFromInput(input: String, key: String): Boolean? {
-    val pattern = "$key=([^;:\\s]+)".toRegex()
-    val match = pattern.find(input)
-    val returnedValue = match?.groupValues?.get(1) ?: return null
-    if( returnedValue == "-1"){
-        return false
-    }
-    if(key == "followers-only" && returnedValue == "0"){
-        return true
-    }
-    else{
-        return returnedValue != "0"
-    }
-
-}
 
 
