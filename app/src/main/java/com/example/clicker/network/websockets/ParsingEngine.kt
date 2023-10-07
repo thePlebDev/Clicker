@@ -237,6 +237,12 @@ class ParsingEngine {
             .build()
     }
 
+    /**
+     * Creates a [TwitchUserData] that will be sent when a USERNOTICE command is sent
+     *
+     * @return a [TwitchUserData] used to notify the chat that an certain event has occurred. Example events are,
+     * announcement, resub, sub, submysterygift, subgift
+     */
     fun userNoticeParsing(text: String,streamerChannelName: String): TwitchUserData {
 
         val displayNamePattern = "display-name=([^;]+)".toRegex()
@@ -271,6 +277,45 @@ class ParsingEngine {
             .addUserType(personalMessage)
             .addSystemMessage(systemMessage)
             .build()
+
+    }
+
+    fun privateMessageParsing(text:String):TwitchUserData{
+        val pattern = "([^;@]+)=([^;]+)".toRegex()
+        val privateMsgPattern = "([^:]+)$".toRegex()
+
+        val matchResults = pattern.findAll(text)
+        val privateMsgResult = privateMsgPattern.find(text)
+
+        val parsedData = mutableMapOf<String, String>()
+        val privateMsg = privateMsgResult?.groupValues?.get(1) ?: ""
+
+
+        for (matchResult in matchResults) {
+            val (key, value) = matchResult.destructured
+            parsedData[key] = value
+        }
+
+        return TwitchUserData(
+            badgeInfo = parsedData["badge-info"],
+            badges = parsedData["badges"],
+            clientNonce = parsedData["client-nonce"],
+            color = parsedData["color"] ?: "#000000",
+            displayName = parsedData["display-name"],
+            emotes = parsedData["emotes"],
+            firstMsg = parsedData["first-msg"],
+            flags = parsedData["flags"],
+            id = parsedData["id"],
+            mod = parsedData["mod"],
+            returningChatter = parsedData["returning-chatter"],
+            subscriber = parsedData["subscriber"]?.toIntOrNull() == 1,
+            roomId = parsedData["room-id"],
+            tmiSentTs = parsedData["tmi-sent"]?.toLongOrNull(),
+            turbo = parsedData["turbo"]?.toIntOrNull() == 1,
+            userType = privateMsg,
+            userId = parsedData["user-id"],
+            messageType = MessageType.USER
+        )
 
     }
 

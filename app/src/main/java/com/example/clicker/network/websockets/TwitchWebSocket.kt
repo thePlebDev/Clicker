@@ -30,33 +30,7 @@ enum class MessageType {
     USER, NOTICE,USERNOTICE,ANNOUNCEMENT,RESUB,SUB,MYSTERYGIFTSUB,GIFTSUB,ERROR,JOIN,CLEARCHAT
 }
 
-data class TwitchUserAnnouncement(
-    val badgeInfo: String,
-    val badges: String,
-    val color: String,
-    val displayName: String,
-    val emotes: String,
-    val flags: String,
-    val id: String,
-    val login: String,
-    val mod: Int,
-    val msgId: String,
-    val msgParamCumulativeMonths: Int,
-    val msgParamMonths: Int,
-    val msgParamMultimonthDuration: Int,
-    val msgParamMultimonthTenure: Int,
-    val msgParamShouldShareStreak: Int,
-    val msgParamStreakMonths: Int,
-    val msgParamSubPlanName: String,
-    val msgParamSubPlan: String,
-    val msgParamWasGifted: Boolean,
-    val roomId: Long,
-    val subscriber: Int,
-    val systemMsg: String,
-    val tmiSentTs: Long,
-    val userId: Long,
-    val userType: String
-)
+
 
 
 
@@ -241,8 +215,9 @@ class TwitchWebSocket @Inject constructor(
 
          if(text.contains("PRIVMSG")){
              Log.d("loggedInDataOnMessage","PRIVMSG --> $text")
-             val anotherTesting = parseStringBaby(text)
-             val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
+//             val anotherTesting = parseStringBaby(text)
+//             val mappedString = mapToTwitchUserData(anotherTesting, sentMessage = sentMessageString)
+              val mappedString = ParsingEngine().privateMessageParsing(text)
              _state.tryEmit(mappedString)
          }
 
@@ -319,62 +294,6 @@ class TwitchWebSocket @Inject constructor(
 
 }/*********END OF THE TwitchWebSocket CLASS*******/
 
-
-fun parseStringBaby(input: String): Map<String, String> {
-    val pattern = "([^;@]+)=([^;]+)".toRegex()
-    val matchResults = pattern.findAll(input)
-
-    val parsedData = mutableMapOf<String, String>()
-
-
-    for (matchResult in matchResults) {
-        val (key, value) = matchResult.destructured
-        parsedData[key] = value
-    }
-
-    return parsedData
-}
-
-fun mapToTwitchUserData(parsedData: Map<String, String>,sentMessage: String): TwitchUserData {
-    return TwitchUserData(
-        badgeInfo = parsedData["badge-info"],
-        badges = parsedData["badges"],
-        clientNonce = parsedData["client-nonce"],
-        color = parsedData["color"] ?: "#000000",
-        displayName = parsedData["display-name"],
-        emotes = parsedData["emotes"],
-        firstMsg = parsedData["first-msg"],
-        flags = parsedData["flags"],
-        id = parsedData["id"],
-        mod = parsedData["mod"],
-        returningChatter = parsedData["returning-chatter"],
-        subscriber = parsedData["subscriber"]?.toIntOrNull() == 1,
-        roomId = parsedData["room-id"],
-        tmiSentTs = parsedData["tmi-sent"]?.toLongOrNull(),
-        turbo = parsedData["turbo"]?.toIntOrNull() == 1,
-        userType = checkStrings(filterText(parsedData["user-type"].toString()),sentMessage),
-        userId = parsedData["user-id"],
-        messageType = MessageType.USER
-    )
-}
-
-fun checkStrings(parsedText:String,sentMessage:String):String{
-    if(parsedText.isEmpty()){
-        return sentMessage
-    }else{
-        return parsedText
-    }
-}
-
-
-fun filterText(chatText:String):String{
-
-    val regex = ":(.*?):(.*)".toRegex()
-    val matchResult = regex.find(chatText)
-    //Log.d("websocketStoofs","onMessageLoggers-> $streamerName")
-
-    return matchResult?.groupValues?.getOrNull(2)?.trim() ?: ""
-}
 
 
 
