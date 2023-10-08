@@ -162,7 +162,6 @@ class HomeViewModel @Inject constructor(
             when(response){
                 is Response.Loading ->{
                     _loginUIState.value = _loginUIState.value.copy(
-                        loginStep3 = Response.Loading,
                         loginStatusText ="Retrieving live streams",
                     )
                 }
@@ -234,6 +233,7 @@ class HomeViewModel @Inject constructor(
                     _loginUIState.value = _loginUIState.value.copy(
 
                         loginStep2 = Response.Success(true),
+                        loginStep3 = Response.Loading
                     )
                     mutableAuthenticatedUserFlow.tryEmit(
                         mutableAuthenticatedUserFlow.value.copy(
