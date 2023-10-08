@@ -2,6 +2,7 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import java.util.regex.Pattern
@@ -260,7 +261,7 @@ class ParsingEngine {
      * @property text the string to be parsed
      * @return a [RoomState] representing the current state of the chat room
      */
-    fun roomStateParsing(text: String):RoomState{
+    fun roomStateParsing(text: String): RoomState {
         val slowMode= getValueFromInput(text,"slow")
 
         val emoteMode = getValueFromInput(text,"emote-only")
