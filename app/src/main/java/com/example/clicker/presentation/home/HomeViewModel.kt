@@ -19,12 +19,16 @@ import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.TwitchWebSocket
+import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class HomeUIState(
@@ -225,34 +229,40 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    private fun validateOAuthToken(oAuthenticationToken:String) = viewModelScope.launch{
-        twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
-            when(response){
-                is Response.Loading ->{}
-                is Response.Success ->{
-                    _loginUIState.value = _loginUIState.value.copy(
+    private fun validateOAuthToken(oAuthenticationToken:String) =viewModelScope.launch{
+        withContext( CoroutineName("TokenValidator")){
+            twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
 
-                        loginStep2 = Response.Success(true),
-                        loginStep3 = Response.Loading
-                    )
-                    mutableAuthenticatedUserFlow.tryEmit(
-                        mutableAuthenticatedUserFlow.value.copy(
-                            authUser = response.data
+                when(response){
+                    is Response.Loading ->{}
+                    is Response.Success ->{
+                        logCoroutineInfo("CoroutineDebugging","GOT ITEMS from remote")
+                        _loginUIState.value = _loginUIState.value.copy(
+
+                            loginStep2 = Response.Success(true),
+                            loginStep3 = Response.Loading
                         )
-                    )
-                    tokenDataStore.setUsername(response.data.login)
-                }
-                is Response.Failure ->{
+                        mutableAuthenticatedUserFlow.tryEmit(
+                            mutableAuthenticatedUserFlow.value.copy(
+                                authUser = response.data
+                            )
+                        )
+                        tokenDataStore.setUsername(response.data.login)
+                    }
+                    is Response.Failure ->{
 
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText =response.e.message ?: "Error! Please login and try again",
-                        loginStep2 = Response.Failure(Exception("failed to validate authentication token"))
-                    )
+                        _loginUIState.value = _loginUIState.value.copy(
+                            loginStatusText =response.e.message ?: "Error! Please login and try again",
+                            loginStep2 = Response.Failure(Exception("failed to validate authentication token"))
+                        )
+                    }
                 }
             }
+
         }
 
-    }
+
+    } //end
 
 
     fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{

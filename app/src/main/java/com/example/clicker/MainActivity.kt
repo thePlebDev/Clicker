@@ -20,11 +20,14 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+
     private val homeViewModel: HomeViewModel by viewModels()
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+       System.setProperty("kotlinx.coroutines.debug", if(BuildConfig.DEBUG) "on" else "off")
 
         supportActionBar!!.hide()
         setContentView(R.layout.activity_main)

@@ -13,6 +13,7 @@ import com.example.clicker.network.models.toStreamInfo
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response
+import com.example.clicker.util.logCoroutineInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -24,6 +25,8 @@ class TwitchRepoImpl @Inject constructor(
 ): TwitchRepo {
 
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
+        logCoroutineInfo("CoroutineDebugging","Fetching from remote")
+
         emit(Response.Loading)
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
        val response= twitchClient.validateToken(
