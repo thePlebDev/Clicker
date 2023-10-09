@@ -85,7 +85,6 @@ fun HomeView(
     streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
-    dataStoreViewModel:DataStoreViewModel,
     workerViewModel:WorkerViewModel
 ){
     val hideModal = homeViewModel.state.value.hideModal
@@ -104,8 +103,7 @@ fun HomeView(
 
 
 
-    val validationStatus = dataStoreViewModel.showLogin.value
-    val authState = dataStoreViewModel.state.value.authState
+
     var state by remember { mutableIntStateOf(0) }
 
     val pagerState = rememberPagerState(pageCount = {

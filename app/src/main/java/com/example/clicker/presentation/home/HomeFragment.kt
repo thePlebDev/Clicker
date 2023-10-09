@@ -74,7 +74,6 @@ class HomeFragment : Fragment() {
                     streamViewModel = streamViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)},
                     onNavigate = { dest -> findNavController().navigate(dest) },
-                    dataStoreViewModel = dataStoreViewModel,
                     workerViewModel = workerViewModel
 
                 )
