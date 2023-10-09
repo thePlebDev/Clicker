@@ -170,42 +170,45 @@ class HomeViewModel @Inject constructor(
     private suspend fun getLiveStreams(validatedUser: ValidatedUser, oAuthToken:String){
         Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
         Log.d("ValidatedUserUserId","client_id -> ${validatedUser.clientId}")
-        twitchRepoImpl.getFollowedLiveStreams(
-            authorizationToken = oAuthToken,
-            clientId = validatedUser.clientId,
-            userId = validatedUser.userId
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText ="Retrieving live streams",
-                    )
-                }
-                is Response.Success ->{
-
-
-                    val replacedWidthHeight =response.data.map{
-                        it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+        withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
+            twitchRepoImpl.getFollowedLiveStreams(
+                authorizationToken = oAuthToken,
+                clientId = validatedUser.clientId,
+                userId = validatedUser.userId
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        _loginUIState.value = _loginUIState.value.copy(
+                            loginStatusText ="Retrieving live streams",
+                        )
                     }
+                    is Response.Success ->{
 
-                    _newUrlList.tryEmit(replacedWidthHeight)
+
+                        val replacedWidthHeight =response.data.map{
+                            it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+                        }
+
+                        _newUrlList.tryEmit(replacedWidthHeight)
 
 
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText ="Success!!!",
-                        loginStep3 = Response.Success(true),
-                        showLoginModal = false,
-                    )
+                        _loginUIState.value = _loginUIState.value.copy(
+                            loginStatusText ="Success!!!",
+                            loginStep3 = Response.Success(true),
+                            showLoginModal = false,
+                        )
+                    }
+                    is Response.Failure ->{
+                        _loginUIState.value = _loginUIState.value.copy(
+                            loginStatusText =response.e.message ?: "Error! Please login and try again",
+                            loginStep3 = Response.Failure(Exception("Unable to getStream")),
+                        )
+                    }
                 }
-                is Response.Failure ->{
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText =response.e.message ?: "Error! Please login and try again",
-                        loginStep3 = Response.Failure(Exception("Unable to getStream")),
-                    )
-                }
+
             }
-
         }
+
     }
 
 
@@ -242,7 +245,7 @@ class HomeViewModel @Inject constructor(
         }
     }
     private fun validateOAuthToken(oAuthenticationToken:String) =viewModelScope.launch{
-        withContext( CoroutineName("TokenValidator")){
+        withContext( Dispatchers.IO +CoroutineName("TokenValidator")){
             twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
 
                 when(response){
@@ -297,32 +300,37 @@ class HomeViewModel @Inject constructor(
             loginStep2 = Response.Loading,
             loginStep3 = null,
         )
-        twitchRepoImpl.logout(clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
-            .collect{response ->
-           // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
-            when(response){
-                is Response.Loading ->{}
-                is Response.Success ->{
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText = "Success!! Please log in with Twitch",
-                        loginStep1 = Response.Success(true),
-                        loginStep2 = Response.Success(true),
-                        loginStep3 = null,
-                        logoutError = false
-                    )
+        withContext( Dispatchers.IO +CoroutineName("BeginLogout")){
+            twitchRepoImpl.logout(
+                clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,
+                token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
+                .collect{response ->
+                    // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
+                    when(response){
+                        is Response.Loading ->{}
+                        is Response.Success ->{
+                            _loginUIState.value = _loginUIState.value.copy(
+                                loginStatusText = "Success!! Please log in with Twitch",
+                                loginStep1 = Response.Success(true),
+                                loginStep2 = Response.Success(true),
+                                loginStep3 = null,
+                                logoutError = false
+                            )
+                        }
+                        is Response.Failure ->{
+                            _loginUIState.value = _loginUIState.value.copy(
+                                loginStatusText = response.e.message ?: "Logout Error! Please try again",
+                                loginStep1 = Response.Success(true),
+                                loginStep2 = Response.Failure(Exception("failed to Logout")),
+                                loginStep3 = null,
+                                logoutError = true
+                            )
+                        }
+                        else -> {}
+                    }
                 }
-                is Response.Failure ->{
-                    _loginUIState.value = _loginUIState.value.copy(
-                        loginStatusText = response.e.message ?: "Logout Error! Please try again",
-                        loginStep1 = Response.Success(true),
-                        loginStep2 = Response.Failure(Exception("failed to Logout")),
-                        loginStep3 = null,
-                        logoutError = true
-                    )
-                }
-                else -> {}
-            }
         }
+
 
 }
 
