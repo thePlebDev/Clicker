@@ -24,6 +24,7 @@ class TwitchRepoImpl @Inject constructor(
     private val twitchClient: TwitchClient
 ): TwitchRepo {
 
+
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
         logCoroutineInfo("CoroutineDebugging","Fetching from remote")
 

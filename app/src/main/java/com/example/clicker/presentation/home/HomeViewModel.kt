@@ -69,6 +69,18 @@ class HomeViewModel @Inject constructor(
 ): ViewModel(){
 
 
+    init{
+//        viewModelScope.launch {
+//            withContext( CoroutineName("TokenValidatorDebugging")){
+//                twitchRepoImpl.validateToken("").collect{
+//                    logCoroutineInfo("CoroutineDebugging","GOT ITEMS from remote")
+//
+//
+//                }
+//            }
+//
+//        }
+    }
 
 
     private val _newUrlList =MutableStateFlow<List<StreamInfo>?>(null)
