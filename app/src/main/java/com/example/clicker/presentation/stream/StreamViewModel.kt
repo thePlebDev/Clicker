@@ -23,9 +23,12 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -118,11 +121,14 @@ class StreamViewModel @Inject constructor(
 
     init{
         viewModelScope.launch {
-            webSocket.messageToDeleteId.collect{nullableMsgId ->
-                nullableMsgId?.let{nonNullMsgId ->
-                    filterMessages(nonNullMsgId)
+            withContext(Dispatchers.IO + CoroutineName("MessageToDeleteId")){
+                webSocket.messageToDeleteId.collect{nullableMsgId ->
+                    nullableMsgId?.let{nonNullMsgId ->
+                        filterMessages(nonNullMsgId)
+                    }
                 }
             }
+
         }
     }
 
@@ -176,35 +182,34 @@ class StreamViewModel @Inject constructor(
     }
 
     fun deleteChatMessage(messageId:String) = viewModelScope.launch{
-        twitchRepoImpl.deleteChatMessage(
-            oAuthToken =_uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            broadcasterId = _uiState.value.broadcasterId,
-            moderatorId = _uiState.value.userId,
-            messageId = messageId
-        ).collect{response ->
+        withContext(Dispatchers.IO + CoroutineName("DeleteChatMessage")){
+            twitchRepoImpl.deleteChatMessage(
+                oAuthToken =_uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                broadcasterId = _uiState.value.broadcasterId,
+                moderatorId = _uiState.value.userId,
+                messageId = messageId
+            ).collect{response ->
 
-            when(response){
-                is Response.Loading ->{
-                    Log.d("deleteChatMessage","LOADING")
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("deleteChatMessage","LOADING")
+                    }
+                    is Response.Success ->{
+                        Log.d("deleteChatMessage","SUCCESS")
+                    }
+                    is Response.Failure ->{
+                        Log.d("deleteChatMessage","FAILURE")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "${response.e.message}"
+                        )
+                    }
                 }
-                is Response.Success ->{
-                    Log.d("deleteChatMessage","SUCCESS")
-                }
-                is Response.Failure ->{
-                    Log.d("deleteChatMessage","FAILURE")
-                    _uiState.value = _uiState.value.copy(
-                        showStickyHeader = true,
-                        undoBanResponse = false,
-                        banResponseMessage = "${response.e.message}"
-                    )
-                }
+
             }
-
         }
-
-
-
 
     }
 
@@ -306,90 +311,102 @@ class StreamViewModel @Inject constructor(
     init{
         Log.d("twitchNameonCreateViewVIewModel","CREATED")
     }
+    /**
+     * This is the hot state receiving the main chat messages
+     * */
     init {
         viewModelScope.launch{
-            webSocket.state.collect{twitchUserMessage ->
-                Log.d("loggedMessage","${twitchUserMessage}")
+           // withContext(Dispatchers.IO + CoroutineName("ChatMessages")){
+                webSocket.state.collect{twitchUserMessage ->
+                    Log.d("loggedMessage","${twitchUserMessage}")
                     listChats.add(twitchUserMessage)
-                if(twitchUserMessage.displayName == _clickedUsername.value){
+                    if(twitchUserMessage.displayName == _clickedUsername.value){
 
-                    clickedUsernameChats.add(twitchUserMessage.userType!!)
+                        clickedUsernameChats.add(twitchUserMessage.userType!!)
+
+                    }
+                    if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null){
+                        listChats.clear()
+                        //todo: add the ability to send a little message saying that the chat was cleard by a mod
+                        val data = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.JOIN)
+                            .addUserType("Chat cleared by moderator")
+                            .addColor("#000000")
+                            .build()
+                        listChats.add(data)
+                    }
+                    if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
+                        Log.d("collectingdatathingy","foundDuration --> $twitchUserMessage.bannedDuration")
+                        banUserFilter(
+                            username= twitchUserMessage.displayName,
+                            banDuration = twitchUserMessage.bannedDuration
+                        )
+                        val data = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.JOIN)
+                            .addUserType("${twitchUserMessage.displayName} banned by moderators")
+                            .addColor("#000000")
+                            .build()
+                        listChats.add(data)
+                    }
+
 
                 }
-                if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null){
-                    listChats.clear()
-                    //todo: add the ability to send a little message saying that the chat was cleard by a mod
-                    val data = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.JOIN)
-                        .addUserType("Chat cleared by moderator")
-                        .addColor("#000000")
-                        .build()
-                    listChats.add(data)
-                }
-                if(twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null){
-                    Log.d("collectingdatathingy","foundDuration --> $twitchUserMessage.bannedDuration")
-                    banUserFilter(
-                       username= twitchUserMessage.displayName,
-                        banDuration = twitchUserMessage.bannedDuration
-                    )
-                    val data = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.JOIN)
-                        .addUserType("${twitchUserMessage.displayName} banned by moderators")
-                        .addColor("#000000")
-                        .build()
-                    listChats.add(data)
-                }
+            //}
 
-
-            }
         }
 
     }
     init{
         viewModelScope.launch {
-            _channelName.collect{channelName ->
-                channelName?.let{
-                    startWebSocket(channelName)
+            withContext(Dispatchers.IO + CoroutineName("StartingWebSocket")){
+                _channelName.collect{channelName ->
+                    channelName?.let{
+                        startWebSocket(channelName)
+                    }
                 }
             }
+
         }
     }
     init{
         viewModelScope.launch {
-            webSocket.roomState.collect{nullableRoomState ->
-                nullableRoomState?.let {roomState ->
-                    //todo: update the _uiState chatSettings with these values
-                    when(val response =_uiState.value.chatSettings){
-                        is Response.Success ->{
-                            val slowMode = roomState.slowMode ?: response.data.slowMode
-                            val emoteMode = roomState.emoteMode ?: response.data.emoteMode
-                            val followerMode = roomState.followerMode ?: response.data.followerMode
-                            val subMode = roomState.subMode ?: response.data.subscriberMode
+            withContext(Dispatchers.IO + CoroutineName("RoomState")){
+                webSocket.roomState.collect{nullableRoomState ->
+                    nullableRoomState?.let {roomState ->
+                        //todo: update the _uiState chatSettings with these values
+                        when(val response =_uiState.value.chatSettings){
+                            is Response.Success ->{
+                                val slowMode = roomState.slowMode ?: response.data.slowMode
+                                val emoteMode = roomState.emoteMode ?: response.data.emoteMode
+                                val followerMode = roomState.followerMode ?: response.data.followerMode
+                                val subMode = roomState.subMode ?: response.data.subscriberMode
 
-                            _uiState.value = _uiState.value.copy(
-                                chatSettings = Response.Success(
-                                    ChatSettingsData(
-                                        broadcasterId = response.data.broadcasterId,
-                                        slowMode = slowMode,
-                                        slowModeWaitTime = response.data.slowModeWaitTime,
-                                        followerMode = followerMode,
-                                        followerModeDuration = response.data.followerModeDuration,
-                                        subscriberMode = subMode,
-                                        emoteMode = emoteMode,
-                                        uniqueChatMode = response.data.uniqueChatMode
+                                _uiState.value = _uiState.value.copy(
+                                    chatSettings = Response.Success(
+                                        ChatSettingsData(
+                                            broadcasterId = response.data.broadcasterId,
+                                            slowMode = slowMode,
+                                            slowModeWaitTime = response.data.slowModeWaitTime,
+                                            followerMode = followerMode,
+                                            followerModeDuration = response.data.followerModeDuration,
+                                            subscriberMode = subMode,
+                                            emoteMode = emoteMode,
+                                            uniqueChatMode = response.data.uniqueChatMode
+                                        )
                                     )
                                 )
-                            )
 
-                        }
-                        else->{
+                            }
+                            else->{
 
+                            }
                         }
+
                     }
 
                 }
-
             }
+
         }
 
     }
@@ -485,40 +502,43 @@ class StreamViewModel @Inject constructor(
 //        tokenDataStore.getClientId().collect{
 //            Log.d("twitchNameonCreateViewVIewModel","tokenDataStoreclientId ->$clientId")
 //        }
-        tokenDataStore.getOAuthToken().collect{oAuthToken ->
-            Log.d("twitchNameonCreateViewVIewModel","clientId ->$clientId")
+        withContext(Dispatchers.IO + CoroutineName("GetChatSettings")){
+            tokenDataStore.getOAuthToken().collect{oAuthToken ->
+                Log.d("twitchNameonCreateViewVIewModel","clientId ->$clientId")
 //            Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
 //            Log.d("twitchNameonCreateViewVIewModel","oAuthToken ->$oAuthToken")
-            if(oAuthToken.isNotEmpty()){
-                _uiState.value = _uiState.value.copy(
-                    oAuthToken = oAuthToken
-                )
-                twitchRepoImpl.getChatSettings("Bearer $oAuthToken",clientId,broadcasterId).collect{response ->
-                    when(response){
-                        is Response.Loading ->{
-                            _uiState.value = _uiState.value.copy(
-                                chatSettings = Response.Loading
-                            )
+                if(oAuthToken.isNotEmpty()){
+                    _uiState.value = _uiState.value.copy(
+                        oAuthToken = oAuthToken
+                    )
+                    twitchRepoImpl.getChatSettings("Bearer $oAuthToken",clientId,broadcasterId).collect{response ->
+                        when(response){
+                            is Response.Loading ->{
+                                _uiState.value = _uiState.value.copy(
+                                    chatSettings = Response.Loading
+                                )
 
-                        }
-                        is Response.Success ->{
-                            Log.d("twitchNameonCreateViewVIewModel","SUCCESS -> ${response.data.data}")
-                            _uiState.value = _uiState.value.copy(
-                                chatSettings = Response.Success(response.data.data[0])
-                            )
-                        }
-                        is Response.Failure ->{
-                            Log.d("twitchNameonCreateViewVIewModel","FAILED -> ${response.e.message}")
-                            _uiState.value = _uiState.value.copy(
+                            }
+                            is Response.Success ->{
+                                Log.d("twitchNameonCreateViewVIewModel","SUCCESS -> ${response.data.data}")
+                                _uiState.value = _uiState.value.copy(
+                                    chatSettings = Response.Success(response.data.data[0])
+                                )
+                            }
+                            is Response.Failure ->{
+                                Log.d("twitchNameonCreateViewVIewModel","FAILED -> ${response.e.message}")
+                                _uiState.value = _uiState.value.copy(
 //
-                                chatSettings = Response.Failure(response.e)
-                            )
+                                    chatSettings = Response.Failure(response.e)
+                                )
+                            }
                         }
                     }
-                }
 
+                }
             }
         }
+
     }
 
 
@@ -527,63 +547,66 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableSlowMode = false
         )
+        withContext(Dispatchers.IO + CoroutineName("SlowModeChatSettings")){
+            twitchRepoImpl.updateChatSettings(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = UpdateChatSettings(
+                    emote_mode = chatSettings.emoteMode,
+                    follower_mode = chatSettings.followerMode,
+                    slow_mode = chatSettings.slowMode,
+                    subscriber_mode = chatSettings.subscriberMode
+                )
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("changeChatSettings","LOADING")
+                    }
+                    is Response.Success ->{
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
 
-        twitchRepoImpl.updateChatSettings(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = UpdateChatSettings(
-                emote_mode = chatSettings.emoteMode,
-                follower_mode = chatSettings.followerMode,
-                slow_mode = chatSettings.slowMode,
-                subscriber_mode = chatSettings.subscriberMode
-            )
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("changeChatSettings","LOADING")
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            enableSlowMode = true
+                        )
+                    }
+                    is Response.Failure ->{
+                        Log.d("changeChatSettings","FAILED -> ${response.e.message}")
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = !chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            showChatSettingAlert = true,
+                            enableSlowMode = true
+                        )
+
+                    }
                 }
-                is Response.Success ->{
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
 
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        enableSlowMode = true
-                    )
-                }
-                is Response.Failure ->{
-                    Log.d("changeChatSettings","FAILED -> ${response.e.message}")
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = !chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
-
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true,
-                        enableSlowMode = true
-                    )
-
-                }
             }
-
         }
+
+
     }
 
     fun followerModeToggle(chatSettings:ChatSettingsData) = viewModelScope.launch{
@@ -591,66 +614,69 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableFollowerMode = false
         )
-        twitchRepoImpl.updateChatSettings(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = UpdateChatSettings(
-                emote_mode = chatSettings.emoteMode,
-                follower_mode = chatSettings.followerMode,
-                slow_mode = chatSettings.slowMode,
-                subscriber_mode = chatSettings.subscriberMode
-            )
+        withContext(Dispatchers.IO + CoroutineName("FollowerModeToggle")){
+            twitchRepoImpl.updateChatSettings(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = UpdateChatSettings(
+                    emote_mode = chatSettings.emoteMode,
+                    follower_mode = chatSettings.followerMode,
+                    slow_mode = chatSettings.slowMode,
+                    subscriber_mode = chatSettings.subscriberMode
+                )
 
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("changeChatSettings","LOADING")
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("changeChatSettings","LOADING")
+                    }
+                    is Response.Success ->{
+                        Log.d("changeChatSettings","SUCCESS")
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            enableFollowerMode = true
+                        )
+
+                    }
+                    is Response.Failure ->{
+                        Log.d("changeChatSettings","FAILED -> ${response.e.message}")
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = !chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            showChatSettingAlert = true,
+                            enableFollowerMode = true
+                        )
+
+                    }
                 }
-                is Response.Success ->{
-                    Log.d("changeChatSettings","SUCCESS")
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
 
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        enableFollowerMode = true
-                    )
-
-                }
-                is Response.Failure ->{
-                    Log.d("changeChatSettings","FAILED -> ${response.e.message}")
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = !chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
-
-
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true,
-                        enableFollowerMode = true
-                    )
-
-                }
             }
-
         }
+
 
     }
 
@@ -659,105 +685,111 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableSubscriberMode = false
         )
-        twitchRepoImpl.updateChatSettings(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = UpdateChatSettings(
-                emote_mode = chatSettings.emoteMode,
-                follower_mode = chatSettings.followerMode,
-                slow_mode = chatSettings.slowMode,
-                subscriber_mode = chatSettings.subscriberMode
-            )
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("changeChatSettings","LOADING")
+        withContext(Dispatchers.IO + CoroutineName("SubscriberModeToggle")){
+            twitchRepoImpl.updateChatSettings(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = UpdateChatSettings(
+                    emote_mode = chatSettings.emoteMode,
+                    follower_mode = chatSettings.followerMode,
+                    slow_mode = chatSettings.slowMode,
+                    subscriber_mode = chatSettings.subscriberMode
+                )
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("changeChatSettings","LOADING")
+                    }
+                    is Response.Success ->{
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            enableSubscriberMode = true
+                        )
+                    }
+                    is Response.Failure ->{
+                        Log.d("changeChatSettings","FAILED -> ${response.e.message}")
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = !chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            showChatSettingAlert = true,
+                            enableSubscriberMode = true
+
+                        )
+
+                    }
                 }
-                is Response.Success ->{
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
 
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        enableSubscriberMode = true
-                    )
-                }
-                is Response.Failure ->{
-                    Log.d("changeChatSettings","FAILED -> ${response.e.message}")
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = !chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
-
-
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true,
-                        enableSubscriberMode = true
-
-                    )
-
-                }
             }
-
         }
+
     }
     fun timeoutUser() = viewModelScope.launch{
-        val timeoutUser = BanUser(
-            data = BanUserData(
-                user_id = _clickedUserId.value,
-                reason = _uiState.value.timeoutReason,
-                duration = _uiState.value.timeoutDuration
+        withContext(Dispatchers.IO + CoroutineName("TimeoutUser")){
+            val timeoutUser = BanUser(
+                data = BanUserData(
+                    user_id = _clickedUserId.value,
+                    reason = _uiState.value.timeoutReason,
+                    duration = _uiState.value.timeoutDuration
+                )
             )
-        )
-        twitchRepoImpl.banUser(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = timeoutUser
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("TIMEOUTUSERRESPONSE","LOADING")
-                }
-                is Response.Success ->{
-                    Log.d("TIMEOUTUSERRESPONSE","SUCCESS")
-                    _uiState.value = _uiState.value.copy(
-                        banResponse = Response.Success(true),
-                        timeoutReason = "",
-                        undoBanResponse = false
-                    )
+            twitchRepoImpl.banUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = timeoutUser
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("TIMEOUTUSERRESPONSE","LOADING")
+                    }
+                    is Response.Success ->{
+                        Log.d("TIMEOUTUSERRESPONSE","SUCCESS")
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            timeoutReason = "",
+                            undoBanResponse = false
+                        )
 
-                }
-                is Response.Failure ->{
-                    Log.d("TIMEOUTUSERRESPONSE","FAILED")
-                    _uiState.value = _uiState.value.copy(
-                        showStickyHeader = true,
-                        undoBanResponse = false,
-                        banResponseMessage = "${response.e.message}"
-                    )
+                    }
+                    is Response.Failure ->{
+                        Log.d("TIMEOUTUSERRESPONSE","FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "${response.e.message}"
+                        )
 
+                    }
                 }
+
             }
-
         }
+
 
     }
 
@@ -772,67 +804,73 @@ class StreamViewModel @Inject constructor(
         )
         Log.d("deleteChatMessageException", "banUser.user_id ${banUserNew.data.user_id}")
        // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
-        twitchRepoImpl.banUser(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = banUserNew
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("BANUSERRESPONSE","LOADING")
-                }
-                is Response.Success ->{
-                    Log.d("BANUSERRESPONSE","SUCCESS")
-                    _uiState.value = _uiState.value.copy(
-                        banResponse = Response.Success(true),
-                        banReason = "",
-                        undoBanResponse = false
-                    )
-                }
-                is Response.Failure ->{
-                    Log.d("BANUSERRESPONSE","FAILED")
-                    _uiState.value = _uiState.value.copy(
-                        showStickyHeader = true,
-                        undoBanResponse = false,
-                        banResponseMessage = "ban attempt unsuccessful"
-                    )
+        withContext(Dispatchers.IO + CoroutineName("BanUser")){
+            twitchRepoImpl.banUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = banUserNew
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("BANUSERRESPONSE","LOADING")
+                    }
+                    is Response.Success ->{
+                        Log.d("BANUSERRESPONSE","SUCCESS")
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            banReason = "",
+                            undoBanResponse = false
+                        )
+                    }
+                    is Response.Failure ->{
+                        Log.d("BANUSERRESPONSE","FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "ban attempt unsuccessful"
+                        )
+                    }
                 }
             }
         }
+
     }
     fun unBanUser() = viewModelScope.launch{
-        twitchRepoImpl.unBanUser(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            userId = _clickedUserId.value
+        withContext(Dispatchers.IO + CoroutineName("UnBanUser")){
+            twitchRepoImpl.unBanUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                userId = _clickedUserId.value
 
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("TESTINGTHEUNBANRESPONSE","LOADING")
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("TESTINGTHEUNBANRESPONSE","LOADING")
+                    }
+                    is Response.Success ->{
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            undoBanResponse = true
+                        )
+                        Log.d("TESTINGTHEUNBANRESPONSE","SUCCESS")
+                    }
+                    is Response.Failure ->{
+                        Log.d("TESTINGTHEUNBANRESPONSE","FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "Fail. User may be unbanned"
+                        )
+                    }
                 }
-                is Response.Success ->{
-                    _uiState.value = _uiState.value.copy(
-                        banResponse = Response.Success(true),
-                        undoBanResponse = true
-                    )
-                    Log.d("TESTINGTHEUNBANRESPONSE","SUCCESS")
-                }
-                is Response.Failure ->{
-                    Log.d("TESTINGTHEUNBANRESPONSE","FAILED")
-                    _uiState.value = _uiState.value.copy(
-                        showStickyHeader = true,
-                        undoBanResponse = false,
-                        banResponseMessage = "Fail. User may be unbanned"
-                    )
-                }
+
             }
-
         }
+
     }
     fun removeUnBanButton(){
         _uiState.value = _uiState.value.copy(
@@ -846,63 +884,66 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableEmoteMode = false
         )
-        twitchRepoImpl.updateChatSettings(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = UpdateChatSettings(
-                emote_mode = chatSettings.emoteMode,
-                follower_mode = chatSettings.followerMode,
-                slow_mode = chatSettings.slowMode,
-                subscriber_mode = chatSettings.subscriberMode
-            )
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                    Log.d("changeChatSettings","LOADING")
+        withContext(Dispatchers.IO + CoroutineName("EmoteModeToggle")){
+            twitchRepoImpl.updateChatSettings(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = UpdateChatSettings(
+                    emote_mode = chatSettings.emoteMode,
+                    follower_mode = chatSettings.followerMode,
+                    slow_mode = chatSettings.slowMode,
+                    subscriber_mode = chatSettings.subscriberMode
+                )
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+                        Log.d("changeChatSettings","LOADING")
+                    }
+                    is Response.Success ->{
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            enableEmoteMode = true
+                        )
+                    }
+                    is Response.Failure ->{
+                        Log.d("changeChatSettings","FAILED -> ${response.e.message}")
+                        val newChatSettingsData = ChatSettingsData(
+                            slowMode = chatSettings.slowMode,
+                            broadcasterId = chatSettings.broadcasterId,
+                            slowModeWaitTime = chatSettings.slowModeWaitTime,
+                            followerMode = chatSettings.followerMode,
+                            followerModeDuration = chatSettings.followerModeDuration,
+                            subscriberMode = chatSettings.subscriberMode,
+                            emoteMode = !chatSettings.emoteMode,
+                            uniqueChatMode = chatSettings.uniqueChatMode
+
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(newChatSettingsData),
+                            showChatSettingAlert = true,
+                            enableEmoteMode = true
+                        )
+
+                    }
                 }
-                is Response.Success ->{
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
 
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        enableEmoteMode = true
-                    )
-                }
-                is Response.Failure ->{
-                    Log.d("changeChatSettings","FAILED -> ${response.e.message}")
-                    val newChatSettingsData = ChatSettingsData(
-                        slowMode = chatSettings.slowMode,
-                        broadcasterId = chatSettings.broadcasterId,
-                        slowModeWaitTime = chatSettings.slowModeWaitTime,
-                        followerMode = chatSettings.followerMode,
-                        followerModeDuration = chatSettings.followerModeDuration,
-                        subscriberMode = chatSettings.subscriberMode,
-                        emoteMode = !chatSettings.emoteMode,
-                        uniqueChatMode = chatSettings.uniqueChatMode
-
-
-                    )
-                    _uiState.value = _uiState.value.copy(
-                        chatSettings = Response.Success(newChatSettingsData),
-                        showChatSettingAlert = true,
-                        enableEmoteMode = true
-                    )
-
-                }
             }
-
         }
+
     }
 
 
