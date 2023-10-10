@@ -655,8 +655,9 @@ fun ChatSettings(
         )
 
 
+        
 
-        AnimatedVisibility(visible = showChatSettingAlert) {
+        AnimatedVisibility(visible = showChatSettingAlert,modifier=Modifier.height(200.dp)) {
             MessageAlertText(
                 message = chatSettingsFailedMessage,
                 closeChatSettingsAlert ={closeChatSettingsAlert()}
@@ -812,27 +813,38 @@ fun MessageAlertText(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(200.dp)
             .padding(15.dp)
             .clickable { },
         border = BorderStroke(2.dp,Color.Red),
         elevation = 10.dp
     ) {
-        Box(){
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Send chat",
+                contentDescription = "Close notification",
                 modifier = Modifier
                     .clickable { closeChatSettingsAlert()}
                     .padding(2.dp)
-                    .size(25.dp)
-                    .align(Alignment.TopEnd),
+                    .size(25.dp),
                 tint = Color.Red
                 )
             Text(
                 "Request failed",
                 textAlign = TextAlign.Center,
-                fontSize = 30.sp,
-                modifier = Modifier.align(Alignment.Center)
+                fontSize = 20.sp,
+            )
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close notification",
+                modifier = Modifier
+                    .clickable { closeChatSettingsAlert()}
+                    .padding(2.dp)
+                    .size(25.dp),
+                tint = Color.Red
             )
         }
 
