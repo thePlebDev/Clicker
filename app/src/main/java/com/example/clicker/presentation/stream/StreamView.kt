@@ -1429,12 +1429,12 @@ fun ChatBadges(
 ){
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
-    val myId = "inlineContent"
+    val modId = "modIcon"
     val subId = "subIcon"
     val text = buildAnnotatedString {
         // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
         if(isMod){
-            appendInlineContent(myId, "[icon]")
+            appendInlineContent(modId, "[icon]")
         }
         if(isSub){
             appendInlineContent(subId, "[subicon]")
@@ -1447,65 +1447,45 @@ fun ChatBadges(
         }
 
     }
-    //                        Text(buildAnnotatedString {
-//                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
-//                                append("${twitchUser.displayName} :")
-//                            }
-//                            withStyle(style = SpanStyle(color = Color.White)) {
-//                                append(" ${twitchUser.userType}")
-//                            }
-//
-//
-//                        },
-//                            modifier = Modifier.padding(5.dp)
-//                        )
 
     val inlineContent = mapOf(
         Pair(
-            // This tells the [CoreText] to replace the placeholder string "[icon]" by
-            // the composable given in the [InlineTextContent] object.
-            myId,
+
+            modId,
             InlineTextContent(
-                // Placeholder tells text layout the expected size and vertical alignment of
-                // children composable.
+
                 Placeholder(
-                    width = 25.sp,
-                    height = 25.sp,
+                    width = 20.sp,
+                    height = 20.sp,
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
-                // This Icon will fill maximum size, which is specified by the [Placeholder]
-                // above. Notice the width and height in [Placeholder] are specified in TextUnit,
-                // and are converted into pixel by text layout.
+
 
                 AsyncImage(
                     model = modBadge,
                     contentDescription = "Moderator badge",
-                    modifier = Modifier.padding(5.dp)
+                    modifier = Modifier.fillMaxSize().padding(2.dp)
                 )
             }
         ),
         Pair(
-            // This tells the [CoreText] to replace the placeholder string "[icon]" by
-            // the composable given in the [InlineTextContent] object.
+
             subId,
             InlineTextContent(
-                // Placeholder tells text layout the expected size and vertical alignment of
-                // children composable.
+
                 Placeholder(
-                    width = 25.sp,
-                    height = 25.sp,
+                    width = 20.sp,
+                    height = 20.sp,
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
-                // This Icon will fill maximum size, which is specified by the [Placeholder]
-                // above. Notice the width and height in [Placeholder] are specified in TextUnit,
-                // and are converted into pixel by text layout.
+
 
                 AsyncImage(
                     model = subBadge,
                     contentDescription = "Subscriber badge",
-                    modifier = Modifier.padding(5.dp)
+                    modifier = Modifier.fillMaxSize().padding(2.dp)
                 )
             }
         )
