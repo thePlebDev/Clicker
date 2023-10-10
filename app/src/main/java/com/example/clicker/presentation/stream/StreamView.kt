@@ -79,6 +79,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -131,6 +133,7 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
@@ -151,8 +154,11 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -1409,6 +1415,109 @@ fun SwipeToDeleteTextCard(
             updateClickedUser ={username,userId,banned,isMod -> updateClickedUser(username,userId,banned,isMod)},
             deleteMessage = {messageId -> deleteMessage(messageId)}
         )
+
+
+}
+@Composable
+fun ChatBadges(
+    username:String,
+    message: String,
+    isMod: Boolean,
+    isSub:Boolean,
+    color:Color,
+    textSize: TextUnit
+){
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val myId = "inlineContent"
+    val subId = "subIcon"
+    val text = buildAnnotatedString {
+        // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
+        if(isMod){
+            appendInlineContent(myId, "[icon]")
+        }
+        if(isSub){
+            appendInlineContent(subId, "[subicon]")
+        }
+        withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
+            append(username)
+        }
+        withStyle(style = SpanStyle(color = Color.White)) {
+            append(message)
+        }
+
+    }
+    //                        Text(buildAnnotatedString {
+//                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
+//                                append("${twitchUser.displayName} :")
+//                            }
+//                            withStyle(style = SpanStyle(color = Color.White)) {
+//                                append(" ${twitchUser.userType}")
+//                            }
+//
+//
+//                        },
+//                            modifier = Modifier.padding(5.dp)
+//                        )
+
+    val inlineContent = mapOf(
+        Pair(
+            // This tells the [CoreText] to replace the placeholder string "[icon]" by
+            // the composable given in the [InlineTextContent] object.
+            myId,
+            InlineTextContent(
+                // Placeholder tells text layout the expected size and vertical alignment of
+                // children composable.
+                Placeholder(
+                    width = 25.sp,
+                    height = 25.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                // This Icon will fill maximum size, which is specified by the [Placeholder]
+                // above. Notice the width and height in [Placeholder] are specified in TextUnit,
+                // and are converted into pixel by text layout.
+
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = "Moderator badge",
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
+        ),
+        Pair(
+            // This tells the [CoreText] to replace the placeholder string "[icon]" by
+            // the composable given in the [InlineTextContent] object.
+            subId,
+            InlineTextContent(
+                // Placeholder tells text layout the expected size and vertical alignment of
+                // children composable.
+                Placeholder(
+                    width = 25.sp,
+                    height = 25.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                // This Icon will fill maximum size, which is specified by the [Placeholder]
+                // above. Notice the width and height in [Placeholder] are specified in TextUnit,
+                // and are converted into pixel by text layout.
+
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = "Subscriber badge",
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
+        )
+    )
+
+
+    Text(text = text,
+        inlineContent = inlineContent,
+        modifier = Modifier.fillMaxWidth().padding(5.dp),
+        color = color,
+        fontSize = textSize
+    )
 }
 
 @Composable
@@ -1576,36 +1685,44 @@ fun ChatCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ){
-                        if (showIcons){
-                            if(twitchUser.subscriber == true){
-                                AsyncImage(
-                                    model = subBadge,
-                                    contentDescription = "Subscriber badge",
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            if(twitchUser.mod == "1"){
-                                AsyncImage(
-                                    model = modBadge,
-                                    contentDescription = "Moderator badge",
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                        }
-
-
-                        Text(buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
-                                append("${twitchUser.displayName} :")
-                            }
-                            withStyle(style = SpanStyle(color = Color.White)) {
-                                append(" ${twitchUser.userType}")
-                            }
-
-
-                        },
-                            modifier = Modifier.padding(5.dp)
+//                        if (showIcons){
+//                            if(twitchUser.subscriber == true){
+//                                AsyncImage(
+//                                    model = subBadge,
+//                                    contentDescription = "Subscriber badge",
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            if(twitchUser.mod == "1"){
+//                                AsyncImage(
+//                                    model = modBadge,
+//                                    contentDescription = "Moderator badge",
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                        }
+                        ChatBadges(
+                            username = "${twitchUser.displayName} :",
+                            message = " ${twitchUser.userType}",
+                            isMod = twitchUser.mod == "1",
+                            isSub = twitchUser.subscriber == true,
+                            color = color,
+                            textSize = fontSize
                         )
+
+
+//                        Text(buildAnnotatedString {
+//                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
+//                                append("${twitchUser.displayName} :")
+//                            }
+//                            withStyle(style = SpanStyle(color = Color.White)) {
+//                                append(" ${twitchUser.userType}")
+//                            }
+//
+//
+//                        },
+//                            modifier = Modifier.padding(5.dp)
+//                        )
 
                     }// end of the row
                 }
