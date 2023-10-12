@@ -65,6 +65,7 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.horizontalDrag
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Spacer
@@ -150,6 +151,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
@@ -162,6 +166,7 @@ import androidx.compose.ui.unit.TextUnit
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -281,32 +286,36 @@ fun StreamView(
                         )
                     }
                 ) {
-                    TextChat(
-                        twitchUserChat = twitchUserChat,
-                        sendMessageToWebSocket = { string ->
-                            streamViewModel.sendMessage(string)
-                        },
-                        drawerState = drawerState,
-                        modStatus = modStatus,
-                        bottomModalState = bottomModalState,
-                        filteredChatList = filteredChat,
-                        filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
-                        clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
-                        addChatter = {username,message -> streamViewModel.addChatter(username,message)},
-                        updateClickedUser = {username,userId,banned,isMod -> streamViewModel.updateClickedChat(username,userId,banned,isMod)},
-                        textFieldValue = streamViewModel.textFieldValue,
-                        channelName = streamViewModel.channelName.collectAsState().value,
-                        deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
+                    //put the pull to refresh here
 
-                        banResponse = streamViewModel.state.value.banResponse,
-                        undoBan = {streamViewModel.unBanUser()},
-                        undoBanResponse = streamViewModel.state.value.undoBanResponse,
-                        showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                        closeStickyHeader = {streamViewModel.closeStickyHeader()},
-                        banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                        removeUnBanButton = { streamViewModel.removeUnBanButton() },
-                        restartWebSocket ={streamViewModel.restartWebSocket()}
-                    )
+                        TextChat(
+                            twitchUserChat = twitchUserChat,
+                            sendMessageToWebSocket = { string ->
+                                streamViewModel.sendMessage(string)
+                            },
+                            drawerState = drawerState,
+                            modStatus = modStatus,
+                            bottomModalState = bottomModalState,
+                            filteredChatList = filteredChat,
+                            filterMethod= {username,newText ->streamViewModel.filterChatters(username,newText)},
+                            clickedAutoCompleteText={fullText,clickedText -> streamViewModel.autoTextChange(fullText,clickedText)},
+                            addChatter = {username,message -> streamViewModel.addChatter(username,message)},
+                            updateClickedUser = {username,userId,banned,isMod -> streamViewModel.updateClickedChat(username,userId,banned,isMod)},
+                            textFieldValue = streamViewModel.textFieldValue,
+                            channelName = streamViewModel.channelName.collectAsState().value,
+                            deleteMessage = {messageId -> streamViewModel.deleteChatMessage(messageId)},
+
+                            banResponse = streamViewModel.state.value.banResponse,
+                            undoBan = {streamViewModel.unBanUser()},
+                            undoBanResponse = streamViewModel.state.value.undoBanResponse,
+                            showStickyHeader = streamViewModel.state.value.showStickyHeader,
+                            closeStickyHeader = {streamViewModel.closeStickyHeader()},
+                            banResponseMessage = streamViewModel.state.value.banResponseMessage,
+                            removeUnBanButton = { streamViewModel.removeUnBanButton() },
+                            restartWebSocket ={streamViewModel.restartWebSocket()}
+                        )
+
+
                 }
             }
         }
@@ -655,7 +664,7 @@ fun ChatSettings(
         )
 
 
-        
+
 
         AnimatedVisibility(visible = showChatSettingAlert,modifier=Modifier.height(200.dp)) {
             MessageAlertText(
@@ -923,8 +932,10 @@ fun TextChat(
 
 
 
+
+
     Box(
-        modifier = Modifier
+        modifier = Modifier.fillMaxSize()
     ){
         LazyColumn(
             state = lazyColumnListState,
@@ -1512,47 +1523,7 @@ fun ChatBadges(
     )
 }
 
-@Composable
-fun rememberSwipeableActionsState(): SwipeableActionsState {
-    return remember { SwipeableActionsState() }
-}
-@Stable
-class SwipeableActionsState internal constructor() {
-    /**
-     * The current position (in pixels) of a [SwipeableActionsBox].
-     */
-    val offset: State<Float> get() = offsetState
-    private var offsetState = mutableStateOf(0f)
-    private var canSwipeTowardsRight =false
-    private var canSwipeTowardsLeft= true
 
-    internal val draggableState = DraggableState { delta ->
-
-        val targetOffset = offsetState.value + delta
-        val isAllowed = isResettingOnRelease
-                || targetOffset > 0f && canSwipeTowardsRight
-                || targetOffset < 0f && canSwipeTowardsLeft
-        // Add some resistance if needed
-        offsetState.value += if (isAllowed) delta else delta / 10
-    }
-    /**
-     * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
-     */
-    var isResettingOnRelease: Boolean by mutableStateOf(false)
-        private set
-    internal suspend fun resetOffset() {
-        draggableState.drag(MutatePriority.PreventUserInput) {
-            isResettingOnRelease = true
-            try {
-                Animatable(offsetState.value).animateTo(targetValue = 0f, tween(durationMillis = 300)) {
-                    dragBy(value - offsetState.value)
-                }
-            } finally {
-                isResettingOnRelease = false
-            }
-        }
-    }
-}
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
@@ -1592,6 +1563,7 @@ fun ChatCard(
     }
 
 
+    //makes it so mods can not be swiped on
     val modDragState = DraggableState { delta ->
 
     }

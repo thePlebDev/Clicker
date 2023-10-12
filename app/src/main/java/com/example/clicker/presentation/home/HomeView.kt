@@ -21,12 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -65,16 +69,23 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import coil.compose.AsyncImage
 import com.example.clicker.util.Response
 import com.example.clicker.R
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.util.rememberPullToRefreshState
 import kotlinx.coroutines.launch
 
 
@@ -506,6 +517,7 @@ fun SecondTesting(
 
 
 
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UrlImages(
@@ -517,85 +529,151 @@ fun UrlImages(
     clientId:String,
     userId:String
 ){
+    val scope = rememberCoroutineScope()
 
     var isRefreshing by remember { mutableStateOf(false) }
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { Log.d("refressingThings","REFRESHPULL") })
+    var pullingState = rememberPullToRefreshState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
 
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
 
-
-        if (urlList != null) {
-        if (urlList.isEmpty()){
-            //TODO: IMPLEMENT THE CLICK TO REFRESH
-            EmptyFollowingList()
-        }
-
-
-            Log.d("UrlImagesListSize", urlList.size.toString())
-            LazyColumn(
-                modifier = Modifier.padding(contentPadding)
-            ) {
-                items(urlList) { streamItem ->
-                    Log.d("urlListImageUrl", streamItem.url)
-                    Row(modifier = Modifier.clickable {
-
-                        Log.d(
-                            "broadcasterIdClicked",
-                            "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
-                        )
-                        updateStreamerName(
-                            streamItem.streamerName, clientId, streamItem.broadcasterId, userId
-                        )
-                        onNavigate(R.id.action_homeFragment_to_streamFragment)
+                if(NestedScrollSource.Drag == source && available.y > 0){
+                    Log.d("REFRESHINGSTATETHINGS","${available.y}")
+                    scope.launch {
+                        pullingState.dispatchScrollDelta(available.y *0.3f)
                     }
-                    ) {
-                        Box() {
-
-                            AsyncImage(
-                                model = streamItem.url,
-                                contentDescription = null
-                            )
-                            Text(
-                                "${streamItem.views}",
-                                style = TextStyle(
-                                    color = Color.White,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                ),
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(5.dp)
-                            )
-                        }
-                        Column(modifier = Modifier.padding(start = 10.dp)) {
-                            Text(streamItem.streamerName, fontSize = 20.sp)
-                            Text(
-                                streamItem.streamTitle,
-                                fontSize = 15.sp,
-                                modifier = Modifier.alpha(0.5f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                streamItem.gameTitle,
-                                fontSize = 15.sp,
-                                modifier = Modifier.alpha(0.5f)
-                            )
-                        }
-
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp)
-                    )
                 }
-            }// end of the lazy column
+
+
+                return super.onPostScroll(consumed, available, source)
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                Log.d("REFRESHINGSTATETHINGS","POST-FLINGING!!!!!!!!!!!!!!")
+                return super.onPostFling(consumed, available)
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                Log.d("REFRESHINGSTATETHINGS","PRE-FLINGING!!!!!!!!!!!!!!")
+                scope.launch {
+                    pullingState.dispatchToResting()
+                }
+
+                return super.onPreFling(available)
+            }
+
         }
-        PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
+
+
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(nestedScrollConnection)
+            .background(Color.Blue)
+
+    ) {
+
+
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.TopCenter))
+
+
+
+
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
+            .background(Color.Blue)
+
+        ){
+            if (urlList != null) {
+                if (urlList.isEmpty()){
+                    //TODO: IMPLEMENT THE CLICK TO REFRESH
+                    EmptyFollowingList()
+                }
+
+
+                Log.d("UrlImagesListSize", urlList.size.toString())
+                LazyColumn(
+                    modifier = Modifier.padding(contentPadding)
+                ) {
+                    items(urlList) { streamItem ->
+                        Log.d("urlListImageUrl", streamItem.url)
+                        Row(modifier = Modifier.clickable {
+
+                            Log.d(
+                                "broadcasterIdClicked",
+                                "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
+                            )
+                            updateStreamerName(
+                                streamItem.streamerName, clientId, streamItem.broadcasterId, userId
+                            )
+                            onNavigate(R.id.action_homeFragment_to_streamFragment)
+                        }
+                        ) {
+                            Box() {
+
+                                AsyncImage(
+                                    model = streamItem.url,
+                                    contentDescription = null
+                                )
+                                Text(
+                                    "${streamItem.views}",
+                                    style = TextStyle(
+                                        color = Color.White,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.ExtraBold
+                                    ),
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(5.dp)
+                                )
+                            }
+                            Column(modifier = Modifier.padding(start = 10.dp)) {
+                                Text(streamItem.streamerName, fontSize = 20.sp)
+                                Text(
+                                    streamItem.streamTitle,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.alpha(0.5f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    streamItem.gameTitle,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.alpha(0.5f)
+                                )
+                            }
+
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(10.dp)
+                        )
+                    }
+                }// end of the lazy column
+            }
+        }
+
+
+
+
+
+        PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+
+    }
+
+
 
 }
 
