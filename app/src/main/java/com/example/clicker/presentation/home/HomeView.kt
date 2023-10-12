@@ -87,6 +87,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.util.Response
 import com.example.clicker.R
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.util.rememberNestedScrollConnection
 import com.example.clicker.util.rememberPullToRefreshState
 import kotlinx.coroutines.launch
 
@@ -538,63 +539,21 @@ fun UrlImages(
     val configuration = LocalConfiguration.current
     val quarterTotalScreenHeight =configuration.screenHeightDp/4.5
 
-    val pullRefreshState = rememberPullRefreshState(isRefreshing, { Log.d("refressingThings","REFRESHPULL") })
+
     var request by remember { mutableStateOf(false) }
     var pullingState = rememberPullToRefreshState()
 
-    if(pullingState.contentOffset >=quarterTotalScreenHeight && isRefreshing == false){
-        isRefreshing = true
-        pullColor = Color.Green
-        Log.d("REFRESHINGSTATETHINGS","REFRESHING!!!!!!!!!")
-    }
-
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-
-                if(NestedScrollSource.Drag == source && available.y > 0){
-                    Log.d("REFRESHINGSTATETHINGS","${available.y}")
-                    scope.launch {
-                        pullingState.dispatchScrollDelta(available.y *0.3f)
-                    }
-                }
 
 
-                return super.onPostScroll(consumed, available, source)
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                Log.d("REFRESHINGSTATETHINGS","POST-FLINGING!!!!!!!!!!!!!!")
-                return super.onPostFling(consumed, available)
-            }
-
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                Log.d("REFRESHINGSTATETHINGS","PRE-FLINGING!!!!!!!!!!!!!!")
-
-                if(isRefreshing == true){
-                    scope.launch {
-                        request = true
-                        pullingState.dispatchToMid((quarterTotalScreenHeight/1.5).toFloat())
-                    }
-                }else{
-                    scope.launch {
-                        pullingState.dispatchToResting()
-                    }
-                    isRefreshing = false
-                    pullColor = Color.White
-                }
-
-
-                return super.onPreFling(available)
-            }
-
-        }
-    }
+    val nestedScrollConnection = rememberNestedScrollConnection(
+        state =pullingState,
+        scope = scope,
+        animationMidPoint = (quarterTotalScreenHeight/1.3).toFloat(),
+        quarterScreenHeight =quarterTotalScreenHeight.toFloat(),
+        changeColor ={color -> pullColor = color},
+        request = request,
+        changeRequest={boolean ->request = boolean}
+    )
 
 
 
@@ -607,6 +566,7 @@ fun UrlImages(
     ) {
 
         if(request){
+            // then we can also make the request here
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.TopCenter).padding(top =(quarterTotalScreenHeight/14).dp),
                 color = Color.White)
