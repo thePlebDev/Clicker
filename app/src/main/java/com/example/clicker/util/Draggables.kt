@@ -12,6 +12,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun rememberSwipeableActionsState(): SwipeableActionsState {
@@ -97,4 +104,72 @@ class PullRefreshState internal constructor() {
 
 
 }
+
+@Composable
+fun rememberNestedScrollConnection(
+    scope: CoroutineScope,
+    state:PullRefreshState,
+    animationMidPoint:Float,
+    quarterScreenHeight:Float,
+    changeColor: (Color) -> Unit,
+    request:Boolean,
+    changeRequest:(Boolean)->Unit
+): PullToRefreshNestedScrollConnection {
+    return remember { PullToRefreshNestedScrollConnection(scope,state,animationMidPoint,quarterScreenHeight,changeColor,request,changeRequest) }
+}
+
+
+class PullToRefreshNestedScrollConnection(
+    private val scope: CoroutineScope,
+    private val state:PullRefreshState,
+    private val animationMidPoint:Float,
+    private val quarterScreenHeight:Float,
+    private val changeColor: (Color) -> Unit,
+    private val request:Boolean,
+    private val changeRequest:(Boolean)->Unit
+): NestedScrollConnection {
+
+    private var requestTest = false
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset {
+        if(NestedScrollSource.Drag == source && available.y > 0){
+            Log.d("REFRESHINGSTATETHINGS","${available.y}")
+            if(state.contentOffset >=quarterScreenHeight){
+                changeColor(Color.Green)
+
+                requestTest = true
+
+
+            }
+            scope.launch {
+                state.dispatchScrollDelta(available.y *0.3f)
+            }
+        }
+        return super.onPostScroll(consumed, available, source)
+    }
+
+    override suspend fun onPreFling(available: Velocity): Velocity {
+        if(requestTest){
+            scope.launch {
+                // request = true
+                changeRequest(true)
+                state.dispatchToMid(animationMidPoint)
+            }
+        }else{
+            scope.launch {
+                // request = true
+                state.dispatchToResting()
+                changeColor(Color.White)
+            }
+        }
+
+        return super.onPreFling(available)
+    }
+
+}
+
 
