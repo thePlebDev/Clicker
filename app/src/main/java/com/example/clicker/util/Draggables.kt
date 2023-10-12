@@ -90,6 +90,9 @@ class PullRefreshState internal constructor() {
     internal suspend fun dispatchToResting() {
         _contentOffset.snapTo(0f)
     }
+    internal suspend fun dispatchToMid(delta: Float){
+        _contentOffset.snapTo(delta)
+    }
 
 
 

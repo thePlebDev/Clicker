@@ -50,10 +50,12 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -532,8 +534,19 @@ fun UrlImages(
     val scope = rememberCoroutineScope()
 
     var isRefreshing by remember { mutableStateOf(false) }
+    var pullColor by remember { mutableStateOf(Color.White) }
+    val configuration = LocalConfiguration.current
+    val quarterTotalScreenHeight =configuration.screenHeightDp/4.5
+
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { Log.d("refressingThings","REFRESHPULL") })
+    var request by remember { mutableStateOf(false) }
     var pullingState = rememberPullToRefreshState()
+
+    if(pullingState.contentOffset >=quarterTotalScreenHeight && isRefreshing == false){
+        isRefreshing = true
+        pullColor = Color.Green
+        Log.d("REFRESHINGSTATETHINGS","REFRESHING!!!!!!!!!")
+    }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -562,9 +575,20 @@ fun UrlImages(
 
             override suspend fun onPreFling(available: Velocity): Velocity {
                 Log.d("REFRESHINGSTATETHINGS","PRE-FLINGING!!!!!!!!!!!!!!")
-                scope.launch {
-                    pullingState.dispatchToResting()
+
+                if(isRefreshing == true){
+                    scope.launch {
+                        request = true
+                        pullingState.dispatchToMid((quarterTotalScreenHeight/1.5).toFloat())
+                    }
+                }else{
+                    scope.launch {
+                        pullingState.dispatchToResting()
+                    }
+                    isRefreshing = false
+                    pullColor = Color.White
                 }
+
 
                 return super.onPreFling(available)
             }
@@ -578,12 +602,31 @@ fun UrlImages(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
-            .background(Color.Blue)
+            .background(Color.DarkGray)
 
     ) {
 
+        if(request){
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.TopCenter).padding(top =(quarterTotalScreenHeight/14).dp),
+                color = Color.White)
 
-        CircularProgressIndicator(modifier = Modifier.align(Alignment.TopCenter))
+        }else{
+            Icon(Icons.Filled.KeyboardArrowDown,
+                "contentDescription",
+                modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.TopCenter)
+                    .offset { IntOffset(0, pullingState.contentOffset.toInt() - 80) },
+                tint = pullColor
+
+            )
+        }
+
+
+
+
+
 
 
 
@@ -591,7 +634,7 @@ fun UrlImages(
         Box(modifier = Modifier
             .fillMaxSize()
             .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
-            .background(Color.Blue)
+            .background(Color.DarkGray)
 
         ){
             if (urlList != null) {
@@ -638,18 +681,20 @@ fun UrlImages(
                                 )
                             }
                             Column(modifier = Modifier.padding(start = 10.dp)) {
-                                Text(streamItem.streamerName, fontSize = 20.sp)
+                                Text(streamItem.streamerName, fontSize = 20.sp,color = Color.White)
                                 Text(
                                     streamItem.streamTitle,
                                     fontSize = 15.sp,
-                                    modifier = Modifier.alpha(0.5f),
+                                    modifier = Modifier.alpha(0.7f),
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White
                                 )
                                 Text(
                                     streamItem.gameTitle,
                                     fontSize = 15.sp,
-                                    modifier = Modifier.alpha(0.5f)
+                                    modifier = Modifier.alpha(0.7f),
+                                    color = Color.White
                                 )
                             }
 
@@ -669,7 +714,7 @@ fun UrlImages(
 
 
 
-        PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+
 
     }
 
