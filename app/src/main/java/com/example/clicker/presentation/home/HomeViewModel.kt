@@ -44,7 +44,8 @@ data class HomeUIState(
     val loadingLoginText:String ="Getting authentication token",
     val loginStep:Response<Boolean>? = Response.Loading,
     val clientId:String = "",
-    val userId:String =""
+    val userId:String ="",
+    val failedNetworkRequest:Boolean = false
 
 
 
@@ -167,10 +168,42 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun testingGetLiveStreams(innerRequest: suspend()->Unit){
+    fun pullToRefreshGetLiveStreams(resetUI: suspend()->Unit){
         viewModelScope.launch {
-            delay(1000)
-            innerRequest()
+
+            twitchRepoImpl
+                .getFollowedLiveStreams(
+                    authorizationToken = _uiState.value.authenticationCode?:"",
+                    clientId=_uiState.value.clientId,
+                    userId =_uiState.value.userId,
+                )
+                .collect{response ->
+                    when(response){
+                        is Response.Loading ->{
+
+                        }
+                        is Response.Success ->{
+                            val replacedWidthHeightList =response.data.map{
+                                it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+                            }
+                            resetUI()
+                            _newUrlList.tryEmit(replacedWidthHeightList)
+
+                        }
+                        is Response.Failure ->{
+                            Log.d("testingGetLiveStreams","FAILED")
+                            _uiState.value = _uiState.value.copy(
+                                failedNetworkRequest = true
+                            )
+                            resetUI()
+                            delay(2000)
+                            _uiState.value = _uiState.value.copy(
+                                failedNetworkRequest = false
+                            )
+                        }
+                    }
+                }
+
         }
     }
 
@@ -262,7 +295,11 @@ class HomeViewModel @Inject constructor(
                         _loginUIState.value = _loginUIState.value.copy(
 
                             loginStep2 = Response.Success(true),
-                            loginStep3 = Response.Loading
+                            loginStep3 = Response.Loading,
+
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            authenticationCode =oAuthenticationToken
                         )
                         mutableAuthenticatedUserFlow.tryEmit(
                             mutableAuthenticatedUserFlow.value.copy(
