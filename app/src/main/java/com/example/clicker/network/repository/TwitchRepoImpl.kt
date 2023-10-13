@@ -63,7 +63,7 @@ class TwitchRepoImpl @Inject constructor(
             clientId = clientId,
             userId = userId
         )
-        //emit(Response.Loading)
+        emit(Response.Loading)
 
         if (response.isSuccessful){
 

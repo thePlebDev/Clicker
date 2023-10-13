@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -62,6 +64,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -89,6 +92,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.util.rememberNestedScrollConnection
 import com.example.clicker.util.rememberPullToRefreshState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -173,8 +177,9 @@ fun HomeView(
                         clientId = homeViewModel.state.value.clientId,
                         userId = homeViewModel.state.value.userId,
                        networkRequest={
-                               innerRequest:suspend ()->Unit -> homeViewModel.testingGetLiveStreams(innerRequest =innerRequest )
-                       }
+                               resetUI:suspend ()->Unit -> homeViewModel.pullToRefreshGetLiveStreams(resetUI =resetUI )
+                       },
+                        showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest
                     )
 //                }
 
@@ -530,7 +535,8 @@ fun UrlImages(
     updateStreamerName: (String,String,String,String) -> Unit,
     clientId:String,
     userId:String,
-    networkRequest:(suspend ()->Unit)->Unit
+    networkRequest:(suspend ()->Unit)->Unit,
+    showFailedNetworkRequestMessage:Boolean
 ){
     val scope = rememberCoroutineScope()
 
@@ -596,12 +602,6 @@ fun UrlImages(
 
 
 
-
-
-
-
-
-
         Box(modifier = Modifier
             .fillMaxSize()
             .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
@@ -619,6 +619,7 @@ fun UrlImages(
                 LazyColumn(
                     modifier = Modifier.padding(contentPadding)
                 ) {
+
                     items(urlList) { streamItem ->
                         Log.d("urlListImageUrl", streamItem.url)
                         Row(modifier = Modifier.clickable {
@@ -679,6 +680,32 @@ fun UrlImages(
                     }
                 }// end of the lazy column
             }
+
+                //apparently this is the code I am using to make the message disappear
+
+                AnimatedVisibility(
+                    visible = showFailedNetworkRequestMessage,
+                    modifier=Modifier
+                        .padding(5.dp)
+                        .align(Alignment.BottomCenter)
+                ){
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(4.dp),
+                        elevation = 10.dp,
+                        backgroundColor = Color.LightGray
+                    ) {
+                        Text("Failed request. Please try again", textAlign = TextAlign.Center,
+                            fontSize = 20.sp,color=Color.Red,
+                            modifier=Modifier.padding(10.dp)
+                        )
+                    }
+                }
+
+
+
+
         }
 
 

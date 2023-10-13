@@ -88,7 +88,7 @@ class PullRefreshState internal constructor() {
      * Dispatch scroll delta in pixels from touch events.
      */
     internal suspend fun dispatchScrollDelta(delta: Float) {
-        Log.d("dispatchScrollDelta",_contentOffset.value.toString())
+
 //        if(_contentOffset.value > 60f){
 //            _contentOffset.snapTo(_contentOffset.value + (delta * 0.1f))
 //        }else{
@@ -147,7 +147,7 @@ class PullToRefreshNestedScrollConnection(
         source: NestedScrollSource
     ): Offset {
         if(NestedScrollSource.Drag == source && available.y > 0){
-            Log.d("REFRESHINGSTATETHINGS","${available.y}")
+//            Log.d("REFRESHINGSTATETHINGS","${available.y}")
             if(state.contentOffset >=quarterScreenHeight){
                 changeColor(Color.Green)
 
