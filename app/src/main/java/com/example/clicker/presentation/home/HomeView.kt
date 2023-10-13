@@ -171,7 +171,10 @@ fun HomeView(
                         )
                         },
                         clientId = homeViewModel.state.value.clientId,
-                        userId = homeViewModel.state.value.userId
+                        userId = homeViewModel.state.value.userId,
+                       networkRequest={
+                               innerRequest:suspend ()->Unit -> homeViewModel.testingGetLiveStreams(innerRequest =innerRequest )
+                       }
                     )
 //                }
 
@@ -518,10 +521,6 @@ fun SecondTesting(
 }
 
 
-
-
-
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UrlImages(
 
@@ -530,14 +529,15 @@ fun UrlImages(
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String,String) -> Unit,
     clientId:String,
-    userId:String
+    userId:String,
+    networkRequest:(suspend ()->Unit)->Unit
 ){
     val scope = rememberCoroutineScope()
 
-    var isRefreshing by remember { mutableStateOf(false) }
     var pullColor by remember { mutableStateOf(Color.White) }
     val configuration = LocalConfiguration.current
-    val quarterTotalScreenHeight =configuration.screenHeightDp/4.5
+
+    val quarterTotalScreenHeight =configuration.screenHeightDp/5
 
 
     var request by remember { mutableStateOf(false) }
@@ -551,8 +551,9 @@ fun UrlImages(
         animationMidPoint = (quarterTotalScreenHeight/1.3).toFloat(),
         quarterScreenHeight =quarterTotalScreenHeight.toFloat(),
         changeColor ={color -> pullColor = color},
-        request = request,
-        changeRequest={boolean ->request = boolean}
+
+        changeRequest={boolean ->request = boolean},
+        changeIsRefreshing = {boolean -> pullingState.isRefreshing = boolean}
     )
 
 
@@ -570,6 +571,16 @@ fun UrlImages(
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.TopCenter).padding(top =(quarterTotalScreenHeight/14).dp),
                 color = Color.White)
+            networkRequest {
+                pullingState.dispatchToResting()
+                pullingState.isRefreshing = false
+                request = false
+                pullColor = Color.White
+
+            }
+
+
+
 
         }else{
             Icon(Icons.Filled.KeyboardArrowDown,
