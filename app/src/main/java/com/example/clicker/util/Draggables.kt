@@ -77,6 +77,8 @@ fun rememberPullToRefreshState(): PullRefreshState {
 
 class PullRefreshState internal constructor() {
     private val _contentOffset = Animatable(0f)
+
+    var isRefreshing by mutableStateOf(false)
     /**
      * The current offset for the content, in pixels.
      */
@@ -112,10 +114,17 @@ fun rememberNestedScrollConnection(
     animationMidPoint:Float,
     quarterScreenHeight:Float,
     changeColor: (Color) -> Unit,
-    request:Boolean,
+    changeIsRefreshing:(Boolean)->Unit,
+
     changeRequest:(Boolean)->Unit
 ): PullToRefreshNestedScrollConnection {
-    return remember { PullToRefreshNestedScrollConnection(scope,state,animationMidPoint,quarterScreenHeight,changeColor,request,changeRequest) }
+    return remember { PullToRefreshNestedScrollConnection(
+        scope,state,animationMidPoint,
+        quarterScreenHeight,
+        changeColor,
+        changeRequest,
+        changeIsRefreshing
+    ) }
 }
 
 
@@ -125,11 +134,12 @@ class PullToRefreshNestedScrollConnection(
     private val animationMidPoint:Float,
     private val quarterScreenHeight:Float,
     private val changeColor: (Color) -> Unit,
-    private val request:Boolean,
-    private val changeRequest:(Boolean)->Unit
+
+    private val changeRequest:(Boolean)->Unit,
+    private val changeIsRefreshing:(Boolean)->Unit
 ): NestedScrollConnection {
 
-    private var requestTest = false
+
 
     override fun onPostScroll(
         consumed: Offset,
@@ -141,7 +151,7 @@ class PullToRefreshNestedScrollConnection(
             if(state.contentOffset >=quarterScreenHeight){
                 changeColor(Color.Green)
 
-                requestTest = true
+                changeIsRefreshing(true)
 
 
             }
@@ -153,7 +163,7 @@ class PullToRefreshNestedScrollConnection(
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
-        if(requestTest){
+        if(state.isRefreshing){
             scope.launch {
                 // request = true
                 changeRequest(true)

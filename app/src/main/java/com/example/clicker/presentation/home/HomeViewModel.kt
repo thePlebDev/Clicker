@@ -23,6 +23,7 @@ import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -166,6 +167,12 @@ class HomeViewModel @Inject constructor(
     }
 
 
+    fun testingGetLiveStreams(innerRequest: suspend()->Unit){
+        viewModelScope.launch {
+            delay(1000)
+            innerRequest()
+        }
+    }
 
     private suspend fun getLiveStreams(validatedUser: ValidatedUser, oAuthToken:String){
         Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
