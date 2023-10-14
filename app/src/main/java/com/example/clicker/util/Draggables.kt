@@ -140,6 +140,10 @@ class PullToRefreshNestedScrollConnection(
 ): NestedScrollConnection {
 
 
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        Log.d("REFRESHINGSTATETHINGS","PRE-SCROLL --->${available.y}")
+        return super.onPreScroll(available, source)
+    }
 
     override fun onPostScroll(
         consumed: Offset,
@@ -147,7 +151,7 @@ class PullToRefreshNestedScrollConnection(
         source: NestedScrollSource
     ): Offset {
         if(NestedScrollSource.Drag == source && available.y > 0){
-//            Log.d("REFRESHINGSTATETHINGS","${available.y}")
+            Log.d("REFRESHINGSTATETHINGS","${available.y}")
             if(state.contentOffset >=quarterScreenHeight){
                 changeColor(Color.Green)
 

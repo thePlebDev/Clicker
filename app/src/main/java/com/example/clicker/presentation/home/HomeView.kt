@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Arrangement
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -543,7 +544,7 @@ fun UrlImages(
     var pullColor by remember { mutableStateOf(Color.White) }
     val configuration = LocalConfiguration.current
 
-    val quarterTotalScreenHeight =configuration.screenHeightDp/5
+    val quarterTotalScreenHeight =configuration.screenHeightDp/8
 
 
     var request by remember { mutableStateOf(false) }
@@ -606,19 +607,21 @@ fun UrlImages(
             .fillMaxSize()
             .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
             .background(Color.DarkGray)
+            .padding(start =5.dp, end = 5.dp)
 
         ){
             if (urlList != null) {
-                if (urlList.isEmpty()){
-                    //TODO: IMPLEMENT THE CLICK TO REFRESH
-                    EmptyFollowingList()
-                }
 
 
                 Log.d("UrlImagesListSize", urlList.size.toString())
                 LazyColumn(
-                    modifier = Modifier.padding(contentPadding)
+                    modifier = Modifier.padding(contentPadding).fillMaxHeight()
                 ) {
+                    if(urlList.isEmpty()){
+                        item{
+                            EmptyFollowingList()
+                        }
+                    }
 
                     items(urlList) { streamItem ->
                         Log.d("urlListImageUrl", streamItem.url)
@@ -722,20 +725,32 @@ fun UrlImages(
 
 @Composable
 fun EmptyFollowingList(){
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
             .padding(15.dp)
-            .clickable { },
+            .clickable{ },
         elevation = 10.dp
     ) {
-        Column(modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier =Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ){
-            Text("No live followed channels", fontSize = 30.sp, textAlign = TextAlign.Center)
-
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription ="No live streams!",
+                tint = Color.Black,
+                modifier = Modifier.size(35.dp)
+            )
+            Text("No live streams. ", fontSize = 20.sp)
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription ="No live streams! pull to refresh",
+                tint = Color.Black,
+                modifier = Modifier.size(35.dp)
+            )
         }
 
     }
