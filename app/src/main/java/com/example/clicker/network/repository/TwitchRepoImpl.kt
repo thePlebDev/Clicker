@@ -43,6 +43,7 @@ class TwitchRepoImpl @Inject constructor(
 
     }.catch { cause ->
         if(cause is UnknownHostException){
+
             emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
         }else{
             emit(Response.Failure(Exception("Error! Please try again")))
