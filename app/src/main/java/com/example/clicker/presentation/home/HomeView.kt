@@ -201,7 +201,8 @@ fun HomeView(
                 loginStep2 = homeViewModel.loginState.value.loginStep2,
                 loginStep3 = homeViewModel.loginState.value.loginStep3,
                 logoutError = homeViewModel.loginState.value.logoutError,
-                logout = {homeViewModel.beginLogout()}
+                logout = {homeViewModel.beginLogout()},
+                loginText =homeViewModel.loginState.value.loginStatusText
             )
         }
 
@@ -253,33 +254,57 @@ fun LoginModal(
     align: Modifier,
     loginWithTwitch:() -> Unit,
     loginStatusText:String,
-    loginStep1:Response<Boolean>?,
+    loginStep1:Response<Boolean>,
     loginStep2:Response<Boolean>?,
     loginStep3:Response<Boolean>?,
     logoutError:Boolean,
-    logout:()-> Unit
+    logout:()-> Unit,
+    loginText:String,
 
 ) {
-            Spacer(
-                modifier = modifier
-                    .disableClickAndRipple()
-                    .background(
-                        color = Color.Gray.copy(alpha = .7f)
-                    )
-            )
+    Box(modifier = Modifier.fillMaxSize()){
+        when(loginStep1){
+            is Response.Loading ->{
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.align(Alignment.Center))
+            }
+            is Response.Success ->{}
+            is Response.Failure ->{
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                        .align(Alignment.Center)
+                        .clickable{ },
+                    elevation = 10.dp
+                ) {
+                    Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
+                        Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
+                        Button(onClick = { loginWithTwitch() }) {
+                            Text("Login with Twitch")
+                        }
+                    }
+                }
+            }
 
-        LoginCard(
-            modifier = align,
-            loginWithTwitch,
-            loginStatusText,
-            loginStep1,
-            loginStep2,
-            loginStep3,
-            logoutError,
-            logout = {logout()}
+
+        }
 
 
-        )
+    }
+
+
+//        LoginCard(
+//            modifier = align,
+//            loginWithTwitch,
+//            loginStatusText,
+//            loginStep1,
+//            loginStep2,
+//            loginStep3,
+//            logoutError,
+//            logout = {logout()}
+//
+//
+//        )
 
 
 
@@ -576,7 +601,9 @@ fun UrlImages(
         if(request){
             // then we can also make the request here
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.TopCenter).padding(top =(quarterTotalScreenHeight/14).dp),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = (quarterTotalScreenHeight / 14).dp),
                 color = Color.White)
             networkRequest {
                 pullingState.dispatchToResting()
@@ -607,7 +634,7 @@ fun UrlImages(
             .fillMaxSize()
             .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
             .background(Color.DarkGray)
-            .padding(start =5.dp, end = 5.dp)
+            .padding(start = 5.dp, end = 5.dp)
 
         ){
             if (urlList != null) {
@@ -615,7 +642,9 @@ fun UrlImages(
 
                 Log.d("UrlImagesListSize", urlList.size.toString())
                 LazyColumn(
-                    modifier = Modifier.padding(contentPadding).fillMaxHeight()
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .fillMaxHeight()
                 ) {
                     if(urlList.isEmpty()){
                         item{
@@ -688,7 +717,7 @@ fun UrlImages(
 
                 AnimatedVisibility(
                     visible = showFailedNetworkRequestMessage,
-                    modifier=Modifier
+                    modifier= Modifier
                         .padding(5.dp)
                         .align(Alignment.BottomCenter)
                 ){
@@ -730,7 +759,7 @@ fun EmptyFollowingList(){
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp)
-            .clickable{ },
+            .clickable { },
         elevation = 10.dp
     ) {
         Row(

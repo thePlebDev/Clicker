@@ -58,13 +58,14 @@ class TwitchRepoImpl @Inject constructor(
         userId: String
     ): Flow<Response<List<StreamInfo>>> = flow{
 
+        emit(Response.Loading)
 
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId
         )
-        emit(Response.Loading)
+
 
         if (response.isSuccessful){
 

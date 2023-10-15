@@ -54,7 +54,7 @@ data class LoginStatus(
     val showLoginModal:Boolean = true,
     val showLoginButton:Boolean = true,
     val loginStatusText:String = "Retrieving authentication token",
-    val loginStep1: Response<Boolean>? = Response.Loading,
+    val loginStep1: Response<Boolean> = Response.Loading,
     val loginStep2: Response<Boolean>? = null,
     val loginStep3: Response<Boolean>? = null,
     val logoutError:Boolean = false
@@ -141,7 +141,10 @@ class HomeViewModel @Inject constructor(
     init {
         getOAuthToken()
     }
+
     init{
+        /**
+         * starts the observing of the hot flow, mutableAuthenticatedUserFlow*/
         collectAuthenticatedUserFlow()
     }
 
@@ -219,8 +222,10 @@ class HomeViewModel @Inject constructor(
                 when(response){
                     is Response.Loading ->{
                         _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText ="Retrieving live streams",
+                            loginStatusText = "Getting live streams",
+                            loginStep1 = Response.Loading
                         )
+
                     }
                     is Response.Success ->{
 
@@ -233,20 +238,22 @@ class HomeViewModel @Inject constructor(
 
 
                         _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText ="Success!!!",
-                            loginStep3 = Response.Success(true),
-                            showLoginModal = false,
+
+                            loginStep1 = Response.Success(true),
                         )
                     }
                     is Response.Failure ->{
                         _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText =response.e.message ?: "Error! Please login and try again",
-                            loginStep3 = Response.Failure(Exception("Unable to getStream")),
+                            loginStatusText = "Error getting streams. Please login again",
+                            loginStep1 = Response.Failure(Exception("No authentication token found"))
+
+
                         )
                     }
                 }
 
             }
+
         }
 
     }
@@ -260,16 +267,18 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    /**
+     * This is the first function to run during the login sequence
+     *
+     * upon a successful retrieval of a stored OAuth token. It is emitted to mutableAuthenticatedUserFlow as oAuthToken
+     *
+     * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
+     * */
     private fun getOAuthToken() = viewModelScope.launch{
         tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
 
             if(storedOAuthToken.length > 2){
 
-                _loginUIState.value = _loginUIState.value.copy(
-                    loginStatusText ="Validating Authentication token",
-                    loginStep1 = Response.Success(true),
-                    loginStep2 = Response.Loading
-                )
                 mutableAuthenticatedUserFlow.tryEmit(
                     mutableAuthenticatedUserFlow.value.copy(
                         oAuthToken = storedOAuthToken
@@ -278,12 +287,16 @@ class HomeViewModel @Inject constructor(
             }else{
 
                 _loginUIState.value = _loginUIState.value.copy(
-                    loginStatusText ="Looks like you are new here. Please login with Twitch to be give a authentication token",
+                    loginStatusText ="Please login with Twitch",
                     loginStep1 = Response.Failure(Exception("No authentication token found"))
                 )
             }
         }
     }
+    /**
+     * The second method to be called in the authentication flow.
+     * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
+     * */
     private fun validateOAuthToken(oAuthenticationToken:String) =viewModelScope.launch{
         withContext( Dispatchers.IO +CoroutineName("TokenValidator")){
             twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
@@ -292,12 +305,7 @@ class HomeViewModel @Inject constructor(
                     is Response.Loading ->{}
                     is Response.Success ->{
                         logCoroutineInfo("CoroutineDebugging","GOT ITEMS from remote")
-                        _loginUIState.value = _loginUIState.value.copy(
 
-                            loginStep2 = Response.Success(true),
-                            loginStep3 = Response.Loading,
-
-                        )
                         _uiState.value = _uiState.value.copy(
                             authenticationCode =oAuthenticationToken
                         )
@@ -311,12 +319,13 @@ class HomeViewModel @Inject constructor(
                     is Response.Failure ->{
 
                         _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText =response.e.message ?: "Error! Please login and try again",
-                            loginStep2 = Response.Failure(Exception("failed to validate authentication token"))
+                            loginStatusText="Failed to validate token. Please login again",
+                            loginStep1 = Response.Failure(Exception("failed to validate Token. Please login again"))
                         )
                     }
                 }
             }
+
 
         }
 
