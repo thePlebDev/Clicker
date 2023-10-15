@@ -194,12 +194,11 @@ fun HomeView(
         if(homeViewModel.loginState.value.showLoginModal){
             LoginModal(
                 modifier = Modifier.matchParentSize(),
-                align = Modifier.align(Alignment.Center),
+
                 loginWithTwitch = { loginWithTwitch() },
-                loginStatusText = homeViewModel.loginState.value.loginStatusText,
+
                 loginStep1 = homeViewModel.loginState.value.loginStep1,
-                loginStep2 = homeViewModel.loginState.value.loginStep2,
-                loginStep3 = homeViewModel.loginState.value.loginStep3,
+
                 logoutError = homeViewModel.loginState.value.logoutError,
                 logout = {homeViewModel.beginLogout()},
                 loginText =homeViewModel.loginState.value.loginStatusText
@@ -251,39 +250,62 @@ fun FilterPager(
 @Composable
 fun LoginModal(
     modifier: Modifier,
-    align: Modifier,
     loginWithTwitch:() -> Unit,
-    loginStatusText:String,
     loginStep1:Response<Boolean>,
-    loginStep2:Response<Boolean>?,
-    loginStep3:Response<Boolean>?,
     logoutError:Boolean,
     logout:()-> Unit,
     loginText:String,
 
 ) {
     Box(modifier = Modifier.fillMaxSize()){
-        when(loginStep1){
+        Spacer(
+            modifier = modifier
+                .disableClickAndRipple()
+                .background(
+                    color = Color.Gray.copy(alpha = .7f)
+                )
+        )
+
+            when(loginStep1){
             is Response.Loading ->{
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.align(Alignment.Center))
             }
             is Response.Success ->{}
             is Response.Failure ->{
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(15.dp)
-                        .align(Alignment.Center)
-                        .clickable{ },
-                    elevation = 10.dp
-                ) {
-                    Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-                        Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
-                        Button(onClick = { loginWithTwitch() }) {
-                            Text("Login with Twitch")
+                if(logoutError){
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp)
+                            .align(Alignment.Center)
+                            .clickable{ },
+                        elevation = 10.dp
+                    ) {
+                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
+                            Button(onClick = { logout() }) {
+                                Text("Logout")
+                            }
+                        }
+                    }
+                }else{
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp)
+                            .align(Alignment.Center)
+                            .clickable{ },
+                        elevation = 10.dp
+                    ) {
+                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
+                            Button(onClick = { loginWithTwitch() }) {
+                                Text("Login with Twitch")
+                            }
                         }
                     }
                 }
+
             }
 
 

@@ -240,6 +240,7 @@ class HomeViewModel @Inject constructor(
                         _loginUIState.value = _loginUIState.value.copy(
 
                             loginStep1 = Response.Success(true),
+                            showLoginModal = false
                         )
                     }
                     is Response.Failure ->{
@@ -348,10 +349,9 @@ class HomeViewModel @Inject constructor(
     fun beginLogout() = viewModelScope.launch{
         _loginUIState.value = _loginUIState.value.copy(
             showLoginModal = true,
+            loginStep1 = Response.Loading,
             loginStatusText = "Logging out",
-            loginStep1 = Response.Success(true),
-            loginStep2 = Response.Loading,
-            loginStep3 = null,
+
         )
         withContext( Dispatchers.IO +CoroutineName("BeginLogout")){
             twitchRepoImpl.logout(
@@ -363,25 +363,24 @@ class HomeViewModel @Inject constructor(
                         is Response.Loading ->{}
                         is Response.Success ->{
                             _loginUIState.value = _loginUIState.value.copy(
-                                loginStatusText = "Success!! Please log in with Twitch",
-                                loginStep1 = Response.Success(true),
-                                loginStep2 = Response.Success(true),
-                                loginStep3 = null,
-                                logoutError = false
+                                loginStatusText = "Success! Please log in with Twitch",
+                                showLoginModal = true,
+                                logoutError = false,
+                                loginStep1 = Response.Failure(Exception("Please login again")),
                             )
                         }
                         is Response.Failure ->{
                             _loginUIState.value = _loginUIState.value.copy(
-                                loginStatusText = response.e.message ?: "Logout Error! Please try again",
-                                loginStep1 = Response.Success(true),
-                                loginStep2 = Response.Failure(Exception("failed to Logout")),
-                                loginStep3 = null,
+                                loginStatusText = "Logout Error! Please try again",
+                                showLoginModal = true,
+                                loginStep1 = Response.Failure(Exception("Error Logging out")),
                                 logoutError = true
                             )
                         }
                         else -> {}
                     }
                 }
+
         }
 
 
