@@ -81,6 +81,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,6 +89,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+
 import com.example.clicker.util.Response
 import com.example.clicker.R
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -180,7 +183,9 @@ fun HomeView(
                        networkRequest={
                                resetUI:suspend ()->Unit -> homeViewModel.pullToRefreshGetLiveStreams(resetUI =resetUI )
                        },
-                        showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest
+                        showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
+                        height = homeViewModel.state.value.aspectHeight,
+                        width = homeViewModel.state.value.width
                     )
 //                }
 
@@ -584,7 +589,9 @@ fun UrlImages(
     clientId:String,
     userId:String,
     networkRequest:(suspend ()->Unit)->Unit,
-    showFailedNetworkRequestMessage:Boolean
+    showFailedNetworkRequestMessage:Boolean,
+    height:Int,
+    width:Int
 ){
     val scope = rememberCoroutineScope()
 
@@ -690,9 +697,15 @@ fun UrlImages(
                         ) {
                             Box() {
 
-                                AsyncImage(
+
+                                SubcomposeAsyncImage(
                                     model = streamItem.url,
-                                    contentDescription = null
+                                    loading = {
+                                        Card(modifier = Modifier.background(Color.DarkGray).height((height/1.5).dp).width((width/1.5).dp)){
+
+                                        }
+                                    },
+                                    contentDescription = "stringResource(R.string.description)"
                                 )
                                 Text(
                                     "${streamItem.views}",
