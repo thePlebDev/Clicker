@@ -609,7 +609,7 @@ fun UrlImages(
     val nestedScrollConnection = rememberNestedScrollConnection(
         state =pullingState,
         scope = scope,
-        animationMidPoint = (quarterTotalScreenHeight/1.3).toFloat(),
+        animationMidPoint = (quarterTotalScreenHeight).toFloat(),
         quarterScreenHeight =quarterTotalScreenHeight.toFloat(),
         changeColor ={color -> pullColor = color},
 
@@ -701,7 +701,10 @@ fun UrlImages(
                                 SubcomposeAsyncImage(
                                     model = streamItem.url,
                                     loading = {
-                                        Card(modifier = Modifier.background(Color.DarkGray).height((height/1.5).dp).width((width/1.5).dp)){
+                                        Card(
+                                            modifier = Modifier.height((height/1.5).dp).width((width/1.5).dp),
+                                            backgroundColor = Color.DarkGray
+                                        ){
 
                                         }
                                     },
