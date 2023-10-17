@@ -81,6 +81,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -461,7 +462,7 @@ fun CustomTopBar(
     val titles = listOf("Followed", "Mods")// I WAS USING A TABBED ROW FOR THIS
     Column(modifier = Modifier
         .fillMaxWidth()
-        .background(MaterialTheme.colors.primary)
+        .background(colorResource(R.color.red))
         .padding(vertical = 10.dp)){
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -594,8 +595,9 @@ fun UrlImages(
     width:Int
 ){
     val scope = rememberCoroutineScope()
+    val initialColor = colorResource(R.color.red)
 
-    var pullColor by remember { mutableStateOf(Color.White) }
+    var pullColor by remember { mutableStateOf(initialColor) }
     val configuration = LocalConfiguration.current
 
     val quarterTotalScreenHeight =configuration.screenHeightDp/8

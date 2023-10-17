@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.clicker.presentation.home.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
        System.setProperty("kotlinx.coroutines.debug", if(BuildConfig.DEBUG) "on" else "off")
+        installSplashScreen()
 
         supportActionBar!!.hide()
         setContentView(R.layout.activity_main)
