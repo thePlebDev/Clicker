@@ -7,12 +7,13 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import okhttp3.WebSocket
 import java.util.regex.Pattern
+import javax.inject.Inject
 
 
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
-class ParsingEngine {
+class ParsingEngine @Inject constructor() {
 
 
     fun clearChatTesting(text:String,streamerName:String):TwitchUserData{

@@ -33,7 +33,8 @@ enum class MessageType {
 }
 
 class TwitchWebSocket @Inject constructor(
-    private val tokenDataStore: TokenDataStore
+    private val tokenDataStore: TokenDataStore,
+    private val twitchParsingEngine: ParsingEngine
 ): WebSocketListener() {
 
     private val webSocketScope = CoroutineScope(Dispatchers.Default + CoroutineName("webSocketScope"))
@@ -160,19 +161,19 @@ class TwitchWebSocket @Inject constructor(
          Log.d("onMessageSocketStoof","state --> $text")
 
          if(text.contains("PING")){
-             ParsingEngine().sendPong(webSocket)
+             twitchParsingEngine.sendPong(webSocket)
          }
 
 
          if(text.contains(" CLEARCHAT ")){
-              val  parsedTwitchUserData = ParsingEngine().clearChatTesting(text,streamerChannelName)
+              val  parsedTwitchUserData = twitchParsingEngine.clearChatTesting(text,streamerChannelName)
              _state.tryEmit(parsedTwitchUserData)
 
          }
 
          if(text.contains(" USERSTATE ")){
 
-             val parsedTwitchInUserData = ParsingEngine().userStateParsing(text)
+             val parsedTwitchInUserData = twitchParsingEngine.userStateParsing(text)
 
              _loggedInUserUiState.tryEmit(
                  parsedTwitchInUserData
@@ -181,26 +182,26 @@ class TwitchWebSocket @Inject constructor(
          }
          if(text.contains(" CLEARMSG ")){
 
-             val messageId = ParsingEngine().clearMsgParsing(text)
+             val messageId = twitchParsingEngine.clearMsgParsing(text)
              _messageToDeleteId.tryEmit(messageId)
 
          }
 
          if(text.contains(" JOIN ")){
-             val joinObject = ParsingEngine().createJoinObject()
+             val joinObject = twitchParsingEngine.createJoinObject()
              _state.tryEmit(joinObject)
          }
          if(text.contains(" NOTICE ")){
              Log.d("NOTICETriggered","NOTICE --> $text")
 
              _state.tryEmit(
-                 ParsingEngine().noticeParsing(text,streamerChannelName)
+                 twitchParsingEngine.noticeParsing(text,streamerChannelName)
              )
 
          }
          if(text.contains(" USERNOTICE ")){
 
-            val userStateData = ParsingEngine().userNoticeParsing(text, streamerChannelName)
+            val userStateData = twitchParsingEngine.userNoticeParsing(text, streamerChannelName)
 
 
              _state.tryEmit(userStateData)
@@ -210,14 +211,14 @@ class TwitchWebSocket @Inject constructor(
          if(text.contains("PRIVMSG")){
              Log.d("loggedInDataOnMessage","PRIVMSG --> $text")
 
-              val parsedPRIVMSG = ParsingEngine().privateMessageParsing(text)
+              val parsedPRIVMSG = twitchParsingEngine.privateMessageParsing(text)
              _state.tryEmit(parsedPRIVMSG)
          }
 
 
          if(text.contains("ROOMSTATE")){
 
-            val roomState = ParsingEngine().roomStateParsing(text)
+            val roomState = twitchParsingEngine.roomStateParsing(text)
              _roomState.tryEmit(roomState)
 
 
