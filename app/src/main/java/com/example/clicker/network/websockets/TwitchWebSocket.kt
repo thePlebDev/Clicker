@@ -159,6 +159,9 @@ class TwitchWebSocket @Inject constructor(
      override fun onMessage(webSocket: WebSocket, text: String) {
          Log.d("onMessageSocketStoof","state --> $text")
 
+         if(text.contains("PING")){
+             ParsingEngine().sendPong(webSocket)
+         }
 
 
          if(text.contains(" CLEARCHAT ")){

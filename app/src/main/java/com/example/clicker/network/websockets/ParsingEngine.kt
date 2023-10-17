@@ -5,6 +5,7 @@ import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
+import okhttp3.WebSocket
 import java.util.regex.Pattern
 
 
@@ -277,6 +278,17 @@ class ParsingEngine {
         )
 
     }
+
+    /**
+     * Send the PONG message to the websocket
+     * @property webSocket the [WebSocket] which PONG will be sent to and tell the Twitch IRC servers to not disconnect
+     */
+    fun sendPong(webSocket: WebSocket){
+        webSocket.send("PONG")
+    }
+
+
+
     private fun getValueFromInput(input: String, key: String): Boolean? {
         val pattern = "$key=([^;:\\s]+)".toRegex()
         val match = pattern.find(input)
@@ -292,6 +304,7 @@ class ParsingEngine {
         }
 
     }
+
 
 
 }
