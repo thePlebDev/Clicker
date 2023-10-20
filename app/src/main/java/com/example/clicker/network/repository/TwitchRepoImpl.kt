@@ -58,7 +58,7 @@ class TwitchRepoImpl @Inject constructor(
         userId: String
     ): Flow<Response<List<StreamInfo>>> = flow{
 
-        emit(Response.Loading)
+        //emit(Response.Loading)
 
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
@@ -67,11 +67,19 @@ class TwitchRepoImpl @Inject constructor(
         )
 
 
+//        println("responseMSG --->${response.message()}")
+        println("response isSuccessful--->${response.isSuccessful}")
+//        println("response code()--->${response.code()}")
         if (response.isSuccessful){
+            //TODO: MOVE THIS MAPPING TO A USECASE
+         //   println("response body()--->${response.body()} ")
+           // println("response body()?.data--->${response.body()?.data} ")
 
 
-            val transformedData = response.body()!!.data.map { it.toStreamInfo() }
-            emit(Response.Success(transformedData))
+
+//            val transformedData = response.body()?.data?.map { it.toStreamInfo() } ?: listOf<StreamInfo>()
+//            println("transformedData---> ${transformedData} ")
+            emit(Response.Success(listOf<StreamInfo>()))
         }else{
 
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
