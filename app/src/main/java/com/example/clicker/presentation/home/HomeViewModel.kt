@@ -169,38 +169,42 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshGetLiveStreams(resetUI: suspend()->Unit){
         viewModelScope.launch {
 
-//            twitchRepoImpl
-//                .getFollowedLiveStreams(
-//                    authorizationToken = _uiState.value.authenticationCode?:"",
-//                    clientId=_uiState.value.clientId,
-//                    userId =_uiState.value.userId,
-//                )
-//                .collect{response ->
-//                    when(response){
-//                        is Response.Loading ->{
-//
-//                        }
-//                        is Response.Success ->{
-//                            val replacedWidthHeightList =response.data.map{
-//                                it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
-//                            }
-//                            resetUI()
-//                            _newUrlList.tryEmit(replacedWidthHeightList)
-//
-//                        }
-//                        is Response.Failure ->{
-//                            Log.d("testingGetLiveStreams","FAILED")
-//                            _uiState.value = _uiState.value.copy(
-//                                failedNetworkRequest = true
-//                            )
-//                            resetUI()
-//                            delay(2000)
-//                            _uiState.value = _uiState.value.copy(
-//                                failedNetworkRequest = false
-//                            )
-//                        }
-//                    }
-//                }
+            withContext(Dispatchers.IO +CoroutineName("GetLiveStreamsPull")){
+                getFollowedLiveStreamsUseCase
+                    .invoke(
+                        authorizationToken = _uiState.value.authenticationCode?:"",
+                        clientId=_uiState.value.clientId,
+                        userId =_uiState.value.userId,
+                    )
+                    .collect{response ->
+                        when(response){
+                            is Response.Loading ->{
+
+                            }
+                            is Response.Success ->{
+                                val replacedWidthHeightList =response.data.map{
+                                    it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+                                }
+                                resetUI()
+                                _newUrlList.tryEmit(replacedWidthHeightList)
+
+                            }
+                            is Response.Failure ->{
+                                Log.d("testingGetLiveStreams","FAILED")
+                                _uiState.value = _uiState.value.copy(
+                                    failedNetworkRequest = true
+                                )
+                                resetUI()
+                                delay(2000)
+                                _uiState.value = _uiState.value.copy(
+                                    failedNetworkRequest = false
+                                )
+                            }
+                        }
+                    }
+            }
+
+
 
         }
     }
