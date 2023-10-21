@@ -7,6 +7,7 @@ import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.models.toStreamInfo
@@ -56,9 +57,8 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<List<StreamInfo>>> = flow{
-
-        //emit(Response.Loading)
+    ): Flow<Response<FollowedLiveStreams>>  = flow{
+        emit(Response.Loading)
 
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
@@ -66,20 +66,11 @@ class TwitchRepoImpl @Inject constructor(
             userId = userId
         )
 
+        val emptyBody = FollowedLiveStreams(listOf<StreamData>())
 
-//        println("responseMSG --->${response.message()}")
-        println("response isSuccessful--->${response.isSuccessful}")
-//        println("response code()--->${response.code()}")
         if (response.isSuccessful){
-            //TODO: MOVE THIS MAPPING TO A USECASE
-         //   println("response body()--->${response.body()} ")
-           // println("response body()?.data--->${response.body()?.data} ")
+            emit(Response.Success(response.body()?:emptyBody))
 
-
-
-//            val transformedData = response.body()?.data?.map { it.toStreamInfo() } ?: listOf<StreamInfo>()
-//            println("transformedData---> ${transformedData} ")
-            emit(Response.Success(listOf<StreamInfo>()))
         }else{
 
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
@@ -87,16 +78,15 @@ class TwitchRepoImpl @Inject constructor(
         }
 
     }.catch { cause ->
-
-
         if(cause is UnknownHostException){
             emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
         }else{
             emit(Response.Failure(Exception("Error getting streams! Please try again")))
         }
 
-
     }
+
+
 
     override fun logout(clientId:String,token:String): Flow<Response<String>> = flow{
         emit(Response.Loading)

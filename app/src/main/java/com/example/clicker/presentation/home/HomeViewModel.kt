@@ -11,6 +11,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.authentication.TwitchAuthentication
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
+import com.example.clicker.domain.GetFollowedLiveStreamsUseCase
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
@@ -70,6 +71,7 @@ class HomeViewModel @Inject constructor(
     private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchRepo,
     private val tokenValidationWorker: TokenValidationWorker,
+    private val getFollowedLiveStreamsUseCase: GetFollowedLiveStreamsUseCase
 ): ViewModel(){
 
 
@@ -167,38 +169,42 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshGetLiveStreams(resetUI: suspend()->Unit){
         viewModelScope.launch {
 
-            twitchRepoImpl
-                .getFollowedLiveStreams(
-                    authorizationToken = _uiState.value.authenticationCode?:"",
-                    clientId=_uiState.value.clientId,
-                    userId =_uiState.value.userId,
-                )
-                .collect{response ->
-                    when(response){
-                        is Response.Loading ->{
+            withContext(Dispatchers.IO +CoroutineName("GetLiveStreamsPull")){
+                getFollowedLiveStreamsUseCase
+                    .invoke(
+                        authorizationToken = _uiState.value.authenticationCode?:"",
+                        clientId=_uiState.value.clientId,
+                        userId =_uiState.value.userId,
+                    )
+                    .collect{response ->
+                        when(response){
+                            is Response.Loading ->{
 
-                        }
-                        is Response.Success ->{
-                            val replacedWidthHeightList =response.data.map{
-                                it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
                             }
-                            resetUI()
-                            _newUrlList.tryEmit(replacedWidthHeightList)
+                            is Response.Success ->{
+                                val replacedWidthHeightList =response.data.map{
+                                    it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+                                }
+                                resetUI()
+                                _newUrlList.tryEmit(replacedWidthHeightList)
 
-                        }
-                        is Response.Failure ->{
-                            Log.d("testingGetLiveStreams","FAILED")
-                            _uiState.value = _uiState.value.copy(
-                                failedNetworkRequest = true
-                            )
-                            resetUI()
-                            delay(2000)
-                            _uiState.value = _uiState.value.copy(
-                                failedNetworkRequest = false
-                            )
+                            }
+                            is Response.Failure ->{
+                                Log.d("testingGetLiveStreams","FAILED")
+                                _uiState.value = _uiState.value.copy(
+                                    failedNetworkRequest = true
+                                )
+                                resetUI()
+                                delay(2000)
+                                _uiState.value = _uiState.value.copy(
+                                    failedNetworkRequest = false
+                                )
+                            }
                         }
                     }
-                }
+            }
+
+
 
         }
     }
@@ -207,7 +213,7 @@ class HomeViewModel @Inject constructor(
         Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
         Log.d("ValidatedUserUserId","client_id -> ${validatedUser.clientId}")
         withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
-            twitchRepoImpl.getFollowedLiveStreams(
+            getFollowedLiveStreamsUseCase.invoke(
                 authorizationToken = oAuthToken,
                 clientId = validatedUser.clientId,
                 userId = validatedUser.userId
@@ -236,6 +242,7 @@ class HomeViewModel @Inject constructor(
                             showLoginModal = false
                         )
                     }
+                    //end
                     is Response.Failure ->{
                         _loginUIState.value = _loginUIState.value.copy(
                             loginStatusText = "Error getting streams. Please login again",
@@ -245,8 +252,8 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
-
             }
+
 
         }
 
