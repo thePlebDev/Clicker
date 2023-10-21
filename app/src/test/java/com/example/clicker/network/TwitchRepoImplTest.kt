@@ -1,5 +1,8 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.presentation.home.StreamInfo
 import kotlinx.coroutines.flow.last
@@ -17,92 +20,60 @@ import kotlinx.coroutines.flow.first
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.RecordedRequest
+import org.junit.After
+import org.junit.Before
 
 
 class TwitchRepoImplTest {
     object RetrofitHelper {
 
-        fun testApiInstance(): TwitchClient {
+        fun testClientInstance(url:String): TwitchClient {
             return Retrofit.Builder()
-                .baseUrl("https://api.twitch.tv/helix/")
+                .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build().create(TwitchClient::class.java)
         }
 
     }
-    //1) repository
-    //2) its dependency
-    //3) the mock web server
 
-//    private lateinit var underTest:TwitchRepo
-//    private lateinit var twitchClient: TwitchClient
-//    private lateinit var mockWebServer: MockWebServer
+    private lateinit var underTest: TwitchRepo
+    private lateinit var twitchClient: TwitchClient
+    private lateinit var mockWebServer: MockWebServer
 //
-//    @Before
-//    fun setUp() {
-//        mockWebServer = MockWebServer()
-//        mockWebServer.start()
-////        twitchClient = RetrofitHelper.testApiInstance
-//        twitchClient= RetrofitHelper.testApiInstance(mockWebServer.url("/").toString())
-//        underTest = TwitchRepoImpl(twitchClient)
-//    }
+    @Before
+    fun setUp() {
+        mockWebServer = MockWebServer()
+        mockWebServer.start()
+        twitchClient= RetrofitHelper.testClientInstance(mockWebServer.url("/").toString())
+        underTest = TwitchRepoImpl(twitchClient)
+    }
 //
-//    @After
-//    fun tearDown() {
-//        mockWebServer.shutdown()
-//    }
+    @After
+    fun tearDown() {
+        mockWebServer.shutdown()
+    }
 
     @Test
-    fun testingGetAllFollowedStreams()= runTest {
+    fun testingGetAllFollowedStreamsSuccess()= runTest {
         /**GIVEN*/
 
-        val mockWebServer = MockWebServer()
-        mockWebServer.start()
-
-        // Set up your API client with the base URL from the mock server
-        val api = Retrofit.Builder()
-            .baseUrl(mockWebServer.url("/")) // Use a relative URL because MockWebServer provides the absolute URL
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(TwitchClient::class.java)
-
-
-        val repository = TwitchRepoImpl(api)
-
-        val expectedResponseJson = """
-            {
-                "data": [
-                    {
-                        "id": "1",
-                        "title": "Stream 1",
-                        "viewer_count": 100
-                    },
-                    {
-                        "id": "2",
-                        "title": "Stream 2",
-                        "viewer_count": 150
-                    }
-                ]
-            }
-        """
+        val response = FollowedLiveStreams(
+            data = listOf<StreamData>()
+        )
+        val expectedJson = Gson().toJson(response)
 
         // Enqueue a MockResponse with the expected JSON
-        val expectedResponse = MockResponse()
+        val expectedServerResponse = MockResponse()
             .setResponseCode(200)
-            .setBody(expectedResponseJson)
-        mockWebServer.enqueue(expectedResponse)
-
+            .setBody(expectedJson)
+        mockWebServer.enqueue(expectedServerResponse)
 
 
         /**WHEN*/
-
-        val actualResponse = repository.getFollowedLiveStreams("dsfgsg","trewtfds","gfdsgf").first()
+        val actualResponse = underTest.getFollowedLiveStreams("dsfgsg","trewtfds","gfdsgf").last()
 
         /**THEN*/
-
-        assertEquals(expectedResponse, actualResponse)
-
-        mockWebServer.shutdown()
+        assertEquals(Response.Success(response), actualResponse)
 
     }
 
