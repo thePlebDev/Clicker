@@ -33,10 +33,6 @@ class TwitchAuthentication constructor(
 ) {
 
 
-    init {
-        //checks to see if the current device has a token stored
-        getOAuthToken()
-    }
 
     //1)CREATE THE AUTHENTICATION STATE
         private val authenticatedUserFlow = combine(
@@ -51,6 +47,12 @@ class TwitchAuthentication constructor(
     )
 
      val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
+    init {
+        //checks to see if the current device has a token stored
+        Log.d("TOKENFOUDNGETTING","TwitchAuthentication CREATED")
+        getOAuthToken()
+    }
+
 
     //2) implement the methods
     /**
@@ -64,6 +66,7 @@ class TwitchAuthentication constructor(
         tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
 
             if(storedOAuthToken.length > 2){
+                Log.d("TOKENFOUDNGETTING","token---- gotten")
 
 
                 mutableAuthenticatedUserFlow.tryEmit(
