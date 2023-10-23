@@ -12,17 +12,17 @@ import javax.inject.Inject
 class GetFollowedLiveStreamsUseCase @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
 ) {
-    suspend operator fun invoke(authorizationToken:String, clientId:String, userId:String):Flow<Response<List<StreamInfo>>>{
+    suspend operator fun invoke(authorizationToken:String, clientId:String, userId:String){
 
-        val items =twitchRepoImpl.getFollowedLiveStreams(
-            authorizationToken = authorizationToken,
-            clientId = clientId,
-            userId = userId
-        )
-
-        return items.map { response ->
-            followedLiveStreamToStreamInfo(response)
-        }
+//        val items =twitchRepoImpl.getFollowedLiveStreams(
+//            authorizationToken = authorizationToken,
+//            clientId = clientId,
+//            userId = userId
+//        )
+//
+//        return items.map { response ->
+//            followedLiveStreamToStreamInfo(response)
+//        }
     }
 
     private fun followedLiveStreamToStreamInfo(stream:Response<FollowedLiveStreams>):Response<List<StreamInfo>>{
