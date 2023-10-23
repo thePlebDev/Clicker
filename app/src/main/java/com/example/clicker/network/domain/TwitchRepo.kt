@@ -19,7 +19,7 @@ interface TwitchRepo {
         authorizationToken:String,
         clientId:String,
         userId:String
-    ):Flow<Response<FollowedLiveStreams>>
+    ):Flow<Response<List<StreamInfo>>>
 
     fun logout(clientId:String,token:String):Flow<Response<String>>
 

@@ -11,7 +11,6 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.authentication.TwitchAuthentication
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
-import com.example.clicker.domain.GetFollowedLiveStreamsUseCase
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
@@ -61,8 +60,6 @@ data class LoginStatus(
     val loginStep2: Response<Boolean>? = null,
     val loginStep3: Response<Boolean>? = null,
     val logoutError:Boolean = false
-
-
 )
 
 
@@ -71,7 +68,6 @@ class HomeViewModel @Inject constructor(
     private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchRepo,
     private val tokenValidationWorker: TokenValidationWorker,
-    private val getFollowedLiveStreamsUseCase: GetFollowedLiveStreamsUseCase
 ): ViewModel(){
 
 
@@ -170,8 +166,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
 
             withContext(Dispatchers.IO +CoroutineName("GetLiveStreamsPull")){
-                getFollowedLiveStreamsUseCase
-                    .invoke(
+                twitchRepoImpl
+                    .getFollowedLiveStreams(
                         authorizationToken = _uiState.value.authenticationCode?:"",
                         clientId=_uiState.value.clientId,
                         userId =_uiState.value.userId,
@@ -213,7 +209,7 @@ class HomeViewModel @Inject constructor(
         Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
         Log.d("ValidatedUserUserId","client_id -> ${validatedUser.clientId}")
         withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
-            getFollowedLiveStreamsUseCase.invoke(
+            twitchRepoImpl.getFollowedLiveStreams(
                 authorizationToken = oAuthToken,
                 clientId = validatedUser.clientId,
                 userId = validatedUser.userId

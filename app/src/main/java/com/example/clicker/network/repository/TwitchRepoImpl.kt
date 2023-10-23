@@ -57,7 +57,7 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<FollowedLiveStreams>>  = flow{
+    ): Flow<Response<List<StreamInfo>>> = flow{
         emit(Response.Loading)
 
         val response = twitchClient.getFollowedStreams(
@@ -65,17 +65,20 @@ class TwitchRepoImpl @Inject constructor(
             clientId = clientId,
             userId = userId
         )
-
         val emptyBody = FollowedLiveStreams(listOf<StreamData>())
+        val body = response.body() ?: emptyBody
+        val exported = body.data.map { it.toStreamInfo() }
 
         if (response.isSuccessful){
-            emit(Response.Success(response.body()?:emptyBody))
+            emit(Response.Success(exported))
 
         }else{
 
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
 
         }
+
+
 
     }.catch { cause ->
         if(cause is UnknownHostException){
@@ -85,6 +88,8 @@ class TwitchRepoImpl @Inject constructor(
         }
 
     }
+
+
 
 
 
