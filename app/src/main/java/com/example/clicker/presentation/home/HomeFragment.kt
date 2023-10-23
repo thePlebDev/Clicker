@@ -101,6 +101,7 @@ class HomeFragment : Fragment() {
         val verticalHeight = (width * 1.77777777778).toInt()
         homeViewModel.updateAspectWidthHeight(width, aspectHeight )
 
+        Log.d("Twitchval","uri -> ${uri.toString()}")
 
         if(uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)){
             Log.d("Twitchval",uri.toString())

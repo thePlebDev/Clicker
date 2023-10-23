@@ -94,6 +94,7 @@ class HomeViewModel @Inject constructor(
         _loginUIState = _loginUIState
     )
 
+
     init{
         viewModelScope.launch {
             _newUrlList.collect{streamInfoList ->
