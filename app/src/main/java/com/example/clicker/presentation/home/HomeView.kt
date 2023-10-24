@@ -94,6 +94,7 @@ import coil.compose.SubcomposeAsyncImage
 
 import com.example.clicker.util.Response
 import com.example.clicker.R
+import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.util.rememberNestedScrollConnection
 import com.example.clicker.util.rememberPullToRefreshState
@@ -101,77 +102,96 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ValidationView(
+    homeViewModel: HomeViewModel,
+    streamViewModel: StreamViewModel,
+    authenticationViewModel: AuthenticationViewModel,
+    loginWithTwitch:() -> Unit,
+    onNavigate: (Int) -> Unit,
+){
+    val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+
+    val userIsAuthenticated = authenticationViewModel.authenticationUIState.value.authenticated
+    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+
+    ModalBottomSheetLayout(
+        sheetState = bottomModalState,
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(Color.DarkGray),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text("You are not logged in",color = Color.White, fontSize = 30.sp)
+                    Button(onClick = {loginWithTwitch()}) {
+                        Text(text = "Login with Twitch")
+                    }
+
+            }
+        }
+    ){
+        Scaffold(
+            scaffoldState = scaffoldState,
+            drawerContent = {
+                ScaffoldDrawer(
+                    logout ={
+                        //  homeViewModel.beginLogout()
+                    },
+                    scaffoldState = scaffoldState
+                )
+            },
+            topBar = {
+                CustomTopBar(
+                    scaffoldState = scaffoldState,
+                )
+            }
+        ){contentPadding->
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .background(Color.DarkGray)){
+                if(userIsAuthenticated){
+                    val certifiedUser = authenticationViewModel.validatedUser()
+                    homeViewModel.updateAuthenticatedUser(certifiedUser)
+                }
+
+                    HomeView(
+                        homeViewModel,
+                        streamViewModel,
+                        loginWithTwitch,
+                        onNavigate
+                    )
+
+
+            }
+
+        }
+    }
+
+
+
+}
+
+
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
-    workerViewModel:WorkerViewModel
 ){
-    val hideModal = homeViewModel.state.value.hideModal
-    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-    val scope = rememberCoroutineScope()
 
-
-
-    val bottomSheetValue = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-//    if(hideModal){
-//        LaunchedEffect(key1 = bottomSheetValue){
-//            Log.d("GITHUB","LaunchedEffect RECOMP")
-//            bottomSheetValue.hide()
-//        }
-//    }
-
-
-
-
-    var state by remember { mutableIntStateOf(0) }
-
-    val pagerState = rememberPagerState(pageCount = {
-        2
-    })
-
-    Box(modifier = Modifier.fillMaxSize()){
-
-        ModalBottomSheetLayout(
-            sheetState = bottomSheetValue,
-            //TODO: THIS sheetContent WILL GET CHANGED OUT TO BE THE STREAMING VIDEO
-            sheetContent = {
-
-
-            }
-        ){
-
-            Scaffold(
-                scaffoldState = scaffoldState,
-                drawerContent = {
-                    ScaffoldDrawer(
-                        logout ={ homeViewModel.beginLogout() },
-                        scaffoldState = scaffoldState
-                    )
-                                },
-                topBar = {
-                    CustomTopBar(
-                        state = state,
-                        { index -> scope.launch {pagerState.scrollToPage(index)  } },
-                        pagerState = pagerState,
-                        scaffoldState = scaffoldState,
-
-
-                    )
-                }
-            ){contentPadding->
-
+        val urlListLoading = homeViewModel.state.value.streamersListLoading
                     //todo: home pager page goes here
-//                FilterPager(
-//                    contentPadding,
-//                    pagerState,
-//                    filteredModList = streamViewModel.exposedModList
-//                ){
                     UrlImages(
-                        contentPadding = contentPadding,
                         urlList =homeViewModel.newUrlList.collectAsState().value,
                         onNavigate ={onNavigate(R.id.action_homeFragment_to_streamFragment)},
                         updateStreamerName={
@@ -179,287 +199,30 @@ fun HomeView(
                             streamerName,clientId,broadcasterId,userId
                         )
                         },
-                        clientId = homeViewModel.state.value.clientId,
-                        userId = homeViewModel.state.value.userId,
+                        clientId = "homeViewModel.state.value.clientId",
+                        userId = "homeViewModel.state.value.userId",
                        networkRequest={
                                resetUI:suspend ()->Unit -> homeViewModel.pullToRefreshGetLiveStreams(resetUI =resetUI )
                        },
                         showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
                         height = homeViewModel.state.value.aspectHeight,
-                        width = homeViewModel.state.value.width
+                        width = homeViewModel.state.value.width,
+                        urlListLoading = urlListLoading
                     )
-//                }
-
-
-
-            }
-            //THIS IS WHAT WILL GET COVERED
-        }
-
-
-        if(homeViewModel.loginState.value.showLoginModal){
-            LoginModal(
-                modifier = Modifier.matchParentSize(),
-
-                loginWithTwitch = { loginWithTwitch() },
-
-                loginStep1 = homeViewModel.loginState.value.loginStep1,
-
-                logoutError = homeViewModel.loginState.value.logoutError,
-                logout = {homeViewModel.beginLogout()},
-                loginText =homeViewModel.loginState.value.loginStatusText
-            )
-        }
-
-
-
-
-
-} // end of the box
 
 }// END OF THE HOME VIEW
-//BUILDING THE PAGER
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun FilterPager(
-    contentPadding: PaddingValues,
-    pagerState: PagerState,
-    filteredModList:List<String?>,
-    pageOne: @Composable () -> Unit
-){
 
-
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.padding(contentPadding)
-
-    ) { page ->
-        // Our page content
-
-
-        when(page){
-            0 ->{
-
-                pageOne()
-            }
-            1 ->{
-
-                SecondTesting(
-                    filteredModList =filteredModList
-                )
-            }
-        }
-    }
-}
-
-//full screen loading animation
-@Composable
-fun LoginModal(
-    modifier: Modifier,
-    loginWithTwitch:() -> Unit,
-    loginStep1:Response<Boolean>,
-    logoutError:Boolean,
-    logout:()-> Unit,
-    loginText:String,
-
-) {
-    Box(modifier = Modifier.fillMaxSize()){
-        Spacer(
-            modifier = modifier
-                .disableClickAndRipple()
-                .background(
-                    color = Color.Gray.copy(alpha = .7f)
-                )
-        )
-
-            when(loginStep1){
-            is Response.Loading ->{
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.align(Alignment.Center))
-            }
-            is Response.Success ->{}
-            is Response.Failure ->{
-                if(logoutError){
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                            .align(Alignment.Center)
-                            .clickable{ },
-                        elevation = 10.dp
-                    ) {
-                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-                            Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
-                            Button(onClick = { logout() }) {
-                                Text("Logout")
-                            }
-                        }
-                    }
-                }else{
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                            .align(Alignment.Center)
-                            .clickable{ },
-                        elevation = 10.dp
-                    ) {
-                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-                            Text(loginText, fontSize = 25.sp, textAlign = TextAlign.Center)
-                            Button(onClick = { loginWithTwitch() }) {
-                                Text("Login with Twitch")
-                            }
-                        }
-                    }
-                }
-
-            }
-
-
-        }
-
-
-    }
-
-
-//        LoginCard(
-//            modifier = align,
-//            loginWithTwitch,
-//            loginStatusText,
-//            loginStep1,
-//            loginStep2,
-//            loginStep3,
-//            logoutError,
-//            logout = {logout()}
-//
-//
-//        )
-
-
-
-}
-
-@Composable
-fun LoginCard(
-    modifier:Modifier,
-    loginWithTwitch:() -> Unit,
-    statusText:String,
-    loginStep1:Response<Boolean>?,
-    loginStep2:Response<Boolean>?,
-    loginStep3:Response<Boolean>?,
-    logoutError:Boolean,
-    logout:()-> Unit
-){
-    val configuration = LocalConfiguration.current
-
-    val widthInDp = configuration.screenWidthDp.dp
-    val halfScreenWidth = (widthInDp.value / 3.5).dp
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(5.dp),
-        elevation = 10.dp
-    ) {
-
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ){
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-                LoadingIcon(loginStep1)
-                Divider(
-                    color = Color.Red,
-                    thickness = 1.dp,
-                    modifier = Modifier
-                        .width(halfScreenWidth)
-                        .padding(10.dp)
-                )
-                LoadingIcon(loginStep2)
-                Divider(
-                    color = Color.Red,
-                    thickness = 1.dp,
-                    modifier = Modifier
-                        .width(halfScreenWidth)
-                        .padding(10.dp)
-                )
-                LoadingIcon(loginStep3)
-            }
-            Text(statusText, modifier = Modifier
-                .padding(bottom = 10.dp),
-                textAlign = TextAlign.Center
-            )
-            if(logoutError){
-                Button(onClick = { logout() }) {
-                    Text("Attempt logout again")
-                }
-            }else{
-                Button(onClick = { loginWithTwitch() }) {
-                    Text("Login with Twitch")
-                }
-            }
-
-        }
-
-
-    }
-}
-
-@Composable
-fun LoadingIcon(response:Response<Boolean>?){
-    when(response){
-        is Response.Loading ->{
-            CircularProgressIndicator()
-        }
-        is Response.Success ->{
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Green,
-                modifier = Modifier.size(35.dp)
-            )
-        }
-        is Response.Failure ->{
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Red,
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        else -> {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription ="Circle with checkmark indicating a process is complete",
-                tint = Color.Gray,
-                modifier = Modifier.size(40.dp)
-            )
-        }
-    }
-
-}
 
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CustomTopBar(
-    state: Int,
-    changeState: (Int) -> Unit,
-    pagerState: PagerState,
     scaffoldState: ScaffoldState,
 
 ){
 
     val scope = rememberCoroutineScope()
-   // var state by remember { mutableStateOf(0) }
-    Log.d("pagerStateCurrentPage",pagerState.currentPage.toString())
-
-    val titles = listOf("Followed", "Mods")// I WAS USING A TABBED ROW FOR THIS
     Column(modifier = Modifier
         .fillMaxWidth()
         .background(colorResource(R.color.red))
@@ -476,15 +239,7 @@ fun CustomTopBar(
                 tint = Color.White)
             Text("Live channels", fontSize = 25.sp,modifier = Modifier.padding(start=20.dp), color = Color.White)
         }
-//        TabRow(selectedTabIndex = pagerState.currentPage) {
-//            titles.forEachIndexed { index, title ->
-//                Tab(
-//                    text = { Text(title) },
-//                    selected = pagerState.currentPage == index,
-//                    onClick = { changeState(index) }
-//                )
-//            }
-//        }
+
 
 
     }
@@ -531,59 +286,10 @@ fun ScaffoldDrawer(
 
 
 
-@Composable
-fun SecondTesting(
-    filteredModList: List<String?>
-) {
-    for(item in filteredModList){
-        Log.d("loggedInUserUiStateViewModel","homeViewList --> ${item}")
-    }
-    if(filteredModList.isNotEmpty()){
-        for(items in filteredModList){
-            items?.let{channelTitle ->
-                Row(){
-                    Box(modifier = Modifier
-                        .width(120.dp)
-                        .height(80.dp)
-                        .background(Color.Red)){
-
-                    }
-                    Column(modifier = Modifier.padding(start = 10.dp)) {
-                        Text(channelTitle, fontSize = 20.sp)
-                        Text(
-                            "streamItem.streamTitle",
-                            fontSize = 15.sp,
-                            modifier = Modifier.alpha(0.5f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            "streamItem.gameTitle",
-                            fontSize = 15.sp,
-                            modifier = Modifier.alpha(0.5f)
-                        )
-                    }
-                }
-            }
-        }
-
-    }else{
-        Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.padding(10.dp)){
-            Text("No live mod channels.", fontSize = 25.sp)
-            Text("If you see channels you mod for in the followed section, please click on them. They will then be automatically added to your mod list",fontSize = 20.sp)
-        }
-
-    }
-
-
-
-}
 
 
 @Composable
 fun UrlImages(
-
-    contentPadding: PaddingValues,
     urlList:List<StreamInfo>?,
     onNavigate: (Int) -> Unit,
     updateStreamerName: (String,String,String,String) -> Unit,
@@ -592,7 +298,8 @@ fun UrlImages(
     networkRequest:(suspend ()->Unit)->Unit,
     showFailedNetworkRequestMessage:Boolean,
     height:Int,
-    width:Int
+    width:Int,
+    urlListLoading:Response<Boolean>
 ){
     val scope = rememberCoroutineScope()
     val initialColor = colorResource(R.color.red)
@@ -668,90 +375,102 @@ fun UrlImages(
             .padding(start = 5.dp, end = 5.dp)
 
         ){
-            if (urlList != null) {
+            when(urlListLoading){
+                is Response.Loading ->{
+                    CircularProgressIndicator(modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
+                }
+                is Response.Success ->{
+                    if (urlList != null) {
 
 
-                Log.d("UrlImagesListSize", urlList.size.toString())
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(contentPadding)
-                        .fillMaxHeight()
-                ) {
-                    if(urlList.isEmpty()){
-                        item{
-                            EmptyFollowingList()
-                        }
-                    }
-
-                    items(urlList) { streamItem ->
-                        Log.d("urlListImageUrl", streamItem.url)
-                        Row(modifier = Modifier.clickable {
-
-                            Log.d(
-                                "broadcasterIdClicked",
-                                "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
-                            )
-                            updateStreamerName(
-                                streamItem.streamerName, clientId, streamItem.broadcasterId, userId
-                            )
-                            onNavigate(R.id.action_homeFragment_to_streamFragment)
-                        }
-                        ) {
-                            Box() {
-
-
-                                SubcomposeAsyncImage(
-                                    model = streamItem.url,
-                                    loading = {
-                                        Card(
-                                            modifier = Modifier.height((height/1.5).dp).width((width/1.5).dp),
-                                            backgroundColor = Color.DarkGray
-                                        ){
-
-                                        }
-                                    },
-                                    contentDescription = "stringResource(R.string.description)"
-                                )
-                                Text(
-                                    "${streamItem.views}",
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.ExtraBold
-                                    ),
-                                    modifier = Modifier
-                                        .align(Alignment.BottomStart)
-                                        .padding(5.dp)
-                                )
-                            }
-                            Column(modifier = Modifier.padding(start = 10.dp)) {
-                                Text(streamItem.streamerName, fontSize = 20.sp,color = Color.White)
-                                Text(
-                                    streamItem.streamTitle,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.alpha(0.7f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color.White
-                                )
-                                Text(
-                                    streamItem.gameTitle,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.alpha(0.7f),
-                                    color = Color.White
-                                )
-                            }
-
-                        }
-
-                        Spacer(
+                        Log.d("UrlImagesListSize", urlList.size.toString())
+                        LazyColumn(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(10.dp)
-                        )
+                                .fillMaxHeight()
+                        ) {
+                            if(urlList.isEmpty()){
+                                item{
+                                    EmptyFollowingList()
+                                }
+                            }
+
+                            items(urlList) { streamItem ->
+                                Log.d("urlListImageUrl", streamItem.url)
+                                Row(modifier = Modifier.clickable {
+
+                                    Log.d(
+                                        "broadcasterIdClicked",
+                                        "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
+                                    )
+                                    updateStreamerName(
+                                        streamItem.streamerName, clientId, streamItem.broadcasterId, userId
+                                    )
+                                    onNavigate(R.id.action_homeFragment_to_streamFragment)
+                                }
+                                ) {
+                                    Box() {
+
+
+                                        SubcomposeAsyncImage(
+                                            model = streamItem.url,
+                                            loading = {
+                                                Card(
+                                                    modifier = Modifier
+                                                        .height((height / 1.5).dp)
+                                                        .width((width / 1.5).dp),
+                                                    backgroundColor = Color.DarkGray
+                                                ){
+
+                                                }
+                                            },
+                                            contentDescription = "stringResource(R.string.description)"
+                                        )
+                                        Text(
+                                            "${streamItem.views}",
+                                            style = TextStyle(
+                                                color = Color.White,
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.ExtraBold
+                                            ),
+                                            modifier = Modifier
+                                                .align(Alignment.BottomStart)
+                                                .padding(5.dp)
+                                        )
+                                    }
+                                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                                        Text(streamItem.streamerName, fontSize = 20.sp,color = Color.White)
+                                        Text(
+                                            streamItem.streamTitle,
+                                            fontSize = 15.sp,
+                                            modifier = Modifier.alpha(0.7f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            color = Color.White
+                                        )
+                                        Text(
+                                            streamItem.gameTitle,
+                                            fontSize = 15.sp,
+                                            modifier = Modifier.alpha(0.7f),
+                                            color = Color.White
+                                        )
+                                    }
+
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(10.dp)
+                                )
+                            }
+                        }// end of the lazy column
                     }
-                }// end of the lazy column
+                }
+                is Response.Failure ->{
+                    Text("FAILED TO GET CODE",modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
+                }
             }
+
 
                 //apparently this is the code I am using to make the message disappear
 
