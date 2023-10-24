@@ -20,6 +20,7 @@ import com.example.clicker.databinding.FragmentHomeBinding
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.presentation.stream.StreamViewModel
 import androidx.fragment.app.activityViewModels
+import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 // TODO: Rename parameter arguments, choose names that match
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val dataStoreViewModel:DataStoreViewModel by activityViewModels()
     private val workerViewModel:WorkerViewModel by activityViewModels()
+    private val authenticationViewModel:AuthenticationViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,12 +71,13 @@ class HomeFragment : Fragment() {
                     Intent.ACTION_VIEW, Uri.parse(
                         "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users")
                 )
-                HomeView(
+                ValidationView(
                     homeViewModel = homeViewModel,
                     streamViewModel = streamViewModel,
+                    authenticationViewModel = authenticationViewModel,
                     loginWithTwitch = {startActivity(twitchIntent)},
                     onNavigate = { dest -> findNavController().navigate(dest) },
-                    workerViewModel = workerViewModel
+                  //  workerViewModel = workerViewModel
 
                 )
             }
@@ -112,7 +115,7 @@ class HomeFragment : Fragment() {
 
 
 
-            homeViewModel.setOAuthToken(authCode)
+            authenticationViewModel.setOAuthToken(authCode)
         }
     }
 

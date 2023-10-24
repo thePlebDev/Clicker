@@ -3,34 +3,22 @@ package com.example.clicker.presentation.home
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.BuildConfig
-import com.example.clicker.authentication.TwitchAuthentication
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.AuthenticatedUser
-import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.ValidatedUser
-import com.example.clicker.network.models.toStreamInfo
-import com.example.clicker.network.repository.TwitchRepoImpl
-import com.example.clicker.network.websockets.TwitchWebSocket
-import com.example.clicker.util.logCoroutineInfo
+import com.example.clicker.presentation.authentication.CertifiedUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -45,9 +33,11 @@ data class HomeUIState(
 
     val loadingLoginText:String ="Getting authentication token",
     val loginStep:Response<Boolean>? = Response.Loading,
-    val clientId:String = "",
-    val userId:String ="",
-    val failedNetworkRequest:Boolean = false
+    val failedNetworkRequest:Boolean = false,
+
+    val streamersListLoading:Response<Boolean> = Response.Loading
+
+
 
 
 
@@ -61,6 +51,8 @@ data class LoginStatus(
     val loginStep3: Response<Boolean>? = null,
     val logoutError:Boolean = false
 )
+
+
 
 
 @HiltViewModel
@@ -79,84 +71,38 @@ class HomeViewModel @Inject constructor(
 
 
 
+
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
 
     private var _loginUIState: MutableState<LoginStatus> = mutableStateOf(LoginStatus())
     val loginState:State<LoginStatus> = _loginUIState
 
-    // really don't like this but It will work for now. Too tightly coupled and should be a dependency
-    private val twitchAuthentication= TwitchAuthentication(
-        twitchRepoImpl = twitchRepoImpl,
-        tokenDataStore = tokenDataStore,
-        scope = viewModelScope,
-        _uiState = _uiState,
-        _loginUIState = _loginUIState
-    )
 
+    private val _authenticatedUser =MutableStateFlow<CertifiedUser?>(null)
+    val authenticatedUser:StateFlow<CertifiedUser?> = _authenticatedUser
+    fun updateAuthenticatedUser(certifiedUser: CertifiedUser){
+        _authenticatedUser.tryEmit(certifiedUser)
+    }
 
     init{
         viewModelScope.launch {
-            _newUrlList.collect{streamInfoList ->
-                streamInfoList?.let{list ->
-                    for (item in list){
-                        Log.d("URLLISTREQUEST","WILL MAKE REQUEST SINGLE REQUEST!!")
-                    }
+            _authenticatedUser.collect{ authUser ->
+                authUser?.also {
+                    getLiveStreams(
+                        userId = it.userId,
+                        clientId = it.clientId,
+                        oAuthToken = it.oAuthToken
+                    )
                 }
 
             }
         }
 
-    }
 
-
-
-
-
-
-    //TODO: THIS SHOULD COME FROM THE TwitchAuthentication CLASS
-    private val mutableAuthenticatedUserFlow = twitchAuthentication.mutableAuthenticatedUserFlow
-
-    init{
-        /**
-         * starts the observing of the hot flow, mutableAuthenticatedUserFlow*/
-        collectAuthenticatedUserFlow()
-    }
-
-
-
-    //TODO:THIS CAN BE MOVED
-    private fun collectAuthenticatedUserFlow() =viewModelScope.launch {
-        mutableAuthenticatedUserFlow.collect{mainState ->
-            mainState.oAuthToken?.let{notNullToken ->
-                twitchAuthentication.validateOAuthToken(
-                    notNullToken,
-                )
-                //todo:send off the worker request
-                tokenValidationWorker.enqueueRequest(notNullToken)
-
-            }
-            mainState.authUser?.let {user ->
-                _uiState.value = _uiState.value.copy(
-                    clientId = user.clientId,
-                    userId = user.userId
-                )
-                getLiveStreams(validatedUser = user,mainState.oAuthToken!!)
-            }
-        }
-    }
-
-
-    fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
-        //need to make a call to exchange the authCode for a validationToken
-        Log.d("setOAuthToken","token -> $oAuthToken")
-        twitchAuthentication.setOAuthToken(oAuthToken = oAuthToken)
 
     }
 
-    fun beginLogout() = viewModelScope.launch{
-      twitchAuthentication.beginLogout()
-    }
 
 
 
@@ -170,8 +116,8 @@ class HomeViewModel @Inject constructor(
                 twitchRepoImpl
                     .getFollowedLiveStreams(
                         authorizationToken = _uiState.value.authenticationCode?:"",
-                        clientId=_uiState.value.clientId,
-                        userId =_uiState.value.userId,
+                        clientId="_uiState.value.clientId",
+                        userId ="_uiState.value.userId",
                     )
                     .collect{response ->
                         when(response){
@@ -206,46 +152,45 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getLiveStreams(validatedUser: ValidatedUser, oAuthToken:String){
-        Log.d("ValidatedUserUserId","user_id -> ${validatedUser.userId}")
-        Log.d("ValidatedUserUserId","client_id -> ${validatedUser.clientId}")
+    private suspend fun getLiveStreams(
+        clientId: String,
+        userId:String,
+        oAuthToken:String
+    ){
+
         withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
             twitchRepoImpl.getFollowedLiveStreams(
                 authorizationToken = oAuthToken,
-                clientId = validatedUser.clientId,
-                userId = validatedUser.userId
+                clientId = clientId,
+                userId = userId
             ).collect{response ->
                 when(response){
                     is Response.Loading ->{
-                        _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText = "Getting live streams",
-                            loginStep1 = Response.Loading
-                        )
 
                     }
                     is Response.Success ->{
 
+                        val liveStreamLists =response.data
+                        Log.d("AuthenticationViewModelGetLiveStreams","size -> ${liveStreamLists.size}")
 
-                        val replacedWidthHeight =response.data.map{
+
+                        val replacedWidthHeightList =response.data.map{
                             it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
                         }
 
-                        _newUrlList.tryEmit(replacedWidthHeight)
-
-
-                        _loginUIState.value = _loginUIState.value.copy(
-
-                            loginStep1 = Response.Success(true),
-                            showLoginModal = false
+                        _uiState.value = _uiState.value.copy(
+                            streamersListLoading = Response.Success(true)
                         )
+                        _newUrlList.tryEmit(replacedWidthHeightList)
                     }
                     //end
                     is Response.Failure ->{
-                        _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText = "Error getting streams. Please login again",
-                            loginStep1 = Response.Failure(Exception("No authentication token found"))
-
-
+                        _uiState.value = _uiState.value.copy(
+                            failedNetworkRequest = true
+                        )
+                        delay(2000)
+                        _uiState.value = _uiState.value.copy(
+                            failedNetworkRequest = false
                         )
                     }
                 }

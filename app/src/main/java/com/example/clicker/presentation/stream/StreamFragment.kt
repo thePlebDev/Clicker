@@ -60,7 +60,7 @@ class StreamFragment : Fragment(),View.OnClickListener {
         val channelName = streamViewModel.channelName.value!!
         Log.d("twitchNameonCreateView",channelName)
 
-        val url="https://player.twitch.tv/?channel=$channelName&muted=false&controls=false&parent=modderz"
+        val url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
 
        // val view = binding.root
 

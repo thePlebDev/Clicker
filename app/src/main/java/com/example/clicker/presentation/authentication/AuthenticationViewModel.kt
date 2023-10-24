@@ -1,20 +1,22 @@
-package com.example.clicker.authentication
+package com.example.clicker.presentation.authentication
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
-import com.example.clicker.presentation.home.HomeUIState
 import com.example.clicker.presentation.home.LoginStatus
 import com.example.clicker.presentation.home.MainBusState
+import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.home.changeUrlWidthHeight
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,33 +26,95 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class TwitchAuthentication constructor(
-    private val twitchRepoImpl: TwitchRepo,
+
+data class AuthenticationUIState(
+    val showLoginModal:Boolean = true,
+    val showLoginButton:Boolean = true,
+
+    val loginStep1: Response<Boolean> = Response.Loading,
+    val logoutError:Boolean = false,
+
+    val authenticationCode:String ="",
+    val clientId:String ="",
+    val userId:String ="",
+
+    val authenticated:Boolean = false,
+
+    val showErrorModal:Boolean = false,
+    val modalText:String = "Retrieving authentication token",
+
+
+)
+
+data class CertifiedUser(
+    val oAuthToken: String="",
+    val clientId: String="",
+    val userId: String=""
+)
+
+@HiltViewModel
+class AuthenticationViewModel @Inject constructor(
+    private val authentication: TwitchRepo,
     private val tokenDataStore: TokenDataStore,
-    private val scope: CoroutineScope,
-    private val _uiState: MutableState<HomeUIState>,
-    private val _loginUIState: MutableState<LoginStatus>
-) {
 
+    ): ViewModel() {
 
+    private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(AuthenticationUIState())
+    val authenticationUIState: State<AuthenticationUIState> = _authenticationUIState
 
     //1)CREATE THE AUTHENTICATION STATE
-        private val authenticatedUserFlow = combine(
+    private val authenticatedUserFlow = combine(
         flow = MutableStateFlow<String?>(null),
-        flow2 =MutableStateFlow<ValidatedUser?>(null)
+        flow2 = MutableStateFlow<ValidatedUser?>(null)
     ){
-        oAuthToken,validatedUser ->
+            oAuthToken,validatedUser ->
         MainBusState(oAuthToken,validatedUser)
 
-    }.stateIn(scope, SharingStarted.Lazily,
+    }.stateIn(viewModelScope, SharingStarted.Lazily,
         MainBusState(oAuthToken = null, authUser = null)
     )
 
-     val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
-    init {
-        //checks to see if the current device has a token stored
-        Log.d("TOKENFOUDNGETTING","TwitchAuthentication CREATED")
+    val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
+
+
+    init{
+        /**
+         * starts the observing of the hot flow, mutableAuthenticatedUserFlow
+         * */
+        collectAuthenticatedUserFlow()
         getOAuthToken()
+    }
+
+    private fun collectAuthenticatedUserFlow() =viewModelScope.launch {
+        mutableAuthenticatedUserFlow.collect{mainState ->
+            mainState.oAuthToken?.let{notNullToken ->
+               validateOAuthToken(
+                    notNullToken,
+                )
+
+                //todo:send off the worker request
+              //  tokenValidationWorker.enqueueRequest(notNullToken)
+
+            }
+            mainState.authUser?.let {user ->
+                _authenticationUIState.value = _authenticationUIState.value.copy(
+                    clientId = user.clientId,
+                    userId = user.userId,
+                    authenticated = true
+                )
+                //todo:the getLivesStreams() code will not run in this viewModel
+
+            }
+        }
+    }
+
+    fun validatedUser():CertifiedUser{
+        val user = CertifiedUser(
+            oAuthToken = _authenticationUIState.value.authenticationCode,
+            clientId = _authenticationUIState.value.clientId,
+            userId = _authenticationUIState.value.userId,
+        )
+        return user
     }
 
 
@@ -62,7 +126,7 @@ class TwitchAuthentication constructor(
      *
      * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
      * */
-    private fun getOAuthToken() = scope.launch{
+    private fun getOAuthToken() = viewModelScope.launch{
         tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
 
             if(storedOAuthToken.length > 2){
@@ -76,9 +140,9 @@ class TwitchAuthentication constructor(
                 )
             }else{
 
-                _loginUIState.value = _loginUIState.value.copy(
-                    loginStatusText ="Please login with Twitch",
-                    loginStep1 = Response.Failure(Exception("No authentication token found"))
+                _authenticationUIState.value = _authenticationUIState.value.copy(
+                    modalText ="Please login with Twitch",
+                    showErrorModal = true
                 )
             }
         }
@@ -90,9 +154,9 @@ class TwitchAuthentication constructor(
      * */
     fun validateOAuthToken(
         oAuthenticationToken:String,
-    ) =scope.launch{
+    ) =viewModelScope.launch{
         withContext( Dispatchers.IO + CoroutineName("TokenValidator")){
-            twitchRepoImpl.validateToken(oAuthenticationToken).collect{response ->
+            authentication.validateToken(oAuthenticationToken).collect{response ->
                 Log.d("VALIDATINGTOKEN","TOKEN ---> VALIDATING.....")
 
                 when(response){
@@ -101,7 +165,7 @@ class TwitchAuthentication constructor(
                         logCoroutineInfo("CoroutineDebugging","GOT ITEMS from remote")
                         Log.d("VALIDATINGTOKEN","TOKEN ---> SUCCESS.....")
 
-                        _uiState.value = _uiState.value.copy(
+                        _authenticationUIState.value = _authenticationUIState.value.copy(
                             authenticationCode =oAuthenticationToken
                         )
                         mutableAuthenticatedUserFlow.tryEmit(
@@ -114,9 +178,9 @@ class TwitchAuthentication constructor(
                     is Response.Failure ->{
                         Log.d("VALIDATINGTOKEN","TOKEN ---> FAILED.....")
 
-                        _loginUIState.value = _loginUIState.value.copy(
-                            loginStatusText="Failed to validate token. Please login again",
-                            loginStep1 = Response.Failure(Exception("failed to validate Token. Please login again"))
+                        _authenticationUIState.value = _authenticationUIState.value.copy(
+                            modalText="Failed to validate token. Please login again",
+                            showErrorModal = true
                         )
                     }
                 }
@@ -126,17 +190,27 @@ class TwitchAuthentication constructor(
         }
 
 
-    }
+    }//end validateOAuthToken
+
+
+
+
+
+
+
+
+
+
     // BEGIN LOGOUT STAGE
     suspend fun beginLogout(){
-        _loginUIState.value = _loginUIState.value.copy(
+        _authenticationUIState.value = _authenticationUIState.value.copy(
             showLoginModal = true,
             loginStep1 = Response.Loading,
-            loginStatusText = "Logging out",
+            modalText = "Logging out",
 
             )
         withContext( Dispatchers.IO +CoroutineName("BeginLogout")){
-            twitchRepoImpl.logout(
+            authentication.logout(
                 clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,
                 token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
                 .collect{response ->
@@ -144,17 +218,15 @@ class TwitchAuthentication constructor(
                     when(response){
                         is Response.Loading ->{}
                         is Response.Success ->{
-                            _loginUIState.value = _loginUIState.value.copy(
-                                loginStatusText = "Success! Please log in with Twitch",
-                                showLoginModal = true,
+                            _authenticationUIState.value = _authenticationUIState.value.copy(
+                                modalText = "Success! Please log in with Twitch",
                                 logoutError = false,
                                 loginStep1 = Response.Failure(Exception("Please login again")),
                             )
                         }
                         is Response.Failure ->{
-                            _loginUIState.value = _loginUIState.value.copy(
-                                loginStatusText = "Logout Error! Please try again",
-                                showLoginModal = true,
+                            _authenticationUIState.value = _authenticationUIState.value.copy(
+                                modalText = "Logout Error! Please try again",
                                 loginStep1 = Response.Failure(Exception("Error Logging out")),
                                 logoutError = true
                             )
@@ -171,7 +243,7 @@ class TwitchAuthentication constructor(
     /**
      * Below could be possibly moved
      */
-    suspend fun setOAuthToken(oAuthToken:String){
+     fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
         //need to make a call to exchange the authCode for a validationToken
         Log.d("setOAuthToken","token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
@@ -184,4 +256,4 @@ class TwitchAuthentication constructor(
     }
 
 
-}
+}// end of the view model
