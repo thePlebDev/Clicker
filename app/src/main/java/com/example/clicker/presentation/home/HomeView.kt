@@ -114,6 +114,24 @@ fun ValidationView(
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+    val modalText = authenticationViewModel.authenticationUIState.value.modalText
+    val showModalState =authenticationViewModel.authenticationUIState.value.showLoginModal
+    if(showModalState){
+        LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
+            // Your coroutine code here
+            scope.launch {
+                bottomModalState.show()
+            }
+        }
+
+    }else{
+        LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
+            // Your coroutine code here
+            scope.launch {
+                bottomModalState.hide()
+            }
+        }
+    }
 
     val userIsAuthenticated = authenticationViewModel.authenticationUIState.value.authenticated
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -130,7 +148,11 @@ fun ValidationView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text("You are not logged in",color = Color.White, fontSize = 30.sp)
+                Text(
+                    modalText,color = Color.White,
+                    fontSize = 30.sp,modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
                     Button(onClick = {loginWithTwitch()}) {
                         Text(text = "Login with Twitch")
                     }
@@ -143,7 +165,7 @@ fun ValidationView(
             drawerContent = {
                 ScaffoldDrawer(
                     logout ={
-                        //  homeViewModel.beginLogout()
+                          authenticationViewModel.beginLogout()
                     },
                     scaffoldState = scaffoldState
                 )
