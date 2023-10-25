@@ -211,7 +211,7 @@ fun HomeView(
     onNavigate: (Int) -> Unit,
 ){
 
-        val urlListLoading = homeViewModel.state.value.streamersListLoading
+     val urlListLoading = homeViewModel.state.value.streamersListLoading
                     //todo: home pager page goes here
                     UrlImages(
                         urlList =homeViewModel.newUrlList.collectAsState().value,

@@ -25,7 +25,6 @@ import javax.inject.Inject
 data class HomeUIState(
     val userLogginIn:Boolean = false,
     val userProfile:String? = null,
-    val authenticationCode:String? = null,
     val hideModal:Boolean = false,
 
     val width:Int =0,
@@ -113,11 +112,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
 
             withContext(Dispatchers.IO +CoroutineName("GetLiveStreamsPull")){
+                Log.d("testingGetLiveStreams","userid ->${_authenticatedUser.value?.userId}")
+                Log.d("testingGetLiveStreams","clientId ->${_authenticatedUser.value?.clientId}")
                 twitchRepoImpl
                     .getFollowedLiveStreams(
-                        authorizationToken = _uiState.value.authenticationCode?:"",
-                        clientId="_uiState.value.clientId",
-                        userId ="_uiState.value.userId",
+                        authorizationToken = _authenticatedUser.value?.oAuthToken?:"",
+                        clientId=_authenticatedUser.value?.clientId ?:"",
+                        userId =_authenticatedUser.value?.userId ?:"",
                     )
                     .collect{response ->
                         when(response){
