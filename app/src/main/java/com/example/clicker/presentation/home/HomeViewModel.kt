@@ -56,9 +56,7 @@ data class LoginStatus(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchRepo,
-    private val tokenValidationWorker: TokenValidationWorker,
 ): ViewModel(){
 
 

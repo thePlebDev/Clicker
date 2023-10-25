@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.LoginStatus
@@ -59,6 +60,7 @@ data class CertifiedUser(
 class AuthenticationViewModel @Inject constructor(
     private val authentication: TwitchRepo,
     private val tokenDataStore: TokenDataStore,
+    private val tokenValidationWorker: TokenValidationWorker,
 
     ): ViewModel() {
 
@@ -96,7 +98,7 @@ class AuthenticationViewModel @Inject constructor(
                 )
 
                 //todo:send off the worker request
-              //  tokenValidationWorker.enqueueRequest(notNullToken)
+                tokenValidationWorker.enqueueRequest(notNullToken)
 
             }
             mainState.authUser?.let {user ->
