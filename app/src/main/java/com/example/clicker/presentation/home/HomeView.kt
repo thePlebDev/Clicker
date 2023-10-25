@@ -53,6 +53,7 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -167,7 +168,11 @@ fun ValidationView(
                     logout ={
                           authenticationViewModel.beginLogout()
                     },
-                    scaffoldState = scaffoldState
+                    loginWithTwitch={
+                                    loginWithTwitch()
+                    },
+                    scaffoldState = scaffoldState,
+                    userIsLoggedIn = userIsAuthenticated
                 )
             },
             topBar = {
@@ -188,7 +193,6 @@ fun ValidationView(
                     HomeView(
                         homeViewModel,
                         streamViewModel,
-                        loginWithTwitch,
                         onNavigate
                     )
 
@@ -207,7 +211,6 @@ fun ValidationView(
 fun HomeView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
-    loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
 ){
 
@@ -272,7 +275,56 @@ fun CustomTopBar(
 @Composable
 fun ScaffoldDrawer(
     logout: () -> Unit,
+    loginWithTwitch: () -> Unit,
     scaffoldState: ScaffoldState,
+    userIsLoggedIn:Boolean
+){
+    if(userIsLoggedIn){
+        LogoutCard(scaffoldState, logout = {logout()})
+    }else{
+        LoginCard(scaffoldState, loginWithTwitch = {loginWithTwitch()})
+    }
+
+}
+
+@Composable
+fun LoginCard(
+    scaffoldState: ScaffoldState,
+    loginWithTwitch: () -> Unit,
+){
+    val scope = rememberCoroutineScope()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable {
+                scope.launch {
+                    scaffoldState.drawerState.close()
+                }
+                loginWithTwitch()
+            },
+        elevation = 10.dp
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ){
+            Text("Login with Twitch", fontSize = 20.sp)
+            Icon(
+                Icons.Default.AccountCircle,
+                "Logout",
+                modifier = Modifier.size(35.dp)
+            )
+
+        }
+    }
+}
+
+@Composable
+fun LogoutCard(
+    scaffoldState: ScaffoldState,
+    logout: () -> Unit,
 ){
     val scope = rememberCoroutineScope()
 
@@ -297,12 +349,11 @@ fun ScaffoldDrawer(
             Icon(
                 Icons.Default.ExitToApp,
                 "Logout",
-                modifier = Modifier.size(35.dp))
+                modifier = Modifier.size(35.dp)
+            )
 
         }
     }
-
-
 }
 
 
