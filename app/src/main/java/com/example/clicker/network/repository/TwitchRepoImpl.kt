@@ -4,7 +4,9 @@ import android.util.Log
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.StreamData
@@ -23,7 +25,7 @@ import javax.inject.Inject
 
 class TwitchRepoImpl @Inject constructor(
     private val twitchClient: TwitchClient
-): TwitchRepo {
+): TwitchRepo,TwitchAuthentication, TwitchStream {
 
 
     override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{

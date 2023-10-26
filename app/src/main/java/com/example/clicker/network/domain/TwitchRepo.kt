@@ -13,7 +13,6 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface TwitchRepo {
-    suspend fun validateToken(token:String): Flow<Response<ValidatedUser>>
 
     suspend fun getFollowedLiveStreams(
         authorizationToken:String,
@@ -21,43 +20,6 @@ interface TwitchRepo {
         userId:String
     ):Flow<Response<List<StreamInfo>>>
 
-    fun logout(clientId:String,token:String):Flow<Response<String>>
-
-    suspend fun getChatSettings(oAuthToken:String,clientId: String,broadcasterId:String):Flow<Response<ChatSettings>>
-
-    suspend fun updateChatSettings(
-        oAuthToken:String,
-        clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
-        body: UpdateChatSettings
-    ):Flow<Response<Boolean>>
-
-    suspend fun deleteChatMessage(
-        oAuthToken:String,
-        clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
-        messageId:String,
-
-    ):Flow<Response<Boolean>>
-
-    suspend fun banUser(
-        oAuthToken:String,
-        clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
-        body:BanUser
-    ):Flow<Response<BanUserResponse>>
-
-    suspend fun unBanUser(
-        oAuthToken:String,
-        clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
-        userId: String
-
-    ):Flow<Response<Boolean>>
 
 
 

@@ -13,6 +13,7 @@ import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.models.UpdateChatSettings
 
@@ -69,7 +70,7 @@ data class StreamUIState(
 class StreamViewModel @Inject constructor(
     private val webSocket: TwitchWebSocket,
     private val tokenDataStore: TokenDataStore,
-    private val twitchRepoImpl: TwitchRepo,
+    private val twitchRepoImpl: TwitchStream,
 ): ViewModel() {
 
     private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)

@@ -3,7 +3,9 @@ package com.example.clicker.di.modules
 import android.content.Context
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.repository.TwitchRepoImpl
 import dagger.Module
 import dagger.Provides
@@ -41,5 +43,15 @@ object SingletonModule {
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
     }
+    @Provides
+    fun provideTwitchAuthRepo(twitchRepoImpl: TwitchRepoImpl): TwitchAuthentication {
+        return twitchRepoImpl
+    }
+
+    @Provides
+    fun provideTwitchStreamRepo(twitchRepoImpl: TwitchRepoImpl): TwitchStream {
+        return twitchRepoImpl
+    }
+
 
 }

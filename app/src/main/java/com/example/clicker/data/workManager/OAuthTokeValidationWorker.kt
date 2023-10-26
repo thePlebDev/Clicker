@@ -9,6 +9,7 @@ import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.util.Response
 import com.google.gson.Gson
@@ -24,7 +25,7 @@ import javax.inject.Inject
 class OAuthTokeValidationWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    @Assisted private val twitchRepoImpl: TwitchRepo
+    @Assisted private val twitchRepoImpl: TwitchAuthentication
 ): CoroutineWorker( appContext,workerParams) {
 
 
