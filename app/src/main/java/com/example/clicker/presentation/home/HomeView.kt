@@ -214,7 +214,7 @@ fun HomeView(
     onNavigate: (Int) -> Unit,
 ){
 
-      val urlListLoading = homeViewModel.state.value.streamersListLoading
+       val urlListLoading = homeViewModel.state.value.streamersListLoading
                     //todo: home pager page goes here
                     UrlImages(
                         urlList =homeViewModel.newUrlList.collectAsState().value,
@@ -224,8 +224,8 @@ fun HomeView(
                             streamerName,clientId,broadcasterId,userId
                         )
                         },
-                        clientId = "homeViewModel.state.value.clientId",
-                        userId = "homeViewModel.state.value.userId",
+                        clientId = homeViewModel.authenticatedUser.value?.clientId ?:"",
+                        userId = homeViewModel.authenticatedUser.value?.userId ?:"",
                        networkRequest={
                                resetUI:suspend ()->Unit -> homeViewModel.pullToRefreshGetLiveStreams(resetUI =resetUI )
                        },

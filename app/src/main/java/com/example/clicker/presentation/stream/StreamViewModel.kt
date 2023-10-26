@@ -505,7 +505,9 @@ class StreamViewModel @Inject constructor(
 //        }
         withContext(Dispatchers.IO + CoroutineName("GetChatSettings")){
             tokenDataStore.getOAuthToken().collect{oAuthToken ->
-                Log.d("twitchNameonCreateViewVIewModel","clientId ->$clientId")
+                Log.d("getChatSettingsCalled","clientId ->${_uiState.value.clientId}")
+                Log.d("getChatSettingsCalled","broadcasterId ->${_uiState.value.broadcasterId}")
+                Log.d("getChatSettingsCalled","oAuthToken ->$oAuthToken")
 //            Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
 //            Log.d("twitchNameonCreateViewVIewModel","oAuthToken ->$oAuthToken")
                 if(oAuthToken.isNotEmpty()){
