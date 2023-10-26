@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.LoginStatus
@@ -58,7 +59,7 @@ data class CertifiedUser(
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
-    private val authentication: TwitchRepo,
+    private val authentication: TwitchAuthentication,
     private val tokenDataStore: TokenDataStore,
     private val tokenValidationWorker: TokenValidationWorker,
 

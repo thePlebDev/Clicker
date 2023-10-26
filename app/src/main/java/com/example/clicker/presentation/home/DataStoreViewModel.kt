@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.AuthenticatedUser
 import com.example.clicker.network.repository.TwitchRepoImpl
@@ -35,7 +36,7 @@ data class DataStoreUIState(
 )
 @HiltViewModel
 class DataStoreViewModel @Inject constructor(
-    private val twitchRepoImpl: TwitchRepo,
+    private val twitchRepoImpl: TwitchAuthentication,
     private val tokenDataStore:TokenDataStore
 ): ViewModel() {
 
