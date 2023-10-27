@@ -27,15 +27,11 @@ import org.mockito.junit.MockitoJUnitRunner
 class HomeViewModelTest {
 
     //todo: I need to mock all of these values
-//    private val tokenDataStore: TokenDataStore,
-//    private val twitchRepoImpl: TwitchRepo,
-//    private val tokenValidationWorker: TokenValidationWorker,
-//    private val getFollowedLiveStreamsUseCase: GetFollowedLiveStreamsUseCase
 
-    var tokenDataStore: TokenDataStore = mock(TokenDataStore::class.java)
+
+
      var twitchRepoImpl: TwitchRepo = mock(TwitchRepo::class.java)
-     //var tokenValidationWorker: TokenValidationWorker = mock(TokenValidationWorker::class.java)
-     //var getFollowedLiveStreamsUseCase: GetFollowedLiveStreamsUseCase = mock(GetFollowedLiveStreamsUseCase::class.java)
+
 
 
 
@@ -43,16 +39,22 @@ class HomeViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testingGetLiveChannels()= runTest(UnconfinedTestDispatcher()) {
-//        val homeViewModel = HomeViewModel(
-//            tokenDataStore,
-//            twitchRepoImpl,
-//            tokenValidationWorker,
-//            getFollowedLiveStreamsUseCase
-//        )
+    fun testingGetLiveChannels()= runTest {
+
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        Dispatchers.setMain(testDispatcher)
+        try{
+//            val homeViewModel = HomeViewModel(
+//                twitchRepoImpl,
+//            )
+            Assert.assertEquals(2, 2)
+        }finally {
+            Dispatchers.resetMain()
+        }
 
 
 
-        Assert.assertEquals(2, 2)
+
+
     }
 }

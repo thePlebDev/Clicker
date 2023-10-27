@@ -24,6 +24,7 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +72,7 @@ class StreamViewModel @Inject constructor(
     private val webSocket: TwitchWebSocket,
     private val tokenDataStore: TokenDataStore,
     private val twitchRepoImpl: TwitchStream,
+    private val ioDispatcher: CoroutineDispatcher
 ): ViewModel() {
 
     private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -122,7 +124,7 @@ class StreamViewModel @Inject constructor(
 
     init{
         viewModelScope.launch {
-            withContext(Dispatchers.IO + CoroutineName("MessageToDeleteId")){
+            withContext(ioDispatcher + CoroutineName("MessageToDeleteId")){
                 webSocket.messageToDeleteId.collect{nullableMsgId ->
                     nullableMsgId?.let{nonNullMsgId ->
                         filterMessages(nonNullMsgId)
@@ -183,7 +185,7 @@ class StreamViewModel @Inject constructor(
     }
 
     fun deleteChatMessage(messageId:String) = viewModelScope.launch{
-        withContext(Dispatchers.IO + CoroutineName("DeleteChatMessage")){
+        withContext(ioDispatcher + CoroutineName("DeleteChatMessage")){
             twitchRepoImpl.deleteChatMessage(
                 oAuthToken =_uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -359,7 +361,7 @@ class StreamViewModel @Inject constructor(
     }
     init{
         viewModelScope.launch {
-            withContext(Dispatchers.IO + CoroutineName("StartingWebSocket")){
+            withContext(ioDispatcher + CoroutineName("StartingWebSocket")){
                 _channelName.collect{channelName ->
                     channelName?.let{
                         startWebSocket(channelName)
@@ -371,7 +373,7 @@ class StreamViewModel @Inject constructor(
     }
     init{
         viewModelScope.launch {
-            withContext(Dispatchers.IO + CoroutineName("RoomState")){
+            withContext(ioDispatcher + CoroutineName("RoomState")){
                 webSocket.roomState.collect{nullableRoomState ->
                     nullableRoomState?.let {roomState ->
                         //todo: update the _uiState chatSettings with these values
@@ -550,7 +552,7 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableSlowMode = false
         )
-        withContext(Dispatchers.IO + CoroutineName("SlowModeChatSettings")){
+        withContext(ioDispatcher + CoroutineName("SlowModeChatSettings")){
             twitchRepoImpl.updateChatSettings(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -617,7 +619,7 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableFollowerMode = false
         )
-        withContext(Dispatchers.IO + CoroutineName("FollowerModeToggle")){
+        withContext(ioDispatcher + CoroutineName("FollowerModeToggle")){
             twitchRepoImpl.updateChatSettings(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -688,7 +690,7 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableSubscriberMode = false
         )
-        withContext(Dispatchers.IO + CoroutineName("SubscriberModeToggle")){
+        withContext(ioDispatcher + CoroutineName("SubscriberModeToggle")){
             twitchRepoImpl.updateChatSettings(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -751,7 +753,7 @@ class StreamViewModel @Inject constructor(
 
     }
     fun timeoutUser() = viewModelScope.launch{
-        withContext(Dispatchers.IO + CoroutineName("TimeoutUser")){
+        withContext(ioDispatcher + CoroutineName("TimeoutUser")){
             val timeoutUser = BanUser(
                 data = BanUserData(
                     user_id = _clickedUserId.value,
@@ -807,7 +809,7 @@ class StreamViewModel @Inject constructor(
         )
         Log.d("deleteChatMessageException", "banUser.user_id ${banUserNew.data.user_id}")
        // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
-        withContext(Dispatchers.IO + CoroutineName("BanUser")){
+        withContext(ioDispatcher + CoroutineName("BanUser")){
             twitchRepoImpl.banUser(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -841,7 +843,7 @@ class StreamViewModel @Inject constructor(
 
     }
     fun unBanUser() = viewModelScope.launch{
-        withContext(Dispatchers.IO + CoroutineName("UnBanUser")){
+        withContext(ioDispatcher + CoroutineName("UnBanUser")){
             twitchRepoImpl.unBanUser(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,
@@ -887,7 +889,7 @@ class StreamViewModel @Inject constructor(
             showChatSettingAlert = false,
             enableEmoteMode = false
         )
-        withContext(Dispatchers.IO + CoroutineName("EmoteModeToggle")){
+        withContext(ioDispatcher + CoroutineName("EmoteModeToggle")){
             twitchRepoImpl.updateChatSettings(
                 oAuthToken = _uiState.value.oAuthToken,
                 clientId = _uiState.value.clientId,

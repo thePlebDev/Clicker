@@ -11,13 +11,13 @@ import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
-import com.example.clicker.presentation.home.LoginStatus
 import com.example.clicker.presentation.home.MainBusState
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.changeUrlWidthHeight
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -62,6 +62,7 @@ class AuthenticationViewModel @Inject constructor(
     private val authentication: TwitchAuthentication,
     private val tokenDataStore: TokenDataStore,
     private val tokenValidationWorker: TokenValidationWorker,
+    private val ioDispatcher: CoroutineDispatcher
 
     ): ViewModel() {
 
@@ -160,7 +161,7 @@ class AuthenticationViewModel @Inject constructor(
     fun validateOAuthToken(
         oAuthenticationToken:String,
     ) =viewModelScope.launch{
-        withContext( Dispatchers.IO + CoroutineName("TokenValidator")){
+        withContext( ioDispatcher + CoroutineName("TokenValidator")){
 
 
             authentication.validateToken(oAuthenticationToken).collect{response ->
@@ -218,7 +219,7 @@ class AuthenticationViewModel @Inject constructor(
             modalText = "Logging out...",
 
             )
-        withContext( Dispatchers.IO +CoroutineName("BeginLogout")){
+        withContext( ioDispatcher +CoroutineName("BeginLogout")){
             authentication.logout(
                 clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,
                 token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
