@@ -133,7 +133,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getLiveStreams(
+     suspend fun getLiveStreams(
         clientId: String,
         userId:String,
         oAuthToken:String
