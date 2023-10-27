@@ -14,6 +14,7 @@ import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,27 +37,13 @@ data class HomeUIState(
 
     val streamersListLoading:Response<Boolean> = Response.Loading
 
-
-
-
-
 )
-data class LoginStatus(
-    val showLoginModal:Boolean = true,
-    val showLoginButton:Boolean = true,
-    val loginStatusText:String = "Retrieving authentication token",
-    val loginStep1: Response<Boolean> = Response.Loading,
-    val loginStep2: Response<Boolean>? = null,
-    val loginStep3: Response<Boolean>? = null,
-    val logoutError:Boolean = false
-)
-
-
 
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
+    private val ioDispatcher: CoroutineDispatcher
 ): ViewModel(){
 
 
@@ -65,15 +52,10 @@ class HomeViewModel @Inject constructor(
 
 
 
-
-
-
-
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state:State<HomeUIState> = _uiState
 
-    private var _loginUIState: MutableState<LoginStatus> = mutableStateOf(LoginStatus())
-    val loginState:State<LoginStatus> = _loginUIState
+
 
 
     private val _authenticatedUser =MutableStateFlow<CertifiedUser?>(null)
@@ -109,7 +91,7 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshGetLiveStreams(resetUI: suspend()->Unit){
         viewModelScope.launch {
 
-            withContext(Dispatchers.IO +CoroutineName("GetLiveStreamsPull")){
+            withContext(ioDispatcher +CoroutineName("GetLiveStreamsPull")){
                 Log.d("testingGetLiveStreams","userid ->${_authenticatedUser.value?.userId}")
                 Log.d("testingGetLiveStreams","clientId ->${_authenticatedUser.value?.clientId}")
                 twitchRepoImpl
