@@ -214,7 +214,7 @@ fun HomeView(
     onNavigate: (Int) -> Unit,
 ){
 
-        val urlListLoading = homeViewModel.state.value.streamersListLoading
+    val urlListLoading = homeViewModel.state.value.streamersListLoading
                     //todo: home pager page goes here
                     UrlImages(
                         urlList =homeViewModel.newUrlList.collectAsState().value,
@@ -448,101 +448,102 @@ fun UrlImages(
             .padding(start = 5.dp, end = 5.dp)
 
         ){
-            when(urlListLoading){
-                is Response.Loading ->{
-                    CircularProgressIndicator(modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
-                }
-                is Response.Success ->{
-                    if (urlList != null) {
-
-
-                        Log.d("UrlImagesListSize", urlList.size.toString())
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                        ) {
-                            if(urlList.isEmpty()){
-                                item{
-                                    EmptyFollowingList()
-                                }
-                            }
-
-                            items(urlList) { streamItem ->
-                                Log.d("urlListImageUrl", streamItem.url)
-                                Row(modifier = Modifier.clickable {
-
-                                    Log.d(
-                                        "broadcasterIdClicked",
-                                        "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
-                                    )
-                                    updateStreamerName(
-                                        streamItem.streamerName, clientId, streamItem.broadcasterId, userId
-                                    )
-                                    onNavigate(R.id.action_homeFragment_to_streamFragment)
-                                }
-                                ) {
-                                    Box() {
-
-
-                                        SubcomposeAsyncImage(
-                                            model = streamItem.url,
-                                            loading = {
-                                                Card(
-                                                    modifier = Modifier
-                                                        .height((height / 1.5).dp)
-                                                        .width((width / 1.5).dp),
-                                                    backgroundColor = Color.DarkGray
-                                                ){
-
-                                                }
-                                            },
-                                            contentDescription = "stringResource(R.string.description)"
-                                        )
-                                        Text(
-                                            "${streamItem.views}",
-                                            style = TextStyle(
-                                                color = Color.White,
-                                                fontSize = 15.sp,
-                                                fontWeight = FontWeight.ExtraBold
-                                            ),
-                                            modifier = Modifier
-                                                .align(Alignment.BottomStart)
-                                                .padding(5.dp)
-                                        )
-                                    }
-                                    Column(modifier = Modifier.padding(start = 10.dp)) {
-                                        Text(streamItem.streamerName, fontSize = 20.sp,color = Color.White)
-                                        Text(
-                                            streamItem.streamTitle,
-                                            fontSize = 15.sp,
-                                            modifier = Modifier.alpha(0.7f),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            color = Color.White
-                                        )
-                                        Text(
-                                            streamItem.gameTitle,
-                                            fontSize = 15.sp,
-                                            modifier = Modifier.alpha(0.7f),
-                                            color = Color.White
-                                        )
-                                    }
-
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(10.dp)
-                                )
-                            }
-                        }// end of the lazy column
-                    }
-                }
-                is Response.Failure ->{
-                    Text("FAILED TO GET CODE",modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
-                }
-            }
+            Text("Fix the damn error handling for getFollowedLiveStreams", fontSize = 30.sp)
+//            when(urlListLoading){
+//                is Response.Loading ->{
+//                    CircularProgressIndicator(modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
+//                }
+//                is Response.Success ->{
+//                    if (urlList != null) {
+//
+//
+//                        Log.d("UrlImagesListSize", urlList.size.toString())
+//                        LazyColumn(
+//                            modifier = Modifier
+//                                .fillMaxHeight()
+//                        ) {
+//                            if(urlList.isEmpty()){
+//                                item{
+//                                    EmptyFollowingList()
+//                                }
+//                            }
+//
+//                            items(urlList) { streamItem ->
+//                                Log.d("urlListImageUrl", streamItem.url)
+//                                Row(modifier = Modifier.clickable {
+//
+//                                    Log.d(
+//                                        "broadcasterIdClicked",
+//                                        "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
+//                                    )
+//                                    updateStreamerName(
+//                                        streamItem.streamerName, clientId, streamItem.broadcasterId, userId
+//                                    )
+//                                    onNavigate(R.id.action_homeFragment_to_streamFragment)
+//                                }
+//                                ) {
+//                                    Box() {
+//
+//
+//                                        SubcomposeAsyncImage(
+//                                            model = streamItem.url,
+//                                            loading = {
+//                                                Card(
+//                                                    modifier = Modifier
+//                                                        .height((height / 1.5).dp)
+//                                                        .width((width / 1.5).dp),
+//                                                    backgroundColor = Color.DarkGray
+//                                                ){
+//
+//                                                }
+//                                            },
+//                                            contentDescription = "stringResource(R.string.description)"
+//                                        )
+//                                        Text(
+//                                            "${streamItem.views}",
+//                                            style = TextStyle(
+//                                                color = Color.White,
+//                                                fontSize = 15.sp,
+//                                                fontWeight = FontWeight.ExtraBold
+//                                            ),
+//                                            modifier = Modifier
+//                                                .align(Alignment.BottomStart)
+//                                                .padding(5.dp)
+//                                        )
+//                                    }
+//                                    Column(modifier = Modifier.padding(start = 10.dp)) {
+//                                        Text(streamItem.streamerName, fontSize = 20.sp,color = Color.White)
+//                                        Text(
+//                                            streamItem.streamTitle,
+//                                            fontSize = 15.sp,
+//                                            modifier = Modifier.alpha(0.7f),
+//                                            maxLines = 1,
+//                                            overflow = TextOverflow.Ellipsis,
+//                                            color = Color.White
+//                                        )
+//                                        Text(
+//                                            streamItem.gameTitle,
+//                                            fontSize = 15.sp,
+//                                            modifier = Modifier.alpha(0.7f),
+//                                            color = Color.White
+//                                        )
+//                                    }
+//
+//                                }
+//
+//                                Spacer(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .height(10.dp)
+//                                )
+//                            }
+//                        }// end of the lazy column
+//                    }
+//                }
+//                is Response.Failure ->{
+//                    Text("FAILED TO GET CODE",modifier = Modifier.size(30.dp).align(Alignment.Center),color = Color.Red)
+//                }
+//            }
 
 
                 //apparently this is the code I am using to make the message disappear
