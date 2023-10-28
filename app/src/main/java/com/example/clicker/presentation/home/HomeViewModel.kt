@@ -165,7 +165,8 @@ class HomeViewModel @Inject constructor(
                          //end
                          is Response.Failure ->{
                              _uiState.value = _uiState.value.copy(
-                                 failedNetworkRequest = true
+                                 failedNetworkRequest = true,
+                                 streamersListLoading = response
                              )
                              delay(2000)
                              _uiState.value = _uiState.value.copy(
