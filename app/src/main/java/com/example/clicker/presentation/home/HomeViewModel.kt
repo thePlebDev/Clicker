@@ -21,20 +21,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 
 data class HomeUIState(
     val userLogginIn:Boolean = false,
     val userProfile:String? = null,
     val hideModal:Boolean = false,
-
     val width:Int =0,
     val aspectHeight:Int =0,
-
     val loadingLoginText:String ="Getting authentication token",
     val loginStep:Response<Boolean>? = Response.Loading,
     val failedNetworkRequest:Boolean = false,
-
     val streamersListLoading:Response<Boolean> = Response.Loading
 
 )
@@ -133,52 +131,58 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getLiveStreams(
+     suspend fun getLiveStreams(
         clientId: String,
         userId:String,
         oAuthToken:String
     ){
+         try{
+             withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
+                 twitchRepoImpl.getFollowedLiveStreams(
+                     authorizationToken = oAuthToken,
+                     clientId = clientId,
+                     userId = userId
+                 ).collect{response ->
+                     when(response){
+                         is Response.Loading ->{
 
-        withContext(Dispatchers.IO +CoroutineName("GetLiveStreams")){
-            twitchRepoImpl.getFollowedLiveStreams(
-                authorizationToken = oAuthToken,
-                clientId = clientId,
-                userId = userId
-            ).collect{response ->
-                when(response){
-                    is Response.Loading ->{
+                         }
+                         is Response.Success ->{
 
-                    }
-                    is Response.Success ->{
-
-                        val liveStreamLists =response.data
-                        Log.d("AuthenticationViewModelGetLiveStreams","size -> ${liveStreamLists.size}")
-
-
-                        val replacedWidthHeightList =response.data.map{
-                            it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
-                        }
-
-                        _uiState.value = _uiState.value.copy(
-                            streamersListLoading = Response.Success(true)
-                        )
-                        _newUrlList.tryEmit(replacedWidthHeightList)
-                    }
-                    //end
-                    is Response.Failure ->{
-                        _uiState.value = _uiState.value.copy(
-                            failedNetworkRequest = true
-                        )
-                        delay(2000)
-                        _uiState.value = _uiState.value.copy(
-                            failedNetworkRequest = false
-                        )
-                    }
-                }
-            }
+                             val liveStreamLists =response.data
+                             Log.d("AuthenticationViewModelGetLiveStreams","size -> ${liveStreamLists.size}")
 
 
-        }
+                             val replacedWidthHeightList =response.data.map{
+                                 it.changeUrlWidthHeight(_uiState.value.width,_uiState.value.aspectHeight)
+                             }
+
+                             _uiState.value = _uiState.value.copy(
+                                 streamersListLoading = Response.Success(true)
+                             )
+                             _newUrlList.tryEmit(replacedWidthHeightList)
+                         }
+                         //end
+                         is Response.Failure ->{
+                             _uiState.value = _uiState.value.copy(
+                                 failedNetworkRequest = true
+                             )
+                             delay(2000)
+                             _uiState.value = _uiState.value.copy(
+                                 failedNetworkRequest = false
+                             )
+                         }
+                     }
+                 }
+
+
+             }
+
+         }catch (e:IOException){
+
+         }
+
+
 
     }
 
