@@ -67,7 +67,7 @@ class TwitchRepoImpl @Inject constructor(
             clientId = clientId,
             userId = userId
         )
-        
+
         val emptyBody = FollowedLiveStreams(listOf<StreamData>())
         val body = response.body() ?: emptyBody
         val exported = body.data.map { it.toStreamInfo() }
