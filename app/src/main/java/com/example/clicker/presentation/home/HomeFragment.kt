@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.material.Text
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
@@ -71,11 +72,28 @@ class HomeFragment : Fragment() {
                     Intent.ACTION_VIEW, Uri.parse(
                         "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users")
                 )
+//                CLIENT_ID=xk7p10b4gwoacyi40rlktnxvyjn990
+//                REDIRECT_URL=https://com.example.modderz
+                val client ="xk7p10b4gwoacyi40rlktnxvyjn990"
+                val redirect ="https://com.example.modderz"
+
+                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$client&redirect_uri=$redirect&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
+
+                val intent = CustomTabsIntent.Builder().build()
+               // twitchIntent.setPackage("com.example.clicker")
+
+
+
                 ValidationView(
                     homeViewModel = homeViewModel,
                     streamViewModel = streamViewModel,
                     authenticationViewModel = authenticationViewModel,
-                    loginWithTwitch = {startActivity(twitchIntent)},
+                    loginWithTwitch = {
+                        startActivity(twitchIntent)
+                        intent.launchUrl(
+                            requireActivity(), Uri.parse(authorizationUrl)
+                    )
+                                      },
                     onNavigate = { dest -> findNavController().navigate(dest) },
                   //  workerViewModel = workerViewModel
 
@@ -94,6 +112,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        Log.d("domainManagerStuff","ON-RESUME")
 
         val uri: Uri? = activity?.intent?.data
 
@@ -117,6 +136,9 @@ class HomeFragment : Fragment() {
 
             authenticationViewModel.setOAuthToken(authCode)
         }
+    }
+    fun launchCustomTab(){
+
     }
 
 }
