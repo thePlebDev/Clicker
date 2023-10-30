@@ -89,6 +89,11 @@ class HomeFragment : Fragment() {
 
                 val intent = CustomTabsIntent.Builder().build()
                // twitchIntent.setPackage("com.example.clicker")
+                val domainIntent = Intent(
+                    Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+                    Uri.parse("package:${context.packageName}")
+                )
+
 
 
 
@@ -103,6 +108,7 @@ class HomeFragment : Fragment() {
                     )
                                       },
                     onNavigate = { dest -> findNavController().navigate(dest) },
+                    addToLinks={ context.startActivity(domainIntent)}
                   //  workerViewModel = workerViewModel
 
                 )

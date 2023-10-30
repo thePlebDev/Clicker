@@ -33,7 +33,8 @@ data class HomeUIState(
     val loadingLoginText:String ="Getting authentication token",
     val loginStep:Response<Boolean>? = Response.Loading,
     val failedNetworkRequest:Boolean = false,
-    val streamersListLoading:Response<Boolean> = Response.Loading
+    val streamersListLoading:Response<Boolean> = Response.Loading,
+    val domainIsRegistered:Boolean = false
 
 )
 
@@ -59,8 +60,10 @@ class HomeViewModel @Inject constructor(
     private val _authenticatedUser =MutableStateFlow<CertifiedUser?>(null)
     val authenticatedUser:StateFlow<CertifiedUser?> = _authenticatedUser
 
-    fun testOnResume(){
-        Log.d("resumeTestingStoof","IT DO BE ONRESUME()")
+    fun registerDomian(isRegistered:Boolean){
+        _uiState.value = _uiState.value.copy(
+            domainIsRegistered = isRegistered
+        )
     }
     fun updateAuthenticatedUser(certifiedUser: CertifiedUser){
         _authenticatedUser.tryEmit(certifiedUser)
