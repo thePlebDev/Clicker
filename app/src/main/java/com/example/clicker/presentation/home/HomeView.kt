@@ -43,6 +43,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -113,11 +114,13 @@ fun ValidationView(
     authenticationViewModel: AuthenticationViewModel,
     loginWithTwitch:() -> Unit,
     onNavigate: (Int) -> Unit,
+    addToLinks: () -> Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val modalText = authenticationViewModel.authenticationUIState.value.modalText
     val showModalState =authenticationViewModel.authenticationUIState.value.showLoginModal
+    val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
     if(showModalState){
         LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
             // Your coroutine code here
@@ -152,7 +155,9 @@ fun ValidationView(
 
                 Text(
                     modalText,color = Color.White,
-                    fontSize = 30.sp,modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
+                    fontSize = 30.sp,modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
                     Button(onClick = {loginWithTwitch()}) {
@@ -203,6 +208,13 @@ fun ValidationView(
         }
     }
 
+    if(!domainIsRegistered){
+        DisableForceRegister(
+            addToLinks ={addToLinks()}
+        )
+    }
+
+
 
 
 
@@ -210,7 +222,9 @@ fun ValidationView(
 }
 
 @Composable
-fun DisableForceRegister(){
+fun DisableForceRegister(
+    addToLinks: () -> Unit,
+){
     Box(modifier = Modifier.fillMaxSize()){
         Spacer(
             modifier = Modifier
@@ -220,7 +234,33 @@ fun DisableForceRegister(){
                 )
                 .matchParentSize()
         )
-    }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)
+                .align(Alignment.Center)
+                .clickable { },
+            backgroundColor = Color.DarkGray,
+            elevation = 10.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("You must add", fontSize = 25.sp, textAlign = TextAlign.Center, color = Color.White)
+                Text("com.example.clicker", fontSize = 30.sp, fontWeight = FontWeight.ExtraBold,color = Color.White,modifier = Modifier.padding(top = 10.dp, bottom = 10.dp), textAlign = TextAlign.Center)
+                Text(" to links to enable login with Twitch on Android 12 and higher",fontSize = 25.sp, color = Color.White,textAlign = TextAlign.Center)
+                Button(
+                    onClick = {addToLinks() },
+                    modifier = Modifier.padding(top = 20.dp,bottom = 20.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                ) {
+                    Text(text = "Add to links",fontSize = 25.sp,color = Color.White)
+                }
+
+            }
+
+        }
+
+    }//end of the box
+
 
 }
 
@@ -317,6 +357,7 @@ fun LoginCard(
             .fillMaxWidth()
             .padding(15.dp)
             .clickable {
+                Log.d("TRYINGtOlOGoUT","IN")
                 scope.launch {
                     scaffoldState.drawerState.close()
                 }
@@ -352,6 +393,7 @@ fun LogoutCard(
             .fillMaxWidth()
             .padding(15.dp)
             .clickable {
+                Log.d("TRYINGtOlOGoUT","OUT")
                 scope.launch {
                     scaffoldState.drawerState.close()
                 }

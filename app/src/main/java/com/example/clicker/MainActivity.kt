@@ -55,13 +55,12 @@ class MainActivity : AppCompatActivity() {
         val unapprovedDomains = userState?.hostToStateMap
             ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
 
-//        if(unapprovedDomains!!.isNotEmpty()){
-//            val intent = Intent(
-//                Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-//                Uri.parse("package:${context.packageName}")
-//            )
-//            context.startActivity(intent)
-//        }
+        if(selectedDomains!!.isNotEmpty()){
+            homeViewModel.registerDomian(true)
+        }
+        if(unapprovedDomains!!.isNotEmpty()){
+            homeViewModel.registerDomian(false)
+        }
 
 
         Log.d("domainManagerStuff","unapprovedDomains -> ${unapprovedDomains}")
