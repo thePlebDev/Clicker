@@ -1,8 +1,12 @@
 package com.example.clicker.presentation.home
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.verify.domain.DomainVerificationManager
+import android.content.pm.verify.domain.DomainVerificationUserState
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.material.Text
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -23,6 +28,7 @@ import com.example.clicker.presentation.stream.StreamViewModel
 import androidx.fragment.app.activityViewModels
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import android.provider.Settings
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -52,6 +58,7 @@ class HomeFragment : Fragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,6 +66,7 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
+
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
@@ -110,9 +118,11 @@ class HomeFragment : Fragment() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
         super.onResume()
         Log.d("domainManagerStuff","ON-RESUME")
+
 
         val uri: Uri? = activity?.intent?.data
 

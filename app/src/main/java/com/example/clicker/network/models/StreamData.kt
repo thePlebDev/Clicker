@@ -1,5 +1,6 @@
 package com.example.clicker.network.models
 
+import android.util.Log
 import com.example.clicker.presentation.home.StreamInfo
 import com.google.gson.annotations.SerializedName
 
@@ -32,8 +33,10 @@ data class StreamData(
 
 )
 fun StreamData.toStreamInfo():StreamInfo{
+
+
     return StreamInfo(
-        streamerName = this.userName,
+        streamerName = this.userLogin,
         streamTitle = this.title,
         gameTitle = this.gameName,
         views = this.viewerCount,

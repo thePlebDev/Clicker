@@ -33,15 +33,8 @@ class MainActivity : AppCompatActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.S)
-    @SuppressLint("SuspiciousIndentation")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-       System.setProperty("kotlinx.coroutines.debug", if(BuildConfig.DEBUG) "on" else "off")
-        installSplashScreen()
-
-        supportActionBar!!.hide()
-
-
+    override fun onResume() {
+        super.onResume()
         val context: Context = this
         val manager = context.getSystemService(DomainVerificationManager::class.java)
         val userState = manager.getDomainVerificationUserState(context.packageName)
@@ -61,13 +54,33 @@ class MainActivity : AppCompatActivity() {
 // All other domains.
         val unapprovedDomains = userState?.hostToStateMap
             ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
-        setContentView(R.layout.activity_main)
+
+//        if(unapprovedDomains!!.isNotEmpty()){
+//            val intent = Intent(
+//                Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+//                Uri.parse("package:${context.packageName}")
+//            )
+//            context.startActivity(intent)
+//        }
+
+
         Log.d("domainManagerStuff","unapprovedDomains -> ${unapprovedDomains}")
 
-        val intent = Intent(
-            Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-            Uri.parse("package:${context.packageName}"))
-        context.startActivity(intent)
+
+    }
+
+
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("SuspiciousIndentation")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+       System.setProperty("kotlinx.coroutines.debug", if(BuildConfig.DEBUG) "on" else "off")
+        installSplashScreen()
+
+        supportActionBar!!.hide()
+        setContentView(R.layout.activity_main)
+
 
 //        val myWebView: WebView = findViewById(R.id.webview)
 //
@@ -91,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
 
 
 

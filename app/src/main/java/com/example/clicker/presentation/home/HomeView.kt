@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -204,9 +205,27 @@ fun ValidationView(
 
 
 
+
+
+}
+
+@Composable
+fun DisableForceRegister(){
+    Box(modifier = Modifier.fillMaxSize()){
+        Spacer(
+            modifier = Modifier
+                .disableClickAndRipple()
+                .background(
+                    color = Color.Gray.copy(alpha = .7f)
+                )
+                .matchParentSize()
+        )
+    }
+
 }
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun HomeView(
     homeViewModel: HomeViewModel,
@@ -480,8 +499,8 @@ fun UrlImages(
                                     Row(modifier = Modifier.clickable {
 
                                         Log.d(
-                                            "broadcasterIdClicked",
-                                            "broadcasterIdClicked -->  ${streamItem.broadcasterId}"
+                                            "streamer",
+                                            "broadcasterIdClicked -->  ${streamItem.url}"
                                         )
                                         updateStreamerName(
                                             streamItem.streamerName, clientId, streamItem.broadcasterId, userId

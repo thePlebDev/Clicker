@@ -58,6 +58,10 @@ class HomeViewModel @Inject constructor(
 
     private val _authenticatedUser =MutableStateFlow<CertifiedUser?>(null)
     val authenticatedUser:StateFlow<CertifiedUser?> = _authenticatedUser
+
+    fun testOnResume(){
+        Log.d("resumeTestingStoof","IT DO BE ONRESUME()")
+    }
     fun updateAuthenticatedUser(certifiedUser: CertifiedUser){
         _authenticatedUser.tryEmit(certifiedUser)
     }
