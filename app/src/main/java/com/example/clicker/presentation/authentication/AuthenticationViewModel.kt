@@ -230,13 +230,15 @@ class AuthenticationViewModel @Inject constructor(
                         is Response.Success ->{
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Success! Login with Twitch",
+                                authenticated = false
                             )
                         }
                         is Response.Failure ->{
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Logout Error! Please try again",
                                 loginStep1 = Response.Failure(Exception("Error Logging out")),
-                                logoutError = true
+                                logoutError = true,
+                                authenticated = true
                             )
                         }
                         else -> {}
