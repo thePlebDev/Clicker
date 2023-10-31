@@ -16,16 +16,15 @@ class TokenValidationWorker @Inject constructor(
     private val context: Context
 ) {
 
-    private val uniqueId:String  ="Validating"
+    private val uniqueId: String = "Validating"
 
     private val workManager = WorkManager.getInstance(context)
-
 
     fun enqueueRequest(oAuthToken: String): LiveData<WorkInfo> {
         val workRequest = PeriodicWorkRequestBuilder<OAuthTokeValidationWorker>(
             1, // repeating interval
-            TimeUnit.HOURS,
-        ) //todo:MAKE THIS PERIODIC
+            TimeUnit.HOURS
+        ) // todo:MAKE THIS PERIODIC
         val data = Data.Builder()
         data.putString("token", oAuthToken)
         workRequest.setInputData(data.build())
@@ -38,8 +37,7 @@ class TokenValidationWorker @Inject constructor(
             ExistingPeriodicWorkPolicy.KEEP,
             builtWorkRequest
         )
-        Log.d("ENQUEDID","IT DO BE LIKE THAT SOMETIMES")
+        Log.d("ENQUEDID", "IT DO BE LIKE THAT SOMETIMES")
         return workManager.getWorkInfoByIdLiveData(builtWorkRequest.id)
     }
-
 }

@@ -5,50 +5,39 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
-import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.util.Response
 import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.onCompletion
-import javax.inject.Inject
 
 @HiltWorker
 class OAuthTokeValidationWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Assisted private val twitchRepoImpl: TwitchAuthentication
-): CoroutineWorker( appContext,workerParams) {
-
+) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-
-
-
-        val token =  inputData.getString("token")
-        Log.d("doWorkToken"," doWorkToken --> $token")
+        val token = inputData.getString("token")
+        Log.d("doWorkToken", " doWorkToken --> $token")
         val response = twitchRepoImpl.validateToken(token!!)
-          .drop(1) // skip the first emission of LOADING
-          .firstOrNull() // will catch either SUCCESS OF FAILURE
+            .drop(1) // skip the first emission of LOADING
+            .firstOrNull() // will catch either SUCCESS OF FAILURE
 
-
-        return when(response){
+        return when (response) {
             is Response.Loading -> {
-                Log.d("observeForeversWorker","LOADING")
+                Log.d("observeForeversWorker", "LOADING")
 
                 Result.success()
             }
             is Response.Success -> {
-                Log.d("observeForeversWorker","SUCCESS")
-                Log.d("observeForeversWorker",response.data.toString())
+                Log.d("observeForeversWorker", "SUCCESS")
+                Log.d("observeForeversWorker", response.data.toString())
 
                 val serializedValue = Gson().toJson(response.data)
                 val outputData = Data.Builder()
@@ -58,23 +47,20 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
                 Result.success(outputData)
             }
             is Response.Failure -> {
-                Log.d("observeForeversWorker","FAILED")
+                Log.d("observeForeversWorker", "FAILED")
                 Result.failure()
             }
             else -> Result.failure()
         }
-
     }
-
 }
 
 class CustomWorker(
     appContext: Context,
-    workerParams: WorkerParameters,
-):Worker(appContext,workerParams){
+    workerParams: WorkerParameters
+) : Worker(appContext, workerParams) {
     override fun doWork(): Result {
-        Log.d("OAuthTokeValidationWorker","IT IS RUNNING")
+        Log.d("OAuthTokeValidationWorker", "IT IS RUNNING")
         return Result.success()
     }
-
 }

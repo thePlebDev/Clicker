@@ -5,14 +5,13 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 
 class TwitchUserDataObjectMother private constructor() {
 
-
-    companion object{
+    companion object {
 
         private var twitchUserData: TwitchUserData = TwitchUserData(
             badgeInfo = null,
             badges = null,
             clientNonce = null,
-            color ="#000000",
+            color = "#000000",
             displayName = null,
             emotes = null,
             firstMsg = null,
@@ -31,109 +30,108 @@ class TwitchUserDataObjectMother private constructor() {
             systemMessage = null
         )
 
-        fun build():TwitchUserData{
+        fun build(): TwitchUserData {
             return twitchUserData
         }
-        fun addBadgeInfo(badgeInfo:String)=apply{
+        fun addBadgeInfo(badgeInfo: String) = apply {
             twitchUserData = twitchUserData.copy(
                 badgeInfo = badgeInfo
             )
         }
-        fun addBadges(badges:String)=apply{
+        fun addBadges(badges: String) = apply {
             twitchUserData = twitchUserData.copy(
                 badges = badges
             )
         }
-        fun addClientNonce(clientNonce:String)=apply{
+        fun addClientNonce(clientNonce: String) = apply {
             twitchUserData = twitchUserData.copy(
                 clientNonce = clientNonce
             )
         }
-        fun addColor(color:String)=apply{
+        fun addColor(color: String) = apply {
             twitchUserData = twitchUserData.copy(
                 color = color
             )
         }
-        fun addDisplayName(displayName:String)=apply{
+        fun addDisplayName(displayName: String) = apply {
             twitchUserData = twitchUserData.copy(
                 displayName = displayName
             )
         }
-        fun addEmotes(emotes:String)=apply{
+        fun addEmotes(emotes: String) = apply {
             twitchUserData = twitchUserData.copy(
                 emotes = emotes
             )
         }
-        fun addFirstMsg(firstMsg:String)=apply{
+        fun addFirstMsg(firstMsg: String) = apply {
             twitchUserData.copy(
                 firstMsg = firstMsg
             )
         }
-        fun addFlags(flags:String)=apply{
+        fun addFlags(flags: String) = apply {
             twitchUserData = twitchUserData.copy(
                 flags = flags
             )
         }
-        fun addId(id:String)=apply{
+        fun addId(id: String) = apply {
             twitchUserData = twitchUserData.copy(
                 id = id
             )
         }
-        fun addMod(mod:String)=apply{
+        fun addMod(mod: String) = apply {
             twitchUserData = twitchUserData.copy(
                 mod = mod
             )
         }
-        fun addReturningChatter(returningChatter:String)=apply{
+        fun addReturningChatter(returningChatter: String) = apply {
             twitchUserData = twitchUserData.copy(
                 returningChatter = returningChatter
             )
         }
-        fun addRoomId(roomId:String)=apply{
+        fun addRoomId(roomId: String) = apply {
             twitchUserData = twitchUserData.copy(
                 roomId = roomId
             )
         }
-        fun addSubscriber(subscriber:Boolean)=apply{
+        fun addSubscriber(subscriber: Boolean) = apply {
             twitchUserData = twitchUserData.copy(
                 subscriber = subscriber
             )
         }
-        fun addTmiSentTs(tmiSentTs:Long)=apply{
+        fun addTmiSentTs(tmiSentTs: Long) = apply {
             twitchUserData = twitchUserData.copy(
                 tmiSentTs = tmiSentTs
             )
         }
-        fun addTurbo(turbo:Boolean)=apply{
+        fun addTurbo(turbo: Boolean) = apply {
             twitchUserData = twitchUserData.copy(
                 turbo = turbo
             )
         }
-        fun addUserId(userId:String)=apply{
+        fun addUserId(userId: String) = apply {
             twitchUserData = twitchUserData.copy(
                 userId = userId
             )
         }
-        fun addUserType(userType:String?)=apply{
+        fun addUserType(userType: String?) = apply {
             twitchUserData = twitchUserData.copy(
                 userType = userType
             )
         }
-        fun addMessageType(messageType:MessageType)=apply{
+        fun addMessageType(messageType: MessageType) = apply {
             twitchUserData = twitchUserData.copy(
                 messageType = messageType
             )
         }
-        fun addBannedDuration(bannedDuration:Int)=apply{
+        fun addBannedDuration(bannedDuration: Int) = apply {
             twitchUserData = twitchUserData.copy(
                 bannedDuration = bannedDuration
             )
         }
-        fun addSystemMessage(systemMessage:String)= apply{
+        fun addSystemMessage(systemMessage: String) = apply {
             twitchUserData = twitchUserData.copy(
                 systemMessage = systemMessage
             )
         }
-
     }
 }

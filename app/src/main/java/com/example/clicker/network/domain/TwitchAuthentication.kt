@@ -5,7 +5,7 @@ import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface TwitchAuthentication {
-    suspend fun validateToken(token:String): Flow<Response<ValidatedUser>>
+    suspend fun validateToken(token: String): Flow<Response<ValidatedUser>>
 
-    fun logout(clientId:String,token:String):Flow<Response<String>>
+    fun logout(clientId: String, token: String): Flow<Response<String>>
 }

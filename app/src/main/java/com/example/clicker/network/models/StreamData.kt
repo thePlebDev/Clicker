@@ -1,40 +1,37 @@
 package com.example.clicker.network.models
 
-import android.util.Log
 import com.example.clicker.presentation.home.StreamInfo
 import com.google.gson.annotations.SerializedName
 
 data class StreamData(
-    val id:String,
+    val id: String,
     @SerializedName("user_id")
-    val userId:String,
+    val userId: String,
     @SerializedName("user_login")
-    val userLogin:String,
+    val userLogin: String,
     @SerializedName("user_name")
-    val userName:String,
+    val userName: String,
     @SerializedName("game_id")
-    val gameId:String,
+    val gameId: String,
     @SerializedName("game_name")
-    val gameName:String,
-    val type:String,
-    val title:String,
+    val gameName: String,
+    val type: String,
+    val title: String,
     @SerializedName("viewer_count")
-    val viewerCount:Int,
+    val viewerCount: Int,
     @SerializedName("started_at")
-    val startedAt:String,
-    val language:String,
+    val startedAt: String,
+    val language: String,
     @SerializedName("thumbnail_url")
-    val thumbNailUrl:String,
+    val thumbNailUrl: String,
     @SerializedName("tag_ids")
-    val tagIds:List<String>,
-    val tags:List<String>,
+    val tagIds: List<String>,
+    val tags: List<String>,
     @SerializedName("is_mature")
-    val isMature:Boolean
+    val isMature: Boolean
 
 )
-fun StreamData.toStreamInfo():StreamInfo{
-
-
+fun StreamData.toStreamInfo(): StreamInfo {
     return StreamInfo(
         streamerName = this.userLogin,
         streamTitle = this.title,
@@ -43,16 +40,4 @@ fun StreamData.toStreamInfo():StreamInfo{
         url = this.thumbNailUrl,
         broadcasterId = this.userId
     )
-
 }
-
-
-
-
-
-
-
-
-
-
-

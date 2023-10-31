@@ -2,9 +2,6 @@ package com.example.clicker.di.modules
 
 import android.content.Context
 import com.example.clicker.data.TokenValidationWorker
-import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.repository.TwitchRepoImpl
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +12,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 @Module
 @InstallIn(ViewModelComponent::class)
 object ViewModelModule {
-
 
 //    @Binds
 //    abstract fun bindsTwitchRepo(
@@ -30,10 +26,7 @@ object ViewModelModule {
     @Provides
     fun provideTokenValidationWorker(
         @ApplicationContext appContext: Context
-    ):TokenValidationWorker{
+    ): TokenValidationWorker {
         return TokenValidationWorker(appContext)
     }
-
-
-
 }
