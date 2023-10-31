@@ -1,53 +1,43 @@
 package com.example.clicker.network.websockets
 
-import android.util.Log
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
-import okhttp3.WebSocket
-import java.util.regex.Pattern
 import javax.inject.Inject
-
+import okhttp3.WebSocket
 
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
 class ParsingEngine @Inject constructor() {
 
-
-    fun clearChatTesting(text:String,streamerName:String):TwitchUserData{
-
-        //THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
-    //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
+    fun clearChatTesting(text: String, streamerName: String): TwitchUserData {
+        // THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
+        // THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
         val streamerNamePattern = "$streamerName$".toRegex()
-
 
         val clearChat = streamerNamePattern.find(text)
         val channelNameFound = clearChat?.value
 
-        if(channelNameFound == null){
+        if (channelNameFound == null) {
             return banUserParsing(text)
-
-        }else{
-            //todo: this should return a TwitchUserData object
-            //todo: 1) Basically I want this to send a message to clear the chat
-            //todo: 2) Basically I want this to display a message stating that the chat was cleared
+        } else {
+            // todo: this should return a TwitchUserData object
+            // todo: 1) Basically I want this to send a message to clear the chat
+            // todo: 2) Basically I want this to display a message stating that the chat was cleared
             return clearChatParsing(channelNameFound)
         }
-
-
     }
-    private fun banUserParsing(text: String):TwitchUserData{
-        //THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
-        //todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
-        //todo: I need to parse out the userId. target-user-id=949335660
+    private fun banUserParsing(text: String): TwitchUserData {
+        // THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
+        // todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
+        // todo: I need to parse out the userId. target-user-id=949335660
         val banUserPattern = "([^:]+)$".toRegex()
         val bannedUserIdPattern = "target-user-id=(\\d+)".toRegex()
 
         val bannedUserUsername = banUserPattern.find(text)
         val bannedUserId = bannedUserIdPattern.find(text)
-
 
         val usernameFound = bannedUserUsername?.value ?: "User"
         val bannedUserIdFound = bannedUserId?.groupValues?.get(1)
@@ -73,9 +63,8 @@ class ParsingEngine @Inject constructor() {
             messageType = MessageType.CLEARCHAT,
             bannedDuration = null
         )
-
     }
-    private fun clearChatParsing(channelName:String):TwitchUserData{
+    private fun clearChatParsing(channelName: String): TwitchUserData {
         return TwitchUserData(
             badgeInfo = null,
             badges = null,
@@ -97,16 +86,13 @@ class ParsingEngine @Inject constructor() {
             messageType = MessageType.CLEARCHAT,
             bannedDuration = null
         )
-
-
     }
-
 
     /**
      * Parses the websocket data sent from twitch. should run when a USERSTATE command is sent
      * @return [LoggedInUserData] Which represents the state of the current logged in user
      */
-    fun userStateParsing(text:String): LoggedInUserData {
+    fun userStateParsing(text: String): LoggedInUserData {
         val colorPattern = "color=([^;]+)".toRegex()
         val displayNamePattern = "display-name=([^;]+)".toRegex()
         val modStatusPattern = "mod=([^;]+)".toRegex()
@@ -117,31 +103,27 @@ class ParsingEngine @Inject constructor() {
         val modStatusMatch = modStatusPattern.find(text)
         val subStatusMatch = subStatusPattern.find(text)
 
-
-        val loggedData =LoggedInUserData(
-            color =colorMatch?.groupValues?.get(1),
+        val loggedData = LoggedInUserData(
+            color = colorMatch?.groupValues?.get(1),
             displayName = displayNameMatch?.groupValues?.get(1)!!,
             mod = modStatusMatch?.groupValues?.get(1)!! == "1",
             sub = subStatusMatch?.groupValues?.get(1)!! == "1"
 
         )
 
-
         return loggedData
-
-
     }
+
     /**
      * Parses the websocket data sent from twitch. Will run when a CLEARMSG command is sent
      * @property text the string to be parsed
      * @return a nullable string containing the id of the message to be deleted
      */
-    fun clearMsgParsing(text:String):String?{
+    fun clearMsgParsing(text: String): String? {
         val pattern = "target-msg-id=([^;]+)".toRegex()
 
         val messageId = pattern.find(text)?.groupValues?.get(1)
         return messageId
-
     }
 
     /**
@@ -149,17 +131,15 @@ class ParsingEngine @Inject constructor() {
      *
      * @return a [TwitchUserData] used to notify the user that they have connected to a streamer's chat room
      */
-    fun createJoinObject():TwitchUserData{
-
+    fun createJoinObject(): TwitchUserData {
         return TwitchUserDataObjectMother.addColor("#000000")
             .addDisplayName("Room update")
             .addUserType("Connected to chat!")
             .addMessageType(MessageType.JOIN)
             .build()
-
     }
 
-    fun noticeParsing(text:String,streamerChannelName: String):TwitchUserData{
+    fun noticeParsing(text: String, streamerChannelName: String): TwitchUserData {
         val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
         val matchResult = pattern.find(text)
         val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
@@ -178,11 +158,10 @@ class ParsingEngine @Inject constructor() {
      * @return a [TwitchUserData] used to notify the chat that an certain event has occurred. Example events are,
      * announcement, resub, sub, submysterygift, subgift
      */
-    fun userNoticeParsing(text: String,streamerChannelName: String): TwitchUserData {
-
+    fun userNoticeParsing(text: String, streamerChannelName: String): TwitchUserData {
         val displayNamePattern = "display-name=([^;]+)".toRegex()
-        val messageIdPattern ="msg-id=([^;]+)".toRegex()
-        val systemMessagePattern ="system-msg=([^;]+)".toRegex()
+        val messageIdPattern = "msg-id=([^;]+)".toRegex()
+        val systemMessagePattern = "system-msg=([^;]+)".toRegex()
         val personalMessagePattern = "#$streamerChannelName :([^;]+)".toRegex()
 
         val displayNameMatch = displayNamePattern.find(text)
@@ -190,20 +169,17 @@ class ParsingEngine @Inject constructor() {
         val systemMessageMatch = systemMessagePattern.find(text)
         val personalMessageMatch = personalMessagePattern.find(text)
 
+        val displayName = displayNameMatch?.groupValues?.get(1) ?: "username"
 
-
-        val displayName =displayNameMatch?.groupValues?.get(1) ?: "username"
-
-        val messageType:MessageType = when(messageIdMatch?.groupValues?.get(1) ?: "announcement"){
-            "announcement" ->{MessageType.ANNOUNCEMENT}
-            "resub" ->MessageType.RESUB
+        val messageType: MessageType = when (messageIdMatch?.groupValues?.get(1) ?: "announcement") {
+            "announcement" -> { MessageType.ANNOUNCEMENT }
+            "resub" -> MessageType.RESUB
             "sub" -> MessageType.SUB
-            "submysterygift" ->MessageType.MYSTERYGIFTSUB
-            "subgift" ->MessageType.GIFTSUB
-            else ->MessageType.ANNOUNCEMENT
-
+            "submysterygift" -> MessageType.MYSTERYGIFTSUB
+            "subgift" -> MessageType.GIFTSUB
+            else -> MessageType.ANNOUNCEMENT
         }
-        val systemMessage = systemMessageMatch?.groupValues?.get(1)?.replace("\\s"," ") ?: "Announcement!"
+        val systemMessage = systemMessageMatch?.groupValues?.get(1)?.replace("\\s", " ") ?: "Announcement!"
         val personalMessage = personalMessageMatch?.groupValues?.get(1)
 
         return TwitchUserDataObjectMother
@@ -212,7 +188,6 @@ class ParsingEngine @Inject constructor() {
             .addUserType(personalMessage)
             .addSystemMessage(systemMessage)
             .build()
-
     }
 
     /**
@@ -220,7 +195,7 @@ class ParsingEngine @Inject constructor() {
      * @property text the string to be parsed
      * @return a [TwitchUserData] representing all the meta data from an individual chatter
      */
-    fun privateMessageParsing(text:String):TwitchUserData{
+    fun privateMessageParsing(text: String): TwitchUserData {
         val pattern = "([^;@]+)=([^;]+)".toRegex()
         val privateMsgPattern = "([^:]+)$".toRegex()
 
@@ -229,7 +204,6 @@ class ParsingEngine @Inject constructor() {
 
         val parsedData = mutableMapOf<String, String>()
         val privateMsg = privateMsgResult?.groupValues?.get(1) ?: ""
-
 
         for (matchResult in matchResults) {
             val (key, value) = matchResult.destructured
@@ -256,56 +230,47 @@ class ParsingEngine @Inject constructor() {
             userId = parsedData["user-id"],
             messageType = MessageType.USER
         )
-
     }
+
     /**
      * Parses the information relate to the chat rooms state. Should be run when ROOMSTATE is sent
      * @property text the string to be parsed
      * @return a [RoomState] representing the current state of the chat room
      */
     fun roomStateParsing(text: String): RoomState {
-        val slowMode= getValueFromInput(text,"slow")
+        val slowMode = getValueFromInput(text, "slow")
 
-        val emoteMode = getValueFromInput(text,"emote-only")
-        val followersMode = getValueFromInput(text,"followers-only")
+        val emoteMode = getValueFromInput(text, "emote-only")
+        val followersMode = getValueFromInput(text, "followers-only")
 
-
-        val subMode = getValueFromInput(text,"subs-only")
+        val subMode = getValueFromInput(text, "subs-only")
         return RoomState(
-            emoteMode=emoteMode,
+            emoteMode = emoteMode,
             followerMode = followersMode,
             slowMode = slowMode,
             subMode = subMode
         )
-
     }
 
     /**
      * Send the PONG message to the websocket
      * @property webSocket the [WebSocket] which PONG will be sent to and tell the Twitch IRC servers to not disconnect
      */
-    fun sendPong(webSocket: WebSocket){
+    fun sendPong(webSocket: WebSocket) {
         webSocket.send("PONG")
     }
-
-
 
     private fun getValueFromInput(input: String, key: String): Boolean? {
         val pattern = "$key=([^;:\\s]+)".toRegex()
         val match = pattern.find(input)
         val returnedValue = match?.groupValues?.get(1) ?: return null
-        if( returnedValue == "-1"){
+        if (returnedValue == "-1") {
             return false
         }
-        if(key == "followers-only" && returnedValue == "0"){
+        if (key == "followers-only" && returnedValue == "0") {
             return true
-        }
-        else{
+        } else {
             return returnedValue != "0"
         }
-
     }
-
-
-
 }

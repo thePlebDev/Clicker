@@ -7,14 +7,13 @@ import androidx.work.Configuration
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.data.workManager.OAuthTokeValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class HiltApplication:Application(), Configuration.Provider {
+class HiltApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: CustomWorkerFactory
@@ -24,16 +23,14 @@ class HiltApplication:Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .build()
     }
-
 }
 
 class CustomWorkerFactory @Inject constructor(
     private val twitchRepoImpl: TwitchAuthentication
-    ): WorkerFactory(){
+) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters
-    ): ListenableWorker? = OAuthTokeValidationWorker(appContext,workerParameters,twitchRepoImpl)
-
+    ): ListenableWorker? = OAuthTokeValidationWorker(appContext, workerParameters, twitchRepoImpl)
 }

@@ -9,40 +9,38 @@ import kotlinx.coroutines.flow.Flow
 
 interface TwitchStream {
 
-
-
-    suspend fun getChatSettings(oAuthToken:String,clientId: String,broadcasterId:String): Flow<Response<ChatSettings>>
+    suspend fun getChatSettings(oAuthToken: String, clientId: String, broadcasterId: String): Flow<Response<ChatSettings>>
 
     suspend fun updateChatSettings(
-        oAuthToken:String,
+        oAuthToken: String,
         clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
+        broadcasterId: String,
+        moderatorId: String,
         body: UpdateChatSettings
     ): Flow<Response<Boolean>>
 
     suspend fun deleteChatMessage(
-        oAuthToken:String,
+        oAuthToken: String,
         clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
-        messageId:String,
+        broadcasterId: String,
+        moderatorId: String,
+        messageId: String
 
-        ): Flow<Response<Boolean>>
+    ): Flow<Response<Boolean>>
 
     suspend fun banUser(
-        oAuthToken:String,
+        oAuthToken: String,
         clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
+        broadcasterId: String,
+        moderatorId: String,
         body: BanUser
     ): Flow<Response<BanUserResponse>>
 
     suspend fun unBanUser(
-        oAuthToken:String,
+        oAuthToken: String,
         clientId: String,
-        broadcasterId:String,
-        moderatorId:String,
+        broadcasterId: String,
+        moderatorId: String,
         userId: String
 
     ): Flow<Response<Boolean>>

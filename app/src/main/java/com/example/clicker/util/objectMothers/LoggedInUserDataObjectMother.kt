@@ -4,7 +4,7 @@ import com.example.clicker.network.websockets.models.LoggedInUserData
 
 class LoggedInUserDataObjectMother private constructor() {
 
-    companion object{
+    companion object {
         private var loggedInUserData = LoggedInUserData(
             color = null,
             displayName = "#000000",
@@ -12,27 +12,27 @@ class LoggedInUserDataObjectMother private constructor() {
             mod = false
 
         )
-        fun addColor(color:String) = apply{
+        fun addColor(color: String) = apply {
             loggedInUserData = loggedInUserData.copy(
                 color = color
             )
         }
-        fun addDisplayName(displayName:String)= apply{
+        fun addDisplayName(displayName: String) = apply {
             loggedInUserData = loggedInUserData.copy(
                 displayName = displayName
             )
         }
-        fun addSub(sub:Boolean)= apply{
+        fun addSub(sub: Boolean) = apply {
             loggedInUserData = loggedInUserData.copy(
                 sub = sub
             )
         }
-        fun addMod(mod:Boolean)= apply{
+        fun addMod(mod: Boolean) = apply {
             loggedInUserData = loggedInUserData.copy(
                 mod = mod
             )
         }
-        fun build():LoggedInUserData{
+        fun build(): LoggedInUserData {
             return loggedInUserData
         }
     }

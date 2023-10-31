@@ -1,10 +1,10 @@
 package com.example.clicker.util
 
+import java.lang.reflect.Type
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
-import java.lang.reflect.Type
 
-class CustomRetrofitCallAdapter: CallAdapter.Factory() {
+class CustomRetrofitCallAdapter : CallAdapter.Factory() {
 
     override fun get(
         returnType: Type,
@@ -13,5 +13,4 @@ class CustomRetrofitCallAdapter: CallAdapter.Factory() {
     ): CallAdapter<*, *>? {
         TODO("Not yet implemented")
     }
-
 }

@@ -10,19 +10,17 @@ import com.example.clicker.network.repository.TwitchRepoImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object SingletonModule {
-
 
     @Singleton
     @Provides
@@ -45,6 +43,7 @@ object SingletonModule {
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
     }
+
     @Provides
     fun provideTwitchAuthRepo(twitchRepoImpl: TwitchRepoImpl): TwitchAuthentication {
         return twitchRepoImpl
@@ -59,5 +58,4 @@ object SingletonModule {
     fun provideCoroutineDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
     }
-
 }

@@ -16,11 +16,9 @@ internal fun Context.findActivity(): Activity {
     throw IllegalStateException("Permissions should be called in the context of an Activity")
 }
 
-fun logCoroutineInfo(tag:String,msg:String){
-    Log.d(tag,"Running on: [${Thread.currentThread().name}] | $msg")
+fun logCoroutineInfo(tag: String, msg: String) {
+    Log.d(tag, "Running on: [${Thread.currentThread().name}] | $msg")
 }
-
-
 
 fun <T, R : Any> Flow<T>.mapWithRetry(
     action: suspend (T) -> R,
@@ -36,4 +34,3 @@ fun <T, R : Any> Flow<T>.mapWithRetry(
     } while (shallRetry)
     return@map lastValue
 }
-

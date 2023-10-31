@@ -7,7 +7,6 @@ import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
-import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.StreamData
 import com.example.clicker.network.models.UpdateChatSettings
@@ -17,49 +16,48 @@ import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
+import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import java.net.UnknownHostException
-import javax.inject.Inject
 
 class TwitchRepoImpl @Inject constructor(
     private val twitchClient: TwitchClient
-): TwitchRepo,TwitchAuthentication, TwitchStream {
+) : TwitchRepo, TwitchAuthentication, TwitchStream {
 
-
-    override suspend fun validateToken(token:String):Flow<Response<ValidatedUser>> = flow{
-        logCoroutineInfo("CoroutineDebugging","Fetching from remote")
+    override suspend fun validateToken(token: String): Flow<Response<ValidatedUser>> = flow {
+        logCoroutineInfo("CoroutineDebugging", "Fetching from remote")
 
         emit(Response.Loading)
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
-       val response= twitchClient.validateToken(
+        val response = twitchClient.validateToken(
             authorization = "OAuth $token"
         )
-        if(response.isSuccessful){
-            LogWrap.d("VALIDATINGTHETOKEN","LOGWRAP SUCCESS")
-           emit(Response.Success(response.body()!!))
-        }else{
+        if (response.isSuccessful) {
+            LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
+            emit(Response.Success(response.body()!!))
+        } else {
             emit(Response.Failure(Exception("Error! Please login again")))
-            Log.d("VALIDATINGTHETOKEN","ERROR")
+            Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
-
     }.catch { cause ->
-        if(cause is UnknownHostException){
-
-            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
-        }else{
+        if (cause is UnknownHostException) {
+            emit(
+                Response.Failure(
+                    Exception("Network Error! Please check your connection and try again")
+                )
+            )
+        } else {
             emit(Response.Failure(Exception("Error! Please try again")))
         }
-
-
     }
 
     override suspend fun getFollowedLiveStreams(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<List<StreamInfo>>> = flow{
+    ): Flow<Response<List<StreamInfo>>> = flow {
         emit(Response.Loading)
 
         val response = twitchClient.getFollowedStreams(
@@ -72,83 +70,77 @@ class TwitchRepoImpl @Inject constructor(
         val body = response.body() ?: emptyBody
         val exported = body.data.map { it.toStreamInfo() }
 
-        if (response.isSuccessful){
+        if (response.isSuccessful) {
             emit(Response.Success(exported))
-
-        }else{
-
+        } else {
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
-
         }
-
-
-
     }.catch { cause ->
-        if(cause is UnknownHostException){
-            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
-        }else{
+        if (cause is UnknownHostException) {
+            emit(
+                Response.Failure(
+                    Exception("Network Error! Please check your connection and try again")
+                )
+            )
+        } else {
             emit(Response.Failure(Exception("Error getting streams! Please try again")))
         }
-
     }
 
-
-
-
-
-    override fun logout(clientId:String,token:String): Flow<Response<String>> = flow{
+    override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
         emit(Response.Loading)
 
         val response = twitchClient.logout(clientId = clientId, token = token)
-        if (response.isSuccessful){
+        if (response.isSuccessful) {
             Log.d("logoutResponse", "SUCCESS ->${response.message()}")
             emit(Response.Success("true"))
-        }else{
-
+        } else {
             Log.d("logoutResponse", "FAILED ->${response.message()}")
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
-
         }
     }.catch { cause ->
-        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
-            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
-        }else{
+        Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
+            emit(
+                Response.Failure(
+                    Exception("Network Error! Please check your connection and try again")
+                )
+            )
+        } else {
             emit(Response.Failure(Exception("Logout Error! Please try again")))
         }
-
-
     }
 
     override suspend fun getChatSettings(
         oAuthToken: String,
         clientId: String,
         broadcasterId: String
-    )= flow {
+    ) = flow {
         emit(Response.Loading)
 
-         val response = twitchClient.getChatSettings(
+        val response = twitchClient.getChatSettings(
             authorization = oAuthToken,
             clientId = clientId,
             broadcasterId = broadcasterId
         )
-        if (response.isSuccessful){
+        if (response.isSuccessful) {
             emit(Response.Success(response.body()!!))
-        }else{
-
+        } else {
             emit(Response.Failure(Exception(response.message())))
         }
     }.catch { cause ->
-        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
-            emit(Response.Failure(Exception("Network Error! Please check your connection and try again")))
-        }else{
+        Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
+            emit(
+                Response.Failure(
+                    Exception("Network Error! Please check your connection and try again")
+                )
+            )
+        } else {
             emit(Response.Failure(Exception("Logout Error! Please try again")))
         }
-
-
     }
 
     override suspend fun updateChatSettings(
@@ -157,32 +149,30 @@ class TwitchRepoImpl @Inject constructor(
         broadcasterId: String,
         moderatorId: String,
         body: UpdateChatSettings
-    ): Flow<Response<Boolean>>  = flow{
+    ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
 
-        val response =twitchClient.updateChatSettings(
+        val response = twitchClient.updateChatSettings(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
             broadcasterId = broadcasterId,
-            moderatorId= moderatorId,
+            moderatorId = moderatorId,
             body = body
         )
-        Log.d("changeChatSettingsUpdate","REQUEST MADE")
-        if (response.isSuccessful){
+        Log.d("changeChatSettingsUpdate", "REQUEST MADE")
+        if (response.isSuccessful) {
             emit(Response.Success(true))
-        }else{
+        } else {
             emit(Response.Failure(Exception(response.message())))
         }
     }.catch { cause ->
-        Log.d("GETTINGLIVESTREAMS","CAUSE IS CAUSE")
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
+        Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
             emit(Response.Failure(Exception("response.message()")))
-        }else{
+        } else {
             emit(Response.Failure(Exception("response.message()")))
         }
-
-
     }
 
     override suspend fun deleteChatMessage(
@@ -195,30 +185,25 @@ class TwitchRepoImpl @Inject constructor(
         emit(Response.Loading)
 
         val response = twitchClient.deleteChatMessage(
-            authorizationToken = "Bearer ${oAuthToken}",
+            authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
             broadcasterId = broadcasterId,
             moderatorId = moderatorId,
             messageId = messageId
         )
-        if(response.isSuccessful){
+        if (response.isSuccessful) {
             emit(Response.Success(true))
-        }else{
-
+        } else {
             emit(Response.Failure(Exception("Unable to delete message")))
         }
     }.catch { cause ->
 
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
-
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
             emit(Response.Failure(Exception("Failed. Network connection error")))
-        }else{
-
+        } else {
             emit(Response.Failure(Exception("Unable to delete message")))
         }
-
-
     }
 
     override suspend fun banUser(
@@ -226,39 +211,35 @@ class TwitchRepoImpl @Inject constructor(
         clientId: String,
         broadcasterId: String,
         moderatorId: String,
-        body:BanUser
-    ): Flow<Response<BanUserResponse>> = flow{
+        body: BanUser
+    ): Flow<Response<BanUserResponse>> = flow {
         emit(Response.Loading)
         val response = twitchClient.banUser(
-            authorizationToken = "Bearer ${oAuthToken}",
+            authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
             broadcasterId = broadcasterId,
             moderatorId = moderatorId,
             body = body
         )
 
-
-        if(response.isSuccessful){
+        if (response.isSuccessful) {
             val data = response.body()
-            data?.let{
+            data?.let {
                 emit(Response.Success(it))
             }
-        }else{
-
+        } else {
             emit(Response.Failure(Exception("Unable to ban user")))
         }
     }.catch { cause ->
 
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
-            Log.d("BANUSEREXCEPTION","UnknownHostException")
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
+            Log.d("BANUSEREXCEPTION", "UnknownHostException")
             emit(Response.Failure(Exception("Network connection error")))
-        }else{
-            Log.d("BANUSEREXCEPTION","Exception Happened")
+        } else {
+            Log.d("BANUSEREXCEPTION", "Exception Happened")
             emit(Response.Failure(Exception("Unable to ban user")))
         }
-
-
     }
 
     override suspend fun unBanUser(
@@ -267,36 +248,29 @@ class TwitchRepoImpl @Inject constructor(
         broadcasterId: String,
         moderatorId: String,
         userId: String
-    ): Flow<Response<Boolean>> = flow{
+    ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
         val response = twitchClient.unBanUser(
-            authorizationToken = "Bearer ${oAuthToken}",
+            authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
             broadcasterId = broadcasterId,
             moderatorId = moderatorId,
             userId = userId
         )
-        if(response.isSuccessful){
+        if (response.isSuccessful) {
             emit(Response.Success(true))
-
-        }else{
-
-
+        } else {
             emit(Response.Failure(Exception("ERROR BANNING USER")))
         }
     }.catch { cause ->
 
-        //Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if(cause is UnknownHostException){
-            Log.d("BANUSEREXCEPTION","UnknownHostException")
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
+            Log.d("BANUSEREXCEPTION", "UnknownHostException")
             emit(Response.Failure(Exception("Network connection error")))
-        }else{
-            Log.d("BANUSEREXCEPTION","Exception Happened")
+        } else {
+            Log.d("BANUSEREXCEPTION", "Exception Happened")
             emit(Response.Failure(Exception("Unable to ban user")))
         }
-
-
     }
-
-
 }

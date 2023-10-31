@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 fun rememberSwipeableActionsState(): SwipeableActionsState {
     return remember { SwipeableActionsState() }
 }
+
 /**
  * A class to hold swipe state
  *
@@ -39,18 +40,19 @@ class SwipeableActionsState internal constructor() {
      */
     val offset: State<Float> get() = offsetState
     private var offsetState = mutableStateOf(0f)
-    private var canSwipeTowardsRight =false
-    private var canSwipeTowardsLeft= true
+    private var canSwipeTowardsRight = false
+    private var canSwipeTowardsLeft = true
 
     internal val draggableState = DraggableState { delta ->
 
         val targetOffset = offsetState.value + delta
-        val isAllowed = isResettingOnRelease
-                || targetOffset > 0f && canSwipeTowardsRight
-                || targetOffset < 0f && canSwipeTowardsLeft
+        val isAllowed = isResettingOnRelease ||
+            targetOffset > 0f && canSwipeTowardsRight ||
+            targetOffset < 0f && canSwipeTowardsLeft
         // Add some resistance if needed
         offsetState.value += if (isAllowed) delta else delta / 10
     }
+
     /**
      * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
      */
@@ -60,7 +62,10 @@ class SwipeableActionsState internal constructor() {
         draggableState.drag(MutatePriority.PreventUserInput) {
             isResettingOnRelease = true
             try {
-                Animatable(offsetState.value).animateTo(targetValue = 0f, tween(durationMillis = 300)) {
+                Animatable(offsetState.value).animateTo(
+                    targetValue = 0f,
+                    tween(durationMillis = 300)
+                ) {
                     dragBy(value - offsetState.value)
                 }
             } finally {
@@ -79,6 +84,7 @@ class PullRefreshState internal constructor() {
     private val _contentOffset = Animatable(0f)
 
     var isRefreshing by mutableStateOf(false)
+
     /**
      * The current offset for the content, in pixels.
      */
@@ -88,60 +94,57 @@ class PullRefreshState internal constructor() {
      * Dispatch scroll delta in pixels from touch events.
      */
     internal suspend fun dispatchScrollDelta(delta: Float) {
-
 //        if(_contentOffset.value > 60f){
 //            _contentOffset.snapTo(_contentOffset.value + (delta * 0.1f))
 //        }else{
-            _contentOffset.snapTo(_contentOffset.value + delta)
-        //}
-
+        _contentOffset.snapTo(_contentOffset.value + delta)
+        // }
     }
     internal suspend fun dispatchToResting() {
         _contentOffset.snapTo(0f)
     }
-    internal suspend fun dispatchToMid(delta: Float){
+    internal suspend fun dispatchToMid(delta: Float) {
         _contentOffset.snapTo(delta)
     }
-
-
-
 }
 
 @Composable
 fun rememberNestedScrollConnection(
     scope: CoroutineScope,
-    state:PullRefreshState,
-    animationMidPoint:Float,
-    quarterScreenHeight:Float,
+    state: PullRefreshState,
+    animationMidPoint: Float,
+    quarterScreenHeight: Float,
     changeColor: (Color) -> Unit,
-    changeIsRefreshing:(Boolean)->Unit,
+    changeIsRefreshing: (Boolean) -> Unit,
 
-    changeRequest:(Boolean)->Unit
+    changeRequest: (Boolean) -> Unit
 ): PullToRefreshNestedScrollConnection {
-    return remember { PullToRefreshNestedScrollConnection(
-        scope,state,animationMidPoint,
-        quarterScreenHeight,
-        changeColor,
-        changeRequest,
-        changeIsRefreshing
-    ) }
+    return remember {
+        PullToRefreshNestedScrollConnection(
+            scope,
+            state,
+            animationMidPoint,
+            quarterScreenHeight,
+            changeColor,
+            changeRequest,
+            changeIsRefreshing
+        )
+    }
 }
-
 
 class PullToRefreshNestedScrollConnection(
     private val scope: CoroutineScope,
-    private val state:PullRefreshState,
-    private val animationMidPoint:Float,
-    private val quarterScreenHeight:Float,
+    private val state: PullRefreshState,
+    private val animationMidPoint: Float,
+    private val quarterScreenHeight: Float,
     private val changeColor: (Color) -> Unit,
 
-    private val changeRequest:(Boolean)->Unit,
-    private val changeIsRefreshing:(Boolean)->Unit
-): NestedScrollConnection {
-
+    private val changeRequest: (Boolean) -> Unit,
+    private val changeIsRefreshing: (Boolean) -> Unit
+) : NestedScrollConnection {
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-        Log.d("REFRESHINGSTATETHINGS","PRE-SCROLL --->${available.y}")
+        Log.d("REFRESHINGSTATETHINGS", "PRE-SCROLL --->${available.y}")
         return super.onPreScroll(available, source)
     }
 
@@ -150,30 +153,28 @@ class PullToRefreshNestedScrollConnection(
         available: Offset,
         source: NestedScrollSource
     ): Offset {
-        if(NestedScrollSource.Drag == source && available.y > 0){
-            Log.d("REFRESHINGSTATETHINGS","${available.y}")
-            if(state.contentOffset >=quarterScreenHeight){
+        if (NestedScrollSource.Drag == source && available.y > 0) {
+            Log.d("REFRESHINGSTATETHINGS", "${available.y}")
+            if (state.contentOffset >= quarterScreenHeight) {
                 changeColor(Color.Green)
 
                 changeIsRefreshing(true)
-
-
             }
             scope.launch {
-                state.dispatchScrollDelta(available.y *0.3f)
+                state.dispatchScrollDelta(available.y * 0.3f)
             }
         }
         return super.onPostScroll(consumed, available, source)
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
-        if(state.isRefreshing){
+        if (state.isRefreshing) {
             scope.launch {
                 // request = true
                 changeRequest(true)
                 state.dispatchToMid(animationMidPoint)
             }
-        }else{
+        } else {
             scope.launch {
                 // request = true
                 state.dispatchToResting()
@@ -183,7 +184,4 @@ class PullToRefreshNestedScrollConnection(
 
         return super.onPreFling(available)
     }
-
 }
-
-

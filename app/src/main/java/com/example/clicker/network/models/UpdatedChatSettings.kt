@@ -2,7 +2,6 @@ package com.example.clicker.network.models
 
 import com.google.gson.annotations.SerializedName
 
-
 data class UpdatedChatSettings(
     @SerializedName("emote_mode")
     val emoteMode: Boolean,
@@ -41,4 +40,3 @@ data class ChatSetting(
     val non_moderator_chat_delay: Boolean,
     val non_moderator_chat_delay_duration: Int?
 )
-

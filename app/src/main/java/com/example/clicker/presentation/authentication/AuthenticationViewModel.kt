@@ -9,52 +9,45 @@ import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.MainBusState
-import com.example.clicker.presentation.home.StreamInfo
-import com.example.clicker.presentation.home.changeUrlWidthHeight
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-
 
 data class AuthenticationUIState(
 
-    val showLoginButton:Boolean = true,
+    val showLoginButton: Boolean = true,
 
     val loginStep1: Response<Boolean> = Response.Loading,
-    val logoutError:Boolean = false,
+    val logoutError: Boolean = false,
 
-    val authenticationCode:String ="",
-    val clientId:String ="",
-    val userId:String ="",
+    val authenticationCode: String = "",
+    val clientId: String = "",
+    val userId: String = "",
 
-    val authenticated:Boolean = false,
+    val authenticated: Boolean = false,
 
-    val showErrorModal:Boolean = false,
+    val showErrorModal: Boolean = false,
 
-    val showLoginModal:Boolean = false,
-    val modalText:String = "Login to continue",
-
+    val showLoginModal: Boolean = false,
+    val modalText: String = "Login to continue"
 
 )
 
 data class CertifiedUser(
-    val oAuthToken: String="",
-    val clientId: String="",
-    val userId: String=""
+    val oAuthToken: String = "",
+    val clientId: String = "",
+    val userId: String = ""
 )
 
 @HiltViewModel
@@ -64,27 +57,29 @@ class AuthenticationViewModel @Inject constructor(
     private val tokenValidationWorker: TokenValidationWorker,
     private val ioDispatcher: CoroutineDispatcher
 
-    ): ViewModel() {
+) : ViewModel() {
 
-    private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(AuthenticationUIState())
+    private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(
+        AuthenticationUIState()
+    )
     val authenticationUIState: State<AuthenticationUIState> = _authenticationUIState
 
-    //1)CREATE THE AUTHENTICATION STATE
+    // 1)CREATE THE AUTHENTICATION STATE
     private val authenticatedUserFlow = combine(
         flow = MutableStateFlow<String?>(null),
         flow2 = MutableStateFlow<ValidatedUser?>(null)
-    ){
-            oAuthToken,validatedUser ->
-        MainBusState(oAuthToken,validatedUser)
-
-    }.stateIn(viewModelScope, SharingStarted.Lazily,
+    ) {
+            oAuthToken, validatedUser ->
+        MainBusState(oAuthToken, validatedUser)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
         MainBusState(oAuthToken = null, authUser = null)
     )
 
     val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
 
-
-    init{
+    init {
         /**
          * starts the observing of the hot flow, mutableAuthenticatedUserFlow
          * */
@@ -92,40 +87,37 @@ class AuthenticationViewModel @Inject constructor(
         getOAuthToken()
     }
 
-    private fun collectAuthenticatedUserFlow() =viewModelScope.launch {
-        mutableAuthenticatedUserFlow.collect{mainState ->
-            mainState.oAuthToken?.let{notNullToken ->
-               validateOAuthToken(
-                    notNullToken,
+    private fun collectAuthenticatedUserFlow() = viewModelScope.launch {
+        mutableAuthenticatedUserFlow.collect { mainState ->
+            mainState.oAuthToken?.let { notNullToken ->
+                validateOAuthToken(
+                    notNullToken
                 )
 
-                //todo:send off the worker request
+                // todo:send off the worker request
                 tokenValidationWorker.enqueueRequest(notNullToken)
-
             }
-            mainState.authUser?.let {user ->
+            mainState.authUser?.let { user ->
                 _authenticationUIState.value = _authenticationUIState.value.copy(
                     clientId = user.clientId,
                     userId = user.userId,
                     authenticated = true
                 )
-                //todo:the getLivesStreams() code will not run in this viewModel
-
+                // todo:the getLivesStreams() code will not run in this viewModel
             }
         }
     }
 
-    fun validatedUser():CertifiedUser{
+    fun validatedUser(): CertifiedUser {
         val user = CertifiedUser(
             oAuthToken = _authenticationUIState.value.authenticationCode,
             clientId = _authenticationUIState.value.clientId,
-            userId = _authenticationUIState.value.userId,
+            userId = _authenticationUIState.value.userId
         )
         return user
     }
 
-
-    //2) implement the methods
+    // 2) implement the methods
     /**
      * This is the first function to run during the login sequence
      *
@@ -133,19 +125,16 @@ class AuthenticationViewModel @Inject constructor(
      *
      * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
      * */
-    private fun getOAuthToken() = viewModelScope.launch{
-        tokenDataStore.getOAuthToken().collect{storedOAuthToken ->
+    private fun getOAuthToken() = viewModelScope.launch {
+        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
 
-
-            if(storedOAuthToken.length > 2){
-
+            if (storedOAuthToken.length > 2) {
                 mutableAuthenticatedUserFlow.tryEmit(
                     mutableAuthenticatedUserFlow.value.copy(
                         oAuthToken = storedOAuthToken
                     )
                 )
-            }else{
-
+            } else {
                 _authenticationUIState.value = _authenticationUIState.value.copy(
                     showLoginModal = true,
                     modalText = "You're new here!"
@@ -159,23 +148,21 @@ class AuthenticationViewModel @Inject constructor(
      * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
      * */
     fun validateOAuthToken(
-        oAuthenticationToken:String,
-    ) =viewModelScope.launch{
-        withContext( ioDispatcher + CoroutineName("TokenValidator")){
+        oAuthenticationToken: String
+    ) = viewModelScope.launch {
+        withContext(ioDispatcher + CoroutineName("TokenValidator")) {
+            authentication.validateToken(oAuthenticationToken).collect { response ->
 
-
-            authentication.validateToken(oAuthenticationToken).collect{response ->
-
-                when(response){
-                    is Response.Loading ->{
-                        //the loading state is to be left empty because it is being handled by the HomeViewModel
+                when (response) {
+                    is Response.Loading -> {
+                        // the loading state is to be left empty because it is being handled by the HomeViewModel
                     }
-                    is Response.Success ->{
-                        logCoroutineInfo("CoroutineDebugging","GOT ITEMS from remote")
-                        Log.d("VALIDATINGTOKEN","TOKEN ---> SUCCESS.....")
+                    is Response.Success -> {
+                        logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
 
                         _authenticationUIState.value = _authenticationUIState.value.copy(
-                            authenticationCode =oAuthenticationToken,
+                            authenticationCode = oAuthenticationToken,
                             showLoginModal = false,
                             modalText = "Login with Twitch"
                         )
@@ -186,8 +173,8 @@ class AuthenticationViewModel @Inject constructor(
                         )
                         tokenDataStore.setUsername(response.data.login)
                     }
-                    is Response.Failure ->{
-                        Log.d("VALIDATINGTOKEN","TOKEN ---> FAILED.....")
+                    is Response.Failure -> {
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
 
                         _authenticationUIState.value = _authenticationUIState.value.copy(
                             showLoginModal = true,
@@ -196,44 +183,32 @@ class AuthenticationViewModel @Inject constructor(
                     }
                 }
             }
-
-
         }
-
-
-    }//end validateOAuthToken
-
-
-
-
-
-
-
-
-
+    } // end validateOAuthToken
 
     // BEGIN LOGOUT STAGE
-     fun beginLogout() = viewModelScope.launch{
+    fun beginLogout() = viewModelScope.launch {
         _authenticationUIState.value = _authenticationUIState.value.copy(
             showLoginModal = true,
-            modalText = "Logging out...",
+            modalText = "Logging out..."
 
-            )
-        withContext( ioDispatcher +CoroutineName("BeginLogout")){
+        )
+        withContext(ioDispatcher + CoroutineName("BeginLogout")) {
             authentication.logout(
                 clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,
-                token = mutableAuthenticatedUserFlow.value.oAuthToken!!)
-                .collect{response ->
+                token = mutableAuthenticatedUserFlow.value.oAuthToken!!
+            )
+                .collect { response ->
                     // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
-                    when(response){
-                        is Response.Loading ->{}
-                        is Response.Success ->{
+                    when (response) {
+                        is Response.Loading -> {}
+                        is Response.Success -> {
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Success! Login with Twitch",
                                 authenticated = false
                             )
                         }
-                        is Response.Failure ->{
+                        is Response.Failure -> {
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Logout Error! Please try again",
                                 loginStep1 = Response.Failure(Exception("Error Logging out")),
@@ -244,30 +219,24 @@ class AuthenticationViewModel @Inject constructor(
                         else -> {}
                     }
                 }
-
         }
-
-
     }
 
     /**
      * Below could be possibly moved
      */
-     fun setOAuthToken(oAuthToken:String) = viewModelScope.launch{
-        //need to make a call to exchange the authCode for a validationToken
+    fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
+        // need to make a call to exchange the authCode for a validationToken
         _authenticationUIState.value = _authenticationUIState.value.copy(
-             showLoginModal= false,
+            showLoginModal = false,
             modalText = "Login with Twitch"
         )
-        Log.d("setOAuthToken","token -> $oAuthToken")
+        Log.d("setOAuthToken", "token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         mutableAuthenticatedUserFlow.tryEmit(
             mutableAuthenticatedUserFlow.value.copy(
                 oAuthToken = oAuthToken
             )
         )
-
     }
-
-
-}// end of the view model
+} // end of the view model

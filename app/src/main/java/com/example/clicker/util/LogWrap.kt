@@ -1,7 +1,6 @@
 package com.example.clicker.util
 
 import android.util.Log
-import java.util.Objects
 /**
  * A wrapper class for the [Log](android.util.Log) class.
  *
@@ -11,8 +10,8 @@ import java.util.Objects
  */
 class LogWrap {
     companion object {
-       fun d(tag:String,message:String,){
-           Log.d(tag,message)
-       }
+        fun d(tag: String, message: String) {
+            Log.d(tag, message)
+        }
     }
 }

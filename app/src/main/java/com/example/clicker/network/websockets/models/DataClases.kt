@@ -2,7 +2,6 @@ package com.example.clicker.network.websockets.models
 
 import com.example.clicker.network.websockets.MessageType
 
-
 /**
  * Represents the state of the logged in User
  *
@@ -15,10 +14,10 @@ import com.example.clicker.network.websockets.MessageType
  * @constructor Creates the state of a loggedIn user.
  */
 data class LoggedInUserData(
-    val color:String?,
+    val color: String?,
     val displayName: String,
-    val sub:Boolean,
-    val mod:Boolean
+    val sub: Boolean,
+    val mod: Boolean
 )
 
 /**
@@ -73,10 +72,10 @@ data class TwitchUserData(
     val userId: String?,
     var userType: String?,
     val messageType: MessageType,
-    val deleted:Boolean = false,
-    val banned:Boolean = false,
-    val bannedDuration:Int? = null,
-    val systemMessage:String? = null
+    val deleted: Boolean = false,
+    val banned: Boolean = false,
+    val bannedDuration: Int? = null,
+    val systemMessage: String? = null
 )
 
 /**
@@ -113,9 +112,6 @@ data class TwitchUserAnnouncement(
     val userType: String
 )
 
-
-
-
 /**
  * Represents the state of the current chat rooms state
  *
@@ -128,8 +124,8 @@ data class TwitchUserAnnouncement(
  * @constructor Creates the state for the current state of the chat room.
  */
 data class RoomState(
-    val emoteMode:Boolean?,
-    val followerMode:Boolean?,
-    val slowMode:Boolean?,
-    val subMode:Boolean?
+    val emoteMode: Boolean?,
+    val followerMode: Boolean?,
+    val slowMode: Boolean?,
+    val subMode: Boolean?
 )
