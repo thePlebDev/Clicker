@@ -494,7 +494,7 @@ fun UrlImages(
                 modifier = Modifier
                     .size(80.dp)
                     .align(Alignment.TopCenter)
-                    .offset { IntOffset(0, pullingState.contentOffset.toInt() - 80) },
+                    .offset { IntOffset(0, pullingState.contentOffset.toInt() - 140) },
                 tint = pullColor
 
             )
@@ -558,8 +558,8 @@ fun UrlImages(
                                                 loading = {
                                                     Card(
                                                         modifier = Modifier
-                                                            .height((height / 1.5).dp)
-                                                            .width((width / 1.5).dp),
+                                                            .height((height / 2.8).dp)
+                                                            .width((width / 2.8).dp),
                                                         backgroundColor = Color.DarkGray
                                                     ){
 
