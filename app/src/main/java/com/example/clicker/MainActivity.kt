@@ -30,8 +30,18 @@ class MainActivity : AppCompatActivity() {
         if (deviceVersion >= minimunRequiredVersion) {
             val manager = context.getSystemService(DomainVerificationManager::class.java)
             val userState = manager.getDomainVerificationUserState(context.packageName)
+            val allowed = userState?.isLinkHandlingAllowed()
+            Log.d("domainManagerStuff", "allowed -> $allowed")
 
             // Domains that haven't passed Android App Links verification but that the user
+            val another = DomainVerificationUserState.DOMAIN_STATE_SELECTED
+
+            val selectedDomain = userState?.hostToStateMap
+                ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
+
+            val verifiedDomains = userState?.hostToStateMap
+                ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_VERIFIED }
+            Log.d("domainManagerStuff", "verifiedDomains -> $verifiedDomains")
             // has associated with an app.
             val selectedDomains = userState?.hostToStateMap
                 ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
@@ -41,10 +51,15 @@ class MainActivity : AppCompatActivity() {
             val unapprovedDomains = userState?.hostToStateMap
                 ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
 
+            Log.d("domainManagerStuff", "unapprovedDomains -> $unapprovedDomains")
+
             if (selectedDomains!!.isNotEmpty()) {
                 homeViewModel.registerDomian(true)
             }
             if (unapprovedDomains!!.isNotEmpty()) {
+                homeViewModel.registerDomian(false)
+            }
+            if (!userState.isLinkHandlingAllowed) {
                 homeViewModel.registerDomian(false)
             }
         } else {
