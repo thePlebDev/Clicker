@@ -36,34 +36,46 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val context: Context = this
-        val manager = context.getSystemService(DomainVerificationManager::class.java)
-        val userState = manager.getDomainVerificationUserState(context.packageName)
 
 
-// Domains that have passed Android App Links verification.
-        val verifiedDomains = userState?.hostToStateMap
-            ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_VERIFIED }
-        Log.d("domainManagerStuff","verifiedDomains -> ${verifiedDomains}")
+        val version =Build.VERSION_CODES.S
+        val allVersion = Build.VERSION.RELEASE
+        Log.d("VERSIONCODE","$allVersion")
 
-// Domains that haven't passed Android App Links verification but that the user
+        val versionInt = convertAPIStringToInt(allVersion)
+        if(versionInt >=12){
+            Log.d("VERSIONCODE","GREATER")
+            val manager = context.getSystemService(DomainVerificationManager::class.java)
+            val userState = manager.getDomainVerificationUserState(context.packageName)
+            Log.d("VERSIONCODE","GREATER")
+            // Domains that haven't passed Android App Links verification but that the user
 // has associated with an app.
-        val selectedDomains = userState?.hostToStateMap
-            ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
-        Log.d("domainManagerStuff","selectedDomains -> ${selectedDomains}")
+            val selectedDomains = userState?.hostToStateMap
+                ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
+            Log.d("domainManagerStuff","selectedDomains -> ${selectedDomains}")
 
 // All other domains.
-        val unapprovedDomains = userState?.hostToStateMap
-            ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
+            val unapprovedDomains = userState?.hostToStateMap
+                ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
 
-        if(selectedDomains!!.isNotEmpty()){
+            if(selectedDomains!!.isNotEmpty()){
+                homeViewModel.registerDomian(true)
+            }
+            if(unapprovedDomains!!.isNotEmpty()){
+                homeViewModel.registerDomian(false)
+            }
+        }else{
             homeViewModel.registerDomian(true)
         }
-        if(unapprovedDomains!!.isNotEmpty()){
-            homeViewModel.registerDomian(false)
-        }
+        Log.d("VERSIONCODE","CODE VERSION--->$version")
+        Log.d("VERSIONCODE","ALL VERSION--->$allVersion")
 
 
-        Log.d("domainManagerStuff","unapprovedDomains -> ${unapprovedDomains}")
+
+
+
+
+        //Log.d("domainManagerStuff","unapprovedDomains -> ${unapprovedDomains}")
 
 
     }
@@ -104,6 +116,25 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun convertAPIStringToInt(apiString: String):Int{
+        var number =8
+        if(apiString.length==1){
+            //return this number
+            number = apiString[0].toString().toInt()
+            return number
+
+        }
+        if (apiString[1].toString() == "."){
+            //return this number
+            number = apiString[0].toString().toInt()
+            return number
+
+        }
+        val subSTring = apiString.subSequence(0,2).toString()
+        number =subSTring.toInt()
+
+        return number
+    }
 
 
 
