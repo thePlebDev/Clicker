@@ -38,23 +38,21 @@ class MainActivity : AppCompatActivity() {
         val context: Context = this
 
 
-        val version =Build.VERSION_CODES.S
-        val allVersion = Build.VERSION.RELEASE
-        Log.d("VERSIONCODE","$allVersion")
+        val minimunRequiredVersion =Build.VERSION_CODES.S
+        val deviceVersion = Build.VERSION.SDK_INT
 
-        val versionInt = convertAPIStringToInt(allVersion)
-        if(versionInt >=12){
-            Log.d("VERSIONCODE","GREATER")
+        if(deviceVersion >=minimunRequiredVersion){
+
             val manager = context.getSystemService(DomainVerificationManager::class.java)
             val userState = manager.getDomainVerificationUserState(context.packageName)
-            Log.d("VERSIONCODE","GREATER")
+
             // Domains that haven't passed Android App Links verification but that the user
-// has associated with an app.
+            // has associated with an app.
             val selectedDomains = userState?.hostToStateMap
                 ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
             Log.d("domainManagerStuff","selectedDomains -> ${selectedDomains}")
 
-// All other domains.
+            // All other domains.
             val unapprovedDomains = userState?.hostToStateMap
                 ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_NONE }
 
@@ -67,15 +65,7 @@ class MainActivity : AppCompatActivity() {
         }else{
             homeViewModel.registerDomian(true)
         }
-        Log.d("VERSIONCODE","CODE VERSION--->$version")
-        Log.d("VERSIONCODE","ALL VERSION--->$allVersion")
 
-
-
-
-
-
-        //Log.d("domainManagerStuff","unapprovedDomains -> ${unapprovedDomains}")
 
 
     }
@@ -115,26 +105,7 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
-    fun convertAPIStringToInt(apiString: String):Int{
-        var number =8
-        if(apiString.length==1){
-            //return this number
-            number = apiString[0].toString().toInt()
-            return number
-
-        }
-        if (apiString[1].toString() == "."){
-            //return this number
-            number = apiString[0].toString().toInt()
-            return number
-
-        }
-        val subSTring = apiString.subSequence(0,2).toString()
-        number =subSTring.toInt()
-
-        return number
-    }
+    
 
 
 
