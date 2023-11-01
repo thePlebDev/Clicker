@@ -69,12 +69,9 @@ class HomeFragment : Fragment() {
                         "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
                     )
                 )
-//                CLIENT_ID=xk7p10b4gwoacyi40rlktnxvyjn990
-//                REDIRECT_URL=https://com.example.modderz
-                val client = "xk7p10b4gwoacyi40rlktnxvyjn990"
-                val redirect = "https://com.example.modderz"
 
-                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$client&redirect_uri=$redirect&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
+
+                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
 
                 val intent = CustomTabsIntent.Builder().build()
                 // twitchIntent.setPackage("com.example.clicker")
@@ -109,10 +106,9 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
+
     override fun onResume() {
         super.onResume()
-        Log.d("domainManagerStuff", "ON-RESUME")
 
         val uri: Uri? = activity?.intent?.data
 
