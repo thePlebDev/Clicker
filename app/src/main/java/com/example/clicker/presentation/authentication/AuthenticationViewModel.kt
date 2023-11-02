@@ -6,8 +6,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.data.TokenDataStore
 import com.example.clicker.data.TokenValidationWorker
+import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.domain.TwitchTokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.presentation.home.MainBusState
@@ -53,10 +54,9 @@ data class CertifiedUser(
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val authentication: TwitchAuthentication,
-    private val tokenDataStore: TokenDataStore,
-    private val tokenValidationWorker: TokenValidationWorker,
+    private val tokenDataStore: TwitchDataStore,
+    private val tokenValidationWorker: TwitchTokenValidationWorker,
     private val ioDispatcher: CoroutineDispatcher
-
 ) : ViewModel() {
 
     private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(

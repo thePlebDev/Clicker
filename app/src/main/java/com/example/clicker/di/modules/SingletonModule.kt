@@ -2,6 +2,7 @@ package com.example.clicker.di.modules
 
 import android.content.Context
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -35,7 +36,7 @@ object SingletonModule {
     @Provides
     fun providesTokenDataStore(
         @ApplicationContext appContext: Context
-    ): TokenDataStore {
+    ): TwitchDataStore {
         return TokenDataStore(appContext)
     }
 

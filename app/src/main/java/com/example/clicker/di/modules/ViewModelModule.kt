@@ -2,6 +2,7 @@ package com.example.clicker.di.modules
 
 import android.content.Context
 import com.example.clicker.data.TokenValidationWorker
+import com.example.clicker.domain.TwitchTokenValidationWorker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +27,7 @@ object ViewModelModule {
     @Provides
     fun provideTokenValidationWorker(
         @ApplicationContext appContext: Context
-    ): TokenValidationWorker {
+    ): TwitchTokenValidationWorker {
         return TokenValidationWorker(appContext)
     }
 }

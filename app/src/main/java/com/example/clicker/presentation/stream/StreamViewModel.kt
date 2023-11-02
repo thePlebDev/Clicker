@@ -10,6 +10,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchStream
@@ -67,7 +68,7 @@ data class StreamUIState(
 @HiltViewModel
 class StreamViewModel @Inject constructor(
     private val webSocket: TwitchWebSocket,
-    private val tokenDataStore: TokenDataStore,
+    private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
