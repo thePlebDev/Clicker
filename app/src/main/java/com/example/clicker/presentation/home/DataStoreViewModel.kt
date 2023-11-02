@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.AuthenticatedUser
 import com.example.clicker.util.Response
@@ -29,7 +30,7 @@ data class DataStoreUIState(
 @HiltViewModel
 class DataStoreViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchAuthentication,
-    private val tokenDataStore: TokenDataStore
+    private val tokenDataStore: TwitchDataStore
 ) : ViewModel() {
 
     private var _uiState: MutableState<DataStoreUIState> = mutableStateOf(DataStoreUIState())

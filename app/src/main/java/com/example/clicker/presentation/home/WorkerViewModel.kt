@@ -27,9 +27,7 @@ data class WorkerUIState(
 
 @HiltViewModel
 class WorkerViewModel @Inject constructor(
-    private val tokenValidationWorker: TokenValidationWorker,
-    private val tokenDataStore: TokenDataStore,
-    private val twitchRepoImpl: TwitchRepo
+
 ) : ViewModel() {
 
     // TODO: MAKE THIS A DO NOTHING CLASS THAT WILL JUST KEEP RUNNING EVER HOUR. TO SATISFY THE TWITCH DOCS
@@ -41,9 +39,7 @@ class WorkerViewModel @Inject constructor(
     private val _AuthenticatedUser: MutableStateFlow<AuthenticatedUser?> = MutableStateFlow(null)
     var liveDataWork: LiveData<WorkInfo>? = null
 
-    private fun runWorkManager(oAuthToken: String) {
-        liveDataWork = tokenValidationWorker.enqueueRequest(oAuthToken)
-    }
+
 }
 
 data class MainStates(

@@ -2,6 +2,7 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -28,7 +29,7 @@ enum class MessageType {
 }
 
 class TwitchWebSocket @Inject constructor(
-    private val tokenDataStore: TokenDataStore,
+    private val tokenDataStore: TwitchDataStore,
     private val twitchParsingEngine: ParsingEngine
 ) : WebSocketListener() {
 
