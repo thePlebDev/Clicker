@@ -32,7 +32,7 @@ data class AuthenticationUIState(
     val loginStep1: Response<Boolean> = Response.Loading,
     val logoutError: Boolean = false,
 
-    val authenticationCode: String = "",
+    val authenticationCode: String = "", //this is the oAuthToken
     val clientId: String = "",
     val userId: String = "",
 
@@ -187,7 +187,8 @@ class AuthenticationViewModel @Inject constructor(
     } // end validateOAuthToken
 
     // BEGIN LOGOUT STAGE
-    fun beginLogout() = viewModelScope.launch {
+    fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
+//
         _authenticationUIState.value = _authenticationUIState.value.copy(
             showLoginModal = true,
             modalText = "Logging out..."
@@ -195,11 +196,10 @@ class AuthenticationViewModel @Inject constructor(
         )
         withContext(ioDispatcher + CoroutineName("BeginLogout")) {
             authentication.logout(
-                clientId = mutableAuthenticatedUserFlow.value.authUser?.clientId!!,
-                token = mutableAuthenticatedUserFlow.value.oAuthToken!!
+                clientId = clientId,
+                token = oAuthToken
             )
                 .collect { response ->
-                    // Log.d("logoutResponse", "beginLogoutCollecting ->${it}")
                     when (response) {
                         is Response.Loading -> {}
                         is Response.Success -> {
@@ -216,7 +216,6 @@ class AuthenticationViewModel @Inject constructor(
                                 authenticated = true
                             )
                         }
-                        else -> {}
                     }
                 }
         }

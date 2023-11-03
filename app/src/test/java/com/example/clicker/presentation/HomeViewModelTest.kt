@@ -28,7 +28,7 @@ import org.mockito.kotlin.doThrow
 
 // Reusable JUnit4 TestRule to override the Main dispatcher
 class MainDispatcherRule(
-    private val testDispatcher: TestDispatcher = StandardTestDispatcher()
+    val testDispatcher: TestDispatcher = StandardTestDispatcher()
 ) : TestWatcher() {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun starting(description: Description) {
