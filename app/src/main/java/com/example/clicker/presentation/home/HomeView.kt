@@ -141,7 +141,10 @@ fun ValidationView(
             drawerContent = {
                 ScaffoldDrawer(
                     logout = {
-                        authenticationViewModel.beginLogout()
+                        authenticationViewModel.beginLogout(
+                            clientId = authenticationViewModel.authenticationUIState.value.clientId,
+                            oAuthToken = authenticationViewModel.authenticationUIState.value.authenticationCode
+                        )
                     },
                     loginWithTwitch = {
                         loginWithTwitch()
@@ -319,7 +322,7 @@ fun ScaffoldDrawer(
     userIsLoggedIn: Boolean
 ) {
     if (userIsLoggedIn) {
-        LogoutCard(scaffoldState, logout = { logout() })
+        LogoutCard(scaffoldState, logout = {logout() })
     } else {
         LoginCard(scaffoldState, loginWithTwitch = { loginWithTwitch() })
     }
