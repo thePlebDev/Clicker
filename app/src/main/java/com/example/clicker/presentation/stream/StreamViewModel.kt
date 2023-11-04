@@ -64,6 +64,12 @@ data class StreamUIState(
 
     val chatSettingsFailedMessage: String = ""
 )
+data class ClickedUIState(
+    val clickedUsername:String ="",
+    val clickedUserId: String ="",
+    val clickedUsernameBanned: Boolean=false,
+    val clickedUsernameIsMod:Boolean =false
+)
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
@@ -81,23 +87,14 @@ class StreamViewModel @Inject constructor(
 
     val listChats = mutableStateListOf<TwitchUserData>()
 
-    private val _clickedUsername: MutableState<String> = mutableStateOf("")
-    val clickedUsername: State<String> = _clickedUsername
-
-    private val _clickedUserId: MutableState<String> = mutableStateOf("")
-    val clickedUserId: State<String> = _clickedUsername
-
-    private val _clickedUsernameBanned: MutableState<Boolean> = mutableStateOf(false)
-    val clickedUsernameBanned: State<Boolean> = _clickedUsernameBanned
-
-    private val _clickedUsernameIsMod: MutableState<Boolean> = mutableStateOf(false)
-    val clickedUsernameIsMod: State<Boolean> = _clickedUsernameIsMod
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state: State<StreamUIState> = _uiState
 
-    private val _modStreamList = mutableStateListOf<String?>(null)
-    val exposedModList: List<String?> get() = _modStreamList
+    private val _clickedUIState = mutableStateOf(ClickedUIState())
+    val clickedUIState = _clickedUIState
+
+
 
     private var currentUsername: String = ""
 
@@ -108,7 +105,6 @@ class StreamViewModel @Inject constructor(
         )
     )
 
-    val testingThings = webSocket.loggedInUserUiState
 
     var filteredChatList = mutableStateListOf<String>()
     val clickedUsernameChats = mutableStateListOf<String>()
@@ -156,6 +152,7 @@ class StreamViewModel @Inject constructor(
 
     // TODO: NOTES FOR WHEN I COME BACK
     // this should be hooked up to a hot flow and run eachtime a new messageId is sent to it
+    //todo:chat method
     fun filterMessages(messageId: String) {
         val found = listChats.first { it.id == messageId }
         val foundIndex = listChats.indexOf(found)
@@ -163,6 +160,7 @@ class StreamViewModel @Inject constructor(
             deleted = true
         )
     }
+    //chat method
     private fun banUserFilter(username: String, banDuration: Int?) {
         listChats.filter { it.displayName == username }.forEach {
             val index = listChats.indexOf(it)
@@ -173,6 +171,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TWITCH METHOD
     fun deleteChatMessage(messageId: String) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("DeleteChatMessage")) {
             twitchRepoImpl.deleteChatMessage(
@@ -203,27 +202,34 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //CHAT METHOD
     fun addChatter(username: String, message: String) {
         if (!allChatters.contains(username)) {
             allChatters.add(username)
         }
     }
+    //CHAT METHOD
     fun updateClickedChat(
         clickedUsername: String,
         clickedUserId: String,
         banned: Boolean,
         isMod: Boolean
     ) {
-        _clickedUsername.value = clickedUsername
-        _clickedUserId.value = clickedUserId
+
         clickedUsernameChats.clear()
         val messages = listChats.filter { it.displayName == clickedUsername }.map { if (it.deleted) it.userType!! + " (deleted by mod)" else it.userType!! }
 
         clickedUsernameChats.addAll(messages)
-        _clickedUsernameBanned.value = banned
-        _clickedUsernameIsMod.value = isMod
+        _clickedUIState.value = _clickedUIState.value.copy(
+            clickedUsername = clickedUsername,
+            clickedUserId = clickedUserId,
+            clickedUsernameBanned = banned,
+            clickedUsernameIsMod = isMod
+        )
+
     }
 
+    //TODO: CHAT METHOD
     var atIndex: Int? = null
     fun filterChatters(username: String, text: String) {
         Log.d("mostRecentChats", text)
@@ -254,6 +260,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: CHAT METHOD
     fun autoTextChange(fullText: String, clickedText: String): String {
         val pattern = Pattern.compile("\\s|@")
         val pattern2 = Regex("@(\\s)|@")
@@ -278,7 +285,6 @@ class StreamViewModel @Inject constructor(
                         loggedInUserData = it
                     )
 
-                    //  Log.d("loggedInUserUiStateViewModel","mod --> ${it.mod}")
                 }
             }
         }
@@ -290,48 +296,17 @@ class StreamViewModel @Inject constructor(
 
     /**
      * This is the hot state receiving the main chat messages
+     * //TODO: SOCKET METHOD
      * */
     init {
         viewModelScope.launch {
             // withContext(Dispatchers.IO + CoroutineName("ChatMessages")){
-            webSocket.state.collect { twitchUserMessage ->
-                Log.d("loggedMessage", "$twitchUserMessage")
-                listChats.add(twitchUserMessage)
-                if (twitchUserMessage.displayName == _clickedUsername.value) {
-
-                    clickedUsernameChats.add(twitchUserMessage.userType!!)
-                }
-                if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null) {
-                    listChats.clear()
-                    // todo: add the ability to send a little message saying that the chat was cleard by a mod
-                    val data = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.JOIN)
-                        .addUserType("Chat cleared by moderator")
-                        .addColor("#000000")
-                        .build()
-                    listChats.add(data)
-                }
-                if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null) {
-                    Log.d(
-                        "collectingdatathingy",
-                        "foundDuration --> $twitchUserMessage.bannedDuration"
-                    )
-                    banUserFilter(
-                        username = twitchUserMessage.displayName,
-                        banDuration = twitchUserMessage.bannedDuration
-                    )
-                    val data = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.JOIN)
-                        .addUserType("${twitchUserMessage.displayName} banned by moderators")
-                        .addColor("#000000")
-                        .build()
-                    listChats.add(data)
-                }
-            }
-            // }
+            monitorSocketForChatMessages()
+             //}
         }
     }
     init {
+        //TODO: SOCKET METHOD
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
                 _channelName.collect { channelName ->
@@ -343,53 +318,99 @@ class StreamViewModel @Inject constructor(
         }
     }
     init {
+        //TODO: SOCKET METHOD
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("RoomState")) {
-                webSocket.roomState.collect { nullableRoomState ->
-                    nullableRoomState?.let { roomState ->
-                        // todo: update the _uiState chatSettings with these values
-                        when (val response = _uiState.value.chatSettings) {
-                            is Response.Success -> {
-                                val slowMode = roomState.slowMode ?: response.data.slowMode
-                                val emoteMode = roomState.emoteMode ?: response.data.emoteMode
-                                val followerMode = roomState.followerMode ?: response.data.followerMode
-                                val subMode = roomState.subMode ?: response.data.subscriberMode
-
-                                _uiState.value = _uiState.value.copy(
-                                    chatSettings = Response.Success(
-                                        ChatSettingsData(
-                                            broadcasterId = response.data.broadcasterId,
-                                            slowMode = slowMode,
-                                            slowModeWaitTime = response.data.slowModeWaitTime,
-                                            followerMode = followerMode,
-                                            followerModeDuration = response.data.followerModeDuration,
-                                            subscriberMode = subMode,
-                                            emoteMode = emoteMode,
-                                            uniqueChatMode = response.data.uniqueChatMode
-                                        )
-                                    )
-                                )
-                            }
-                            else -> {
-                            }
-                        }
-                    }
-                }
+                monitorSocketRoomState()
             }
         }
     }
 
+    suspend fun monitorSocketForChatMessages(){
+        webSocket.state.collect { twitchUserMessage ->
+            Log.d("loggedMessage", "$twitchUserMessage")
+            listChats.add(twitchUserMessage)
+            if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
+
+                clickedUsernameChats.add(twitchUserMessage.userType!!)
+            }
+            if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null) {
+                listChats.clear()
+                // todo: add the ability to send a little message saying that the chat was cleard by a mod
+                val data = TwitchUserDataObjectMother
+                    .addMessageType(MessageType.JOIN)
+                    .addUserType("Chat cleared by moderator")
+                    .addColor("#000000")
+                    .build()
+                listChats.add(data)
+            }
+            if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null) {
+                Log.d(
+                    "collectingdatathingy",
+                    "foundDuration --> $twitchUserMessage.bannedDuration"
+                )
+                banUserFilter(
+                    username = twitchUserMessage.displayName,
+                    banDuration = twitchUserMessage.bannedDuration
+                )
+                val data = TwitchUserDataObjectMother
+                    .addMessageType(MessageType.JOIN)
+                    .addUserType("${twitchUserMessage.displayName} banned by moderators")
+                    .addColor("#000000")
+                    .build()
+                listChats.add(data)
+            }
+        }
+    }
+
+    suspend fun monitorSocketRoomState(){
+        webSocket.roomState.collect { nullableRoomState ->
+            nullableRoomState?.let { roomState ->
+                // todo: update the _uiState chatSettings with these values
+                when (val response = _uiState.value.chatSettings) {
+                    is Response.Success -> {
+                        val slowMode = roomState.slowMode ?: response.data.slowMode
+                        val emoteMode = roomState.emoteMode ?: response.data.emoteMode
+                        val followerMode = roomState.followerMode ?: response.data.followerMode
+                        val subMode = roomState.subMode ?: response.data.subscriberMode
+
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(
+                                ChatSettingsData(
+                                    broadcasterId = response.data.broadcasterId,
+                                    slowMode = slowMode,
+                                    slowModeWaitTime = response.data.slowModeWaitTime,
+                                    followerMode = followerMode,
+                                    followerModeDuration = response.data.followerModeDuration,
+                                    subscriberMode = subMode,
+                                    emoteMode = emoteMode,
+                                    uniqueChatMode = response.data.uniqueChatMode
+                                )
+                            )
+                        )
+                    }
+                    else -> {
+                    }
+                }
+            }
+        }
+
+    }
+
+    //TODO: CHAT METHOD
     fun closeChatSettingAlert() {
         _uiState.value = _uiState.value.copy(
             showChatSettingAlert = false
         )
     }
 
+    //TODO: SOCKET METHOD
     fun restartWebSocket() {
         val channelName = _channelName.value ?: ""
         startWebSocket(channelName)
     }
 
+    //TODO: SOCKET METHOD
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
         tokenDataStore.getUsername().collect { username ->
             if (username.isNotEmpty()) {
@@ -400,6 +421,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: SOCKET METHOD
     fun sendMessage(chatMessage: String) {
         val messageResult = webSocket.sendMessage(chatMessage)
         textFieldValue.value = TextFieldValue(
@@ -455,6 +477,7 @@ class StreamViewModel @Inject constructor(
         )
     }
 
+    //TODO: TWITCH METHOD
     private fun getChatSettings(
         clientId: String,
         broadcasterId: String
@@ -506,6 +529,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: TWITCH METHOD
     fun slowModeChatSettings(chatSettings: ChatSettingsData) = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(
             showChatSettingAlert = false,
@@ -569,6 +593,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: TWICH METHOD
     fun followerModeToggle(chatSettings: ChatSettingsData) = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(
             showChatSettingAlert = false,
@@ -634,6 +659,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: TWICH METHOD
     fun subscriberModeToggle(chatSettings: ChatSettingsData) = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(
             showChatSettingAlert = false,
@@ -697,11 +723,12 @@ class StreamViewModel @Inject constructor(
             }
         }
     }
+    //TODO: TWICH METHOD
     fun timeoutUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
             val timeoutUser = BanUser(
-                data = BanUserData(
-                    user_id = _clickedUserId.value,
+                data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
+                    user_id = _clickedUIState.value.clickedUserId,
                     reason = _uiState.value.timeoutReason,
                     duration = _uiState.value.timeoutDuration
                 )
@@ -738,10 +765,11 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //TODO: TWICH METHOD
     fun banUser(banUser: BanUser) = viewModelScope.launch {
         val banUserNew = BanUser(
-            data = BanUserData(
-                user_id = _clickedUserId.value,
+            data = BanUserData( //TODO:SHOULD BE PASSED IN
+                user_id =_clickedUIState.value.clickedUserId,
                 reason = banUser.data.reason,
                 duration = _uiState.value.banDuration
 
@@ -781,6 +809,7 @@ class StreamViewModel @Inject constructor(
             }
         }
     }
+    //TODO: TWICH METHOD
     fun unBanUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("UnBanUser")) {
             twitchRepoImpl.unBanUser(
@@ -788,7 +817,7 @@ class StreamViewModel @Inject constructor(
                 clientId = _uiState.value.clientId,
                 moderatorId = _uiState.value.userId,
                 broadcasterId = _uiState.value.broadcasterId,
-                userId = _clickedUserId.value
+                userId = _clickedUIState.value.clickedUserId //TODO:PASS IT IN
 
             ).collect { response ->
                 when (response) {
@@ -821,6 +850,7 @@ class StreamViewModel @Inject constructor(
         )
     }
 
+    //TODO: TWICH METHOD
     fun emoteModeToggle(chatSettings: ChatSettingsData) = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(
             showChatSettingAlert = false,

@@ -162,7 +162,7 @@ fun StreamView(
                     BottomModalContent(
                         // TODO: this should 100% not be filteredChat. Need to create new variable
                         clickedUsernameChats = clickedUsernameChats,
-                        clickedUsername = streamViewModel.clickedUsername.value,
+                        clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                         bottomModalState = bottomModalState,
                         textFieldValue = streamViewModel.textFieldValue,
 
@@ -187,12 +187,12 @@ fun StreamView(
                         },
                         changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
                         banUser = { banUser -> streamViewModel.banUser(banUser) },
-                        clickedUserId = streamViewModel.clickedUserId.value,
+                        clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
                         closeBottomModal = { scope.launch { bottomModalState.hide() } },
                         timeOutUser = { streamViewModel.timeoutUser() },
-                        banned = streamViewModel.clickedUsernameBanned.value,
+                        banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                         unbanUser = { streamViewModel.unBanUser() },
-                        isMod = streamViewModel.clickedUsernameIsMod.value
+                        isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod
                     )
                 }
             ) {
