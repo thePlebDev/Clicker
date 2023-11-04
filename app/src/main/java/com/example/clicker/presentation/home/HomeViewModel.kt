@@ -158,6 +158,7 @@ class HomeViewModel @Inject constructor(
                                 failedNetworkRequest = true,
                                 streamersListLoading = response
                             )
+                            print("before the delay")
                             delay(2000)
                             _uiState.value = _uiState.value.copy(
                                 failedNetworkRequest = false

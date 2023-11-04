@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -56,7 +58,6 @@ class HomeViewModelTest {
     fun testing_get_live_channels_success() = runTest {
         /**GIVEN*/
 
-        val unconfinedDispatcher = UnconfinedTestDispatcher(testScheduler)
 
         val response = Response.Success(listOf(StreamInfo("", "", "", 0, "", "")))
 
@@ -66,7 +67,7 @@ class HomeViewModelTest {
 
         val homeViewModel = HomeViewModel(
             twitchRepoImpl = twitchRepoImpl,
-            ioDispatcher = unconfinedDispatcher
+            ioDispatcher = mainDispatcherRule.testDispatcher
         )
 
         /**WHEN*/
@@ -82,12 +83,11 @@ class HomeViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testing_get_live_channels_fail() = runTest(StandardTestDispatcher()) {
+    fun testing_get_live_channels_fail() = runTest {
         // TODO: NEED TO ASK SOMEONE HELP FOR TESTING COROUTINES AND HOW TO ADVANCE THE TIME MANUALLY
         // TODO: THE DELAY(2000) IS SOMETHING I JUST CAN'T FIGURE OUT
         /**GIVEN*/
 
-        val standardDispatcher = StandardTestDispatcher()
 
         val response = Response.Failure(Exception("Failed to make request"))
 
@@ -97,23 +97,28 @@ class HomeViewModelTest {
 
         val homeViewModel = HomeViewModel(
             twitchRepoImpl = twitchRepoImpl,
-            ioDispatcher = standardDispatcher
+            ioDispatcher = mainDispatcherRule.testDispatcher
         )
 
         /**WHEN*/
-//         launch{
-//            homeViewModel.getLiveStreams("","","")
-//
-//        }
-//        standardDispatcher.scheduler.advanceTimeBy(1000)
-//        homeViewModel.getLiveStreams("","","")
-//
-//
-//        val actualValue = homeViewModel.state.value.failedNetworkRequest
-//        val expectedResponse = true
-//        Assert.assertEquals(expectedResponse, actualValue)
+        homeViewModel.getLiveStreams("","","")
 
-        // standardDispatcher.scheduler.advanceUntilIdle()
+
+        advanceTimeBy(1000)
+
+        val failedNetworkRequest = homeViewModel.state.value.failedNetworkRequest
+        Assert.assertEquals(true, failedNetworkRequest)
+
+        advanceUntilIdle()
+
+
+
+        val actualValue = homeViewModel.state.value.failedNetworkRequest
+        val expectedResponse = false
+
+
+
+
 
         /**THEN*/
     }
