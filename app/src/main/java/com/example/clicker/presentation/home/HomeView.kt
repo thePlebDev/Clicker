@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -117,13 +118,13 @@ fun ValidationView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .background(Color.DarkGray),
+                    .background(MaterialTheme.colorScheme.primary),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     modalText,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 30.sp,
                     modifier = Modifier
                         .padding(bottom = 10.dp)
@@ -137,6 +138,7 @@ fun ValidationView(
         }
     ) {
         Scaffold(
+            backgroundColor=MaterialTheme.colorScheme.primary,
             scaffoldState = scaffoldState,
             drawerContent = {
                 ScaffoldDrawer(
@@ -163,7 +165,7 @@ fun ValidationView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .background(Color.DarkGray)
+                    .background(MaterialTheme.colorScheme.primary)
             ) {
                 if (userIsAuthenticated) {
                     val certifiedUser = authenticationViewModel.validatedUser()
@@ -205,7 +207,7 @@ fun DisableForceRegister(
                 .padding(15.dp)
                 .align(Alignment.Center)
                 .clickable { },
-            backgroundColor = Color.DarkGray,
+            backgroundColor = MaterialTheme.colorScheme.primary,
             elevation = 10.dp
         ) {
             Column(
@@ -216,20 +218,20 @@ fun DisableForceRegister(
                     "You must add",
                     fontSize = 25.sp,
                     textAlign = TextAlign.Center,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     "com.example.clicker",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     " to links to enable login with Twitch on Android 12 and higher",
                     fontSize = 25.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center
                 )
                 Button(
@@ -237,7 +239,7 @@ fun DisableForceRegister(
                     modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
                 ) {
-                    Text(text = "Add to links", fontSize = 25.sp, color = Color.White)
+                    Text(text = "Add to links", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -290,7 +292,7 @@ fun CustomTopBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorResource(R.color.red))
+            .background(MaterialTheme.colorScheme.secondary)
             .padding(vertical = 10.dp)
     ) {
         Row(
@@ -302,13 +304,13 @@ fun CustomTopBar(
                 modifier = Modifier
                     .size(35.dp)
                     .clickable { scope.launch { scaffoldState.drawerState.open() } },
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.onSecondary
             )
             Text(
                 "Live channels",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(start = 20.dp),
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSecondary
             )
         }
     }
@@ -321,11 +323,14 @@ fun ScaffoldDrawer(
     scaffoldState: ScaffoldState,
     userIsLoggedIn: Boolean
 ) {
-    if (userIsLoggedIn) {
-        LogoutCard(scaffoldState, logout = {logout() })
-    } else {
-        LoginCard(scaffoldState, loginWithTwitch = { loginWithTwitch() })
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)){
+        if (userIsLoggedIn) {
+            LogoutCard(scaffoldState, logout = {logout() })
+        } else {
+            LoginCard(scaffoldState, loginWithTwitch = { loginWithTwitch() })
+        }
     }
+
 }
 
 @Composable
@@ -348,15 +353,16 @@ fun LoginCard(
         elevation = 10.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondary),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text("Login with Twitch", fontSize = 20.sp)
+            Text("Login with Twitch", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSecondary)
             Icon(
                 Icons.Default.AccountCircle,
                 "Logout",
-                modifier = Modifier.size(35.dp)
+                modifier = Modifier.size(35.dp),
+                tint =  MaterialTheme.colorScheme.onSecondary
             )
         }
     }
@@ -383,15 +389,16 @@ fun LogoutCard(
         elevation = 10.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondary),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text("Logout", fontSize = 20.sp)
+            Text("Logout", fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
             Icon(
                 Icons.Default.ExitToApp,
                 "Logout",
-                modifier = Modifier.size(35.dp)
+                modifier = Modifier.size(35.dp),
+                tint =  MaterialTheme.colorScheme.onSecondary
             )
         }
     }
@@ -436,7 +443,7 @@ fun UrlImages(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
-            .background(Color.DarkGray)
+            .background(MaterialTheme.colorScheme.primary)
 
     ) {
         if (request) {
@@ -470,7 +477,7 @@ fun UrlImages(
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
-                .background(Color.DarkGray)
+                .background(MaterialTheme.colorScheme.primary)
                 .padding(start = 5.dp, end = 5.dp)
 
         ) {
@@ -527,7 +534,7 @@ fun UrlImages(
                                                     modifier = Modifier
                                                         .height((height / 2.8).dp)
                                                         .width((width / 2.8).dp),
-                                                    backgroundColor = Color.DarkGray
+                                                    backgroundColor = MaterialTheme.colorScheme.primary
                                                 ) {
                                                 }
                                             },
@@ -536,7 +543,7 @@ fun UrlImages(
                                         Text(
                                             "${streamItem.views}",
                                             style = TextStyle(
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onPrimary,
                                                 fontSize = 15.sp,
                                                 fontWeight = FontWeight.ExtraBold
                                             ),
@@ -549,7 +556,7 @@ fun UrlImages(
                                         Text(
                                             streamItem.streamerName,
                                             fontSize = 20.sp,
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                         Text(
                                             streamItem.streamTitle,
@@ -557,13 +564,13 @@ fun UrlImages(
                                             modifier = Modifier.alpha(0.7f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                         Text(
                                             streamItem.gameTitle,
                                             fontSize = 15.sp,
                                             modifier = Modifier.alpha(0.7f),
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                     }
                                 }

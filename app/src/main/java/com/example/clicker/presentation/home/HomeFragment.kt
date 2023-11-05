@@ -20,6 +20,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 // TODO: Rename parameter arguments, choose names that match
@@ -80,22 +81,25 @@ class HomeFragment : Fragment() {
                     Uri.parse("package:${context.packageName}")
                 )
 
-                ValidationView(
-                    homeViewModel = homeViewModel,
-                    streamViewModel = streamViewModel,
-                    authenticationViewModel = authenticationViewModel,
-                    loginWithTwitch = {
-                        startActivity(twitchIntent)
-                        intent.launchUrl(
-                            requireActivity(),
-                            Uri.parse(authorizationUrl)
-                        )
-                    },
-                    onNavigate = { dest -> findNavController().navigate(dest) },
-                    addToLinks = { context.startActivity(domainIntent) }
-                    //  workerViewModel = workerViewModel
+                AppTheme{
+                    ValidationView(
+                        homeViewModel = homeViewModel,
+                        streamViewModel = streamViewModel,
+                        authenticationViewModel = authenticationViewModel,
+                        loginWithTwitch = {
+                            startActivity(twitchIntent)
+                            intent.launchUrl(
+                                requireActivity(),
+                                Uri.parse(authorizationUrl)
+                            )
+                        },
+                        onNavigate = { dest -> findNavController().navigate(dest) },
+                        addToLinks = { context.startActivity(domainIntent) }
+                        //  workerViewModel = workerViewModel
 
-                )
+                    )
+                }
+
             }
         }
         return view

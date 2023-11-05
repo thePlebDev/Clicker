@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.ui.theme.AppTheme
 
 /**
  * A simple [Fragment] subclass.
@@ -86,10 +87,13 @@ fun setOrientation(
 ): FrameLayout {
     binding.composeView.apply {
         setContent {
-            StreamView(
-                streamViewModel,
-                homeViewModel
-            )
+            AppTheme{
+                StreamView(
+                    streamViewModel,
+                    homeViewModel
+                )
+            }
+
         }
     }
 

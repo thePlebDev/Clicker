@@ -9,6 +9,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
@@ -157,9 +158,11 @@ fun StreamView(
         }
         else -> {
             ModalBottomSheetLayout(
+                sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                 sheetState = bottomModalState,
                 sheetContent = {
                     BottomModalContent(
+
                         // TODO: this should 100% not be filteredChat. Need to create new variable
                         clickedUsernameChats = clickedUsernameChats,
                         clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
@@ -359,7 +362,7 @@ fun BottomModalContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp)
+            .padding(10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -372,14 +375,15 @@ fun BottomModalContent(
                     contentDescription = "Send chat",
                     modifier = Modifier
                         .clickable { }
-                        .padding(2.dp)
-                        .size(25.dp),
-                    tint = Color.Red
+                        .size(35.dp),
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
                 )
-                Text(clickedUsername)
+                Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
             }
 
-            Button(onClick = {
+            Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                onClick = {
                 scope.launch {
                     textFieldValue.value = TextFieldValue(
                         text = "@$clickedUsername ",
@@ -388,7 +392,7 @@ fun BottomModalContent(
                     bottomModalState.hide()
                 }
             }) {
-                Text("Reply")
+                Text("Reply",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
             }
         }
         Row(
@@ -396,29 +400,34 @@ fun BottomModalContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Recent Messages")
+            Text("Recent Messages",color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
             if (isMod) {
                 Row() {
                     Button(
+                        colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
                         onClick = {
                             openTimeoutDialog.value = true
                         },
                         modifier = Modifier.padding(end = 20.dp)
                     ) {
-                        Text("Timeout")
+                        Text("Timeout",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                     }
                     if (banned) {
-                        Button(onClick = {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                            onClick = {
                             closeBottomModal()
                             unbanUser()
                         }) {
-                            Text("Unban")
+                            Text("Unban",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                         }
                     } else {
-                        Button(onClick = {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                            onClick = {
                             openBanDialog.value = true
                         }) {
-                            Text("Ban")
+                            Text("Ban",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                         }
                     }
                 }
@@ -429,9 +438,10 @@ fun BottomModalContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 10.dp)
             .height(100.dp)
-            .background(Color.DarkGray)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+            .border(width = 1.dp, color = androidx.compose.material3.MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(8.dp))
     ) {
         items(clickedUsernameChats) {
             Text(
@@ -439,7 +449,9 @@ fun BottomModalContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 5.dp),
-                color = Color.White
+                color = Color.White,
+                fontSize = 15.sp
+
             )
         }
     }
@@ -465,9 +477,9 @@ fun DrawerContent(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
     ) {
-        Text("Chat settings", fontSize = 30.sp)
+        Text("Chat settings", fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         when (chatSettingsData) {
             is Response.Loading -> {
                 CircularProgressIndicator()
@@ -529,10 +541,13 @@ fun ChatSettingsDataUI(
     var tabIndex by remember { mutableIntStateOf(0) }
     val titles = listOf("Chat room Settings")
     Column {
-        TabRow(selectedTabIndex = tabIndex) {
+        TabRow(
+            selectedTabIndex = tabIndex,
+            backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        ) {
             titles.forEachIndexed { index, title ->
                 Tab(
-                    text = { Text(title) },
+                    text = { Text(title, fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary) },
                     selected = tabIndex == index,
                     onClick = { tabIndex = index }
                 )
@@ -630,7 +645,7 @@ fun ChatSettings(
 
         )
 
-        AnimatedVisibility(visible = showChatSettingAlert, modifier = Modifier.height(200.dp)) {
+        AnimatedVisibility(visible = showChatSettingAlert) {
             MessageAlertText(
                 message = chatSettingsFailedMessage,
                 closeChatSettingsAlert = { closeChatSettingsAlert() }
@@ -651,7 +666,7 @@ fun SlowSwitchRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = switchLabel, fontSize = 25.sp)
+        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         Switch(
             checked = switchCheck,
             enabled = enableSwitch,
@@ -686,7 +701,7 @@ fun EmoteSwitchRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = switchLabel, fontSize = 25.sp)
+        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         Switch(
             checked = switchCheck,
             enabled = enableSwitch,
@@ -720,7 +735,7 @@ fun SubscriberSwitchRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = switchLabel, fontSize = 25.sp)
+        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         Switch(
             checked = switchCheck,
             enabled = enableSwitch,
@@ -755,7 +770,7 @@ fun FollowerSwitchRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = switchLabel, fontSize = 25.sp)
+        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         Switch(
             checked = switchCheck,
             enabled = enableSwitch,
@@ -786,7 +801,6 @@ fun MessageAlertText(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
             .padding(15.dp)
             .clickable { },
         border = BorderStroke(2.dp, Color.Red),
@@ -899,7 +913,7 @@ fun TextChat(
             state = lazyColumnListState,
             modifier = Modifier
                 .padding(bottom = 70.dp)
-                .background(Color.DarkGray)
+                .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
                 .fillMaxSize()
 
         ) {
@@ -1061,7 +1075,7 @@ fun TextChat(
 
 @Composable
 fun JoinMessage(message: String) {
-    Text(message, fontSize = 17.sp, color = Color.White, modifier = Modifier.padding(start = 5.dp))
+    Text(message, fontSize = 17.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(start = 5.dp))
 }
 
 @Composable
@@ -1414,7 +1428,7 @@ fun ChatBadges(
         withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
             append(username)
         }
-        withStyle(style = SpanStyle(color = Color.White)) {
+        withStyle(style = SpanStyle(color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)) {
             append(message)
         }
     }
@@ -1562,8 +1576,8 @@ fun ChatCard(
                             }
                         }
                     ),
-                backgroundColor = Color.DarkGray,
-                border = BorderStroke(2.dp, Color.White)
+                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                border = BorderStroke(2.dp, androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
 
             ) {
                 Column() {
@@ -1582,22 +1596,7 @@ fun ChatCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-//                        if (showIcons){
-//                            if(twitchUser.subscriber == true){
-//                                AsyncImage(
-//                                    model = subBadge,
-//                                    contentDescription = "Subscriber badge",
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            if(twitchUser.mod == "1"){
-//                                AsyncImage(
-//                                    model = modBadge,
-//                                    contentDescription = "Moderator badge",
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                        }
+
                         ChatBadges(
                             username = "${twitchUser.displayName} :",
                             message = " ${twitchUser.userType}",
@@ -1607,18 +1606,6 @@ fun ChatCard(
                             textSize = fontSize
                         )
 
-//                        Text(buildAnnotatedString {
-//                            withStyle(style = SpanStyle(color = color, fontSize = fontSize)) {
-//                                append("${twitchUser.displayName} :")
-//                            }
-//                            withStyle(style = SpanStyle(color = Color.White)) {
-//                                append(" ${twitchUser.userType}")
-//                            }
-//
-//
-//                        },
-//                            modifier = Modifier.padding(5.dp)
-//                        )
                     } // end of the row
                 }
             } // end of the Card
@@ -1650,16 +1637,21 @@ fun ScrollToBottom(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (scrollingPaused) {
-                Button(onClick = { enableAutoScroll() }) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                    onClick = { enableAutoScroll() }
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Send chat",
+                        tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier
                     )
-                    Text("Scroll to bottom")
+                    Text("Scroll to bottom",color =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,)
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Send chat",
+                        tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier
                     )
                 }
@@ -1709,7 +1701,7 @@ fun EnterChat(
     // todo: I think we can move this to the viewModel
     Log.d("currentStreamChannelName", "NAME --> $channelName")
 
-    Column(modifier = modifier.background(Color.DarkGray)) {
+    Column(modifier = modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary)) {
         LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
             items(filteredChatList) {
                 Text(
@@ -1724,7 +1716,7 @@ fun EnterChat(
                                 )
                             )
                         },
-                    color = Color.White
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -1747,7 +1739,10 @@ fun TextFieldChat(
     chat: (String) -> Unit,
     showModal: () -> Unit
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         if (modStatus != null && modStatus == true) {
             AsyncImage(
                 model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
@@ -1787,7 +1782,7 @@ fun TextFieldChat(
                     .size(35.dp)
                     .clickable { chat(textFieldValue.value.text) }
                     .padding(start = 5.dp),
-                tint = Color.White
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
             )
         } else {
             Icon(
@@ -1797,7 +1792,7 @@ fun TextFieldChat(
                     .size(35.dp)
                     .clickable { showModal() }
                     .padding(start = 5.dp),
-                tint = Color.White
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
             )
         }
     }
