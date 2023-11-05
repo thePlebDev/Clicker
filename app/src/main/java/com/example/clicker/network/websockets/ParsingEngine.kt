@@ -1,5 +1,7 @@
 package com.example.clicker.network.websockets
 
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -11,6 +13,8 @@ import okhttp3.WebSocket
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
 class ParsingEngine @Inject constructor() {
+    val initialState = mutableStateOf("")
+    private var initialRoomState:RoomState = RoomState(false,false,false,false,0,0)
 
     fun clearChatTesting(text: String, streamerName: String): TwitchUserData {
         // THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
@@ -238,17 +242,51 @@ class ParsingEngine @Inject constructor() {
      * @return a [RoomState] representing the current state of the chat room
      */
     fun roomStateParsing(text: String): RoomState {
-        val slowMode = getValueFromInput(text, "slow")
+
+        val slowModeDuration = getDuration(text,"slow")
+        val followerModeDuration = getDuration(text, "followers-only")
 
         val emoteMode = getValueFromInput(text, "emote-only")
         val followersMode = getValueFromInput(text, "followers-only")
-
+        val slowMode = getValueFromInput(text, "slow")
         val subMode = getValueFromInput(text, "subs-only")
+
+
+        when{
+            slowMode !=null && emoteMode != null && followersMode !=null && subMode!=null ->{
+                initialRoomState = RoomState(
+                    emoteMode,followersMode,slowMode,subMode,followerModeDuration, slowModeDuration
+                )
+            }
+            slowMode !=null ->{
+                initialRoomState = RoomState(
+                    initialRoomState.emoteMode,initialRoomState.followerMode,slowMode,initialRoomState.subMode,followerModeDuration, slowModeDuration
+                )
+            }
+            emoteMode !=null ->{
+                initialRoomState = RoomState(
+                    emoteMode,initialRoomState.followerMode,initialRoomState.slowMode,initialRoomState.subMode,followerModeDuration, slowModeDuration
+                )
+            }
+            followersMode !=null ->{
+                initialRoomState = RoomState(
+                    initialRoomState.emoteMode,followersMode,initialRoomState.slowMode,initialRoomState.subMode,followerModeDuration, slowModeDuration
+                )
+            }
+            subMode !=null ->{
+                initialRoomState = RoomState(
+                    initialRoomState.emoteMode,initialRoomState.followerMode,initialRoomState.slowMode,subMode,followerModeDuration, slowModeDuration
+                )
+            }
+        }
         return RoomState(
-            emoteMode = emoteMode,
-            followerMode = followersMode,
-            slowMode = slowMode,
-            subMode = subMode
+            emoteMode = emoteMode ?: initialRoomState.emoteMode,
+            followerMode = followersMode ?: initialRoomState.followerMode,
+            slowMode = slowMode ?: initialRoomState.slowMode,
+            subMode = subMode?: initialRoomState.subMode,
+
+            followerModeDuration = followerModeDuration,
+            slowModeDuration = slowModeDuration
         )
     }
 
@@ -260,6 +298,21 @@ class ParsingEngine @Inject constructor() {
         webSocket.send("PONG")
     }
 
+    fun getDuration(input: String, key: String): Int {
+        val pattern = "$key=([^;:\\s]+)".toRegex()
+        val match = pattern.find(input)
+        val returnedValue = match?.groupValues?.get(1)
+        if(returnedValue == null){
+            return 0
+        }else{
+            if (returnedValue == "-1"){
+                return 0
+            }else{
+                return returnedValue.toInt()
+            }
+        }
+
+    }
     private fun getValueFromInput(input: String, key: String): Boolean? {
         val pattern = "$key=([^;:\\s]+)".toRegex()
         val match = pattern.find(input)

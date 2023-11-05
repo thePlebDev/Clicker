@@ -7,8 +7,6 @@ data class ChatSettings(
 )
 
 data class ChatSettingsData(
-    @SerializedName("broadcaster_id")
-    val broadcasterId: String,
     @SerializedName("slow_mode")
     val slowMode: Boolean,
     @SerializedName("slow_mode_wait_time")
@@ -21,8 +19,8 @@ data class ChatSettingsData(
     val subscriberMode: Boolean,
     @SerializedName("emote_mode") //
     val emoteMode: Boolean,
-    @SerializedName("unique_chat_mode")
-    val uniqueChatMode: Boolean
+//    @SerializedName("unique_chat_mode")
+//    val uniqueChatMode: Boolean
 )
 
 // data class UpdateChatSettings(

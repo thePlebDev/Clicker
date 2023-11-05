@@ -188,6 +188,7 @@ class TwitchWebSocket @Inject constructor(
         }
 
         if (text.contains("ROOMSTATE")) {
+            Log.d("logginTheRoomState", "Roomstate --> $text")
             val roomState = twitchParsingEngine.roomStateParsing(text)
             _roomState.tryEmit(roomState)
         }

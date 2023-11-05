@@ -124,8 +124,11 @@ data class TwitchUserAnnouncement(
  * @constructor Creates the state for the current state of the chat room.
  */
 data class RoomState(
-    val emoteMode: Boolean?,
-    val followerMode: Boolean?,
-    val slowMode: Boolean?,
-    val subMode: Boolean?
+    val emoteMode: Boolean,
+    val followerMode: Boolean,
+    val slowMode: Boolean,
+    val subMode: Boolean,
+
+    val followerModeDuration:Int,
+    val slowModeDuration:Int
 )
