@@ -155,4 +155,15 @@ class ParsingEngineTest {
         /* Then */
         Assert.assertEquals(LONGER_EXPECTED_MESSAGE, result.userType)
     }
+
+
+
+    @Test
+    fun getting_duration(){
+        val text = "@followers-only=10;room-id=520593641 :tmi.twitch.tv ROOMSTATE #theplebdev"
+        val actualResult = underTest.getDuration(text, "followers-only")
+
+
+        Assert.assertEquals(10, actualResult)
+    }
 }

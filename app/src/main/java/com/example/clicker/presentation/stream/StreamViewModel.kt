@@ -38,7 +38,7 @@ data class ChattingUser(
     val message: String
 )
 data class StreamUIState(
-    val chatSettings: Response<ChatSettingsData> = Response.Loading,
+    val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket
     val loggedInUserData: LoggedInUserData? = null,
 
     val clientId: String = "",
@@ -65,7 +65,7 @@ data class StreamUIState(
     val chatSettingsFailedMessage: String = ""
 )
 data class ClickedUIState(
-    val clickedUsername:String ="",
+    val clickedUsername:String ="", //websocket
     val clickedUserId: String ="",
     val clickedUsernameBanned: Boolean=false,
     val clickedUsernameIsMod:Boolean =false
@@ -365,33 +365,24 @@ class StreamViewModel @Inject constructor(
 
     suspend fun monitorSocketRoomState(){
         webSocket.roomState.collect { nullableRoomState ->
-            nullableRoomState?.let { roomState ->
+            nullableRoomState?.let { nonNullroomState ->
+                Log.d("theCurrentRoomState","$nonNullroomState")
                 // todo: update the _uiState chatSettings with these values
-                when (val response = _uiState.value.chatSettings) {
-                    is Response.Success -> {
-                        val slowMode = roomState.slowMode ?: response.data.slowMode
-                        val emoteMode = roomState.emoteMode ?: response.data.emoteMode
-                        val followerMode = roomState.followerMode ?: response.data.followerMode
-                        val subMode = roomState.subMode ?: response.data.subscriberMode
+                _uiState.value = _uiState.value.copy(
+                    chatSettings = Response.Success(
+                        ChatSettingsData(
+                            slowMode = nonNullroomState.slowMode,
+                            slowModeWaitTime = nonNullroomState.slowModeDuration,
+                            followerMode = nonNullroomState.followerMode,
+                            followerModeDuration = nonNullroomState.followerModeDuration,
+                            subscriberMode = nonNullroomState.subMode,
+                            emoteMode = nonNullroomState.emoteMode,
 
-                        _uiState.value = _uiState.value.copy(
-                            chatSettings = Response.Success(
-                                ChatSettingsData(
-                                    broadcasterId = response.data.broadcasterId,
-                                    slowMode = slowMode,
-                                    slowModeWaitTime = response.data.slowModeWaitTime,
-                                    followerMode = followerMode,
-                                    followerModeDuration = response.data.followerModeDuration,
-                                    subscriberMode = subMode,
-                                    emoteMode = emoteMode,
-                                    uniqueChatMode = response.data.uniqueChatMode
-                                )
-                            )
                         )
-                    }
-                    else -> {
-                    }
-                }
+                    )
+
+                )
+                
             }
         }
 
@@ -555,13 +546,12 @@ class StreamViewModel @Inject constructor(
                     is Response.Success -> {
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
+
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -573,13 +563,11 @@ class StreamViewModel @Inject constructor(
                         Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = !chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -621,13 +609,11 @@ class StreamViewModel @Inject constructor(
                         Log.d("changeChatSettings", "SUCCESS")
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -639,13 +625,11 @@ class StreamViewModel @Inject constructor(
                         Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = !chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -685,13 +669,11 @@ class StreamViewModel @Inject constructor(
                     is Response.Success -> {
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -703,13 +685,11 @@ class StreamViewModel @Inject constructor(
                         Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = !chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -876,13 +856,12 @@ class StreamViewModel @Inject constructor(
                     is Response.Success -> {
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
+
 
                         )
                         _uiState.value = _uiState.value.copy(
@@ -894,13 +873,11 @@ class StreamViewModel @Inject constructor(
                         Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
                         val newChatSettingsData = ChatSettingsData(
                             slowMode = chatSettings.slowMode,
-                            broadcasterId = chatSettings.broadcasterId,
                             slowModeWaitTime = chatSettings.slowModeWaitTime,
                             followerMode = chatSettings.followerMode,
                             followerModeDuration = chatSettings.followerModeDuration,
                             subscriberMode = chatSettings.subscriberMode,
                             emoteMode = !chatSettings.emoteMode,
-                            uniqueChatMode = chatSettings.uniqueChatMode
 
                         )
                         _uiState.value = _uiState.value.copy(

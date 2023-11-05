@@ -659,14 +659,13 @@ fun SlowSwitchRow(
             onCheckedChange = {
                 slowModeToggle(
                     ChatSettingsData(
-                        broadcasterId = chatSettingsData.broadcasterId,
                         slowMode = it,
                         slowModeWaitTime = chatSettingsData.slowModeWaitTime,
                         followerMode = chatSettingsData.followerMode,
                         followerModeDuration = chatSettingsData.followerModeDuration,
                         subscriberMode = chatSettingsData.subscriberMode,
                         emoteMode = chatSettingsData.emoteMode,
-                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
 
                     )
                 )
@@ -695,14 +694,12 @@ fun EmoteSwitchRow(
             onCheckedChange = {
                 emoteModeToggle(
                     ChatSettingsData(
-                        broadcasterId = chatSettingsData.broadcasterId,
                         slowMode = chatSettingsData.slowMode,
                         slowModeWaitTime = chatSettingsData.slowModeWaitTime,
                         followerMode = chatSettingsData.followerMode,
                         followerModeDuration = chatSettingsData.followerModeDuration,
                         subscriberMode = chatSettingsData.subscriberMode,
                         emoteMode = it,
-                        uniqueChatMode = chatSettingsData.uniqueChatMode
 
                     )
                 )
@@ -731,14 +728,13 @@ fun SubscriberSwitchRow(
             onCheckedChange = {
                 subscriberModeToggle(
                     ChatSettingsData(
-                        broadcasterId = chatSettingsData.broadcasterId,
                         slowMode = chatSettingsData.slowMode,
                         slowModeWaitTime = chatSettingsData.slowModeWaitTime,
                         followerMode = chatSettingsData.followerMode,
                         followerModeDuration = chatSettingsData.followerModeDuration,
                         subscriberMode = it,
                         emoteMode = chatSettingsData.emoteMode,
-                        uniqueChatMode = chatSettingsData.uniqueChatMode
+
 
                     )
                 )
@@ -767,14 +763,12 @@ fun FollowerSwitchRow(
             onCheckedChange = {
                 followerModeToggle(
                     ChatSettingsData(
-                        broadcasterId = chatSettingsData.broadcasterId,
                         slowMode = chatSettingsData.slowMode,
                         slowModeWaitTime = chatSettingsData.slowModeWaitTime,
                         followerMode = it,
                         followerModeDuration = chatSettingsData.followerModeDuration,
                         subscriberMode = chatSettingsData.subscriberMode,
                         emoteMode = chatSettingsData.emoteMode,
-                        uniqueChatMode = chatSettingsData.uniqueChatMode
 
                     )
                 )
@@ -962,7 +956,7 @@ fun TextChat(
                     when (twitchUser.messageType) {
                         MessageType.NOTICE -> {
                             NoticeMessage(
-                                color = color,
+                                color = Color.White,
                                 displayName = twitchUser.displayName,
                                 message = twitchUser.userType
                             )
@@ -1319,7 +1313,8 @@ fun NoticeMessage(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp)
+            .padding(15.dp),
+        color = Color.White
     )
 }
 
