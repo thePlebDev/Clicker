@@ -453,7 +453,7 @@ fun UrlImages(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = (quarterTotalScreenHeight / 14).dp),
-                color = Color.White
+                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
             )
             networkRequest {
                 pullingState.dispatchToResting()
@@ -495,7 +495,7 @@ fun UrlImages(
                             ) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(40.dp),
-                                    color = Color.Red
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
                                 )
                             }
                         }
