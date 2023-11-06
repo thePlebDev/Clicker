@@ -95,6 +95,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
@@ -109,6 +110,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.example.clicker.R
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.models.ChatSettingsData
@@ -143,7 +145,6 @@ fun StreamView(
     )
 
     val testingString = ""
-    val anotherThingy = testingString.indexOf("badge-info")
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
 //
@@ -372,7 +373,7 @@ fun BottomModalContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Send chat",
+                    contentDescription = stringResource(R.string.user_icon_description),
                     modifier = Modifier
                         .clickable { }
                         .size(35.dp),
@@ -392,7 +393,7 @@ fun BottomModalContent(
                     bottomModalState.hide()
                 }
             }) {
-                Text("Reply",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                Text(stringResource(R.string.reply),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
             }
         }
         Row(
@@ -400,7 +401,7 @@ fun BottomModalContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Recent Messages",color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+            Text(stringResource(R.string.recent_messages),color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
             if (isMod) {
                 Row() {
                     Button(
@@ -410,7 +411,7 @@ fun BottomModalContent(
                         },
                         modifier = Modifier.padding(end = 20.dp)
                     ) {
-                        Text("Timeout",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                        Text(stringResource(R.string.timeout),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                     }
                     if (banned) {
                         Button(
@@ -419,7 +420,7 @@ fun BottomModalContent(
                             closeBottomModal()
                             unbanUser()
                         }) {
-                            Text("Unban",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                            Text(stringResource(R.string.unban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                         }
                     } else {
                         Button(
@@ -427,7 +428,7 @@ fun BottomModalContent(
                             onClick = {
                             openBanDialog.value = true
                         }) {
-                            Text("Ban",color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                            Text(stringResource(R.string.ban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
                         }
                     }
                 }
@@ -479,7 +480,7 @@ fun DrawerContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
     ) {
-        Text("Chat settings", fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+        Text(stringResource(R.string.chat_settings), fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         when (chatSettingsData) {
             is Response.Loading -> {
                 CircularProgressIndicator()
@@ -509,11 +510,11 @@ fun DrawerContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("FAILED TO FETCH CHAT SETTINGS")
+                    Text(stringResource(R.string.failed_to_get_chat_settings))
                     Button(onClick = {
                         fetchChatSettings()
                     }) {
-                        Text("Get Chat settings")
+                        Text(stringResource(R.string.get_chat_settings))
                     }
                 }
             }
@@ -575,13 +576,6 @@ fun ChatSettingsDataUI(
                     closeChatSettingsAlert = { closeChatSettingAlter() }
                 )
             }
-            1 -> {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    text = "Bonker Settings",
-                    style = MaterialTheme.typography.body1
-                )
-            }
         }
     }
 }
@@ -613,7 +607,7 @@ fun ChatSettings(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SlowSwitchRow(
-            switchLabel = "Slow mode: ",
+            switchLabel = stringResource(R.string.slow_mode),
             enableSwitch = enableSlowModeSwitch,
             switchCheck = slowMode,
             chatSettingsData = chatSettingsData,
@@ -621,7 +615,7 @@ fun ChatSettings(
         )
 
         FollowerSwitchRow(
-            switchLabel = "Follower mode: ",
+            switchLabel = stringResource(R.string.follower_mode),
             enableSwitch = enableFollowerModeSwitch,
             switchCheck = followerMode,
             chatSettingsData = chatSettingsData,
@@ -629,7 +623,7 @@ fun ChatSettings(
         )
 
         SubscriberSwitchRow(
-            switchLabel = "Subscriber mode: ",
+            switchLabel = stringResource(R.string.subscriber_mode),
             enableSwitch = enableSubscriberSwitch,
             switchCheck = subscriberMode,
             chatSettingsData = chatSettingsData,
@@ -637,7 +631,7 @@ fun ChatSettings(
         )
 
         EmoteSwitchRow(
-            switchLabel = "Emote mode: ",
+            switchLabel = stringResource(R.string.emote_mode),
             enableSwitch = enableEmoteModeSwitch,
             switchCheck = emoteMode,
             chatSettingsData = chatSettingsData,
@@ -812,7 +806,7 @@ fun MessageAlertText(
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close notification",
+                contentDescription = stringResource(R.string.close_icon_description),
                 modifier = Modifier
                     .clickable { closeChatSettingsAlert() }
                     .padding(2.dp)
@@ -820,13 +814,13 @@ fun MessageAlertText(
                 tint = Color.Red
             )
             Text(
-                "Request failed",
+                stringResource(R.string.failed_request_notification),
                 textAlign = TextAlign.Center,
                 fontSize = 20.sp
             )
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close notification",
+                contentDescription = stringResource(R.string.close_icon_description),
                 modifier = Modifier
                     .clickable { closeChatSettingsAlert() }
                     .padding(2.dp)
@@ -933,7 +927,7 @@ fun TextChat(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Error has occured",
+                            contentDescription = stringResource(R.string.close_icon_description),
                             modifier = Modifier
                                 .size(30.dp),
                             tint = Color.White
@@ -945,7 +939,7 @@ fun TextChat(
                         )
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Error has occured",
+                            contentDescription = stringResource(R.string.close_icon_description),
                             modifier = Modifier
                                 .size(30.dp),
                             tint = Color.White
@@ -1102,7 +1096,7 @@ fun ErrorMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.Warning,
-                    contentDescription = "Error has occured",
+                    contentDescription = stringResource(R.string.warning_icon_description),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
@@ -1110,7 +1104,7 @@ fun ErrorMessage(
                 Text(user, color = Color.White, fontSize = 20.sp)
                 Icon(
                     imageVector = Icons.Default.Warning,
-                    contentDescription = "Error has occured",
+                    contentDescription = stringResource(R.string.warning_icon_description),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
@@ -1129,7 +1123,7 @@ fun ErrorMessage(
                 onClick = { restartWebSocket() },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
             ) {
-                Text("Click to reconnect", color = Color.White)
+                Text(stringResource(R.string.click_to_connect), color = Color.White)
             }
         }
     }
@@ -1159,12 +1153,12 @@ fun MysteryGiftSubMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "RANDOM GIFTED SUB",
+                    contentDescription = stringResource(R.string.random_gift_sub),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text("RANDOM GIFTED SUB", color = Color.White, fontSize = 20.sp)
+                Text(stringResource(R.string.random_gift_sub), color = Color.White, fontSize = 20.sp)
             }
 
             Text(
@@ -1204,12 +1198,12 @@ fun GiftSubMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "GIFTED SUB",
+                    contentDescription = stringResource(R.string.gift_sub),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text("GIFTED SUB", color = Color.White, fontSize = 20.sp)
+                Text(stringResource(R.string.gift_sub), color = Color.White, fontSize = 20.sp)
             }
 
             Text(
@@ -1249,12 +1243,12 @@ fun SubMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = "Sub",
+                    contentDescription = stringResource(R.string.sub),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text("SUB", color = Color.White, fontSize = 20.sp)
+                Text(stringResource(R.string.sub), color = Color.White, fontSize = 20.sp)
             }
 
             Text(
@@ -1292,12 +1286,12 @@ fun ResubMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.Star,
-                    contentDescription = "resub icon",
+                    contentDescription = stringResource(R.string.re_sub),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text("RESUB", color = Color.White, fontSize = 20.sp)
+                Text(stringResource(R.string.re_sub), color = Color.White, fontSize = 20.sp)
             }
 
             Text(
@@ -1357,12 +1351,12 @@ fun AnnouncementMessage(
             ) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
-                    contentDescription = "Send chat",
+                    contentDescription = stringResource(R.string.announcement),
                     modifier = Modifier
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text("ANNOUNCEMENT", color = Color.White, fontSize = 20.sp)
+                Text(stringResource(R.string.announcement), color = Color.White, fontSize = 20.sp)
             }
 
             Text(
@@ -1413,6 +1407,7 @@ fun ChatBadges(
     color: Color,
     textSize: TextUnit
 ) {
+    //for not these values can stay here hard coded. Until I implement more Icon
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modId = "modIcon"
@@ -1447,7 +1442,7 @@ fun ChatBadges(
             ) {
                 AsyncImage(
                     model = modBadge,
-                    contentDescription = "Moderator badge",
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
                     modifier = Modifier.fillMaxSize().padding(2.dp)
                 )
             }
@@ -1465,7 +1460,7 @@ fun ChatBadges(
             ) {
                 AsyncImage(
                     model = subBadge,
-                    contentDescription = "Subscriber badge",
+                    contentDescription = stringResource(R.string.sub_badge_icon_description),
                     modifier = Modifier.fillMaxSize().padding(2.dp)
                 )
             }
@@ -1583,7 +1578,7 @@ fun ChatCard(
                 Column() {
                     if (twitchUser.deleted) {
                         Text(
-                            "Moderator deleted Comment",
+                            stringResource(R.string.moderator_deleted_comment),
                             fontSize = 20.sp,
                             modifier = Modifier.padding(start = 5.dp)
                         )
@@ -1643,14 +1638,14 @@ fun ScrollToBottom(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Send chat",
+                        contentDescription = stringResource(R.string.arrow_drop_down_description),
                         tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier
                     )
-                    Text("Scroll to bottom",color =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,)
+                    Text(stringResource(R.string.scroll_to_bottom),color =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,)
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Send chat",
+                        contentDescription = stringResource(R.string.arrow_drop_down_description),
                         tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier
                     )
@@ -1665,7 +1660,7 @@ fun ScrollToBottom(
                 if (response.data && !undoBanResponse) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "undo ban button",
+                        contentDescription = stringResource(R.string.undo_ban_button),
                         modifier = Modifier
                             .clip(RoundedCornerShape(5.dp))
                             .size(50.dp)
@@ -1699,7 +1694,6 @@ fun EnterChat(
     showModal: () -> Unit
 ) {
     // todo: I think we can move this to the viewModel
-    Log.d("currentStreamChannelName", "NAME --> $channelName")
 
     Column(modifier = modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary)) {
         LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
@@ -1746,7 +1740,7 @@ fun TextFieldChat(
         if (modStatus != null && modStatus == true) {
             AsyncImage(
                 model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                contentDescription = "Moderator badge"
+                contentDescription = stringResource(R.string.moderator_badge_icon_description)
             )
         }
         TextField(
@@ -1771,13 +1765,13 @@ fun TextFieldChat(
                 unfocusedIndicatorColor = Color.Transparent
             ),
             placeholder = {
-                Text("Send a message", color = Color.White)
+                Text(stringResource(R.string.send_a_message), color = Color.White)
             }
         )
         if (textFieldValue.value.text.length > 0) {
             Icon(
                 imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Send chat",
+                contentDescription = stringResource(R.string.send_chat),
                 modifier = Modifier
                     .size(35.dp)
                     .clickable { chat(textFieldValue.value.text) }
@@ -1787,7 +1781,7 @@ fun TextFieldChat(
         } else {
             Icon(
                 imageVector = Icons.Default.MoreVert,
-                contentDescription = "Show side modal",
+                contentDescription = stringResource(R.string.more_vert_icon_description),
                 modifier = Modifier
                     .size(35.dp)
                     .clickable { showModal() }
@@ -1825,11 +1819,11 @@ fun TimeoutDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    Text("Timeout: ", fontSize = 22.sp)
+                    Text(stringResource(R.string.timeout_text), fontSize = 22.sp)
                     Text(username, fontSize = 22.sp)
                 }
                 Divider(color = Color.Red, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-                Text("Duration :")
+                Text(stringResource(R.string.duration_text))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -1839,45 +1833,45 @@ fun TimeoutDialog(
                             selected = timeoutDuration == 10,
                             onClick = { changeTimeoutDuration(10) }
                         )
-                        Text("10sec")
+                        Text(stringResource(R.string.ten_seconds))
                     }
                     Column {
                         RadioButton(
                             selected = timeoutDuration == 60,
                             onClick = { changeTimeoutDuration(60) }
                         )
-                        Text("1min")
+                        Text(stringResource(R.string.one_minute))
                     }
                     Column {
                         RadioButton(
                             selected = timeoutDuration == 600,
                             onClick = { changeTimeoutDuration(600) }
                         )
-                        Text("10min")
+                        Text(stringResource(R.string.ten_minutes))
                     }
                     Column {
                         RadioButton(
                             selected = timeoutDuration == 1800,
                             onClick = { changeTimeoutDuration(1800) }
                         )
-                        Text("30min")
+                        Text(stringResource(R.string.thirty_minutes))
                     }
                 }
                 OutlinedTextField(
                     value = timeoutReason,
                     onValueChange = { changeTimeoutReason(it) },
-                    label = { Text("Reason") }
+                    label = { Text(stringResource(R.string.reason)) }
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     // todo: Implement the details of the timeout implementation
                     Button(onClick = {
                         closeDialog()
                         timeOutUser()
                     }, modifier = Modifier.padding(10.dp)) {
-                        Text("Timeout")
+                        Text(stringResource(R.string.timeout_confirm))
                     }
                 }
             }
@@ -1898,26 +1892,29 @@ fun BanDialog(
     closeDialog: () -> Unit,
     closeBottomModal: () -> Unit
 ) {
-    Dialog(onDismissRequest = { onDismissRequest() }) {
+    Dialog(
+        onDismissRequest = { onDismissRequest() },
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            backgroundColor = Color.Red
         ) {
             Column(
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(10.dp).background(Color.Red)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    Text("Ban: ", fontSize = 22.sp)
+                    Text(stringResource(R.string.ban), fontSize = 22.sp)
                     Text(username, fontSize = 22.sp)
                 }
-                Divider(color = Color.Red, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-                Text("Duration :")
+                Divider(color = androidx.compose.material3.MaterialTheme.colorScheme.secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+                Text(stringResource(R.string.duration_text))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -1927,31 +1924,31 @@ fun BanDialog(
                             selected = banDuration == 604800,
                             onClick = { changeBanDuration(604800) }
                         )
-                        Text("1 week")
+                        Text(stringResource(R.string.one_week))
                     }
                     Column {
                         RadioButton(
                             selected = banDuration == 1209600,
                             onClick = { changeBanDuration(1209600) }
                         )
-                        Text("2 weeks")
+                        Text(stringResource(R.string.two_weeks))
                     }
                     Column {
                         RadioButton(
                             selected = banDuration == 0,
                             onClick = { changeBanDuration(0) }
                         )
-                        Text("Permanently")
+                        Text(stringResource(R.string.permanently))
                     }
                 }
                 OutlinedTextField(
                     value = banReason,
                     onValueChange = { changeBanReason(it) },
-                    label = { Text("Reason") }
+                    label = { Text(stringResource(R.string.reason)) }
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Button(onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
 
                     Button(
@@ -1969,7 +1966,7 @@ fun BanDialog(
                         },
                         modifier = Modifier.padding(10.dp)
                     ) {
-                        Text("Ban")
+                        Text(stringResource(R.string.ban))
                     }
                 }
             }

@@ -2,4 +2,133 @@
     <string name="app_name">Modderz</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- TODO: HomeView Strings below -->
+
+
+    <string name="login_with_twitch">Login with Twitch</string>
+    <!-- HomeView implicit grant flow -->
+    <string name="you_must_add">You must add</string>
+    <string name="package_name">com.example.clicker</string>
+    <string name="enable_login_with_Android_12">to links to enable login with Twitch on Android 12 and higher</string>
+    <string name="add_to_links">Add to links</string>
+
+
+    <!-- HomeView CustomTopBar composable -->
+    <string name="menu_icon_description">Menu</string>
+    <string name="live_channels">Live channels</string>
+
+
+    <!-- HomeView LoginCard composable -->
+    <string name="login_icon_description">Login</string>
+
+    <!-- HomeView LogoutCard composable -->
+    <string name="logout_icon_description">Logout</string>
+    <string name="logout">Logout</string>
+
+    <!-- HomeView UrlImages composable -->
+    <string name="keyboard_arrow_down_description">Pull down to refresh</string>
+    <string name="sub_compose_async_image_description">loading thumbnail of streamer</string>
+    <string name="failed_request">Failed request. Please try again</string>
+
+
+    <!-- HomeView EmptyFollowingList composable -->
+    <string name="pull_to_refresh_icon_description">Pull to refresh!</string>
+    <string name="no_live_streams">No live streams! Pull to refresh!</string>
+
+
+    <!-- HomeView GettingStreamsError composable -->
+    <string name="error_pull_to_refresh">Error! Pull to refresh </string>
+
+
+
+
+
+
+    <!-- TODO: StreamView Strings below -->
+
+    <!-- StreamView BottomModalContent composable -->
+    <string name="user_icon_description">User icon</string>
+    <string name="reply">Reply</string>
+    <string name="recent_messages">Recent Messages</string>
+    <string name="timeout">Timeout</string>
+    <string name="unban">Unban</string>
+    <string name="ban">Ban</string>
+
+
+    <!-- StreamView DrawerContent composable -->
+    <string name="chat_settings">Chat settings</string>
+    <string name="failed_to_get_chat_settings">FAILED TO FETCH CHAT SETTINGS</string>
+    <string name="get_chat_settings">Get Chat settings</string>
+
+
+    <!-- StreamView ChatSettings composable -->
+    <string name="slow_mode">Slow mode: </string>
+    <string name="follower_mode">Follower mode: </string>
+    <string name="subscriber_mode">Subscriber mode: </string>
+    <string name="emote_mode">Emote mode: </string>
+
+
+
+    <!-- StreamView MessageAlertText composable -->
+    <string name="close_icon_description">Close notification</string>
+    <string name="failed_request_notification">Request failed</string>
+
+    <!-- StreamView ErrorMessage composable -->
+    <string name="warning_icon_description">Error has occurred</string>
+    <string name="click_to_connect">Click to reconnect</string>
+
+    <!-- StreamView MysteryGiftSubMessage composable -->
+    <string name="random_gift_sub">RANDOM GIFTED SUB</string>
+
+    <!-- StreamView GiftSubMessage composable -->
+    <string name="gift_sub">GIFTED SUB</string>
+
+    <!-- StreamView SubMessage composable -->
+    <string name="sub">SUB</string>
+
+    <!-- StreamView ResubMessage composable -->
+    <string name="re_sub">RESUB</string>
+
+    <!-- StreamView AnnouncementMessage composable -->
+    <string name="announcement">ANNOUNCEMENT</string>
+
+    <!-- StreamView ChatBadges composable -->
+    <string name="moderator_badge_icon_description">Moderator badge</string>
+    <string name="sub_badge_icon_description">Subscriber badge</string>
+
+
+    <!-- StreamView ChatCard composable -->
+    <string name="moderator_deleted_comment">Moderator deleted Comment</string>
+
+    <!-- StreamView ScrollToBottom composable -->
+    <string name="arrow_drop_down_description">click to advance to bottom of chat</string>
+    <string name="scroll_to_bottom">Scroll to bottom</string>
+    <string name="undo_ban_button">Undo ban button</string>
+
+
+    <!-- StreamView TextFieldChat composable -->
+    <string name="send_a_message">Send a message</string>
+    <string name="send_chat">Send chat</string>
+    <string name="more_vert_icon_description">Show side modal</string>
+
+
+    <!-- StreamView TimeoutDialog composable -->
+    <string name="timeout_text">Timeout :</string>
+    <string name="duration_text">Duration :</string>
+    <string name="ten_seconds">10sec</string>
+    <string name="one_minute">1min</string>
+    <string name="ten_minutes">10min</string>
+    <string name="thirty_minutes">30min</string>
+    <string name="reason">Reason</string>
+    <string name="cancel">Cancel</string>
+    <string name="timeout_confirm">Timeout</string>
+
+
+    <!-- StreamView BanDialog composable -->
+    <string name="one_week">1 week</string>
+    <string name="two_weeks">2 weeks</string>
+    <string name="permanently">Permanently</string>
+
+
 </resources>
