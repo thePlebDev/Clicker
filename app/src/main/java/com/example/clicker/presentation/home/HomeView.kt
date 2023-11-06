@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
+import android.provider.Settings.Global.getString
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -61,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -132,7 +134,7 @@ fun ValidationView(
                     textAlign = TextAlign.Center
                 )
                 Button(onClick = { loginWithTwitch() }) {
-                    Text(text = "Login with Twitch")
+                    Text(text = stringResource(R.string.login_with_twitch))
                 }
             }
         }
@@ -215,13 +217,13 @@ fun DisableForceRegister(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "You must add",
+                    stringResource(R.string.you_must_add),
                     fontSize = 25.sp,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
-                    "com.example.clicker",
+                    stringResource(R.string.package_name),
                     fontSize = 30.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -229,7 +231,7 @@ fun DisableForceRegister(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    " to links to enable login with Twitch on Android 12 and higher",
+                    stringResource(R.string.enable_login_with_Android_12),
                     fontSize = 25.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center
@@ -239,7 +241,7 @@ fun DisableForceRegister(
                     modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
                 ) {
-                    Text(text = "Add to links", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text =stringResource(R.string.add_to_links), fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -300,14 +302,14 @@ fun CustomTopBar(
         ) {
             Icon(
                 Icons.Filled.Menu,
-                "menu",
+                stringResource(R.string.menu_icon_description),
                 modifier = Modifier
                     .size(35.dp)
                     .clickable { scope.launch { scaffoldState.drawerState.open() } },
                 tint = MaterialTheme.colorScheme.onSecondary
             )
             Text(
-                "Live channels",
+                stringResource(R.string.live_channels),
                 fontSize = 25.sp,
                 modifier = Modifier.padding(start = 20.dp),
                 color = MaterialTheme.colorScheme.onSecondary
@@ -344,7 +346,7 @@ fun LoginCard(
             .fillMaxWidth()
             .padding(15.dp)
             .clickable {
-                Log.d("TRYINGtOlOGoUT", "IN")
+
                 scope.launch {
                     scaffoldState.drawerState.close()
                 }
@@ -357,10 +359,10 @@ fun LoginCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text("Login with Twitch", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSecondary)
+            Text(stringResource(R.string.login_with_twitch), fontSize = 20.sp, color = MaterialTheme.colorScheme.onSecondary)
             Icon(
                 Icons.Default.AccountCircle,
-                "Logout",
+                stringResource(R.string.login_icon_description),
                 modifier = Modifier.size(35.dp),
                 tint =  MaterialTheme.colorScheme.onSecondary
             )
@@ -380,7 +382,6 @@ fun LogoutCard(
             .fillMaxWidth()
             .padding(15.dp)
             .clickable {
-                Log.d("TRYINGtOlOGoUT", "OUT")
                 scope.launch {
                     scaffoldState.drawerState.close()
                 }
@@ -393,10 +394,10 @@ fun LogoutCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text("Logout", fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
+            Text(stringResource(R.string.logout), fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
             Icon(
                 Icons.Default.ExitToApp,
-                "Logout",
+                stringResource(R.string.logout_icon_description),
                 modifier = Modifier.size(35.dp),
                 tint =  MaterialTheme.colorScheme.onSecondary
             )
@@ -463,7 +464,7 @@ fun UrlImages(
         } else {
             Icon(
                 Icons.Filled.KeyboardArrowDown,
-                "contentDescription",
+                stringResource(R.string.keyboard_arrow_down_description),
                 modifier = Modifier
                     .size(80.dp)
                     .align(Alignment.TopCenter)
@@ -501,7 +502,6 @@ fun UrlImages(
                     }
                     is Response.Success -> {
                         if (urlList != null) {
-                            Log.d("UrlImagesListSize", urlList.size.toString())
 
                             if (urlList.isEmpty()) {
                                 item {
@@ -510,13 +510,8 @@ fun UrlImages(
                             }
 
                             items(urlList) { streamItem ->
-                                Log.d("urlListImageUrl", streamItem.url)
                                 Row(
                                     modifier = Modifier.clickable {
-                                        Log.d(
-                                            "streamer",
-                                            "broadcasterIdClicked -->  ${streamItem.url}"
-                                        )
                                         updateStreamerName(
                                             streamItem.streamerName,
                                             clientId,
@@ -538,7 +533,7 @@ fun UrlImages(
                                                 ) {
                                                 }
                                             },
-                                            contentDescription = "stringResource(R.string.description)"
+                                            contentDescription = stringResource(R.string.sub_compose_async_image_description)
                                         )
                                         Text(
                                             "${streamItem.views}",
@@ -608,7 +603,7 @@ fun UrlImages(
                     backgroundColor = Color.LightGray
                 ) {
                     Text(
-                        "Failed request. Please try again",
+                        stringResource(R.string.failed_request),
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp,
                         color = Color.Red,
@@ -636,14 +631,14 @@ fun EmptyFollowingList() {
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "No live streams!",
+                contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
                 tint = Color.Black,
                 modifier = Modifier.size(35.dp)
             )
-            Text("No live streams. ", fontSize = 20.sp)
+            Text(stringResource(R.string.no_live_streams), fontSize = 20.sp)
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "No live streams! pull to refresh",
+                contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
                 tint = Color.Black,
                 modifier = Modifier.size(35.dp)
             )
@@ -667,14 +662,14 @@ fun GettingStreamsError() {
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "pull to refresh",
+                contentDescription =stringResource(R.string.pull_to_refresh_icon_description),
                 tint = Color.Black,
                 modifier = Modifier.size(35.dp)
             )
-            Text("Error! Pull to refresh ", fontSize = 20.sp)
+            Text(stringResource(R.string.error_pull_to_refresh), fontSize = 20.sp)
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "pull to refresh",
+                contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
                 tint = Color.Black,
                 modifier = Modifier.size(35.dp)
             )
