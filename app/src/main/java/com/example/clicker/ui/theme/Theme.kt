@@ -1,6 +1,7 @@
 package com.example.clicker.ui.theme
 
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -28,10 +29,16 @@ fun AppTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
-        LightColors
-    } else {
-        DarkColors
+//    val colors = if (!useDarkTheme) {
+//        LightColors
+//    } else {
+//        DarkColors
+//    }
+//
+    val colors = when{
+        (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) -> DarkColors
+        (!useDarkTheme) -> LightColors
+        else -> DarkColors
     }
 
     MaterialTheme(
