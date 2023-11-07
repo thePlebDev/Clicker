@@ -239,9 +239,9 @@ fun DisableForceRegister(
                 Button(
                     onClick = { addToLinks() },
                     modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary)
                 ) {
-                    Text(text =stringResource(R.string.add_to_links), fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text =stringResource(R.string.add_to_links), fontSize = 25.sp, color = MaterialTheme.colorScheme.onSecondary)
                 }
             }
         }
