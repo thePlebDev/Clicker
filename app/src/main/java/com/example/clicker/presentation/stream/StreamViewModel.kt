@@ -38,29 +38,29 @@ data class ChattingUser(
     val message: String
 )
 data class StreamUIState(
-    val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket
-    val loggedInUserData: LoggedInUserData? = null,
+    val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket twitchImpl
+    val loggedInUserData: LoggedInUserData? = null, //websocket
 
-    val clientId: String = "",
-    val broadcasterId: String = "",
-    val userId: String = "",
-    val oAuthToken: String = "",
+    val clientId: String = "", //twitchRepoImpl
+    val broadcasterId: String = "", //twitchRepoImpl
+    val userId: String = "", //twitchRepoImpl
+    val oAuthToken: String = "", //twitchRepoImpl
 
-    val showChatSettingAlert: Boolean = false,
+    val showChatSettingAlert: Boolean = false, //twitchRepoImpl
 
-    val enableSlowMode: Boolean = true,
-    val enableFollowerMode: Boolean = true,
-    val enableSubscriberMode: Boolean = true,
-    val enableEmoteMode: Boolean = true,
+    val enableSlowMode: Boolean = true, //twitchRepoImpl
+    val enableFollowerMode: Boolean = true, //twitchRepoImpl
+    val enableSubscriberMode: Boolean = true, //twitchRepoImpl
+    val enableEmoteMode: Boolean = true, //twitchRepoImpl
 
-    val banDuration: Int = 0,
-    val banReason: String = "",
-    val timeoutDuration: Int = 10,
-    val timeoutReason: String = "",
-    val banResponse: Response<Boolean> = Response.Success(false),
-    val banResponseMessage: String = "",
-    val undoBanResponse: Boolean = false,
-    val showStickyHeader: Boolean = false,
+    val banDuration: Int = 0, //twitchRepoImpl
+    val banReason: String = "", //twitchRepoImpl
+    val timeoutDuration: Int = 10, //twitchRepoImpl
+    val timeoutReason: String = "", //twitchRepoImpl
+    val banResponse: Response<Boolean> = Response.Success(false), //twitchRepoImpl
+    val banResponseMessage: String = "", //twitchRepoImpl
+    val undoBanResponse: Boolean = false, //twitchRepoImpl
+    val showStickyHeader: Boolean = false, //twitchRepoImpl
 
     val chatSettingsFailedMessage: String = ""
 )
@@ -495,10 +495,7 @@ class StreamViewModel @Inject constructor(
                                 )
                             }
                             is Response.Success -> {
-                                Log.d(
-                                    "twitchNameonCreateViewVIewModel",
-                                    "SUCCESS -> ${response.data.data}"
-                                )
+
                                 _uiState.value = _uiState.value.copy(
                                     chatSettings = Response.Success(response.data.data[0])
                                 )

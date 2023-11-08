@@ -1490,6 +1490,9 @@ fun ChatCard(
     val coroutineScope = rememberCoroutineScope()
 
     var color by remember { mutableStateOf(Color(parseColor(twitchUser.color))) }
+    if(color == Color.Black){
+        color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+    }
     var displayName by remember { mutableStateOf(twitchUser.displayName) }
     var comment by remember { mutableStateOf(twitchUser.userType) }
     var showIcons by remember { mutableStateOf(true) }
@@ -1573,7 +1576,7 @@ fun ChatCard(
                         }
                     ),
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                border = BorderStroke(2.dp, androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+                border = BorderStroke(2.dp, androidx.compose.material3.MaterialTheme.colorScheme.secondary)
 
             ) {
                 Column() {
@@ -1759,7 +1762,7 @@ fun TextFieldChat(
             },
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.White,
-                backgroundColor = Color.Black,
+                backgroundColor = Color.DarkGray,
                 cursorColor = Color.White,
                 disabledLabelColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
@@ -1814,7 +1817,8 @@ fun TimeoutDialog(
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            backgroundColor = primary
+            backgroundColor = primary,
+            border = BorderStroke(2.dp,secondary)
         ) {
             Column(
                 modifier = Modifier
@@ -1826,7 +1830,7 @@ fun TimeoutDialog(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Text(stringResource(R.string.timeout_text), fontSize = 22.sp,color = onPrimary)
-                    Text(username, fontSize = 22.sp)
+                    Text(username, fontSize = 22.sp,color = onPrimary)
                 }
                 Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
                 Text(stringResource(R.string.duration_text),color = onPrimary)
@@ -1848,7 +1852,7 @@ fun TimeoutDialog(
                             selected = timeoutDuration == 60,
                             onClick = { changeTimeoutDuration(60) }
                         )
-                        Text(stringResource(R.string.one_minute))
+                        Text(stringResource(R.string.one_minute),color = onPrimary)
                     }
                     Column {
                         RadioButton(
@@ -1856,7 +1860,7 @@ fun TimeoutDialog(
                             selected = timeoutDuration == 600,
                             onClick = { changeTimeoutDuration(600) }
                         )
-                        Text(stringResource(R.string.ten_minutes))
+                        Text(stringResource(R.string.ten_minutes),color = onPrimary)
                     }
                     Column {
                         RadioButton(
@@ -1864,7 +1868,7 @@ fun TimeoutDialog(
                             selected = timeoutDuration == 1800,
                             onClick = { changeTimeoutDuration(1800) }
                         )
-                        Text(stringResource(R.string.thirty_minutes))
+                        Text(stringResource(R.string.thirty_minutes),color = onPrimary)
                     }
                 }
                 OutlinedTextField(
@@ -1922,7 +1926,8 @@ fun BanDialog(
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            backgroundColor = primary
+            backgroundColor = primary,
+            border = BorderStroke(2.dp,secondary)
         ) {
             Column(
                 modifier = Modifier

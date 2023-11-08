@@ -218,7 +218,7 @@ class ParsingEngine @Inject constructor() {
             badgeInfo = parsedData["badge-info"],
             badges = parsedData["badges"],
             clientNonce = parsedData["client-nonce"],
-            color = parsedData["color"] ?: "#000000",
+            color = parsedData["color"] ?: "#FF6650a4",
             displayName = parsedData["display-name"],
             emotes = parsedData["emotes"],
             firstMsg = parsedData["first-msg"],
