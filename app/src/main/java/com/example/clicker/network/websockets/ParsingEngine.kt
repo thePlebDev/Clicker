@@ -199,15 +199,15 @@ class ParsingEngine @Inject constructor() {
      * @property text the string to be parsed
      * @return a [TwitchUserData] representing all the meta data from an individual chatter
      */
-    fun privateMessageParsing(text: String): TwitchUserData {
+    fun privateMessageParsing(text: String,channelName: String): TwitchUserData {
         val pattern = "([^;@]+)=([^;]+)".toRegex()
-        val privateMsgPattern = "([^:]+)$".toRegex()
+        val privateMsgPattern = "(#$channelName :)(.+)".toRegex()
 
         val matchResults = pattern.findAll(text)
         val privateMsgResult = privateMsgPattern.find(text)
 
         val parsedData = mutableMapOf<String, String>()
-        val privateMsg = privateMsgResult?.groupValues?.get(1) ?: ""
+        val privateMsg = privateMsgResult?.groupValues?.get(2) ?: ""
 
         for (matchResult in matchResults) {
             val (key, value) = matchResult.destructured
