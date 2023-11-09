@@ -144,16 +144,30 @@ class ParsingEngine @Inject constructor() {
     }
 
     fun noticeParsing(text: String, streamerChannelName: String): TwitchUserData {
-        val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
-        val matchResult = pattern.find(text)
-        val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
+        if(text.contains("NOTICE *")){
+            val regexPattern ="(NOTICE \\* :)(.+)".toRegex()
+            val matchedPattern= regexPattern.find(text)?.groupValues?.get(2) ?: "Room information updated"
+            return TwitchUserDataObjectMother
+                .addColor("#000000")
+                .addDisplayName("Room update")
+                .addUserType(matchedPattern)
+                .addMessageType(MessageType.NOTICE)
+                .build()
 
-        return TwitchUserDataObjectMother
-            .addColor("#000000")
-            .addDisplayName("Room update")
-            .addUserType(extractedInfo)
-            .addMessageType(MessageType.NOTICE)
-            .build()
+        }else{
+            val pattern = "#$streamerChannelName\\s*:(.+)".toRegex()
+            val matchResult = pattern.find(text)
+            val extractedInfo = matchResult?.groupValues?.get(1)?.trim() ?: "Room information updated"
+            return TwitchUserDataObjectMother
+                .addColor("#000000")
+                .addDisplayName("Room update")
+                .addUserType(extractedInfo)
+                .addMessageType(MessageType.NOTICE)
+                .build()
+        }
+
+
+
     }
 
     /**
