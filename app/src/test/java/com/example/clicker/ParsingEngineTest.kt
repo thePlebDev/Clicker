@@ -181,4 +181,19 @@ class ParsingEngineTest {
         /* THEN */
         Assert.assertEquals(expectedResult, actualResult)
     }
+    @Test
+    fun star_notice_testing(){
+        /* Given */
+        val expectedResult="Login authentication failed"
+        val testText = ":tmi.twitch.tv NOTICE * :$expectedResult"
+
+        /* When */
+        // so we need to match everything after this patter, #tru3ta1ent :
+
+        val actualResult = underTest.noticeParsing(testText,"channelName").userType
+
+
+        /* THEN */
+        Assert.assertEquals(expectedResult, actualResult)
+    }
 }
