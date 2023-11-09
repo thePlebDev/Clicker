@@ -8,6 +8,9 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.repository.TwitchRepoImpl
+import com.example.clicker.network.websockets.ParsingEngine
+import com.example.clicker.network.websockets.TwitchWebSocket
+import com.example.clicker.network.websockets.domain.TwitchSocket
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -58,5 +61,12 @@ object SingletonModule {
     @Provides
     fun provideCoroutineDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
+    }
+    @Provides
+    fun provideTwitchWebSocket(
+        tokenDataStore: TwitchDataStore,
+        twitchParsingEngine: ParsingEngine
+    ): TwitchSocket {
+        return TwitchWebSocket(tokenDataStore,twitchParsingEngine)
     }
 }

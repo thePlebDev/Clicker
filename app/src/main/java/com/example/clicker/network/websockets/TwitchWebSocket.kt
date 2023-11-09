@@ -3,6 +3,7 @@ package com.example.clicker.network.websockets
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.websockets.domain.TwitchSocket
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.RoomState
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -31,7 +32,7 @@ enum class MessageType {
 class TwitchWebSocket @Inject constructor(
     private val tokenDataStore: TwitchDataStore,
     private val twitchParsingEngine: ParsingEngine
-) : WebSocketListener() {
+) : WebSocketListener(), TwitchSocket {
 
     private val webSocketScope = CoroutineScope(
         Dispatchers.Default + CoroutineName("webSocketScope")
@@ -63,10 +64,10 @@ class TwitchWebSocket @Inject constructor(
     private var loggedInUsername = ""
 
     private val _state = MutableStateFlow(initialValue)
-    val state = _state.asStateFlow() // this is the text data shown to the user
+    override val state = _state.asStateFlow() // this is the text data shown to the user
 
     private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
-    val loggedInUserUiState = _loggedInUserUiState
+    override val loggedInUserUiState = _loggedInUserUiState
 
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket: WebSocket? = null
@@ -74,15 +75,15 @@ class TwitchWebSocket @Inject constructor(
     var sentMessageString: String = ""
 
     private val _roomState = MutableStateFlow<RoomState?>(null)
-    val roomState = _roomState.asStateFlow()
+    override val roomState = _roomState.asStateFlow()
 
     private val _messageToDeleteId: MutableStateFlow<String?> = MutableStateFlow(null)
-    val messageToDeleteId = _messageToDeleteId.asStateFlow() // this is the text data shown to the user
+    override val messageToDeleteId = _messageToDeleteId.asStateFlow() // this is the text data shown to the user
 
     private val _bannedUsername: MutableStateFlow<String?> = MutableStateFlow(null)
     val bannedUsername = _bannedUsername.asStateFlow() // this is the text data shown to the user
 
-    fun run(channelName: String?, username: String) {
+    override fun run(channelName: String?, username: String) {
         loggedInUsername = username
         if (channelName != null) {
             streamerChannelName = channelName
@@ -95,7 +96,7 @@ class TwitchWebSocket @Inject constructor(
         } else {
         }
     }
-    fun close() {
+    override fun close() {
         // Trigger shutdown of the dispatcher's executor so this process can exit cleanly.
         client.dispatcher.executorService.shutdown()
         webSocket?.close(1009, "Manually closed ")
@@ -183,7 +184,7 @@ class TwitchWebSocket @Inject constructor(
         if (text.contains("PRIVMSG")) {
             Log.d("loggedInDataOnMessage", "PRIVMSG --> $text")
 
-            val parsedPRIVMSG = twitchParsingEngine.privateMessageParsing(text)
+            val parsedPRIVMSG = twitchParsingEngine.privateMessageParsing(text,streamerChannelName)
             _state.tryEmit(parsedPRIVMSG)
         }
 
@@ -217,7 +218,7 @@ class TwitchWebSocket @Inject constructor(
         _state.tryEmit(errorValue)
     }
 
-    fun sendMessage(chatMessage: String): Boolean {
+    override fun sendMessage(chatMessage: String): Boolean {
         val sendingText = webSocket?.send("PRIVMSG #$streamerChannelName :$chatMessage")
         sentMessageString = chatMessage
         // 'PRIVMSG #$channelName :$message'

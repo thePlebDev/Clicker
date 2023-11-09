@@ -18,6 +18,7 @@ import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.TwitchWebSocket
+import com.example.clicker.network.websockets.domain.TwitchSocket
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.Response
@@ -73,7 +74,7 @@ data class ClickedUIState(
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
-    private val webSocket: TwitchWebSocket,
+    private val webSocket: TwitchSocket,
     private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher
@@ -458,7 +459,7 @@ class StreamViewModel @Inject constructor(
             userId = userId
         )
 
-        getChatSettings(clientId, broadcasterId)
+       // getChatSettings(clientId, broadcasterId)
         listChats.clear()
     }
     fun retryGettingChatSetting() {
@@ -473,16 +474,10 @@ class StreamViewModel @Inject constructor(
         clientId: String,
         broadcasterId: String
     ) = viewModelScope.launch {
-//        tokenDataStore.getClientId().collect{
-//            Log.d("twitchNameonCreateViewVIewModel","tokenDataStoreclientId ->$clientId")
-//        }
+
         withContext(Dispatchers.IO + CoroutineName("GetChatSettings")) {
             tokenDataStore.getOAuthToken().collect { oAuthToken ->
-                Log.d("getChatSettingsCalled", "clientId ->${_uiState.value.clientId}")
-                Log.d("getChatSettingsCalled", "broadcasterId ->${_uiState.value.broadcasterId}")
-                Log.d("getChatSettingsCalled", "oAuthToken ->$oAuthToken")
-//            Log.d("twitchNameonCreateViewVIewModel","broadcasterId ->$broadcasterId")
-//            Log.d("twitchNameonCreateViewVIewModel","oAuthToken ->$oAuthToken")
+
                 if (oAuthToken.isNotEmpty()) {
                     _uiState.value = _uiState.value.copy(
                         oAuthToken = oAuthToken
@@ -501,12 +496,7 @@ class StreamViewModel @Inject constructor(
                                 )
                             }
                             is Response.Failure -> {
-                                Log.d(
-                                    "twitchNameonCreateViewVIewModel",
-                                    "FAILED -> ${response.e.message}"
-                                )
                                 _uiState.value = _uiState.value.copy(
-//
                                     chatSettings = Response.Failure(response.e)
                                 )
                             }
