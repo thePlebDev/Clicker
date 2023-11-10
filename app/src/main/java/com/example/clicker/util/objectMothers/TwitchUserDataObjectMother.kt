@@ -5,6 +5,7 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 
 class TwitchUserDataObjectMother private constructor() {
 
+
     companion object {
 
         private var twitchUserData: TwitchUserData = TwitchUserData(
