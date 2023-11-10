@@ -329,7 +329,7 @@ class StreamViewModel @Inject constructor(
 
     suspend fun monitorSocketForChatMessages(){
         webSocket.state.collect { twitchUserMessage ->
-            Log.d("loggedMessage", "$twitchUserMessage")
+            Log.d("loggedMessage", "${twitchUserMessage.id}")
             listChats.add(twitchUserMessage)
             if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
@@ -459,7 +459,7 @@ class StreamViewModel @Inject constructor(
             userId = userId
         )
 
-       // getChatSettings(clientId, broadcasterId)
+        getChatSettings(clientId, broadcasterId)
         listChats.clear()
     }
     fun retryGettingChatSetting() {

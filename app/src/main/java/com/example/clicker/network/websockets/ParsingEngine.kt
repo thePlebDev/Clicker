@@ -139,11 +139,13 @@ class ParsingEngine @Inject constructor() {
         return TwitchUserDataObjectMother.addColor("#000000")
             .addDisplayName("Room update")
             .addUserType("Connected to chat!")
+            .addId("1")
             .addMessageType(MessageType.JOIN)
             .build()
     }
 
     fun noticeParsing(text: String, streamerChannelName: String): TwitchUserData {
+        Log.d("noticeParsingTHings",text)
         if(text.contains("NOTICE *")){
             val regexPattern ="(NOTICE \\* :)(.+)".toRegex()
             val matchedPattern= regexPattern.find(text)?.groupValues?.get(2) ?: "Room information updated"
@@ -151,6 +153,7 @@ class ParsingEngine @Inject constructor() {
                 .addColor("#000000")
                 .addDisplayName("Room update")
                 .addUserType(matchedPattern)
+                .addId("1")
                 .addMessageType(MessageType.NOTICE)
                 .build()
 
@@ -177,15 +180,19 @@ class ParsingEngine @Inject constructor() {
      * announcement, resub, sub, submysterygift, subgift
      */
     fun userNoticeParsing(text: String, streamerChannelName: String): TwitchUserData {
+
         val displayNamePattern = "display-name=([^;]+)".toRegex()
         val messageIdPattern = "msg-id=([^;]+)".toRegex()
         val systemMessagePattern = "system-msg=([^;]+)".toRegex()
         val personalMessagePattern = "#$streamerChannelName :([^;]+)".toRegex()
+        val idPattern = "id=([^;]+)".toRegex()
 
         val displayNameMatch = displayNamePattern.find(text)
         val messageIdMatch = messageIdPattern.find(text)
         val systemMessageMatch = systemMessagePattern.find(text)
         val personalMessageMatch = personalMessagePattern.find(text)
+        val id = idPattern.find(text)?.groupValues?.get(1)
+
 
         val displayName = displayNameMatch?.groupValues?.get(1) ?: "username"
 
@@ -205,6 +212,7 @@ class ParsingEngine @Inject constructor() {
             .addMessageType(messageType)
             .addUserType(personalMessage)
             .addSystemMessage(systemMessage)
+            .addId(id!!)
             .build()
     }
 

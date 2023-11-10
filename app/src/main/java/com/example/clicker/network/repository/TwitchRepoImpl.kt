@@ -159,7 +159,7 @@ class TwitchRepoImpl @Inject constructor(
             moderatorId = moderatorId,
             body = body
         )
-        Log.d("changeChatSettingsUpdate", "REQUEST MADE")
+        Log.d("changeChatSettingsUpdate", "${response.message()}")
         if (response.isSuccessful) {
             emit(Response.Success(true))
         } else {
