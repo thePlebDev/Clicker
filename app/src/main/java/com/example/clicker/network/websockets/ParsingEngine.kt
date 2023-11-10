@@ -13,6 +13,7 @@ import okhttp3.WebSocket
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
 class ParsingEngine @Inject constructor() {
+    var globalId = 1
     val initialState = mutableStateOf("")
     private var initialRoomState:RoomState = RoomState(false,false,false,false,0,0)
 
@@ -69,6 +70,7 @@ class ParsingEngine @Inject constructor() {
         )
     }
     private fun clearChatParsing(channelName: String): TwitchUserData {
+        globalId += 1
         return TwitchUserData(
             badgeInfo = null,
             badges = null,
@@ -78,7 +80,7 @@ class ParsingEngine @Inject constructor() {
             emotes = null,
             firstMsg = null,
             flags = null,
-            id = null,
+            id = globalId.toString(),
             mod = null,
             returningChatter = null,
             roomId = null,
@@ -136,15 +138,17 @@ class ParsingEngine @Inject constructor() {
      * @return a [TwitchUserData] used to notify the user that they have connected to a streamer's chat room
      */
     fun createJoinObject(): TwitchUserData {
+        globalId += 1
         return TwitchUserDataObjectMother.addColor("#000000")
             .addDisplayName("Room update")
             .addUserType("Connected to chat!")
-            .addId("1")
+            .addId(globalId.toString())
             .addMessageType(MessageType.JOIN)
             .build()
     }
 
     fun noticeParsing(text: String, streamerChannelName: String): TwitchUserData {
+        globalId += 1
         Log.d("noticeParsingTHings",text)
         if(text.contains("NOTICE *")){
             val regexPattern ="(NOTICE \\* :)(.+)".toRegex()
@@ -153,7 +157,7 @@ class ParsingEngine @Inject constructor() {
                 .addColor("#000000")
                 .addDisplayName("Room update")
                 .addUserType(matchedPattern)
-                .addId("1")
+                .addId(globalId.toString())
                 .addMessageType(MessageType.NOTICE)
                 .build()
 
@@ -165,6 +169,7 @@ class ParsingEngine @Inject constructor() {
                 .addColor("#000000")
                 .addDisplayName("Room update")
                 .addUserType(extractedInfo)
+                .addId(globalId.toString())
                 .addMessageType(MessageType.NOTICE)
                 .build()
         }

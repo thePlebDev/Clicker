@@ -956,7 +956,7 @@ fun TextChat(
                 }
             }
 
-            items(twitchUserChat,) { twitchUser ->
+            items(twitchUserChat,key = { twitchUser -> twitchUser.id!!}) { twitchUser ->
 
                 val color = Color(parseColor(twitchUser.color))
 
