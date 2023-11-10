@@ -509,7 +509,7 @@ fun UrlImages(
                                 }
                             }
 
-                            items(urlList) { streamItem ->
+                            items(urlList,key = { streamItem -> streamItem.broadcasterId }) { streamItem ->
                                 Row(
                                     modifier = Modifier.clickable {
                                         updateStreamerName(
