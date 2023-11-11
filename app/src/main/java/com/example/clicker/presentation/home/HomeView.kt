@@ -65,6 +65,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,7 +87,8 @@ fun ValidationView(
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
-    quarterTotalScreenHeight:Int
+    quarterTotalScreenHeight:Int,
+    loadingPadding: Int,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -177,7 +179,8 @@ fun ValidationView(
                     homeViewModel,
                     streamViewModel,
                     onNavigate,
-                    quarterTotalScreenHeight
+                    quarterTotalScreenHeight,
+                    loadingPadding
                 )
             }
         }
@@ -254,7 +257,8 @@ fun HomeView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     onNavigate: (Int) -> Unit,
-    quarterTotalScreenHeight:Int
+    quarterTotalScreenHeight:Int,
+    loadingPadding: Int,
 ) {
     val urlListLoading = homeViewModel.state.value.streamersListLoading
     // todo: home pager page goes here
@@ -282,7 +286,8 @@ fun HomeView(
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         urlListLoading = urlListLoading,
-        quarterTotalScreenHeight = quarterTotalScreenHeight
+        quarterTotalScreenHeight = quarterTotalScreenHeight,
+        loadingPadding = loadingPadding
     )
 } // END OF THE HOME VIEW
 
@@ -419,6 +424,7 @@ fun UrlImages(
     height: Int,
     width: Int,
     quarterTotalScreenHeight:Int,
+    loadingPadding: Int,
     urlListLoading: Response<Boolean>
 ) {
     val scope = rememberCoroutineScope()
@@ -426,8 +432,9 @@ fun UrlImages(
 
     var pullColor by remember { mutableStateOf(initialColor) }
     val configuration = LocalConfiguration.current
+    val another = 5.dp
 
-    val quarterTotalScreenHeight = configuration.screenHeightDp / 8 //todo: calculation should be done outside of compose
+    //val quarterTotalScreenHeight = configuration.screenHeightDp / 8 //todo: calculation should be done outside of compose
 
     var request by remember { mutableStateOf(false) }
     var pullingState = rememberPullToRefreshState()
@@ -455,7 +462,7 @@ fun UrlImages(
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = (quarterTotalScreenHeight / 14).dp), //todo: calculation should be done outside of compose
+                    .padding(top = (loadingPadding).dp), //todo: calculation should be done outside of compose
                 color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
             )
             networkRequest {
