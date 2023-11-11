@@ -8,8 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -41,6 +44,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
 
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
         // val channelName =streamViewModel.channelName.value
@@ -92,6 +96,7 @@ fun setOrientation(
                     streamViewModel,
                     homeViewModel
                 )
+
             }
 
         }

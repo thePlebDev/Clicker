@@ -157,6 +157,10 @@ fun StreamView(
 
     when (orientation) {
         Configuration.ORIENTATION_LANDSCAPE -> {
+            Column(modifier = Modifier.fillMaxSize().background(Color.Red)) {
+
+                Text("IT DO BE LIKE THAT", fontSize = 30.sp)
+            }
         }
         else -> {
             ModalBottomSheetLayout(
@@ -443,7 +447,11 @@ fun BottomModalContent(
             .padding(horizontal = 10.dp)
             .height(100.dp)
             .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-            .border(width = 1.dp, color = androidx.compose.material3.MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(8.dp))
+            .border(
+                width = 1.dp,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(8.dp)
+            )
     ) {
         items(clickedUsernameChats) {
             Text(
@@ -479,7 +487,9 @@ fun DrawerContent(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
     ) {
         Text(stringResource(R.string.chat_settings), fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
         when (chatSettingsData) {
@@ -1444,7 +1454,9 @@ fun ChatBadges(
                 AsyncImage(
                     model = modBadge,
                     contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                    modifier = Modifier.fillMaxSize().padding(2.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
                 )
             }
         ),
@@ -1462,7 +1474,9 @@ fun ChatBadges(
                 AsyncImage(
                     model = subBadge,
                     contentDescription = stringResource(R.string.sub_badge_icon_description),
-                    modifier = Modifier.fillMaxSize().padding(2.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
                 )
             }
         )
@@ -1471,7 +1485,9 @@ fun ChatBadges(
     Text(
         text = text,
         inlineContent = inlineContent,
-        modifier = Modifier.fillMaxWidth().padding(5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
         color = color,
         fontSize = textSize
     )
@@ -1822,7 +1838,8 @@ fun TimeoutDialog(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(10.dp).background(primary)
+                    .padding(10.dp)
+                    .background(primary)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1931,7 +1948,8 @@ fun BanDialog(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(10.dp).background(primary)
+                    .padding(10.dp)
+                    .background(primary)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
