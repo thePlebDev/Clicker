@@ -85,14 +85,12 @@ class HomeFragment : Fragment() {
                     Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
                     Uri.parse("package:${context.packageName}")
                 )
-                val display = requireActivity().windowManager.currentWindowMetrics.bounds
-                val stageWidth = display.width
-                val stageHeight = display.height
-                val display = requireActivity().windowManager.defaultDisplay
-                val stageWidth = display.width
-                val stageHeight = display.height
 
-                val width = Resources.getSystem().displayMetrics.widthPixels
+                val height = getScreenHeight(requireActivity())
+                val quarterTotalScreenHeight = height/8
+                val loadingPadding = quarterTotalScreenHeight/14
+
+
 
                 AppTheme{
                     ValidationView(
@@ -108,7 +106,8 @@ class HomeFragment : Fragment() {
                         },
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         addToLinks = { context.startActivity(domainIntent) },
-                        quarterTotalScreenHeight
+                        quarterTotalScreenHeight,
+                        loadingPadding
 
 
                     )
@@ -119,18 +118,34 @@ class HomeFragment : Fragment() {
         return view
     }
 
+    //screen width taking into account any space occupied by system bars.
     fun getScreenWidth(activity: Activity): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowMetrics = activity.windowManager.currentWindowMetrics
             val insets: Insets = windowMetrics.windowInsets
                 .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
-            windowMetrics.bounds.width() - insets.left - insets.right
+            windowMetrics.bounds.width() - insets.left - insets.right //width of the content area of the current window or activity
         } else {
             val displayMetrics = DisplayMetrics()
             activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
-            displayMetrics.widthPixels
+            displayMetrics.widthPixels // total width of the screen, regardless of the current activity,
         }
     }
+
+    //screen height taking into account any space occupied by system bars.
+    fun getScreenHeight(activity: Activity): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowMetrics = activity.windowManager.currentWindowMetrics
+            val insets: Insets = windowMetrics.windowInsets
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+            windowMetrics.bounds.height() - insets.top - insets.bottom
+        } else {
+            val displayMetrics = DisplayMetrics()
+            activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+            displayMetrics.heightPixels
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
