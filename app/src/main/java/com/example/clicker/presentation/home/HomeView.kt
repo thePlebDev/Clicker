@@ -1,8 +1,6 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
-import android.provider.Settings.Global.getString
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -87,7 +85,8 @@ fun ValidationView(
     authenticationViewModel: AuthenticationViewModel,
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
-    addToLinks: () -> Unit
+    addToLinks: () -> Unit,
+    quarterTotalScreenHeight:Int
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -177,7 +176,8 @@ fun ValidationView(
                 HomeView(
                     homeViewModel,
                     streamViewModel,
-                    onNavigate
+                    onNavigate,
+                    quarterTotalScreenHeight
                 )
             }
         }
@@ -253,7 +253,8 @@ fun DisableForceRegister(
 fun HomeView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
-    onNavigate: (Int) -> Unit
+    onNavigate: (Int) -> Unit,
+    quarterTotalScreenHeight:Int
 ) {
     val urlListLoading = homeViewModel.state.value.streamersListLoading
     // todo: home pager page goes here
@@ -280,7 +281,8 @@ fun HomeView(
         showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
-        urlListLoading = urlListLoading
+        urlListLoading = urlListLoading,
+        quarterTotalScreenHeight = quarterTotalScreenHeight
     )
 } // END OF THE HOME VIEW
 
@@ -416,6 +418,7 @@ fun UrlImages(
     showFailedNetworkRequestMessage: Boolean,
     height: Int,
     width: Int,
+    quarterTotalScreenHeight:Int,
     urlListLoading: Response<Boolean>
 ) {
     val scope = rememberCoroutineScope()
@@ -424,7 +427,7 @@ fun UrlImages(
     var pullColor by remember { mutableStateOf(initialColor) }
     val configuration = LocalConfiguration.current
 
-    val quarterTotalScreenHeight = configuration.screenHeightDp / 8
+    val quarterTotalScreenHeight = configuration.screenHeightDp / 8 //todo: calculation should be done outside of compose
 
     var request by remember { mutableStateOf(false) }
     var pullingState = rememberPullToRefreshState()
@@ -452,7 +455,7 @@ fun UrlImages(
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = (quarterTotalScreenHeight / 14).dp),
+                    .padding(top = (quarterTotalScreenHeight / 14).dp), //todo: calculation should be done outside of compose
                 color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
             )
             networkRequest {
@@ -468,7 +471,7 @@ fun UrlImages(
                 modifier = Modifier
                     .size(80.dp)
                     .align(Alignment.TopCenter)
-                    .offset { IntOffset(0, pullingState.contentOffset.toInt() - 140) },
+                    .offset { IntOffset(0, pullingState.contentOffset.toInt() - 140) },//todo: calculation should be done outside of compose
                 tint = pullColor
 
             )
