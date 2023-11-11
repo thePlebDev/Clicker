@@ -1,15 +1,19 @@
 package com.example.clicker.presentation.home
 
+import android.app.Activity
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Insets
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -22,6 +26,7 @@ import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -80,6 +85,14 @@ class HomeFragment : Fragment() {
                     Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
                     Uri.parse("package:${context.packageName}")
                 )
+                val display = requireActivity().windowManager.currentWindowMetrics.bounds
+                val stageWidth = display.width
+                val stageHeight = display.height
+                val display = requireActivity().windowManager.defaultDisplay
+                val stageWidth = display.width
+                val stageHeight = display.height
+
+                val width = Resources.getSystem().displayMetrics.widthPixels
 
                 AppTheme{
                     ValidationView(
@@ -94,8 +107,9 @@ class HomeFragment : Fragment() {
                             )
                         },
                         onNavigate = { dest -> findNavController().navigate(dest) },
-                        addToLinks = { context.startActivity(domainIntent) }
-                        //  workerViewModel = workerViewModel
+                        addToLinks = { context.startActivity(domainIntent) },
+                        quarterTotalScreenHeight
+
 
                     )
                 }
@@ -103,6 +117,19 @@ class HomeFragment : Fragment() {
             }
         }
         return view
+    }
+
+    fun getScreenWidth(activity: Activity): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowMetrics = activity.windowManager.currentWindowMetrics
+            val insets: Insets = windowMetrics.windowInsets
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+            windowMetrics.bounds.width() - insets.left - insets.right
+        } else {
+            val displayMetrics = DisplayMetrics()
+            activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+            displayMetrics.widthPixels
+        }
     }
 
     override fun onDestroyView() {
