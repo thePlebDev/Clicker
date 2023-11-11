@@ -10,15 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <WebView
             android:id="@+id/webView"
             android:layout_width="0.dp"
             android:layout_height="0.dp"
 
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/compose_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintWidth_percent="0.6"
             />
 
         <androidx.compose.ui.platform.ComposeView
@@ -28,9 +30,13 @@
 
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/webView"
             app:layout_constraintTop_toTopOf="parent"
-             />
+            app:layout_constraintWidth_percent="0.4"
+            />
+
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

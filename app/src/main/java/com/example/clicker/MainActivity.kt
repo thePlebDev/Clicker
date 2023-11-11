@@ -4,15 +4,20 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.clicker.presentation.home.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -75,22 +80,13 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
 
         supportActionBar!!.hide()
+
+        val bitmap = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(Color.BLACK)
+        val bitmapDrawable = BitmapDrawable(resources, bitmap)
+        window.setBackgroundDrawable(bitmapDrawable)
         setContentView(R.layout.activity_main)
 
-//        val myWebView: WebView = findViewById(R.id.webview)
-//
-//
-//        val channelName ="Robbaz"
-//        val url="https://player.twitch.tv/?channel=$channelName&parent=Modderz"
-//        val chatUrl = "https://www.twitch.tv/embed/$channelName/chat?parent=Modderz"
-//
-//
-//        myWebView.settings.javaScriptEnabled = true // THis needs to be enabled
-//       // myWebView.settings.setSupportMultipleWindows(true) //How to support webview with multiple screens in android
-//        myWebView.loadUrl(chatUrl)
 
-        // val myWebView = WebView(this)
-        // myWebView.loadUrl(url)
-        // setContentView(myWebView)
     }
 }
