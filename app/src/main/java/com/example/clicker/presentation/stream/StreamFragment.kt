@@ -1,12 +1,19 @@
 package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.Resources
+import android.graphics.Insets
+import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -66,6 +73,21 @@ class StreamFragment : Fragment(), View.OnClickListener {
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
+        myWebView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Handle touch down event
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    // Handle touch up event
+                    myWebView.performClick()
+                    true
+                }
+                else -> false
+            }
+        }
+
 
         setWebView(
             myWebView = myWebView,
@@ -103,6 +125,18 @@ fun setOrientation(
     }
 
     return binding.root
+}
+fun getScreenWidth(activity: Activity): Int {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val windowMetrics = activity.windowManager.currentWindowMetrics
+        val insets: Insets = windowMetrics.windowInsets
+            .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+        windowMetrics.bounds.width() - insets.left - insets.right //width of the content area of the current window or activity
+    } else {
+        val displayMetrics = DisplayMetrics()
+        activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        displayMetrics.widthPixels // total width of the screen, regardless of the current activity,
+    }
 }
 
 fun setWebView(

@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.substring
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.data.TokenDataStore
@@ -111,6 +112,23 @@ class StreamViewModel @Inject constructor(
     val clickedUsernameChats = mutableStateListOf<String>()
 
     private val allChatters = mutableStateListOf<String>()
+
+    /**THis is the data for the new filter methods*/
+
+
+    private val filterMethodStartingIndex = mutableStateOf(0)
+    private val shouldFilter = mutableStateOf(false)
+     val chatTextRange= mutableStateOf(TextRange(0))
+
+    fun changeTextRange(currentTextRange:TextRange){
+        chatTextRange.value = currentTextRange
+    }
+
+
+
+
+
+    /**THis is the data for the new filter methods*/
 
     init {
         viewModelScope.launch {
@@ -881,5 +899,47 @@ class StreamViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         webSocket.close()
+    }
+
+
+
+
+    fun filterMethodBetter(text:String,currentCharacter:Char,currentIndex:Int){
+        try{
+            if(text.length == 1){
+                filteredChatList.clear()
+            }
+            if(currentCharacter.toString() == "@"){
+                filterMethodStartingIndex.value = currentIndex
+                shouldFilter.value = true
+                filteredChatList.clear()
+
+            }
+            if(currentCharacter.toString() == " "){
+                shouldFilter.value = false
+                filteredChatList.clear()
+            }
+            if(shouldFilter.value == true){
+                var extraCharacter = ""
+                if(currentCharacter.toString() != "@"){
+                    extraCharacter = currentCharacter.toString()
+                }
+
+                val subString = "${text.substring(TextRange((filterMethodStartingIndex.value),currentIndex))}$extraCharacter"
+                val filterText = subString.replace("@","")
+                val filteredList = allChatters.filter { item -> item.contains(filterText,ignoreCase = true) }
+
+                val newList = mutableStateListOf<String>()
+                newList.addAll(filteredList)
+
+                filteredChatList.clear()
+                filteredChatList.addAll(newList.toList())
+
+            }
+        }catch (e:Exception){
+            filteredChatList.clear()
+        }
+
+
     }
 }

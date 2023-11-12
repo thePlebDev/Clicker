@@ -157,10 +157,7 @@ fun StreamView(
 
     when (orientation) {
         Configuration.ORIENTATION_LANDSCAPE -> {
-            Column(modifier = Modifier.fillMaxSize().background(Color.Red)) {
-
-                Text("IT DO BE LIKE THAT", fontSize = 30.sp)
-            }
+            HorizontalChat(streamViewModel)
         }
         else -> {
             ModalBottomSheetLayout(
