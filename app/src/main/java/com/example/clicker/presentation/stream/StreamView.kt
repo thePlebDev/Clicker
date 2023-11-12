@@ -37,6 +37,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -79,6 +81,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -1750,6 +1753,11 @@ fun TextFieldChat(
     chat: (String) -> Unit,
     showModal: () -> Unit
 ) {
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+
     Row(
         modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary),
         verticalAlignment = Alignment.CenterVertically
@@ -1760,31 +1768,33 @@ fun TextFieldChat(
                 contentDescription = stringResource(R.string.moderator_badge_icon_description)
             )
         }
-        TextField(
-            modifier = Modifier
-                .weight(2f),
-            value = textFieldValue.value,
-            shape = RoundedCornerShape(8.dp),
-            onValueChange = { newText ->
-                filterMethod("username", newText.text)
-                textFieldValue.value = TextFieldValue(
-                    text = newText.text,
-                    selection = TextRange(newText.text.length)
-                )
-                // text = newText
-            },
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.White,
-                backgroundColor = Color.DarkGray,
-                cursorColor = Color.White,
-                disabledLabelColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            placeholder = {
-                Text(stringResource(R.string.send_a_message), color = Color.White)
-            }
-        )
+        CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+            TextField(
+                modifier = Modifier
+                    .weight(2f),
+                value = textFieldValue.value,
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { newText ->
+                    filterMethod("username", newText.text)
+                    textFieldValue.value = TextFieldValue(
+                        text = newText.text,
+                        selection = newText.selection
+                    )
+                    // text = newText
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.White,
+                    backgroundColor = Color.DarkGray,
+                    cursorColor = Color.White,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                placeholder = {
+                    Text(stringResource(R.string.send_a_message), color = Color.White)
+                }
+            )
+        }
         if (textFieldValue.value.text.length > 0) {
             Icon(
                 imageVector = Icons.Default.ArrowForward,

@@ -906,9 +906,7 @@ class StreamViewModel @Inject constructor(
 
     fun filterMethodBetter(text:String,currentCharacter:Char,currentIndex:Int){
         try{
-            if(text.length == 1){
-                filteredChatList.clear()
-            }
+
             if(currentCharacter.toString() == "@"){
                 filterMethodStartingIndex.value = currentIndex
                 shouldFilter.value = true

@@ -53,8 +53,7 @@ fun HorizontalChat(
             textFieldValue = streamViewModel.textFieldValue,
             filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
             filteredChatList = streamViewModel.filteredChatList,
-            textRange = streamViewModel.chatTextRange.value,
-            changeTextRange = {range -> streamViewModel.changeTextRange(range)}
+            clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) }
         )
 
     }
@@ -68,8 +67,7 @@ fun EnterChatBox(
     textFieldValue: MutableState<TextFieldValue>,
     filterMethod:(String,Char,Int) -> Unit,
     filteredChatList:List<String>,
-    changeTextRange:(TextRange) -> Unit,
-    textRange: TextRange
+    clickedAutoCompleteText: (String, String) -> String,
 ){
     Column(
         modifier = modifier
@@ -78,11 +76,11 @@ fun EnterChatBox(
     ){
 
 
-        AutoCompleteUserNameRow(filteredChatList,textFieldValue,textRange)
+        AutoCompleteUserNameRow(filteredChatList,textFieldValue,
+            clickedAutoCompleteText={currentText,username -> clickedAutoCompleteText(currentText,username)})
        ChatTextField(
            textFieldValue,
            filterMethod = {text,character,index ->filterMethod(text,character,index)},
-           changeTextRange = {range -> changeTextRange(range) }
        )
 
     }
@@ -91,7 +89,7 @@ fun EnterChatBox(
 fun AutoCompleteUserNameRow(
     listName:List<String>,
     textFieldValue: MutableState<TextFieldValue>,
-    textRange: TextRange
+    clickedAutoCompleteText: (String, String) -> String,
 ){
     LazyRow(modifier = Modifier.padding(vertical = 10.dp)){
         if(listName.isEmpty()){
@@ -104,9 +102,8 @@ fun AutoCompleteUserNameRow(
                         .padding(5.dp)
                         .clickable {
 
-                            //autoChangeText()
                             textFieldValue.value = TextFieldValue(
-                                text = textFieldValue.value.text + name,
+                                text = clickedAutoCompleteText(textFieldValue.value.text, name),
                                 selection = TextRange(
                                     (textFieldValue.value.text + "$name ").length
                                 )
@@ -121,16 +118,13 @@ fun AutoCompleteUserNameRow(
     }
 
 }
-//THis needs to be implemented
-fun autoChangeText(text:String,index:Int,clickedName:String){
-    text
-}
+
 
 @Composable
 fun ChatTextField(
     textFieldValue: MutableState<TextFieldValue>,
     filterMethod:(String,Char,Int) -> Unit,
-    changeTextRange:(TextRange) -> Unit
+
 ){
 
     val customTextSelectionColors = TextSelectionColors(
@@ -145,15 +139,11 @@ fun ChatTextField(
 
             shape = RoundedCornerShape(8.dp),
             onValueChange = { newText ->
-                //filterMethod("username", newText.text)
                 val index = newText.selection
-                changeTextRange(index)
                 if(newText.selection.collapsed && index.start != 0){
                     val currentIndex = (index.start -1)
                     val currentCharacter = newText.text[currentIndex]
-
                     filterMethod(newText.text,currentCharacter,currentIndex)
-
                 }
 
                 textFieldValue.value = TextFieldValue(
