@@ -173,11 +173,17 @@ class StreamViewModel @Inject constructor(
     // this should be hooked up to a hot flow and run eachtime a new messageId is sent to it
     //todo:chat method
     fun filterMessages(messageId: String) {
-        val found = listChats.first { it.id == messageId }
-        val foundIndex = listChats.indexOf(found)
-        listChats[foundIndex] = found.copy(
-            deleted = true
-        )
+        try{
+            val found = listChats.first { it.id == messageId }
+            val foundIndex = listChats.indexOf(found)
+            listChats[foundIndex] = found.copy(
+                deleted = true
+            )
+        }catch (e:Exception){
+            Log.d("FilterMessageCrash","messageId-----> $messageId")
+            Log.d("FilterMessageCrash","messageId-----> ${e.message}")
+        }
+
     }
     //chat method
     private fun banUserFilter(username: String, banDuration: Int?) {

@@ -966,7 +966,7 @@ fun TextChat(
                 }
             }
 
-            items(twitchUserChat,key = { twitchUser -> twitchUser.id!!}) { twitchUser ->
+            items(twitchUserChat) { twitchUser ->
 
                 val color = Color(parseColor(twitchUser.color))
 
@@ -1509,9 +1509,7 @@ fun ChatCard(
     if(color == Color.Black){
         color = androidx.compose.material3.MaterialTheme.colorScheme.primary
     }
-    var displayName by remember { mutableStateOf(twitchUser.displayName) }
-    var comment by remember { mutableStateOf(twitchUser.userType) }
-    var showIcons by remember { mutableStateOf(true) }
+
     val state = rememberSwipeableActionsState()
 
     val offset = state.offset.value
@@ -1520,7 +1518,6 @@ fun ChatCard(
 
     val thresholdCrossed = abs(offset) > swipeThresholdPx
 
-    // val backgroundColor = Color.Black
     var backgroundColor by remember { mutableStateOf(Color.Black) }
     var fontSize = 17.sp
 
