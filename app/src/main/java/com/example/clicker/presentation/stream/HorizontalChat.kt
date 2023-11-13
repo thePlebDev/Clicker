@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.interaction.DragInteraction
@@ -54,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -64,8 +66,11 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.Response
+import com.example.clicker.util.SwipeableActionsState
+import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
@@ -337,50 +342,118 @@ fun ScrollToBottomButton(
 
 @Composable
 fun ChatCard(twitchUser:TwitchUserData){
+
+    val state = rememberSwipeableActionsState()
+    var dragState = state.draggableState
+    val offset = state.offset.value
+
+    val swipeThreshold = 130.dp
+    val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
+    var backgroundColor by remember { mutableStateOf(Color.Black) }
+
+
+    val thresholdCrossed = abs(offset) > swipeThresholdPx
+
+    if (thresholdCrossed) {
+        backgroundColor = Color.Red
+    } else {
+        backgroundColor = Color.Black
+    }
+
+    SwipeDetectionBox(
+        backgroundColor = backgroundColor,
+        dragState = dragState,
+        thresholdCrossed = thresholdCrossed,
+        state = state,
+
+    ){
+        SwipeableChatCard(
+            twitchUser = twitchUser,
+            offset = offset
+        )
+
+    }
+}
+
+@Composable
+fun SwipeableChatCard(
+    twitchUser:TwitchUserData,
+    offset: Float,
+){
+    var fontSize = 17.sp
     var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
     if(color == Color.Black){
         color = androidx.compose.material3.MaterialTheme.colorScheme.primary
     }
-    var fontSize = 17.sp
+    Column(
+        verticalArrangement = Arrangement.Center
+
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+            ,
+            backgroundColor = MaterialTheme.colorScheme.primary,
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+
+        ) {
+            Column() {
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    ChatBadges(
+                        username = "${twitchUser.displayName} :",
+                        message = " ${twitchUser.userType}",
+                        isMod = twitchUser.mod == "1",
+                        isSub = twitchUser.subscriber == true,
+                        color = color,
+                        textSize = fontSize
+                    )
+
+                } // end of the row
+            }
+        } // end of the Card
+    }
+}
+
+@Composable
+fun SwipeDetectionBox(
+    backgroundColor: Color,
+    dragState: DraggableState,
+    thresholdCrossed:Boolean,
+    state: SwipeableActionsState,
+    content: @Composable() (() -> Unit)
+){
+    val scope = rememberCoroutineScope()
     Box(
         Modifier
             .fillMaxWidth()
             .padding(vertical = 10.dp, horizontal = 10.dp)
-            .background(Color.Black)
+            .background(backgroundColor)
+            .draggable(
+                orientation = Orientation.Horizontal,
+                enabled = true,
+                state = dragState,
+                onDragStopped = {
+                    scope.launch {
+                        if (thresholdCrossed) {
+                            state.resetOffset()
+                            // deleteMessage(twitchUser.id ?: "")
+                        } else {
+                            state.resetOffset()
+                        }
+                    }
+
+                }
+
+            )
 
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center
-
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-
-                 ,
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
-
-            ) {
-                Column() {
-
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        ChatBadges(
-                            username = "${twitchUser.displayName} :",
-                            message = " ${twitchUser.userType}",
-                            isMod = twitchUser.mod == "1",
-                            isSub = twitchUser.subscriber == true,
-                            color = color,
-                            textSize = fontSize
-                        )
-
-                    } // end of the row
-                }
-            } // end of the Card
-        }
+        content()
     }
+
 }

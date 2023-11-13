@@ -40,7 +40,7 @@ class SwipeableActionsState internal constructor() {
      */
     val offset: State<Float> get() = offsetState
     private var offsetState = mutableStateOf(0f)
-    private var canSwipeTowardsRight = false
+    private var canSwipeTowardsRight = true
     private var canSwipeTowardsLeft = true
 
     internal val draggableState = DraggableState { delta ->
