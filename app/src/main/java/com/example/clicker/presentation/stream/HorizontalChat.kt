@@ -1,59 +1,103 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.substring
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.util.Response
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 @Composable
 fun HorizontalChat(
     streamViewModel: StreamViewModel
 ){
+    val twitchUserChat = streamViewModel.listChats.toList()
+    val lazyColumnListState = rememberLazyListState()
+    var autoscroll by remember { mutableStateOf(true) }
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.primary)){
-        ChatList()
+        .background(MaterialTheme.colorScheme.primary)
+    ){
+        ChatList(
+            twitchUserChat,
+            lazyColumnListState = lazyColumnListState,
+            autoscroll = autoscroll,
+            changeAutoScroll = {value -> autoscroll = value}
+        )
         EnterChatBox(
             modifier =Modifier.align(Alignment.BottomCenter),
             textFieldValue = streamViewModel.textFieldValue,
             filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
             filteredChatList = streamViewModel.filteredChatList,
             clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) }
+        )
+        ScrollToBottomButton(
+            scrollingPaused = !autoscroll,
+            enableAutoScroll = { autoscroll = true },
+            modifier =Modifier.align(Alignment.BottomCenter)
         )
 
     }
@@ -171,13 +215,172 @@ fun ChatTextField(
 
 
 @Composable
-fun ChatList(){
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .padding(bottom = 80.dp)){
+fun ChatList(
+    chatList:List<TwitchUserData>,
+    lazyColumnListState: LazyListState,
+    autoscroll: Boolean,
+    changeAutoScroll:(Boolean) ->Unit
 
-        items(35) { index ->
-            Text(text = "Item: $index",fontSize = 30.sp,color = MaterialTheme.colorScheme.onPrimary)
+){
+    val coroutineScope = rememberCoroutineScope()
+
+    var showStickyHeader by remember { mutableStateOf(true) }
+
+    // Add a gesture listener to detect upward scroll
+
+
+    AutoScrollUtil(
+        interactionSource = lazyColumnListState.interactionSource,
+        changeAutoScroll = {booleanValue ->changeAutoScroll(booleanValue)},
+        lazyColumnListState = lazyColumnListState
+    )
+
+
+    LazyColumn(
+        state = lazyColumnListState,
+        modifier = Modifier
+            .padding(bottom = 70.dp)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+            .fillMaxSize()
+    ){
+
+        coroutineScope.launch {
+            if (autoscroll) {
+                lazyColumnListState.scrollToItem(chatList.size)
+            }
+        }
+        items(chatList) { twitchUser ->
+            ChatCard(twitchUser)
+        }
+
+    }
+}
+
+@Composable
+fun AutoScrollUtil(
+    interactionSource: InteractionSource,
+    changeAutoScroll:(Boolean)->Unit,
+    lazyColumnListState: LazyListState
+){
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    changeAutoScroll(false)
+                }
+                is PressInteraction.Press -> {
+                    changeAutoScroll(false)
+                }
+            }
+        }
+    }
+    // observer when reached end of list
+    val endOfListReached by remember {
+        derivedStateOf {
+            lazyColumnListState.isScrolledToEnd()
+        }
+    }
+
+    // act when end of list reached
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if (endOfListReached) {
+            changeAutoScroll(true)
+        }
+    }
+
+}
+
+@Composable
+fun ScrollToBottomButton(
+    scrollingPaused: Boolean,
+    enableAutoScroll: () -> Unit,
+    modifier:Modifier= Modifier,
+
+) {
+    Box(
+        modifier = modifier
+            .padding(bottom = 77.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (scrollingPaused) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                    onClick = { enableAutoScroll() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.arrow_drop_down_description),
+                        tint =  MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier
+                    )
+                    Text(stringResource(R.string.scroll_to_bottom),color =  MaterialTheme.colorScheme.onSecondary,)
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.arrow_drop_down_description),
+                        tint =  MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatCard(twitchUser:TwitchUserData){
+    var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
+    if(color == Color.Black){
+        color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+    }
+    var fontSize = 17.sp
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 10.dp)
+            .background(Color.Black)
+
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center
+
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+
+                 ,
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+
+            ) {
+                Column() {
+
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        ChatBadges(
+                            username = "${twitchUser.displayName} :",
+                            message = " ${twitchUser.userType}",
+                            isMod = twitchUser.mod == "1",
+                            isSub = twitchUser.subscriber == true,
+                            color = color,
+                            textSize = fontSize
+                        )
+
+                    } // end of the row
+                }
+            } // end of the Card
         }
     }
 }
