@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.stream
 
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Insets
 import android.os.Build
@@ -15,11 +17,11 @@ import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.ComposeView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -61,7 +63,6 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         val url = "https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
 
-        Log.d("CHANNELNAMENONENGLISH", "url -->$url")
 
         // val view = binding.root
 
@@ -73,20 +74,53 @@ class StreamFragment : Fragment(), View.OnClickListener {
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
-        myWebView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // Handle touch down event
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    // Handle touch up event
-                    myWebView.performClick()
-                    true
-                }
-                else -> false
+        val composeView:ComposeView = view.findViewById(R.id.compose_view)
+
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
+            // Do some stuff
+            val clickableWebView: ClickableWebView = myWebView as ClickableWebView
+            (clickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+            clickableWebView.expandedMethod = {
+                Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
+
+
+//            Create layout parameters to match parent
+                val layoutParams = ConstraintLayout.LayoutParams(
+                    ConstraintLayout.LayoutParams.MATCH_PARENT,
+                    ConstraintLayout.LayoutParams.MATCH_PARENT
+                )
+
+                //View.VISIBLE, View.INVISIBLE, View.GONE
+                composeView.visibility = View.INVISIBLE
+
+                myWebView.layoutParams = layoutParams
+            }
+
+            /**collapsed method*/
+            clickableWebView.collapsedMethod = {
+                val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
+
+
+                val webViewLayout = ConstraintLayout.LayoutParams(
+                    webViewWidth,
+                    ConstraintLayout.LayoutParams.MATCH_PARENT
+                )
+
+                composeView.visibility = View.VISIBLE
+                myWebView.layoutParams = webViewLayout
+
             }
         }
+
+
+
+
+        /**Below should happen on the double tap*/
+
+
+        /**above should happen on the double tap*/
 
 
         setWebView(
@@ -103,6 +137,16 @@ class StreamFragment : Fragment(), View.OnClickListener {
         Log.d("CLICKEDNLOADED", "IT DO BE CLICKING SOMETHING FIERCE")
         findNavController().popBackStack()
     }
+}
+private fun removeWidthConstraint( view: WebView) {
+    val constraintSet = ConstraintSet()
+    constraintSet.clear(view.id)
+
+}
+private fun removeComposeWidthConstraint(view: ComposeView) {
+    val constraintSet = ConstraintSet()
+    constraintSet.clear(view.id)
+
 }
 
 fun setOrientation(

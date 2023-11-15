@@ -8,14 +8,16 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/rootLayout"
+        >
 
 
-        <WebView
+        <com.example.clicker.presentation.stream.ClickableWebView
             android:id="@+id/webView"
             android:layout_width="0.dp"
             android:layout_height="0.dp"
-
+            android:animateLayoutChanges="true"
             app:layout_constraintEnd_toStartOf="@id/compose_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
