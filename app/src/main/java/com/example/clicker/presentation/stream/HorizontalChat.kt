@@ -38,7 +38,14 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -81,31 +88,52 @@ fun HorizontalChat(
     val twitchUserChat = streamViewModel.listChats.toList()
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.primary)
-    ){
-        ChatList(
-            twitchUserChat,
-            lazyColumnListState = lazyColumnListState,
-            autoscroll = autoscroll,
-            changeAutoScroll = {value -> autoscroll = value}
-        )
-        EnterChatBox(
-            modifier =Modifier.align(Alignment.BottomCenter),
-            textFieldValue = streamViewModel.textFieldValue,
-            filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
-            filteredChatList = streamViewModel.filteredChatList,
-            clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) }
-        )
-        ScrollToBottomButton(
-            scrollingPaused = !autoscroll,
-            enableAutoScroll = { autoscroll = true },
-            modifier =Modifier.align(Alignment.BottomCenter)
-        )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text("Drawer title", modifier = Modifier.padding(16.dp),color = MaterialTheme.colorScheme.secondary)
+                Divider()
+                NavigationDrawerItem(
+                    label = { Text(text = "Drawer Item",color = MaterialTheme.colorScheme.secondary) },
+                    selected = false,
+                    onClick = { /*TODO*/ }
+                )
 
+            }
+        },
+        gesturesEnabled = true
+    ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+        ){
+            ChatList(
+                twitchUserChat,
+                lazyColumnListState = lazyColumnListState,
+                autoscroll = autoscroll,
+                changeAutoScroll = {value -> autoscroll = value},
+                drawerState
+            )
+            EnterChatBox(
+                modifier =Modifier.align(Alignment.BottomCenter),
+                textFieldValue = streamViewModel.textFieldValue,
+                filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
+                filteredChatList = streamViewModel.filteredChatList,
+                clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) }
+            )
+            ScrollToBottomButton(
+                scrollingPaused = !autoscroll,
+                enableAutoScroll = { autoscroll = true },
+                modifier =Modifier.align(Alignment.BottomCenter)
+            )
+
+        }
     }
+
+
 
 
 }
@@ -224,7 +252,8 @@ fun ChatList(
     chatList:List<TwitchUserData>,
     lazyColumnListState: LazyListState,
     autoscroll: Boolean,
-    changeAutoScroll:(Boolean) ->Unit
+    changeAutoScroll:(Boolean) ->Unit,
+    drawerState: DrawerState
 
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -255,7 +284,10 @@ fun ChatList(
             }
         }
         items(chatList) { twitchUser ->
-            ChatCard(twitchUser)
+            ChatCard(
+                twitchUser,
+                drawerState
+            )
         }
 
     }
@@ -341,10 +373,12 @@ fun ScrollToBottomButton(
 }
 
 @Composable
-fun ChatCard(twitchUser:TwitchUserData){
+fun ChatCard(
+    twitchUser:TwitchUserData,
+    drawerState: DrawerState
+){
 
     val state = rememberSwipeableActionsState()
-    var dragState = state.draggableState
     val offset = state.offset.value
 
     val swipeThreshold = 130.dp
@@ -362,14 +396,14 @@ fun ChatCard(twitchUser:TwitchUserData){
 
     SwipeDetectionBox(
         backgroundColor = backgroundColor,
-        dragState = dragState,
         thresholdCrossed = thresholdCrossed,
         state = state,
 
     ){
         SwipeableChatCard(
             twitchUser = twitchUser,
-            offset = offset
+            offset = offset,
+            drawerState
         )
 
     }
@@ -379,7 +413,9 @@ fun ChatCard(twitchUser:TwitchUserData){
 fun SwipeableChatCard(
     twitchUser:TwitchUserData,
     offset: Float,
+    drawerState: DrawerState
 ){
+    val coroutineScope = rememberCoroutineScope()
     var fontSize = 17.sp
     var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
     if(color == Color.Black){
@@ -393,6 +429,11 @@ fun SwipeableChatCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+                .clickable {
+                    coroutineScope.launch {
+                        drawerState.open()
+                    }
+                }
             ,
             backgroundColor = MaterialTheme.colorScheme.primary,
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
@@ -423,7 +464,6 @@ fun SwipeableChatCard(
 @Composable
 fun SwipeDetectionBox(
     backgroundColor: Color,
-    dragState: DraggableState,
     thresholdCrossed:Boolean,
     state: SwipeableActionsState,
     content: @Composable() (() -> Unit)
@@ -437,7 +477,7 @@ fun SwipeDetectionBox(
             .draggable(
                 orientation = Orientation.Horizontal,
                 enabled = true,
-                state = dragState,
+                state = state.draggableState,
                 onDragStopped = {
                     scope.launch {
                         if (thresholdCrossed) {
