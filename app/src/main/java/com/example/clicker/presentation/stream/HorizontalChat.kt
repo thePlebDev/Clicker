@@ -129,7 +129,8 @@ fun HorizontalChat(
                 textFieldValue = streamViewModel.textFieldValue,
                 filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
                 filteredChatList = streamViewModel.filteredChatList,
-                clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) }
+                clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) },
+                chatMentionMethod = {text -> streamViewModel.filterTextMethodFinal(text)}
             )
             ScrollToBottomButton(
                 scrollingPaused = !autoscroll,
@@ -258,6 +259,7 @@ fun EnterChatBox(
     filterMethod:(String,Char,Int) -> Unit,
     filteredChatList:List<String>,
     clickedAutoCompleteText: (String, String) -> String,
+    chatMentionMethod:(String) ->Unit
 ){
     Column(
         modifier = modifier
@@ -271,6 +273,7 @@ fun EnterChatBox(
        ChatTextField(
            textFieldValue,
            filterMethod = {text,character,index ->filterMethod(text,character,index)},
+           chatMentionMethod = chatMentionMethod
        )
 
     }
@@ -314,6 +317,7 @@ fun AutoCompleteUserNameRow(
 fun ChatTextField(
     textFieldValue: MutableState<TextFieldValue>,
     filterMethod:(String,Char,Int) -> Unit,
+    chatMentionMethod:(String) ->Unit
 
 ){
 
@@ -329,6 +333,7 @@ fun ChatTextField(
 
             shape = RoundedCornerShape(8.dp),
             onValueChange = { newText ->
+                chatMentionMethod(newText.text)
                 val index = newText.selection
                 if(newText.selection.collapsed && index.start != 0){
                     val currentIndex = (index.start -1)
