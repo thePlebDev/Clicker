@@ -392,8 +392,8 @@ fun BottomModalContent(
                 onClick = {
                 scope.launch {
                     textFieldValue.value = TextFieldValue(
-                        text = "@$clickedUsername ",
-                        selection = TextRange("@$clickedUsername ".length)
+                        text = textFieldValue.value.text + "@$clickedUsername ",
+                        selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
                     )
                     bottomModalState.hide()
                 }
