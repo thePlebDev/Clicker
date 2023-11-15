@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.util.Response
 import com.example.clicker.util.SwipeableActionsState
@@ -94,6 +95,7 @@ fun HorizontalChat(
     val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
     val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
     val textFieldValue = streamViewModel.textFieldValue
+
 
 
     ModalNavigationDrawer(
@@ -122,7 +124,8 @@ fun HorizontalChat(
                 drawerState,
                 updateClickedUser={
                         username,userId,banned,isMod ->streamViewModel.updateClickedChat(username,userId,banned,isMod)
-                }
+                },
+                restartWebSocket = {streamViewModel.restartWebSocket()}
             )
             EnterChatBox(
                 modifier =Modifier.align(Alignment.BottomCenter),
@@ -373,6 +376,7 @@ fun ChatList(
     changeAutoScroll:(Boolean) ->Unit,
     drawerState: DrawerState,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    restartWebSocket: () -> Unit
 
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -403,11 +407,19 @@ fun ChatList(
             }
         }
         items(chatList) { twitchUser ->
-            ChatCard(
+            /**THIS IS WHERE THE FILTER NEEDS TO GO**/
+            FilterChatMessageTypes(
                 twitchUser,
-                drawerState,
-                updateClickedUser ={username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)}
-            )
+                restartWebSocket = {restartWebSocket()}
+            ){
+                ChatCard(
+                    twitchUser,
+                    drawerState,
+                    updateClickedUser ={username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)}
+                )
+            }
+
+
         }
 
     }
@@ -623,6 +635,75 @@ fun SwipeDetectionBox(
 
     ) {
         content()
+    }
+
+}
+@Composable
+fun FilterChatMessageTypes(
+    twitchUser: TwitchUserData,
+    restartWebSocket:()->Unit,
+    mainChatCard: @Composable() (() -> Unit)
+){
+    when (twitchUser.messageType) {
+        MessageType.NOTICE -> {
+            NoticeMessage(
+                color = Color.White,
+                displayName = twitchUser.displayName,
+                message = twitchUser.userType
+            )
+        }
+
+        MessageType.USER -> {
+            mainChatCard()
+
+        }
+
+        MessageType.ANNOUNCEMENT -> {
+            AnnouncementMessage(
+                displayName = twitchUser.displayName,
+                message = twitchUser.userType,
+                systemMessage = twitchUser.systemMessage
+            )
+        }
+        MessageType.RESUB -> {
+            ResubMessage(
+                message = twitchUser.userType,
+                systemMessage = twitchUser.systemMessage
+            )
+        }
+        MessageType.SUB -> {
+            SubMessage(
+                message = twitchUser.userType,
+                systemMessage = twitchUser.systemMessage
+            )
+        }
+        // MYSTERYGIFTSUB,GIFTSUB
+        MessageType.GIFTSUB -> {
+            GiftSubMessage(
+                message = twitchUser.userType,
+                systemMessage = twitchUser.systemMessage
+            )
+        }
+        MessageType.MYSTERYGIFTSUB -> {
+            MysteryGiftSubMessage(
+                message = twitchUser.userType,
+                systemMessage = twitchUser.systemMessage
+            )
+        }
+        MessageType.ERROR -> {
+            ErrorMessage(
+                message = twitchUser.userType!!,
+                user = twitchUser.displayName!!,
+                restartWebSocket = { restartWebSocket() }
+            )
+        }
+        MessageType.JOIN -> {
+            JoinMessage(
+                message = twitchUser.userType!!
+            )
+        }
+
+        else -> {}
     }
 
 }
