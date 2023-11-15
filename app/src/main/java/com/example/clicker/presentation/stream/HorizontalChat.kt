@@ -92,13 +92,17 @@ fun HorizontalChat(
     var autoscroll by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
+    val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
 
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                ClickedUserModalDrawer(clickedUsername)
+                ClickedUserModalDrawer(
+                    clickedUsername,
+                    recentChatMessagesByClickedUsername
+                )
             }
         },
         gesturesEnabled = true
@@ -140,7 +144,8 @@ fun HorizontalChat(
 
 @Composable
 fun ClickedUserModalDrawer(
-    clickedUsername:String
+    clickedUsername:String,
+    recentChatMessagesByClickedUsername:List<String>
 ){
     val secondaryColor =androidx.compose.material3.MaterialTheme.colorScheme.secondary
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -167,9 +172,9 @@ fun ClickedUserModalDrawer(
 
 
             ){
-                items(35){
+                items(recentChatMessagesByClickedUsername){message ->
                     Text(
-                        "Recent chat message test.",
+                        message,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(vertical = 5.dp)
                     )
