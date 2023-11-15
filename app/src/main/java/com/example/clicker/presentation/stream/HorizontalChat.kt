@@ -93,6 +93,7 @@ fun HorizontalChat(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
     val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
+    val textFieldValue = streamViewModel.textFieldValue
 
 
     ModalNavigationDrawer(
@@ -101,7 +102,9 @@ fun HorizontalChat(
             ModalDrawerSheet {
                 ClickedUserModalDrawer(
                     clickedUsername,
-                    recentChatMessagesByClickedUsername
+                    recentChatMessagesByClickedUsername,
+                    textFieldValue =textFieldValue,
+                    drawerState = drawerState
                 )
             }
         },
@@ -145,8 +148,12 @@ fun HorizontalChat(
 @Composable
 fun ClickedUserModalDrawer(
     clickedUsername:String,
-    recentChatMessagesByClickedUsername:List<String>
+    recentChatMessagesByClickedUsername:List<String>,
+    textFieldValue: MutableState<TextFieldValue>,
+    drawerState: DrawerState
 ){
+    val scope = rememberCoroutineScope()
+
     val secondaryColor =androidx.compose.material3.MaterialTheme.colorScheme.secondary
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
@@ -168,10 +175,7 @@ fun ClickedUserModalDrawer(
                 fontSize = 20.sp
             )
             Divider(color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(vertical = 10.dp))
-            LazyColumn(
-
-
-            ){
+            LazyColumn(){
                 items(recentChatMessagesByClickedUsername){message ->
                     Text(
                         message,
@@ -187,8 +191,13 @@ fun ClickedUserModalDrawer(
             .fillMaxHeight()
             ){
             Box(modifier = Modifier.fillMaxSize()){
-                Column(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(5.dp), horizontalAlignment = Alignment.End) {
-                    Row(modifier = Modifier.fillMaxWidth().padding(bottom=10.dp), horizontalArrangement = Arrangement.SpaceBetween){
+                Column(modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(5.dp), horizontalAlignment = Alignment.End) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp), horizontalArrangement = Arrangement.SpaceBetween){
                         Button(
                             onClick ={},
                             colors = ButtonDefaults.buttonColors(secondaryColor)
@@ -214,7 +223,16 @@ fun ClickedUserModalDrawer(
                     }
                    //here
                     Button(
-                        onClick ={},
+                        onClick ={
+                            textFieldValue.value = TextFieldValue(
+                                text = textFieldValue.value.text + "@$clickedUsername ",
+                                selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
+                            )
+
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(secondaryColor)
                     ) {
                         Text(
