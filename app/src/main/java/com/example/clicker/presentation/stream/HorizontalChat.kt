@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
@@ -89,19 +91,14 @@ fun HorizontalChat(
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("Drawer title", modifier = Modifier.padding(16.dp),color = MaterialTheme.colorScheme.secondary)
-                Divider()
-                NavigationDrawerItem(
-                    label = { Text(text = "Drawer Item",color = MaterialTheme.colorScheme.secondary) },
-                    selected = false,
-                    onClick = { /*TODO*/ }
-                )
-
+                ClickedUserModalDrawer(clickedUsername)
             }
         },
         gesturesEnabled = true
@@ -115,7 +112,10 @@ fun HorizontalChat(
                 lazyColumnListState = lazyColumnListState,
                 autoscroll = autoscroll,
                 changeAutoScroll = {value -> autoscroll = value},
-                drawerState
+                drawerState,
+                updateClickedUser={
+                        username,userId,banned,isMod ->streamViewModel.updateClickedChat(username,userId,banned,isMod)
+                }
             )
             EnterChatBox(
                 modifier =Modifier.align(Alignment.BottomCenter),
@@ -134,6 +134,96 @@ fun HorizontalChat(
     }
 
 
+
+
+}
+
+@Composable
+fun ClickedUserModalDrawer(
+    clickedUsername:String
+){
+    val secondaryColor =androidx.compose.material3.MaterialTheme.colorScheme.secondary
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.Person,
+            contentDescription = stringResource(R.string.user_icon_description),
+            modifier = Modifier
+                .clickable { }
+                .size(35.dp),
+            tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        )
+        Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+    }
+    Divider(color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(vertical = 10.dp))
+    Row(modifier = Modifier.padding(5.dp)){
+        Column(
+            modifier = Modifier.weight(1f)) {
+            Text(text ="Recent Chats",
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                fontSize = 20.sp
+            )
+            Divider(color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(vertical = 10.dp))
+            LazyColumn(
+
+
+            ){
+                items(35){
+                    Text(
+                        "Recent chat message test.",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(vertical = 5.dp)
+                    )
+                }
+            }
+        }
+
+        Column(modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+            ){
+            Box(modifier = Modifier.fillMaxSize()){
+                Column(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(5.dp), horizontalAlignment = Alignment.End) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(bottom=10.dp), horizontalArrangement = Arrangement.SpaceBetween){
+                        Button(
+                            onClick ={},
+                            colors = ButtonDefaults.buttonColors(secondaryColor)
+                        ) {
+                            Text(
+                                "Ban",
+                                color = MaterialTheme.colorScheme.onSecondary,
+                                modifier = Modifier.padding(vertical = 5.dp)
+                            )
+                        }
+
+                        Button(
+                            onClick ={},
+                            colors = ButtonDefaults.buttonColors(secondaryColor)
+                        ) {
+                            Text(
+                                "Timeout",
+                                color = MaterialTheme.colorScheme.onSecondary,
+                                modifier = Modifier.padding(vertical = 5.dp)
+                            )
+                        }
+
+                    }
+                   //here
+                    Button(
+                        onClick ={},
+                        colors = ButtonDefaults.buttonColors(secondaryColor)
+                    ) {
+                        Text(
+                            "Reply",
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = Modifier.padding(vertical = 5.dp)
+                        )
+                    }
+                }
+
+            }
+        }
+
+    }
 
 
 }
@@ -253,7 +343,8 @@ fun ChatList(
     lazyColumnListState: LazyListState,
     autoscroll: Boolean,
     changeAutoScroll:(Boolean) ->Unit,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -286,7 +377,8 @@ fun ChatList(
         items(chatList) { twitchUser ->
             ChatCard(
                 twitchUser,
-                drawerState
+                drawerState,
+                updateClickedUser ={username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)}
             )
         }
 
@@ -375,7 +467,8 @@ fun ScrollToBottomButton(
 @Composable
 fun ChatCard(
     twitchUser:TwitchUserData,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 ){
 
     val state = rememberSwipeableActionsState()
@@ -403,7 +496,8 @@ fun ChatCard(
         SwipeableChatCard(
             twitchUser = twitchUser,
             offset = offset,
-            drawerState
+            drawerState,
+            updateClickedUser ={username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)}
         )
 
     }
@@ -413,7 +507,8 @@ fun ChatCard(
 fun SwipeableChatCard(
     twitchUser:TwitchUserData,
     offset: Float,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 ){
     val coroutineScope = rememberCoroutineScope()
     var fontSize = 17.sp
@@ -430,6 +525,12 @@ fun SwipeableChatCard(
                 .fillMaxWidth()
                 .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                 .clickable {
+                    updateClickedUser(
+                        twitchUser.displayName.toString(),
+                        twitchUser.userId.toString(),
+                        twitchUser.banned,
+                        twitchUser.mod != "1"
+                    )
                     coroutineScope.launch {
                         drawerState.open()
                     }
