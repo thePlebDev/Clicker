@@ -947,12 +947,12 @@ class StreamViewModel @Inject constructor(
 
     }
     fun filterTextMethodFinal(text:String){
-        val lastCharacter = text[text.length -1]
-        val cursorPosition = textFieldValue.value.selection.start
-        if(text.isNotBlank()){
-            Log.d("FOUNDMESSAGESPARSING","last character -->${lastCharacter}")
-            Log.d("FOUNDMESSAGESPARSING","character behind cursor -->${text[cursorPosition]}")
-        }
+//        val lastCharacter = text[text.length -1]
+//        val cursorPosition = textFieldValue.value.selection.start
+//        if(text.isNotBlank()){
+//            Log.d("FOUNDMESSAGESPARSING","last character -->${lastCharacter}")
+//            Log.d("FOUNDMESSAGESPARSING","character behind cursor -->${text[cursorPosition]}")
+//        }
 
 
     }
