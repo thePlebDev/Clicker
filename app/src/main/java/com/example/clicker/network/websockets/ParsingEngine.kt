@@ -41,33 +41,29 @@ class ParsingEngine @Inject constructor() {
         val banUserPattern = "([^:]+)$".toRegex()
         val bannedUserIdPattern = "target-user-id=(\\d+)".toRegex()
 
+        val banDurationPattern = "ban-duration=([^;]+)".toRegex()
+        val banDurationFound = banDurationPattern.find(text)?.groupValues?.get(1)
+        Log.d("banDurationFound","banDurationFound ---> $banDurationFound")
+
         val bannedUserUsername = banUserPattern.find(text)
         val bannedUserId = bannedUserIdPattern.find(text)
 
         val usernameFound = bannedUserUsername?.value ?: "User"
         val bannedUserIdFound = bannedUserId?.groupValues?.get(1)
 
-        return TwitchUserData(
-            badgeInfo = null,
-            badges = null,
-            clientNonce = null,
-            color = "#000000",
-            displayName = usernameFound,
-            emotes = null,
-            firstMsg = null,
-            flags = null,
-            id = bannedUserIdFound,
-            mod = null,
-            returningChatter = null,
-            roomId = null,
-            subscriber = false,
-            tmiSentTs = null,
-            turbo = false,
-            userId = null,
-            userType = "$usernameFound banned by moderator",
-            messageType = MessageType.CLEARCHAT,
-            bannedDuration = null
-        )
+        var message = "$usernameFound banned by moderator"
+        if(banDurationFound !=null){
+            Log.d("banDurationFound","banDurationFound ---> NOT NULL")
+            message = "$usernameFound timed out for $banDurationFound seconds"
+        }
+
+        return TwitchUserDataObjectMother
+            .addColor("#000000")
+            .addDisplayName(usernameFound)
+            .addId(bannedUserIdFound)
+            .addUserType(message)
+            .addMessageType(MessageType.CLEARCHAT)
+            .build()
     }
     private fun clearChatParsing(channelName: String): TwitchUserData {
         globalId += 1
@@ -89,7 +85,7 @@ class ParsingEngine @Inject constructor() {
             turbo = false,
             userId = null,
             userType = "Chat cleared by moderator",
-            messageType = MessageType.CLEARCHAT,
+            messageType = MessageType.CLEARCHATALL,
             bannedDuration = null
         )
     }

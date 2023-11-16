@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.substring
@@ -359,35 +360,40 @@ class StreamViewModel @Inject constructor(
 
                 clickedUsernameChats.add(twitchUserMessage.userType!!)
             }
-            if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName == null) {
-                listChats.clear()
-                // todo: add the ability to send a little message saying that the chat was cleard by a mod
-                val data = TwitchUserDataObjectMother
-                    .addMessageType(MessageType.JOIN)
-                    .addUserType("Chat cleared by moderator")
-                    .addColor("#000000")
-                    .build()
-                listChats.add(data)
+            //todo:CLEAR THIS MESS OUT BELOW
+            //TODO: WE CAN MVOE THIS TO A NEW MessageType.CLEARCHAT IN THE VIEW
+            when(twitchUserMessage.messageType){
+                MessageType.CLEARCHAT ->{
+                    notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
+                }
+                MessageType.CLEARCHATALL->{
+                    clearAllChatMessages(listChats)
+                }
+                else -> {}
             }
-            if (twitchUserMessage.messageType == MessageType.CLEARCHAT && twitchUserMessage.displayName != null) {
-                Log.d(
-                    "collectingdatathingy",
-                    "foundDuration --> $twitchUserMessage.bannedDuration"
-                )
-                banUserFilter(
-                    username = twitchUserMessage.displayName,
-                    banDuration = twitchUserMessage.bannedDuration
-                )
-                val data = TwitchUserDataObjectMother
-                    .addMessageType(MessageType.JOIN)
-                    .addUserType("${twitchUserMessage.displayName} banned by moderators")
-                    .addColor("#000000")
-                    .build()
-                listChats.add(data)
-            }
+
+
+            //todo:CLEAR THIS MESS OUT ABOVE
         }
     }
+fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
+    chatList.clear()
+    val data =TwitchUserDataObjectMother
+        .addMessageType(MessageType.JOIN)
+        .addUserType("Chat cleared by moderator")
+        .addColor("#000000")
+        .build()
 
+    chatList.add(data)
+}
+    fun notifyChatOfBanTimeoutEvent(chatList: SnapshotStateList<TwitchUserData>,message: String?){
+        val data = TwitchUserDataObjectMother
+            .addMessageType(MessageType.JOIN)
+            .addUserType(message)
+            .addColor("#000000")
+            .build()
+        chatList.add(data)
+    }
     suspend fun monitorSocketRoomState(){
         webSocket.roomState.collect { nullableRoomState ->
             nullableRoomState?.let { nonNullroomState ->

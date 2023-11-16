@@ -196,4 +196,22 @@ class ParsingEngineTest {
         /* THEN */
         Assert.assertEquals(expectedResult, actualResult)
     }
+
+    @Test
+    fun new_clear_message_parsing(){
+        /* Given */
+        val givenStringBanDuration = "@ban-duration=600;room-id=520593641;target-user-id=949335660;tmi-sent-ts=1700154214763 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny"
+        val givenStringWithNoBanDuration = "room-id=520593641;target-user-id=949335660;tmi-sent-ts=1700154214763 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny"
+
+        /* When */
+        val pattern = "ban-duration=([^;]+)".toRegex()
+
+        val banDurationFound = pattern.find(givenStringBanDuration)?.groupValues?.get(1)
+        val banDurationNotFound = pattern.find(givenStringWithNoBanDuration)?.groupValues?.get(1)
+
+        /* Then */
+        Assert.assertEquals("600", banDurationFound)
+        Assert.assertEquals(null, banDurationNotFound)
+
+    }
 }

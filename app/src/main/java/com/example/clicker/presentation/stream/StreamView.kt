@@ -1859,14 +1859,7 @@ fun TimeoutDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = timeoutDuration == 10,
-                            onClick = { changeTimeoutDuration(10) }
-                        )
-                        Text(stringResource(R.string.ten_seconds),color = onPrimary)
-                    }
+
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
@@ -1890,6 +1883,14 @@ fun TimeoutDialog(
                             onClick = { changeTimeoutDuration(1800) }
                         )
                         Text(stringResource(R.string.thirty_minutes),color = onPrimary)
+                    }
+                    Column {
+                        RadioButton(
+                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                            selected = timeoutDuration == 604800,
+                            onClick = { changeTimeoutDuration(604800) }
+                        )
+                        Text(stringResource(R.string.one_week),color = onPrimary)
                     }
                 }
                 OutlinedTextField(
