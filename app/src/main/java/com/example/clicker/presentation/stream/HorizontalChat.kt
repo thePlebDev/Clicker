@@ -115,7 +115,17 @@ fun HorizontalChat(
                     clickedUsername,
                     recentChatMessagesByClickedUsername,
                     textFieldValue =textFieldValue,
-                    drawerState = drawerState
+                    drawerState = drawerState,
+                    banDuration = streamViewModel.state.value.banDuration,
+                    banReason = streamViewModel.state.value.banReason,
+                    changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
+                    changeBanDuration = { duration ->
+                        streamViewModel.changeBanDuration(
+                            duration
+                        )
+                    },
+                    banUser = { banUser -> streamViewModel.banUser(banUser) },
+                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId
                 )
             }
         },
@@ -163,19 +173,34 @@ fun ClickedUserModalDrawer(
     clickedUsername:String,
     recentChatMessagesByClickedUsername:List<String>,
     textFieldValue: MutableState<TextFieldValue>,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    changeBanDuration: (Int) -> Unit,
+    changeBanReason: (String) -> Unit,
+    banDuration: Int,
+    banReason: String,
+    banUser: (BanUser) -> Unit,
+    clickedUserId: String
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
     val openBanDialog = remember { mutableStateOf(false) }
     if(openTimeoutDialog.value){
         HorizontalTimeoutDialog(
-            onDismissRequest = {openTimeoutDialog.value = false}
+            onDismissRequest = {openTimeoutDialog.value = false},
+            clickedUsername = clickedUsername
         )
     }
     if(openBanDialog.value){
+
         HorizontalBanDialog(
-            onDismissRequest = {openBanDialog.value = false}
+            onDismissRequest = {openBanDialog.value = false},
+            clickedUsername = clickedUsername,
+            changeBanDuration = { duration -> changeBanDuration(duration) },
+            changeBanReason = { reason -> changeBanReason(reason) },
+            banDuration =banDuration,
+            banReason = banReason,
+            banUser ={user ->banUser(user)},
+            clickedUserId = clickedUserId
         )
     }
 
@@ -735,6 +760,7 @@ fun FilterChatMessageTypes(
 @Composable
 fun HorizontalTimeoutDialog(
     onDismissRequest: () -> Unit,
+    clickedUsername: String
 ){
     val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
     val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
@@ -759,7 +785,7 @@ fun HorizontalTimeoutDialog(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Text(stringResource(R.string.timeout_text), fontSize = 22.sp,color = onPrimary)
-                    Text("username", fontSize = 22.sp,color = onPrimary)
+                    Text(clickedUsername, fontSize = 22.sp,color = onPrimary)
                 }
                 androidx.compose.material.Divider(
                     color = secondary,
@@ -849,6 +875,13 @@ fun HorizontalTimeoutDialog(
 @Composable
 fun HorizontalBanDialog(
     onDismissRequest: () -> Unit,
+    clickedUsername: String,
+    banDuration: Int,
+    banReason: String,
+    changeBanDuration: (Int) -> Unit,
+    changeBanReason: (String) -> Unit,
+    banUser: (BanUser) -> Unit,
+    clickedUserId:String
 ){
     val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
     val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
@@ -875,7 +908,7 @@ fun HorizontalBanDialog(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Text(stringResource(R.string.ban), fontSize = 22.sp,color = onPrimary)
-                    Text("username", fontSize = 22.sp,color = onPrimary)
+                    Text(clickedUsername, fontSize = 22.sp,color = onPrimary)
                 }
                 androidx.compose.material.Divider(
                     color = MaterialTheme.colorScheme.secondary,
@@ -890,9 +923,9 @@ fun HorizontalBanDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "banDuration" == "604800",
+                            selected = banDuration == 604800,
                             onClick = {
-                                //changeBanDuration(604800)
+                                changeBanDuration(604800)
                             }
                         )
                         Text(stringResource(R.string.one_week),color = onPrimary)
@@ -900,9 +933,9 @@ fun HorizontalBanDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "banDuration" == "1209600",
+                            selected = banDuration == 1209600,
                             onClick = {
-                                //changeBanDuration(1209600)
+                                changeBanDuration(1209600)
                             }
                         )
                         Text(stringResource(R.string.two_weeks),color = onPrimary)
@@ -910,9 +943,9 @@ fun HorizontalBanDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "banDuration" == "0",
+                            selected = banDuration == 0,
                             onClick = {
-                               // changeBanDuration(0)
+                                changeBanDuration(0)
                             }
                         )
                         Text(stringResource(R.string.permanently),color = onPrimary)
@@ -922,9 +955,9 @@ fun HorizontalBanDialog(
                     colors= TextFieldDefaults.textFieldColors(
                         textColor = onPrimary, focusedLabelColor = onPrimary,
                         focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                    value = "banReason",
+                    value = banReason,
                     onValueChange = {
-                       // changeBanReason(it)
+                        changeBanReason(it)
                                     },
                     label = { Text(stringResource(R.string.reason),color = onPrimary) }
                 )
@@ -939,16 +972,17 @@ fun HorizontalBanDialog(
                     Button(
                         colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
                         onClick = {
-//                            closeDialog()
-//                            closeBottomModal()
-//                            banUser(
-//                                BanUser(
-//                                    data = BanUserData(
-//                                        user_id = clickedUserId,
-//                                        reason = banReason
-//                                    )
-//                                )
-//                            )
+                                  /**This is the actual modding action takes place*/
+                            onDismissRequest()
+
+                            banUser(
+                                BanUser(
+                                    data = BanUserData(
+                                        user_id = clickedUserId,
+                                        reason = banReason
+                                    )
+                                )
+                            )
                         },
                         modifier = Modifier.padding(10.dp)
                     ) {
