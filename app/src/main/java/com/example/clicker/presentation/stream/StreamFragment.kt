@@ -86,6 +86,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
 
 
+
+
 //            Create layout parameters to match parent
                 val layoutParams = ConstraintLayout.LayoutParams(
                     ConstraintLayout.LayoutParams.MATCH_PARENT,
