@@ -918,29 +918,9 @@ fun HorizontalBanDialog(
                 Text(stringResource(R.string.duration_text),color = onPrimary)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = banDuration == 604800,
-                            onClick = {
-                                changeBanDuration(604800)
-                            }
-                        )
-                        Text(stringResource(R.string.one_week),color = onPrimary)
-                    }
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = banDuration == 1209600,
-                            onClick = {
-                                changeBanDuration(1209600)
-                            }
-                        )
-                        Text(stringResource(R.string.two_weeks),color = onPrimary)
-                    }
-                    Column {
+                    Column() {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
                             selected = banDuration == 0,
