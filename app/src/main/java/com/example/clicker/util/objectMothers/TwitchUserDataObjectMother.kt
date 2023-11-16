@@ -74,7 +74,7 @@ class TwitchUserDataObjectMother private constructor() {
                 flags = flags
             )
         }
-        fun addId(id: String) = apply {
+        fun addId(id: String?) = apply {
             twitchUserData = twitchUserData.copy(
                 id = id
             )
