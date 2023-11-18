@@ -455,7 +455,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                 badgeInfo = null,
                 badges = null,
                 clientNonce = null,
-                color = "#000000",
+                color = "#BF40BF",
                 displayName = currentUsername,
                 emotes = null,
                 firstMsg = null,
