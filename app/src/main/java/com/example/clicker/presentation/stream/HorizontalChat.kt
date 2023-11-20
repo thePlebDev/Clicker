@@ -125,7 +125,20 @@ fun HorizontalChat(
                         )
                     },
                     banUser = { banUser -> streamViewModel.banUser(banUser) },
-                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId
+                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
+                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                    timeoutReason = streamViewModel.state.value.timeoutReason,
+                    changeTimeoutReason = { reason ->
+                        streamViewModel.changeTimeoutReason(
+                            reason
+                        )
+                    },
+                    changeTimeoutDuration = { duration ->
+                        streamViewModel.changeTimeoutDuration(
+                            duration
+                        )
+                    },
+                    timeOutUser = { streamViewModel.timeoutUser() }
                 )
             }
         },
@@ -179,7 +192,12 @@ fun ClickedUserModalDrawer(
     banDuration: Int,
     banReason: String,
     banUser: (BanUser) -> Unit,
-    clickedUserId: String
+    clickedUserId: String,
+    timeoutDuration: Int,
+    timeoutReason: String,
+    changeTimeoutDuration: (Int) -> Unit,
+    changeTimeoutReason: (String) -> Unit,
+    timeOutUser: () -> Unit
 ){
     val scope = rememberCoroutineScope()
     val openTimeoutDialog = remember { mutableStateOf(false) }
@@ -187,7 +205,15 @@ fun ClickedUserModalDrawer(
     if(openTimeoutDialog.value){
         HorizontalTimeoutDialog(
             onDismissRequest = {openTimeoutDialog.value = false},
-            clickedUsername = clickedUsername
+            clickedUsername = clickedUsername,
+            timeoutDuration = timeoutDuration,
+            timeoutReason = timeoutReason,
+            changeTimeoutDuration  = { duration ->changeTimeoutDuration(duration)},
+            changeTimeoutReason ={reason -> changeTimeoutReason(reason)},
+            timeOutUser = { timeOutUser() }
+
+
+
         )
     }
     if(openBanDialog.value){
@@ -760,7 +786,12 @@ fun FilterChatMessageTypes(
 @Composable
 fun HorizontalTimeoutDialog(
     onDismissRequest: () -> Unit,
-    clickedUsername: String
+    clickedUsername: String,
+    timeoutDuration: Int,
+    timeoutReason: String,
+    changeTimeoutDuration: (Int) -> Unit,
+    changeTimeoutReason: (String) -> Unit,
+    timeOutUser: () -> Unit
 ){
     val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
     val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
@@ -801,9 +832,9 @@ fun HorizontalTimeoutDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "timeoutDuration" == "60",
+                            selected = timeoutDuration == 60,
                             onClick = {
-                                //changeTimeoutDuration(60)
+                                changeTimeoutDuration(60)
                             }
                         )
                         Text(stringResource(R.string.one_minute),color = onPrimary)
@@ -811,9 +842,9 @@ fun HorizontalTimeoutDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "timeoutDuration" == "600",
+                            selected = timeoutDuration == 600,
                             onClick = {
-                               // changeTimeoutDuration(600)
+                                changeTimeoutDuration(600)
                             }
                         )
                         Text(stringResource(R.string.ten_minutes),color = onPrimary)
@@ -821,9 +852,9 @@ fun HorizontalTimeoutDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "timeoutDuration" == "1800",
+                            selected = timeoutDuration == 1800,
                             onClick = {
-                              //  changeTimeoutDuration(1800)
+                                changeTimeoutDuration(1800)
                             }
                         )
                         Text(stringResource(R.string.thirty_minutes),color = onPrimary)
@@ -831,9 +862,9 @@ fun HorizontalTimeoutDialog(
                     Column {
                         RadioButton(
                             colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = "timeoutDuration" == "604800",
+                            selected = timeoutDuration == 604800,
                             onClick = {
-                                //changeTimeoutDuration(604800)
+                                changeTimeoutDuration(604800)
                             }
                         )
                         Text(stringResource(R.string.one_week),color = onPrimary)
@@ -843,9 +874,9 @@ fun HorizontalTimeoutDialog(
                     colors= TextFieldDefaults.textFieldColors(
                         textColor = onPrimary, focusedLabelColor = onPrimary,
                         focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                    value = "timeoutReason",
+                    value = timeoutReason,
                     onValueChange = {
-                        //changeTimeoutReason(it)
+                        changeTimeoutReason(it)
                                     },
                     label = { Text(stringResource(R.string.reason)) }
                 )
@@ -861,8 +892,8 @@ fun HorizontalTimeoutDialog(
                     Button(
                         colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
                         onClick = {
-//                            closeDialog()
-//                            timeOutUser()
+                            onDismissRequest()
+                            timeOutUser()
                         }, modifier = Modifier.padding(10.dp)) {
                         Text(stringResource(R.string.timeout_confirm),color = onSecondary)
                     }
