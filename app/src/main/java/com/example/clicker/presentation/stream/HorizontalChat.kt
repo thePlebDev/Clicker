@@ -43,6 +43,8 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Divider
@@ -406,40 +408,82 @@ fun ChatTextField(
     )
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-        TextField(
-            modifier = Modifier,
-            value = textFieldValue.value,
+        Row(
+            modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            TextField(
+                modifier = Modifier,
+                value = textFieldValue.value,
 
-            shape = RoundedCornerShape(8.dp),
-            onValueChange = { newText ->
-                chatMentionMethod(newText.text)
-                val index = newText.selection
-                if(newText.selection.collapsed && index.start != 0){
-                    val currentIndex = (index.start -1)
-                    val currentCharacter = newText.text[currentIndex]
-                    filterMethod(newText.text,currentCharacter,currentIndex)
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { newText ->
+                    chatMentionMethod(newText.text)
+                    val index = newText.selection
+                    if(newText.selection.collapsed && index.start != 0){
+                        val currentIndex = (index.start -1)
+                        val currentCharacter = newText.text[currentIndex]
+                        filterMethod(newText.text,currentCharacter,currentIndex)
+                    }
+
+                    textFieldValue.value = TextFieldValue(
+                        text = newText.text,
+                        selection = newText.selection
+                    )
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.White,
+                    backgroundColor = Color.DarkGray,
+                    cursorColor = MaterialTheme.colorScheme.secondary,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                placeholder = {
+                    Text(stringResource(R.string.send_a_message), color = Color.White)
                 }
+            )
 
-                textFieldValue.value = TextFieldValue(
-                    text = newText.text,
-                    selection = newText.selection
-                )
-            },
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.White,
-                backgroundColor = Color.DarkGray,
-                cursorColor = MaterialTheme.colorScheme.secondary,
-                disabledLabelColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-            placeholder = {
-                Text(stringResource(R.string.send_a_message), color = Color.White)
-            }
-        )
+            SendChatIcon(
+                textLength =textFieldValue.value.text.length
+            )
+        }
+
+
+
 
     }
 
+
+}
+
+@Composable
+fun SendChatIcon(textLength:Int){
+    if (textLength > 0) {
+        Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = stringResource(R.string.send_chat),
+            modifier = Modifier
+                .size(35.dp)
+                .clickable {
+                    //   chat(textFieldValue.value.text)
+                }
+                .padding(start = 5.dp),
+            tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = stringResource(R.string.more_vert_icon_description),
+            modifier = Modifier
+                .size(35.dp)
+                .clickable {
+                    // showModal()
+                }
+                .padding(start = 5.dp),
+            tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+        )
+    }
 
 }
 
