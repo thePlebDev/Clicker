@@ -167,7 +167,8 @@ fun HorizontalChat(
                 filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
                 filteredChatList = streamViewModel.filteredChatList,
                 clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) },
-                chatMentionMethod = {text -> streamViewModel.filterTextMethodFinal(text)}
+                chatMentionMethod = {text -> streamViewModel.filterTextMethodFinal(text)},
+                sendMessageToWebSocket = {message ->streamViewModel.sendMessage(message)}
             )
             ScrollToBottomButton(
                 scrollingPaused = !autoscroll,
@@ -340,7 +341,8 @@ fun EnterChatBox(
     filterMethod:(String,Char,Int) -> Unit,
     filteredChatList:List<String>,
     clickedAutoCompleteText: (String, String) -> String,
-    chatMentionMethod:(String) ->Unit
+    chatMentionMethod:(String) ->Unit,
+    sendMessageToWebSocket: (String) -> Unit,
 ){
     Column(
         modifier = modifier
@@ -354,7 +356,8 @@ fun EnterChatBox(
        ChatTextField(
            textFieldValue,
            filterMethod = {text,character,index ->filterMethod(text,character,index)},
-           chatMentionMethod = chatMentionMethod
+           chatMentionMethod = chatMentionMethod,
+           sendMessageToWebSocket ={message -> sendMessageToWebSocket(message)}
        )
 
     }
@@ -398,7 +401,9 @@ fun AutoCompleteUserNameRow(
 fun ChatTextField(
     textFieldValue: MutableState<TextFieldValue>,
     filterMethod:(String,Char,Int) -> Unit,
-    chatMentionMethod:(String) ->Unit
+    chatMentionMethod:(String) ->Unit,
+    sendMessageToWebSocket: (String) -> Unit,
+
 
 ){
 
@@ -445,7 +450,9 @@ fun ChatTextField(
             )
 
             SendChatIcon(
-                textLength =textFieldValue.value.text.length
+                textLength =textFieldValue.value.text.length,
+                message = textFieldValue.value.text,
+                sendMessageToWebSocket = {message -> sendMessageToWebSocket(message)}
             )
         }
 
@@ -458,32 +465,38 @@ fun ChatTextField(
 }
 
 @Composable
-fun SendChatIcon(textLength:Int){
-    if (textLength > 0) {
+fun SendChatIcon(
+    textLength:Int,
+    sendMessageToWebSocket: (String) -> Unit,
+    message:String
+){
+//    if (textLength > 0) {
         Icon(
             imageVector = Icons.Default.ArrowForward,
             contentDescription = stringResource(R.string.send_chat),
             modifier = Modifier
                 .size(35.dp)
                 .clickable {
-                    //   chat(textFieldValue.value.text)
+                    if(textLength >0){
+                        sendMessageToWebSocket(message)
+                    }
                 }
                 .padding(start = 5.dp),
             tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
         )
-    } else {
-        Icon(
-            imageVector = Icons.Default.MoreVert,
-            contentDescription = stringResource(R.string.more_vert_icon_description),
-            modifier = Modifier
-                .size(35.dp)
-                .clickable {
-                    // showModal()
-                }
-                .padding(start = 5.dp),
-            tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-        )
-    }
+//    } else {
+////        Icon(
+////            imageVector = Icons.Default.MoreVert,
+////            contentDescription = stringResource(R.string.more_vert_icon_description),
+////            modifier = Modifier
+////                .size(35.dp)
+////                .clickable {
+////                    // showModal()
+////                }
+////                .padding(start = 5.dp),
+////            tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+////        )
+//    }
 
 }
 
