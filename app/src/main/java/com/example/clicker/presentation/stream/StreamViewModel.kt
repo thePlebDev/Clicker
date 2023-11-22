@@ -371,6 +371,8 @@ class StreamViewModel @Inject constructor(
                     clearAllChatMessages(listChats)
                 }
                 MessageType.USER ->{
+                    Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
+                    Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
                     addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
                 }
                 else -> {}

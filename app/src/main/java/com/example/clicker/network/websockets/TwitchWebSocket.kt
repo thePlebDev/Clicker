@@ -56,7 +56,8 @@ class TwitchWebSocket @Inject constructor(
         turbo = false,
         userId = "144252234",
         userType = "Connecting to chat",
-        messageType = MessageType.USER
+        messageType = MessageType.ANNOUNCEMENT,
+        systemMessage = "Connecting to chat"
     )
 
     private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
