@@ -982,7 +982,6 @@ fun TextChat(
                         }
 
                         MessageType.USER -> {
-                            addChatter(twitchUser.displayName!!, twitchUser.userType!!)
                             SwipeToDeleteTextCard(
                                 twitchUser = twitchUser,
                                 bottomModalState = bottomModalState,

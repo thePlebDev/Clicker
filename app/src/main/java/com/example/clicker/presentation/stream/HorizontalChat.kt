@@ -167,7 +167,7 @@ fun HorizontalChat(
                 filterMethod = {text,character,index ->streamViewModel.filterMethodBetter(text,character,index)},
                 filteredChatList = streamViewModel.filteredChatList,
                 clickedAutoCompleteText= { text, username -> streamViewModel.autoTextChange(text,username) },
-                chatMentionMethod = {text -> streamViewModel.filterTextMethodFinal(text)},
+                chatMentionMethod = {text,currentCharacter,currentIndex -> streamViewModel.filterAgain(text,currentCharacter,currentIndex)},
                 sendMessageToWebSocket = {message ->streamViewModel.sendMessage(message)}
             )
             ScrollToBottomButton(
@@ -341,7 +341,7 @@ fun EnterChatBox(
     filterMethod:(String,Char,Int) -> Unit,
     filteredChatList:List<String>,
     clickedAutoCompleteText: (String, String) -> String,
-    chatMentionMethod:(String) ->Unit,
+    chatMentionMethod:(String,String,Int) ->Unit,
     sendMessageToWebSocket: (String) -> Unit,
 ){
     Column(
@@ -356,7 +356,7 @@ fun EnterChatBox(
        ChatTextField(
            textFieldValue,
            filterMethod = {text,character,index ->filterMethod(text,character,index)},
-           chatMentionMethod = chatMentionMethod,
+           chatMentionMethod = { text,character,index -> chatMentionMethod(text,character,index)},
            sendMessageToWebSocket ={message -> sendMessageToWebSocket(message)}
        )
 
@@ -379,11 +379,10 @@ fun AutoCompleteUserNameRow(
                         .padding(5.dp)
                         .clickable {
 
+                            val currentIndex = textFieldValue.value.selection.start + name.length
                             textFieldValue.value = TextFieldValue(
                                 text = clickedAutoCompleteText(textFieldValue.value.text, name),
-                                selection = TextRange(
-                                    (textFieldValue.value.text + "$name ").length
-                                )
+                                selection = TextRange(currentIndex)
                             )
                         },
 
@@ -401,7 +400,7 @@ fun AutoCompleteUserNameRow(
 fun ChatTextField(
     textFieldValue: MutableState<TextFieldValue>,
     filterMethod:(String,Char,Int) -> Unit,
-    chatMentionMethod:(String) ->Unit,
+    chatMentionMethod:(String,String,Int) ->Unit,
     sendMessageToWebSocket: (String) -> Unit,
 
 
@@ -423,7 +422,7 @@ fun ChatTextField(
 
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
-                    chatMentionMethod(newText.text)
+
                     val index = newText.selection
                     if(newText.selection.collapsed && index.start != 0){
                         val currentIndex = (index.start -1)
@@ -477,7 +476,7 @@ fun SendChatIcon(
             modifier = Modifier
                 .size(35.dp)
                 .clickable {
-                    if(textLength >0){
+                    if (textLength > 0) {
                         sendMessageToWebSocket(message)
                     }
                 }
