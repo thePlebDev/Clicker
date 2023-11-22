@@ -291,6 +291,9 @@ class StreamViewModel @Inject constructor(
         val pattern = Pattern.compile("\\s|@")
         val pattern2 = Regex("@(\\s)|@")
         val lastFind = pattern2.findAll(fullText).last()
+        val foundIndex = filterMethodStartingIndex.value
+        //val subString = fullText.subSequence(foundIndex,clickedText.length)
+        Log.d("FOUNDLASTONETest", "$foundIndex")
 
         val foundOne = lastFind.value
         val range = lastFind.range
@@ -360,14 +363,15 @@ class StreamViewModel @Inject constructor(
 
                 clickedUsernameChats.add(twitchUserMessage.userType!!)
             }
-            //todo:CLEAR THIS MESS OUT BELOW
-            //TODO: WE CAN MVOE THIS TO A NEW MessageType.CLEARCHAT IN THE VIEW
             when(twitchUserMessage.messageType){
                 MessageType.CLEARCHAT ->{
                     notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
                 }
                 MessageType.CLEARCHATALL->{
                     clearAllChatMessages(listChats)
+                }
+                MessageType.USER ->{
+                    addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
                 }
                 else -> {}
             }
@@ -917,51 +921,55 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
 
     fun filterMethodBetter(text:String,currentCharacter:Char,currentIndex:Int){
+
+        filterAgain(text,currentCharacter.toString(),currentIndex)
+
+
+    }
+    fun filterAgain(text: String,currentCharacter:String,currentIndex: Int){
         try{
-
-            if(currentCharacter.toString() == "@"){
-                filterMethodStartingIndex.value = currentIndex
-                shouldFilter.value = true
-                filteredChatList.clear()
-
-            }
-            if(currentCharacter.toString() == " "){
+            if(text.isEmpty()){
                 shouldFilter.value = false
-                filteredChatList.clear()
             }
-            if(shouldFilter.value == true){
-                var extraCharacter = ""
-                if(currentCharacter.toString() != "@"){
-                    extraCharacter = currentCharacter.toString()
-                }
+            val subString:CharSequence
+            if(currentCharacter == "@"){
+                shouldFilter.value = true
 
-                val subString = "${text.substring(TextRange((filterMethodStartingIndex.value),currentIndex))}$extraCharacter"
-                val filterText = subString.replace("@","")
-                val filteredList = allChatters.filter { item -> item.contains(filterText,ignoreCase = true) }
+                filterMethodStartingIndex.value = currentIndex
 
+
+            }
+
+            if(shouldFilter.value  == true){
+
+                subString = text.subSequence(filterMethodStartingIndex.value,currentIndex).removePrefix("@")
+
+
+                Log.d("filterIndexingText","substring ----> $subString")
+                val filteredList = allChatters.filter { item -> item.startsWith(subString,true) }
                 val newList = mutableStateListOf<String>()
                 newList.addAll(filteredList)
-
                 filteredChatList.clear()
                 filteredChatList.addAll(newList.toList())
+//            Log.d("filterIndexingText","allChatters ----> ${allChatters.toList()}")
+                Log.d("filterIndexingText","filteredList ----> $filteredList")
+            }
 
+            if(currentCharacter == " "){
+                filteredChatList.clear()
+                shouldFilter.value = false
             }
         }catch (e:Exception){
             filteredChatList.clear()
+            shouldFilter.value = false
         }
 
 
-    }
-    fun filterTextMethodFinal(text:String){
-//        val lastCharacter = text[text.length -1]
-//        val cursorPosition = textFieldValue.value.selection.start
-//        if(text.isNotBlank()){
-//            Log.d("FOUNDMESSAGESPARSING","last character -->${lastCharacter}")
-//            Log.d("FOUNDMESSAGESPARSING","character behind cursor -->${text[cursorPosition]}")
-//        }
+
 
 
     }
+
 }
 
 
