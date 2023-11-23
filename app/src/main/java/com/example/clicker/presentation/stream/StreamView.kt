@@ -69,6 +69,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
@@ -1512,6 +1514,7 @@ fun ChatCard(
     val state = rememberSwipeableActionsState()
 
     val offset = state.offset.value
+
     val swipeThreshold = 130.dp
     val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
 
@@ -1522,6 +1525,7 @@ fun ChatCard(
 
     if (thresholdCrossed) {
         backgroundColor = Color.Red
+
     } else {
         backgroundColor = Color.Black
     }
@@ -1561,11 +1565,15 @@ fun ChatCard(
                             state.resetOffset()
                         }
                     }
+                },
+                onDragStarted = {
+                    Log.d("TESTINGTHEVIEWTHINGS", "onDragStarted --->${it.x}")
                 }
 
             )
 
     ) {
+
         Column(
             verticalArrangement = Arrangement.Center
 
@@ -1620,6 +1628,50 @@ fun ChatCard(
                     } // end of the row
                 }
             } // end of the Card
+//            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+//                Icon(
+//                    imageVector = Icons.Default.DateRange,
+//                    contentDescription = stringResource(R.string.undo_ban_button),
+//                    modifier = Modifier
+//                        .clip(RoundedCornerShape(5.dp))
+//                        .size(30.dp)
+//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                )
+//                Divider(
+//                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                    modifier = Modifier
+//                        .height(1.dp)  //fill the max height
+//                        .width(5.dp)
+//                )
+//                Icon(
+//                    imageVector = Icons.Default.Refresh,
+//                    contentDescription = stringResource(R.string.undo_ban_button),
+//                    modifier = Modifier
+//                        .clip(RoundedCornerShape(5.dp))
+//                        .size(30.dp)
+//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                )
+//                Divider(
+//                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                    modifier = Modifier
+//                        .height(1.dp)  //fill the max height
+//                        .width(5.dp)
+//                )
+//                Icon(
+//                    imageVector = Icons.Default.Delete,
+//                    contentDescription = stringResource(R.string.undo_ban_button),
+//                    modifier = Modifier
+//                        .clip(RoundedCornerShape(5.dp))
+//                        .size(30.dp)
+//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                )
+//
+//            }
+
+
         }
     }
 }
