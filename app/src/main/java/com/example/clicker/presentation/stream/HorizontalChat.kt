@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -380,9 +381,10 @@ fun AutoCompleteUserNameRow(
                         .clickable {
 
                             val currentIndex = textFieldValue.value.selection.start + name.length
+                            val currentString = clickedAutoCompleteText(textFieldValue.value.text, name)
                             textFieldValue.value = TextFieldValue(
-                                text = clickedAutoCompleteText(textFieldValue.value.text, name),
-                                selection = TextRange(currentIndex)
+                                text = currentString,
+                                selection = TextRange(currentString.length)
                             )
                         },
 
@@ -417,9 +419,10 @@ fun ChatTextField(
             verticalAlignment = Alignment.CenterVertically
         ){
             TextField(
-                modifier = Modifier,
+                modifier = Modifier.weight(2f),
                 value = textFieldValue.value,
-
+                maxLines =1,
+                singleLine = true,
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
 
@@ -451,7 +454,7 @@ fun ChatTextField(
             SendChatIcon(
                 textLength =textFieldValue.value.text.length,
                 message = textFieldValue.value.text,
-                sendMessageToWebSocket = {message -> sendMessageToWebSocket(message)}
+                sendMessageToWebSocket = {message -> sendMessageToWebSocket(message)},
             )
         }
 
@@ -467,7 +470,7 @@ fun ChatTextField(
 fun SendChatIcon(
     textLength:Int,
     sendMessageToWebSocket: (String) -> Unit,
-    message:String
+    message:String,
 ){
 //    if (textLength > 0) {
         Icon(

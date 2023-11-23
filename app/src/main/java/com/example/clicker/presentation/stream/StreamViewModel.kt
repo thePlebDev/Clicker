@@ -79,7 +79,8 @@ class StreamViewModel @Inject constructor(
     private val webSocket: TwitchSocket,
     private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val autoCompleteChat: AutoCompleteChat
 ) : ViewModel() {
 
     private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -110,6 +111,7 @@ class StreamViewModel @Inject constructor(
 
 
     var filteredChatList = mutableStateListOf<String>()
+    val testingFilteredList = autoCompleteChat.filteredChatList
     val clickedUsernameChats = mutableStateListOf<String>()
 
     private val allChatters = mutableStateListOf<String>()
@@ -118,7 +120,7 @@ class StreamViewModel @Inject constructor(
 
 
     private val filterMethodStartingIndex = mutableStateOf(0)
-    private val shouldFilter = mutableStateOf(false)
+
      val chatTextRange= mutableStateOf(TextRange(0))
 
     fun changeTextRange(currentTextRange:TextRange){
@@ -373,6 +375,7 @@ class StreamViewModel @Inject constructor(
                 MessageType.USER ->{
                     Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
                     Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
+                    autoCompleteChat.addChatter(twitchUserMessage.displayName!!)
                     addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
                 }
                 else -> {}
@@ -931,18 +934,19 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     fun filterAgain(text: String,currentCharacter:String,currentIndex: Int){
         try{
             if(text.isEmpty()){
-                shouldFilter.value = false
+                autoCompleteChat.setShowFilteredUsernames(true)
             }
             val subString:CharSequence
             if(currentCharacter == "@"){
-                shouldFilter.value = true
+
+                autoCompleteChat.setShowFilteredUsernames(true)
 
                 filterMethodStartingIndex.value = currentIndex
 
 
             }
 
-            if(shouldFilter.value  == true){
+            if(autoCompleteChat.showFilteredUsernames.value  == true){
 
                 subString = text.subSequence(filterMethodStartingIndex.value,currentIndex).removePrefix("@")
 
@@ -952,6 +956,8 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                 val newList = mutableStateListOf<String>()
                 newList.addAll(filteredList)
                 filteredChatList.clear()
+                autoCompleteChat.clearFilteredChatList()
+                autoCompleteChat.addAllToFilteredChatList(newList.toList())
                 filteredChatList.addAll(newList.toList())
 //            Log.d("filterIndexingText","allChatters ----> ${allChatters.toList()}")
                 Log.d("filterIndexingText","filteredList ----> $filteredList")
@@ -959,11 +965,11 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
             if(currentCharacter == " "){
                 filteredChatList.clear()
-                shouldFilter.value = false
+                autoCompleteChat.setShowFilteredUsernames(false)
             }
         }catch (e:Exception){
             filteredChatList.clear()
-            shouldFilter.value = false
+            autoCompleteChat.setShowFilteredUsernames(false)
         }
 
 
