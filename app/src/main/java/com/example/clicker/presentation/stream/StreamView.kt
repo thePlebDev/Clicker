@@ -1768,6 +1768,8 @@ fun TextFieldChat(
             TextField(
                 modifier = Modifier
                     .weight(2f),
+                maxLines =1,
+                singleLine = true,
                 value = textFieldValue.value,
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
