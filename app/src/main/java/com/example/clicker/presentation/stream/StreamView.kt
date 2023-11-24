@@ -150,6 +150,7 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var oneClickActionsChecked by remember { mutableStateOf(false) }
 
     val testingString = ""
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
@@ -240,7 +241,10 @@ fun StreamView(
                             enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
                             chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
                             fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
-                            closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() }
+                            closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
+                            oneClickActionsChecked=oneClickActionsChecked,
+                            changeOneClickActionsStatus={checkedStatus -> oneClickActionsChecked = checkedStatus}
+
                         )
                     }
                 ) {
@@ -296,7 +300,10 @@ fun StreamView(
                         closeStickyHeader = { streamViewModel.closeStickyHeader() },
                         banResponseMessage = streamViewModel.state.value.banResponseMessage,
                         removeUnBanButton = { streamViewModel.removeUnBanButton() },
-                        restartWebSocket = { streamViewModel.restartWebSocket() }
+                        restartWebSocket = { streamViewModel.restartWebSocket() },
+                        showOneClickAction = oneClickActionsChecked,
+                        banUser={userDetails -> streamViewModel.banUser(userDetails)},
+                    timeOutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
                     )
                 }
             }
@@ -486,7 +493,10 @@ fun DrawerContent(
     enableEmoteModeSwitch: Boolean,
 
     chatSettingsFailedMessage: String,
-    fetchChatSettings: () -> Unit
+    fetchChatSettings: () -> Unit,
+
+    oneClickActionsChecked:Boolean,
+    changeOneClickActionsStatus:(Boolean) -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -516,7 +526,9 @@ fun DrawerContent(
                     enableSubscriberSwitch = enableSubscriberSwitch,
                     enableEmoteModeSwitch = enableEmoteModeSwitch,
                     chatSettingsFailedMessage = chatSettingsFailedMessage,
-                    closeChatSettingAlter = { closeChatSettingAlter() }
+                    closeChatSettingAlter = { closeChatSettingAlter() },
+                    oneClickActionsChecked=oneClickActionsChecked,
+                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
                 )
             }
             is Response.Failure -> {
@@ -545,6 +557,9 @@ fun ChatSettingsDataUI(
     followerModeToggle: (ChatSettingsData) -> Unit,
     subscriberModeToggle: (ChatSettingsData) -> Unit,
     emoteModeToggle: (ChatSettingsData) -> Unit,
+
+    oneClickActionsChecked:Boolean,
+    changeOneClickActionsStatus:(Boolean) -> Unit,
 
     enableSlowModeSwitch: Boolean,
     enableFollowerModeSwitch: Boolean,
@@ -580,6 +595,10 @@ fun ChatSettingsDataUI(
                             chatSettingsInfo
                         )
                     },
+
+                    oneClickActionsChecked = oneClickActionsChecked,
+                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
+
                     emoteModeToggle = { chatSettingsInfo -> emoteModeToggle(chatSettingsInfo) },
 
                     enableSlowModeSwitch = enableSlowModeSwitch,
@@ -603,6 +622,8 @@ fun ChatSettings(
     followerModeToggle: (ChatSettingsData) -> Unit,
     subscriberModeToggle: (ChatSettingsData) -> Unit,
     emoteModeToggle: (ChatSettingsData) -> Unit,
+    oneClickActionsChecked:Boolean,
+    changeOneClickActionsStatus:(Boolean) -> Unit,
 
     enableSlowModeSwitch: Boolean,
     enableFollowerModeSwitch: Boolean,
@@ -620,6 +641,11 @@ fun ChatSettings(
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        OneClickActionRow(
+            switchLabel="One click actions",
+            checked =oneClickActionsChecked,
+            changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)}
+        )
         SlowSwitchRow(
             switchLabel = stringResource(R.string.slow_mode),
             enableSwitch = enableSlowModeSwitch,
@@ -661,7 +687,28 @@ fun ChatSettings(
         }
     } // end of the Column
 }
+@Composable
+fun OneClickActionRow(
+    switchLabel: String,
+    checked:Boolean,
+    changeOneClickActionsStatus:(Boolean) -> Unit
 
+
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                changeOneClickActionsStatus(it)
+            }
+        )
+    }
+}
 @Composable
 fun SlowSwitchRow(
     switchLabel: String,
@@ -871,7 +918,10 @@ fun TextChat(
     closeStickyHeader: () -> Unit,
     banResponseMessage: String,
     removeUnBanButton: () -> Unit,
-    restartWebSocket: () -> Unit
+    restartWebSocket: () -> Unit,
+    showOneClickAction:Boolean,
+    banUser: (BanUser) -> Unit,
+    timeOutUser: (String) -> Unit
 
 ) {
     val lazyColumnListState = rememberLazyListState()
@@ -996,7 +1046,10 @@ fun TextChat(
                                         isMod
                                     )
                                 },
-                                deleteMessage = { messageId -> deleteMessage(messageId) }
+                                deleteMessage = { messageId -> deleteMessage(messageId) },
+                                showOneClickAction = showOneClickAction,
+                                banUser={userDetails -> banUser(userDetails)},
+                            timeOutUser={userDetails -> timeOutUser(userDetails)}
                             )
                         }
 
@@ -1393,7 +1446,10 @@ fun SwipeToDeleteTextCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-    deleteMessage: (String) -> Unit
+    deleteMessage: (String) -> Unit,
+    showOneClickAction:Boolean,
+    banUser: (BanUser) -> Unit,
+    timeOutUser: (String) -> Unit
 
 ) {
     ChatCard(
@@ -1407,7 +1463,11 @@ fun SwipeToDeleteTextCard(
                 isMod
             )
         },
-        deleteMessage = { messageId -> deleteMessage(messageId) }
+        deleteMessage = { messageId -> deleteMessage(messageId) },
+        showOneClickAction =showOneClickAction,
+        banUser={userDetails -> banUser(userDetails)},
+        timeOutUser={userDetails ->timeOutUser(userDetails)}
+
     )
 }
 
@@ -1501,7 +1561,10 @@ fun ChatCard(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-    deleteMessage: (String) -> Unit
+    deleteMessage: (String) -> Unit,
+    showOneClickAction:Boolean,
+    banUser: (BanUser) -> Unit,
+    timeOutUser: (String) -> Unit
 ) {
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
@@ -1514,7 +1577,7 @@ fun ChatCard(
 
     val state = rememberSwipeableActionsState()
 
-    val offset = state.offset.value
+    var offset = state.offset.value
 
     val swipeThreshold = 130.dp
     val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
@@ -1531,6 +1594,9 @@ fun ChatCard(
         backgroundColor = Color.Black
     }
 
+    if(showOneClickAction){
+        offset = 0f
+    }
     // makes it so mods can not be swiped on
     val modDragState = DraggableState { delta ->
     }
@@ -1547,6 +1613,7 @@ fun ChatCard(
 
     val cardWidth = Resources.getSystem().displayMetrics.widthPixels.dp // width of what will be moving
     val scope = rememberCoroutineScope()
+    val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
 
     Box(
         Modifier
@@ -1559,7 +1626,8 @@ fun ChatCard(
                 state = dragState,
                 onDragStopped = {
                     scope.launch {
-                        if (thresholdCrossed) {
+
+                        if (thresholdCrossed && !showOneClickAction) {
                             state.resetOffset()
                             deleteMessage(twitchUser.id ?: "")
                         } else {
@@ -1605,7 +1673,8 @@ fun ChatCard(
                         Text(
                             stringResource(R.string.moderator_deleted_comment),
                             fontSize = 20.sp,
-                            modifier = Modifier.padding(start = 5.dp)
+                            modifier = Modifier.padding(start = 5.dp),
+                            color = MaterialTheme.colors.onPrimary
                         )
                     }
 
@@ -1629,48 +1698,72 @@ fun ChatCard(
                     } // end of the row
                 }
             } // end of the Card
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.undo_ban_button),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(5.dp))
-                        .size(30.dp)
-                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                )
-                Divider(
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .height(1.dp)  //fill the max height
-                        .width(5.dp)
-                )
-                Icon(
-                    imageVector = Icons.Default.DateRange,
-                    contentDescription = stringResource(R.string.undo_ban_button),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(5.dp))
-                        .size(30.dp)
-                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                )
-                Divider(
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .height(1.dp)  //fill the max height
-                        .width(5.dp)
-                )
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.undo_ban_button),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(5.dp))
-                        .size(30.dp)
-                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                )
+            if(showOneClickAction){
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(primary), horizontalArrangement = Arrangement.End,
+                ){
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.undo_ban_button),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .size(30.dp)
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                            .clickable {
+                                banUser(
+                                    BanUser(
+                                        data = BanUserData(
+                                            user_id = twitchUser.userId ?:"",
+                                            reason = ""
+                                        )
+                                    )
+                                )
+                            },
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                    )
+                    Divider(
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .height(1.dp)  //fill the max height
+                            .width(5.dp)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = stringResource(R.string.undo_ban_button),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .size(30.dp)
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                            .clickable {
+                                timeOutUser(twitchUser.id ?: "")
+                            },
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                    )
+                    Divider(
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .height(1.dp)  //fill the max height
+                            .width(5.dp)
+                    )
+                    if(!twitchUser.deleted){
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.undo_ban_button),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(5.dp))
+                                .size(30.dp)
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                                .clickable {
+                                    deleteMessage(twitchUser.id ?: "")
+                                },
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
 
+
+                }
             }
+
 
 
         }
