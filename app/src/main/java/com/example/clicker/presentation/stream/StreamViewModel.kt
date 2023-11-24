@@ -733,6 +733,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
     fun oneClickTimeoutUser(userId:String) = viewModelScope.launch{
         withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
+            Log.d("deleteChatMessageException", "oneClickTimeoutUser.user_id ${userId}")
             val timeoutUser = BanUser(
                 data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
                     user_id = userId,
