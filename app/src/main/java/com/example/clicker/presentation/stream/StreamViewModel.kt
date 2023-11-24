@@ -730,6 +730,48 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         }
     }
     //TODO: TWICH METHOD
+
+    fun oneClickTimeoutUser(userId:String) = viewModelScope.launch{
+        withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
+            val timeoutUser = BanUser(
+                data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
+                    user_id = userId,
+                    reason = "",
+                    duration = 600
+                )
+            )
+            twitchRepoImpl.banUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                body = timeoutUser
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {
+                        Log.d("TIMEOUTUSERRESPONSE", "LOADING")
+                    }
+                    is Response.Success -> {
+                        Log.d("TIMEOUTUSERRESPONSE", "SUCCESS")
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            timeoutReason = "",
+                            undoBanResponse = false
+                        )
+                    }
+                    is Response.Failure -> {
+                        Log.d("TIMEOUTUSERRESPONSE", "FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "${response.e.message}"
+                        )
+                    }
+                }
+            }
+        }
+
+    }
     fun timeoutUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
             val timeoutUser = BanUser(
