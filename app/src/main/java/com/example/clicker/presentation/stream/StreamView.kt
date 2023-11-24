@@ -1735,7 +1735,7 @@ fun ChatCard(
                             .size(30.dp)
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                             .clickable {
-                                timeOutUser(twitchUser.id ?: "")
+                                timeOutUser(twitchUser.userId ?: "")
                             },
                         tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
                     )
