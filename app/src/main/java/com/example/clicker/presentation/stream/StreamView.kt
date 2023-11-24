@@ -68,6 +68,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
@@ -1628,48 +1629,48 @@ fun ChatCard(
                     } // end of the row
                 }
             } // end of the Card
-//            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
-//                Icon(
-//                    imageVector = Icons.Default.DateRange,
-//                    contentDescription = stringResource(R.string.undo_ban_button),
-//                    modifier = Modifier
-//                        .clip(RoundedCornerShape(5.dp))
-//                        .size(30.dp)
-//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                )
-//                Divider(
-//                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-//                    modifier = Modifier
-//                        .height(1.dp)  //fill the max height
-//                        .width(5.dp)
-//                )
-//                Icon(
-//                    imageVector = Icons.Default.Refresh,
-//                    contentDescription = stringResource(R.string.undo_ban_button),
-//                    modifier = Modifier
-//                        .clip(RoundedCornerShape(5.dp))
-//                        .size(30.dp)
-//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                )
-//                Divider(
-//                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-//                    modifier = Modifier
-//                        .height(1.dp)  //fill the max height
-//                        .width(5.dp)
-//                )
-//                Icon(
-//                    imageVector = Icons.Default.Delete,
-//                    contentDescription = stringResource(R.string.undo_ban_button),
-//                    modifier = Modifier
-//                        .clip(RoundedCornerShape(5.dp))
-//                        .size(30.dp)
-//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                )
-//
-//            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.undo_ban_button),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .size(30.dp)
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                )
+                Divider(
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .height(1.dp)  //fill the max height
+                        .width(5.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = stringResource(R.string.undo_ban_button),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .size(30.dp)
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                )
+                Divider(
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .height(1.dp)  //fill the max height
+                        .width(5.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.undo_ban_button),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .size(30.dp)
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                )
+
+            }
 
 
         }
