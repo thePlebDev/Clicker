@@ -11,4 +11,8 @@ interface TwitchDataStore {
     suspend fun setUsername(username: String)
 
     fun getUsername(): Flow<String>
+
+    fun getOneClickAction():Flow<Boolean>
+
+    suspend fun setOneClickAction(isOneClickOn:Boolean)
 }
