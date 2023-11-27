@@ -117,6 +117,9 @@ class DataStoreViewModel @Inject constructor(
             }
         }
     }
+    fun getOneClickActions(){
+
+    }
 
     fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
         // need to make a call to exchange the authCode for a validationToken

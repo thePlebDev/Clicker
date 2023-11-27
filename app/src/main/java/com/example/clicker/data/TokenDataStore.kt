@@ -3,6 +3,7 @@ package com.example.clicker.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,9 +22,16 @@ class TokenDataStore @Inject constructor(
     private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
     private val usernameKey = stringPreferencesKey("username_value")
 
+    private val oneClickActionsKey = booleanPreferencesKey("one_click_action")
+
     override suspend fun setOAuthToken(oAuthToken: String) {
         context.dataStore.edit { tokens ->
             tokens[oAuthTokenKey] = oAuthToken
+        }
+    }
+    override suspend fun setOneClickAction(isOneClickOn:Boolean){
+        context.dataStore.edit { item ->
+            item[oneClickActionsKey] = isOneClickOn
         }
     }
     override fun getOAuthToken(): Flow<String> {
@@ -33,6 +41,14 @@ class TokenDataStore @Inject constructor(
             }
         return oAuthToken
     }
+    override fun getOneClickAction():Flow<Boolean>{
+        val isOneClickOn: Flow<Boolean> = context.dataStore.data
+            .map { preferences ->
+                preferences[oneClickActionsKey] ?: false
+            }
+        return isOneClickOn
+    }
+
 
     override suspend fun setUsername(username: String) {
         context.dataStore.edit { database ->
@@ -48,3 +64,5 @@ class TokenDataStore @Inject constructor(
         return username
     }
 }
+
+
