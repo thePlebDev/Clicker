@@ -302,8 +302,8 @@ fun StreamView(
                         removeUnBanButton = { streamViewModel.removeUnBanButton() },
                         restartWebSocket = { streamViewModel.restartWebSocket() },
                         showOneClickAction = oneClickActionsChecked,
-                        banUser={userDetails -> streamViewModel.banUser(userDetails)},
-                    timeOutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
+                        oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
+                        oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
                     )
                 }
             }
@@ -920,8 +920,8 @@ fun TextChat(
     removeUnBanButton: () -> Unit,
     restartWebSocket: () -> Unit,
     showOneClickAction:Boolean,
-    banUser: (BanUser) -> Unit,
-    timeOutUser: (String) -> Unit
+    oneClickBanUser: (String) -> Unit,
+    oneClickTimeoutUser: (String) -> Unit
 
 ) {
     val lazyColumnListState = rememberLazyListState()
@@ -1048,8 +1048,8 @@ fun TextChat(
                                 },
                                 deleteMessage = { messageId -> deleteMessage(messageId) },
                                 showOneClickAction = showOneClickAction,
-                                banUser={userDetails -> banUser(userDetails)},
-                            timeOutUser={userDetails -> timeOutUser(userDetails)}
+                                oneClickBanUser={userId -> oneClickBanUser(userId)},
+                                oneClickTimeoutUser={userDetails -> oneClickTimeoutUser(userDetails)}
                             )
                         }
 
@@ -1448,8 +1448,8 @@ fun SwipeToDeleteTextCard(
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     deleteMessage: (String) -> Unit,
     showOneClickAction:Boolean,
-    banUser: (BanUser) -> Unit,
-    timeOutUser: (String) -> Unit
+    oneClickBanUser: (String) -> Unit,
+    oneClickTimeoutUser: (String) -> Unit
 
 ) {
     ChatCard(
@@ -1465,8 +1465,8 @@ fun SwipeToDeleteTextCard(
         },
         deleteMessage = { messageId -> deleteMessage(messageId) },
         showOneClickAction =showOneClickAction,
-        banUser={userDetails -> banUser(userDetails)},
-        timeOutUser={userDetails ->timeOutUser(userDetails)}
+        oneClickBanUser={userId -> oneClickBanUser(userId)},
+        oneClickTimeoutUser={userDetails ->oneClickTimeoutUser(userDetails)}
 
     )
 }
@@ -1563,8 +1563,8 @@ fun ChatCard(
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     deleteMessage: (String) -> Unit,
     showOneClickAction:Boolean,
-    banUser: (BanUser) -> Unit,
-    timeOutUser: (String) -> Unit
+    oneClickBanUser: (String) -> Unit,
+    oneClickTimeoutUser: (String) -> Unit
 ) {
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
@@ -1614,6 +1614,8 @@ fun ChatCard(
     val cardWidth = Resources.getSystem().displayMetrics.widthPixels.dp // width of what will be moving
     val scope = rememberCoroutineScope()
     val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
+
+    Log.d("deleteChatMessageException", "WTwitchUser.userId---> ${twitchUser.userId}")
 
     Box(
         Modifier
@@ -1710,14 +1712,7 @@ fun ChatCard(
                             .size(30.dp)
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                             .clickable {
-                                banUser(
-                                    BanUser(
-                                        data = BanUserData(
-                                            user_id = twitchUser.userId ?:"",
-                                            reason = ""
-                                        )
-                                    )
-                                )
+                                oneClickBanUser(twitchUser.userId ?: "")
                             },
                         tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
                     )
@@ -1735,7 +1730,7 @@ fun ChatCard(
                             .size(30.dp)
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                             .clickable {
-                                timeOutUser(twitchUser.userId ?: "")
+                                oneClickTimeoutUser(twitchUser.userId ?: "")
                             },
                         tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
                     )
