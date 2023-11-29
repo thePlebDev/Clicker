@@ -10,6 +10,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.clicker.domain.TwitchDataStore
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
 // At the top level of your kotlin file:
@@ -19,13 +21,20 @@ class TokenDataStore @Inject constructor(
     private val context: Context
 ):TwitchDataStore {
 
+    private val _oneClickActionState = MutableStateFlow(false)
+     val oneClickActionState = _oneClickActionState.asStateFlow() // this is the text data shown to the user
+
     private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
     private val usernameKey = stringPreferencesKey("username_value")
 
     private val oneClickActionsKey = booleanPreferencesKey("one_click_action")
 
+    init{
+
+    }
+
     override suspend fun setOAuthToken(oAuthToken: String) {
-        context.dataStore.edit { tokens ->
+        val another =context.dataStore.edit { tokens ->
             tokens[oAuthTokenKey] = oAuthToken
         }
     }
