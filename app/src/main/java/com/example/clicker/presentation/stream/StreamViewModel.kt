@@ -817,6 +817,54 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         }
     }
 
+fun oneClickBanUser(userId:String) = viewModelScope.launch{
+
+    _clickedUIState.value = _clickedUIState.value.copy(
+        clickedUserId =userId
+    )
+
+    val banUserNew = BanUser(
+        data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
+            user_id = userId,
+            reason = "",
+            duration = 0
+        )
+    )
+
+    withContext(ioDispatcher + CoroutineName("BanUser")) {
+        twitchRepoImpl.banUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            body = banUserNew
+        ).collect { response ->
+            when (response) {
+                is Response.Loading -> {
+                    Log.d("BANUSERRESPONSE", "LOADING")
+                }
+                is Response.Success -> {
+                    Log.d("BANUSERRESPONSE", "SUCCESS")
+                    _uiState.value = _uiState.value.copy(
+                        banResponse = Response.Success(true),
+                        banReason = "",
+                        undoBanResponse = false
+                    )
+                }
+                is Response.Failure -> {
+                    Log.d("BANUSERRESPONSE", "FAILED")
+                    _uiState.value = _uiState.value.copy(
+                        showStickyHeader = true,
+                        undoBanResponse = false,
+                        banResponseMessage = "ban attempt unsuccessful"
+                    )
+                }
+            }
+        }
+    }
+
+}
+
     //TODO: TWICH METHOD
     fun banUser(banUser: BanUser) = viewModelScope.launch {
         val banUserNew = BanUser(
@@ -827,7 +875,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
             )
         )
-        Log.d("deleteChatMessageException", "banUser.user_id ${banUserNew.data.user_id}")
+        Log.d("deleteChatMessageException", "PbanUser.user_id---> ${banUserNew.data.user_id}")
         // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
         withContext(ioDispatcher + CoroutineName("BanUser")) {
             twitchRepoImpl.banUser(
