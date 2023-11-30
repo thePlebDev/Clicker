@@ -150,7 +150,7 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    var oneClickActionsChecked by remember { mutableStateOf(false) }
+    var oneClickActionsChecked by remember { mutableStateOf(true) }
 
     val testingString = ""
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
@@ -641,11 +641,11 @@ fun ChatSettings(
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OneClickActionRow(
-            switchLabel="One click actions",
-            checked =oneClickActionsChecked,
-            changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)}
-        )
+//        OneClickActionRow(
+//            switchLabel="One click actions",
+//            checked =oneClickActionsChecked,
+//            changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)}
+//        )
         SlowSwitchRow(
             switchLabel = stringResource(R.string.slow_mode),
             enableSwitch = enableSlowModeSwitch,
@@ -1594,9 +1594,9 @@ fun ChatCard(
         backgroundColor = Color.Black
     }
 
-    if(showOneClickAction){
-        offset = 0f
-    }
+//    if(showOneClickAction){
+//        offset = 0f
+//    }
     // makes it so mods can not be swiped on
     val modDragState = DraggableState { delta ->
     }
@@ -1629,7 +1629,7 @@ fun ChatCard(
                 onDragStopped = {
                     scope.launch {
 
-                        if (thresholdCrossed && !showOneClickAction) {
+                        if (thresholdCrossed) {
                             state.resetOffset()
                             deleteMessage(twitchUser.id ?: "")
                         } else {
@@ -1700,64 +1700,64 @@ fun ChatCard(
                     } // end of the row
                 }
             } // end of the Card
-            if(showOneClickAction){
-                Row(
-                    modifier = Modifier.fillMaxWidth().background(primary), horizontalArrangement = Arrangement.End,
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(R.string.undo_ban_button),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .size(30.dp)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                            .clickable {
-                                oneClickBanUser(twitchUser.userId ?: "")
-                            },
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                    )
-                    Divider(
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .height(1.dp)  //fill the max height
-                            .width(5.dp)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = stringResource(R.string.undo_ban_button),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .size(30.dp)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                            .clickable {
-                                oneClickTimeoutUser(twitchUser.userId ?: "")
-                            },
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                    )
-                    Divider(
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .height(1.dp)  //fill the max height
-                            .width(5.dp)
-                    )
-                    if(!twitchUser.deleted){
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.undo_ban_button),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(5.dp))
-                                .size(30.dp)
-                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                                .clickable {
-                                    deleteMessage(twitchUser.id ?: "")
-                                },
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                        )
-                    }
-
-
-                }
-            }
+//            if(showOneClickAction){
+//                Row(
+//                    modifier = Modifier.fillMaxWidth().background(primary), horizontalArrangement = Arrangement.End,
+//                ){
+//                    Icon(
+//                        imageVector = Icons.Default.Close,
+//                        contentDescription = stringResource(R.string.undo_ban_button),
+//                        modifier = Modifier
+//                            .clip(RoundedCornerShape(5.dp))
+//                            .size(30.dp)
+//                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+//                            .clickable {
+//                                oneClickBanUser(twitchUser.userId ?: "")
+//                            },
+//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                    )
+//                    Divider(
+//                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                        modifier = Modifier
+//                            .height(1.dp)  //fill the max height
+//                            .width(5.dp)
+//                    )
+//                    Icon(
+//                        imageVector = Icons.Default.DateRange,
+//                        contentDescription = stringResource(R.string.undo_ban_button),
+//                        modifier = Modifier
+//                            .clip(RoundedCornerShape(5.dp))
+//                            .size(30.dp)
+//                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+//                            .clickable {
+//                                oneClickTimeoutUser(twitchUser.userId ?: "")
+//                            },
+//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                    )
+//                    Divider(
+//                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                        modifier = Modifier
+//                            .height(1.dp)  //fill the max height
+//                            .width(5.dp)
+//                    )
+//                    if(!twitchUser.deleted){
+//                        Icon(
+//                            imageVector = Icons.Default.Delete,
+//                            contentDescription = stringResource(R.string.undo_ban_button),
+//                            modifier = Modifier
+//                                .clip(RoundedCornerShape(5.dp))
+//                                .size(30.dp)
+//                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+//                                .clickable {
+//                                    deleteMessage(twitchUser.id ?: "")
+//                                },
+//                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+//                        )
+//                    }
+//
+//
+//                }
+//            }
 
 
 
