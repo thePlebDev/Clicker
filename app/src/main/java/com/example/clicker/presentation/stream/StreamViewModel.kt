@@ -49,12 +49,14 @@ data class StreamUIState(
     val userId: String = "", //twitchRepoImpl
     val oAuthToken: String = "", //twitchRepoImpl
 
+    //todo: make this chat settings into its own state
     val showChatSettingAlert: Boolean = false, //twitchRepoImpl
-
     val enableSlowMode: Boolean = true, //twitchRepoImpl
     val enableFollowerMode: Boolean = true, //twitchRepoImpl
     val enableSubscriberMode: Boolean = true, //twitchRepoImpl
     val enableEmoteMode: Boolean = true, //twitchRepoImpl
+    val oneClickActionsChecked:Boolean = true,
+
 
     val banDuration: Int = 0, //twitchRepoImpl
     val banReason: String = "", //twitchRepoImpl
@@ -169,6 +171,12 @@ class StreamViewModel @Inject constructor(
     fun changeBanReason(reason: String) {
         _uiState.value = _uiState.value.copy(
             banReason = reason
+        )
+    }
+    fun changeOneClickActionsChecked(actionState:Boolean){
+        Log.d("CheckingchatSettingStatus","actionSTate -->  $actionState")
+        _uiState.value = _uiState.value.copy(
+            oneClickActionsChecked = actionState
         )
     }
 
