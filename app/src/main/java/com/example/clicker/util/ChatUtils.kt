@@ -10,25 +10,35 @@ enum class TokenType {
     WORD,
 
     // just empty space characters
-    EmptySpace
+    EmptySpace,
+
+    //Twitch mod command
+    ModCommand
 }
 
 class Scanner{
-    private final var source:String = ""
-    private final val tokens = mutableListOf<Token>()
+    private  var source:String = ""
+    private  val tokens = mutableListOf<Token>()
     private var start = 0
     private var current = 0
-    private val line = 1
+    private var mentionStart = 0
+    var chatCommands : HashMap<String, TokenType> = HashMap()
+    init{
+        chatCommands["/ban"] = TokenType.ModCommand
+        chatCommands["/mods"] = TokenType.ModCommand
+        chatCommands["/block"] = TokenType.ModCommand
+        chatCommands["/unban"] = TokenType.ModCommand
+        chatCommands["/disconnect"] = TokenType.ModCommand
+    }
 
     fun setSource(source:String){
         this.source = source
+        scanTokens()
     }
 
     private fun scanTokens(){
-        val char = advance()
         while(!isAtEnd()){
             start = current
-
             //start scanning tokens here
             scanToken()
         }
@@ -43,19 +53,49 @@ class Scanner{
     private fun scanToken(){
         val char = advance()
         when(char){
-            ' ' ->{addToken(TokenType.EmptySpace)}
+            ' ' ->{addToken(TokenType.EmptySpace,start)}
+            '@' ->{
+                mentionStart = start
+                while (!isAtEnd() && peek() != ' '){
+                    advance()
+                }
+                addToken(TokenType.MENTION,mentionStart)
+            }
+            '/' ->{
+                mentionStart = start
+                while (!isAtEnd() && peek() != ' '){
+                    advance()
+                }
+                if(isChatCommands(mentionStart)){
+                    addToken(TokenType.ModCommand,mentionStart)
+                }
+
+            }
         }
     }
-    private fun addToken(type:TokenType){
-        val text = source.subSequence(start,current).toString()
-        val token = Token(type,text,0)
+    private fun isChatCommands(startIndex: Int):Boolean{
+        val chatCommandKey = source.subSequence(startIndex,current).toString()
+
+        return chatCommands[chatCommandKey] !=null
+    }
+    private fun addToken(type:TokenType,startIndex: Int){
+        val text = source.subSequence(startIndex,current).toString()
+        val token = Token(type,text,startIndex,current)
         tokens.add(token)
 
+    }
+    fun getTokenList():List<Token>{
+        return this.tokens
+    }
+    private fun peek():Char{
+
+        return source[current]
     }
 }
 
 data class Token(
     val type: TokenType,
     val lexeme: String,
-    val line:Int
+    val startIndex:Int,
+    val endIndex:Int
     )

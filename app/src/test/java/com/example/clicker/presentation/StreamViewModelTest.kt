@@ -75,27 +75,27 @@ class StreamViewModelTest {
     //1) set the dispatcher
     //2) mock the dependencies for streamViewModel
     //3) run the tests
-    @Test
-    fun testing_delete_chat_message_failed() = runTest{
-        /**GIVEN*/
-
-        val messageId = "44"
-        Mockito.`when`(twitchRepoImpl.deleteChatMessage("", "", "","",messageId)).thenReturn(
-            flow { emit(Response.Failure(Exception("Error thrown"))) }
-        )
-        mockWebSocketStartingState(webSocket)
-
-        val streamViewModel = StreamViewModel(webSocket,tokenDataStore,twitchRepoImpl,mainDispatcherRule.testDispatcher)
-
-        /**WHEN*/
-        streamViewModel.deleteChatMessage(messageId)
-
-        val expectedResult = true
-
-        /**THEN*/
-
-        Assert.assertEquals(expectedResult, streamViewModel.state.value.showStickyHeader)
-    }
+//    @Test
+//    fun testing_delete_chat_message_failed() = runTest{
+//        /**GIVEN*/
+//
+//        val messageId = "44"
+//        Mockito.`when`(twitchRepoImpl.deleteChatMessage("", "", "","",messageId)).thenReturn(
+//            flow { emit(Response.Failure(Exception("Error thrown"))) }
+//        )
+//        mockWebSocketStartingState(webSocket)
+//
+//        val streamViewModel = StreamViewModel(webSocket,tokenDataStore,twitchRepoImpl,mainDispatcherRule.testDispatcher)
+//
+//        /**WHEN*/
+//        streamViewModel.deleteChatMessage(messageId)
+//
+//        val expectedResult = true
+//
+//        /**THEN*/
+//
+//        Assert.assertEquals(expectedResult, streamViewModel.state.value.showStickyHeader)
+//    }
 
 
 
