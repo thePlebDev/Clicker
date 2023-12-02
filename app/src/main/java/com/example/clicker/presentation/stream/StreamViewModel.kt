@@ -56,6 +56,7 @@ data class StreamUIState(
     val enableSubscriberMode: Boolean = true, //twitchRepoImpl
     val enableEmoteMode: Boolean = true, //twitchRepoImpl
     val oneClickActionsChecked:Boolean = true,
+    val noChatMode:Boolean = false,
 
 
     val banDuration: Int = 0, //twitchRepoImpl
@@ -350,7 +351,10 @@ class StreamViewModel @Inject constructor(
             withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
                 _channelName.collect { channelName ->
                     channelName?.let {
-                        startWebSocket(channelName)
+                       // if(_uiState.value.noChatMode){
+                            startWebSocket(channelName)
+                        //}
+
                     }
                 }
             }
