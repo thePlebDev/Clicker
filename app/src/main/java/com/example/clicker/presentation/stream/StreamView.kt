@@ -153,6 +153,8 @@ fun StreamView(
     )
     var oneClickActionsChecked by remember { mutableStateOf(true) }
 
+    val openTimeoutDialog = remember { mutableStateOf(false) }
+
     val testingString = ""
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -180,20 +182,8 @@ fun StreamView(
                         bottomModalState = bottomModalState,
                         textFieldValue = streamViewModel.textFieldValue,
 
-                        timeoutDuration = streamViewModel.state.value.timeoutDuration,
-                        timeoutReason = streamViewModel.state.value.timeoutReason,
                         banDuration = streamViewModel.state.value.banDuration,
                         banReason = streamViewModel.state.value.banReason,
-                        changeTimeoutReason = { reason ->
-                            streamViewModel.changeTimeoutReason(
-                                reason
-                            )
-                        },
-                        changeTimeoutDuration = { duration ->
-                            streamViewModel.changeTimeoutDuration(
-                                duration
-                            )
-                        },
                         changeBanDuration = { duration ->
                             streamViewModel.changeBanDuration(
                                 duration
@@ -203,10 +193,41 @@ fun StreamView(
                         banUser = { banUser -> streamViewModel.banUser(banUser) },
                         clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
                         closeBottomModal = { scope.launch { bottomModalState.hide() } },
-                        timeOutUser = { streamViewModel.timeoutUser() },
                         banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                         unbanUser = { streamViewModel.unBanUser() },
-                        isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod
+                        isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+                        openTimeoutDialog = {openTimeoutDialog.value = true},
+                        timeoutDialogContent ={
+                            if(openTimeoutDialog.value){
+                                TimeoutDialog(
+                                    onDismissRequest = {
+                                        openTimeoutDialog.value = false
+                                    },
+                                    username = streamViewModel.clickedUIState.value.clickedUsername,
+                                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                                    timeoutReason = streamViewModel.state.value.timeoutReason,
+                                    changeTimeoutDuration = { duration ->
+                                        streamViewModel.changeTimeoutDuration(
+                                            duration
+                                        )
+                                    },
+                                    changeTimeoutReason = { reason ->
+                                        streamViewModel.changeTimeoutReason(
+                                            reason
+                                        )
+                                    },
+                                    closeDialog = {
+                                        openTimeoutDialog.value = false
+                                        scope.launch { bottomModalState.hide() }
+
+                                    },
+                                    timeOutUser = {
+                                        streamViewModel.timeoutUser()
+                                    }
+                                )
+                            }
+                        },
+
                     )
                 }
             ) {
@@ -320,61 +341,43 @@ fun BottomModalContent(
     bottomModalState: ModalBottomSheetState,
     textFieldValue: MutableState<TextFieldValue>,
 
-    timeoutDuration: Int,
-    timeoutReason: String,
+    //ban dialog stuff
     banDuration: Int,
     banReason: String,
-
-    changeTimeoutDuration: (Int) -> Unit,
-    changeTimeoutReason: (String) -> Unit,
-
     changeBanDuration: (Int) -> Unit,
     changeBanReason: (String) -> Unit,
-
     banUser: (BanUser) -> Unit,
+    clickedUserId: String,
+
     banned: Boolean,
     isMod: Boolean,
-    clickedUserId: String,
     closeBottomModal: () -> Unit,
+    unbanUser: () -> Unit,
+    
+    openTimeoutDialog:() -> Unit,
+    timeoutDialogContent:@Composable () -> Unit
 
-    timeOutUser: () -> Unit,
-    unbanUser: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val openTimeoutDialog = remember { mutableStateOf(false) }
     val openBanDialog = remember { mutableStateOf(false) }
 
-    if (openTimeoutDialog.value) {
-        TimeoutDialog(
-            onDismissRequest = { openTimeoutDialog.value = false },
-            username = clickedUsername,
-            timeoutDuration = timeoutDuration,
-            timeoutReason = timeoutReason,
-            changeTimeoutDuration = { duration -> changeTimeoutDuration(duration) },
-            changeTimeoutReason = { reason -> changeTimeoutReason(reason) },
-            closeDialog = {
-                openTimeoutDialog.value = false
-                closeBottomModal()
-            },
-            timeOutUser = { timeOutUser() }
+    timeoutDialogContent()
 
-        )
-    }
-    if (openBanDialog.value) {
-        BanDialog(
-            onDismissRequest = { openBanDialog.value = false },
-            username = clickedUsername,
-            banDuration = banDuration,
-            banReason = banReason,
-            changeBanDuration = { duration -> changeBanDuration(duration) },
-            changeBanReason = { reason -> changeBanReason(reason) },
-            banUser = { bannedUser -> banUser(bannedUser) },
-            clickedUserId = clickedUserId,
-            closeDialog = { openBanDialog.value = false },
-            closeBottomModal = { closeBottomModal() }
-
-        )
-    }
+//    if (openBanDialog.value) {
+//        BanDialog(
+//            onDismissRequest = { openBanDialog.value = false },
+//            username = clickedUsername,
+//            banDuration = banDuration,
+//            banReason = banReason,
+//            changeBanDuration = { duration -> changeBanDuration(duration) },
+//            changeBanReason = { reason -> changeBanReason(reason) },
+//            banUser = { bannedUser -> banUser(bannedUser) },
+//            clickedUserId = clickedUserId,
+//            closeDialog = { openBanDialog.value = false },
+//            closeBottomModal = { closeBottomModal() }
+//
+//        )
+//    }
 
     Column(
         modifier = Modifier
@@ -423,7 +426,7 @@ fun BottomModalContent(
                     Button(
                         colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
                         onClick = {
-                            openTimeoutDialog.value = true
+                            openTimeoutDialog()
                         },
                         modifier = Modifier.padding(end = 20.dp)
                     ) {
