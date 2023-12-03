@@ -1,9 +1,11 @@
 package com.example.clicker.presentation.stream.views
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,11 +17,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +41,10 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.clicker.R
+import com.example.clicker.network.BanUser
+import com.example.clicker.network.BanUserData
 import kotlinx.coroutines.launch
 
 /**
@@ -191,4 +202,209 @@ object BottomModal{
             }
         }
     }
-}
+
+    @Composable
+    fun TimeoutDialog(
+        onDismissRequest: () -> Unit,
+        username: String,
+        timeoutDuration: Int,
+        timeoutReason: String,
+        changeTimeoutDuration: (Int) -> Unit,
+        changeTimeoutReason: (String) -> Unit,
+        closeDialog: () -> Unit,
+        timeOutUser: () -> Unit
+    ) {
+        val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
+        val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+        val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = primary,
+                border = BorderStroke(2.dp,secondary)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .background(primary)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        Text(stringResource(R.string.timeout_text), fontSize = 22.sp,color = onPrimary)
+                        Text(username, fontSize = 22.sp,color = onPrimary)
+                    }
+                    Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+                    Text(stringResource(R.string.duration_text),color = onPrimary)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+
+                        Column {
+                            RadioButton(
+                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                                selected = timeoutDuration == 60,
+                                onClick = { changeTimeoutDuration(60) }
+                            )
+                            Text(stringResource(R.string.one_minute),color = onPrimary)
+                        }
+                        Column {
+                            RadioButton(
+                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                                selected = timeoutDuration == 600,
+                                onClick = { changeTimeoutDuration(600) }
+                            )
+                            Text(stringResource(R.string.ten_minutes),color = onPrimary)
+                        }
+                        Column {
+                            RadioButton(
+                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                                selected = timeoutDuration == 1800,
+                                onClick = { changeTimeoutDuration(1800) }
+                            )
+                            Text(stringResource(R.string.thirty_minutes),color = onPrimary)
+                        }
+                        Column {
+                            RadioButton(
+                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                                selected = timeoutDuration == 604800,
+                                onClick = { changeTimeoutDuration(604800) }
+                            )
+                            Text(stringResource(R.string.one_week),color = onPrimary)
+                        }
+                    }
+                    OutlinedTextField(
+                        colors= TextFieldDefaults.textFieldColors(
+                            textColor = onPrimary, focusedLabelColor = onPrimary,
+                            focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                        value = timeoutReason,
+                        onValueChange = { changeTimeoutReason(it) },
+                        label = { Text(stringResource(R.string.reason)) }
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Button(
+                            onClick = { onDismissRequest() },
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary)
+                        ) {
+                            Text(stringResource(R.string.cancel),color = onSecondary)
+                        }
+                        // todo: Implement the details of the timeout implementation
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
+                            onClick = {
+                                closeDialog()
+                                timeOutUser()
+                            }, modifier = Modifier.padding(10.dp)) {
+                            Text(stringResource(R.string.timeout_confirm),color = onSecondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun BanDialog(
+        onDismissRequest: () -> Unit,
+        username: String,
+        banDuration: Int,
+        banReason: String,
+        changeBanDuration: (Int) -> Unit,
+        changeBanReason: (String) -> Unit,
+        banUser: (BanUser) -> Unit,
+        clickedUserId: String,
+        closeDialog: () -> Unit,
+        closeBottomModal: () -> Unit
+    ) {
+        val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
+        val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+        val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+        Dialog(
+            onDismissRequest = { onDismissRequest() },
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = primary,
+                border = BorderStroke(2.dp,secondary)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .background(primary)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text(stringResource(R.string.ban), fontSize = 22.sp,color = onPrimary)
+                        Text(username, fontSize = 22.sp,color = onPrimary)
+                    }
+                    Divider(color = androidx.compose.material3.MaterialTheme.colorScheme.secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+                    Text(stringResource(R.string.duration_text),color = onPrimary)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+
+                        Column {
+                            RadioButton(
+                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
+                                selected = banDuration == 0,
+                                onClick = { changeBanDuration(0) }
+                            )
+                            Text(stringResource(R.string.permanently),color = onPrimary)
+                        }
+                    }
+                    OutlinedTextField(
+                        colors= TextFieldDefaults.textFieldColors(
+                            textColor = onPrimary, focusedLabelColor = onPrimary,
+                            focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                        value = banReason,
+                        onValueChange = { changeBanReason(it) },
+                        label = { Text(stringResource(R.string.reason),color = onPrimary) }
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
+                            onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(stringResource(R.string.cancel),color =onSecondary)
+                        }
+
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
+                            onClick = {
+                                closeDialog()
+                                closeBottomModal()
+                                banUser(
+                                    BanUser(
+                                        data = BanUserData(
+                                            user_id = clickedUserId,
+                                            reason = banReason
+                                        )
+                                    )
+                                )
+                            },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(stringResource(R.string.ban),color =onSecondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+}// end of BottomModal

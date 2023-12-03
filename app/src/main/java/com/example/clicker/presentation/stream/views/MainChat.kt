@@ -6,23 +6,34 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,8 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -253,4 +267,139 @@ object MainChat{
 
         }
     }
+
+    object TextChat{
+        @Composable
+        fun EnterChat(
+            modifier: Modifier,
+            chat: (String) -> Unit,
+            modStatus: Boolean?,
+            filteredChatList: List<String>,
+            filterMethod: (String, String) -> Unit,
+            clickedAutoCompleteText: (String, String) -> String,
+            textFieldValue: MutableState<TextFieldValue>,
+            channelName: String?,
+            showModal: () -> Unit
+        ) {
+            // todo: I think we can move this to the viewModel
+
+            Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
+                FilteredMentionLazyRow(
+                    filteredChatList =filteredChatList,
+                    textFieldValue =textFieldValue,
+                    clickedAutoCompleteText ={addedValue, currentValue ->clickedAutoCompleteText(addedValue,currentValue)}
+                )
+
+                TextFieldChat(
+                    textFieldValue = textFieldValue,
+                    modStatus = modStatus,
+                    filterMethod = { username, text -> filterMethod(username, text) },
+                    chat = { chatMessage -> chat(chatMessage) },
+                    showModal = { showModal() }
+                )
+            }
+        }
+        @Composable
+        fun FilteredMentionLazyRow(
+            filteredChatList: List<String>,
+            textFieldValue: MutableState<TextFieldValue>,
+            clickedAutoCompleteText: (String, String) -> String,
+        ){
+            LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
+                items(filteredChatList) {
+                    Text(
+                        it,
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .clickable {
+                                textFieldValue.value = TextFieldValue(
+                                    text = clickedAutoCompleteText(textFieldValue.value.text, it),
+                                    selection = TextRange(
+                                        (textFieldValue.value.text + "$it ").length
+                                    )
+                                )
+                            },
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+
+        @Composable
+        fun TextFieldChat(
+            textFieldValue: MutableState<TextFieldValue>,
+            modStatus: Boolean?,
+            filterMethod: (String, String) -> Unit,
+            chat: (String) -> Unit,
+            showModal: () -> Unit
+        ) {
+            val customTextSelectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.secondary,
+                backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+            )
+
+            Row(
+                modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (modStatus != null && modStatus == true) {
+                    AsyncImage(
+                        model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                        contentDescription = stringResource(R.string.moderator_badge_icon_description)
+                    )
+                }
+                CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+                    TextField(
+
+                        modifier = Modifier
+                            .weight(2f),
+                        maxLines =1,
+                        singleLine = true,
+                        value = textFieldValue.value,
+                        shape = RoundedCornerShape(8.dp),
+                        onValueChange = { newText ->
+                            filterMethod("username", newText.text)
+                            textFieldValue.value = TextFieldValue(
+                                text = newText.text,
+                                selection = newText.selection
+                            )
+                            // text = newText
+                        },
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = Color.White,
+                            backgroundColor = Color.DarkGray,
+                            cursorColor = Color.White,
+                            disabledLabelColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = {
+                            Text(stringResource(R.string.send_a_message), color = Color.White)
+                        }
+                    )
+                }
+                if (textFieldValue.value.text.length > 0) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = stringResource(R.string.send_chat),
+                        modifier = Modifier
+                            .size(35.dp)
+                            .clickable { chat(textFieldValue.value.text) }
+                            .padding(start = 5.dp),
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.more_vert_icon_description),
+                        modifier = Modifier
+                            .size(35.dp)
+                            .clickable { showModal() }
+                            .padding(start = 5.dp),
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+    }// end of Text Chat
 }
