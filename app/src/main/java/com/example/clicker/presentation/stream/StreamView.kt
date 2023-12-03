@@ -354,88 +354,133 @@ fun StreamView(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun BottomModalContentBanner(
-    clickedUsername: String,
-    bottomModalState: ModalBottomSheetState,
-    textFieldValue: MutableState<TextFieldValue>,
-){
-    val scope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = stringResource(R.string.user_icon_description),
-                modifier = Modifier
-                    .clickable { }
-                    .size(35.dp),
-                tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-            )
-            Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
-        }
+/**
+ * BottomModal pops up when the user clicks on an individual chat message during stream chat.
+ * It contains 3 components:
+ *
+ * - [ContentBanner] : shown at the top of the [ModalBottomSheetLayout]. Displays clicked username and reply button
+ *
+ * - [ContentBottom]: shown below [ContentBanner], contains ban, unban and timeout buttons
+ *
+ * - [ClickedUserMessages] : Shown below [ContentBottom] and displays a list of clickedUsername's chat
+ *
+ * */
+object BottomModal{
 
-        Button(
-            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-            onClick = {
-                scope.launch {
-                    textFieldValue.value = TextFieldValue(
-                        text = textFieldValue.value.text + "@$clickedUsername ",
-                        selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
-                    )
-                    bottomModalState.hide()
-                }
-            }) {
-            Text(stringResource(R.string.reply),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+    /**still need to document these*/
+    @Composable
+    fun ClickedUserMessages(
+        clickedUsernameChats: List<String>
+    ){
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .height(100.dp)
+                .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+                .border(
+                    width = 1.dp,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(8.dp)
+                )
+        ) {
+            items(clickedUsernameChats) {
+                Text(
+                    it,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 5.dp),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 15.sp
+
+                )
+            }
         }
     }
-}
-@Composable
-fun BottomModalContentBottom(
-    banned: Boolean,
-    isMod: Boolean,
-    closeBottomModal: () -> Unit,
-    unbanUser: () -> Unit,
-    openTimeoutDialog:() -> Unit,
-    openBanDialog:() -> Unit,
-){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(stringResource(R.string.recent_messages),color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        if (isMod) {
-            Row() {
-                Button(
-                    colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                    onClick = {
-                        openTimeoutDialog()
-                    },
-                    modifier = Modifier.padding(end = 20.dp)
-                ) {
-                    Text(stringResource(R.string.timeout),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
-                }
-                if (banned) {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                        onClick = {
-                            closeBottomModal()
-                            unbanUser()
-                        }) {
-                        Text(stringResource(R.string.unban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun ContentBanner(
+        clickedUsername: String,
+        bottomModalState: ModalBottomSheetState,
+        textFieldValue: MutableState<TextFieldValue>,
+    ){
+        val scope = rememberCoroutineScope()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = stringResource(R.string.user_icon_description),
+                    modifier = Modifier
+                        .clickable { }
+                        .size(35.dp),
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+                )
+                Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+            }
+
+            Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    scope.launch {
+                        textFieldValue.value = TextFieldValue(
+                            text = textFieldValue.value.text + "@$clickedUsername ",
+                            selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
+                        )
+                        bottomModalState.hide()
                     }
-                } else {
+                }) {
+                Text(stringResource(R.string.reply),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+            }
+        }
+    }
+
+    @Composable
+    fun ContentBottom(
+        banned: Boolean,
+        isMod: Boolean,
+        closeBottomModal: () -> Unit,
+        unbanUser: () -> Unit,
+        openTimeoutDialog:() -> Unit,
+        openBanDialog:() -> Unit,
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.recent_messages),color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+            if (isMod) {
+                Row() {
                     Button(
                         colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
                         onClick = {
-                            openBanDialog()
-                        }) {
-                        Text(stringResource(R.string.ban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                            openTimeoutDialog()
+                        },
+                        modifier = Modifier.padding(end = 20.dp)
+                    ) {
+                        Text(stringResource(R.string.timeout),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                    }
+                    if (banned) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                            onClick = {
+                                closeBottomModal()
+                                unbanUser()
+                            }) {
+                            Text(stringResource(R.string.unban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                        }
+                    } else {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                            onClick = {
+                                openBanDialog()
+                            }) {
+                            Text(stringResource(R.string.ban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                        }
                     }
                 }
             }
@@ -471,13 +516,13 @@ fun BottomModalContent(
             .padding(10.dp)
     ) {
 
-        BottomModalContentBanner(
+        BottomModal.ContentBanner(
             clickedUsername = clickedUsername,
             bottomModalState = bottomModalState,
             textFieldValue = textFieldValue
 
         )
-        BottomModalContentBottom(
+        BottomModal.ContentBottom(
             banned =banned,
             isMod =isMod,
             closeBottomModal ={closeBottomModal()},
@@ -485,41 +530,14 @@ fun BottomModalContent(
             openTimeoutDialog={openTimeoutDialog()},
             openBanDialog ={openBanDialog()}
         )
-        
-        ClickedUserMessages(clickedUsernameChats)
+
+        BottomModal.ClickedUserMessages(clickedUsernameChats)
     } // END OF THE COLUMN
 
 
 }
 
-@Composable
-fun ClickedUserMessages(
-    clickedUsernameChats: List<String>
-){
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .height(100.dp)
-            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-            .border(
-                width = 1.dp,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(8.dp)
-            )
-    ) {
-        items(clickedUsernameChats) {
-            Text(
-                it,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                fontSize = 15.sp
 
-            )
-        }
-    }
-}
 
 @Composable
 fun DrawerContent(
