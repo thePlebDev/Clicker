@@ -15,8 +15,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.interaction.DragInteraction
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,10 +23,8 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -68,10 +64,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
@@ -88,7 +81,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,7 +92,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -122,14 +113,14 @@ import com.example.clicker.R
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.models.ChatSettingsData
-import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.util.Response
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -354,139 +345,7 @@ fun StreamView(
     }
 }
 
-/**
- * BottomModal pops up when the user clicks on an individual chat message during stream chat.
- * It contains 3 components:
- *
- * - [ContentBanner] : shown at the top of the [ModalBottomSheetLayout]. Displays clicked username and reply button
- *
- * - [ContentBottom]: shown below [ContentBanner], contains ban, unban and timeout buttons
- *
- * - [ClickedUserMessages] : Shown below [ContentBottom] and displays a list of clickedUsername's chat
- *
- * */
-object BottomModal{
 
-    /**still need to document these*/
-    @Composable
-    fun ClickedUserMessages(
-        clickedUsernameChats: List<String>
-    ){
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .height(100.dp)
-                .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-                .border(
-                    width = 1.dp,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
-                    shape = RoundedCornerShape(8.dp)
-                )
-        ) {
-            items(clickedUsernameChats) {
-                Text(
-                    it,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 5.dp),
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 15.sp
-
-                )
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    fun ContentBanner(
-        clickedUsername: String,
-        bottomModalState: ModalBottomSheetState,
-        textFieldValue: MutableState<TextFieldValue>,
-    ){
-        val scope = rememberCoroutineScope()
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = stringResource(R.string.user_icon_description),
-                    modifier = Modifier
-                        .clickable { }
-                        .size(35.dp),
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-                )
-                Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
-            }
-
-            Button(
-                colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    scope.launch {
-                        textFieldValue.value = TextFieldValue(
-                            text = textFieldValue.value.text + "@$clickedUsername ",
-                            selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
-                        )
-                        bottomModalState.hide()
-                    }
-                }) {
-                Text(stringResource(R.string.reply),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
-            }
-        }
-    }
-
-    @Composable
-    fun ContentBottom(
-        banned: Boolean,
-        isMod: Boolean,
-        closeBottomModal: () -> Unit,
-        unbanUser: () -> Unit,
-        openTimeoutDialog:() -> Unit,
-        openBanDialog:() -> Unit,
-    ){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(stringResource(R.string.recent_messages),color =androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-            if (isMod) {
-                Row() {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                        onClick = {
-                            openTimeoutDialog()
-                        },
-                        modifier = Modifier.padding(end = 20.dp)
-                    ) {
-                        Text(stringResource(R.string.timeout),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
-                    }
-                    if (banned) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                            onClick = {
-                                closeBottomModal()
-                                unbanUser()
-                            }) {
-                            Text(stringResource(R.string.unban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
-                        }
-                    } else {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                            onClick = {
-                                openBanDialog()
-                            }) {
-                            Text(stringResource(R.string.ban),color =androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -956,6 +815,9 @@ fun MessageAlertText(
 
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
+
+
+/**THIS IS THE CHAT SHOWING IN THE UI*/
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -991,40 +853,13 @@ fun TextChat(
     var autoscroll by remember { mutableStateOf(true) }
 
     // Add a gesture listener to detect upward scroll
-
-    val testingStuff = lazyColumnListState.interactionSource
-    LaunchedEffect(testingStuff) {
-        testingStuff.interactions.collect { interaction ->
-            when (interaction) {
-                is DragInteraction.Start -> {
-                    autoscroll = false
-                }
-                is PressInteraction.Press -> {
-                    autoscroll = false
-                }
-            }
-        }
-    }
-    // observer when reached end of list
-    val endOfListReached by remember {
-        derivedStateOf {
-            lazyColumnListState.isScrolledToEnd()
-        }
-    }
-
-    // act when end of list reached
-    LaunchedEffect(endOfListReached) {
-        // do your stuff
-        if (endOfListReached) {
-            autoscroll = true
-        }
-    }
-    if (showStickyHeader) {
-        LaunchedEffect(key1 = Unit) {
-            delay(2000)
-            closeStickyHeader()
-        }
-    }
+    MainChat.DetermineScrollState(
+        lazyColumnListState =lazyColumnListState,
+        setAutoScrollFalse={autoscroll = false},
+        setAutoScrollTrue = {autoscroll = true},
+        showStickyHeader =showStickyHeader,
+        closeStickyHeader ={closeStickyHeader()}
+    )
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -1039,39 +874,11 @@ fun TextChat(
         ) {
             stickyHeader {
                 if (showStickyHeader) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(5.dp)
-                            .clip(shape = RoundedCornerShape(10.dp))
-                            .background(Color.Red.copy(alpha = 0.6f))
-                            .clickable {
-                                closeStickyHeader()
-                            },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.close_icon_description),
-                            modifier = Modifier
-                                .size(30.dp),
-                            tint = Color.White
-                        )
-                        Text(
-                            text = banResponseMessage,
-                            color = Color.White,
-                            fontSize = 20.sp
-                        )
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.close_icon_description),
-                            modifier = Modifier
-                                .size(30.dp),
-                            tint = Color.White
-                        )
-                    }
-                } else {
+                    MainChat.StickyHeader(
+                        banResponseMessage =banResponseMessage,
+                        closeStickyHeader ={closeStickyHeader()}
+                    )
+
                 }
             }
 
@@ -1087,81 +894,26 @@ fun TextChat(
 
                 // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
                 if (twitchUserChat.isNotEmpty()) {
-                    when (twitchUser.messageType) {
-                        MessageType.NOTICE -> {
-                            NoticeMessage(
-                                color = Color.White,
-                                displayName = twitchUser.displayName,
-                                message = twitchUser.userType
-                            )
-                        }
+                    MainChat.ChatMessages(
+                        twitchUser,
+                        restartWebSocket = {restartWebSocket()}
+                    ){
+                        SwipeToDeleteChatMessages(
+                            twitchUser = twitchUser,
+                            bottomModalState = bottomModalState,
+                            updateClickedUser = { username, userId, banned, isMod ->
+                                updateClickedUser(
+                                    username,
+                                    userId,
+                                    banned,
+                                    isMod
+                                )
+                            },
+                            deleteMessage = { messageId -> deleteMessage(messageId) },
 
-                        MessageType.USER -> {
-                            SwipeToDeleteTextCard(
-                                twitchUser = twitchUser,
-                                bottomModalState = bottomModalState,
-                                updateClickedUser = { username, userId, banned, isMod ->
-                                    updateClickedUser(
-                                        username,
-                                        userId,
-                                        banned,
-                                        isMod
-                                    )
-                                },
-                                deleteMessage = { messageId -> deleteMessage(messageId) },
-                                showOneClickAction = showOneClickAction,
-                                oneClickBanUser={userId -> oneClickBanUser(userId)},
-                                oneClickTimeoutUser={userDetails -> oneClickTimeoutUser(userDetails)}
-                            )
-                        }
+                        )
+                    }
 
-                        MessageType.ANNOUNCEMENT -> {
-                            AnnouncementMessage(
-                                displayName = twitchUser.displayName,
-                                message = twitchUser.userType,
-                                systemMessage = twitchUser.systemMessage
-                            )
-                        }
-                        MessageType.RESUB -> {
-                            ResubMessage(
-                                message = twitchUser.userType,
-                                systemMessage = twitchUser.systemMessage
-                            )
-                        }
-                        MessageType.SUB -> {
-                            SubMessage(
-                                message = twitchUser.userType,
-                                systemMessage = twitchUser.systemMessage
-                            )
-                        }
-                        // MYSTERYGIFTSUB,GIFTSUB
-                        MessageType.GIFTSUB -> {
-                            GiftSubMessage(
-                                message = twitchUser.userType,
-                                systemMessage = twitchUser.systemMessage
-                            )
-                        }
-                        MessageType.MYSTERYGIFTSUB -> {
-                            MysteryGiftSubMessage(
-                                message = twitchUser.userType,
-                                systemMessage = twitchUser.systemMessage
-                            )
-                        }
-                        MessageType.ERROR -> {
-                            ErrorMessage(
-                                message = twitchUser.userType!!,
-                                user = twitchUser.displayName!!,
-                                restartWebSocket = { restartWebSocket() }
-                            )
-                        }
-                        MessageType.JOIN -> {
-                            JoinMessage(
-                                message = twitchUser.userType!!
-                            )
-                        }
-
-                        else -> {}
-                    } // end of the WHEN BLOCK
                 }
             }
         }
@@ -1185,16 +937,14 @@ fun TextChat(
             channelName = channelName,
             showModal = { coroutineScope.launch { drawerState.open() } }
         )
-        ScrollToBottom(
+        MainChat.ScrollToBottom(
             scrollingPaused = !autoscroll,
             enableAutoScroll = { autoscroll = true },
-            banResponse = banResponse,
-            undoBan = { undoBan() },
-            undoBanResponse = undoBanResponse,
-            removeUndoButton = { removeUnBanButton() }
         )
     } // end of the Box scope
 }
+
+
 @Composable
 fun NoChatMode(
     modifier:Modifier = Modifier
@@ -1524,14 +1274,12 @@ fun AnnouncementMessage(
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SwipeToDeleteTextCard(
+fun SwipeToDeleteChatMessages(
     twitchUser: TwitchUserData,
     bottomModalState: ModalBottomSheetState,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     deleteMessage: (String) -> Unit,
-    showOneClickAction:Boolean,
-    oneClickBanUser: (String) -> Unit,
-    oneClickTimeoutUser: (String) -> Unit
+
 
 ) {
     ChatCard(
@@ -1546,9 +1294,6 @@ fun SwipeToDeleteTextCard(
             )
         },
         deleteMessage = { messageId -> deleteMessage(messageId) },
-        showOneClickAction =showOneClickAction,
-        oneClickBanUser={userId -> oneClickBanUser(userId)},
-        oneClickTimeoutUser={userDetails ->oneClickTimeoutUser(userDetails)}
 
     )
 }
@@ -1644,9 +1389,6 @@ fun ChatCard(
     bottomModalState: ModalBottomSheetState,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     deleteMessage: (String) -> Unit,
-    showOneClickAction:Boolean,
-    oneClickBanUser: (String) -> Unit,
-    oneClickTimeoutUser: (String) -> Unit
 ) {
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
@@ -1782,143 +1524,12 @@ fun ChatCard(
                     } // end of the row
                 }
             } // end of the Card
-//            if(showOneClickAction){
-//                Row(
-//                    modifier = Modifier.fillMaxWidth().background(primary), horizontalArrangement = Arrangement.End,
-//                ){
-//                    Icon(
-//                        imageVector = Icons.Default.Close,
-//                        contentDescription = stringResource(R.string.undo_ban_button),
-//                        modifier = Modifier
-//                            .clip(RoundedCornerShape(5.dp))
-//                            .size(30.dp)
-//                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-//                            .clickable {
-//                                oneClickBanUser(twitchUser.userId ?: "")
-//                            },
-//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                    )
-//                    Divider(
-//                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-//                        modifier = Modifier
-//                            .height(1.dp)  //fill the max height
-//                            .width(5.dp)
-//                    )
-//                    Icon(
-//                        imageVector = Icons.Default.DateRange,
-//                        contentDescription = stringResource(R.string.undo_ban_button),
-//                        modifier = Modifier
-//                            .clip(RoundedCornerShape(5.dp))
-//                            .size(30.dp)
-//                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-//                            .clickable {
-//                                oneClickTimeoutUser(twitchUser.userId ?: "")
-//                            },
-//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                    )
-//                    Divider(
-//                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-//                        modifier = Modifier
-//                            .height(1.dp)  //fill the max height
-//                            .width(5.dp)
-//                    )
-//                    if(!twitchUser.deleted){
-//                        Icon(
-//                            imageVector = Icons.Default.Delete,
-//                            contentDescription = stringResource(R.string.undo_ban_button),
-//                            modifier = Modifier
-//                                .clip(RoundedCornerShape(5.dp))
-//                                .size(30.dp)
-//                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-//                                .clickable {
-//                                    deleteMessage(twitchUser.id ?: "")
-//                                },
-//                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-//                        )
-//                    }
-//
-//
-//                }
-//            }
-
-
 
         }
     }
 }
 
-@Composable
-fun ScrollToBottom(
-    scrollingPaused: Boolean,
-    enableAutoScroll: () -> Unit,
-    banResponse: Response<Boolean>,
-    undoBanResponse: Boolean,
-    undoBan: () -> Unit,
-    removeUndoButton: () -> Unit
 
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 77.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (scrollingPaused) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
-                    onClick = { enableAutoScroll() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.arrow_drop_down_description),
-                        tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier
-                    )
-                    Text(stringResource(R.string.scroll_to_bottom),color =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.arrow_drop_down_description),
-                        tint =  androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier
-                    )
-                }
-            }
-        }
-        when (val response = banResponse) {
-            is Response.Loading -> {}
-            is Response.Success -> {
-                if (response.data && undoBanResponse) {
-                }
-                if (response.data && !undoBanResponse) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = stringResource(R.string.undo_ban_button),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .size(50.dp)
-                            .clickable { undoBan() } // todo: WHEN CLICKED WE NEED TO CLOSE ALL THE MODAL
-                            .align(Alignment.BottomEnd)
-                            .background(Color.White),
-                        tint = Color.Magenta
-                    )
-                    LaunchedEffect(key1 = Unit) {
-                        delay(10000)
-                        // todo: reset the response.data && !undoBanResponse
-                        removeUndoButton()
-                    }
-                }
-            }
-            is Response.Failure -> {}
-        }
-    }
-}
 
 @Composable
 fun EnterChat(
@@ -1935,24 +1546,11 @@ fun EnterChat(
     // todo: I think we can move this to the viewModel
 
     Column(modifier = modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary)) {
-        LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
-            items(filteredChatList) {
-                Text(
-                    it,
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .clickable {
-                            textFieldValue.value = TextFieldValue(
-                                text = clickedAutoCompleteText(textFieldValue.value.text, it),
-                                selection = TextRange(
-                                    (textFieldValue.value.text + "$it ").length
-                                )
-                            )
-                        },
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
+        FilteredMentionLazyRow(
+            filteredChatList =filteredChatList,
+            textFieldValue =textFieldValue,
+            clickedAutoCompleteText ={addedValue, currentValue ->clickedAutoCompleteText(addedValue,currentValue)}
+        )
 
         TextFieldChat(
             textFieldValue = textFieldValue,
@@ -1961,6 +1559,32 @@ fun EnterChat(
             chat = { chatMessage -> chat(chatMessage) },
             showModal = { showModal() }
         )
+    }
+}
+
+@Composable
+fun FilteredMentionLazyRow(
+    filteredChatList: List<String>,
+    textFieldValue: MutableState<TextFieldValue>,
+    clickedAutoCompleteText: (String, String) -> String,
+){
+    LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
+        items(filteredChatList) {
+            Text(
+                it,
+                modifier = Modifier
+                    .padding(5.dp)
+                    .clickable {
+                        textFieldValue.value = TextFieldValue(
+                            text = clickedAutoCompleteText(textFieldValue.value.text, it),
+                            selection = TextRange(
+                                (textFieldValue.value.text + "$it ").length
+                            )
+                        )
+                    },
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+            )
+        }
     }
 }
 
@@ -2242,25 +1866,5 @@ fun BanDialog(
                 }
             }
         }
-    }
-}
-
-private fun getDismissDirection(from: DismissValue, to: DismissValue): DismissDirection? {
-    return when {
-        // settled at the default state
-        from == to && from == Default -> null
-        // has been dismissed to the end
-        from == to && from == DismissValue.DismissedToEnd -> DismissDirection.StartToEnd
-        // has been dismissed to the start
-        from == to && from == DismissValue.DismissedToStart -> DismissDirection.EndToStart
-        // is currently being dismissed to the end
-        from == Default && to == DismissValue.DismissedToEnd -> DismissDirection.StartToEnd
-        // is currently being dismissed to the start
-        from == Default && to == DismissValue.DismissedToStart -> DismissDirection.EndToStart
-        // has been dismissed to the end but is now animated back to default
-        from == DismissValue.DismissedToEnd && to == Default -> DismissDirection.StartToEnd
-        // has been dismissed to the start but is now animated back to default
-        from == DismissValue.DismissedToStart && to == Default -> DismissDirection.EndToStart
-        else -> null
     }
 }
