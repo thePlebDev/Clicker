@@ -36,6 +36,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -218,97 +219,59 @@ object BottomModal{
         val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
         val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
         val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-        Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = primary,
-                border = BorderStroke(2.dp,secondary)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .background(primary)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Text(stringResource(R.string.timeout_text), fontSize = 22.sp,color = onPrimary)
-                        Text(username, fontSize = 22.sp,color = onPrimary)
-                    }
-                    Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-                    Text(stringResource(R.string.duration_text),color = onPrimary)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
+        val timeList = listOf<TimeListData>(
+            TimeListData(60,stringResource(R.string.one_minute)),
+            TimeListData(600,stringResource(R.string.ten_minutes)),
+            TimeListData(1800,stringResource(R.string.thirty_minutes)),
+            TimeListData(604800,stringResource(R.string.one_week))
+        )
+        DialogBuilder.RadioButtonDialog(
+            dialogHeaderContent ={DialogParts.DialogHeader(username,stringResource(R.string.timeout_text),onPrimary)},
+            dialogSubHeaderContent={
+                DialogParts.SubHeader(
+                secondary = secondary,
+                onPrimary = onPrimary,
+                subTitleText = stringResource(R.string.duration_text)
+            )
+            },
+            dialogRadioButtonsContent={
+                DialogParts.DialogRadioButtons(
+                    onPrimary = onPrimary,
+                    secondary = secondary,
+                    dialogDuration = timeoutDuration,
+                    changeDialogDuration={duration ->changeTimeoutDuration(duration)},
+                    timeList =timeList
+                )
+            },
+            dialogTextFieldContent={
+                OutlinedTextField(
+                    colors= TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary, focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                    value = timeoutReason,
+                    onValueChange = { changeTimeoutReason(it) },
+                    label = { Text(stringResource(R.string.reason)) }
+                )
+            },
+            dialogConfirmCancelContent={
+                DialogParts.DialogConfirmCancel(
+                    secondary = secondary,
+                    onSecondary = onSecondary,
+                    onDismissRequest ={onDismissRequest()},
+                    closeDialog = {closeDialog()},
+                    timeOutUser = {timeOutUser()},
+                    confirmText = stringResource(R.string.timeout_confirm),
+                    cancelText = stringResource(R.string.cancel)
+                )
+            },
+            onDismissRequest={onDismissRequest()},
+            secondary = secondary,
+            primary =  primary
 
-                        Column {
-                            RadioButton(
-                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                                selected = timeoutDuration == 60,
-                                onClick = { changeTimeoutDuration(60) }
-                            )
-                            Text(stringResource(R.string.one_minute),color = onPrimary)
-                        }
-                        Column {
-                            RadioButton(
-                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                                selected = timeoutDuration == 600,
-                                onClick = { changeTimeoutDuration(600) }
-                            )
-                            Text(stringResource(R.string.ten_minutes),color = onPrimary)
-                        }
-                        Column {
-                            RadioButton(
-                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                                selected = timeoutDuration == 1800,
-                                onClick = { changeTimeoutDuration(1800) }
-                            )
-                            Text(stringResource(R.string.thirty_minutes),color = onPrimary)
-                        }
-                        Column {
-                            RadioButton(
-                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                                selected = timeoutDuration == 604800,
-                                onClick = { changeTimeoutDuration(604800) }
-                            )
-                            Text(stringResource(R.string.one_week),color = onPrimary)
-                        }
-                    }
-                    OutlinedTextField(
-                        colors= TextFieldDefaults.textFieldColors(
-                            textColor = onPrimary, focusedLabelColor = onPrimary,
-                            focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                        value = timeoutReason,
-                        onValueChange = { changeTimeoutReason(it) },
-                        label = { Text(stringResource(R.string.reason)) }
-                    )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        Button(
-                            onClick = { onDismissRequest() },
-                            modifier = Modifier.padding(10.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary)
-                        ) {
-                            Text(stringResource(R.string.cancel),color = onSecondary)
-                        }
-                        // todo: Implement the details of the timeout implementation
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                            onClick = {
-                                closeDialog()
-                                timeOutUser()
-                            }, modifier = Modifier.padding(10.dp)) {
-                            Text(stringResource(R.string.timeout_confirm),color = onSecondary)
-                        }
-                    }
-                }
-            }
-        }
+        )
+
     }
+
 
     @Composable
     fun BanDialog(
@@ -327,84 +290,67 @@ object BottomModal{
         val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
         val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
         val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-        Dialog(
-            onDismissRequest = { onDismissRequest() },
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = primary,
-                border = BorderStroke(2.dp,secondary)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .background(primary)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Text(stringResource(R.string.ban), fontSize = 22.sp,color = onPrimary)
-                        Text(username, fontSize = 22.sp,color = onPrimary)
-                    }
-                    Divider(color = androidx.compose.material3.MaterialTheme.colorScheme.secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-                    Text(stringResource(R.string.duration_text),color = onPrimary)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
+        val timeList = listOf<TimeListData>(
+            TimeListData(0,stringResource(R.string.permanently))
+        )
 
-                        Column {
-                            RadioButton(
-                                colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                                selected = banDuration == 0,
-                                onClick = { changeBanDuration(0) }
-                            )
-                            Text(stringResource(R.string.permanently),color = onPrimary)
-                        }
-                    }
-                    OutlinedTextField(
-                        colors= TextFieldDefaults.textFieldColors(
-                            textColor = onPrimary, focusedLabelColor = onPrimary,
-                            focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                        value = banReason,
-                        onValueChange = { changeBanReason(it) },
-                        label = { Text(stringResource(R.string.reason),color = onPrimary) }
-                    )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                            onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)
-                        ) {
-                            Text(stringResource(R.string.cancel),color =onSecondary)
-                        }
-
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                            onClick = {
-                                closeDialog()
-                                closeBottomModal()
-                                banUser(
-                                    BanUser(
-                                        data = BanUserData(
-                                            user_id = clickedUserId,
-                                            reason = banReason
-                                        )
-                                    )
+        DialogBuilder.RadioButtonDialog(
+            dialogHeaderContent = {DialogParts.DialogHeader(username,stringResource(R.string.ban),onPrimary) },
+            dialogSubHeaderContent = {
+                DialogParts.SubHeader(
+                    secondary = secondary,
+                    onPrimary = onPrimary,
+                    subTitleText = stringResource(R.string.duration_text)
+                )
+            },
+            dialogRadioButtonsContent = {
+               DialogParts.DialogRadioButtons(
+                    onPrimary = onPrimary,
+                    secondary = secondary,
+                    dialogDuration = 0,
+                    changeDialogDuration={changeBanDuration(0)},
+                    timeList =timeList
+                )
+            },
+            dialogTextFieldContent = {
+                OutlinedTextField(
+                    colors= TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary, focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                    value = banReason,
+                    onValueChange = { changeBanReason(it) },
+                    label = { Text(stringResource(R.string.reason),color = onPrimary) }
+                )
+            },
+            dialogConfirmCancelContent = {
+                DialogParts.DialogConfirmCancel(
+                    secondary = secondary,
+                    onSecondary = onSecondary,
+                    onDismissRequest ={onDismissRequest()},
+                    closeDialog = {closeDialog()},
+                    cancelText = stringResource(R.string.cancel),
+                    confirmText = stringResource(R.string.ban),
+                    timeOutUser = {
+                        banUser(
+                            BanUser(
+                                data = BanUserData(
+                                    user_id = clickedUserId,
+                                    reason = banReason
                                 )
-                            },
-                            modifier = Modifier.padding(10.dp)
-                        ) {
-                            Text(stringResource(R.string.ban),color =onSecondary)
-                        }
+                            )
+                        )
                     }
-                }
-            }
-        }
+                )
+            },
+            onDismissRequest = { onDismissRequest() },
+            primary =primary ,
+            secondary = secondary,
+
+        )
+
     }
 
 
 }// end of BottomModal
+
+
