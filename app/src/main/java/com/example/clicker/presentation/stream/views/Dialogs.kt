@@ -28,6 +28,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.clicker.presentation.stream.views.BottomModal.ClickedUserMessages
 import com.example.clicker.presentation.stream.views.BottomModal.ContentBanner
 import com.example.clicker.presentation.stream.views.BottomModal.ContentBottom
+import com.example.clicker.presentation.stream.views.DialogBuilder.RadioButtonDialog
 
 data class TimeListData(
     val time:Int,
@@ -93,14 +94,41 @@ object DialogBuilder {
     }
 
 }
+
+/**
+ * DialogParts contains all the possible composables that can be used to create a Dialog. Currently there are only 4
+ * composables:
+ *
+ * - [DialogConfirmCancel] : A [Row] containing two buttons, one for confirmation and another for cancellation
+ *
+ * - [DialogRadioButtons] : A [Row] containing radio buttons. It is a main component of [RadioButtonDialog]
+ *
+ * - [SubHeader] : A simple [Divider] and text, should be placed below a [DialogHeader]. Used to display secondary data
+ *
+ * - [DialogHeader] : A [Row] containing important information that the user must know
+ *
+ * */
 object DialogParts{
+
+    /**
+     *  Used to display a choice between success and cancel to a user. The Buttons will be displayed in a row at the end of that row
+     *
+     *  @param secondary Color for the background of the buttons
+     *  @param onSecondary Color for the text that appears on the buttons
+     *  @param onDismissRequest function called to dismiss the dialog
+     *  @param closeDialog function called to close dialog
+     *  @param confirmAction function called when the confirm button is pressed
+     *  @param cancelText String placed on the button to represent the cancel action
+     *  @param confirmText String placed on the button to represent the confirm action
+     *
+     * */
     @Composable
     fun DialogConfirmCancel(
         secondary: Color,
         onSecondary: Color,
         onDismissRequest: () -> Unit,
         closeDialog: () -> Unit,
-        timeOutUser: () -> Unit,
+        confirmAction: () -> Unit,
         cancelText:String,
         confirmText:String
 
@@ -118,12 +146,23 @@ object DialogParts{
                 colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
                 onClick = {
                     closeDialog()
-                    timeOutUser()
+                    confirmAction()
                 }, modifier = Modifier.padding(10.dp)) {
                 Text(confirmText,color = onSecondary)
             }
         }
     }
+
+    /**
+     *  A group of radio buttons meant to present a choice to the user
+     *
+     *  @param onPrimary Color that represents the text and the unselected choice of the radio buttons
+     *  @param secondary Color that represents the selected color of the Radio button
+     *  @param dialogDuration Integer used to determine which radio button is selected
+     *  @param changeDialogDuration function used to change the [dialogDuration] and show a new selected radio button
+     *  @param timeList a list of [TimeListData] that determines how many radio buttons are displayed. A recommend size is 4
+     *
+     * */
     @Composable
     fun DialogRadioButtons(
         onPrimary: Color,
@@ -153,6 +192,16 @@ object DialogParts{
         }
     }
 
+
+    /**
+     *  A smaller header meant to display secondary data.
+     *  This data is not majorly important but it is still nice to know
+     *
+     *  @param secondary Color that resents the color of the [Divider]
+     *  @param onPrimary Color that represents the text of the [subTitleText]
+     *  @param subTitleText String used to display the secondary information to the user
+     *
+     * */
     @Composable
     fun SubHeader(
         secondary: Color,
@@ -162,6 +211,15 @@ object DialogParts{
         Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
         Text(subTitleText,color = onPrimary, fontSize = 20.sp)
     }
+
+    /**
+     *  A large header meant to display critical information to the user. Usualy placed above a [SubHeader]
+     *
+     *  @param username String meant to represent an individual
+     *  @param headerText String meant to convey critical information to the person looking at it
+     *  @param onPrimary Color that will be used for both [username] and [onPrimary]
+     *
+     * */
     @Composable
     fun DialogHeader(
         username:String,

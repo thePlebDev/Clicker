@@ -259,7 +259,7 @@ object BottomModal{
                     onSecondary = onSecondary,
                     onDismissRequest ={onDismissRequest()},
                     closeDialog = {closeDialog()},
-                    timeOutUser = {timeOutUser()},
+                    confirmAction = {timeOutUser()},
                     confirmText = stringResource(R.string.timeout_confirm),
                     cancelText = stringResource(R.string.cancel)
                 )
@@ -330,7 +330,7 @@ object BottomModal{
                     closeDialog = {closeDialog()},
                     cancelText = stringResource(R.string.cancel),
                     confirmText = stringResource(R.string.ban),
-                    timeOutUser = {
+                    confirmAction = {
                         banUser(
                             BanUser(
                                 data = BanUserData(
