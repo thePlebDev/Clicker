@@ -87,6 +87,7 @@ import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.presentation.stream.views.SystemChats
 import com.example.clicker.util.Response
 import com.example.clicker.util.SwipeableActionsState
 import com.example.clicker.util.rememberSwipeableActionsState
@@ -800,13 +801,13 @@ fun FilterChatMessageTypes(
             )
         }
         MessageType.RESUB -> {
-            ResubMessage(
+            SystemChats.ResubMessage(
                 message = twitchUser.userType,
                 systemMessage = twitchUser.systemMessage
             )
         }
         MessageType.SUB -> {
-            SubMessage(
+            SystemChats.SubMessage(
                 message = twitchUser.userType,
                 systemMessage = twitchUser.systemMessage
             )
