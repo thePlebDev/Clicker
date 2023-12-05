@@ -51,12 +51,6 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
-import com.example.clicker.presentation.stream.AnnouncementMessage
-import com.example.clicker.presentation.stream.ErrorMessage
-import com.example.clicker.presentation.stream.GiftSubMessage
-import com.example.clicker.presentation.stream.JoinMessage
-import com.example.clicker.presentation.stream.MysteryGiftSubMessage
-import com.example.clicker.presentation.stream.NoticeMessage
 import com.example.clicker.presentation.stream.isScrolledToEnd
 
 import kotlinx.coroutines.delay
@@ -124,7 +118,7 @@ object MainChat{
         ){
         when (twitchUser.messageType) {
             MessageType.NOTICE -> {
-                NoticeMessage(
+                SystemChats.NoticeMessage(
                     color = Color.White,
                     displayName = twitchUser.displayName,
                     message = twitchUser.userType
@@ -136,7 +130,7 @@ object MainChat{
             }
 
             MessageType.ANNOUNCEMENT -> {
-                AnnouncementMessage(
+                SystemChats.AnnouncementMessage(
                     displayName = twitchUser.displayName,
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
@@ -157,26 +151,26 @@ object MainChat{
             }
             // MYSTERYGIFTSUB,GIFTSUB
             MessageType.GIFTSUB -> {
-                GiftSubMessage(
+                SystemChats.GiftSubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             }
             MessageType.MYSTERYGIFTSUB -> {
-                MysteryGiftSubMessage(
+                SystemChats.MysteryGiftSubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             }
             MessageType.ERROR -> {
-                ErrorMessage(
+                SystemChats.ErrorMessage(
                     message = twitchUser.userType!!,
                     user = twitchUser.displayName!!,
                     restartWebSocket = { restartWebSocket() }
                 )
             }
             MessageType.JOIN -> {
-                JoinMessage(
+                SystemChats.JoinMessage(
                     message = twitchUser.userType!!
                 )
             }

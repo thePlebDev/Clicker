@@ -782,7 +782,7 @@ fun FilterChatMessageTypes(
 ){
     when (twitchUser.messageType) {
         MessageType.NOTICE -> {
-            NoticeMessage(
+            SystemChats.NoticeMessage(
                 color = Color.White,
                 displayName = twitchUser.displayName,
                 message = twitchUser.userType
@@ -794,7 +794,7 @@ fun FilterChatMessageTypes(
         }
 
         MessageType.ANNOUNCEMENT -> {
-            AnnouncementMessage(
+            SystemChats.AnnouncementMessage(
                 displayName = twitchUser.displayName,
                 message = twitchUser.userType,
                 systemMessage = twitchUser.systemMessage
@@ -814,26 +814,26 @@ fun FilterChatMessageTypes(
         }
         // MYSTERYGIFTSUB,GIFTSUB
         MessageType.GIFTSUB -> {
-            GiftSubMessage(
+            SystemChats.GiftSubMessage(
                 message = twitchUser.userType,
                 systemMessage = twitchUser.systemMessage
             )
         }
         MessageType.MYSTERYGIFTSUB -> {
-            MysteryGiftSubMessage(
+            SystemChats.MysteryGiftSubMessage(
                 message = twitchUser.userType,
                 systemMessage = twitchUser.systemMessage
             )
         }
         MessageType.ERROR -> {
-            ErrorMessage(
+            SystemChats.ErrorMessage(
                 message = twitchUser.userType!!,
                 user = twitchUser.displayName!!,
                 restartWebSocket = { restartWebSocket() }
             )
         }
         MessageType.JOIN -> {
-            JoinMessage(
+            SystemChats.JoinMessage(
                 message = twitchUser.userType!!
             )
         }
