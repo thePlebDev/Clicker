@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -56,9 +57,8 @@ import com.example.clicker.presentation.stream.GiftSubMessage
 import com.example.clicker.presentation.stream.JoinMessage
 import com.example.clicker.presentation.stream.MysteryGiftSubMessage
 import com.example.clicker.presentation.stream.NoticeMessage
-import com.example.clicker.presentation.stream.ResubMessage
-import com.example.clicker.presentation.stream.SubMessage
 import com.example.clicker.presentation.stream.isScrolledToEnd
+
 import kotlinx.coroutines.delay
 
 /**
@@ -143,13 +143,14 @@ object MainChat{
                 )
             }
             MessageType.RESUB -> {
-                ResubMessage(
+                SystemChats.ResubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             }
             MessageType.SUB -> {
-                SubMessage(
+
+                SystemChats.SubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
