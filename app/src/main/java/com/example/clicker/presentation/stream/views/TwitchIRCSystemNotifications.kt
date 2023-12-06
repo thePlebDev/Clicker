@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -29,10 +31,46 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.views.BottomModal.ClickedUserMessages
+import com.example.clicker.presentation.stream.views.BottomModal.ContentBanner
+import com.example.clicker.presentation.stream.views.BottomModal.ContentBottom
+import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystemNotificationsBuilder.SystemChat
 
+//parts builders implementations (PBI architecture for short)
 
+/**
+ * SystemChats represents all the UI composables for the chat messages sent by the [Twitch IRC server](https://dev.twitch.tv/docs/irc/commands/)
+ * that contains the  [USERNOTICE](https://dev.twitch.tv/docs/irc/commands/#usernotice) command. It
+ * is then picked up by our [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] which will run the [userNoticeParsing()][com.example.clicker.network.websockets.ParsingEngine.userNoticeParsing]
+ * method to create a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object marked with the appropriate [MessageType][com.example.clicker.network.websockets.MessageType] and then given to the UI.
+ * The UI then uses the [MessageType][com.example.clicker.network.websockets.MessageType] to determine which component to show
+ * - SystemChats contains 8 components:
+ *
+ * - [ResubMessage] : Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***resub***
+ *
+ * - [SubMessage]: Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***sub***
+ *
+ * - [AnnouncementMessage] : Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***announcement***
+ *
+ * - [MysteryGiftSubMessage] : Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***submysterygift***
+ *
+ * - [GiftSubMessage] : Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***subgift***
+ *
+ * - [JoinMessage] : Shows a message in chat when the Twitch IRC server replies with the JOIN, indicating we have successfully joined the chat,
+ *
+ * - [NoticeMessage] : Shows a message in chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***NOTICE*** message
+ *
+ * - [ErrorMessage] : Shows a message in chat when the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] detects a failure an runs its [onFailure()][com.example.clicker.network.websockets.TwitchWebSocket.onFailure] method
+ *
+ * */
 object SystemChats {
 
+    /**
+     * Composable function meant to display a message to the user indicating a reSub event has occurred
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
+     * */
     @Composable
     fun ResubMessage(
         message: String?,
@@ -54,6 +92,13 @@ object SystemChats {
                     }
                 )
     }
+
+    /**
+     * Composable function meant to display a message to the user once a [USERNOTICE tags](https://dev.twitch.tv/docs/irc/tags/#usernotice-tags) of ***sub***
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
+     * */
     @Composable
     fun SubMessage(
         message: String?,
@@ -62,7 +107,7 @@ object SystemChats {
         TwitchIRCSystemNotificationsBuilder.SystemChat(
             messageHeader = {
                 ChatMessagesParts.MessageHeader(
-                    contentDescription = stringResource(R.string.re_sub),
+                    contentDescription = stringResource(R.string.sub),
                     iconImageVector =Icons.Default.Star,
                     message =stringResource(R.string.sub)
                 )
@@ -75,6 +120,14 @@ object SystemChats {
             }
         )
     }
+
+    /**
+     * Composable function meant to display a message to the user once a [USERNOTICE tags](https://dev.twitch.tv/docs/irc/tags/#usernotice-tags) of ***announcement***
+     *
+     * @param displayName String of the username that sent this chat
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
+     * */
     @Composable
     fun AnnouncementMessage(
         displayName: String?,
@@ -98,20 +151,37 @@ object SystemChats {
             }
         )
     }
+
+    /**
+     * Composable function meant to display a message indicating that we have successfully joined the chat room. This composable
+     * is shown after the [Joining a Chat Room](https://dev.twitch.tv/docs/irc/join-chat-room/) process
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * */
     @Composable
     fun JoinMessage(message: String) {
         ChatMessagesParts.SimpleText(message = message)
     }
 
+
+    /**
+     * [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] fails and triggers the
+     * [onFailure()][com.example.clicker.network.websockets.TwitchWebSocket.onFailure] method. When this is triggered
+     * the user is no longer connected to chat
+     *
+     * @param message String main message shown to the user
+     * @param alterMessage String indicating what type of user has occured
+     * @param restartWebSocket function which when triggered should attempt to reconnect the web socket
+     * */
     @Composable
     fun ErrorMessage(
         message: String,
-        user: String,
+        alterMessage: String,
         restartWebSocket: () -> Unit
     ){
         TwitchIRCSystemNotificationsBuilder.SystemChatAlert(
             messageHeader ={
-                ChatMessagesParts.AlertHeader(alertMessage = user, alertIcon =Icons.Default.Warning )
+                ChatMessagesParts.AlertHeader(alertMessage = alterMessage, alertIcon =Icons.Default.Warning )
             },
             messageText = { ChatMessagesParts.SimpleText(message)},
             messageButton = {
@@ -123,6 +193,12 @@ object SystemChats {
         )
     }
 
+    /**
+     * Composable function meant to display a message to the user once a [USERNOTICE tags](https://dev.twitch.tv/docs/irc/tags/#usernotice-tags) of ***submysterygift***
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
+     * */
     @Composable
     fun MysteryGiftSubMessage(
         message: String?,
@@ -146,6 +222,13 @@ object SystemChats {
         )
     }
 
+
+    /**
+     * Composable function meant to display a message to the user once a [USERNOTICE tags](https://dev.twitch.tv/docs/irc/tags/#usernotice-tags) of ***subgift***
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
+     * */
     @Composable
     fun GiftSubMessage(
         message: String?,
@@ -169,6 +252,14 @@ object SystemChats {
 
     }
 
+    /**
+     * Composable function meant to display a system level event sent from the Twitch IRC servers. Read more about the
+     * [NOTICE](https://dev.twitch.tv/docs/irc/commands/#notice) process
+     *
+     * @param color Color of the Text to be displayed
+     * @param displayName String of the entity sending the message, will be `Room status`
+     * @param message String of the message meant to be displayed
+     * */
     @Composable
     fun NoticeMessage(
         color: Color,
@@ -182,7 +273,21 @@ object SystemChats {
         )
 
     }
+    /**
+     * TwitchIRCSystemNotificationsBuilder is the most generic section of all the [SystemChat] composables. It is meants ot
+     * act as a layout guide for how all [SystemChat] implementations should look
+     * */
     private object TwitchIRCSystemNotificationsBuilder{
+
+        /**
+         * The basic layout of the chat messages sent from the Twitch IRC server. An example of what a typical composable
+         * looks like can be seen, [HERE](https://theplebdev.github.io/Modderz-style-guide/#SystemChat)
+         *
+         * @param messageHeader a Composable part meant to represent the header of this composable. Should contain important
+         * information that the user needs
+         *
+         * @param messageText a Composable part that represents information that represents the main information meant to be shown to the user
+         * */
         @Composable
         fun SystemChat(
             messageHeader:@Composable () -> Unit,
@@ -203,6 +308,17 @@ object SystemChats {
                 }
             }
         }
+
+        /**
+         * The basic layout of the chat messages sent when an error has occurred.
+         * This is usually shown when the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] disconnects
+         * typical UI demonstration can be shown, [HERE](https://theplebdev.github.io/Modderz-style-guide/#SystemChatAlert)
+         *
+         * @param messageHeader a Composable part meant to represent the header of this composable. Should contain important
+         * information that the user needs
+         * @param messageText a Composable part that represents information that represents the main information meant to be shown to the user
+         * @param messageButton a Composable composing of a button, prompting the user to take an action of some kind
+         * */
         @Composable
         fun SystemChatAlert(
             messageHeader:@Composable () -> Unit,
@@ -232,9 +348,22 @@ object SystemChats {
             }
 
         }
-    }
+    } // END OF TwitchIRCSystemNotificationsBuilder
 
+
+    /**
+     * ChatMessagesParts represents all the possible individual Composables that can be used inside of a [TwitchIRCSystemNotificationsBuilder]
+     * */
     private object ChatMessagesParts{
+
+
+        /**
+         * A [Row] containing a Icon and Text Composable, this should be used to quickly convey short and important information to the user
+         *
+         * @param contentDescription a String used to describe the image vector being used as the Icon
+         * @param iconImageVector a image vector used to convery what category the text is in
+         * @param message a String used to represent the information shown to the user. This should only be one word or two
+         * */
         @Composable
         fun MessageHeader(
             contentDescription:String,
@@ -257,6 +386,12 @@ object SystemChats {
                 Text(message, color = Color.White, fontSize = 20.sp)
             }
         }
+        /**
+         * A stylized Text meant to convery a large amount of information to the user
+         *
+         * @param message a String representing any message sent by the user
+         * @param systemMessage a String representing any message sent by the Twitch IRC server
+         * */
         @Composable
         fun MessageText(
             message: String?,
@@ -273,6 +408,14 @@ object SystemChats {
                 }
             )
         }
+
+        /**
+         * A stylized Text meant to convery a large amount of information to a specific user
+         *
+         * @param displayName a String representing the username of a specific user
+         * @param message a String representing any message targeted at a user
+         * @param systemMessage a String representing any message sent by the Twitch IRC server
+         * */
         @Composable
         fun NamedMessageText(
             displayName: String?,
@@ -295,6 +438,12 @@ object SystemChats {
 
         }
 
+
+        /**
+         * A Simple text styled with the onPrimary color theme
+         *
+         * @param message a String representing a large amount of information
+         * */
         @Composable
         fun SimpleText(message: String){
             Text(message,
@@ -303,6 +452,14 @@ object SystemChats {
                 modifier = Modifier.padding(start = 5.dp)
             )
         }
+
+        /**
+         * A [Row] meant to display text surrounded by two icons. This Composable is meant to represent the type of
+         * error that has occured
+         *
+         * @param alertMessage a String representing the error. Should only be one word or two
+         * @param alertIcon a image vector meant to represent the two icons that will surround the [alertMessage]
+         * */
         @Composable
         fun AlertHeader(
             alertMessage:String,
@@ -331,6 +488,12 @@ object SystemChats {
             }
         }
 
+        /**
+         * A [Button] meant to be used to do some sort of action
+         *
+         * @param buttonAction a function that will run when the button is clicked
+         * @param buttonText a String that will be displayed on the Button
+         * */
         @Composable
         fun ButtonWithText(
             buttonAction: () -> Unit,
@@ -344,6 +507,14 @@ object SystemChats {
             }
         }
 
+
+        /**
+         * A stylized text that will be used to conver a message to a specific user
+         *
+         * @param color a Color what will be used on the [displayName] text
+         * @param displayName a String that will represent a specific user in chat
+         * @param message a String that will represent the information meant to be conveyed to the [displayName] user
+         * */
         @Composable
         fun UserSpecificText(
             color: Color,

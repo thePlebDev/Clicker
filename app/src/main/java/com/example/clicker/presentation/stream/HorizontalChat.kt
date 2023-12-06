@@ -828,7 +828,7 @@ fun FilterChatMessageTypes(
         MessageType.ERROR -> {
             SystemChats.ErrorMessage(
                 message = twitchUser.userType!!,
-                user = twitchUser.displayName!!,
+                alterMessage = twitchUser.displayName!!,
                 restartWebSocket = { restartWebSocket() }
             )
         }
