@@ -88,6 +88,7 @@ import com.example.clicker.network.BanUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.stream.views.SystemChats
+import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.util.Response
 import com.example.clicker.util.SwipeableActionsState
 import com.example.clicker.util.rememberSwipeableActionsState

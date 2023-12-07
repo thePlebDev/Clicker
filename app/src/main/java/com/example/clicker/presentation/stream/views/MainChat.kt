@@ -15,12 +15,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.DrawerState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -37,7 +41,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,10 +58,13 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
-import com.example.clicker.presentation.stream.isScrolledToEnd
+import com.example.clicker.presentation.stream.ScrollingChat
+import com.example.clicker.util.Response
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 /**
  * MainChat is all the components used to construct the chat functionality when the user navigates to the Stream fragment
  *
@@ -397,4 +407,97 @@ object MainChat{
             }
         }
     }// end of Text Chat
+}
+
+object ChatBuilder{
+    @Composable
+    fun ScrollableChat(
+        determineScrollState:@Composable () -> Unit,
+        autoScrollingChat:@Composable () -> Unit,
+        enterChat:@Composable (modifier:Modifier) -> Unit,
+        scrollToBottom:@Composable () -> Unit,
+    ){
+        determineScrollState()
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            autoScrollingChat()
+            enterChat(Modifier.align(Alignment.BottomCenter).fillMaxWidth())
+            scrollToBottom()
+        }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun ChatBuilderImpl(
+        showStickyHeader: Boolean,
+        closeStickyHeader: () -> Unit,
+        twitchUserChat: List<TwitchUserData>,
+        bottomModalState: ModalBottomSheetState,
+        restartWebSocket: () -> Unit,
+        banResponseMessage: String,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        deleteMessage: (String) -> Unit,
+        sendMessageToWebSocket: (String) -> Unit,
+        modStatus: Boolean?,
+        filteredChatList: List<String>,
+        filterMethod: (String, String) -> Unit,
+        clickedAutoCompleteText: (String, String) -> String,
+        textFieldValue: MutableState<TextFieldValue>,
+        channelName: String?,
+        drawerState: DrawerState,
+    ){
+        val lazyColumnListState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
+        var autoscroll by remember { mutableStateOf(true) }
+        ScrollableChat(
+            determineScrollState={
+                MainChat.DetermineScrollState(
+                    lazyColumnListState =lazyColumnListState,
+                    setAutoScrollFalse={autoscroll = false},
+                    setAutoScrollTrue = {autoscroll = true},
+                    showStickyHeader =showStickyHeader,
+                    closeStickyHeader ={closeStickyHeader()}
+                )
+            },
+            autoScrollingChat={
+                ScrollingChat(
+                    twitchUserChat = twitchUserChat,
+                    lazyColumnListState = lazyColumnListState,
+                    showStickyHeader = showStickyHeader,
+                    banResponseMessage =banResponseMessage,
+                    closeStickyHeader ={closeStickyHeader()},
+                    autoscroll =autoscroll,
+                    restartWebSocket ={restartWebSocket},
+                    bottomModalState =bottomModalState,
+                    updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
+                    deleteMessage ={messageId -> deleteMessage(messageId)}
+                )
+            },
+            enterChat ={boxModifier ->
+                MainChat.TextChat.EnterChat(
+                    modifier = boxModifier,
+                    chat = { text -> sendMessageToWebSocket(text) },
+                    modStatus = modStatus,
+                    filteredChatList = filteredChatList,
+                    filterMethod = { username, newText -> filterMethod(username, newText) },
+                    clickedAutoCompleteText = { fullText, clickedText ->
+                        clickedAutoCompleteText(
+                            fullText,
+                            clickedText
+                        )
+                    },
+                    textFieldValue = textFieldValue,
+                    channelName = channelName,
+                    showModal = { coroutineScope.launch { drawerState.open() } }
+                )
+            }, // end of enter chat
+            scrollToBottom ={
+                MainChat.ScrollToBottom(
+                    scrollingPaused = !autoscroll,
+                    enableAutoScroll = { autoscroll = true },
+                )
+            }
+        )
+    }
 }

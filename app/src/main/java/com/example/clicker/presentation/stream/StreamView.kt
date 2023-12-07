@@ -116,6 +116,7 @@ import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.ChatBuilder.ChatBuilderImpl
 import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.util.Response
 import com.example.clicker.util.rememberSwipeableActionsState
@@ -813,7 +814,6 @@ fun MessageAlertText(
     }
 }
 
-fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
 
 
@@ -848,100 +848,101 @@ fun TextChat(
     oneClickTimeoutUser: (String) -> Unit
 
 ) {
-    val lazyColumnListState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    var autoscroll by remember { mutableStateOf(true) }
 
-    // Add a gesture listener to detect upward scroll
-    MainChat.DetermineScrollState(
-        lazyColumnListState =lazyColumnListState,
-        setAutoScrollFalse={autoscroll = false},
-        setAutoScrollTrue = {autoscroll = true},
+    ChatBuilderImpl(
         showStickyHeader =showStickyHeader,
-        closeStickyHeader ={closeStickyHeader()}
+        closeStickyHeader ={closeStickyHeader()},
+        twitchUserChat = twitchUserChat,
+        bottomModalState =bottomModalState,
+        restartWebSocket ={restartWebSocket},
+        banResponseMessage =banResponseMessage,
+        updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
+        deleteMessage ={messageId -> deleteMessage(messageId)},
+        sendMessageToWebSocket ={ text -> sendMessageToWebSocket(text) },
+        modStatus = modStatus,
+        filteredChatList = filteredChatList,
+        filterMethod = { username, newText -> filterMethod(username, newText) },
+        clickedAutoCompleteText = { fullText, clickedText ->
+            clickedAutoCompleteText(
+                fullText,
+                clickedText
+            )
+        },
+        textFieldValue = textFieldValue,
+        channelName = channelName,
+        drawerState =drawerState
     )
 
-    Box(
-        modifier = Modifier.fillMaxSize()
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@Composable
+fun ScrollingChat(
+    twitchUserChat: List<TwitchUserData>,
+    lazyColumnListState: LazyListState,
+    showStickyHeader: Boolean,
+    banResponseMessage: String,
+    closeStickyHeader: () -> Unit,
+    autoscroll: Boolean,
+    restartWebSocket: () -> Unit,
+    bottomModalState: ModalBottomSheetState,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    deleteMessage: (String) -> Unit,
+){
+    val coroutineScope = rememberCoroutineScope()
+    LazyColumn(
+        state = lazyColumnListState,
+        modifier = Modifier
+            .padding(bottom = 70.dp)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+            .fillMaxSize()
+
     ) {
-        LazyColumn(
-            state = lazyColumnListState,
-            modifier = Modifier
-                .padding(bottom = 70.dp)
-                .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-                .fillMaxSize()
+        stickyHeader {
+            if (showStickyHeader) {
+                MainChat.StickyHeader(
+                    banResponseMessage =banResponseMessage,
+                    closeStickyHeader ={closeStickyHeader()}
+                )
 
-        ) {
-            stickyHeader {
-                if (showStickyHeader) {
-                    MainChat.StickyHeader(
-                        banResponseMessage =banResponseMessage,
-                        closeStickyHeader ={closeStickyHeader()}
-                    )
-
-                }
-            }
-
-            coroutineScope.launch {
-                if (autoscroll) {
-                    lazyColumnListState.scrollToItem(twitchUserChat.size)
-                }
-            }
-
-            items(twitchUserChat) { twitchUser ->
-
-                val color = Color(parseColor(twitchUser.color))
-
-                // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
-                if (twitchUserChat.isNotEmpty()) {
-                    MainChat.ChatMessages(
-                        twitchUser,
-                        restartWebSocket = {restartWebSocket()}
-                    ){
-                        SwipeToDeleteChatMessages(
-                            twitchUser = twitchUser,
-                            bottomModalState = bottomModalState,
-                            updateClickedUser = { username, userId, banned, isMod ->
-                                updateClickedUser(
-                                    username,
-                                    userId,
-                                    banned,
-                                    isMod
-                                )
-                            },
-                            deleteMessage = { messageId -> deleteMessage(messageId) },
-
-                        )
-                    }
-
-                }
             }
         }
 
-//        NoChatMode(modifier = Modifier.align(Alignment.Center))
-        MainChat.TextChat.EnterChat(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
-            chat = { text -> sendMessageToWebSocket(text) },
-            modStatus = modStatus,
-            filteredChatList = filteredChatList,
-            filterMethod = { username, newText -> filterMethod(username, newText) },
-            clickedAutoCompleteText = { fullText, clickedText ->
-                clickedAutoCompleteText(
-                    fullText,
-                    clickedText
-                )
-            },
-            textFieldValue = textFieldValue,
-            channelName = channelName,
-            showModal = { coroutineScope.launch { drawerState.open() } }
-        )
-        MainChat.ScrollToBottom(
-            scrollingPaused = !autoscroll,
-            enableAutoScroll = { autoscroll = true },
-        )
-    } // end of the Box scope
+        coroutineScope.launch {
+            if (autoscroll) {
+                lazyColumnListState.scrollToItem(twitchUserChat.size)
+            }
+        }
+
+        items(twitchUserChat) { twitchUser ->
+
+            val color = Color(parseColor(twitchUser.color))
+
+            // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
+            if (twitchUserChat.isNotEmpty()) {
+                MainChat.ChatMessages(
+                    twitchUser,
+                    restartWebSocket = {restartWebSocket()}
+                ){
+                    SwipeToDeleteChatMessages(
+                        twitchUser = twitchUser,
+                        bottomModalState = bottomModalState,
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
+                        deleteMessage = { messageId -> deleteMessage(messageId) },
+
+                        )
+                }
+
+            }
+        }
+    }// END OF THE LAZY COLUMN
 }
 
 
