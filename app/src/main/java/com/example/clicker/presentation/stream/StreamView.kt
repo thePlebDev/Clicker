@@ -116,8 +116,8 @@ import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
-import com.example.clicker.presentation.stream.views.ChatBuilder.ChatBuilderImpl
 import com.example.clicker.presentation.stream.views.MainChat
+import com.example.clicker.presentation.stream.views.SystemChats
 import com.example.clicker.util.Response
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlin.math.abs
@@ -849,12 +849,12 @@ fun TextChat(
 
 ) {
 
-    ChatBuilderImpl(
+    MainChat.AutoScrollChatWithTextBox(
         showStickyHeader =showStickyHeader,
         closeStickyHeader ={closeStickyHeader()},
         twitchUserChat = twitchUserChat,
         bottomModalState =bottomModalState,
-        restartWebSocket ={restartWebSocket},
+        restartWebSocket ={restartWebSocket()},
         banResponseMessage =banResponseMessage,
         updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
         deleteMessage ={messageId -> deleteMessage(messageId)},
@@ -874,101 +874,6 @@ fun TextChat(
     )
 
 }
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
-@Composable
-fun ScrollingChat(
-    twitchUserChat: List<TwitchUserData>,
-    lazyColumnListState: LazyListState,
-    showStickyHeader: Boolean,
-    banResponseMessage: String,
-    closeStickyHeader: () -> Unit,
-    autoscroll: Boolean,
-    restartWebSocket: () -> Unit,
-    bottomModalState: ModalBottomSheetState,
-    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-    deleteMessage: (String) -> Unit,
-){
-    val coroutineScope = rememberCoroutineScope()
-    LazyColumn(
-        state = lazyColumnListState,
-        modifier = Modifier
-            .padding(bottom = 70.dp)
-            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-            .fillMaxSize()
-
-    ) {
-        stickyHeader {
-            if (showStickyHeader) {
-                MainChat.StickyHeader(
-                    banResponseMessage =banResponseMessage,
-                    closeStickyHeader ={closeStickyHeader()}
-                )
-
-            }
-        }
-
-        coroutineScope.launch {
-            if (autoscroll) {
-                lazyColumnListState.scrollToItem(twitchUserChat.size)
-            }
-        }
-
-        items(twitchUserChat) { twitchUser ->
-
-            val color = Color(parseColor(twitchUser.color))
-
-            // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
-            if (twitchUserChat.isNotEmpty()) {
-                MainChat.ChatMessages(
-                    twitchUser,
-                    restartWebSocket = {restartWebSocket()}
-                ){
-                    SwipeToDeleteChatMessages(
-                        twitchUser = twitchUser,
-                        bottomModalState = bottomModalState,
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        deleteMessage = { messageId -> deleteMessage(messageId) },
-
-                        )
-                }
-
-            }
-        }
-    }// END OF THE LAZY COLUMN
-}
-
-
-@Composable
-fun NoChatMode(
-    modifier:Modifier = Modifier
-){
-    var checked by remember { mutableStateOf(true) }
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            "No chat mode enabled",
-            color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
-            fontSize = 20.sp
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                checked = it
-            }
-        )
-    }
-}
-
-
-
-
 
 
 @OptIn(ExperimentalMaterialApi::class)

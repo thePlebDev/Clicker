@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.DragInteraction
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -49,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -58,15 +61,15 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
-import com.example.clicker.presentation.stream.ScrollingChat
-import com.example.clicker.util.Response
+
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**Extension function used to determine if the use has scrolled to the end of the chat*/
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 /**
- * MainChat is all the components used to construct the chat functionality when the user navigates to the Stream fragment
+ * MainChat represents all the UI composables used to build the auto scrolling chat system, the text box used to enter chat messages and utility composables
  *
  * - [DetermineScrollState] : Used to facilitate,modify and identify the current scroll state of the chat messages Lazy Column
  *
@@ -76,360 +79,14 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
  *
  * */
 object MainChat{
-    @Composable
-    fun DetermineScrollState(
-        lazyColumnListState: LazyListState,
-        setAutoScrollFalse:()->Unit,
-        setAutoScrollTrue:()->Unit,
-        showStickyHeader:Boolean,
-        closeStickyHeader: () -> Unit,
-    ){
-        val interactionSource = lazyColumnListState.interactionSource
-        val endOfListReached by remember {
-            derivedStateOf {
-                lazyColumnListState.isScrolledToEnd()
-            }
-        }
 
-        LaunchedEffect(interactionSource) {
-            interactionSource.interactions.collect { interaction ->
-                when (interaction) {
-                    is DragInteraction.Start -> {
-                        setAutoScrollFalse()
-                    }
-                    is PressInteraction.Press -> {
-                        setAutoScrollFalse()
-                    }
-                }
-            }
-        }
-
-        // observer when reached end of list
-        LaunchedEffect(endOfListReached) {
-            // do your stuff
-            if (endOfListReached) {
-                setAutoScrollTrue()
-            }
-        }
-
-        if (showStickyHeader) {
-            LaunchedEffect(key1 = Unit) {
-                delay(2000)
-                closeStickyHeader()
-            }
-        }
-    }
-    @Composable
-    fun ChatMessages(
-        twitchUser: TwitchUserData,
-        restartWebSocket: () -> Unit,
-        swipeContent:@Composable () -> Unit,
-
-        ){
-        when (twitchUser.messageType) {
-            MessageType.NOTICE -> {
-                SystemChats.NoticeMessage(
-                    color = Color.White,
-                    displayName = twitchUser.displayName,
-                    message = twitchUser.userType
-                )
-            }
-
-            MessageType.USER -> {
-                swipeContent()
-            }
-
-            MessageType.ANNOUNCEMENT -> {
-                SystemChats.AnnouncementMessage(
-                    displayName = twitchUser.displayName,
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            }
-            MessageType.RESUB -> {
-                SystemChats.ResubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            }
-            MessageType.SUB -> {
-
-                SystemChats.SubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            }
-            // MYSTERYGIFTSUB,GIFTSUB
-            MessageType.GIFTSUB -> {
-                SystemChats.GiftSubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            }
-            MessageType.MYSTERYGIFTSUB -> {
-                SystemChats.MysteryGiftSubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            }
-            MessageType.ERROR -> {
-                SystemChats.ErrorMessage(
-                    message = twitchUser.userType!!,
-                    alterMessage = twitchUser.displayName!!,
-                    restartWebSocket = { restartWebSocket() }
-                )
-            }
-            MessageType.JOIN -> {
-                SystemChats.JoinMessage(
-                    message = twitchUser.userType!!
-                )
-            }
-
-            else -> {}
-        } // end of the WHEN BLOCK
-
-    }
-    @Composable
-    fun StickyHeader(
-        banResponseMessage:String,
-        closeStickyHeader: () -> Unit,
-
-        ){
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)
-                .clip(shape = RoundedCornerShape(10.dp))
-                .background(Color.Red.copy(alpha = 0.6f))
-                .clickable {
-                    closeStickyHeader()
-                },
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
-                modifier = Modifier
-                    .size(30.dp),
-                tint = Color.White
-            )
-            Text(
-                text = banResponseMessage,
-                color = Color.White,
-                fontSize = 20.sp
-            )
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
-                modifier = Modifier
-                    .size(30.dp),
-                tint = Color.White
-            )
-        }
-    }
-
-    @Composable
-    fun ScrollToBottom(
-        scrollingPaused: Boolean,
-        enableAutoScroll: () -> Unit,
-
-        ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 77.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (scrollingPaused) {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                        onClick = { enableAutoScroll() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = stringResource(R.string.arrow_drop_down_description),
-                            tint =  MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier
-                        )
-                        Text(stringResource(R.string.scroll_to_bottom),color =  MaterialTheme.colorScheme.onSecondary,)
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = stringResource(R.string.arrow_drop_down_description),
-                            tint =  MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier
-                        )
-                    }
-                }
-            }
-
-        }
-    }
-
-    object TextChat{
-        @Composable
-        fun EnterChat(
-            modifier: Modifier,
-            chat: (String) -> Unit,
-            modStatus: Boolean?,
-            filteredChatList: List<String>,
-            filterMethod: (String, String) -> Unit,
-            clickedAutoCompleteText: (String, String) -> String,
-            textFieldValue: MutableState<TextFieldValue>,
-            channelName: String?,
-            showModal: () -> Unit
-        ) {
-            // todo: I think we can move this to the viewModel
-
-            Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
-                FilteredMentionLazyRow(
-                    filteredChatList =filteredChatList,
-                    textFieldValue =textFieldValue,
-                    clickedAutoCompleteText ={addedValue, currentValue ->clickedAutoCompleteText(addedValue,currentValue)}
-                )
-
-                TextFieldChat(
-                    textFieldValue = textFieldValue,
-                    modStatus = modStatus,
-                    filterMethod = { username, text -> filterMethod(username, text) },
-                    chat = { chatMessage -> chat(chatMessage) },
-                    showModal = { showModal() }
-                )
-            }
-        }
-        @Composable
-        fun FilteredMentionLazyRow(
-            filteredChatList: List<String>,
-            textFieldValue: MutableState<TextFieldValue>,
-            clickedAutoCompleteText: (String, String) -> String,
-        ){
-            LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
-                items(filteredChatList) {
-                    Text(
-                        it,
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .clickable {
-                                textFieldValue.value = TextFieldValue(
-                                    text = clickedAutoCompleteText(textFieldValue.value.text, it),
-                                    selection = TextRange(
-                                        (textFieldValue.value.text + "$it ").length
-                                    )
-                                )
-                            },
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        }
-
-        @Composable
-        fun TextFieldChat(
-            textFieldValue: MutableState<TextFieldValue>,
-            modStatus: Boolean?,
-            filterMethod: (String, String) -> Unit,
-            chat: (String) -> Unit,
-            showModal: () -> Unit
-        ) {
-            val customTextSelectionColors = TextSelectionColors(
-                handleColor = MaterialTheme.colorScheme.secondary,
-                backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-            )
-
-            Row(
-                modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.primary),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (modStatus != null && modStatus == true) {
-                    AsyncImage(
-                        model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                        contentDescription = stringResource(R.string.moderator_badge_icon_description)
-                    )
-                }
-                CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-                    TextField(
-
-                        modifier = Modifier
-                            .weight(2f),
-                        maxLines =1,
-                        singleLine = true,
-                        value = textFieldValue.value,
-                        shape = RoundedCornerShape(8.dp),
-                        onValueChange = { newText ->
-                            filterMethod("username", newText.text)
-                            textFieldValue.value = TextFieldValue(
-                                text = newText.text,
-                                selection = newText.selection
-                            )
-                            // text = newText
-                        },
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.DarkGray,
-                            cursorColor = Color.White,
-                            disabledLabelColor = Color.White,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        placeholder = {
-                            Text(stringResource(R.string.send_a_message), color = Color.White)
-                        }
-                    )
-                }
-                if (textFieldValue.value.text.length > 0) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = stringResource(R.string.send_chat),
-                        modifier = Modifier
-                            .size(35.dp)
-                            .clickable { chat(textFieldValue.value.text) }
-                            .padding(start = 5.dp),
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.more_vert_icon_description),
-                        modifier = Modifier
-                            .size(35.dp)
-                            .clickable { showModal() }
-                            .padding(start = 5.dp),
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        }
-    }// end of Text Chat
-}
-
-object ChatBuilder{
-    @Composable
-    fun ScrollableChat(
-        determineScrollState:@Composable () -> Unit,
-        autoScrollingChat:@Composable () -> Unit,
-        enterChat:@Composable (modifier:Modifier) -> Unit,
-        scrollToBottom:@Composable () -> Unit,
-    ){
-        determineScrollState()
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            autoScrollingChat()
-            enterChat(Modifier.align(Alignment.BottomCenter).fillMaxWidth())
-            scrollToBottom()
-        }
-    }
-
+    /**
+     * AutoScrollChatWithTextBox is the implementation that contains all the individual elements that makes
+     * our user chat experience
+     * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun ChatBuilderImpl(
+    fun AutoScrollChatWithTextBox(
         showStickyHeader: Boolean,
         closeStickyHeader: () -> Unit,
         twitchUserChat: List<TwitchUserData>,
@@ -450,9 +107,10 @@ object ChatBuilder{
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
         var autoscroll by remember { mutableStateOf(true) }
-        ScrollableChat(
+        //this is a builder
+        ChatBuilder.ScrollableChat(
             determineScrollState={
-                MainChat.DetermineScrollState(
+                MainChatParts.DetermineScrollState(
                     lazyColumnListState =lazyColumnListState,
                     setAutoScrollFalse={autoscroll = false},
                     setAutoScrollTrue = {autoscroll = true},
@@ -461,43 +119,359 @@ object ChatBuilder{
                 )
             },
             autoScrollingChat={
-                ScrollingChat(
+                MainChatParts.AutoScrollingChat(
                     twitchUserChat = twitchUserChat,
                     lazyColumnListState = lazyColumnListState,
                     showStickyHeader = showStickyHeader,
                     banResponseMessage =banResponseMessage,
                     closeStickyHeader ={closeStickyHeader()},
                     autoscroll =autoscroll,
-                    restartWebSocket ={restartWebSocket},
+                    restartWebSocket ={restartWebSocket()},
                     bottomModalState =bottomModalState,
                     updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
                     deleteMessage ={messageId -> deleteMessage(messageId)}
                 )
             },
             enterChat ={boxModifier ->
-                MainChat.TextChat.EnterChat(
+                TextChat.EnterChat(
                     modifier = boxModifier,
-                    chat = { text -> sendMessageToWebSocket(text) },
-                    modStatus = modStatus,
                     filteredChatList = filteredChatList,
-                    filterMethod = { username, newText -> filterMethod(username, newText) },
-                    clickedAutoCompleteText = { fullText, clickedText ->
+                    textFieldValue = textFieldValue,
+                    clickedAutoCompleteText = { addedValue, currentValue ->
                         clickedAutoCompleteText(
-                            fullText,
-                            clickedText
+                            addedValue,
+                            currentValue
                         )
                     },
-                    textFieldValue = textFieldValue,
-                    channelName = channelName,
-                    showModal = { coroutineScope.launch { drawerState.open() } }
+                    modStatus = modStatus,
+                    filterMethod = { username, text -> filterMethod(username, text) },
+                    sendMessageToWebSocket = {chatMessage -> sendMessageToWebSocket(chatMessage)},
+                    showModal ={
+                        coroutineScope.launch { drawerState.open() }
+                    }
                 )
+
             }, // end of enter chat
-            scrollToBottom ={
+            scrollToBottom ={boxModifier ->
                 MainChat.ScrollToBottom(
                     scrollingPaused = !autoscroll,
                     enableAutoScroll = { autoscroll = true },
+                    modifier = boxModifier
                 )
             }
         )
     }
+
+    /**IMPLEMENTATIONS BELOW*/
+
+    //todo: this is a part
+
+    @Composable
+    fun StickyHeader(
+        banResponseMessage:String,
+        closeStickyHeader: () -> Unit,
+
+        ){
+        MainChatParts.AlertRowHeader(
+            alertMessage =banResponseMessage,
+            closeAlert ={closeStickyHeader()}
+        )
+
+    }
+
+    //
+    @Composable
+    fun ScrollToBottom(
+        scrollingPaused: Boolean,
+        enableAutoScroll: () -> Unit,
+        modifier:Modifier
+        ) {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (scrollingPaused) {
+                    MainChatParts.DualIconsButton(
+                        buttonAction = {enableAutoScroll()},
+                        iconImageVector=Icons.Default.ArrowDropDown,
+                        iconDescription = stringResource(R.string.arrow_drop_down_description),
+                        buttonText =stringResource(R.string.scroll_to_bottom)
+
+                    )
+                }
+            }
+    }
+
+
+
+
+    /**PARTS BELOW*/
+    private object MainChatParts{
+        /**
+         * A [Row] meant to display a urgent message to the user. This message should indicate a failure of some sort.
+         * This message should be a max of 3 words and will be placed between two icons
+         *
+         * @param alertMessage a String to be placed between two icons and display a urgent message to the user. Should be
+         * no longer than 3 words and will be placed between 2 close icons
+         * @param closeAlert a function used to close this header
+         * */
+        @Composable
+        fun AlertRowHeader(
+            alertMessage:String,
+            closeAlert: () -> Unit,
+        ){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+                    .clip(shape = RoundedCornerShape(10.dp))
+                    .background(Color.Red.copy(alpha = 0.6f))
+                    .clickable {
+                        closeAlert()
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.close_icon_description),
+                    modifier = Modifier
+                        .size(30.dp),
+                    tint = Color.White
+                )
+                Text(
+                    text = alertMessage,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.close_icon_description),
+                    modifier = Modifier
+                        .size(30.dp),
+                    tint = Color.White
+                )
+            }
+        }
+
+        /**
+         * A [Button] meant to display a message surrounded by two icons.
+         *
+         * @param buttonAction a function that will run when this button is clicked
+         * @param iconImageVector the image vector for the two icons surrounding the [buttonText]
+         * @param iconDescription a String that will act as the contentDescription for the two icons created by the [iconImageVector]
+         * @param buttonText a String that will be displayed on top of the Button. This String should be short and no longer than
+         * 3 words
+         * */
+        @Composable
+        fun DualIconsButton(
+            buttonAction: () -> Unit,
+            iconImageVector:ImageVector,
+            iconDescription:String,
+            buttonText:String,
+        ){
+            Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                onClick = { buttonAction() }
+            ) {
+                Icon(
+                    imageVector = iconImageVector,
+                    contentDescription = iconDescription,
+                    tint =  MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                )
+                Text(buttonText,color =  MaterialTheme.colorScheme.onSecondary,)
+                Icon(
+                    imageVector = iconImageVector,
+                    contentDescription = iconDescription,
+                    tint =  MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                )
+            }
+        }
+
+        /**
+         * A utility composable used to determine the current state of a [LazyListState] and act accordingly
+         * There are 3 states that this composables detects:
+         * 1) [DragInteraction.Start],
+         * 2) [PressInteraction.Press]
+         * 3) [isScrolledToEnd]
+         *
+         * @param lazyColumnListState the current state of a [LazyColumn]. This state us used to determine the 3 needed states
+         * of this composable
+         *
+         * @param setAutoScrollFalse a function used to turn the auto-scrolling chat off
+         * @param setAutoScrollTrue a function used to turn the auto-scrolling chat on
+         * @param showStickyHeader used to determine if the sticky header is showing or not. If it is then wait 2 seconds and run [closeStickyHeader]
+         * @param closeStickyHeader function called to hide the sticky header after 2 seconds
+         * */
+        @Composable
+        fun DetermineScrollState(
+            lazyColumnListState: LazyListState,
+            setAutoScrollFalse:()->Unit,
+            setAutoScrollTrue:()->Unit,
+            showStickyHeader:Boolean,
+            closeStickyHeader: () -> Unit,
+        ){
+            val interactionSource = lazyColumnListState.interactionSource
+            val endOfListReached by remember {
+                derivedStateOf {
+                    lazyColumnListState.isScrolledToEnd()
+                }
+            }
+
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    when (interaction) {
+                        is DragInteraction.Start -> {
+                            setAutoScrollFalse()
+                        }
+                        is PressInteraction.Press -> {
+                            setAutoScrollFalse()
+                        }
+                    }
+                }
+            }
+
+            // observer when reached end of list
+            LaunchedEffect(endOfListReached) {
+                // do your stuff
+                if (endOfListReached) {
+                    setAutoScrollTrue()
+                }
+            }
+
+            if (showStickyHeader) {
+                LaunchedEffect(key1 = Unit) {
+                    delay(2000)
+                    closeStickyHeader()
+                }
+            }
+        }
+
+        /**This composable is used to create the auto scrolling chat functionality. Inside of a [LazyColumn] is combines
+         * 2 composables, [StickyHeader] and [SystemChats.IndividualChatMessages] to create the desired chat features
+         *
+         * @param twitchUserChat a list of [TwitchUserData] that represents all of the user's current chat messages. It gets
+         * passed to the [SystemChats.IndividualChatMessages] composable
+         *
+         * @param lazyColumnListState the state passed to the [LazyColumn] to enable or disable its auto scrolling state
+         * @param showStickyHeader a boolean meant to determine if the [StickyHeader] should be shown or not
+         * @param banResponseMessage a String representing the message that will be shown to the [StickyHeader]
+         * @param closeStickyHeader a function passed to [StickyHeader] that will be used to hide the sticky header
+         * @param autoscroll a boolean used to determine if the auto scrolling functionality should be enabled or not
+         * @param restartWebSocket a function passed to [SystemChats.IndividualChatMessages] used to restart a websocket after a failure has occured
+         * @param bottomModalState the state to determine if the bottom modal should pop up or not. This is passed to
+         * [SystemChats.IndividualChatMessages] and gets triggered when a user's chat message is clicked
+         * @param updateClickedUser a function passed to [SystemChats.IndividualChatMessages] and used to update the viewmodel
+         * state containing the current clicked user
+         * @param deleteMessage a function passed to [SystemChats.IndividualChatMessages] that will be triggered when the chat
+         * message is swiped passed its threshold
+         * */
+        @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+        @Composable
+        fun AutoScrollingChat(
+            twitchUserChat: List<TwitchUserData>,
+            lazyColumnListState: LazyListState,
+            showStickyHeader: Boolean,
+            banResponseMessage: String,
+            closeStickyHeader: () -> Unit,
+            autoscroll: Boolean,
+            restartWebSocket: () -> Unit,
+            bottomModalState: ModalBottomSheetState,
+            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+            deleteMessage: (String) -> Unit,
+        ){
+            val coroutineScope = rememberCoroutineScope()
+            LazyColumn(
+                state = lazyColumnListState,
+                modifier = Modifier
+                    .padding(bottom = 70.dp)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .fillMaxSize()
+
+            ) {
+                stickyHeader {
+                    if (showStickyHeader) {
+                        MainChat.StickyHeader(
+                            banResponseMessage =banResponseMessage,
+                            closeStickyHeader ={closeStickyHeader()}
+                        )
+
+                    }
+                }
+
+                coroutineScope.launch {
+                    if (autoscroll) {
+                        lazyColumnListState.scrollToItem(twitchUserChat.size)
+                    }
+                }
+
+                items(twitchUserChat) { twitchUser ->
+
+                    val color = Color(android.graphics.Color.parseColor(twitchUser.color))
+
+                    // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
+                    if (twitchUserChat.isNotEmpty()) {
+                        SystemChats.IndividualChatMessages(
+                            twitchUser = twitchUser,
+                            restartWebSocket = {restartWebSocket() },
+                            bottomModalState = bottomModalState,
+                            deleteMessage = {messageId -> deleteMessage(messageId)},
+                            updateClickedUser = { username, userId, banned, isMod ->
+                                updateClickedUser(
+                                    username,
+                                    userId,
+                                    banned,
+                                    isMod
+                                )
+                            }
+                        )
+
+                    }
+                }
+            }// END OF THE LAZY COLUMN
+        }
+
+
+
+    }
+    /**
+     * ChatBuilder is the most generic of all builders and
+     * */
+    private object ChatBuilder{
+
+        /**
+         * ScrollableChat  is the basic layout for the user chat experience. A example of what the typical UI looks like
+         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#ScrollableChat)
+         * */
+        @Composable
+        fun ScrollableChat(
+            determineScrollState:@Composable () -> Unit,
+            autoScrollingChat:@Composable () -> Unit,
+            enterChat:@Composable (modifier:Modifier) -> Unit,
+            scrollToBottom:@Composable (modifier:Modifier) -> Unit,
+        ){
+            determineScrollState()
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                autoScrollingChat()
+                enterChat(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth())
+                scrollToBottom(modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 77.dp))
+            }
+        }
+
+    }
 }
+
+
+

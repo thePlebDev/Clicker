@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -31,6 +32,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.network.websockets.models.TwitchUserAnnouncement
+import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.presentation.stream.SwipeToDeleteChatMessages
 import com.example.clicker.presentation.stream.views.BottomModal.ClickedUserMessages
 import com.example.clicker.presentation.stream.views.BottomModal.ContentBanner
 import com.example.clicker.presentation.stream.views.BottomModal.ContentBottom
@@ -64,6 +69,11 @@ import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystem
  *
  * */
 object SystemChats {
+
+
+    //slotting layout means that it is a builder
+    // MainChatting is a builder
+
 
     /**
      * Composable function meant to display a message to the user indicating a reSub event has occurred
@@ -273,6 +283,141 @@ object SystemChats {
         )
 
     }
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun IndividualChatMessages(
+        twitchUser: TwitchUserData,
+        restartWebSocket: () -> Unit,
+        bottomModalState: ModalBottomSheetState,
+        deleteMessage: (String) -> Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    ){
+        MainChatBuilder.MainChatting(
+            twitchUser =twitchUser,
+            individualSwipableChatMessage = {
+                SwipeToDeleteChatMessages(
+                    twitchUser = twitchUser,
+                    bottomModalState = bottomModalState,
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    deleteMessage = { messageId -> deleteMessage(messageId) },
+                    )
+                                            },
+            noticeMessage = {
+                SystemChats.NoticeMessage(
+                    color = Color.White,
+                    displayName = twitchUser.displayName,
+                    message = twitchUser.userType
+                )
+            },
+            announcementMessage = {
+                SystemChats.AnnouncementMessage(
+                    displayName = twitchUser.displayName,
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            resubMessage = {
+                SystemChats.ResubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            subMessage = {
+                SystemChats.SubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            giftSubMessage = {
+                SystemChats.GiftSubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            mysterySubMessage = {
+                SystemChats.MysteryGiftSubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            errorMessage = {
+                SystemChats.ErrorMessage(
+                    message = twitchUser.userType!!,
+                    alterMessage = twitchUser.displayName!!,
+                    restartWebSocket = { restartWebSocket() }
+                )
+            },
+        joinMessage = {
+            SystemChats.JoinMessage(
+                message = twitchUser.userType!!
+            )
+        }
+        )
+
+    }
+
+    private object MainChatBuilder{
+        @Composable
+        fun MainChatting(
+            twitchUser: TwitchUserData,
+            individualSwipableChatMessage:@Composable () -> Unit,
+            noticeMessage:@Composable () -> Unit,
+            announcementMessage:@Composable () -> Unit,
+            resubMessage:@Composable () -> Unit,
+            subMessage:@Composable () -> Unit,
+            giftSubMessage:@Composable () -> Unit,
+            mysterySubMessage:@Composable () -> Unit,
+            errorMessage:@Composable () -> Unit,
+            joinMessage:@Composable () -> Unit,
+
+            ){
+            when (twitchUser.messageType) {
+                MessageType.NOTICE -> { //added
+                    noticeMessage()
+                }
+
+                MessageType.USER -> { //added
+                    individualSwipableChatMessage()
+                }
+
+                MessageType.ANNOUNCEMENT -> { //added
+                    announcementMessage()
+                }
+                MessageType.RESUB -> { //added
+                    resubMessage()
+                }
+                MessageType.SUB -> { //added
+                    subMessage()
+                }
+                // MYSTERYGIFTSUB,GIFTSUB
+                MessageType.GIFTSUB -> { //added
+                    giftSubMessage()
+                }
+                MessageType.MYSTERYGIFTSUB -> { //
+                    mysterySubMessage()
+                }
+                MessageType.ERROR -> {
+                    errorMessage()
+                }
+                MessageType.JOIN -> {
+                    joinMessage()
+                }
+
+                else -> {}
+            } // end of the WHEN BLOCK
+
+        }
+
+    }
+
+
     /**
      * TwitchIRCSystemNotificationsBuilder is the most generic section of all the [SystemChat] composables. It is meants ot
      * act as a layout guide for how all [SystemChat] implementations should look
