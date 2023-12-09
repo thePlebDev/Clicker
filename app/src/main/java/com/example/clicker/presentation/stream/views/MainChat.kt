@@ -445,6 +445,7 @@ object MainChat{
     private object ChatBuilder{
 
         /**
+         *
          * ScrollableChat  is the basic layout for the user chat experience. A example of what the typical UI looks like
          * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#ScrollableChat)
          * */
