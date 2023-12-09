@@ -74,6 +74,86 @@ object SystemChats {
     //slotting layout means that it is a builder
     // MainChatting is a builder
 
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun IndividualChatMessages(
+        twitchUser: TwitchUserData,
+        restartWebSocket: () -> Unit,
+        bottomModalState: ModalBottomSheetState,
+        deleteMessage: (String) -> Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    ){
+        MainChatBuilder.MainChatting(
+            twitchUser =twitchUser,
+            individualSwipableChatMessage = {
+                SwipeToDeleteChatMessages(
+                    twitchUser = twitchUser,
+                    bottomModalState = bottomModalState,
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    deleteMessage = { messageId -> deleteMessage(messageId) },
+                )
+            },
+            noticeMessage = {
+                SystemChats.NoticeMessage(
+                    color = Color.White,
+                    displayName = twitchUser.displayName,
+                    message = twitchUser.userType
+                )
+            },
+            announcementMessage = {
+                SystemChats.AnnouncementMessage(
+                    displayName = twitchUser.displayName,
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            resubMessage = {
+                SystemChats.ResubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            subMessage = {
+                SystemChats.SubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            giftSubMessage = {
+                SystemChats.GiftSubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            mysterySubMessage = {
+                SystemChats.MysteryGiftSubMessage(
+                    message = twitchUser.userType,
+                    systemMessage = twitchUser.systemMessage
+                )
+            },
+            errorMessage = {
+                SystemChats.ErrorMessage(
+                    message = twitchUser.userType!!,
+                    alterMessage = twitchUser.displayName!!,
+                    restartWebSocket = { restartWebSocket() }
+                )
+            },
+            joinMessage = {
+                SystemChats.JoinMessage(
+                    message = twitchUser.userType!!
+                )
+            }
+        )
+
+    }
+
 
     /**
      * Composable function meant to display a message to the user indicating a reSub event has occurred
@@ -280,85 +360,6 @@ object SystemChats {
             color = color,
             displayName = displayName,
             message = message
-        )
-
-    }
-    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    fun IndividualChatMessages(
-        twitchUser: TwitchUserData,
-        restartWebSocket: () -> Unit,
-        bottomModalState: ModalBottomSheetState,
-        deleteMessage: (String) -> Unit,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-    ){
-        MainChatBuilder.MainChatting(
-            twitchUser =twitchUser,
-            individualSwipableChatMessage = {
-                SwipeToDeleteChatMessages(
-                    twitchUser = twitchUser,
-                    bottomModalState = bottomModalState,
-                    updateClickedUser = { username, userId, banned, isMod ->
-                        updateClickedUser(
-                            username,
-                            userId,
-                            banned,
-                            isMod
-                        )
-                    },
-                    deleteMessage = { messageId -> deleteMessage(messageId) },
-                    )
-                                            },
-            noticeMessage = {
-                SystemChats.NoticeMessage(
-                    color = Color.White,
-                    displayName = twitchUser.displayName,
-                    message = twitchUser.userType
-                )
-            },
-            announcementMessage = {
-                SystemChats.AnnouncementMessage(
-                    displayName = twitchUser.displayName,
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            },
-            resubMessage = {
-                SystemChats.ResubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            },
-            subMessage = {
-                SystemChats.SubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            },
-            giftSubMessage = {
-                SystemChats.GiftSubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            },
-            mysterySubMessage = {
-                SystemChats.MysteryGiftSubMessage(
-                    message = twitchUser.userType,
-                    systemMessage = twitchUser.systemMessage
-                )
-            },
-            errorMessage = {
-                SystemChats.ErrorMessage(
-                    message = twitchUser.userType!!,
-                    alterMessage = twitchUser.displayName!!,
-                    restartWebSocket = { restartWebSocket() }
-                )
-            },
-        joinMessage = {
-            SystemChats.JoinMessage(
-                message = twitchUser.userType!!
-            )
-        }
         )
 
     }

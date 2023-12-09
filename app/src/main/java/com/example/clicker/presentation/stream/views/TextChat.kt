@@ -38,12 +38,21 @@ import kotlinx.coroutines.launch
  *
  * */
 object TextChat{
-    // Anything at this level can be used anywhere in the code base
-    // how to determine where the composable should go
-    //1) if it uses the slot layout then it is a builder
-    //2) if it does not use the slot layout and is only used inside of this declaration then it is a part
-    //3) parts are allowed to be made up of multiple parts
-    //4) if it does not contain a slot layout and is used elsewhere in the code base, then it goes at the top level and is considered an implementation
+
+
+    /**
+     * This is the public facing API composable for the [TextChat] object. Placing EnterChat in the code base will
+     * give the user full access to the active typing experience
+     *
+     * @param modifier a modifier used to determine where this Composable should be placed in a box. the typical is BottomCenter
+     * @param filteredChatList a list of filtered usernames that is shown when the user types @
+     * @param textFieldValue a value of what the user is currently typing
+     * @param clickedAutoCompleteText a function to do autocomplete to the [textFieldValue] when run
+     * @param modStatus a boolean that determines if the user is a moderator or not
+     * @param filterMethod a method used to filter out the proper  usernames from [filteredChatList]
+     * @param sendMessageToWebSocket a function that is used to send the message to the websocket hooked up to the TwitchIRC server
+     * @param showModal a function to run to show the bottom modal when a individual chat message is clicked
+     * */
     @Composable
     fun EnterChat(
         modifier: Modifier,
@@ -55,7 +64,7 @@ object TextChat{
         sendMessageToWebSocket: (String) -> Unit,
         showModal: () -> Unit
     ){
-        ChatBuilders.EnterChat(
+        TextChatBuilders.EnterChat(
             modifier = modifier,
             filteredRow = {
                 TextChatParts.FilteredMentionLazyRow(
@@ -69,13 +78,21 @@ object TextChat{
                     }
                 )
             },
-            enterChatBox = {
-                TextChat.TextFieldChat(
+            showModStatus = {
+                TextChatParts.ShowModStatus(modStatus =modStatus)
+            },
+            stylizedTextField ={boxModifier ->
+                TextChatParts.StylizedTextField(
+                    modifier = boxModifier,
                     textFieldValue = textFieldValue,
-                    modStatus = modStatus,
-                    filterMethod = { username, text -> filterMethod(username, text) },
-                    chat = { chatMessage -> sendMessageToWebSocket(chatMessage) },
-                    showModal = { showModal() }
+                    filterMethod ={username, newText -> filterMethod(username,newText)}
+                )
+            },
+            showIconBasedOnTextLength ={
+                TextChatParts.ShowIconBasedOnTextLength(
+                    textFieldValue =textFieldValue,
+                    chat = {item -> sendMessageToWebSocket(item)},
+                    showModal ={showModal()}
                 )
             }
         )
@@ -84,60 +101,54 @@ object TextChat{
 
 
 
-    @Composable
-    fun TextFieldChat(
-        textFieldValue: MutableState<TextFieldValue>,
-        modStatus: Boolean?,
-        filterMethod: (String, String) -> Unit,
-        chat: (String) -> Unit,
-        showModal: () -> Unit
-    ) {
 
-        Row(
-            modifier = Modifier.background(MaterialTheme.colorScheme.primary),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            //This should be its own composable too
-            if (modStatus != null && modStatus == true) {
-                AsyncImage(
-                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
-                )
-            }
-            TextChatParts.StylizedTextField(
-                modifier = Modifier.weight(2f),
-                textFieldValue = textFieldValue,
-                filterMethod ={username, newText -> filterMethod(username,newText)}
-            )
+    /**
+     * TextChatBuilders is the most generic section of all the [TextChat] composables. It is meant to
+     * act as a layout guide for how all [TextChat] implementations should look
+     * */
+    private object TextChatBuilders{
 
-            TextChatParts.ShowIconBasedOnTextLength(
-                textFieldValue =textFieldValue,
-                chat = {item -> chat(item)},
-                showModal ={showModal()}
-            )
-        }
-    }
-
-    // the modifier should be Modifier.weight(2f)
-
-
-
-    private object ChatBuilders{
+        /**
+         * The basic layout of the text box users use to enter and share chat to the server. An example of what a typical composable
+         * looks like can be seen, [HERE](https://theplebdev.github.io/Modderz-style-guide/#enterchat-)
+         *
+         * @param modifier this modifier is used to position the chat box inside of the [MainChat] builders. The modifier for
+         * this builder is .align(Alignment.BottomCenter).fillMaxWidth()
+         * @param filteredRow a Composable meant to represent the list of filtered usernames. [TextChatParts.FilteredMentionLazyRow] is used to
+         * implement this functionality
+         * @param showModStatus a Composable meant to determine if there should be a Mod icon shown to the user.
+         * [TextChatParts.ShowModStatus] is the implementation of this functionality
+         * @param stylizedTextField a composable that acts a simple text field that users can enter their chat messages to.
+         * [TextChatParts.StylizedTextField] is the implementation of this functionality
+         * @param showIconBasedOnTextLength a composable that determines which Icon to show depending on length of the characters inside of the [stylizedTextField]
+         * [TextChatParts.ShowIconBasedOnTextLength] is the implementation of this functionality
+         *
+         * */
         @Composable
         fun EnterChat(
             modifier: Modifier,
             filteredRow:@Composable () -> Unit,
-            enterChatBox:@Composable () -> Unit,
+
+            showModStatus:@Composable () -> Unit,
+            stylizedTextField:@Composable (modifier:Modifier) -> Unit,
+            showIconBasedOnTextLength:@Composable () -> Unit,
         ) {
 
             Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
                 filteredRow()
-                enterChatBox()
+                Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
+                    verticalAlignment = Alignment.CenterVertically){
+                    showModStatus()
+                    stylizedTextField(modifier = Modifier.weight(2f))
+                    showIconBasedOnTextLength()
+                }
             }
         }
     }
 
     private object TextChatParts{
+
+
         /**
          * This composable represents a stylized text item that has the ability to auto complete the [textFieldValue]
          * when this text is clicked
@@ -193,6 +204,8 @@ object TextChat{
             }
         }
 
+
+
         /**
          * A Composable that will show an Icon based on the length of [textFieldValue]. If the length is greater than 0 then
          * the [ArrowForward] will be shown. If the length is less then or equal to 0 then the [MoreVert] will be shown
@@ -230,7 +243,16 @@ object TextChat{
             }
         }
 
-        // need to document this
+
+
+        /**
+         * A styled [TextField] to allow the user to enter chat messages
+         *
+         * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
+         * @param textFieldValue The value that the user it currently typing in
+         * @param filterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
+         *
+         * */
         @Composable
         fun StylizedTextField(
             modifier: Modifier,
@@ -271,6 +293,23 @@ object TextChat{
                 )
             }
 
+        }
+
+        /**
+         * A composable meant to show a moderator Icon based on the status of [modStatus]
+         *
+         * @param modStatus a boolean meant to determine if the user is a moderator or not.
+         * */
+        @Composable
+        fun ShowModStatus(
+            modStatus: Boolean?,
+        ){
+            if (modStatus != null && modStatus == true) {
+                AsyncImage(
+                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
+                )
+            }
         }
     }// end of TextChatParts
 
