@@ -38,13 +38,25 @@ data class TimeListData(
 )
 
 /**
- * DialogBuilder outlines for the possible Dialogs being inside of this app. It currently contains 1 component:
- *
- * - [RadioButtonDialog] : Meant to represent a dialog that pops up to the user,
- * giving a number of choices, text field and a confirm/deny button
+ * Dialogs contains all the composables responsible for creating all the dialogs shown throughout this application
  *
  * */
 object Dialogs{
+
+    /**
+     * TimeoutDialog is a implementation used inside of [BottomModal.BanTimeOutDialogs] to shown to the user when they want
+     * to time out a user
+     *
+     * @param onDismissRequest A function that is used to hide this dialog
+     * @param username A string to be shown on the dialog. This will be the user who's message was clicked on
+     * @param timeoutDuration A integer representing the amount of time (in seconds) a user is banned for
+     * @param timeoutReason A String representing a reason why the user is timed out
+     * @param changeTimeoutDuration A function used to change the [timeoutDuration]
+     * @param changeTimeoutReason A function used to change the [timeoutReason]
+     * @param closeDialog a function that is used to close the dialog and the bottom modal
+     * @param timeOutUser a function that will trigger the proccess to ban the user
+     *
+     * */
     @Composable
     fun TimeoutDialog(
         onDismissRequest: () -> Unit,
@@ -115,6 +127,19 @@ object Dialogs{
     }
 
 
+
+    /**
+     * BanDialog is a implementation used inside of [BottomModal.BanTimeOutDialogs] to shown to the user when they want
+     * to ban a user
+     *
+     * @param onDismissRequest a function meant to close the dialog
+     * @param username A string representing the username of the user's chat message clicked
+     * @param banReason A string representing the reasons the user is getting banned
+     * @param changeBanReason a function meant to change the [banReason]
+     * @param banUser a function used to send the ban request to the Twitch server
+     * @param clickedUserId a String representing the clicked user's id, this is used inside the [banUser] function
+     * @param closeDialog a function meant to close the dialog and the bottom modal
+     * */
     @Composable
     fun BanDialog(
         onDismissRequest: () -> Unit,
