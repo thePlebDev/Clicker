@@ -7,7 +7,6 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,30 +14,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DrawerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
@@ -53,18 +44,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
 
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+
 
 /**Extension function used to determine if the use has scrolled to the end of the chat*/
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
@@ -102,7 +99,7 @@ object MainChat{
         clickedAutoCompleteText: (String, String) -> String,
         textFieldValue: MutableState<TextFieldValue>,
         channelName: String?,
-        drawerState: DrawerState,
+        drawerState: androidx.compose.material3.DrawerState,
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -472,6 +469,89 @@ object MainChat{
         }
 
     }
+}
+@Composable
+fun ChatBadges(
+    username: String,
+    message: String,
+    isMod: Boolean,
+    isSub: Boolean,
+    color: Color,
+    textSize: TextUnit
+) {
+    //for not these values can stay here hard coded. Until I implement more Icon
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val modId = "modIcon"
+    val subId = "subIcon"
+    val text = buildAnnotatedString {
+        // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
+        if (isMod) {
+            appendInlineContent(modId, "[icon]")
+        }
+        if (isSub) {
+            appendInlineContent(subId, "[subicon]")
+        }
+        withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
+            append(username)
+        }
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
+            append(message)
+        }
+    }
+
+    val inlineContent = mapOf(
+        Pair(
+
+            modId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = 20.sp,
+                    height = 20.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            subId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = 20.sp,
+                    height = 20.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = stringResource(R.string.sub_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        )
+    )
+
+    Text(
+        text = text,
+        inlineContent = inlineContent,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        color = color,
+        fontSize = textSize
+    )
 }
 
 

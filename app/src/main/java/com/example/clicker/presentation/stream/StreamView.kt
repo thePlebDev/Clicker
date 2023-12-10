@@ -9,9 +9,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -22,62 +20,29 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.DismissDirection
-import androidx.compose.material.DismissValue
-import androidx.compose.material.DismissValue.Default
-import androidx.compose.material.Divider
-import androidx.compose.material.DrawerState
-import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.ModalDrawer
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.Switch
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -90,40 +55,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.BanUser
-import com.example.clicker.network.BanUserData
 import com.example.clicker.network.models.ChatSettingsData
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.MainChat
-import com.example.clicker.presentation.stream.views.SystemChats
 import com.example.clicker.util.Response
+import com.example.clicker.util.SwipeableActionsState
 import com.example.clicker.util.rememberSwipeableActionsState
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -132,7 +86,7 @@ fun StreamView(
     homeViewModel: HomeViewModel
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
     val filteredChat = streamViewModel.filteredChatList
@@ -229,7 +183,7 @@ fun StreamView(
                                     closeDialog = {
                                         openBanDialog.value = false
                                         scope.launch { bottomModalState.hide() }
-                                                  },
+                                    },
                                     closeBottomModal = {
                                         scope.launch {
                                             openBanDialog.value = false
@@ -244,9 +198,9 @@ fun StreamView(
                     )
                 }
             ) {
-                ModalDrawer(
+                SideModal(
                     drawerState = drawerState,
-                    drawerContent = {
+                    drawerContent={
                         DrawerContent(
                             chatSettingData,
                             showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
@@ -281,71 +235,90 @@ fun StreamView(
                             changeOneClickActionsStatus={checkedStatus -> oneClickActionsChecked = checkedStatus}
 
                         )
+                    },
+                    contentCoveredBySideModal = {
+                        TextChat(
+                            twitchUserChat = twitchUserChat,
+                            sendMessageToWebSocket = { string ->
+                                streamViewModel.sendMessage(string)
+                            },
+                            drawerState = drawerState,
+                            modStatus = modStatus,
+                            bottomModalState = bottomModalState,
+                            filteredChatList = filteredChat,
+                            filterMethod = { username, newText ->
+                                streamViewModel.filterChatters(
+                                    username,
+                                    newText
+                                )
+                            },
+                            clickedAutoCompleteText = { fullText, clickedText ->
+                                streamViewModel.autoTextChange(
+                                    fullText,
+                                    clickedText
+                                )
+                            },
+                            addChatter = { username, message ->
+                                streamViewModel.addChatter(
+                                    username,
+                                    message
+                                )
+                            },
+                            updateClickedUser = { username, userId, banned, isMod ->
+                                streamViewModel.updateClickedChat(
+                                    username,
+                                    userId,
+                                    banned,
+                                    isMod
+                                )
+                            },
+                            textFieldValue = streamViewModel.textFieldValue,
+                            channelName = streamViewModel.channelName.collectAsState().value,
+                            deleteMessage = { messageId ->
+                                streamViewModel.deleteChatMessage(
+                                    messageId
+                                )
+                            },
+
+                            banResponse = streamViewModel.state.value.banResponse,
+                            undoBan = { streamViewModel.unBanUser() },
+                            undoBanResponse = streamViewModel.state.value.undoBanResponse,
+                            showStickyHeader = streamViewModel.state.value.showStickyHeader,
+                            closeStickyHeader = { streamViewModel.closeStickyHeader() },
+                            banResponseMessage = streamViewModel.state.value.banResponseMessage,
+                            removeUnBanButton = { streamViewModel.removeUnBanButton() },
+                            restartWebSocket = { streamViewModel.restartWebSocket() },
+                            showOneClickAction = oneClickActionsChecked,
+                            oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
+                            oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
+                        )
                     }
-                ) {
-                    // put the pull to refresh here
+                )
+            } // end of the bottom modal
 
-                    TextChat(
-                        twitchUserChat = twitchUserChat,
-                        sendMessageToWebSocket = { string ->
-                            streamViewModel.sendMessage(string)
-                        },
-                        drawerState = drawerState,
-                        modStatus = modStatus,
-                        bottomModalState = bottomModalState,
-                        filteredChatList = filteredChat,
-                        filterMethod = { username, newText ->
-                            streamViewModel.filterChatters(
-                                username,
-                                newText
-                            )
-                        },
-                        clickedAutoCompleteText = { fullText, clickedText ->
-                            streamViewModel.autoTextChange(
-                                fullText,
-                                clickedText
-                            )
-                        },
-                        addChatter = { username, message ->
-                            streamViewModel.addChatter(
-                                username,
-                                message
-                            )
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            streamViewModel.updateClickedChat(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        textFieldValue = streamViewModel.textFieldValue,
-                        channelName = streamViewModel.channelName.collectAsState().value,
-                        deleteMessage = { messageId ->
-                            streamViewModel.deleteChatMessage(
-                                messageId
-                            )
-                        },
 
-                        banResponse = streamViewModel.state.value.banResponse,
-                        undoBan = { streamViewModel.unBanUser() },
-                        undoBanResponse = streamViewModel.state.value.undoBanResponse,
-                        showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                        closeStickyHeader = { streamViewModel.closeStickyHeader() },
-                        banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                        removeUnBanButton = { streamViewModel.removeUnBanButton() },
-                        restartWebSocket = { streamViewModel.restartWebSocket() },
-                        showOneClickAction = oneClickActionsChecked,
-                        oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
-                        oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
-                    )
-                }
-            }
         }
     }
 }
 
+@Composable
+fun SideModal(
+    drawerState: DrawerState,
+    contentCoveredBySideModal:@Composable () -> Unit,
+    drawerContent:@Composable () -> Unit,
+
+){
+    ModalNavigationDrawer(
+        drawerState =drawerState,
+        drawerContent ={
+            ModalDrawerSheet{
+                drawerContent()
+            }
+        }
+    ){
+        contentCoveredBySideModal()
+    }
+}
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -856,8 +829,8 @@ fun TextChat(
         bottomModalState =bottomModalState,
         restartWebSocket ={restartWebSocket()},
         banResponseMessage =banResponseMessage,
-        updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
-        deleteMessage ={messageId -> deleteMessage(messageId)},
+        updateClickedUser ={ username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)},
+        deleteMessage ={ messageId -> deleteMessage(messageId)},
         sendMessageToWebSocket ={ text -> sendMessageToWebSocket(text) },
         modStatus = modStatus,
         filteredChatList = filteredChatList,
@@ -902,89 +875,7 @@ fun SwipeToDeleteChatMessages(
     )
 }
 
-@Composable
-fun ChatBadges(
-    username: String,
-    message: String,
-    isMod: Boolean,
-    isSub: Boolean,
-    color: Color,
-    textSize: TextUnit
-) {
-    //for not these values can stay here hard coded. Until I implement more Icon
-    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
-    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
-    val modId = "modIcon"
-    val subId = "subIcon"
-    val text = buildAnnotatedString {
-        // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
-        if (isMod) {
-            appendInlineContent(modId, "[icon]")
-        }
-        if (isSub) {
-            appendInlineContent(subId, "[subicon]")
-        }
-        withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
-            append(username)
-        }
-        withStyle(style = SpanStyle(color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)) {
-            append(message)
-        }
-    }
 
-    val inlineContent = mapOf(
-        Pair(
-
-            modId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 20.sp,
-                    height = 20.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = modBadge,
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-        Pair(
-
-            subId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 20.sp,
-                    height = 20.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = subBadge,
-                    contentDescription = stringResource(R.string.sub_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        )
-    )
-
-    Text(
-        text = text,
-        inlineContent = inlineContent,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp),
-        color = color,
-        fontSize = textSize
-    )
-}
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -1045,6 +936,45 @@ fun ChatCard(
 
     Log.d("deleteChatMessageException", "WTwitchUser.userId---> ${twitchUser.userId}")
 
+    DetectSwipeBox(
+        backgroundColor =backgroundColor,
+        dragState =dragState,
+        state =state,
+        thresholdCrossed =thresholdCrossed,
+        deleteMessage ={messageId ->deleteMessage(messageId)},
+        twitchUserId = twitchUser.id,
+        cardThatMoves={
+            ClickableCard(
+                twitchUser =twitchUser,
+                color = color,
+                bottomModalState = bottomModalState,
+                offset = offset,
+                fontSize = fontSize,
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                }
+            )
+        }
+    )
+}
+
+@Composable
+fun DetectSwipeBox(
+    backgroundColor:Color,
+    dragState: DraggableState,
+    state: SwipeableActionsState,
+    thresholdCrossed: Boolean,
+    deleteMessage: (String) -> Unit,
+    twitchUserId:String?,
+    cardThatMoves:@Composable () -> Unit,
+
+){
+    val scope = rememberCoroutineScope()
     Box(
         Modifier
             .fillMaxWidth()
@@ -1059,77 +989,103 @@ fun ChatCard(
 
                         if (thresholdCrossed) {
                             state.resetOffset()
-                            deleteMessage(twitchUser.id ?: "")
+                            deleteMessage(twitchUserId ?: "")
                         } else {
                             state.resetOffset()
                         }
                     }
                 },
                 onDragStarted = {
-                    Log.d("TESTINGTHEVIEWTHINGS", "onDragStarted --->${it.x}")
+
                 }
 
             )
 
     ) {
+        cardThatMoves()
+    }
+}
 
-        Column(
-            verticalArrangement = Arrangement.Center
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ClickableCard(
+    twitchUser: TwitchUserData,
+    color: Color,
+    offset: Float,
+    bottomModalState: ModalBottomSheetState,
+    fontSize:TextUnit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-                    .combinedClickable(
-                        onClick = {
-                            updateClickedUser(
-                                twitchUser.displayName.toString(),
-                                twitchUser.userId.toString(),
-                                twitchUser.banned,
-                                twitchUser.mod != "1"
-                            )
-                            coroutineScope.launch {
-                                bottomModalState.show()
-                            }
-                        }
-                    ),
-                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                border = BorderStroke(2.dp, androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-
-            ) {
-                Column() {
-                    if (twitchUser.deleted) {
-                        Text(
-                            stringResource(R.string.moderator_deleted_comment),
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(start = 5.dp),
-                            color = MaterialTheme.colors.onPrimary
-                        )
-                    }
-
-                    if (twitchUser.banned) {
-                        val duration = if (twitchUser.bannedDuration != null) "Banned for ${twitchUser.bannedDuration} seconds" else "Banned permanently"
-                        Text(duration, fontSize = 20.sp, modifier = Modifier.padding(start = 5.dp))
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        ChatBadges(
-                            username = "${twitchUser.displayName} :",
-                            message = " ${twitchUser.userType}",
-                            isMod = twitchUser.mod == "1",
-                            isSub = twitchUser.subscriber == true,
-                            color = color,
-                            textSize = fontSize
-                        )
-
-                    } // end of the row
+){
+    val coroutineScope = rememberCoroutineScope()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+            .clickable {
+                updateClickedUser(
+                    twitchUser.displayName.toString(),
+                    twitchUser.userId.toString(),
+                    twitchUser.banned,
+                    twitchUser.mod != "1"
+                )
+                coroutineScope.launch {
+                    bottomModalState.show()
                 }
-            } // end of the Card
+            },
+        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+        border = BorderStroke(2.dp, androidx.compose.material3.MaterialTheme.colorScheme.secondary)
 
+    ) {
+        Column() {
+            CheckIfUserDeleted(twitchUser = twitchUser)
+            CheckIfUserIsBanned(twitchUser = twitchUser)
+            TextWithChatBadges(
+                twitchUser = twitchUser,
+                color = color,
+                fontSize = fontSize
+            )
         }
     }
 }
 
+@Composable
+fun CheckIfUserDeleted(twitchUser: TwitchUserData){
+    if (twitchUser.deleted) {
+        Text(
+            stringResource(R.string.moderator_deleted_comment),
+            fontSize = 20.sp,
+            modifier = Modifier.padding(start = 5.dp),
+            color = MaterialTheme.colors.onPrimary
+        )
+    }
+}
+@Composable
+fun CheckIfUserIsBanned(twitchUser: TwitchUserData){
+    if (twitchUser.banned) {
+        val duration = if (twitchUser.bannedDuration != null) "Banned for ${twitchUser.bannedDuration} seconds" else "Banned permanently"
+        Text(duration, fontSize = 20.sp, modifier = Modifier.padding(start = 5.dp))
+    }
+}
+@Composable
+fun TextWithChatBadges(
+    twitchUser: TwitchUserData,
+    color:Color,
+    fontSize: TextUnit
+
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        ChatBadges(
+            username = "${twitchUser.displayName} :",
+            message = " ${twitchUser.userType}",
+            isMod = twitchUser.mod == "1",
+            isSub = twitchUser.subscriber == true,
+            color = color,
+            textSize = fontSize
+        )
+
+    } // end of the row
+}
