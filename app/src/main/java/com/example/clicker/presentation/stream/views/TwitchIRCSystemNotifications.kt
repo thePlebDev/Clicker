@@ -36,9 +36,7 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserAnnouncement
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.stream.SwipeToDeleteChatMessages
-import com.example.clicker.presentation.stream.views.BottomModal.ClickedUserMessages
-import com.example.clicker.presentation.stream.views.BottomModal.ContentBanner
-import com.example.clicker.presentation.stream.views.BottomModal.ContentBottom
+
 import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystemNotificationsBuilder.SystemChat
 
 //parts builders implementations (PBI architecture for short)

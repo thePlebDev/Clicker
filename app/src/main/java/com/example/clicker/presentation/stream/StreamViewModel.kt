@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -111,6 +112,8 @@ class StreamViewModel @Inject constructor(
             selection = TextRange(0)
         )
     )
+    val openTimeoutDialog = mutableStateOf(false)
+    val openBanDialog = mutableStateOf(false)
 
 
     var filteredChatList = mutableStateListOf<String>()

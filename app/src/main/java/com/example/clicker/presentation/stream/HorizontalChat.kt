@@ -123,8 +123,7 @@ fun HorizontalChat(
         skipHalfExpanded = true
     )
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
-    val openTimeoutDialog = remember { mutableStateOf(false) }
-    val openBanDialog = remember { mutableStateOf(false) }
+
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
     val filteredChat = streamViewModel.filteredChatList
@@ -148,9 +147,9 @@ fun HorizontalChat(
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                 unbanUser = { streamViewModel.unBanUser() },
                 isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-                openTimeoutDialog = { openTimeoutDialog.value = true },
-                closeTimeoutDialog = { openTimeoutDialog.value = false },
-                timeOutDialogOpen = openTimeoutDialog.value,
+                openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+                closeTimeoutDialog = { streamViewModel.openTimeoutDialog.value = false },
+                timeOutDialogOpen = streamViewModel.openTimeoutDialog.value,
                 timeoutDuration = streamViewModel.state.value.timeoutDuration,
                 timeoutReason = streamViewModel.state.value.timeoutReason,
                 changeTimeoutDuration = { duration ->
@@ -164,18 +163,18 @@ fun HorizontalChat(
                     )
                 },
                 closeDialog = {
-                    openTimeoutDialog.value = false
+                    streamViewModel.openTimeoutDialog.value = false
                     scope.launch { bottomModalState.hide() }
 
                 },
                 timeOutUser = {
                     streamViewModel.timeoutUser()
                 },
-                banDialogOpen = openBanDialog.value,
-                openBanDialog = { openBanDialog.value = true },
+                banDialogOpen = streamViewModel.openBanDialog.value,
+                openBanDialog = { streamViewModel.openBanDialog.value = true },
                 closeBanDialog = {
                     scope.launch {
-                        openBanDialog.value = false
+                        streamViewModel.openBanDialog.value = false
 
                     }
                 },
