@@ -51,18 +51,46 @@ import com.example.clicker.presentation.stream.views.Dialogs.TimeoutDialog
 import kotlinx.coroutines.launch
 
 /**
- * BottomModal pops up when the user clicks on an individual chat message during stream chat.
- * It contains 3 components:
- *
- * - [ContentBanner] : shown at the top of the [ModalBottomSheetLayout]. Displays clicked username and reply button
- *
- * - [ContentBottom]: shown below [ContentBanner], contains ban, unban and timeout buttons
- *
- * - [ClickedUserMessages] : Shown below [ContentBottom] and displays a list of clickedUsername's chat
+ * BottomModal contains all the composables responsible for creating the entire experience when a user clicks on a
+ * individual chat message.
  *
  * */
 object BottomModal{
-    //below is the implementation
+
+    /**
+     * BanTimeOutDialogs contains everything that is shown inside of a [ModalBottomSheetLayout] when a user clicks the
+     * individual chat. Also, it contains [Dialogs.TimeoutDialog] and [Dialogs.BanDialog] to handle if the user wants to
+     * ban or timeout a user
+     *
+     * @param clickedUsernameChats a list of all the clicked username's chat messages. It will update in real time
+     * @param clickedUsername the username of the clicked chat message
+     * @param bottomModalState the state for the [ModalBottomSheetLayout] and determines if the bottom modal should pop up or no
+     * @param textFieldValue A string value meant to represent what the user is typing. This is used when the user hits the reply
+     * functionality on the [BottomModalParts.ContentBanner]
+     * @param closeBottomModal A function meant to close the [ModalBottomSheetLayout]
+     * @param banned A boolean to determine if the user is banned or not
+     * @param isMod A boolean to determine if the user is a mod or not
+     * @param unbanUser A function that will be used to unban a user
+     * @param openTimeoutDialog A function that when trigger will shown the [Dialogs.TimeoutDialog]
+     * @param closeTimeoutDialog A function that when trigger will close the [Dialogs.TimeoutDialog]
+     * @param timeOutDialogOpen A Boolean to determine if the [Dialogs.TimeoutDialog] should be shown or not
+     *
+     *
+     * @param timeoutDuration An integer meant to represent the amount of time(in seconds) a user is timed out
+     * @param timeoutReason A String that is given to represent why the user is timed out
+     * @param changeTimeoutDuration a function meant to change the [timeoutDuration]
+     * @param changeTimeoutReason A function meant to change the [timeoutReason]
+     * @param closeDialog A function meant to close the Dialogs.TimeoutDialog]
+     * @param timeOutUser A function that will actually send the request to timeout the user
+     *
+     * @param banDialogOpen A boolean to determine if the [Dialogs.BanDialog] should be shown
+     * @param openBanDialog A function that is used to show the [Dialogs.BanDialog]
+     * @param closeBanDialog A function that is used to close the [Dialogs.BanDialog]
+     * @param banReason A string meant to represent the reason a user is getting banned
+     * @param changeBanReason  A function meant the change the [banReason]
+     * @param banUser A function that will actually ban the user
+     * @param clickedUserId A string representing the UserId of the user that we have clicked
+     * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun BanTimeOutDialogs(
@@ -154,7 +182,18 @@ object BottomModal{
         )
     }
 
+    /**
+     * BottomModalBuilders represents the most generic parts of all [BottomModal]. The builder is meant to be a design layout
+     * meaning that all implementations that use this builder will share the same basic design layout
+     * */
     private object BottomModalBuilders{
+
+
+        /**
+         *
+         * BottomModalContent is the basic layout for the bottom modal and dialog experience. A example of what the typical UI looks like
+         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#BottomModalContent)
+         * */
         @OptIn(ExperimentalMaterialApi::class)
         @Composable
         fun BottomModalContent(
