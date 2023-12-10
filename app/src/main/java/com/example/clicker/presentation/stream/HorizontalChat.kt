@@ -139,9 +139,7 @@ fun HorizontalChat(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
         sheetState = bottomModalState,
         sheetContent = {
-            BottomModalContent(
-
-                // TODO: this should 100% not be filteredChat. Need to create new variable
+            BottomModal.BanTimeOutDialogs(
                 clickedUsernameChats = clickedUsernameChats,
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                 bottomModalState = bottomModalState,
@@ -150,70 +148,41 @@ fun HorizontalChat(
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                 unbanUser = { streamViewModel.unBanUser() },
                 isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-                openTimeoutDialog = {openTimeoutDialog.value = true},
-                timeoutDialogContent ={
-                    if(openTimeoutDialog.value){
-                        BottomModal.TimeoutDialog(
-                            onDismissRequest = {
-                                openTimeoutDialog.value = false
-                            },
-                            username = streamViewModel.clickedUIState.value.clickedUsername,
-                            timeoutDuration = streamViewModel.state.value.timeoutDuration,
-                            timeoutReason = streamViewModel.state.value.timeoutReason,
-                            changeTimeoutDuration = { duration ->
-                                streamViewModel.changeTimeoutDuration(
-                                    duration
-                                )
-                            },
-                            changeTimeoutReason = { reason ->
-                                streamViewModel.changeTimeoutReason(
-                                    reason
-                                )
-                            },
-                            closeDialog = {
-                                openTimeoutDialog.value = false
-                                scope.launch { bottomModalState.hide() }
+                openTimeoutDialog = { openTimeoutDialog.value = true },
+                closeTimeoutDialog = { openTimeoutDialog.value = false },
+                timeOutDialogOpen = openTimeoutDialog.value,
+                timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                timeoutReason = streamViewModel.state.value.timeoutReason,
+                changeTimeoutDuration = { duration ->
+                    streamViewModel.changeTimeoutDuration(
+                        duration
+                    )
+                },
+                changeTimeoutReason = { reason ->
+                    streamViewModel.changeTimeoutReason(
+                        reason
+                    )
+                },
+                closeDialog = {
+                    openTimeoutDialog.value = false
+                    scope.launch { bottomModalState.hide() }
 
-                            },
-                            timeOutUser = {
-                                streamViewModel.timeoutUser()
-                            }
-                        )
+                },
+                timeOutUser = {
+                    streamViewModel.timeoutUser()
+                },
+                banDialogOpen = openBanDialog.value,
+                openBanDialog = { openBanDialog.value = true },
+                closeBanDialog = {
+                    scope.launch {
+                        openBanDialog.value = false
+
                     }
                 },
-                openBanDialog = {openBanDialog.value = true},
-                banDialogContent ={
-                    if(openBanDialog.value){
-                        BottomModal.BanDialog(
-                            onDismissRequest = {
-                                openBanDialog.value = false
-                            },
-                            username = streamViewModel.clickedUIState.value.clickedUsername,
-                            banDuration = streamViewModel.state.value.banDuration,
-                            banReason = streamViewModel.state.value.banReason,
-                            changeBanDuration = { duration ->
-                                streamViewModel.changeBanDuration(
-                                    duration
-                                )
-                            },
-                            changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
-                            banUser = { banUser -> streamViewModel.banUser(banUser) },
-                            clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
-                            closeDialog = {
-                                openBanDialog.value = false
-                                scope.launch { bottomModalState.hide() }
-                            },
-                            closeBottomModal = {
-                                scope.launch {
-                                    openBanDialog.value = false
-                                    bottomModalState.hide()
-                                }
-                            }
-                        )
-                    }
-
-                }
-
+                banReason = streamViewModel.state.value.banReason,
+                changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
+                banUser = { banUser -> streamViewModel.banUser(banUser) },
+                clickedUserId = streamViewModel.clickedUIState.value.clickedUserId
             )
         }
     ) {
@@ -318,227 +287,3 @@ fun HorizontalChat(
 
 }
 
-
-
-@Composable
-fun HorizontalTimeoutDialog(
-    onDismissRequest: () -> Unit,
-    clickedUsername: String,
-    timeoutDuration: Int,
-    timeoutReason: String,
-    changeTimeoutDuration: (Int) -> Unit,
-    changeTimeoutReason: (String) -> Unit,
-    timeOutUser: () -> Unit
-){
-    val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-    val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
-    val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-    val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-    Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            backgroundColor = primary,
-            border = BorderStroke(2.dp,secondary)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .background(primary)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Text(stringResource(R.string.timeout_text), fontSize = 22.sp,color = onPrimary)
-                    Text(clickedUsername, fontSize = 22.sp,color = onPrimary)
-                }
-                androidx.compose.material.Divider(
-                    color = secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(stringResource(R.string.duration_text),color = onPrimary)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = timeoutDuration == 60,
-                            onClick = {
-                                changeTimeoutDuration(60)
-                            }
-                        )
-                        Text(stringResource(R.string.one_minute),color = onPrimary)
-                    }
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = timeoutDuration == 600,
-                            onClick = {
-                                changeTimeoutDuration(600)
-                            }
-                        )
-                        Text(stringResource(R.string.ten_minutes),color = onPrimary)
-                    }
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = timeoutDuration == 1800,
-                            onClick = {
-                                changeTimeoutDuration(1800)
-                            }
-                        )
-                        Text(stringResource(R.string.thirty_minutes),color = onPrimary)
-                    }
-                    Column {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = timeoutDuration == 604800,
-                            onClick = {
-                                changeTimeoutDuration(604800)
-                            }
-                        )
-                        Text(stringResource(R.string.one_week),color = onPrimary)
-                    }
-                }
-                OutlinedTextField(
-                    colors= TextFieldDefaults.textFieldColors(
-                        textColor = onPrimary, focusedLabelColor = onPrimary,
-                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                    value = timeoutReason,
-                    onValueChange = {
-                        changeTimeoutReason(it)
-                                    },
-                    label = { Text(stringResource(R.string.reason)) }
-                )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Button(
-                        onClick = { onDismissRequest() },
-                        modifier = Modifier.padding(10.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = secondary)
-                    ) {
-                        Text(stringResource(R.string.cancel),color = onSecondary)
-                    }
-                    // todo: Implement the details of the timeout implementation
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                        onClick = {
-                            onDismissRequest()
-                            timeOutUser()
-                        }, modifier = Modifier.padding(10.dp)) {
-                        Text(stringResource(R.string.timeout_confirm),color = onSecondary)
-                    }
-                }
-            }
-        }
-    }
-
-}
-
-@Composable
-fun HorizontalBanDialog(
-    onDismissRequest: () -> Unit,
-    clickedUsername: String,
-    banDuration: Int,
-    banReason: String,
-    changeBanDuration: (Int) -> Unit,
-    changeBanReason: (String) -> Unit,
-    banUser: (BanUser) -> Unit,
-    clickedUserId:String
-){
-    val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-    val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
-    val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-    val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-    Dialog(
-        onDismissRequest = { onDismissRequest() },
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            backgroundColor = primary,
-            border = BorderStroke(2.dp,secondary)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .background(primary)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Text(stringResource(R.string.ban), fontSize = 22.sp,color = onPrimary)
-                    Text(clickedUsername, fontSize = 22.sp,color = onPrimary)
-                }
-                androidx.compose.material.Divider(
-                    color = MaterialTheme.colorScheme.secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(stringResource(R.string.duration_text),color = onPrimary)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Column() {
-                        RadioButton(
-                            colors =  RadioButtonDefaults.colors( selectedColor=secondary, unselectedColor = onPrimary),
-                            selected = banDuration == 0,
-                            onClick = {
-                                changeBanDuration(0)
-                            }
-                        )
-                        Text(stringResource(R.string.permanently),color = onPrimary)
-                    }
-                }
-                OutlinedTextField(
-                    colors= TextFieldDefaults.textFieldColors(
-                        textColor = onPrimary, focusedLabelColor = onPrimary,
-                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
-                    value = banReason,
-                    onValueChange = {
-                        changeBanReason(it)
-                                    },
-                    label = { Text(stringResource(R.string.reason),color = onPrimary) }
-                )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                        onClick = { onDismissRequest() }, modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(stringResource(R.string.cancel),color =onSecondary)
-                    }
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                        onClick = {
-                                  /**This is the actual modding action takes place*/
-                            onDismissRequest()
-
-                            banUser(
-                                BanUser(
-                                    data = BanUserData(
-                                        user_id = clickedUserId,
-                                        reason = banReason
-                                    )
-                                )
-                            )
-                        },
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(stringResource(R.string.ban),color =onSecondary)
-                    }
-                }
-            }
-        }
-    }
-}
