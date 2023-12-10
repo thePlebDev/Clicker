@@ -35,7 +35,10 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
@@ -48,6 +51,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -88,6 +92,7 @@ import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.SystemChats
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
@@ -100,6 +105,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HorizontalChat(
     streamViewModel: StreamViewModel
@@ -112,204 +118,205 @@ fun HorizontalChat(
     val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
     val textFieldValue = streamViewModel.textFieldValue
 
+    val bottomModalState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val clickedUsernameChats = streamViewModel.clickedUsernameChats
+    val openTimeoutDialog = remember { mutableStateOf(false) }
+    val openBanDialog = remember { mutableStateOf(false) }
+    val chatSettingData = streamViewModel.state.value.chatSettings
+    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
+    val filteredChat = streamViewModel.filteredChatList
+
+
+    val scope = rememberCoroutineScope()
+
     //todo: Also need to refactor the dialogs
 
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                ClickedUserModalDrawer(
-                    clickedUsername,
-                    recentChatMessagesByClickedUsername,
-                    textFieldValue =textFieldValue,
+    ModalBottomSheetLayout(
+        sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+        sheetState = bottomModalState,
+        sheetContent = {
+            BottomModalContent(
+
+                // TODO: this should 100% not be filteredChat. Need to create new variable
+                clickedUsernameChats = clickedUsernameChats,
+                clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                bottomModalState = bottomModalState,
+                textFieldValue = streamViewModel.textFieldValue,
+                closeBottomModal = { scope.launch { bottomModalState.hide() } },
+                banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                unbanUser = { streamViewModel.unBanUser() },
+                isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+                openTimeoutDialog = {openTimeoutDialog.value = true},
+                timeoutDialogContent ={
+                    if(openTimeoutDialog.value){
+                        BottomModal.TimeoutDialog(
+                            onDismissRequest = {
+                                openTimeoutDialog.value = false
+                            },
+                            username = streamViewModel.clickedUIState.value.clickedUsername,
+                            timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                            timeoutReason = streamViewModel.state.value.timeoutReason,
+                            changeTimeoutDuration = { duration ->
+                                streamViewModel.changeTimeoutDuration(
+                                    duration
+                                )
+                            },
+                            changeTimeoutReason = { reason ->
+                                streamViewModel.changeTimeoutReason(
+                                    reason
+                                )
+                            },
+                            closeDialog = {
+                                openTimeoutDialog.value = false
+                                scope.launch { bottomModalState.hide() }
+
+                            },
+                            timeOutUser = {
+                                streamViewModel.timeoutUser()
+                            }
+                        )
+                    }
+                },
+                openBanDialog = {openBanDialog.value = true},
+                banDialogContent ={
+                    if(openBanDialog.value){
+                        BottomModal.BanDialog(
+                            onDismissRequest = {
+                                openBanDialog.value = false
+                            },
+                            username = streamViewModel.clickedUIState.value.clickedUsername,
+                            banDuration = streamViewModel.state.value.banDuration,
+                            banReason = streamViewModel.state.value.banReason,
+                            changeBanDuration = { duration ->
+                                streamViewModel.changeBanDuration(
+                                    duration
+                                )
+                            },
+                            changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
+                            banUser = { banUser -> streamViewModel.banUser(banUser) },
+                            clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
+                            closeDialog = {
+                                openBanDialog.value = false
+                                scope.launch { bottomModalState.hide() }
+                            },
+                            closeBottomModal = {
+                                scope.launch {
+                                    openBanDialog.value = false
+                                    bottomModalState.hide()
+                                }
+                            }
+                        )
+                    }
+
+                }
+
+            )
+        }
+    ) {
+        SideModal(
+            drawerState = drawerState,
+            drawerContent={
+                DrawerContent(
+                    chatSettingData,
+                    showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
+                    slowModeToggle = { chatSettingsData ->
+                        streamViewModel.slowModeChatSettings(
+                            chatSettingsData
+                        )
+                    },
+                    followerModeToggle = { chatSettingsData ->
+                        streamViewModel.followerModeToggle(
+                            chatSettingsData
+                        )
+                    },
+                    subscriberModeToggle = { chatSettingsData ->
+                        streamViewModel.subscriberModeToggle(
+                            chatSettingsData
+                        )
+                    },
+                    emoteModeToggle = { chatSettingsData ->
+                        streamViewModel.emoteModeToggle(
+                            chatSettingsData
+                        )
+                    },
+                    enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
+                    enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
+                    enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
+                    enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
+                    chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
+                    fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
+                    closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
+                    oneClickActionsChecked=false,
+                    changeOneClickActionsStatus={}
+
+                )
+            },
+            contentCoveredBySideModal = {
+                TextChat(
+                    twitchUserChat = twitchUserChat,
+                    sendMessageToWebSocket = { string ->
+                        streamViewModel.sendMessage(string)
+                    },
                     drawerState = drawerState,
-                    banDuration = streamViewModel.state.value.banDuration,
-                    banReason = streamViewModel.state.value.banReason,
-                    changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
-                    changeBanDuration = { duration ->
-                        streamViewModel.changeBanDuration(
-                            duration
+                    modStatus = modStatus,
+                    bottomModalState = bottomModalState,
+                    filteredChatList = filteredChat,
+                    filterMethod = { username, newText ->
+                        streamViewModel.filterChatters(
+                            username,
+                            newText
                         )
                     },
-                    banUser = { banUser -> streamViewModel.banUser(banUser) },
-                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
-                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
-                    timeoutReason = streamViewModel.state.value.timeoutReason,
-                    changeTimeoutReason = { reason ->
-                        streamViewModel.changeTimeoutReason(
-                            reason
+                    clickedAutoCompleteText = { fullText, clickedText ->
+                        streamViewModel.autoTextChange(
+                            fullText,
+                            clickedText
                         )
                     },
-                    changeTimeoutDuration = { duration ->
-                        streamViewModel.changeTimeoutDuration(
-                            duration
+                    addChatter = { username, message ->
+                        streamViewModel.addChatter(
+                            username,
+                            message
                         )
                     },
-                    timeOutUser = { streamViewModel.timeoutUser() }
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        streamViewModel.updateClickedChat(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    textFieldValue = streamViewModel.textFieldValue,
+                    channelName = streamViewModel.channelName.collectAsState().value,
+                    deleteMessage = { messageId ->
+                        streamViewModel.deleteChatMessage(
+                            messageId
+                        )
+                    },
+
+                    banResponse = streamViewModel.state.value.banResponse,
+                    undoBan = { streamViewModel.unBanUser() },
+                    undoBanResponse = streamViewModel.state.value.undoBanResponse,
+                    showStickyHeader = streamViewModel.state.value.showStickyHeader,
+                    closeStickyHeader = { streamViewModel.closeStickyHeader() },
+                    banResponseMessage = streamViewModel.state.value.banResponseMessage,
+                    removeUnBanButton = { streamViewModel.removeUnBanButton() },
+                    restartWebSocket = { streamViewModel.restartWebSocket() },
+                    showOneClickAction = false,
+                    oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
+                    oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
                 )
             }
-        },
-        gesturesEnabled = true
-    ) {
-
-    }
-
-
-
-
-}
-
-@Composable
-fun ClickedUserModalDrawer(
-    clickedUsername:String,
-    recentChatMessagesByClickedUsername:List<String>,
-    textFieldValue: MutableState<TextFieldValue>,
-    drawerState: DrawerState,
-    changeBanDuration: (Int) -> Unit,
-    changeBanReason: (String) -> Unit,
-    banDuration: Int,
-    banReason: String,
-    banUser: (BanUser) -> Unit,
-    clickedUserId: String,
-    timeoutDuration: Int,
-    timeoutReason: String,
-    changeTimeoutDuration: (Int) -> Unit,
-    changeTimeoutReason: (String) -> Unit,
-    timeOutUser: () -> Unit
-){
-    val scope = rememberCoroutineScope()
-    val openTimeoutDialog = remember { mutableStateOf(false) }
-    val openBanDialog = remember { mutableStateOf(false) }
-    if(openTimeoutDialog.value){
-        HorizontalTimeoutDialog(
-            onDismissRequest = {openTimeoutDialog.value = false},
-            clickedUsername = clickedUsername,
-            timeoutDuration = timeoutDuration,
-            timeoutReason = timeoutReason,
-            changeTimeoutDuration  = { duration ->changeTimeoutDuration(duration)},
-            changeTimeoutReason ={reason -> changeTimeoutReason(reason)},
-            timeOutUser = { timeOutUser() }
-
-
-
         )
-    }
-    if(openBanDialog.value){
-
-        HorizontalBanDialog(
-            onDismissRequest = {openBanDialog.value = false},
-            clickedUsername = clickedUsername,
-            changeBanDuration = { duration -> changeBanDuration(duration) },
-            changeBanReason = { reason -> changeBanReason(reason) },
-            banDuration =banDuration,
-            banReason = banReason,
-            banUser ={user ->banUser(user)},
-            clickedUserId = clickedUserId
-        )
-    }
-
-    val secondaryColor =androidx.compose.material3.MaterialTheme.colorScheme.secondary
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = stringResource(R.string.user_icon_description),
-            modifier = Modifier
-                .clickable { }
-                .size(35.dp),
-            tint = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-        )
-        Text(clickedUsername, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
-    }
-    Divider(color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(vertical = 10.dp))
-    Row(modifier = Modifier.padding(5.dp)){
-        Column(
-            modifier = Modifier.weight(1f)) {
-            Text(text ="Recent Chats",
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                fontSize = 20.sp
-            )
-            Divider(color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(vertical = 10.dp))
-            LazyColumn(){
-                items(recentChatMessagesByClickedUsername){message ->
-                    Text(
-                        message,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
-                }
-            }
-        }
-
-        Column(modifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
-            ){
-            Box(modifier = Modifier.fillMaxSize()){
-                Column(modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(5.dp), horizontalAlignment = Alignment.End) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp), horizontalArrangement = Arrangement.SpaceBetween){
-                        Button(
-                            onClick ={
-                                openBanDialog.value = true
-                            },
-                            colors = ButtonDefaults.buttonColors(secondaryColor)
-                        ) {
-                            Text(
-                                "Ban",
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.padding(vertical = 5.dp)
-                            )
-                        }
-
-                        Button(
-                            onClick ={
-                                openTimeoutDialog.value = true
-                            },
-                            colors = ButtonDefaults.buttonColors(secondaryColor)
-                        ) {
-                            Text(
-                                "Timeout",
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.padding(vertical = 5.dp)
-                            )
-                        }
-
-                    }
-                   //here
-                    Button(
-                        onClick ={
-                            textFieldValue.value = TextFieldValue(
-                                text = textFieldValue.value.text + "@$clickedUsername ",
-                                selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
-                            )
-
-                            scope.launch {
-                                drawerState.close()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(secondaryColor)
-                    ) {
-                        Text(
-                            "Reply",
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier.padding(vertical = 5.dp)
-                        )
-                    }
-                }
-
-            }
-        }
-
     }
 
 
 }
-
 
 
 

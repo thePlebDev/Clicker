@@ -116,6 +116,8 @@ fun StreamView(
             HorizontalChat(streamViewModel)
         }
         else -> {
+            // Below is the behemoth I am trying to rework
+            // be warned, the code below is not for those weak of heart
             ModalBottomSheetLayout(
                 sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                 sheetState = bottomModalState,
