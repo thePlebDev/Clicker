@@ -76,7 +76,6 @@ import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
-import com.example.clicker.presentation.stream.views.ChatSettingsContainer.SlowModeSwitch
 import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.util.Response
 import com.example.clicker.util.SwipeableActionsState
@@ -291,29 +290,15 @@ fun DrawerContent(
             .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
     ) {
 
-
         Text(stringResource(R.string.chat_settings), fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Slow mode", fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-            Switch(
-                checked = chatSettingsData.slowMode,
-                enabled = enableSwitches,
-                modifier = Modifier.size(40.dp),
-                onCheckedChange = {
-                    val newChatSettingsData = chatSettingsData.copy(slowMode = it)
-                    updateChatSettings(newChatSettingsData)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
-                    uncheckedThumbColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
-                    checkedTrackColor = Color.DarkGray,
-                    uncheckedTrackColor = Color.DarkGray,
-                )
-            )
-        }
+        ChatSettingsContainer.SettingsSwitches(
+            enableSwitches =enableSwitches,
+            showChatSettingAlert = showChatSettingAlert,
+            chatSettingsData =chatSettingsData ,
+            updateChatSettings = {chatSettingsData -> updateChatSettings(chatSettingsData)  }
+        )
+
+
 
         if(showChatSettingAlert){
             AlertRowHeader(
