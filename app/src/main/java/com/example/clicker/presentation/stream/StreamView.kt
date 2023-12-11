@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -33,6 +34,7 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
@@ -55,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -72,6 +75,8 @@ import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatBadges
+import com.example.clicker.presentation.stream.views.ChatSettingsContainer
+import com.example.clicker.presentation.stream.views.ChatSettingsContainer.SlowModeSwitch
 import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.util.Response
 import com.example.clicker.util.SwipeableActionsState
@@ -171,41 +176,15 @@ fun StreamView(
 
                 }
             ) {
+
                 SideModal(
                     drawerState = drawerState,
                     drawerContent={
                         DrawerContent(
-                            chatSettingData,
-                            showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
-                            slowModeToggle = { chatSettingsData ->
-                                streamViewModel.slowModeChatSettings(
-                                    chatSettingsData
-                                )
-                            },
-                            followerModeToggle = { chatSettingsData ->
-                                streamViewModel.followerModeToggle(
-                                    chatSettingsData
-                                )
-                            },
-                            subscriberModeToggle = { chatSettingsData ->
-                                streamViewModel.subscriberModeToggle(
-                                    chatSettingsData
-                                )
-                            },
-                            emoteModeToggle = { chatSettingsData ->
-                                streamViewModel.emoteModeToggle(
-                                    chatSettingsData
-                                )
-                            },
-                            enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
-                            enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
-                            enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-                            enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
-                            chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
-                            fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
-                            closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
-                            oneClickActionsChecked=oneClickActionsChecked,
-                            changeOneClickActionsStatus={checkedStatus -> oneClickActionsChecked = checkedStatus}
+                            enableSwitches = streamViewModel.chatSettingsState.value.switchesEnabled,
+                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
+                            chatSettingsData = streamViewModel.chatSettingsState.value.data,
+                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)}
 
                         )
                     },
@@ -263,7 +242,7 @@ fun StreamView(
                             restartWebSocket = { streamViewModel.restartWebSocket() },
                             showOneClickAction = oneClickActionsChecked,
                             oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
-                            oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
+                            oneClickTimeoutUser={}
                         )
                     }
                 )
@@ -295,27 +274,15 @@ fun SideModal(
 
 
 
-
+//todo: rebuild the chat settings here
 @Composable
 fun DrawerContent(
-    chatSettingsData: Response<ChatSettingsData>,
+    enableSwitches:Boolean,
     showChatSettingAlert: Boolean,
-    closeChatSettingAlter: () -> Unit,
-    slowModeToggle: (ChatSettingsData) -> Unit,
-    followerModeToggle: (ChatSettingsData) -> Unit,
-    subscriberModeToggle: (ChatSettingsData) -> Unit,
-    emoteModeToggle: (ChatSettingsData) -> Unit,
+    chatSettingsData:ChatSettingsData,
+    updateChatSettings:(ChatSettingsData)->Unit
 
-    enableSlowModeSwitch: Boolean,
-    enableFollowerModeSwitch: Boolean,
-    enableSubscriberSwitch: Boolean,
-    enableEmoteModeSwitch: Boolean,
 
-    chatSettingsFailedMessage: String,
-    fetchChatSettings: () -> Unit,
-
-    oneClickActionsChecked:Boolean,
-    changeOneClickActionsStatus:(Boolean) -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -323,47 +290,79 @@ fun DrawerContent(
             .fillMaxSize()
             .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
     ) {
+
+
         Text(stringResource(R.string.chat_settings), fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        when (chatSettingsData) {
-            is Response.Loading -> {
-                CircularProgressIndicator()
-            }
-            is Response.Success -> {
-                ChatSettingsDataUI(
-                    chatSettingsData.data,
-                    showChatSettingAlert = showChatSettingAlert,
-                    slowModeToggle = { chatSettingsData -> slowModeToggle(chatSettingsData) },
-                    followerModeToggle = { chatSettingsData -> followerModeToggle(chatSettingsData) },
-                    subscriberModeToggle = { chatSettingsData ->
-                        subscriberModeToggle(
-                            chatSettingsData
-                        )
-                    },
-                    emoteModeToggle = { chatSettingsData -> emoteModeToggle(chatSettingsData) },
-                    enableSlowModeSwitch = enableSlowModeSwitch,
-                    enableFollowerModeSwitch = enableFollowerModeSwitch,
-                    enableSubscriberSwitch = enableSubscriberSwitch,
-                    enableEmoteModeSwitch = enableEmoteModeSwitch,
-                    chatSettingsFailedMessage = chatSettingsFailedMessage,
-                    closeChatSettingAlter = { closeChatSettingAlter() },
-                    oneClickActionsChecked=oneClickActionsChecked,
-                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Slow mode", fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+            Switch(
+                checked = chatSettingsData.slowMode,
+                enabled = enableSwitches,
+                modifier = Modifier.size(40.dp),
+                onCheckedChange = {
+                    val newChatSettingsData = chatSettingsData.copy(slowMode = it)
+                    updateChatSettings(newChatSettingsData)
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                    uncheckedThumbColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                    checkedTrackColor = Color.DarkGray,
+                    uncheckedTrackColor = Color.DarkGray,
                 )
-            }
-            is Response.Failure -> {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(stringResource(R.string.failed_to_get_chat_settings))
-                    Button(onClick = {
-                        fetchChatSettings()
-                    }) {
-                        Text(stringResource(R.string.get_chat_settings))
-                    }
-                }
-            }
+            )
         }
+
+        if(showChatSettingAlert){
+            AlertRowHeader(
+                alertMessage = "request failed",
+                closeAlert = {}
+            )
+        }
+
+    }
+}
+/**
+ * I stole this from [MainChat] and this needs to be somewhere more public
+ * */
+@Composable
+fun AlertRowHeader(
+    alertMessage:String,
+    closeAlert: () -> Unit,
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+            .clip(shape = RoundedCornerShape(10.dp))
+            .background(Color.Red.copy(alpha = 0.6f))
+            .clickable {
+                closeAlert()
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = stringResource(R.string.close_icon_description),
+            modifier = Modifier
+                .size(30.dp),
+            tint = Color.White
+        )
+        Text(
+            text = alertMessage,
+            color = Color.White,
+            fontSize = 20.sp
+        )
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = stringResource(R.string.close_icon_description),
+            modifier = Modifier
+                .size(30.dp),
+            tint = Color.White
+        )
     }
 }
 
@@ -404,286 +403,50 @@ fun ChatSettingsDataUI(
         }
         when (tabIndex) {
             0 -> {
-                ChatSettings(
-                    chatSettingsData = chatSettingsData,
-                    showChatSettingAlert = showChatSettingAlert,
-                    slowModeToggle = { chatSettingsInfo -> slowModeToggle(chatSettingsInfo) },
-                    followerModeToggle = { chatSettingsInfo -> followerModeToggle(chatSettingsInfo) },
-                    subscriberModeToggle = { chatSettingsInfo ->
-                        subscriberModeToggle(
-                            chatSettingsInfo
-                        )
-                    },
-
-                    oneClickActionsChecked = oneClickActionsChecked,
-                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
-
-                    emoteModeToggle = { chatSettingsInfo -> emoteModeToggle(chatSettingsInfo) },
-
-                    enableSlowModeSwitch = enableSlowModeSwitch,
-                    enableFollowerModeSwitch = enableFollowerModeSwitch,
-                    enableSubscriberSwitch = enableSubscriberSwitch,
-                    enableEmoteModeSwitch = enableEmoteModeSwitch,
-                    chatSettingsFailedMessage = chatSettingsFailedMessage,
-                    closeChatSettingsAlert = { closeChatSettingAlter() }
-                )
+//                ChatSettingsContainer.SlowModeSwitch(
+//                    switchLabel = stringResource(R.string.slow_mode),
+//                    enableSwitch = enableSlowModeSwitch,
+//                    switchCheck = chatSettingsData.slowMode,
+//                    chatSettingsData = chatSettingsData,
+//                    slowModeToggle = { chatSettingsData -> slowModeToggle(chatSettingsData) }
+//                )
+//                ChatSettingsContainer.SlowModeSwitch(
+//                    switchLabel = stringResource(R.string.slow_mode),
+//                    enableSwitch = enableSlowModeSwitch,
+//                    switchCheck = chatSettingsData.slowMode,
+//                    switchFunction = {checked,switchType ->}
+//                )
+                //todo: below is the old implentation
+//                ChatSettingsContainer.ChatSettingsBox(
+//                    chatSettingsData = chatSettingsData,
+//                    showChatSettingAlert = showChatSettingAlert,
+//                    slowModeToggle = { chatSettingsInfo -> slowModeToggle(chatSettingsInfo) },
+//                    followerModeToggle = { chatSettingsInfo -> followerModeToggle(chatSettingsInfo) },
+//                    subscriberModeToggle = { chatSettingsInfo ->
+//                        subscriberModeToggle(
+//                            chatSettingsInfo
+//                        )
+//                    },
+//
+//                    oneClickActionsChecked = oneClickActionsChecked,
+//                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
+//
+//                    emoteModeToggle = { chatSettingsInfo -> emoteModeToggle(chatSettingsInfo) },
+//
+//                    enableSlowModeSwitch = enableSlowModeSwitch,
+//                    enableFollowerModeSwitch = enableFollowerModeSwitch,
+//                    enableSubscriberSwitch = enableSubscriberSwitch,
+//                    enableEmoteModeSwitch = enableEmoteModeSwitch,
+//                    chatSettingsFailedMessage = chatSettingsFailedMessage,
+//                    closeChatSettingsAlert = { closeChatSettingAlter() }
+//                )
             }
         }
     }
 }
 
-@Composable
-fun ChatSettings(
-    chatSettingsData: ChatSettingsData,
-    showChatSettingAlert: Boolean,
-    closeChatSettingsAlert: () -> Unit,
-    slowModeToggle: (ChatSettingsData) -> Unit,
-    followerModeToggle: (ChatSettingsData) -> Unit,
-    subscriberModeToggle: (ChatSettingsData) -> Unit,
-    emoteModeToggle: (ChatSettingsData) -> Unit,
-    oneClickActionsChecked:Boolean,
-    changeOneClickActionsStatus:(Boolean) -> Unit,
-
-    enableSlowModeSwitch: Boolean,
-    enableFollowerModeSwitch: Boolean,
-    enableSubscriberSwitch: Boolean,
-    enableEmoteModeSwitch: Boolean,
-    chatSettingsFailedMessage: String
-) {
-    val slowMode = chatSettingsData.slowMode
-    val followerMode = chatSettingsData.followerMode
-    val subscriberMode = chatSettingsData.subscriberMode
-    val emoteMode = chatSettingsData.emoteMode
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        SlowSwitchRow(
-            switchLabel = stringResource(R.string.slow_mode),
-            enableSwitch = enableSlowModeSwitch,
-            switchCheck = slowMode,
-            chatSettingsData = chatSettingsData,
-            slowModeToggle = { chatSettingsData -> slowModeToggle(chatSettingsData) }
-        )
-
-        FollowerSwitchRow(
-            switchLabel = stringResource(R.string.follower_mode),
-            enableSwitch = enableFollowerModeSwitch,
-            switchCheck = followerMode,
-            chatSettingsData = chatSettingsData,
-            followerModeToggle = { chatSettingsData -> followerModeToggle(chatSettingsData) }
-        )
-
-        SubscriberSwitchRow(
-            switchLabel = stringResource(R.string.subscriber_mode),
-            enableSwitch = enableSubscriberSwitch,
-            switchCheck = subscriberMode,
-            chatSettingsData = chatSettingsData,
-            subscriberModeToggle = { chatSettingsData -> subscriberModeToggle(chatSettingsData) }
-        )
-
-        EmoteSwitchRow(
-            switchLabel = stringResource(R.string.emote_mode),
-            enableSwitch = enableEmoteModeSwitch,
-            switchCheck = emoteMode,
-            chatSettingsData = chatSettingsData,
-            emoteModeToggle = { chatSettingsData -> emoteModeToggle(chatSettingsData) }
-
-        )
-
-        AnimatedVisibility(visible = showChatSettingAlert) {
-            MessageAlertText(
-                message = chatSettingsFailedMessage,
-                closeChatSettingsAlert = { closeChatSettingsAlert() }
-            )
-        }
-    } // end of the Column
-}
-@Composable
-fun SlowSwitchRow(
-    switchLabel: String,
-    enableSwitch: Boolean,
-    switchCheck: Boolean,
-    chatSettingsData: ChatSettingsData,
-    slowModeToggle: (ChatSettingsData) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        Switch(
-            checked = switchCheck,
-            enabled = enableSwitch,
-            modifier = Modifier.size(40.dp),
-            onCheckedChange = {
-                slowModeToggle(
-                    ChatSettingsData(
-                        slowMode = it,
-                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                        followerMode = chatSettingsData.followerMode,
-                        followerModeDuration = chatSettingsData.followerModeDuration,
-                        subscriberMode = chatSettingsData.subscriberMode,
-                        emoteMode = chatSettingsData.emoteMode,
 
 
-                    )
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun EmoteSwitchRow(
-    switchLabel: String,
-    enableSwitch: Boolean,
-    switchCheck: Boolean,
-    chatSettingsData: ChatSettingsData,
-    emoteModeToggle: (ChatSettingsData) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        Switch(
-            checked = switchCheck,
-            enabled = enableSwitch,
-            modifier = Modifier.size(40.dp),
-            onCheckedChange = {
-                emoteModeToggle(
-                    ChatSettingsData(
-                        slowMode = chatSettingsData.slowMode,
-                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                        followerMode = chatSettingsData.followerMode,
-                        followerModeDuration = chatSettingsData.followerModeDuration,
-                        subscriberMode = chatSettingsData.subscriberMode,
-                        emoteMode = it,
-
-                    )
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun SubscriberSwitchRow(
-    switchLabel: String,
-    enableSwitch: Boolean,
-    switchCheck: Boolean,
-    chatSettingsData: ChatSettingsData,
-    subscriberModeToggle: (ChatSettingsData) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        Switch(
-            checked = switchCheck,
-            enabled = enableSwitch,
-            modifier = Modifier.size(40.dp),
-            onCheckedChange = {
-                subscriberModeToggle(
-                    ChatSettingsData(
-                        slowMode = chatSettingsData.slowMode,
-                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                        followerMode = chatSettingsData.followerMode,
-                        followerModeDuration = chatSettingsData.followerModeDuration,
-                        subscriberMode = it,
-                        emoteMode = chatSettingsData.emoteMode,
-
-
-                    )
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun FollowerSwitchRow(
-    switchLabel: String,
-    enableSwitch: Boolean,
-    switchCheck: Boolean,
-    chatSettingsData: ChatSettingsData,
-    followerModeToggle: (ChatSettingsData) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = switchLabel, fontSize = 25.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        Switch(
-            checked = switchCheck,
-            enabled = enableSwitch,
-            modifier = Modifier.size(40.dp),
-            onCheckedChange = {
-                followerModeToggle(
-                    ChatSettingsData(
-                        slowMode = chatSettingsData.slowMode,
-                        slowModeWaitTime = chatSettingsData.slowModeWaitTime,
-                        followerMode = it,
-                        followerModeDuration = chatSettingsData.followerModeDuration,
-                        subscriberMode = chatSettingsData.subscriberMode,
-                        emoteMode = chatSettingsData.emoteMode,
-
-                    )
-                )
-            }
-        )
-    }
-}
-
-// TODO: MAKE IT SO THE X CLICK REMOVES THE REQUEST MESSAGE
-@Composable
-fun MessageAlertText(
-    message: String,
-    closeChatSettingsAlert: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .clickable { },
-        border = BorderStroke(2.dp, Color.Red),
-        elevation = 10.dp
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
-                modifier = Modifier
-                    .clickable { closeChatSettingsAlert() }
-                    .padding(2.dp)
-                    .size(25.dp),
-                tint = Color.Red
-            )
-            Text(
-                stringResource(R.string.failed_request_notification),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp
-            )
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
-                modifier = Modifier
-                    .clickable { closeChatSettingsAlert() }
-                    .padding(2.dp)
-                    .size(25.dp),
-                tint = Color.Red
-            )
-        }
-    }
-}
 
 
 

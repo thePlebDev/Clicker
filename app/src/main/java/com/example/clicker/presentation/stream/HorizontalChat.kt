@@ -188,40 +188,40 @@ fun HorizontalChat(
         SideModal(
             drawerState = drawerState,
             drawerContent={
-                DrawerContent(
-                    chatSettingData,
-                    showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
-                    slowModeToggle = { chatSettingsData ->
-                        streamViewModel.slowModeChatSettings(
-                            chatSettingsData
-                        )
-                    },
-                    followerModeToggle = { chatSettingsData ->
-                        streamViewModel.followerModeToggle(
-                            chatSettingsData
-                        )
-                    },
-                    subscriberModeToggle = { chatSettingsData ->
-                        streamViewModel.subscriberModeToggle(
-                            chatSettingsData
-                        )
-                    },
-                    emoteModeToggle = { chatSettingsData ->
-                        streamViewModel.emoteModeToggle(
-                            chatSettingsData
-                        )
-                    },
-                    enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
-                    enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
-                    enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-                    enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
-                    chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
-                    fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
-                    closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
-                    oneClickActionsChecked=false,
-                    changeOneClickActionsStatus={}
-
-                )
+//                DrawerContent(
+//                    chatSettingData,
+//                    showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
+//                    slowModeToggle = { chatSettingsData ->
+//                        streamViewModel.slowModeChatSettings(
+//                            chatSettingsData
+//                        )
+//                    },
+//                    followerModeToggle = { chatSettingsData ->
+//                        streamViewModel.followerModeToggle(
+//                            chatSettingsData
+//                        )
+//                    },
+//                    subscriberModeToggle = { chatSettingsData ->
+//                        streamViewModel.subscriberModeToggle(
+//                            chatSettingsData
+//                        )
+//                    },
+//                    emoteModeToggle = { chatSettingsData ->
+//                        streamViewModel.emoteModeToggle(
+//                            chatSettingsData
+//                        )
+//                    },
+//                    enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
+//                    enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
+//                    enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
+//                    enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
+//                    chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
+//                    fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
+//                    closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
+//                    oneClickActionsChecked=false,
+//                    changeOneClickActionsStatus={}
+//
+//                )
             },
             contentCoveredBySideModal = {
                 TextChat(
@@ -277,7 +277,9 @@ fun HorizontalChat(
                     restartWebSocket = { streamViewModel.restartWebSocket() },
                     showOneClickAction = false,
                     oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
-                    oneClickTimeoutUser={userDetails -> streamViewModel.oneClickTimeoutUser(userDetails)}
+                    oneClickTimeoutUser={
+                            userDetails ->
+                    }
                 )
             }
         )
