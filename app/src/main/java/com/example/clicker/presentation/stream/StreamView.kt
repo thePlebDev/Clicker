@@ -571,7 +571,7 @@ fun ChatCard(
         backgroundColor = Color.Red
 
     } else {
-        backgroundColor = Color.Black
+        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary
     }
 
 //    if(showOneClickAction){
