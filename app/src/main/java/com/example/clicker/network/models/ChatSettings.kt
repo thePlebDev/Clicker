@@ -6,6 +6,10 @@ data class ChatSettings(
     val data: List<ChatSettingsData>
 )
 
+/**
+ * Represent the data that the Switches in [ChatSettingsContainer][com.example.clicker.presentation.stream.views.ChatSettingsContainer]
+ * are manipulating
+ * */
 data class ChatSettingsData(
     @SerializedName("slow_mode")
     val slowMode: Boolean,
@@ -23,17 +27,7 @@ data class ChatSettingsData(
 //    val uniqueChatMode: Boolean
 )
 
-// data class UpdateChatSettings(
-//    val emote_mode: Boolean,
-//    val follower_mode: Boolean,
-//    val follower_mode_duration: Int,
-//    val non_moderator_chat_delay: Boolean,
-//    val non_moderator_chat_delay_duration: Int,
-//    val slow_mode: Boolean,
-//    val slow_mode_wait_time: Int,
-//    val subscriber_mode: Boolean,
-//    val unique_chat_mode: Boolean
-// )
+
 data class UpdateChatSettings(
     val emote_mode: Boolean,
     val follower_mode: Boolean,
@@ -41,14 +35,3 @@ data class UpdateChatSettings(
     val subscriber_mode: Boolean
 )
 
-// The data ChatSettingsData is representing
-// {
-//    "broadcaster_id": "26610234",
-//    "slow_mode": false,
-//    "slow_mode_wait_time": null,
-//    "follower_mode": true,
-//    "follower_mode_duration": 1800,
-//    "subscriber_mode": false,
-//    "emote_mode": false,
-//    "unique_chat_mode": false
-// }
