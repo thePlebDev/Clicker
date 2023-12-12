@@ -2,13 +2,16 @@ package com.example.clicker.presentation.stream.views
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Switch
@@ -20,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.models.ChatSettingsData
 
+
 object ChatSettingsContainer {
 
     @Composable
@@ -35,7 +40,8 @@ object ChatSettingsContainer {
         enableSwitches:Boolean,
         showChatSettingAlert: Boolean,
         chatSettingsData:ChatSettingsData,
-        updateChatSettings:(ChatSettingsData)->Unit
+        updateChatSettings:(ChatSettingsData)->Unit,
+        closeAlertHeader:()->Unit
     ) {
         ChatSettingsBuilder.ChatSettingsSwitchBox(
             slowModeSwitch = {
@@ -49,7 +55,57 @@ object ChatSettingsContainer {
                     }
 
                 )
+            },
+            followerModeSwitch ={
+                ChatSettingsParts.SwitchPart(
+                    enableSwitches = enableSwitches,
+                    checked =chatSettingsData.followerMode,
+                    switchLabel = "Follower mode",
+                    switchFunction = {
+                        val newChatSettingsData = chatSettingsData.copy(followerMode = it)
+                        updateChatSettings(newChatSettingsData)
+                    }
+
+                )
+            },
+            subscriberModeSwitch={
+                ChatSettingsParts.SwitchPart(
+                    enableSwitches = enableSwitches,
+                    checked =chatSettingsData.subscriberMode,
+                    switchLabel = "Subscriber mode",
+                    switchFunction = {
+                        val newChatSettingsData = chatSettingsData.copy(subscriberMode = it)
+                        updateChatSettings(newChatSettingsData)
+                    }
+
+                )
+            },
+            emoteModeSwitch={
+                ChatSettingsParts.SwitchPart(
+                    enableSwitches = enableSwitches,
+                    checked =chatSettingsData.emoteMode,
+                    switchLabel = "Emote mode",
+                    switchFunction = {
+                        val newChatSettingsData = chatSettingsData.copy(emoteMode = it)
+                        updateChatSettings(newChatSettingsData)
+                    }
+
+                )
+            },
+            alertHeader = {
+                if(showChatSettingAlert){
+                    ChatSettingsParts.AlertRowMessage(
+                        alertMessage = "request failed",
+                        closeAlert = {
+                            closeAlertHeader()
+                        }
+                    )
+                }
+            },
+            chatSettingsHeader ={
+                ChatSettingsParts.ChatSettingsHeader()
             }
+
         )
     }
 
@@ -61,28 +117,51 @@ object ChatSettingsContainer {
         @Composable
         fun ChatSettingsSwitchBox(
             slowModeSwitch: @Composable () -> Unit,
-//            followerModeSwitch:@Composable () -> Unit,
-//            subscriberModeSwitch:@Composable () -> Unit,
-//            emoteModeSwitch:@Composable () -> Unit,
+            followerModeSwitch:@Composable () -> Unit,
+            subscriberModeSwitch:@Composable () -> Unit,
+            emoteModeSwitch:@Composable () -> Unit,
+            alertHeader:@Composable () -> Unit,
+            chatSettingsHeader:@Composable () -> Unit,
 
         ) {
             //This will be a builder
             Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
             ) {
-                slowModeSwitch()
-//                followerModeSwitch()
-//                subscriberModeSwitch()
-//                emoteModeSwitch()
+                chatSettingsHeader()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
+                    slowModeSwitch()
+                    followerModeSwitch()
+                    subscriberModeSwitch()
+                    emoteModeSwitch()
+                    alertHeader()
+                }
 
             }
+
         }
     }// end of the builder
     private object ChatSettingsParts {
+
+        @Composable
+        fun ChatSettingsHeader(){
+            val secondary =androidx.compose.material3.MaterialTheme.colorScheme.secondary
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
+                .background(secondary)
+                .padding(vertical = 10.dp)
+                .fillMaxWidth()) {
+                Text("Chat room settings", fontSize = 25.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+            }
+        }
         @Composable
         fun SwitchPart(
             enableSwitches: Boolean,
@@ -98,7 +177,7 @@ object ChatSettingsContainer {
                 Text(
                     text = switchLabel,
                     fontSize = 25.sp,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                 )
                 Switch(
                     checked = checked,
@@ -116,52 +195,45 @@ object ChatSettingsContainer {
                 )
             }
         }
-    }
-}
-
-
-//todo: THIS IS OUTSIDE OF THE MAIN OBJECT
-
-@Composable
-fun MessageAlertText(
-    message: String,
-    closeChatSettingsAlert: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .clickable { },
-        border = BorderStroke(2.dp, Color.Red),
-        elevation = 10.dp
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
+        @Composable
+        fun AlertRowMessage(
+            alertMessage:String,
+            closeAlert: () -> Unit,
+        ){
+            Row(
                 modifier = Modifier
-                    .clickable { closeChatSettingsAlert() }
-                    .padding(2.dp)
-                    .size(25.dp),
-                tint = Color.Red
-            )
-            Text(
-                stringResource(R.string.failed_request_notification),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp
-            )
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close_icon_description),
-                modifier = Modifier
-                    .clickable { closeChatSettingsAlert() }
-                    .padding(2.dp)
-                    .size(25.dp),
-                tint = Color.Red
-            )
+                    .fillMaxWidth()
+                    .padding(5.dp)
+                    .clip(shape = RoundedCornerShape(10.dp))
+                    .background(Color.Red.copy(alpha = 0.6f))
+                    .clickable {
+                        closeAlert()
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.close_icon_description),
+                    modifier = Modifier
+                        .size(30.dp),
+                    tint = Color.White
+                )
+                Text(
+                    text = alertMessage,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.close_icon_description),
+                    modifier = Modifier
+                        .size(30.dp),
+                    tint = Color.White
+                )
+            }
         }
     }
 }
+

@@ -179,13 +179,15 @@ fun StreamView(
                 SideModal(
                     drawerState = drawerState,
                     drawerContent={
-                        DrawerContent(
-                            enableSwitches = streamViewModel.chatSettingsState.value.switchesEnabled,
-                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
-                            chatSettingsData = streamViewModel.chatSettingsState.value.data,
-                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)}
 
+                        ChatSettingsContainer.SettingsSwitches(
+                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
+                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
+                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
+                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
+                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()}
                         )
+
                     },
                     contentCoveredBySideModal = {
                         TextChat(
@@ -270,171 +272,6 @@ fun SideModal(
         contentCoveredBySideModal()
     }
 }
-
-
-
-//todo: rebuild the chat settings here
-@Composable
-fun DrawerContent(
-    enableSwitches:Boolean,
-    showChatSettingAlert: Boolean,
-    chatSettingsData:ChatSettingsData,
-    updateChatSettings:(ChatSettingsData)->Unit
-
-
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
-    ) {
-
-        Text(stringResource(R.string.chat_settings), fontSize = 30.sp,color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
-        ChatSettingsContainer.SettingsSwitches(
-            enableSwitches =enableSwitches,
-            showChatSettingAlert = showChatSettingAlert,
-            chatSettingsData =chatSettingsData ,
-            updateChatSettings = {chatSettingsData -> updateChatSettings(chatSettingsData)  }
-        )
-
-
-
-        if(showChatSettingAlert){
-            AlertRowHeader(
-                alertMessage = "request failed",
-                closeAlert = {}
-            )
-        }
-
-    }
-}
-/**
- * I stole this from [MainChat] and this needs to be somewhere more public
- * */
-@Composable
-fun AlertRowHeader(
-    alertMessage:String,
-    closeAlert: () -> Unit,
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)
-            .clip(shape = RoundedCornerShape(10.dp))
-            .background(Color.Red.copy(alpha = 0.6f))
-            .clickable {
-                closeAlert()
-            },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = stringResource(R.string.close_icon_description),
-            modifier = Modifier
-                .size(30.dp),
-            tint = Color.White
-        )
-        Text(
-            text = alertMessage,
-            color = Color.White,
-            fontSize = 20.sp
-        )
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = stringResource(R.string.close_icon_description),
-            modifier = Modifier
-                .size(30.dp),
-            tint = Color.White
-        )
-    }
-}
-
-@Composable
-fun ChatSettingsDataUI(
-    chatSettingsData: ChatSettingsData,
-    showChatSettingAlert: Boolean,
-    closeChatSettingAlter: () -> Unit,
-    slowModeToggle: (ChatSettingsData) -> Unit,
-    followerModeToggle: (ChatSettingsData) -> Unit,
-    subscriberModeToggle: (ChatSettingsData) -> Unit,
-    emoteModeToggle: (ChatSettingsData) -> Unit,
-
-    oneClickActionsChecked:Boolean,
-    changeOneClickActionsStatus:(Boolean) -> Unit,
-
-    enableSlowModeSwitch: Boolean,
-    enableFollowerModeSwitch: Boolean,
-    enableSubscriberSwitch: Boolean,
-    enableEmoteModeSwitch: Boolean,
-    chatSettingsFailedMessage: String
-
-) {
-    var tabIndex by remember { mutableIntStateOf(0) }
-    val titles = listOf("Chat room Settings")
-    Column {
-        TabRow(
-            selectedTabIndex = tabIndex,
-            backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-        ) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    text = { Text(title, fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary) },
-                    selected = tabIndex == index,
-                    onClick = { tabIndex = index }
-                )
-            }
-        }
-        when (tabIndex) {
-            0 -> {
-//                ChatSettingsContainer.SlowModeSwitch(
-//                    switchLabel = stringResource(R.string.slow_mode),
-//                    enableSwitch = enableSlowModeSwitch,
-//                    switchCheck = chatSettingsData.slowMode,
-//                    chatSettingsData = chatSettingsData,
-//                    slowModeToggle = { chatSettingsData -> slowModeToggle(chatSettingsData) }
-//                )
-//                ChatSettingsContainer.SlowModeSwitch(
-//                    switchLabel = stringResource(R.string.slow_mode),
-//                    enableSwitch = enableSlowModeSwitch,
-//                    switchCheck = chatSettingsData.slowMode,
-//                    switchFunction = {checked,switchType ->}
-//                )
-                //todo: below is the old implentation
-//                ChatSettingsContainer.ChatSettingsBox(
-//                    chatSettingsData = chatSettingsData,
-//                    showChatSettingAlert = showChatSettingAlert,
-//                    slowModeToggle = { chatSettingsInfo -> slowModeToggle(chatSettingsInfo) },
-//                    followerModeToggle = { chatSettingsInfo -> followerModeToggle(chatSettingsInfo) },
-//                    subscriberModeToggle = { chatSettingsInfo ->
-//                        subscriberModeToggle(
-//                            chatSettingsInfo
-//                        )
-//                    },
-//
-//                    oneClickActionsChecked = oneClickActionsChecked,
-//                    changeOneClickActionsStatus ={checkedBoolean -> changeOneClickActionsStatus(checkedBoolean)},
-//
-//                    emoteModeToggle = { chatSettingsInfo -> emoteModeToggle(chatSettingsInfo) },
-//
-//                    enableSlowModeSwitch = enableSlowModeSwitch,
-//                    enableFollowerModeSwitch = enableFollowerModeSwitch,
-//                    enableSubscriberSwitch = enableSubscriberSwitch,
-//                    enableEmoteModeSwitch = enableEmoteModeSwitch,
-//                    chatSettingsFailedMessage = chatSettingsFailedMessage,
-//                    closeChatSettingsAlert = { closeChatSettingAlter() }
-//                )
-            }
-        }
-    }
-}
-
-
-
-
-
-
 
 /**THIS IS THE CHAT SHOWING IN THE UI*/
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
