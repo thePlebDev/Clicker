@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -100,7 +101,7 @@ object SystemChats {
             },
             noticeMessage = {
                 SystemChats.NoticeMessage(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     displayName = twitchUser.displayName,
                     message = twitchUser.userType
                 )
@@ -675,7 +676,7 @@ object SystemChats {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(15.dp),
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
