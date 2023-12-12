@@ -94,6 +94,7 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.ChatBadges
+import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.presentation.stream.views.SystemChats
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.util.Response
@@ -188,40 +189,13 @@ fun HorizontalChat(
         SideModal(
             drawerState = drawerState,
             drawerContent={
-//                DrawerContent(
-//                    chatSettingData,
-//                    showChatSettingAlert = streamViewModel.state.value.showChatSettingAlert,
-//                    slowModeToggle = { chatSettingsData ->
-//                        streamViewModel.slowModeChatSettings(
-//                            chatSettingsData
-//                        )
-//                    },
-//                    followerModeToggle = { chatSettingsData ->
-//                        streamViewModel.followerModeToggle(
-//                            chatSettingsData
-//                        )
-//                    },
-//                    subscriberModeToggle = { chatSettingsData ->
-//                        streamViewModel.subscriberModeToggle(
-//                            chatSettingsData
-//                        )
-//                    },
-//                    emoteModeToggle = { chatSettingsData ->
-//                        streamViewModel.emoteModeToggle(
-//                            chatSettingsData
-//                        )
-//                    },
-//                    enableSlowModeSwitch = streamViewModel.state.value.enableSlowMode,
-//                    enableFollowerModeSwitch = streamViewModel.state.value.enableFollowerMode,
-//                    enableSubscriberSwitch = streamViewModel.state.value.enableSubscriberMode,
-//                    enableEmoteModeSwitch = streamViewModel.state.value.enableEmoteMode,
-//                    chatSettingsFailedMessage = streamViewModel.state.value.chatSettingsFailedMessage,
-//                    fetchChatSettings = { streamViewModel.retryGettingChatSetting() },
-//                    closeChatSettingAlter = { streamViewModel.closeChatSettingAlert() },
-//                    oneClickActionsChecked=false,
-//                    changeOneClickActionsStatus={}
-//
-//                )
+                ChatSettingsContainer.SettingsSwitches(
+                    enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
+                    showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
+                    chatSettingsData =streamViewModel.chatSettingsState.value.data ,
+                    updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
+                    closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()}
+                )
             },
             contentCoveredBySideModal = {
                 TextChat(

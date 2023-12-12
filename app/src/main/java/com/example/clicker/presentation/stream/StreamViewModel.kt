@@ -583,6 +583,12 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         }
     }
 
+    fun closeSettingsAlertHeader(){
+        _chatSettingsState.value = _chatSettingsState.value.copy(
+            showChatSettingAlert = false
+        )
+    }
+
     //below is what I am building to create the new generic chat settings switch function
     /**
      * toggleChatSettings() is a generic function that is called when a [Switch][androidx.compose.material.Switch] inside of [ChatSettingsContainer][com.example.clicker.presentation.stream.views.ChatSettingsContainer]
@@ -601,8 +607,6 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         // if the request is a success update the chatSettingsData, set switchesEnabled = true
         // if the request fails, do nothing except, switchesEnabled = true,showChatSettingAlert=true
         updateDateChatSettings(chatSettingsData)
-
-
 
     }
 
