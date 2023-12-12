@@ -418,7 +418,7 @@ object SystemChats {
 
 
     /**
-     * TwitchIRCSystemNotificationsBuilder is the most generic section of all the [SystemChat] composables. It is meants ot
+     * TwitchIRCSystemNotificationsBuilder is the most generic section of all the [SystemChat] composables. It is meant to
      * act as a layout guide for how all [SystemChat] implementations should look
      * */
     private object TwitchIRCSystemNotificationsBuilder{
