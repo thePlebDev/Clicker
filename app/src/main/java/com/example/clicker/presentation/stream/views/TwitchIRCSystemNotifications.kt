@@ -36,7 +36,7 @@ import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserAnnouncement
 import com.example.clicker.network.websockets.models.TwitchUserData
-import com.example.clicker.presentation.stream.SwipeToDeleteChatMessages
+import com.example.clicker.presentation.stream.views.SwipeToDelete.SwipeToDeleteChatMessages
 
 import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystemNotificationsBuilder.SystemChat
 
