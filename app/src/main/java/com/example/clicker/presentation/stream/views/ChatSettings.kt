@@ -183,7 +183,7 @@ object ChatSettingsContainer {
     }// end of the builder
 
     /**
-     * ChatSettingsParts represents all the possible individual Composables that can be used inside of a [ChatSettingsContainer]
+     * ChatSettingsParts represents all the possible individual composables that can be used inside of a [ChatSettingsContainer]
      * */
     private object ChatSettingsParts {
 
