@@ -6,6 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.PressGestureScope
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,12 +37,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +64,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,7 +75,7 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import kotlin.math.roundToInt
 
 
 /**Extension function used to determine if the use has scrolled to the end of the chat*/
@@ -165,7 +170,8 @@ object MainChat{
                     enableAutoScroll = { autoscroll = true },
                     modifier = boxModifier
                 )
-            }
+            },
+            draggableButton = {MainChatParts.DraggableUndoButton()}
         )
     }
 
@@ -211,6 +217,51 @@ object MainChat{
                 }
             }
     }
+
+    /**
+     * ChatBuilder is the most generic of all builders and
+     * */
+    private object ChatBuilder{
+
+        /**
+         *
+         * ScrollableChat  is the basic layout for the user chat experience. A example of what the typical UI looks like
+         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#ScrollableChat)
+         * */
+        @Composable
+        fun ScrollableChat(
+            determineScrollState:@Composable () -> Unit,
+            autoScrollingChat:@Composable () -> Unit,
+            enterChat:@Composable (modifier:Modifier) -> Unit,
+            scrollToBottom:@Composable (modifier:Modifier) -> Unit,
+            draggableButton:@Composable () -> Unit,
+        ){
+
+
+            determineScrollState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Red)
+
+            ) {
+                autoScrollingChat()
+                enterChat(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                )
+                scrollToBottom(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 77.dp)
+                )
+                draggableButton()
+
+            }
+        }
+
+    }//end of the builder
 
 
 
@@ -443,90 +494,50 @@ object MainChat{
             }// END OF THE LAZY COLUMN
         }
 
-
-
-    }
-    /**
-     * ChatBuilder is the most generic of all builders and
-     * */
-    private object ChatBuilder{
-
         /**
-         *
-         * ScrollableChat  is the basic layout for the user chat experience. A example of what the typical UI looks like
-         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#ScrollableChat)
+         * A [Box] within a [Box] used to be able to detect drag events move the inner box accourdingly. A demonstration
+         * can be found on Google's official home page [HERE](https://developer.android.com/jetpack/compose/touch-input/pointer-input/drag-swipe-fling)
          * */
         @Composable
-        fun ScrollableChat(
-            determineScrollState:@Composable () -> Unit,
-            autoScrollingChat:@Composable () -> Unit,
-            enterChat:@Composable (modifier:Modifier) -> Unit,
-            scrollToBottom:@Composable (modifier:Modifier) -> Unit,
-        ){
-            determineScrollState()
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                autoScrollingChat()
-                UndoButton(modifier =Modifier.align(Alignment.CenterStart))
-                enterChat(
+        fun DraggableUndoButton(){
+            Box(modifier = Modifier.fillMaxSize()) {
+                var offsetX by remember { mutableStateOf(0f) }
+                var offsetY by remember { mutableStateOf(0f) }
+
+                Box(
                     Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                )
-                scrollToBottom(
-                    modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 77.dp)
-                )
+                        .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .size(50.dp)
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+
+                                change.consume()
+                                offsetX += dragAmount.x
+                                offsetY += dragAmount.y
+                            }
+                        }
+
+                        .align(Alignment.Center)
+                ){
+                    Icon(
+                        modifier =Modifier
+                            .size(50.dp)
+                            .align(Alignment.Center),
+                        tint=MaterialTheme.colorScheme.onSecondary,
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = ""
+
+                    )
+                }
             }
         }
 
-    }
-    @Composable
-    fun UndoButton(
-        modifier: Modifier
-    ){
-        var doubleTap by remember { mutableStateOf(false) }
-        var longPress by remember { mutableStateOf(false) }
-
-
-        Log.d("longPressExample","$longPress")
-        Icon(
-
-            tint=MaterialTheme.colorScheme.onSecondary,
-            imageVector = Icons.Default.Refresh,
-            contentDescription = stringResource(R.string.undo_ban_button),
-            modifier = modifier
-                .clip(RoundedCornerShape(5.dp))
-                .animateContentSize()
-                .size(if (longPress) 60.dp else 50.dp)
-                .background(MaterialTheme.colorScheme.secondary)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = { tapOffset ->
-                            doubleTap = !doubleTap
-                        },
-                        onLongPress = {longPressOffset ->
-                            longPress = !longPress
-                        },
-                    )
-                }
-                .pointerInput(null) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            // handle pointer event
-
-                            if (event.type == PointerEventType.Release){
-                                longPress = false
-                            }
-                        }
-                    }
-                },
-        )
 
     }
+
+
 }
 
 
