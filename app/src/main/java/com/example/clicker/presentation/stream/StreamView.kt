@@ -74,7 +74,6 @@ import com.example.clicker.network.websockets.models.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
-import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.util.Response
