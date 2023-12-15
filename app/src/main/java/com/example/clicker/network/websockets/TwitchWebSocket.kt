@@ -64,8 +64,18 @@ class TwitchWebSocket @Inject constructor(
     var streamerChannelName = ""
     private var loggedInUsername = ""
 
+    /**
+     * This is all the text shown to user. it is everything sent from the Twitch IRC server
+     * */
     private val _state = MutableStateFlow(initialValue)
-    override val state = _state.asStateFlow() // this is the text data shown to the user
+    override val state = _state.asStateFlow()
+
+    /**
+     * this will hold the id of the latest banned/timed out user
+     * */
+    private val _latestBannedUserId = MutableStateFlow("initialValue")
+     val latestBannedUserId = _latestBannedUserId.asStateFlow()
+
 
     private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
     override val loggedInUserUiState = _loggedInUserUiState

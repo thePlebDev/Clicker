@@ -165,6 +165,14 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    /**
+     * This is meant to monitor of the latest ban/timeout messages
+     *
+     * */
+    init{
+
+    }
+
     fun closeStickyHeader() {
         _uiState.value = _uiState.value.copy(
             showStickyHeader = false

@@ -495,7 +495,7 @@ object MainChat{
         }
 
         /**
-         * A [Box] within a [Box] used to be able to detect drag events move the inner box accourdingly. A demonstration
+         * A [Box] within a [Box] used to be able to detect drag events move the inner box accordingly. A demonstration
          * can be found on Google's official home page [HERE](https://developer.android.com/jetpack/compose/touch-input/pointer-input/drag-swipe-fling)
          * */
         @Composable
