@@ -99,6 +99,7 @@ object MainChat{
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun AutoScrollChatWithTextBox(
+        undoBan: () -> Unit,
         showStickyHeader: Boolean,
         closeStickyHeader: () -> Unit,
         twitchUserChat: List<TwitchUserData>,
@@ -171,7 +172,11 @@ object MainChat{
                     modifier = boxModifier
                 )
             },
-            draggableButton = {MainChatParts.DraggableUndoButton()}
+            draggableButton = {
+                MainChatParts.DraggableUndoButton(
+                    undoBan={undoBan()}
+                )
+            }
         )
     }
 
@@ -499,7 +504,9 @@ object MainChat{
          * can be found on Google's official home page [HERE](https://developer.android.com/jetpack/compose/touch-input/pointer-input/drag-swipe-fling)
          * */
         @Composable
-        fun DraggableUndoButton(){
+        fun DraggableUndoButton(
+            undoBan: () -> Unit,
+        ){
             Box(modifier = Modifier.fillMaxSize()) {
                 var offsetX by remember { mutableStateOf(0f) }
                 var offsetY by remember { mutableStateOf(0f) }
@@ -520,6 +527,9 @@ object MainChat{
                         }
 
                         .align(Alignment.Center)
+                        .clickable {
+                            undoBan()
+                        }
                 ){
                     Icon(
                         modifier =Modifier

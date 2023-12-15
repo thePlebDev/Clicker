@@ -325,7 +325,8 @@ fun TextChat(
         },
         textFieldValue = textFieldValue,
         channelName = channelName,
-        drawerState =drawerState
+        drawerState =drawerState,
+        undoBan = {undoBan()}
     )
 
 }
