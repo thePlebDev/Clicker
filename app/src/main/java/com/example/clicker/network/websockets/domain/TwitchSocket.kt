@@ -27,6 +27,11 @@ interface TwitchSocket {
     val state: StateFlow<TwitchUserData>
 
     /**
+     *  A string representing the id of the latest person to be banned or timed out.
+     * */
+    val latestBannedUserId: StateFlow<String?>
+
+    /**
      *  a [RoomState] object that is used to represent state of the current chat room
      * */
     val roomState: StateFlow<RoomState?>

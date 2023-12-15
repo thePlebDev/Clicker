@@ -39,7 +39,7 @@ class ParsingEngine @Inject constructor() {
             // todo: this should return a TwitchUserData object
             // todo: 1) Basically I want this to send a message to clear the chat
             // todo: 2) Basically I want this to display a message stating that the chat was cleared
-            return clearChatParsing(channelNameFound)
+            return clearChatParsing()
         }
     }
     /**
@@ -78,7 +78,7 @@ class ParsingEngine @Inject constructor() {
             .addMessageType(MessageType.CLEARCHAT)
             .build()
     }
-    private fun clearChatParsing(channelName: String): TwitchUserData {
+    private fun clearChatParsing(): TwitchUserData {
         globalId += 1
         return TwitchUserData(
             badgeInfo = null,

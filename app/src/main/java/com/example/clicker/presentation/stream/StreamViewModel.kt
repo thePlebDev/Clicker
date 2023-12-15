@@ -165,11 +165,23 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+
+    private val _idOfLatestBan = mutableStateOf("")
+    val idOfLatestBan = _idOfLatestBan
     /**
      * This is meant to monitor of the latest ban/timeout messages
      *
      * */
     init{
+        viewModelScope.launch {
+            webSocket.latestBannedUserId.collect{latestBannedId ->
+                latestBannedId?.also{
+                    Log.d("latestBannedId", "latestBannedId --> ${latestBannedId}")
+                    _idOfLatestBan.value = latestBannedId
+                }
+
+            }
+        }
 
     }
 
@@ -671,66 +683,6 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
     }
 
-//    //TODO: TWITCH METHOD
-//    fun slowModeChatSettings(chatSettings: ChatSettingsData) = viewModelScope.launch {
-//        chatSettingsState.value = chatSettingsState.value.copy(
-//            showChatSettingAlert = false,
-//            //enableSlowMode = false
-//        )
-//        withContext(ioDispatcher + CoroutineName("SlowModeChatSettings")) {
-//            twitchRepoImpl.updateChatSettings(
-//                oAuthToken = _uiState.value.oAuthToken,
-//                clientId = _uiState.value.clientId,
-//                moderatorId = _uiState.value.userId,
-//                broadcasterId = _uiState.value.broadcasterId,
-//                body = UpdateChatSettings(
-//                    emote_mode = chatSettings.emoteMode,
-//                    follower_mode = chatSettings.followerMode,
-//                    slow_mode = chatSettings.slowMode,
-//                    subscriber_mode = chatSettings.subscriberMode
-//                )
-//            ).collect { response ->
-//                when (response) {
-//                    is Response.Loading -> {
-//                        Log.d("changeChatSettings", "LOADING")
-//                    }
-//                    is Response.Success -> {
-//                        val newChatSettingsData = ChatSettingsData(
-//                            slowMode = chatSettings.slowMode,
-//                            slowModeWaitTime = chatSettings.slowModeWaitTime,
-//                            followerMode = chatSettings.followerMode,
-//                            followerModeDuration = chatSettings.followerModeDuration,
-//                            subscriberMode = chatSettings.subscriberMode,
-//                            emoteMode = chatSettings.emoteMode,
-//
-//
-//                        )
-//                        _uiState.value = _uiState.value.copy(
-//                            chatSettings = Response.Success(newChatSettingsData),
-//                            //enableSlowMode = true
-//                        )
-//                    }
-//                    is Response.Failure -> {
-//                        Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
-//                        val newChatSettingsData = ChatSettingsData(
-//                            slowMode = !chatSettings.slowMode,
-//                            slowModeWaitTime = chatSettings.slowModeWaitTime,
-//                            followerMode = chatSettings.followerMode,
-//                            followerModeDuration = chatSettings.followerModeDuration,
-//                            subscriberMode = chatSettings.subscriberMode,
-//                            emoteMode = chatSettings.emoteMode,
-//
-//                        )
-//                        _uiState.value = _uiState.value.copy(
-//                            chatSettings = Response.Success(newChatSettingsData),
-////                            showChatSettingAlert = true,
-////                            enableSlowMode = true
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
 
 
     fun timeoutUser() = viewModelScope.launch {
@@ -874,7 +826,7 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
                 clientId = _uiState.value.clientId,
                 moderatorId = _uiState.value.userId,
                 broadcasterId = _uiState.value.broadcasterId,
-                userId = _clickedUIState.value.clickedUserId //TODO:PASS IT IN
+                userId = _idOfLatestBan.value //TODO:PASS IT IN
 
             ).collect { response ->
                 when (response) {
