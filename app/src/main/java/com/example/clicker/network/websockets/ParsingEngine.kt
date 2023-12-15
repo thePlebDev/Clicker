@@ -17,6 +17,14 @@ class ParsingEngine @Inject constructor() {
     val initialState = mutableStateOf("")
     private var initialRoomState:RoomState = RoomState(false,false,false,false,0,0)
 
+    /**
+     * clearChatTesting() a triggered inside of [TwitchWebSocket] once a " CLEARCHAT " command is found.
+     * This function is used to determine if the " CLEARCHAT " command was sent to ban the user or to clear the chat of
+     * chat messages
+     *
+     * @param text A string representing all the meta data sent from the twitch IRC server
+     * @param streamerName a String representing the name of the channel currently watching
+     * */
     fun clearChatTesting(text: String, streamerName: String): TwitchUserData {
         // THIS IS TO CLEAR EVERYTHING @room-id=520593641;tmi-sent-ts=1696019043159 :tmi.twitch.tv CLEARCHAT #theplebdev
         // THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
@@ -34,10 +42,15 @@ class ParsingEngine @Inject constructor() {
             return clearChatParsing(channelNameFound)
         }
     }
+    /**
+     * banUserParsing() is a private function used by [clearChatTesting] and will be triggered when a `ban user` command is
+     * detected, meaning a certain user was banned from the chat
+     *
+     * @param text a String that represents the text sent from the Twitch IRC server and is what we are going to parse
+     * */
     private fun banUserParsing(text: String): TwitchUserData {
         // THIS IS TO BAN USER @room-id=520593641;target-user-id=949335660;tmi-sent-ts=1696019132494 :tmi.twitch.tv CLEARCHAT #theplebdev :meanermeeny
-        // todo: I want this to modify the messages like it currently is but also sent a little message stating what user was banned
-        // todo: I need to parse out the userId. target-user-id=949335660
+
         val banUserPattern = "([^:]+)$".toRegex()
         val bannedUserIdPattern = "target-user-id=(\\d+)".toRegex()
 
