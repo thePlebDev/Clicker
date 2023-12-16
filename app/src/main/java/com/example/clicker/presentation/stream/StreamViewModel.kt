@@ -200,6 +200,9 @@ class StreamViewModel @Inject constructor(
         )
     }
     fun setNoChatMode(status: Boolean){
+        if(status){
+
+        }
         _chatSettingsState.value = _chatSettingsState.value.copy(
             noChatMode = status
         )
