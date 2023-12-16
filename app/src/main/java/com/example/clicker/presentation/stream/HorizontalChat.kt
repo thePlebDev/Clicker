@@ -115,7 +115,9 @@ fun HorizontalChat(
                     updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
                     closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
                     showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
-                    showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton
+                    showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
+                    noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
+                    setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
                 )
             },
             contentCoveredBySideModal = {

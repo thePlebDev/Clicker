@@ -59,9 +59,19 @@ object ChatSettingsContainer {
         closeAlertHeader:()->Unit,
         showUndoButton: (Boolean) -> Unit,
         showUndoButtonStatus:Boolean,
+        noChatMode:Boolean,
+        setNoChatMode:(Boolean)->Unit
     ) {
         ChatSettingsBuilder.ChatSettingsSwitchBox(
-            showUndoButton ={
+            noChatModeSwitch={
+                             ChatSettingsParts.SwitchPart(
+                                 enableSwitches = true,
+                                 checked = noChatMode,
+                                 switchLabel = "No chat mode",
+                                 switchFunction ={setNoChatMode(it)}
+                             )
+            },
+            showUndoButtonSwitch ={
                             ChatSettingsParts.SwitchPart(
                                 enableSwitches =true,
                                 checked = showUndoButtonStatus,
@@ -157,7 +167,8 @@ object ChatSettingsContainer {
          * */
         @Composable
         fun ChatSettingsSwitchBox(
-            showUndoButton: @Composable () -> Unit,
+            noChatModeSwitch: @Composable () -> Unit,
+            showUndoButtonSwitch: @Composable () -> Unit,
             slowModeSwitch: @Composable () -> Unit,
             followerModeSwitch:@Composable () -> Unit,
             subscriberModeSwitch:@Composable () -> Unit,
@@ -181,7 +192,8 @@ object ChatSettingsContainer {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    showUndoButton()
+                    noChatModeSwitch()
+                    showUndoButtonSwitch()
                     slowModeSwitch()
                     followerModeSwitch()
                     subscriberModeSwitch()

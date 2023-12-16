@@ -50,6 +50,7 @@ data class ChattingUser(
 data class ChatSettings(
     val showChatSettingAlert: Boolean = false,
     val showUndoButton:Boolean = false,
+    val noChatMode:Boolean = false,
     val data:ChatSettingsData = ChatSettingsData(
         slowMode = false,slowModeWaitTime = null,
         followerMode = false, followerModeDuration =null ,
@@ -196,6 +197,11 @@ class StreamViewModel @Inject constructor(
 
         _chatSettingsState.value = _chatSettingsState.value.copy(
             showUndoButton = status
+        )
+    }
+    fun setNoChatMode(status: Boolean){
+        _chatSettingsState.value = _chatSettingsState.value.copy(
+            noChatMode = status
         )
     }
     fun closeStickyHeader() {
