@@ -49,6 +49,7 @@ data class ChattingUser(
  * */
 data class ChatSettings(
     val showChatSettingAlert: Boolean = false,
+    val showUndoButton:Boolean = true,
     val data:ChatSettingsData = ChatSettingsData(
         slowMode = false,slowModeWaitTime = null,
         followerMode = false, followerModeDuration =null ,
@@ -185,6 +186,18 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     * showUndoButton() is function used by [SettingsSwitches][com.example.clicker.presentation.stream.views.ChatSettingsContainer.SettingsSwitches]
+     * composable to hide or show the [DraggableUndoButton][com.example.clicker.presentation.stream.views.MainChat.MainChatParts.DraggableUndoButton]
+     *
+     * @param status a boolean representing the current state of the switch being clicked
+     * */
+    fun showUndoButton(status:Boolean){
+
+        _chatSettingsState.value = _chatSettingsState.value.copy(
+            showUndoButton = status
+        )
+    }
     fun closeStickyHeader() {
         _uiState.value = _uiState.value.copy(
             showStickyHeader = false

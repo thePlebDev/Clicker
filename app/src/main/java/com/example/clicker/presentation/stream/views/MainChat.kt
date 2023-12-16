@@ -116,6 +116,7 @@ object MainChat{
         textFieldValue: MutableState<TextFieldValue>,
         channelName: String?,
         drawerState: androidx.compose.material3.DrawerState,
+        showUndoButton:Boolean,
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -173,9 +174,12 @@ object MainChat{
                 )
             },
             draggableButton = {
-                MainChatParts.DraggableUndoButton(
-                    undoBan={undoBan()}
-                )
+                    MainChatParts.DraggableUndoButton(
+                        undoBan={undoBan()},
+                        showUndoButton =showUndoButton
+
+                    )
+
             }
         )
     }
@@ -506,41 +510,47 @@ object MainChat{
         @Composable
         fun DraggableUndoButton(
             undoBan: () -> Unit,
+            showUndoButton: Boolean
         ){
             Box(modifier = Modifier.fillMaxSize()) {
                 var offsetX by remember { mutableStateOf(0f) }
                 var offsetY by remember { mutableStateOf(0f) }
 
-                Box(
-                    Modifier
-                        .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(MaterialTheme.colorScheme.secondary)
-                        .size(50.dp)
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
 
-                                change.consume()
-                                offsetX += dragAmount.x
-                                offsetY += dragAmount.y
-                            }
-                        }
-
-                        .align(Alignment.Center)
-                        .clickable {
-                            undoBan()
-                        }
-                ){
-                    Icon(
-                        modifier =Modifier
+                if(showUndoButton){
+                    Box(
+                        Modifier
+                            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(MaterialTheme.colorScheme.secondary)
                             .size(50.dp)
-                            .align(Alignment.Center),
-                        tint=MaterialTheme.colorScheme.onSecondary,
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = ""
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
 
-                    )
+                                    change.consume()
+                                    offsetX += dragAmount.x
+                                    offsetY += dragAmount.y
+                                }
+                            }
+
+                            .align(Alignment.Center)
+                            .clickable {
+                                undoBan()
+                            }
+                    ){
+                        Icon(
+                            modifier =Modifier
+                                .size(50.dp)
+                                .align(Alignment.Center),
+                            tint=MaterialTheme.colorScheme.onSecondary,
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = ""
+
+                        )
+                    }
                 }
+
+
             }
         }
 
