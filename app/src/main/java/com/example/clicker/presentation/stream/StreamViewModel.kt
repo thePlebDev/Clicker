@@ -49,7 +49,7 @@ data class ChattingUser(
  * */
 data class ChatSettings(
     val showChatSettingAlert: Boolean = false,
-    val showUndoButton:Boolean = true,
+    val showUndoButton:Boolean = false,
     val data:ChatSettingsData = ChatSettingsData(
         slowMode = false,slowModeWaitTime = null,
         followerMode = false, followerModeDuration =null ,
