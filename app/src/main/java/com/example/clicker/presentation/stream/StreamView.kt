@@ -184,7 +184,9 @@ fun StreamView(
                             showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
                             chatSettingsData =streamViewModel.chatSettingsState.value.data ,
                             updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
-                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()}
+                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
+                            showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
+                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton
                         )
 
                     },
@@ -242,7 +244,8 @@ fun StreamView(
                             restartWebSocket = { streamViewModel.restartWebSocket() },
                             showOneClickAction = oneClickActionsChecked,
                             oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
-                            oneClickTimeoutUser={}
+                            oneClickTimeoutUser={},
+                            showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton
                         )
                     }
                 )
@@ -300,7 +303,8 @@ fun TextChat(
     restartWebSocket: () -> Unit,
     showOneClickAction:Boolean,
     oneClickBanUser: (String) -> Unit,
-    oneClickTimeoutUser: (String) -> Unit
+    oneClickTimeoutUser: (String) -> Unit,
+    showUndoButton:Boolean,
 
 ) {
 
@@ -326,7 +330,8 @@ fun TextChat(
         textFieldValue = textFieldValue,
         channelName = channelName,
         drawerState =drawerState,
-        undoBan = {undoBan()}
+        undoBan = {undoBan()},
+        showUndoButton =showUndoButton
     )
 
 }

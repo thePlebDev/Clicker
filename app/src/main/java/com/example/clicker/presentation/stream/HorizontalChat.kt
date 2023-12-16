@@ -113,7 +113,9 @@ fun HorizontalChat(
                     showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
                     chatSettingsData =streamViewModel.chatSettingsState.value.data ,
                     updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
-                    closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()}
+                    closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
+                    showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
+                    showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton
                 )
             },
             contentCoveredBySideModal = {
@@ -172,7 +174,8 @@ fun HorizontalChat(
                     oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
                     oneClickTimeoutUser={
                             userDetails ->
-                    }
+                    },
+                    showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton
                 )
             }
         )

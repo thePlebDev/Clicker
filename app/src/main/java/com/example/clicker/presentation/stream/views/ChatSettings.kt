@@ -56,9 +56,19 @@ object ChatSettingsContainer {
         showChatSettingAlert: Boolean,
         chatSettingsData:ChatSettingsData,
         updateChatSettings:(ChatSettingsData)->Unit,
-        closeAlertHeader:()->Unit
+        closeAlertHeader:()->Unit,
+        showUndoButton: (Boolean) -> Unit,
+        showUndoButtonStatus:Boolean,
     ) {
         ChatSettingsBuilder.ChatSettingsSwitchBox(
+            showUndoButton ={
+                            ChatSettingsParts.SwitchPart(
+                                enableSwitches =true,
+                                checked = showUndoButtonStatus,
+                                switchLabel = "Show undo button",
+                                switchFunction ={showUndoButton(it)}
+                            )
+            },
             slowModeSwitch = {
                 ChatSettingsParts.SwitchPart(
                     enableSwitches = enableSwitches,
@@ -147,6 +157,7 @@ object ChatSettingsContainer {
          * */
         @Composable
         fun ChatSettingsSwitchBox(
+            showUndoButton: @Composable () -> Unit,
             slowModeSwitch: @Composable () -> Unit,
             followerModeSwitch:@Composable () -> Unit,
             subscriberModeSwitch:@Composable () -> Unit,
@@ -170,6 +181,7 @@ object ChatSettingsContainer {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
+                    showUndoButton()
                     slowModeSwitch()
                     followerModeSwitch()
                     subscriberModeSwitch()
