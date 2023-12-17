@@ -34,6 +34,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -100,12 +101,18 @@ class StreamViewModel @Inject constructor(
     private val autoCompleteChat: AutoCompleteChat
 ) : ViewModel() {
 
+    /**
+     * The name of the channel that this chat is connecting to
+     * */
     private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)
     val channelName: StateFlow<String?> = _channelName
 
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
 
+    /**
+     * A list representing all the chats users have sent
+     * */
     val listChats = mutableStateListOf<TwitchUserData>()
 
 
@@ -200,12 +207,22 @@ class StreamViewModel @Inject constructor(
         )
     }
     fun setNoChatMode(status: Boolean){
-        if(status){
-
-        }
         _chatSettingsState.value = _chatSettingsState.value.copy(
             noChatMode = status
         )
+        if(status){
+            webSocket.close()
+            listChats.clear()
+
+        }else{
+            startWebSocket(channelName.value ?:"")
+        }
+        viewModelScope.launch {
+            delay(200)
+            listChats.clear()
+        }
+
+
     }
     fun closeStickyHeader() {
         _uiState.value = _uiState.value.copy(
@@ -410,9 +427,9 @@ class StreamViewModel @Inject constructor(
             withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
                 _channelName.collect { channelName ->
                     channelName?.let {
-                       // if(_uiState.value.noChatMode){
+
                             startWebSocket(channelName)
-                        //}
+
 
                     }
                 }
@@ -513,14 +530,23 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     }
 
     //TODO: SOCKET METHOD
+    /**
+     * startWebSocket() is a private method meant to be called by methods inside of [StreamViewModel]
+     * It is used to start and connect a Websocket using the [TwitchSocket]
+     * */
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
-        tokenDataStore.getUsername().collect { username ->
-            if (username.isNotEmpty()) {
-                currentUsername = username
-                Log.d("startWebSocket", "username --->$username")
-                webSocket.run(channelName, username)
+        if(_chatSettingsState.value.noChatMode){
+            //this is meant to be empty to represent doing nothing and the user being in no chat mode
+        }else{
+            tokenDataStore.getUsername().collect { username ->
+                if (username.isNotEmpty()) {
+                    currentUsername = username
+                    Log.d("startWebSocket", "username --->$username")
+                    webSocket.run(channelName, username)
+                }
             }
         }
+
     }
 
     //TODO: SOCKET METHOD

@@ -177,7 +177,8 @@ fun HorizontalChat(
                     oneClickTimeoutUser={
                             userDetails ->
                     },
-                    showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton
+                    showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton,
+                    noChatMode =  streamViewModel.chatSettingsState.value.noChatMode
                 )
             }
         )

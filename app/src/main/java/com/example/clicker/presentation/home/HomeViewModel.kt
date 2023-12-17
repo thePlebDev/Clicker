@@ -22,6 +22,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
+ * are fetched
+ *
+ * */
+data class StreamInfo(
+    val streamerName: String,
+    val streamTitle: String,
+    val gameTitle: String,
+    val views: Int,
+    val url: String,
+    val broadcasterId: String
+)
 data class HomeUIState(
     val userLogginIn: Boolean = false,
     val userProfile: String? = null,
@@ -178,14 +191,7 @@ class HomeViewModel @Inject constructor(
         )
     }
 }
-data class StreamInfo(
-    val streamerName: String,
-    val streamTitle: String,
-    val gameTitle: String,
-    val views: Int,
-    val url: String,
-    val broadcasterId: String
-)
+
 fun StreamInfo.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamInfo {
     return StreamInfo(
         streamerName = this.streamerName,
