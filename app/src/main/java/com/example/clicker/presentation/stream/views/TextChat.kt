@@ -62,7 +62,7 @@ object TextChat{
         modStatus: Boolean?,
         filterMethod: (String, String) -> Unit,
         sendMessageToWebSocket: (String) -> Unit,
-        showModal: () -> Unit
+        showModal: () -> Unit,
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,
@@ -85,7 +85,8 @@ object TextChat{
                 TextChatParts.StylizedTextField(
                     modifier = boxModifier,
                     textFieldValue = textFieldValue,
-                    filterMethod ={username, newText -> filterMethod(username,newText)}
+                    filterMethod ={username, newText -> filterMethod(username,newText)},
+
                 )
             },
             showIconBasedOnTextLength ={

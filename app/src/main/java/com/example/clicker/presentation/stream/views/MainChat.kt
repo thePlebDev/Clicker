@@ -117,10 +117,12 @@ object MainChat{
         channelName: String?,
         drawerState: androidx.compose.material3.DrawerState,
         showUndoButton:Boolean,
+        noChatMode:Boolean
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
         var autoscroll by remember { mutableStateOf(true) }
+
         //this is a builder
         ChatBuilder.ScrollableChat(
             determineScrollState={
@@ -162,7 +164,7 @@ object MainChat{
                     sendMessageToWebSocket = {chatMessage -> sendMessageToWebSocket(chatMessage)},
                     showModal ={
                         coroutineScope.launch { drawerState.open() }
-                    }
+                    },
                 )
 
             }, // end of enter chat
@@ -180,7 +182,8 @@ object MainChat{
 
                     )
 
-            }
+            },
+            noChatMode = noChatMode
         )
     }
 
@@ -239,12 +242,14 @@ object MainChat{
          * */
         @Composable
         fun ScrollableChat(
+            noChatMode: Boolean,
             determineScrollState:@Composable () -> Unit,
             autoScrollingChat:@Composable () -> Unit,
             enterChat:@Composable (modifier:Modifier) -> Unit,
             scrollToBottom:@Composable (modifier:Modifier) -> Unit,
             draggableButton:@Composable () -> Unit,
         ){
+
 
 
             determineScrollState()
@@ -258,7 +263,7 @@ object MainChat{
                 enterChat(
                     Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
                 )
                 scrollToBottom(
                     modifier = Modifier
@@ -266,6 +271,15 @@ object MainChat{
                         .padding(bottom = 77.dp)
                 )
                 draggableButton()
+                if(noChatMode){
+                    Text(
+                        "You are in no chat mode",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 20.sp
+                    )
+                }
+
 
             }
         }
@@ -539,7 +553,7 @@ object MainChat{
                             }
                     ){
                         Icon(
-                            modifier =Modifier
+                            modifier = Modifier
                                 .size(50.dp)
                                 .align(Alignment.Center),
                             tint=MaterialTheme.colorScheme.onSecondary,

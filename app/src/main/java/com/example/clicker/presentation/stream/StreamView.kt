@@ -247,7 +247,8 @@ fun StreamView(
                             showOneClickAction = oneClickActionsChecked,
                             oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
                             oneClickTimeoutUser={},
-                            showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton
+                            showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton,
+                            noChatMode= streamViewModel.chatSettingsState.value.noChatMode
                         )
                     }
                 )
@@ -307,6 +308,7 @@ fun TextChat(
     oneClickBanUser: (String) -> Unit,
     oneClickTimeoutUser: (String) -> Unit,
     showUndoButton:Boolean,
+    noChatMode:Boolean,
 
 ) {
 
@@ -333,7 +335,8 @@ fun TextChat(
         channelName = channelName,
         drawerState =drawerState,
         undoBan = {undoBan()},
-        showUndoButton =showUndoButton
+        showUndoButton =showUndoButton,
+        noChatMode =noChatMode
     )
 
 }
