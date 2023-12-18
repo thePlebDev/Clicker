@@ -47,7 +47,7 @@ object HomeComponents {
     fun HomeImplementationScaffold(
         scaffoldState: ScaffoldState,
         logout:()->Unit,
-        loginWithTwitch: () -> Unit,
+        login: () -> Unit,
         userIsAuthenticated:Boolean,
         updateAuthenticatedUser:()->Unit,
         homeView:@Composable () -> Unit
@@ -61,7 +61,7 @@ object HomeComponents {
                         logout()
                     },
                     loginWithTwitch = {
-                        loginWithTwitch()
+                        login()
                     },
                     scaffoldState = scaffoldState,
                     userIsLoggedIn = userIsAuthenticated
