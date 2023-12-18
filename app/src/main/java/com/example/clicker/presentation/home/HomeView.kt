@@ -137,7 +137,7 @@ fun ValidationView(
                     oAuthToken = authenticationViewModel.authenticationUIState.value.authenticationCode
                 )
             },
-            loginWithTwitch = {
+            login = {
                 loginWithTwitch()
             },
             scaffoldState = scaffoldState,
@@ -271,6 +271,7 @@ fun CustomTopBar(
 
 /**
  * This is the composable that shows the loading images and the actual images that are shown to the user to click on
+ * I think this should be a builder
  * */
 @Composable
 fun UrlImages(
@@ -339,60 +340,20 @@ fun UrlImages(
                 .padding(start = 5.dp, end = 5.dp)
 
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-            ) {
-                when (urlListLoading) {
-                    is Response.Loading -> {
-                        item {
-                            //todo:This is its own item
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(40.dp),
-                                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-                    is Response.Success -> {
-                        if (urlList != null) {
+            LiveChannelsLazyColumn(
+                urlList =urlList,
+                urlListLoading =urlListLoading,
+                onNavigate = {id -> onNavigate(id)},
+                updateStreamerName = {
+                        streamerName, clientIds, broadcasterId, userIds ->
+                    updateStreamerName(streamerName, clientIds, broadcasterId, userIds)
+                },
+                clientId =clientId,
+                userId = userId,
+                height = height,
+                width = width
 
-                            if (urlList.isEmpty()) {
-                                item {
-                                    EmptyFollowingList()
-                                }
-                            }
-
-                            items(urlList,key = { streamItem -> streamItem.broadcasterId }) { streamItem ->
-                                LiveChannelRowItem(
-                                    updateStreamerName ={
-                                            streamerName,clientId,broadcasterId,userId ->
-                                        updateStreamerName(streamerName,clientId,broadcasterId,userId)
-
-                                    },
-                                    streamItem = streamItem,
-                                    clientId =clientId,
-                                    userId = userId,
-                                    height = height,
-                                    width = width,
-                                    onNavigate = {id -> onNavigate(id)}
-                                )
-//
-                            }
-                            // end of the lazy column
-                        }
-                    }
-                    is Response.Failure -> {
-                        item {
-                            GettingStreamsError()
-                        }
-                    }
-                }
-            }
+            )
 
             // apparently this is the code I am using to make the message disappear
             AnimatedErrorMessage(
@@ -400,6 +361,75 @@ fun UrlImages(
                 showFailedNetworkRequestMessage =showFailedNetworkRequestMessage,
                 errorMessage =stringResource(R.string.failed_request)
             )
+        }//inner box scope
+    }//outer box scope
+}
+
+@Composable
+fun LiveChannelsLazyColumn(
+    urlList: List<StreamInfo>?,
+    urlListLoading: Response<Boolean>,
+    onNavigate: (Int) -> Unit,
+    updateStreamerName: (String, String, String, String) -> Unit,
+    clientId: String,
+    userId: String,
+    height: Int,
+    width: Int,
+
+
+){
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxHeight()
+    ) {
+        when (urlListLoading) {
+            is Response.Loading -> {
+                item {
+                    //todo:This is its own item
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp),
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+            }
+            is Response.Success -> {
+                if (urlList != null) {
+
+                    if (urlList.isEmpty()) {
+                        item {
+                            EmptyFollowingList()
+                        }
+                    }
+
+                    items(urlList,key = { streamItem -> streamItem.broadcasterId }) { streamItem ->
+                        LiveChannelRowItem(
+                            updateStreamerName ={
+                                    streamerName,clientId,broadcasterId,userId ->
+                                updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                            },
+                            streamItem = streamItem,
+                            clientId =clientId,
+                            userId = userId,
+                            height = height,
+                            width = width,
+                            onNavigate = {id -> onNavigate(id)}
+                        )
+//
+                    }
+                    // end of the lazy column
+                }
+            }
+            is Response.Failure -> {
+                item {
+                    GettingStreamsError()
+                }
+            }
         }
     }
 }
@@ -427,7 +457,7 @@ fun PullDownToRequest(
             pullingState.dispatchToResting()
             pullingState.isRefreshing = false
             changeRequest(false)
-            changeColor(Color.White)
+            changeColor(Color.Red)
 
         }
     } else {
