@@ -76,9 +76,40 @@ import com.example.clicker.util.Response
 import com.example.clicker.util.rememberNestedScrollConnection
 import com.example.clicker.util.rememberPullToRefreshState
 import kotlinx.coroutines.launch
-
+/**
+ * - Contains 1 implementation:
+ * 1) [HomeViewImplementation]
+ *
+ * - HomeComponents represents a combination of [ScaffoldComponents] implementation and [HomeComponents] to
+ * create the entire HomeView
+ * */
 object HomeComponents {
 
+    /**
+     * - Implementation of [Builder.HomeModalBottomSheet].
+     * - Contains 3 parts:
+     * 1) [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
+     * 2) [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * 3) [Parts.DisableForceRegister][Parts.DisableForceRegister]
+     *
+     * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
+     * @param modalText a String passed to [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
+     * @param loginWithTwitch a function passed to [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
+     * @param addToLinks a function passed to [Parts.DisableForceRegister][Parts.DisableForceRegister]
+     * @param onNavigate a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param quarterTotalScreenHeight a Int passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param streamersListLoading a value passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param urlList a list of [com.example.clicker.presentation.home.StreamInfo] passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param clientId a String passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param userId a String passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param pullToRefreshRequest a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param showFailedNetworkRequestMessage a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param height a Int representing the height in a aspect ratio that will make the images look nice
+     * @param width a Int representing the width in a aspect ratio that will make the images look nice
+     * @param logout a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param userIsAuthenticated a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param updateAuthenticatedUser a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun HomeViewImplementation(
@@ -103,7 +134,7 @@ object HomeComponents {
         updateAuthenticatedUser: () -> Unit
 
     ){
-        Builder.HomeModalBottomSheet(
+        Builder.HomeModalBottomSheetBuilder(
             loginBottomModal = {
                 Parts.LoginWithTwitchBottomModalButton(
                     modalText = modalText,
@@ -164,9 +195,19 @@ object HomeComponents {
      * */
     private object Builder{
 
+        /**
+         * - HomeModalBottomSheetBuilder is used inside of  [HomeViewImplementation].
+         *
+         *
+         * @param loginBottomModal a composable function that will be shown on the bottom modal
+         * @param scaffoldHomeView a composable function that will be covered by the bottom modal
+         * @param forceRegisterLinks a composable function that will be shown when their is no deep links registered
+         * @param bottomModalState the state of the [ModalBottomSheetLayout]
+         * @param domainIsRegistered a boolean determining if [forceRegisterLinks] should be shown or not
+         * */
         @OptIn(ExperimentalMaterialApi::class)
         @Composable
-        fun HomeModalBottomSheet(
+        fun HomeModalBottomSheetBuilder(
             loginBottomModal:@Composable () -> Unit,
             scaffoldHomeView:@Composable () -> Unit,
             forceRegisterLinks:@Composable () -> Unit,
@@ -198,6 +239,16 @@ object HomeComponents {
      object Parts{
 
 
+        /**
+         * - Contains 0 extra parts
+         *
+         * - AnimatedErrorMessage is an animated Error message that will only be shown to the user where an error from fetching
+         * the network occurs
+         *
+         * @param modifier a modifier used to determine where this composable should be displayed
+         * @param showFailedNetworkRequestMessage a Boolean used to determine if the error message should show or not.
+         * @param errorMessage a String displaying the actual error message
+         * */
         @Composable
         fun AnimatedErrorMessage(
             modifier: Modifier,
@@ -230,6 +281,15 @@ object HomeComponents {
 
 
 
+        /**
+         * - Contains 0 extra parts
+         *
+         * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
+         *
+         * @param modalText a String that will be displayed on the button and will tell the user what the button does
+         * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
+         * to log in with Twitch
+         * */
         @Composable
         fun LoginWithTwitchBottomModalButton(
             modalText:String,
@@ -258,6 +318,13 @@ object HomeComponents {
             }
         }
 
+        /**
+         * - Contains 0 extra parts
+         *
+         * - DisableForceRegister is shown to the user if they are on Android 12 or up and have not validated the deep link
+         *
+         * @param addToLinks a function used to send the user to validate the deep link
+         * */
         @Composable
         fun DisableForceRegister(
             addToLinks: () -> Unit
