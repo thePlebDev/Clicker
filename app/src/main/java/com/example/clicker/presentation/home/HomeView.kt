@@ -91,7 +91,6 @@ fun ValidationView(
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
     quarterTotalScreenHeight:Int,
-    loadingPadding: Int,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -124,7 +123,6 @@ fun ValidationView(
         addToLinks = { addToLinks() },
         onNavigate = {id -> onNavigate(id) },
         quarterTotalScreenHeight =quarterTotalScreenHeight,
-        loadingPadding =loadingPadding,
         updateStreamerName = { streamerName, clientId,broadcasterId,userId->
             streamViewModel.updateChannelNameAndClientIdAndUserId(
                 streamerName,

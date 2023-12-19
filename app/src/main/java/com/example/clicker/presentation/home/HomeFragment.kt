@@ -107,7 +107,6 @@ class HomeFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         addToLinks = { context.startActivity(domainIntent) },
                         quarterTotalScreenHeight,
-                        loadingPadding
 
 
                     )
