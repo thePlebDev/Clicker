@@ -89,7 +89,6 @@ object HomeComponents {
         addToLinks: () -> Unit,
         onNavigate: (Int) -> Unit,
         quarterTotalScreenHeight: Int,
-        loadingPadding: Int,
         updateStreamerName: (String, String, String, String) -> Unit,
         streamersListLoading: Response<Boolean>,
         urlList: List<StreamInfo>?,
@@ -114,7 +113,6 @@ object HomeComponents {
             scaffoldHomeView ={
                 ScaffoldComponents.MainScaffoldComponent(
                     onNavigate = {id -> onNavigate(id) },
-                    loadingPadding =loadingPadding,
                     updateStreamerName = { streamerName, clientId,broadcasterId,userId->
                         updateStreamerName(
                             streamerName,
@@ -198,112 +196,8 @@ object HomeComponents {
      * The components inside of [Parts] represent all the composables that make up the the `HomeView` experience
      * */
      object Parts{
-        @Composable
-        fun LiveChannelsLazyColumn(
-            urlList: List<StreamInfo>?,
-            urlListLoading: Response<Boolean>,
-            onNavigate: (Int) -> Unit,
-            updateStreamerName: (String, String, String, String) -> Unit,
-            clientId: String,
-            userId: String,
-            height: Int,
-            width: Int,
 
 
-            ){
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-            ) {
-                when (urlListLoading) {
-                    is Response.Loading -> {
-                        item {
-                            //todo:This is its own item
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(40.dp),
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-                    is Response.Success -> {
-                        if (urlList != null) {
-
-                            if (urlList.isEmpty()) {
-                                item {
-                                    EmptyFollowingList()
-                                }
-                            }
-
-                            items(urlList,key = { streamItem -> streamItem.broadcasterId }) { streamItem ->
-                                LiveChannelRowItem(
-                                    updateStreamerName ={
-                                            streamerName,clientId,broadcasterId,userId ->
-                                        updateStreamerName(streamerName,clientId,broadcasterId,userId)
-
-                                    },
-                                    streamItem = streamItem,
-                                    clientId =clientId,
-                                    userId = userId,
-                                    height = height,
-                                    width = width,
-                                    onNavigate = {id -> onNavigate(id)}
-                                )
-//
-                            }
-                            // end of the lazy column
-                        }
-                    }
-                    is Response.Failure -> {
-                        item {
-                            GettingStreamsError()
-                        }
-                    }
-                }
-            }
-        }
-        @Composable
-        fun PullDownToRequest(
-            request:Boolean,
-            changeRequest:(Boolean)->Unit,
-            modifier: Modifier,
-            loadingPadding: Int,
-            pullColor: Color,
-            changeColor:(Color)->Unit,
-            pullingState: PullRefreshState,
-            networkRequest: (suspend () -> Unit) -> Unit,
-        ){
-            if (request) {
-                // then we can also make the request here
-                //todo: make this into its own loading request
-                CircularProgressIndicator(
-                    modifier = modifier
-                        .padding(top = (loadingPadding).dp), //todo: calculation should be done outside of compose
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                networkRequest {
-                    pullingState.dispatchToResting()
-                    pullingState.isRefreshing = false
-                    changeRequest(false)
-                    changeColor(Color.Red)
-
-                }
-            } else {
-                Icon(
-                    Icons.Filled.KeyboardArrowDown,
-                    stringResource(R.string.keyboard_arrow_down_description),
-                    modifier = modifier
-                        .size(80.dp)
-                        .offset { IntOffset(0, pullingState.contentOffset.toInt() - 140) },//todo: calculation should be done outside of compose
-                    tint = pullColor
-
-                )
-            }
-        }
         @Composable
         fun AnimatedErrorMessage(
             modifier: Modifier,
@@ -333,109 +227,9 @@ object HomeComponents {
                 }
             }
         }
-        @Composable
-        fun LiveChannelRowItem(
-            updateStreamerName: (String, String, String, String) -> Unit,
-            streamItem: StreamInfo,
-            clientId: String,
-            userId:String,
-            onNavigate: (Int) -> Unit,
-            height: Int,
-            width: Int
 
 
-        ){
-            Row(
-                modifier = Modifier.clickable {
-                    updateStreamerName(
-                        streamItem.streamerName,
-                        clientId,
-                        streamItem.broadcasterId,
-                        userId
-                    )
-                    onNavigate(R.id.action_homeFragment_to_streamFragment)
-                }
-            ){
-                ImageWithViewCount(
-                    url =streamItem.url,
-                    height = height,
-                    width= width,
-                    viewCount =streamItem.views
-                )
-                StreamTitleWithInfo(
-                    streamerName =streamItem.streamerName,
-                    streamTitle =streamItem.streamTitle,
-                    gameTitle = streamItem.gameTitle
-                )
 
-            }
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-            )
-        }
-
-        @Composable
-        fun GettingStreamsError() {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .clickable { },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    Text(stringResource(R.string.error_pull_to_refresh), fontSize = 20.sp)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-            }
-        }
-        @Composable
-        fun EmptyFollowingList() {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .clickable { },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    Text(stringResource(R.string.no_live_streams), fontSize = 20.sp)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-            }
-        }
         @Composable
         fun LoginWithTwitchBottomModalButton(
             modalText:String,
@@ -460,44 +254,6 @@ object HomeComponents {
                 )
                 Button(onClick = { loginWithTwitch() }) {
                     Text(text = stringResource(R.string.login_with_twitch))
-                }
-            }
-        }
-        @Composable
-        fun AccountActionCard(
-            scaffoldState: ScaffoldState,
-            accountAction: () -> Unit,
-            title:String,
-            iconImageVector: ImageVector
-        ) {
-            val scope = rememberCoroutineScope()
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .clickable {
-                        scope.launch {
-                            scaffoldState.drawerState.close()
-                        }
-                        accountAction()
-                    },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.secondary),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Text(title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
-                    Icon(
-                        iconImageVector,
-                        stringResource(R.string.logout_icon_description),
-                        modifier = Modifier.size(35.dp),
-                        tint =  MaterialTheme.colorScheme.onSecondary
-                    )
                 }
             }
         }
@@ -562,69 +318,6 @@ object HomeComponents {
             } // end of the box
         }
 
-        @Composable
-        fun StreamTitleWithInfo(
-            streamerName:String,
-            streamTitle:String,
-            gameTitle:String
-        ){
-            Column(modifier = Modifier.padding(start = 10.dp)) {
-                Text(
-                    streamerName,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    streamTitle,
-                    fontSize = 15.sp,
-                    modifier = Modifier.alpha(0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    gameTitle,
-                    fontSize = 15.sp,
-                    modifier = Modifier.alpha(0.7f),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
-        @Composable
-        fun ImageWithViewCount(
-            url: String,
-            height: Int,
-            width: Int,
-            viewCount:Int,
-        ){
-            Box() {
-
-                SubcomposeAsyncImage(
-                    model = url,
-                    loading = {
-                        Card(
-                            modifier = Modifier
-                                .height((height / 2.8).dp)
-                                .width((width / 2.8).dp),
-                            backgroundColor = MaterialTheme.colorScheme.primary
-                        ) {
-                        }
-                    },
-                    contentDescription = stringResource(R.string.sub_compose_async_image_description)
-                )
-                Text(
-                    "${viewCount}",
-                    style = TextStyle(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(5.dp)
-                )
-            }
-        }
 
 
 
