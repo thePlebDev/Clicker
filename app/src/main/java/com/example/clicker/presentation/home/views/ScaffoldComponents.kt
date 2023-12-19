@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.home.views.HomeComponents.HomeViewImplementation
 import com.example.clicker.presentation.stream.views.MainChat.StickyHeader
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.util.PullToRefreshNestedScrollConnection
@@ -65,16 +66,17 @@ import com.example.clicker.util.rememberPullToRefreshState
 import kotlinx.coroutines.launch
 
 /**
- * MainChat represents all the UI composables that create the scaffold experience inside the HomeView.
+ * - Contains 1 implementation:
+ * 1) [MainScaffoldComponent]
  *
- * - [MainScaffoldComponent] : Used to create a [Scaffold] that is used inside of [HomeViewImplementation][HomeComponents.HomeViewImplementation]
-
+ * - ScaffoldComponents represents all the UI composables that create the scaffold experience inside the HomeView.
+ *
  *
  * */
 object ScaffoldComponents {
 
     /**
-     * - MainScaffoldComponent is the implementation of [Builder.ScaffoldBuilder].
+     * - Implementation of [Builder.ScaffoldBuilder].
      *
      * - MainScaffoldComponent is used soley inside of [HomeViewImplementation][HomeComponents.HomeViewImplementation] to
      * create the scaffold home view. Essentially it is what the user sees when the data loads from the twitch server plus a
