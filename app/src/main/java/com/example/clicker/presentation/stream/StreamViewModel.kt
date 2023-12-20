@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
@@ -12,6 +13,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.substring
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.R
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.BanUser
@@ -886,7 +888,13 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
                             banResponse = Response.Success(true),
                             undoBanResponse = true
                         )
-                        Log.d("TESTINGTHEUNBANRESPONSE", "SUCCESS")
+
+                        val unBanSuccessMessage =TwitchUserDataObjectMother.addColor("#FFBB86FC")
+                            .addDisplayName("Room update")
+                            .addUserType("Unban successful")
+                            .addMessageType(MessageType.NOTICE)
+                            .build()
+                        listChats.add(unBanSuccessMessage)
                     }
                     is Response.Failure -> {
                         Log.d("TESTINGTHEUNBANRESPONSE", "FAILED")
