@@ -81,20 +81,22 @@ import kotlin.math.roundToInt
 /**Extension function used to determine if the use has scrolled to the end of the chat*/
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 /**
+ * 1) delete this after) Rule: brief description followed by the number of implementations
+ *
  * MainChat represents all the UI composables used to build the auto scrolling chat system, the text box used to enter chat messages and utility composables
+ *  - MainChat contains 1 top level implementation:
+ *  1) [AutoScrollChatWithTextBox]
  *
- * - [DetermineScrollState] : Used to facilitate,modify and identify the current scroll state of the chat messages Lazy Column
- *
- * - [ChatMessages]: The combination of all the possible chat messages delivered from the [Twitch IRC websocket](https://dev.twitch.tv/docs/irc/capabilities/)
- *
- * - [StickyHeader] : Show at the top of the user's chat when a sticky header conditional is triggered
  *
  * */
 object MainChat{
 
     /**
+     * 1) delete this after) Rule: brief description followed by builders used, then parameter description
+     *
      * AutoScrollChatWithTextBox is the implementation that contains all the individual elements that makes
      * our user chat experience
+     * - AutoScrollChatWithTextBox implements the [ScrollableChat][ChatBuilder.ScrollableChat] builder
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -249,15 +251,11 @@ object MainChat{
             scrollToBottom:@Composable (modifier:Modifier) -> Unit,
             draggableButton:@Composable () -> Unit,
         ){
-
-
-
             determineScrollState()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Red)
-
             ) {
                 autoScrollingChat()
                 enterChat(
@@ -279,11 +277,8 @@ object MainChat{
                         fontSize = 20.sp
                     )
                 }
-
-
             }
         }
-
     }//end of the builder
 
 
