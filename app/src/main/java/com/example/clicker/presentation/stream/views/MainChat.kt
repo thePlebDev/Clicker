@@ -32,6 +32,8 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -90,13 +92,32 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
  *
  * */
 object MainChat{
-
+//Rule: brief description followed by builders used, then parameter description
     /**
-     * 1) delete this after) Rule: brief description followed by builders used, then parameter description
+     *
      *
      * AutoScrollChatWithTextBox is the implementation that contains all the individual elements that makes
      * our user chat experience
-     * - AutoScrollChatWithTextBox implements the [ScrollableChat][ChatBuilder.ScrollableChat] builder
+     * - AutoScrollChatWithTextBox implements the [ScrollableChat][Builders.ScrollableChat] builder
+     *
+     * @param undoBan a function that will be used to reverse the most recent ban in chat
+     * @param showStickyHeader a conditional used to determine if there should be a sticky header shown in a [LazyColumn]
+     * @param closeStickyHeader a function used to change the [showStickyHeader]
+     * @param twitchUserChat a list of [TwitchUserData] used to represent each individual chat message
+     * @param bottomModalState a state for the [ModalBottomSheetLayout][androidx.compose.material.ModalBottomSheetLayout] object
+     * @param restartWebSocket a function used to restart a websocket
+     * @param banResponseMessage a String used to represent the response of the ban function
+     * @param updateClickedUser a function used to update values in the ViewModel with the username and id of the chat message just clicked
+     * @param deleteMessage a function used to delete the chat message
+     * @param sendMessageToWebSocket a function used to send the chat message to the Twitch IRC server
+     * @param modStatus a boolean to determine if the user is a mod or not
+     * @param filteredChatList a list of Strings representing the filtered out usernames the user is typing
+     * @param filterMethod a function used to filter out the names in [filteredChatList]
+     * @param clickedAutoCompleteText a function used to autocomplete text when a name in [filteredChatList] is clicked
+     * @param textFieldValue a [TextFieldValue] representing the current message the user is typing
+     * @param drawerState the state for a [ModalNavigationDrawer][androidx.compose.material3.ModalNavigationDrawer]
+     * @param showUndoButton a conditional used to determine if the button used to unban users should be shown
+     * @param noChatMode a conditional used to determine if the user is in no chat mode or not
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -126,9 +147,9 @@ object MainChat{
         var autoscroll by remember { mutableStateOf(true) }
 
         //this is a builder
-        ChatBuilder.ScrollableChat(
+        Builders.ScrollableChat(
             determineScrollState={
-                MainChatParts.DetermineScrollState(
+                Parts.DetermineScrollState(
                     lazyColumnListState =lazyColumnListState,
                     setAutoScrollFalse={autoscroll = false},
                     setAutoScrollTrue = {autoscroll = true},
@@ -137,7 +158,7 @@ object MainChat{
                 )
             },
             autoScrollingChat={
-                MainChatParts.AutoScrollingChat(
+                Parts.AutoScrollingChat(
                     twitchUserChat = twitchUserChat,
                     lazyColumnListState = lazyColumnListState,
                     showStickyHeader = showStickyHeader,
@@ -171,14 +192,14 @@ object MainChat{
 
             }, // end of enter chat
             scrollToBottom ={boxModifier ->
-                MainChat.ScrollToBottom(
+                Parts.ScrollToBottom(
                     scrollingPaused = !autoscroll,
                     enableAutoScroll = { autoscroll = true },
                     modifier = boxModifier
                 )
             },
             draggableButton = {
-                    MainChatParts.DraggableUndoButton(
+                Parts.DraggableUndoButton(
                         undoBan={undoBan()},
                         showUndoButton =showUndoButton
 
@@ -189,58 +210,25 @@ object MainChat{
         )
     }
 
-    /**IMPLEMENTATIONS BELOW*/
-
-    //todo: this is a part
-
-    @Composable
-    fun StickyHeader(
-        banResponseMessage:String,
-        closeStickyHeader: () -> Unit,
-
-        ){
-        MainChatParts.AlertRowHeader(
-            alertMessage =banResponseMessage,
-            closeAlert ={closeStickyHeader()}
-        )
-
-    }
-
-    //
-    @Composable
-    fun ScrollToBottom(
-        scrollingPaused: Boolean,
-        enableAutoScroll: () -> Unit,
-        modifier:Modifier
-        ) {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (scrollingPaused) {
-                    MainChatParts.DualIconsButton(
-                        buttonAction = {enableAutoScroll()},
-                        iconImageVector=Icons.Default.ArrowDropDown,
-                        iconDescription = stringResource(R.string.arrow_drop_down_description),
-                        buttonText =stringResource(R.string.scroll_to_bottom)
-
-                    )
-                }
-            }
-    }
 
     /**
-     * ChatBuilder is the most generic of all builders and
+     * Builders represents the most generic parts of [MainChat] and should be thought of as UI layout guides used
+     * by the implementations above
      * */
-    private object ChatBuilder{
+    private object Builders{
 
         /**
+         * - ScrollableChat is used inside of  [AutoScrollChatWithTextBox].
          *
          * ScrollableChat  is the basic layout for the user chat experience. A example of what the typical UI looks like
          * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#ScrollableChat)
+         *
+         * @param noChatMode a boolean to determine if a String saying, `You are in no chat mode`, should be shown
+         * @param determineScrollState a composable function used to determine the current scrolling state of [AutoScrollChatWithTextBox]
+         * @param autoScrollingChat a composable function that represents the auto scrolling chat functionality
+         * @param enterChat a composable function that represents the entering chat function
+         * @param scrollToBottom a composable function that represents a button to be pressed when autoscrolling is paused
+         * @param draggableButton a composable function that represents a button that that should be draggable all throughout the chat feature
          * */
         @Composable
         fun ScrollableChat(
@@ -284,9 +272,71 @@ object MainChat{
 
 
 
-    /**PARTS BELOW*/
-    private object MainChatParts{
+    /**
+     * Parts represents the most individual parts of [MainChat] and should be thought of as the individual
+     * pieces that are used inside of a [Builders] to create a [MainChat] implementation
+     * */
+    private object Parts{
         /**
+         * - Contains 1 extra part [AlertRowHeader][Parts.AlertRowHeader]
+         *
+         * - A header that is to be shown at the top of a [LazyColumn]
+         *
+         * @param headerMessage a String representing a short message displayed to the user
+         * @param closeStickyHeader a function used to remove this message from the LazyColumn
+         * */
+        @Composable
+        fun StickyHeader(
+            headerMessage:String,
+            closeStickyHeader: () -> Unit,
+
+            ){
+            Parts.AlertRowHeader(
+                alertMessage =headerMessage,
+                closeAlert ={closeStickyHeader()}
+            )
+
+        }
+
+        /**
+         * - Contains 1 extra part [DualIconsButton][MainChatParts.DualIconsButton]
+         *
+         * - A [Row] containing a button that will notify the user that they have the ability to click this button and
+         * automatically scroll to the bottom
+         *
+         * @param scrollingPaused a boolean to determine if [MainChatParts.DualIconsButton] should be shown to the user
+         * @param enableAutoScroll a function that will be used to change the value of [scrollingPaused]
+         * @param modifier a modifier that should be used to determine the placement of ScrollToBottom
+         * */
+        @Composable
+        fun ScrollToBottom(
+            scrollingPaused: Boolean,
+            enableAutoScroll: () -> Unit,
+            modifier:Modifier
+        ) {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (scrollingPaused) {
+                    Parts.DualIconsButton(
+                        buttonAction = {enableAutoScroll()},
+                        iconImageVector=Icons.Default.ArrowDropDown,
+                        iconDescription = stringResource(R.string.arrow_drop_down_description),
+                        buttonText =stringResource(R.string.scroll_to_bottom)
+
+                    )
+                }
+            }
+        }
+
+
+        /**
+         * - Contains 0 extra parts
+         *
          * A [Row] meant to display a urgent message to the user. This message should indicate a failure of some sort.
          * This message should be a max of 3 words and will be placed between two icons
          *
@@ -334,6 +384,7 @@ object MainChat{
         }
 
         /**
+         * - Contains 0 extra parts
          * A [Button] meant to display a message surrounded by two icons.
          *
          * @param buttonAction a function that will run when this button is clicked
@@ -370,6 +421,8 @@ object MainChat{
         }
 
         /**
+         * - Contains 0 extra parts
+         *
          * A utility composable used to determine the current state of a [LazyListState] and act accordingly
          * There are 3 states that this composables detects:
          * 1) [DragInteraction.Start],
@@ -428,7 +481,12 @@ object MainChat{
             }
         }
 
-        /**This composable is used to create the auto scrolling chat functionality. Inside of a [LazyColumn] is combines
+        /**
+         * - Contains 2 extra parts
+         * 1) [StickyHeader][Parts.StickyHeader]
+         * 2) [IndividualChatMessages][SystemChats.IndividualChatMessages]
+         *
+         * This composable is used to create the auto scrolling chat functionality. Inside of a [LazyColumn] is combines
          * 2 composables, [StickyHeader] and [SystemChats.IndividualChatMessages] to create the desired chat features
          *
          * @param twitchUserChat a list of [TwitchUserData] that represents all of the user's current chat messages. It gets
@@ -472,8 +530,8 @@ object MainChat{
             ) {
                 stickyHeader {
                     if (showStickyHeader) {
-                        MainChat.StickyHeader(
-                            banResponseMessage =banResponseMessage,
+                        Parts.StickyHeader(
+                            headerMessage =banResponseMessage,
                             closeStickyHeader ={closeStickyHeader()}
                         )
 
@@ -513,6 +571,8 @@ object MainChat{
         }
 
         /**
+         * - Contains 0 extra parts
+         *
          * A [Box] within a [Box] used to be able to detect drag events move the inner box accordingly. A demonstration
          * can be found on Google's official home page [HERE](https://developer.android.com/jetpack/compose/touch-input/pointer-input/drag-swipe-fling)
          * */
