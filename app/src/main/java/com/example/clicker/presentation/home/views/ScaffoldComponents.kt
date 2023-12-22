@@ -56,8 +56,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.home.StreamInfo
-import com.example.clicker.presentation.home.views.HomeComponents.HomeViewImplementation
-import com.example.clicker.presentation.stream.views.MainChat.StickyHeader
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.util.PullToRefreshNestedScrollConnection
 import com.example.clicker.util.Response
@@ -139,7 +137,7 @@ object ScaffoldComponents {
         if (userIsLoggedIn) {
             updateAuthenticatedUser()
         }
-        Builder.ScaffoldBuilder(
+        Builders.ScaffoldBuilder(
             scaffoldState =scaffoldState,
             nestedScrollConnection =nestedScrollConnection,
             pullingState =pullingState,
@@ -204,7 +202,7 @@ object ScaffoldComponents {
      * Builder represents the most generic parts of [ScaffoldComponents] and should be thought of as layout guides used
      * by the implementations above
      * */
-    private object Builder{
+    private object Builders{
 
         /**
          * - ScaffoldBuilder is used inside of  [MainScaffoldComponent].

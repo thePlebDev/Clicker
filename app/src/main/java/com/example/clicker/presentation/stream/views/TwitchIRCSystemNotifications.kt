@@ -36,6 +36,7 @@ import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.models.TwitchUserAnnouncement
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.presentation.stream.views.MainChat.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.SwipeToDelete.SwipeToDeleteChatMessages
 
 import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystemNotificationsBuilder.SystemChat
@@ -66,6 +67,8 @@ import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystem
  *
  * - [ErrorMessage] : Shows a message in chat when the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] detects a failure an runs its [onFailure()][com.example.clicker.network.websockets.TwitchWebSocket.onFailure] method
  *
+ * - SystemChats contains 1 top level implementation:
+ *  1) [IndividualChatMessages]
  * */
 object SystemChats {
 
@@ -73,6 +76,12 @@ object SystemChats {
     //slotting layout means that it is a builder
     // MainChatting is a builder
 
+    /**
+     *
+     * IndividualChatMessages is the implementation used to represent all the individual messages
+     * sent from the TwitchIRC server
+     * - IndividualChatMessages implements the [MainChatting][Builders.MainChatting] builder
+     * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun IndividualChatMessages(
@@ -82,7 +91,7 @@ object SystemChats {
         deleteMessage: (String) -> Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ){
-        MainChatBuilder.MainChatting(
+        Builders.MainChatting(
             twitchUser =twitchUser,
             individualSwipableChatMessage = {
                 SwipeToDeleteChatMessages(
@@ -363,7 +372,22 @@ object SystemChats {
 
     }
 
-    private object MainChatBuilder{
+    /**
+     * Builders represents the most generic parts of [SystemChats] and should be thought of as UI layout guides used
+     * by the implementations above
+     * */
+    private object Builders{
+
+        /**
+         * - ScrollableChat is used inside of  [IndividualChatMessages].
+         *
+         * @param noChatMode a boolean to determine if a String saying, `You are in no chat mode`, should be shown
+         * @param determineScrollState a composable function used to determine the current scrolling state of [AutoScrollChatWithTextBox]
+         * @param autoScrollingChat a composable function that represents the auto scrolling chat functionality
+         * @param enterChat a composable function that represents the entering chat function
+         * @param scrollToBottom a composable function that represents a button to be pressed when autoscrolling is paused
+         * @param draggableButton a composable function that represents a button that that should be draggable all throughout the chat feature
+         * */
         @Composable
         fun MainChatting(
             twitchUser: TwitchUserData,
