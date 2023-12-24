@@ -49,7 +49,7 @@ import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystem
  * is then picked up by our [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] which will run the [userNoticeParsing()][com.example.clicker.network.websockets.ParsingEngine.userNoticeParsing]
  * method to create a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object marked with the appropriate [MessageType][com.example.clicker.network.websockets.MessageType] and then given to the UI.
  * The UI then uses the [MessageType][com.example.clicker.network.websockets.MessageType] to determine which component to show
- * - SystemChats contains 8 components:
+ * - SystemChats contains private 8 components:
  *
  * - [ResubMessage] : Shows a message in the chat when the [ParsingEngine][com.example.clicker.network.websockets.ParsingEngine] detects a ***msg-id*** of ***resub***
  *
@@ -69,6 +69,7 @@ import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystem
  *
  * - SystemChats contains 1 top level implementation:
  *  1) [IndividualChatMessages]
+ *
  * */
 object SystemChats {
 
@@ -170,7 +171,7 @@ object SystemChats {
      * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
      * */
     @Composable
-    fun ResubMessage(
+    private fun ResubMessage(
         message: String?,
         systemMessage: String?
     ) {
@@ -198,7 +199,7 @@ object SystemChats {
      * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
      * */
     @Composable
-    fun SubMessage(
+   private fun SubMessage(
         message: String?,
         systemMessage: String?
     ){
@@ -227,7 +228,7 @@ object SystemChats {
      * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
      * */
     @Composable
-    fun AnnouncementMessage(
+    private fun AnnouncementMessage(
         displayName: String?,
         message: String?,
         systemMessage: String?
@@ -257,7 +258,7 @@ object SystemChats {
      * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
      * */
     @Composable
-    fun JoinMessage(message: String) {
+    private fun JoinMessage(message: String) {
         ChatMessagesParts.SimpleText(message = message)
     }
 
@@ -272,7 +273,7 @@ object SystemChats {
      * @param restartWebSocket function which when triggered should attempt to reconnect the web socket
      * */
     @Composable
-    fun ErrorMessage(
+    private fun ErrorMessage(
         message: String,
         alterMessage: String,
         restartWebSocket: () -> Unit
@@ -298,7 +299,7 @@ object SystemChats {
      * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
      * */
     @Composable
-    fun MysteryGiftSubMessage(
+    private fun MysteryGiftSubMessage(
         message: String?,
         systemMessage: String?
     ) {
@@ -328,7 +329,7 @@ object SystemChats {
      * @param systemMessage String system message. This message is sent by the Twitch servers indicating how long the user has been subscribed for
      * */
     @Composable
-    fun GiftSubMessage(
+    private fun GiftSubMessage(
         message: String?,
         systemMessage: String?
     ) {
@@ -359,7 +360,7 @@ object SystemChats {
      * @param message String of the message meant to be displayed
      * */
     @Composable
-    fun NoticeMessage(
+    private fun NoticeMessage(
         color: Color,
         displayName: String?,
         message: String?

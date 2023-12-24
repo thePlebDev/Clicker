@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -82,8 +83,9 @@ import kotlin.math.roundToInt
 
 /**Extension function used to determine if the use has scrolled to the end of the chat*/
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+
+//1) delete this after) Rule: brief description followed by the number of implementations
 /**
- * 1) delete this after) Rule: brief description followed by the number of implementations
  *
  * MainChat represents all the UI composables used to build the auto scrolling chat system, the text box used to enter chat messages and utility composables
  *  - MainChat contains 1 top level implementation:
@@ -628,6 +630,9 @@ object MainChat{
 
 
 }
+
+
+
 
 
 
