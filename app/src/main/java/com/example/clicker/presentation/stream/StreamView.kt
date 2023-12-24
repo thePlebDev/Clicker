@@ -28,7 +28,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
@@ -179,17 +179,19 @@ fun StreamView(
                     drawerState = drawerState,
                     drawerContent={
 
-                        ChatSettingsContainer.SettingsSwitches(
-                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
-                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
-                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
-                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
-                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
-                            showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
-                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
-                            noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
-                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
-                        )
+                        //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
+                        TabScreen()
+//                        ChatSettingsContainer.SettingsSwitches(
+//                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
+//                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
+//                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
+//                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
+//                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
+//                            showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
+//                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
+//                            noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
+//                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
+//                        )
 
                     },
                     contentCoveredBySideModal = {
@@ -339,6 +341,35 @@ fun TextChat(
         noChatMode =noChatMode
     )
 
+}
+
+@Composable
+fun TabScreen() {
+    var tabIndex by remember { mutableStateOf(0) }
+
+    val tabs = listOf("Mod Settings", "Advanced chat settings")
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        TabRow(
+            selectedTabIndex = tabIndex,
+
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
+                    text = { Text(title) },
+                    selected = tabIndex == index,
+                    onClick = { tabIndex = index }
+                )
+            }
+        }
+        when (tabIndex) {
+            0 -> Text("HOME",color = MaterialTheme.colorScheme.onPrimary)
+            1 -> Text("Advanced chat settings",color = MaterialTheme.colorScheme.onPrimary)
+        }
+    }
 }
 
 
