@@ -28,16 +28,18 @@ import com.example.clicker.R
 import com.example.clicker.network.models.ChatSettingsData
 
 
-
 /**
  * ChatSettingsContainer contains all of the composables that are used to create the chat settings experience
+ *
+ *  - ChatSettingsContainer contains 1 top level implementation:
+ *  1) [SettingsSwitches]
  * */
 object ChatSettingsContainer {
 
     /**
-     * SettingsSwitches is the implementation that represents the entire feature of chat settings. It makes heavy use of the
-     * builder [ChatSettingsSwitchBox][ChatSettingsBuilder.ChatSettingsSwitchBox] to create the chat settings feature used
-     * throughout the application
+     * SettingsSwitches is the implementation that represents the entire feature of chat settings.
+     *
+     * - SettingsSwitches implements the [ChatSettingsSwitchBox][Builders.ChatSettingsSwitchBox] builder
      *
      * @param enableSwitches a boolean used to determine if all the switches inside the [ChatSettingsSwitchBox][ChatSettingsBuilder.ChatSettingsSwitchBox]
      * should be enabled or not. This is needed because I don't want the user sending another request while they are still waiting for
@@ -62,9 +64,9 @@ object ChatSettingsContainer {
         noChatMode:Boolean,
         setNoChatMode:(Boolean)->Unit
     ) {
-        ChatSettingsBuilder.ChatSettingsSwitchBox(
+        Builders.ChatSettingsSwitchBox(
             noChatModeSwitch={
-                             ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                                  enableSwitches = true,
                                  checked = noChatMode,
                                  switchLabel = "No chat mode",
@@ -72,7 +74,7 @@ object ChatSettingsContainer {
                              )
             },
             showUndoButtonSwitch ={
-                            ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                                 enableSwitches =true,
                                 checked = showUndoButtonStatus,
                                 switchLabel = "Show undo button",
@@ -80,7 +82,7 @@ object ChatSettingsContainer {
                             )
             },
             slowModeSwitch = {
-                ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                     enableSwitches = enableSwitches,
                     checked =chatSettingsData.slowMode,
                     switchLabel = "Slow mode",
@@ -92,7 +94,7 @@ object ChatSettingsContainer {
                 )
             },
             followerModeSwitch ={
-                ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                     enableSwitches = enableSwitches,
                     checked =chatSettingsData.followerMode,
                     switchLabel = "Follower mode",
@@ -104,7 +106,7 @@ object ChatSettingsContainer {
                 )
             },
             subscriberModeSwitch={
-                ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                     enableSwitches = enableSwitches,
                     checked =chatSettingsData.subscriberMode,
                     switchLabel = "Subscriber mode",
@@ -116,7 +118,7 @@ object ChatSettingsContainer {
                 )
             },
             emoteModeSwitch={
-                ChatSettingsParts.SwitchPart(
+                Parts.SwitchPart(
                     enableSwitches = enableSwitches,
                     checked =chatSettingsData.emoteMode,
                     switchLabel = "Emote mode",
@@ -129,7 +131,7 @@ object ChatSettingsContainer {
             },
             alertHeader = {
                 if(showChatSettingAlert){
-                    ChatSettingsParts.AlertRowMessage(
+                    Parts.AlertRowMessage(
                         alertMessage = "request failed",
                         closeAlert = {
                             closeAlertHeader()
@@ -138,7 +140,7 @@ object ChatSettingsContainer {
                 }
             },
             chatSettingsHeader ={
-                ChatSettingsParts.ChatSettingsHeader()
+                Parts.ChatSettingsHeader()
             }
 
         )
@@ -149,14 +151,16 @@ object ChatSettingsContainer {
 
 
     /**
-     * ChatSettingsBuilder is the most generic section of all the [ChatSettingsContainer] composables. It is meant to
-     * act as a layout guide for how all [ChatSettingsContainer] implementations should look
+     * Builders represents the most generic parts of [ChatSettingsContainer] and should be thought of as UI layout guides used
+     * by the implementations above
      * */
-    private object ChatSettingsBuilder {
+    private object Builders {
 
         /**
          * The basic layout of how the the chat settings section will look. A UI demonstration can be seen
          * [HERE](https://theplebdev.github.io/Modderz-style-guide/#ChatSettingsSwitchBox)
+         *
+         * - ChatSettingsSwitchBox is used inside of [SettingsSwitches]
          *
          * @param slowModeSwitch a [Switch][androidx.compose.material] used to toggle the slow mode setting for the chat's settings
          * @param followerModeSwitch a [Switch][androidx.compose.material] used to toggle the follower mode setting for the chat's settings
@@ -207,12 +211,15 @@ object ChatSettingsContainer {
     }// end of the builder
 
     /**
-     * ChatSettingsParts represents all the possible individual composables that can be used inside of a [ChatSettingsContainer]
+     * Parts represents the most individual parts of [ChatSettingsContainer] and should be thought of as the individual
+     * pieces that are used inside of a [Builders] to create a [ChatSettingsContainer] implementation
      * */
-    private object ChatSettingsParts {
+    private object Parts {
 
         /**
-         * A [Row] containing a Text Composable and a background color of secondary. This composable is used to convey the
+         * - Contains 0 extra parts
+         *
+         * - A [Row] containing a Text Composable and a background color of secondary. This composable is used to convey the
          * short title to the user and let the user know what section of the app they are in
          *
          * */
@@ -228,7 +235,9 @@ object ChatSettingsContainer {
         }
 
         /**
-         * A [Row] containing a Text Composable and a Switch. This is the main part that is used heavily in the [SettingsSwitches]
+         * - Contains 0 extra parts
+         *
+         * - A [Row] containing a Text Composable and a Switch. This is the main part that is used heavily in the [SettingsSwitches]
          * implementation
          *
          * @param enableSwitches a boolean used to determine if the switch should be enabled or not
@@ -271,7 +280,9 @@ object ChatSettingsContainer {
         }
 
         /**
-         * A [Row] meant to display text surrounded by two icons. This Composable is meant to represent the type of
+         * - Contains 0 extra parts
+         *
+         * - A [Row] meant to display text surrounded by two icons. This Composable is meant to represent the type of
          * error that has occurred
          *
          * @param alertMessage a String representing the error. Should only be one word or two
