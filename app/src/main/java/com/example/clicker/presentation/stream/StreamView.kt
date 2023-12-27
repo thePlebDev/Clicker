@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -180,18 +183,17 @@ fun StreamView(
                     drawerContent={
 
                         //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
-                        TabScreen()
-//                        ChatSettingsContainer.SettingsSwitches(
-//                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
-//                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
-//                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
-//                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
-//                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
-//                            showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
-//                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
-//                            noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
-//                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
-//                        )
+                        ChatSettingsContainer.EnhancedChatSettingsBox(
+                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
+                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
+                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
+                            updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
+                            closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
+                            showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
+                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
+                            noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
+                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
+                        )
 
                     },
                     contentCoveredBySideModal = {
@@ -344,8 +346,11 @@ fun TextChat(
 }
 
 @Composable
-fun TabScreen() {
+fun TabScreen(
+    modSettings:@Composable () -> Unit,
+) {
     var tabIndex by remember { mutableStateOf(0) }
+
 
     val tabs = listOf("Mod Settings", "Advanced chat settings")
 
@@ -365,10 +370,10 @@ fun TabScreen() {
                 )
             }
         }
-        when (tabIndex) {
-            0 -> Text("HOME",color = MaterialTheme.colorScheme.onPrimary)
-            1 -> Text("Advanced chat settings",color = MaterialTheme.colorScheme.onPrimary)
-        }
+    }
+    when (tabIndex) {
+        0 -> modSettings()
+        1 -> Text("Advanced chat settings",color = MaterialTheme.colorScheme.onPrimary)
     }
 }
 

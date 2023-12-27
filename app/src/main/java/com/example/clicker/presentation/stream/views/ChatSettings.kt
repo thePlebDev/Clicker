@@ -13,10 +13,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -145,6 +153,35 @@ object ChatSettingsContainer {
 
         )
     }
+    @Composable
+    fun EnhancedChatSettingsBox(
+        enableSwitches: Boolean,
+        showChatSettingAlert: Boolean,
+        chatSettingsData: ChatSettingsData,
+        updateChatSettings: (ChatSettingsData) -> Unit,
+        closeAlertHeader: () -> Unit,
+        showUndoButton: (Boolean) -> Unit,
+        showUndoButtonStatus: Boolean,
+        noChatMode: Boolean,
+        setNoChatMode: (Boolean) -> Unit
+    ){
+        Builders.TabbedChatSettingsSwitchBox(
+            modSettings = {
+                ChatSettingsContainer.SettingsSwitches(
+                    enableSwitches =enableSwitches,
+                    showChatSettingAlert = showChatSettingAlert,
+                    chatSettingsData =chatSettingsData,
+                    updateChatSettings = {newData -> updateChatSettings(newData)},
+                    closeAlertHeader = {closeAlertHeader()},
+                    showUndoButton = {showStatus ->showUndoButton(showStatus)},
+                    showUndoButtonStatus = showUndoButtonStatus,
+                    noChatMode = noChatMode,
+                    setNoChatMode = {state ->setNoChatMode(state)}
+                )
+            },
+            advancedChatSettings = {Text("Advanced CHAT SETTINGS",color = Color.Blue)}
+        )
+    }
 
 
     // end of ChatSettingsBox
@@ -157,6 +194,7 @@ object ChatSettingsContainer {
     private object Builders {
 
         /**
+         *
          * The basic layout of how the the chat settings section will look. A UI demonstration can be seen
          * [HERE](https://theplebdev.github.io/Modderz-style-guide/#ChatSettingsSwitchBox)
          *
@@ -208,6 +246,39 @@ object ChatSettingsContainer {
             }
 
         }
+
+        @Composable
+        fun TabbedChatSettingsSwitchBox(
+            modSettings:@Composable () -> Unit,
+            advancedChatSettings:@Composable () -> Unit,
+        ){
+            var tabIndex by remember { mutableIntStateOf(0) }
+
+
+            val tabs = listOf("Mod Settings", "Advanced chat settings")
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TabRow(
+                    selectedTabIndex = tabIndex,
+
+                    ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
+                            text = { Text(title) },
+                            selected = tabIndex == index,
+                            onClick = { tabIndex = index }
+                        )
+                    }
+                }
+            }
+            when (tabIndex) {
+                0 -> modSettings()
+                1 -> advancedChatSettings()
+            }
+        }
     }// end of the builder
 
     /**
@@ -225,12 +296,12 @@ object ChatSettingsContainer {
          * */
         @Composable
         fun ChatSettingsHeader(){
-            val secondary =androidx.compose.material3.MaterialTheme.colorScheme.secondary
+            val secondary =androidx.compose.material3.MaterialTheme.colorScheme.primary
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
                 .background(secondary)
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()) {
-                Text("Chat room settings", fontSize = 25.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary)
+                Text("You are not a moderator in chat ", fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
             }
         }
 
