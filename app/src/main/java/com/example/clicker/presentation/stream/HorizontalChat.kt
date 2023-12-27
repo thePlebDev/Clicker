@@ -108,7 +108,7 @@ fun HorizontalChat(
         SideModal(
             drawerState = drawerState,
             drawerContent={
-                ChatSettingsContainer.SettingsSwitches(
+                ChatSettingsContainer.EnhancedChatSettingsBox(
                     enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
                     showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
                     chatSettingsData =streamViewModel.chatSettingsState.value.data ,
