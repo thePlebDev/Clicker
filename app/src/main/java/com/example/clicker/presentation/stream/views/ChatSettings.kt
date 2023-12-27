@@ -44,6 +44,13 @@ import com.example.clicker.network.models.ChatSettingsData
  * */
 object ChatSettingsContainer {
 
+    @Deprecated(
+        "Removed from external implementation to interanl ",
+        replaceWith = ReplaceWith(
+            expression = "EnhancedChatSettingsBox",
+        ),
+        level = DeprecationLevel.WARNING
+    )
     /**
      * SettingsSwitches is the implementation that represents the entire feature of chat settings.
      *
@@ -61,7 +68,7 @@ object ChatSettingsContainer {
      * [showChatSettingAlert]
      * */
     @Composable
-    fun SettingsSwitches(
+    private fun SettingsSwitches(
         enableSwitches:Boolean,
         showChatSettingAlert: Boolean,
         chatSettingsData:ChatSettingsData,
