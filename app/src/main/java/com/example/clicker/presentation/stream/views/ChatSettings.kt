@@ -44,6 +44,40 @@ import com.example.clicker.network.models.ChatSettingsData
  * */
 object ChatSettingsContainer {
 
+    //todo: This needs to be documented
+    @Composable
+    fun EnhancedChatSettingsBox(
+        enableSwitches: Boolean,
+        showChatSettingAlert: Boolean,
+        chatSettingsData: ChatSettingsData,
+        updateChatSettings: (ChatSettingsData) -> Unit,
+        closeAlertHeader: () -> Unit,
+        showUndoButton: (Boolean) -> Unit,
+        showUndoButtonStatus: Boolean,
+        noChatMode: Boolean,
+        setNoChatMode: (Boolean) -> Unit
+    ){
+        Builders.TabbedChatSettingsSwitchBox(
+            modSettings = {
+                ChatSettingsContainer.SettingsSwitches(
+                    enableSwitches =enableSwitches,
+                    showChatSettingAlert = showChatSettingAlert,
+                    chatSettingsData =chatSettingsData,
+                    updateChatSettings = {newData -> updateChatSettings(newData)},
+                    closeAlertHeader = {closeAlertHeader()},
+                    showUndoButton = {showStatus ->showUndoButton(showStatus)},
+                    showUndoButtonStatus = showUndoButtonStatus,
+                )
+            },
+            advancedChatSettings = {
+                AdvancedChatSettings(
+                    noChatMode = noChatMode,
+                    setNoChatMode = {state ->setNoChatMode(state)}
+                )
+            }
+        )
+    }
+
     @Deprecated(
         "Removed from external implementation to interanl ",
         replaceWith = ReplaceWith(
@@ -76,18 +110,8 @@ object ChatSettingsContainer {
         closeAlertHeader:()->Unit,
         showUndoButton: (Boolean) -> Unit,
         showUndoButtonStatus:Boolean,
-        noChatMode:Boolean,
-        setNoChatMode:(Boolean)->Unit
     ) {
         Builders.ChatSettingsSwitchBox(
-            noChatModeSwitch={
-                Parts.SwitchPart(
-                                 enableSwitches = true,
-                                 checked = noChatMode,
-                                 switchLabel = "No chat mode",
-                                 switchFunction ={setNoChatMode(it)}
-                             )
-            },
             showUndoButtonSwitch ={
                 Parts.SwitchPart(
                                 enableSwitches =true,
@@ -160,35 +184,25 @@ object ChatSettingsContainer {
 
         )
     }
+
     @Composable
-    fun EnhancedChatSettingsBox(
-        enableSwitches: Boolean,
-        showChatSettingAlert: Boolean,
-        chatSettingsData: ChatSettingsData,
-        updateChatSettings: (ChatSettingsData) -> Unit,
-        closeAlertHeader: () -> Unit,
-        showUndoButton: (Boolean) -> Unit,
-        showUndoButtonStatus: Boolean,
-        noChatMode: Boolean,
-        setNoChatMode: (Boolean) -> Unit
+    private fun AdvancedChatSettings(
+        noChatMode:Boolean,
+        setNoChatMode:(Boolean)->Unit
     ){
-        Builders.TabbedChatSettingsSwitchBox(
-            modSettings = {
-                ChatSettingsContainer.SettingsSwitches(
-                    enableSwitches =enableSwitches,
-                    showChatSettingAlert = showChatSettingAlert,
-                    chatSettingsData =chatSettingsData,
-                    updateChatSettings = {newData -> updateChatSettings(newData)},
-                    closeAlertHeader = {closeAlertHeader()},
-                    showUndoButton = {showStatus ->showUndoButton(showStatus)},
-                    showUndoButtonStatus = showUndoButtonStatus,
-                    noChatMode = noChatMode,
-                    setNoChatMode = {state ->setNoChatMode(state)}
+        Builders.AdvancedChatBuilder(
+            chatSettingsHeader ={},
+            noChatModeSwitch={
+                Parts.SwitchPart(
+                    enableSwitches = true,
+                    checked = noChatMode,
+                    switchLabel = "No chat mode",
+                    switchFunction ={setNoChatMode(it)}
                 )
-            },
-            advancedChatSettings = {Text("Advanced CHAT SETTINGS",color = Color.Blue)}
+            }
         )
     }
+
 
 
     // end of ChatSettingsBox
@@ -216,7 +230,6 @@ object ChatSettingsContainer {
          * */
         @Composable
         fun ChatSettingsSwitchBox(
-            noChatModeSwitch: @Composable () -> Unit,
             showUndoButtonSwitch: @Composable () -> Unit,
             slowModeSwitch: @Composable () -> Unit,
             followerModeSwitch:@Composable () -> Unit,
@@ -241,7 +254,6 @@ object ChatSettingsContainer {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    noChatModeSwitch()
                     showUndoButtonSwitch()
                     slowModeSwitch()
                     followerModeSwitch()
@@ -253,7 +265,34 @@ object ChatSettingsContainer {
             }
 
         }
+        @Composable
+        fun AdvancedChatBuilder(
+            chatSettingsHeader:@Composable () -> Unit,
+            noChatModeSwitch: @Composable () -> Unit,
 
+        ){
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
+            ) {
+                chatSettingsHeader()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    noChatModeSwitch()
+                }
+
+            }
+        }
+
+
+        //todo: this needs to be documented
         @Composable
         fun TabbedChatSettingsSwitchBox(
             modSettings:@Composable () -> Unit,
@@ -281,6 +320,7 @@ object ChatSettingsContainer {
                     }
                 }
             }
+
             when (tabIndex) {
                 0 -> modSettings()
                 1 -> advancedChatSettings()
