@@ -40,7 +40,11 @@ import com.example.clicker.network.models.ChatSettingsData
  * ChatSettingsContainer contains all of the composables that are used to create the chat settings experience
  *
  *  - ChatSettingsContainer contains 1 top level implementation:
- *  1) [SettingsSwitches]
+ *  1) [EnhancedChatSettingsBox]
+ *
+ *   - ChatSettingsContainer contains 2 top level private implementations:
+ *   1) [SettingsSwitches]
+ *   2) [AdvancedChatSettings]
  * */
 object ChatSettingsContainer {
 
@@ -185,12 +189,22 @@ object ChatSettingsContainer {
         )
     }
 
+    /**
+     * AdvancedChatSettings is the private implementation that represents chat setting section dealing with non moderator
+     * related tasks.
+     *
+     * - AdvancedChatSettings implements the [AdvancedChatBuilder][Builders.AdvancedChat] builder
+     *
+     * @param noChatMode a boolean used to determine which state the internal [Switch] is in
+     * @param setNoChatMode a function used by the internal [Switch] when [noChatMode] is set to true and
+     * is used to sever the connection with the websocket that is connecting the Twitch IRC server
+     * */
     @Composable
     private fun AdvancedChatSettings(
         noChatMode:Boolean,
         setNoChatMode:(Boolean)->Unit
     ){
-        Builders.AdvancedChatBuilder(
+        Builders.AdvancedChat(
             chatSettingsHeader ={},
             noChatModeSwitch={
                 Parts.SwitchPart(
@@ -265,8 +279,18 @@ object ChatSettingsContainer {
             }
 
         }
+
+        /**
+         *
+         * The basic layout of how the the chat settings section dealing with non-moderator tasks will look.
+         *
+         * - AdvancedChat is used inside of [AdvancedChatSettings]
+         *
+         * @param chatSettingsHeader a header that is used to represent the title of the chat settings section
+         * @param noChatModeSwitch a [Switch] that is used to toggle the chat into ***no chat mode***
+         * */
         @Composable
-        fun AdvancedChatBuilder(
+        fun AdvancedChat(
             chatSettingsHeader:@Composable () -> Unit,
             noChatModeSwitch: @Composable () -> Unit,
 
@@ -292,7 +316,15 @@ object ChatSettingsContainer {
         }
 
 
-        //todo: this needs to be documented
+        /**
+         *
+         * The basic layout of how the enhanced chat settings UI will look
+         *
+         * - AdvancedChat is used inside of [EnhancedChatSettingsBox]
+         *
+         * @param modSettings a section of code that will represent what the moderator settings will look like
+         * @param advancedChatSettings a section of code that will represent what the advanced  non- moderator settings will look like
+         * */
         @Composable
         fun TabbedChatSettingsSwitchBox(
             modSettings:@Composable () -> Unit,
