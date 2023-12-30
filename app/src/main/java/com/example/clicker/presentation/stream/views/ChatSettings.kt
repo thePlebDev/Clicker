@@ -213,7 +213,40 @@ object ChatSettingsContainer {
                     switchLabel = "No chat mode",
                     switchFunction ={setNoChatMode(it)}
                 )
+            },
+            subscriptionSwitch={
+                Parts.SwitchPart(
+                    enableSwitches = true,
+                    checked = noChatMode,
+                    switchLabel = "Sub notifications",
+                    switchFunction ={setNoChatMode(it)}
+                )
+            },
+            anonymousSubscriptionSwitch ={
+                Parts.SwitchPart(
+                    enableSwitches = true,
+                    checked = noChatMode,
+                    switchLabel = "Anon sub notifications",
+                    switchFunction ={setNoChatMode(it)}
+                )
+            },
+            reSubSwitch ={
+                Parts.SwitchPart(
+                    enableSwitches = true,
+                    checked = noChatMode,
+                    switchLabel = "Re-sub notifications",
+                    switchFunction ={setNoChatMode(it)}
+                )
+            },
+            giftSubSwitch={
+                Parts.SwitchPart(
+                    enableSwitches = true,
+                    checked = noChatMode,
+                    switchLabel = "Gift sub notifications",
+                    switchFunction ={setNoChatMode(it)}
+                )
             }
+
         )
     }
 
@@ -288,11 +321,21 @@ object ChatSettingsContainer {
          *
          * @param chatSettingsHeader a header that is used to represent the title of the chat settings section
          * @param noChatModeSwitch a [Switch] that is used to toggle the chat into ***no chat mode***
+         *
+         * @param subscriptionSwitch a [Switch] that is used to toggle the UI subscription messages
+         * @param anonymousSubscriptionSwitch a [Switch] that is used to toggle the UI anonymous subscription messages
+         * @param reSubSwitch a [Switch] that is used to toggle the UI re-subscription UI messages
+         * @param giftSubSwitch a [Switch] that is used to toggle the gifted sub messages
          * */
         @Composable
         fun AdvancedChat(
             chatSettingsHeader:@Composable () -> Unit,
             noChatModeSwitch: @Composable () -> Unit,
+
+            subscriptionSwitch: @Composable () -> Unit,
+            anonymousSubscriptionSwitch:@Composable () -> Unit,
+            reSubSwitch:@Composable () -> Unit,
+            giftSubSwitch:@Composable () -> Unit,
 
         ){
             Column(
@@ -310,6 +353,10 @@ object ChatSettingsContainer {
                 ) {
 
                     noChatModeSwitch()
+                    subscriptionSwitch()
+                    anonymousSubscriptionSwitch()
+                    reSubSwitch()
+                    giftSubSwitch()
                 }
 
             }
