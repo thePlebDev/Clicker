@@ -184,14 +184,14 @@ fun StreamView(
 
                         //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
                         ChatSettingsContainer.EnhancedChatSettingsBox(
-                            enableSwitches =streamViewModel.chatSettingsState.value.switchesEnabled,
-                            showChatSettingAlert = streamViewModel.chatSettingsState.value.showChatSettingAlert,
-                            chatSettingsData =streamViewModel.chatSettingsState.value.data ,
+                            enableSwitches =streamViewModel.modChatSettingsState.value.switchesEnabled,
+                            showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
+                            chatSettingsData =streamViewModel.modChatSettingsState.value.data ,
                             updateChatSettings = {newData -> streamViewModel.toggleChatSettings(newData)},
                             closeAlertHeader = {streamViewModel.closeSettingsAlertHeader()},
                             showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
-                            showUndoButtonStatus = streamViewModel.chatSettingsState.value.showUndoButton,
-                            noChatMode = streamViewModel.chatSettingsState.value.noChatMode,
+                            showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
+                            noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                             setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
                         )
 
@@ -251,8 +251,8 @@ fun StreamView(
                             showOneClickAction = oneClickActionsChecked,
                             oneClickBanUser={userId -> streamViewModel.oneClickBanUser(userId)},
                             oneClickTimeoutUser={},
-                            showUndoButton = streamViewModel.chatSettingsState.value.showUndoButton,
-                            noChatMode= streamViewModel.chatSettingsState.value.noChatMode
+                            showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
+                            noChatMode= streamViewModel.advancedChatSettingsState.value.noChatMode
                         )
                     }
                 )

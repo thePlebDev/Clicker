@@ -48,12 +48,11 @@ data class ChattingUser(
 )
 
 /**
- * ChatSettings holds all the data representing the current chat settings
+ * ChatSettings holds all the data representing the current mod related chat settings
  * */
-data class ChatSettings(
+data class ModChatSettings(
     val showChatSettingAlert: Boolean = false,
     val showUndoButton:Boolean = false,
-    val noChatMode:Boolean = false,
     val data:ChatSettingsData = ChatSettingsData(
         slowMode = false,slowModeWaitTime = null,
         followerMode = false, followerModeDuration =null ,
@@ -61,6 +60,12 @@ data class ChatSettings(
     ),
 
     val switchesEnabled:Boolean = true
+)
+/**
+ * AdvancedChatSettings holds all the data representing the current advanced settings relating to the chat messages
+ * */
+data class AdvancedChatSettings(
+    val noChatMode:Boolean = false,
 )
 data class StreamUIState(
     val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket twitchImpl
@@ -124,8 +129,14 @@ class StreamViewModel @Inject constructor(
     private val _clickedUIState = mutableStateOf(ClickedUIState())
     val clickedUIState = _clickedUIState
 
-    private val _chatSettingsState = mutableStateOf(ChatSettings())
-    val chatSettingsState = _chatSettingsState
+    //all the related chat settings code
+    private val _modChatSettingsState = mutableStateOf(ModChatSettings())
+    val modChatSettingsState = _modChatSettingsState
+
+    private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
+    val advancedChatSettingsState = _advancedChatSettingsState
+
+
 
 
 
@@ -204,12 +215,12 @@ class StreamViewModel @Inject constructor(
      * */
     fun showUndoButton(status:Boolean){
 
-        _chatSettingsState.value = _chatSettingsState.value.copy(
+        _modChatSettingsState.value = _modChatSettingsState.value.copy(
             showUndoButton = status
         )
     }
     fun setNoChatMode(status: Boolean){
-        _chatSettingsState.value = _chatSettingsState.value.copy(
+        _advancedChatSettingsState.value = _advancedChatSettingsState.value.copy(
             noChatMode = status
         )
         if(status){
@@ -537,7 +548,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
      * It is used to start and connect a Websocket using the [TwitchSocket]
      * */
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
-        if(_chatSettingsState.value.noChatMode){
+        if(_advancedChatSettingsState.value.noChatMode){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
         }else{
             tokenDataStore.getUsername().collect { username ->
@@ -626,21 +637,21 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                     twitchRepoImpl.getChatSettings("Bearer $oAuthToken", clientId, broadcasterId).collect { response ->
                         when (response) {
                             is Response.Loading -> {
-                                _chatSettingsState.value = _chatSettingsState.value.copy(
+                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
                                     switchesEnabled = false
                                 )
                             }
                             is Response.Success -> {
 
                                 val chatSettingsData = response.data.data[0]
-                                _chatSettingsState.value = _chatSettingsState.value.copy(
+                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
                                     data = chatSettingsData,
                                     switchesEnabled = true
                                 )
                             }
                             is Response.Failure -> {
 
-                                _chatSettingsState.value = _chatSettingsState.value.copy(
+                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
                                     switchesEnabled = true,
                                     showChatSettingAlert = true
 
@@ -654,7 +665,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     }
 
     fun closeSettingsAlertHeader(){
-        _chatSettingsState.value = _chatSettingsState.value.copy(
+        _modChatSettingsState.value = _modChatSettingsState.value.copy(
             showChatSettingAlert = false
         )
     }
@@ -669,7 +680,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
      * @param switchType is a Enum of type [ChatSettingsContainer.SwitchTypes] and represents which switch got toggled
      * */
     fun toggleChatSettings(chatSettingsData: ChatSettingsData){
-        _chatSettingsState.value = _chatSettingsState.value.copy(
+        _modChatSettingsState.value = _modChatSettingsState.value.copy(
             switchesEnabled = false,
             showChatSettingAlert = false
         )
@@ -713,7 +724,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                     }
                     is Response.Success -> {
 
-                        _chatSettingsState.value = _chatSettingsState.value.copy(
+                        _modChatSettingsState.value = _modChatSettingsState.value.copy(
                             data = chatSettingsData,
                             switchesEnabled = true,
                         )
@@ -721,7 +732,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                     }
                     is Response.Failure -> {
                         Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
-                        _chatSettingsState.value = _chatSettingsState.value.copy(
+                        _modChatSettingsState.value = _modChatSettingsState.value.copy(
                             showChatSettingAlert = true,
                             switchesEnabled = true,
                         )
