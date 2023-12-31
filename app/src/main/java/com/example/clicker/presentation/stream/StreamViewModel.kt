@@ -66,6 +66,11 @@ data class ModChatSettings(
  * */
 data class AdvancedChatSettings(
     val noChatMode:Boolean = false,
+
+    val showSubs:Boolean = true,
+    val showReSubs:Boolean = true,
+    val showAnonSubs:Boolean = true,
+    val showGiftSubs:Boolean = true,
 )
 data class StreamUIState(
     val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket twitchImpl
@@ -133,6 +138,9 @@ class StreamViewModel @Inject constructor(
     private val _modChatSettingsState = mutableStateOf(ModChatSettings())
     val modChatSettingsState = _modChatSettingsState
 
+    /**
+     * The UI state that represents all the data meant for the [ChatSettingsContainer.EnhancedChatSettingsBox] composable
+     * */
     private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
     val advancedChatSettingsState = _advancedChatSettingsState
 
@@ -169,6 +177,14 @@ class StreamViewModel @Inject constructor(
         chatTextRange.value = currentTextRange
     }
 
+    /**
+     * updateAdvancedChatSettings is used to update the [_advancedChatSettingsState] UI state
+     *
+     * @param advancedChatSettings the new state that will now represent the [_advancedChatSettingsState] UI state
+     */
+    fun updateAdvancedChatSettings(advancedChatSettings: AdvancedChatSettings){
+        _advancedChatSettingsState.value =advancedChatSettings
+    }
 
 
 
@@ -461,7 +477,7 @@ class StreamViewModel @Inject constructor(
     suspend fun monitorSocketForChatMessages(){
         webSocket.state.collect { twitchUserMessage ->
             Log.d("loggedMessage", "${twitchUserMessage.id}")
-            listChats.add(twitchUserMessage)
+
             if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
                 clickedUsernameChats.add(twitchUserMessage.userType!!)
@@ -478,8 +494,32 @@ class StreamViewModel @Inject constructor(
                     Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
                     autoCompleteChat.addChatter(twitchUserMessage.displayName!!)
                     addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
+                    listChats.add(twitchUserMessage)
                 }
-                else -> {}
+                MessageType.SUB ->{
+                    if(_advancedChatSettingsState.value.showSubs){
+                        listChats.add(twitchUserMessage)
+                    }
+
+                }
+                MessageType.RESUB ->{
+                    if(_advancedChatSettingsState.value.showReSubs){
+                        listChats.add(twitchUserMessage)
+                    }
+                }
+                MessageType.GIFTSUB ->{
+                    if(_advancedChatSettingsState.value.showGiftSubs){
+                        listChats.add(twitchUserMessage)
+                    }
+                }
+                MessageType.MYSTERYGIFTSUB ->{
+                    if(_advancedChatSettingsState.value.showAnonSubs){
+                        listChats.add(twitchUserMessage)
+                    }
+                }
+                else -> {
+                    listChats.add(twitchUserMessage)
+                }
             }
 
 
