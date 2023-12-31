@@ -192,7 +192,9 @@ fun StreamView(
                             showUndoButton = {showStatus ->streamViewModel.showUndoButton(showStatus)},
                             showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
                             noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)}
+                            setNoChatMode = {state ->streamViewModel.setNoChatMode(state)},
+                            advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                            updateAdvancedChatSettings = {data ->streamViewModel.updateAdvancedChatSettings(data)}
                         )
 
                     },

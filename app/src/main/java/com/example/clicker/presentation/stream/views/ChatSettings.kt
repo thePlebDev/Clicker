@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.presentation.stream.AdvancedChatSettings
 
 
 /**
@@ -59,7 +60,9 @@ object ChatSettingsContainer {
         showUndoButton: (Boolean) -> Unit,
         showUndoButtonStatus: Boolean,
         noChatMode: Boolean,
-        setNoChatMode: (Boolean) -> Unit
+        setNoChatMode: (Boolean) -> Unit,
+        advancedChatSettings: AdvancedChatSettings,
+        updateAdvancedChatSettings: (AdvancedChatSettings) -> Unit
     ){
         Builders.TabbedChatSettingsSwitchBox(
             modSettings = {
@@ -74,9 +77,14 @@ object ChatSettingsContainer {
                 )
             },
             advancedChatSettings = {
-                AdvancedChatSettings(
+                AdvancedChatSection(
                     noChatMode = noChatMode,
-                    setNoChatMode = {state ->setNoChatMode(state)}
+                    setNoChatMode = {state ->setNoChatMode(state)},
+                    advancedChatSettings = advancedChatSettings,
+                    updateAdvancedChatSettings ={advancedChatSettings ->
+                        updateAdvancedChatSettings(advancedChatSettings)
+                    }
+
                 )
             }
         )
@@ -200,9 +208,13 @@ object ChatSettingsContainer {
      * is used to sever the connection with the websocket that is connecting the Twitch IRC server
      * */
     @Composable
-    private fun AdvancedChatSettings(
+    private fun AdvancedChatSection(
         noChatMode:Boolean,
-        setNoChatMode:(Boolean)->Unit
+        setNoChatMode:(Boolean)->Unit,
+
+        advancedChatSettings: AdvancedChatSettings,
+        updateAdvancedChatSettings:(AdvancedChatSettings)-> Unit
+
     ){
         Builders.AdvancedChat(
             chatSettingsHeader ={},
@@ -217,33 +229,45 @@ object ChatSettingsContainer {
             subscriptionSwitch={
                 Parts.SwitchPart(
                     enableSwitches = true,
-                    checked = noChatMode,
+                    checked = advancedChatSettings.showSubs,
                     switchLabel = "Sub notifications",
-                    switchFunction ={setNoChatMode(it)}
+                    switchFunction ={
+                        val updateSubs = advancedChatSettings.copy(showSubs = it)
+                        updateAdvancedChatSettings(updateSubs)
+                    }
                 )
             },
             anonymousSubscriptionSwitch ={
                 Parts.SwitchPart(
                     enableSwitches = true,
-                    checked = noChatMode,
+                    checked = advancedChatSettings.showAnonSubs,
                     switchLabel = "Anon sub notifications",
-                    switchFunction ={setNoChatMode(it)}
+                    switchFunction ={
+                        val updateAnonSubs = advancedChatSettings.copy(showAnonSubs = it)
+                        updateAdvancedChatSettings(updateAnonSubs)
+                    }
                 )
             },
             reSubSwitch ={
                 Parts.SwitchPart(
                     enableSwitches = true,
-                    checked = noChatMode,
+                    checked = advancedChatSettings.showReSubs,
                     switchLabel = "Re-sub notifications",
-                    switchFunction ={setNoChatMode(it)}
+                    switchFunction ={
+                        val updateReSubs =  advancedChatSettings.copy(showReSubs = it)
+                        updateAdvancedChatSettings(updateReSubs)
+                    }
                 )
             },
             giftSubSwitch={
                 Parts.SwitchPart(
                     enableSwitches = true,
-                    checked = noChatMode,
+                    checked = advancedChatSettings.showGiftSubs,
                     switchLabel = "Gift sub notifications",
-                    switchFunction ={setNoChatMode(it)}
+                    switchFunction ={
+                        val updateGiftSubs =  advancedChatSettings.copy(showGiftSubs = it)
+                        updateAdvancedChatSettings(updateGiftSubs)
+                    }
                 )
             }
 

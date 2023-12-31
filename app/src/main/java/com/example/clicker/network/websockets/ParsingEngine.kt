@@ -36,9 +36,6 @@ class ParsingEngine @Inject constructor() {
         if (channelNameFound == null) {
             return banUserParsing(text)
         } else {
-            // todo: this should return a TwitchUserData object
-            // todo: 1) Basically I want this to send a message to clear the chat
-            // todo: 2) Basically I want this to display a message stating that the chat was cleared
             return clearChatParsing()
         }
     }
@@ -78,6 +75,12 @@ class ParsingEngine @Inject constructor() {
             .addMessageType(MessageType.CLEARCHAT)
             .build()
     }
+
+    /**
+     * clearChatParsing() is a private function used by [clearChatTesting] and will be triggered when a `clear chat` command is
+     * detected, that the entire chat room is to be cleared by a moderator
+     *
+     * */
     private fun clearChatParsing(): TwitchUserData {
         globalId += 1
         return TwitchUserData(
@@ -189,6 +192,7 @@ class ParsingEngine @Inject constructor() {
 
     /**
      * Creates a [TwitchUserData] that will be sent when a USERNOTICE command is sent
+     * - more can be read [HERE](https://dev.twitch.tv/docs/irc/commands/#usernotice)
      *
      * @return a [TwitchUserData] used to notify the chat that an certain event has occurred. Example events are,
      * announcement, resub, sub, submysterygift, subgift
