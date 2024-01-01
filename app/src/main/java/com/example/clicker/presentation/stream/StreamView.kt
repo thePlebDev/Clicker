@@ -194,7 +194,8 @@ fun StreamView(
                             noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                             setNoChatMode = {state ->streamViewModel.setNoChatMode(state)},
                             advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                            updateAdvancedChatSettings = {data ->streamViewModel.updateAdvancedChatSettings(data)}
+                            updateAdvancedChatSettings = {data ->streamViewModel.updateAdvancedChatSettings(data)},
+                            userIsModerator = modStatus ?: false
                         )
 
                     },
@@ -347,36 +348,5 @@ fun TextChat(
 
 }
 
-@Composable
-fun TabScreen(
-    modSettings:@Composable () -> Unit,
-) {
-    var tabIndex by remember { mutableStateOf(0) }
-
-
-    val tabs = listOf("Mod Settings", "Advanced chat settings")
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        TabRow(
-            selectedTabIndex = tabIndex,
-
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
-                    text = { Text(title) },
-                    selected = tabIndex == index,
-                    onClick = { tabIndex = index }
-                )
-            }
-        }
-    }
-    when (tabIndex) {
-        0 -> modSettings()
-        1 -> Text("Advanced chat settings",color = MaterialTheme.colorScheme.onPrimary)
-    }
-}
 
 
