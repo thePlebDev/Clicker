@@ -49,7 +49,29 @@ import com.example.clicker.presentation.stream.AdvancedChatSettings
  * */
 object ChatSettingsContainer {
 
-    //todo: This needs to be documented
+    /**
+     * EnhancedChatSettingsBox is the implementation that represents the entire feature of the tabbed chat settings.
+     *
+     * - EnhancedChatSettingsBox implements the [TabbedChatSettingsSwitchBox][Builders.TabbedChatSettingsSwitchBox] builder
+     *
+     *
+     * @param enableSwitches a Boolean determining if the switches of the [TabbedChatSettingsSwitchBox][Builders.TabbedChatSettingsSwitchBox] should be enabled.
+     *
+     * @param showChatSettingAlert a Boolean determining if a message should be shown to the user
+     * @param chatSettingsData a ChatSettingsData[com.example.clicker.network.models.ChatSettingsData] object that represents all the
+     * data meant to represent the mod data
+     * @param updateChatSettings a function that is used to update new versions of the [chatSettingsData]
+     * @param closeAlertHeader a function that is used to close the header
+     * @param showUndoButton a boolean used to determine if the user is to be shown the undo button
+     * @param showUndoButtonStatus a boolean used to determine if the user is to be shown the response from the undo button
+     * @param noChatMode a boolean used to determine if the user is in ***no chat mode***
+     * @param setNoChatMode a function used to change the status of [setNoChatMode]
+     * @param advancedChatSettings a [AdvancedChatSettings][com.example.clicker.presentation.stream.AdvancedChatSettings] object
+     * used to represent all the non-moderator related chat setting state
+     * @param updateAdvancedChatSettings a function used to update the [advancedChatSettings] object
+     * @param userIsModerator a boolean used to determine if the user is a moderator or not
+     *
+     * */
     @Composable
     fun EnhancedChatSettingsBox(
         enableSwitches: Boolean,
@@ -62,7 +84,8 @@ object ChatSettingsContainer {
         noChatMode: Boolean,
         setNoChatMode: (Boolean) -> Unit,
         advancedChatSettings: AdvancedChatSettings,
-        updateAdvancedChatSettings: (AdvancedChatSettings) -> Unit
+        updateAdvancedChatSettings: (AdvancedChatSettings) -> Unit,
+        userIsModerator:Boolean
     ){
         Builders.TabbedChatSettingsSwitchBox(
             modSettings = {
@@ -74,6 +97,7 @@ object ChatSettingsContainer {
                     closeAlertHeader = {closeAlertHeader()},
                     showUndoButton = {showStatus ->showUndoButton(showStatus)},
                     showUndoButtonStatus = showUndoButtonStatus,
+                    userIsModerator=userIsModerator
                 )
             },
             advancedChatSettings = {
@@ -112,6 +136,7 @@ object ChatSettingsContainer {
      * @param updateChatSettings a function used to send a request to update the chat's settings to the Twitch server.
      * @param closeAlertHeader a function used to close the [ChatSettingsHeader][ChatSettingsParts.ChatSettingsHeader] triggered by
      * [showChatSettingAlert]
+     *  @param userIsModerator a boolean used to determine if the user is a moderator or not
      * */
     @Composable
     private fun SettingsSwitches(
@@ -122,6 +147,7 @@ object ChatSettingsContainer {
         closeAlertHeader:()->Unit,
         showUndoButton: (Boolean) -> Unit,
         showUndoButtonStatus:Boolean,
+        userIsModerator:Boolean,
     ) {
         Builders.ChatSettingsSwitchBox(
             showUndoButtonSwitch ={
@@ -191,7 +217,9 @@ object ChatSettingsContainer {
                 }
             },
             chatSettingsHeader ={
-                Parts.ChatSettingsHeader()
+                Parts.ChatSettingsHeader(
+                    userIsModerator =userIsModerator
+                )
             }
 
         )
@@ -443,15 +471,22 @@ object ChatSettingsContainer {
          * - A [Row] containing a Text Composable and a background color of secondary. This composable is used to convey the
          * short title to the user and let the user know what section of the app they are in
          *
+         *  @param userIsModerator a boolean used to determine if the user is a moderator or not
+         *
          * */
         @Composable
-        fun ChatSettingsHeader(){
+        fun ChatSettingsHeader(
+            userIsModerator:Boolean
+        ){
             val secondary =androidx.compose.material3.MaterialTheme.colorScheme.primary
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
                 .background(secondary)
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()) {
-                Text("You are not a moderator in chat ", fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+                if(!userIsModerator){
+                    Text("You are not a moderator in chat ", fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+                }
+
             }
         }
 
