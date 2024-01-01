@@ -119,7 +119,8 @@ fun HorizontalChat(
                     noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                     setNoChatMode = {state ->streamViewModel.setNoChatMode(state)},
                     advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                    updateAdvancedChatSettings = {data ->streamViewModel.updateAdvancedChatSettings(data)}
+                    updateAdvancedChatSettings = {data ->streamViewModel.updateAdvancedChatSettings(data)},
+                    userIsModerator = modStatus ?: false
                 )
             },
             contentCoveredBySideModal = {

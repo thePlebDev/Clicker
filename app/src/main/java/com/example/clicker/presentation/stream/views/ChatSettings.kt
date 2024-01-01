@@ -160,7 +160,7 @@ object ChatSettingsContainer {
             },
             slowModeSwitch = {
                 Parts.SwitchPart(
-                    enableSwitches = enableSwitches,
+                    enableSwitches = enableSwitches && userIsModerator,
                     checked =chatSettingsData.slowMode,
                     switchLabel = "Slow mode",
                     switchFunction = {
@@ -172,7 +172,7 @@ object ChatSettingsContainer {
             },
             followerModeSwitch ={
                 Parts.SwitchPart(
-                    enableSwitches = enableSwitches,
+                    enableSwitches = enableSwitches && userIsModerator,
                     checked =chatSettingsData.followerMode,
                     switchLabel = "Follower mode",
                     switchFunction = {
@@ -184,7 +184,7 @@ object ChatSettingsContainer {
             },
             subscriberModeSwitch={
                 Parts.SwitchPart(
-                    enableSwitches = enableSwitches,
+                    enableSwitches = enableSwitches && userIsModerator,
                     checked =chatSettingsData.subscriberMode,
                     switchLabel = "Subscriber mode",
                     switchFunction = {
@@ -196,7 +196,7 @@ object ChatSettingsContainer {
             },
             emoteModeSwitch={
                 Parts.SwitchPart(
-                    enableSwitches = enableSwitches,
+                    enableSwitches = enableSwitches && userIsModerator,
                     checked =chatSettingsData.emoteMode,
                     switchLabel = "Emote mode",
                     switchFunction = {
