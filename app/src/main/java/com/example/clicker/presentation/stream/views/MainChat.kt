@@ -120,6 +120,7 @@ object MainChat{
      * @param drawerState the state for a [ModalNavigationDrawer][androidx.compose.material3.ModalNavigationDrawer]
      * @param showUndoButton a conditional used to determine if the button used to unban users should be shown
      * @param noChatMode a conditional used to determine if the user is in no chat mode or not
+     * @param showOuterBottomModalState a function used to show the a bottom layout sheet
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -142,7 +143,8 @@ object MainChat{
         channelName: String?,
         drawerState: androidx.compose.material3.DrawerState,
         showUndoButton:Boolean,
-        noChatMode:Boolean
+        noChatMode:Boolean,
+        showOuterBottomModalState:() ->Unit
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -190,6 +192,7 @@ object MainChat{
                     showModal ={
                         coroutineScope.launch { drawerState.open() }
                     },
+                    showOuterBottomModalState ={showOuterBottomModalState()}
                 )
 
             }, // end of enter chat
