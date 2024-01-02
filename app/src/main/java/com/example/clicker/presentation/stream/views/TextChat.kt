@@ -11,7 +11,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,7 +55,9 @@ object TextChat{
      * @param filterMethod a method used to filter out the proper  usernames from [filteredChatList]
      * @param sendMessageToWebSocket a function that is used to send the message to the websocket hooked up to the TwitchIRC server
      * @param showModal a function to run to show the bottom modal when a individual chat message is clicked
+     * @param showOuterBottomModalState a function used to show the a bottom layout sheet
      * */
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun EnterChat(
         modifier: Modifier,
@@ -63,6 +68,7 @@ object TextChat{
         filterMethod: (String, String) -> Unit,
         sendMessageToWebSocket: (String) -> Unit,
         showModal: () -> Unit,
+        showOuterBottomModalState:() ->Unit
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,
@@ -79,7 +85,10 @@ object TextChat{
                 )
             },
             showModStatus = {
-                TextChatParts.ShowModStatus(modStatus =modStatus)
+                TextChatParts.ShowModStatus(
+                    modStatus =modStatus,
+                    showOuterBottomModalState={showOuterBottomModalState()}
+                )
             },
             stylizedTextField ={boxModifier ->
                 TextChatParts.StylizedTextField(
@@ -300,17 +309,27 @@ object TextChat{
          * A composable meant to show a moderator Icon based on the status of [modStatus]
          *
          * @param modStatus a boolean meant to determine if the user is a moderator or not.
+         * @param showOuterBottomModalState a function used to show the a bottom layout sheet
          * */
         @Composable
         fun ShowModStatus(
             modStatus: Boolean?,
+            showOuterBottomModalState: () ->Unit
         ){
-            if (modStatus != null && modStatus == true) {
-                AsyncImage(
-                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
-                )
-            }
+            val scope = rememberCoroutineScope()
+//            if (modStatus != null && modStatus == true) {
+//                AsyncImage(
+//                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+//                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
+//                )
+//            }
+            AsyncImage(
+                modifier = Modifier.clickable {
+                    showOuterBottomModalState()
+                },
+                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                contentDescription = stringResource(R.string.moderator_badge_icon_description)
+            )
         }
     }// end of TextChatParts
 
