@@ -6,6 +6,9 @@ import android.content.res.Resources
 import android.graphics.Color.parseColor
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -23,8 +26,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -42,16 +48,23 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +78,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -106,7 +120,7 @@ fun StreamView(
     )
     val outerBottomModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Expanded,
-        //skipHalfExpanded = true
+        skipHalfExpanded = true
     )
     var oneClickActionsChecked by remember { mutableStateOf(true) }
 
@@ -132,13 +146,8 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                 sheetContent ={
-                    Column() {
-                        Text("Another one",color = Color.Red, fontSize = 30.sp)
-                        Text("Another one",color = Color.Red, fontSize = 30.sp)
-                        Text("Another one",color = Color.Red, fontSize = 30.sp)
-                        Text("Another one",color = Color.Red, fontSize = 30.sp)
-                        Text("Another one",color = Color.Red, fontSize = 30.sp)
-                    }
+
+                        SliderMinimalExample()
 
                 },
                 sheetState = outerBottomModalState
@@ -324,6 +333,265 @@ fun SideModal(
         contentCoveredBySideModal()
     }
 }
+
+@Composable
+fun AutoModRowHostility(){
+    var expandedState by remember {
+        mutableStateOf(true)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp)
+            .animateContentSize(
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = LinearOutSlowInEasing
+                )
+            )
+            .clickable { expandedState = !expandedState },
+
+        verticalAlignment = Alignment.CenterVertically){
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = stringResource(R.string.close_icon_description),
+//                    modifier = Modifier.size(30.dp),
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(end = 5.dp)
+        )
+
+            Text("HOSTILITY", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+        Column(modifier = Modifier
+            .wrapContentSize(Alignment.Center)
+            .padding(horizontal = 5.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(5.dp)
+                    .clip(shape = CircleShape)
+                    .background(MaterialTheme.colorScheme.onPrimary)
+            )
+        }
+            Text("Aggression, L2; Bullying, L1", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary)
+
+
+        Divider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+
+    }
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 15.dp)) {
+        if(expandedState){
+            Row(modifier = Modifier.fillMaxWidth()){
+                Column(){
+                    Text("Aggression", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                    Text("Threatening, inciting, or promoting violence or other harm", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary )
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth()){
+                Column(){
+                    Text("Bullying", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                    Text("Name-calling, insults, or antagonization", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
+
+        }
+    }
+
+}
+
+@Composable
+fun ClickableRow(
+    changeExpandedState:() ->Unit,
+
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp)
+            .animateContentSize(
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = LinearOutSlowInEasing
+                )
+            )
+            .clickable { changeExpandedState() },
+
+        verticalAlignment = Alignment.CenterVertically){
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = stringResource(R.string.close_icon_description),
+//                    modifier = Modifier.size(30.dp),
+            tint = Color.White,
+            modifier = Modifier.padding(end = 5.dp)
+        )
+        Text("DISCRIMINATION AND SLURS", fontSize = 20.sp,modifier = Modifier.padding(end = 5.dp),color = MaterialTheme.colorScheme.onPrimary)
+        Column(modifier = Modifier
+            .wrapContentSize(Alignment.Center)
+            .padding(horizontal = 5.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(5.dp)
+                    .clip(shape = CircleShape)
+                    .background(MaterialTheme.colorScheme.onPrimary)
+            )
+        }
+//        Text("Disability, ", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary)
+        Divider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+
+    }
+}
+@Composable
+fun AutoModRowDiscrimination(){
+    var expandedState by remember {
+        mutableStateOf(true)
+    }
+
+
+    LazyColumn(modifier = Modifier
+        .fillMaxWidth()
+        .padding(15.dp)) {
+        item{
+            ClickableRow(
+                changeExpandedState = {
+                    expandedState = !expandedState
+                }
+            )
+        }
+
+
+        if(expandedState){
+            item{
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom =10.dp)){
+                    Column(){
+                        Text("Disability", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
+                        DropdownDemo()
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom =10.dp)){
+                    Column(){
+                        Text("Sexuality, sex, or gender", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(horizontal=10.dp))
+                        DropdownDemo()
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom =10.dp)){
+                    Column(){
+                        Text("Misogyny", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Demonstrating hatred or prejudice against women, including sexual objectification", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(horizontal=10.dp))
+                        DropdownDemo()
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom =10.dp)){
+                    Column(){
+                        Text("Race, ethnicity, or religion", fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Demonstrating hatred or prejudice based on race, ethnicity, or religion", fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(horizontal=10.dp))
+                        DropdownDemo()
+                    }
+                }
+            }
+
+
+        }
+    }
+}
+@Composable
+fun DropdownDemo() {
+    var expanded by remember { mutableStateOf(false) }
+    val items = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering")
+    var selectedIndex by remember { mutableStateOf(0) }
+    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart).padding(horizontal =10.dp)) {
+        Text(
+            items[selectedIndex],
+            modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true })
+                .background(Color.Gray)
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth().background(
+                Color.Red
+            )
+        ) {
+            items.forEachIndexed { index, s ->
+                DropdownMenuItem(onClick = {
+                    selectedIndex = index
+                    expanded = false
+                },
+                    text = {
+                        Text(text = s)
+                    }
+                )
+            }
+        }
+    }
+
+}
+@Composable
+fun AutoModRowSexualContent(){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(bottom = 10.dp), verticalAlignment = Alignment.CenterVertically){
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = stringResource(R.string.close_icon_description),
+//                    modifier = Modifier.size(30.dp),
+            tint = Color.White,
+            modifier = Modifier.padding(end = 5.dp)
+        )
+        Text("SEXUAL CONTENT", fontSize = 20.sp,modifier = Modifier.padding(end = 5.dp),color = MaterialTheme.colorScheme.onPrimary)
+        Divider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+
+    }
+}
+@Composable
+fun AutoModRowProfanity(){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(bottom = 10.dp), verticalAlignment = Alignment.CenterVertically){
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = stringResource(R.string.close_icon_description),
+//                    modifier = Modifier.size(30.dp),
+            tint = Color.White,
+            modifier = Modifier.padding(end = 5.dp)
+        )
+        Text("PROFANITY", fontSize = 20.sp,modifier = Modifier.padding(end = 5.dp),color = MaterialTheme.colorScheme.onPrimary)
+        Divider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+
+    }
+}
+@Composable
+fun SliderMinimalExample() {
+        var sliderPosition by remember { mutableFloatStateOf(0f) }
+        Column(modifier = Modifier.padding(5.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
+                Text("Your AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = { sliderPosition = it },
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.onPrimary,
+                        activeTrackColor = MaterialTheme.colorScheme.secondary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                    steps = 3,
+                    valueRange = 0f..10f
+                )
+            }
+
+
+            Text(text = sliderPosition.toString(),color = MaterialTheme.colorScheme.onPrimary)
+           // AutoModRowHostility()
+            AutoModRowDiscrimination()
+//            AutoModRowSexualContent()
+//            AutoModRowProfanity()
+
+        }
+
+}
+
+
 
 /**THIS IS THE CHAT SHOWING IN THE UI*/
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
