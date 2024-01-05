@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import com.example.clicker.presentation.stream.views.AutoMod
 
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
@@ -48,7 +49,7 @@ fun HorizontalChat(
     )
     val outerBottomModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Expanded,
-        //skipHalfExpanded = true
+        skipHalfExpanded = true
     )
 
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
@@ -65,13 +66,7 @@ fun HorizontalChat(
     ModalBottomSheetLayout(
         sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
         sheetContent ={
-            Column() {
-                Text("Another one",color = Color.Red, fontSize = 30.sp)
-                Text("Another one",color = Color.Red, fontSize = 30.sp)
-                Text("Another one",color = Color.Red, fontSize = 30.sp)
-                Text("Another one",color = Color.Red, fontSize = 30.sp)
-                Text("Another one",color = Color.Red, fontSize = 30.sp)
-            }
+            AutoMod.Settings()
 
         },
         sheetState = outerBottomModalState
