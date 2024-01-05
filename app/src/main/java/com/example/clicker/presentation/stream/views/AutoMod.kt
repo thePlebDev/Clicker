@@ -19,6 +19,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -114,8 +115,8 @@ object AutoMod {
     private object Builders{
         //Rule: brief description followed by the UI link and then the params
         /**
-         * AutoModRows  is the basic layout for the user Auto Moderation experience. A example of what the typical UI looks like
-         * with this builder can be found [HERE]()
+         * AutoModRows is the basic layout for the user Auto Moderation experience. A example of what the typical UI looks like
+         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#AutoModRows)
          *
          * @param slider a [Slider] that will be shown to the user and represent the current state of [AutoMod]
          * @param hostilityRow a [Row] representing all the [hostilityList][Constants.hostilityList] information
@@ -220,7 +221,7 @@ object AutoMod {
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            Color.Red
+                            MaterialTheme.colorScheme.primary
                         )
                 ) {
                     filterLevels.forEachIndexed { index, s ->
@@ -229,7 +230,17 @@ object AutoMod {
                             expanded = false
                         },
                             text = {
-                                Text(text = s)
+                                Row(verticalAlignment = Alignment.CenterVertically){
+                                    Text(text = s, color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+                                   repeat(index+1){
+                                       Icon(
+                                           imageVector = Icons.Default.Delete,
+                                           contentDescription = stringResource(R.string.close_icon_description),
+                                           tint = Color.Red,
+                                           modifier = Modifier.padding(end = 5.dp)
+                                       )
+                                   }
+                                }
                             }
                         )
                     }
@@ -293,7 +304,24 @@ object AutoMod {
                 }
 
 
-                Text(text = sliderPosition.toString(),color = MaterialTheme.colorScheme.onPrimary)
+                when(sliderPosition){
+                    0.0.toFloat() ->{
+                        Text(text = "No filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                    }
+                    2.5.toFloat() ->{
+                        Text(text = "Less filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                    }
+                    5.0.toFloat() ->{
+                        Text(text = "Some filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                    }
+                    7.5.toFloat() ->{
+                        Text(text = "More filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                    }
+                    10.0.toFloat() ->{
+                        Text(text = "Max filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                    }
+                }
+
             }
 
 
@@ -343,7 +371,7 @@ object AutoMod {
                             .background(MaterialTheme.colorScheme.onPrimary)
                     )
                 }
-                Divider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+                Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxWidth())
 
             }
         }
@@ -376,6 +404,8 @@ object AutoMod {
                 )
                 Text(
                     selectedText,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 20.sp
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
