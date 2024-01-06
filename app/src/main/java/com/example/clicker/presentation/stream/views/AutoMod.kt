@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.DiscriminationIndexData
 import com.example.clicker.presentation.stream.FilterType
 
 
@@ -90,7 +91,9 @@ object AutoMod {
         profanityFilterIndex:Int,
 
         changeSelectedIndex:(Int,FilterType)->Unit,
-        discriminationList: List<TitleSubTitle>
+        discriminationList: List<TitleSubTitle>,
+        discriminationIndexData: DiscriminationIndexData
+
     ) {
 
         Builders.AutoModRows(
@@ -101,40 +104,40 @@ object AutoMod {
             )
                     },
             hostilityRow = {
-                HostilityAutoModRow(
-                    titleList = Constants.hostilityList,
-                    filterLevels = hostilityFilterList,
-                    selectedIndex = hostilityFilterIndex,
-                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-                )
+//                HostilityAutoModRow(
+//                    titleList = Constants.hostilityList,
+//                    filterLevels = hostilityFilterList,
+//                    selectedIndex = hostilityFilterIndex,
+//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+//                )
             },
             discriminationRow = {
                 DiscriminationAutoModRow(
-                    titleList = discriminationList,
                     filterLevels = discriminationFilterList,
-                    selectedIndex = discriminationFilterIndex,
                     changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                    discriminationIndexData = discriminationIndexData
                 )
             },
             sexualRow = {
-                SexualAutoModRow(
-                    titleList = Constants.sexualList,
-                    filterLevels = sexualFilterList,
-                    selectedIndex = sexualFilterIndex,
-                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-                )
+//                SexualAutoModRow(
+//                    titleList = Constants.sexualList,
+//                    filterLevels = sexualFilterList,
+//                    selectedIndex = sexualFilterIndex,
+//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+//                )
             },
             profanityRow={
-                ProfanityAutoModRow(
-                    titleList = Constants.profanityList,
-                    filterLevels = profanityFilterList,
-                    selectedIndex = profanityFilterIndex,
-                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-                )
+//                ProfanityAutoModRow(
+//                    titleList = Constants.profanityList,
+//                    filterLevels = profanityFilterList,
+//                    selectedIndex = profanityFilterIndex,
+//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+//                )
             }
         )
     }
 
+    // I like this way because it allows for more individuality when trying to change things
     @Composable
     private fun HostilityAutoModRow(
         titleList: List<TitleSubTitle>,
@@ -144,28 +147,113 @@ object AutoMod {
     ){
         Parts.AutoModRow(
             title = "HOSTILITY",
-            titleList = titleList,
-            filterLevels = filterLevels,
-            selectedIndex = selectedIndex,
-            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
-            filterType = FilterType.HOSTILITY
+            clickablePopOutMenu={}
         )
     }
     @Composable
     private fun DiscriminationAutoModRow(
-        titleList: List<TitleSubTitle>,
         filterLevels: List<String>,
-        selectedIndex: Int,
         changeSelectedIndex:(Int,FilterType)->Unit,
+        discriminationIndexData: DiscriminationIndexData
     ){
         Parts.AutoModRow(
             title = "DISCRIMINATION AND SLURS",
-            titleList = titleList,
-            filterLevels = filterLevels,
-            selectedIndex = selectedIndex,
-            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
-            filterType = FilterType.DISCRIMINATION
+            clickablePopOutMenu={
+                    DiscriminationDataColumns(
+                        filterLevels, discriminationIndexData, changeSelectedIndex
+                    )
+            }
         )
+    }
+
+    @Composable
+    fun DiscriminationDataColumns(
+        filterLevels: List<String>,
+        discriminationIndexData: DiscriminationIndexData,
+        changeSelectedIndex: (Int, FilterType) -> Unit,
+    ){
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom=10.dp)){
+
+            IndividualDropDownItem(
+                filterLevels = filterLevels,
+                selectedIndex = discriminationIndexData.disabilityIndex,
+                changeSelectedIndex = { selectedIndex, filterType ->
+                    changeSelectedIndex(
+                        selectedIndex,
+                        filterType
+                    )
+                },
+                title ="Disability",
+                subTitle = "Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",
+                filterType = FilterType.DISABILITY
+            )
+            IndividualDropDownItem(
+                filterLevels = filterLevels,
+                selectedIndex = discriminationIndexData.sexualityIndex,
+                changeSelectedIndex = { selectedIndex, filterType ->
+                    changeSelectedIndex(
+                        selectedIndex,
+                        filterType
+                    )
+                },
+                title ="Sexuality, sex, or gender",
+                subTitle = "Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",
+                filterType = FilterType.SEXUALITY
+            )
+            IndividualDropDownItem(
+                filterLevels = filterLevels,
+                selectedIndex = discriminationIndexData.misogynyIndex,
+                changeSelectedIndex = { selectedIndex, filterType ->
+                    changeSelectedIndex(
+                        selectedIndex,
+                        filterType
+                    )
+                },
+                title ="Misogyny",
+                subTitle = "Demonstrating hatred or prejudice against women, including sexual objectification",
+                filterType = FilterType.MISOGYNY
+            )
+            IndividualDropDownItem(
+                filterLevels = filterLevels,
+                selectedIndex = discriminationIndexData.raceIndex,
+                changeSelectedIndex = { selectedIndex, filterType ->
+                    changeSelectedIndex(
+                        selectedIndex,
+                        filterType
+                    )
+                },
+                title ="Race, ethnicity, or religion",
+                subTitle = "Demonstrating hatred or prejudice based on race, ethnicity, or religion",
+                filterType = FilterType.RACE
+            )
+        }
+    }
+
+    @Composable
+    fun IndividualDropDownItem(
+        filterLevels: List<String>,
+        selectedIndex: Int,
+        changeSelectedIndex: (Int, FilterType) -> Unit,
+        title: String,
+        subTitle:String,
+        filterType:FilterType
+    ){
+        Column() {
+            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+            Text(subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
+            Parts.DropdownRowMenu(
+                filterLevels = filterLevels,
+                selectedIndex = selectedIndex,
+                changeSelectedIndex = { selectedIndex, filter ->
+                    changeSelectedIndex(
+                        selectedIndex,
+                        filter
+                    )
+                },
+                filterType = filterType
+            )
+        }
+
     }
 
     @Composable
@@ -177,11 +265,7 @@ object AutoMod {
     ){
         Parts.AutoModRow(
             title = "SEXUAL CONTENT",
-            titleList = titleList,
-            filterLevels = filterLevels,
-            selectedIndex = selectedIndex,
-            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
-            filterType = FilterType.SEXUAL
+            clickablePopOutMenu={}
         )
     }
 
@@ -194,11 +278,7 @@ object AutoMod {
     ){
         Parts.AutoModRow(
             title = "PROFANITY",
-            titleList = titleList,
-            filterLevels = filterLevels,
-            selectedIndex = selectedIndex,
-            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
-            filterType = FilterType.PROFANITY
+            clickablePopOutMenu ={}
         )
     }
 
@@ -268,11 +348,7 @@ object AutoMod {
         @Composable
         fun AutoModRow(
             title:String,
-            titleList: List<TitleSubTitle>,
-            filterLevels: List<String>,
-            selectedIndex: Int,
-            changeSelectedIndex:(Int,FilterType)->Unit,
-            filterType: FilterType
+            clickablePopOutMenu: @Composable () -> Unit,
 
         ){
             var expandedState by remember {
@@ -292,11 +368,7 @@ object AutoMod {
 
                 ConditionalRows(
                     expandedState,
-                    titleList,
-                    filterLevels,
-                    selectedIndex = selectedIndex,
-                    changeSelectedIndex ={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-                    filterType = filterType
+                    clickablePopOutMenu={clickablePopOutMenu()}
                 )
 
             }
@@ -363,34 +435,14 @@ object AutoMod {
          * - Contains 1 extra part: [DropdownRowMenu]
          *
          * @param expandedState a boolean that is used to determine if infromation from [titleList] should be shown to the user
-         * @param titleList a list of [TitleSubTitle] objects that will be conditionally shown to the user
          * */
         @Composable
         fun ConditionalRows(
             expandedState:Boolean,
-            titleList: List<TitleSubTitle>,
-            filterLevels: List<String>,
-            selectedIndex: Int,
-            changeSelectedIndex:(Int,FilterType)->Unit,
-            filterType: FilterType,
+            clickablePopOutMenu: @Composable () -> Unit,
         ){
             if(expandedState){
-                for(item in titleList){
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp)){
-                        Column(){
-                            Text(item.title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
-                            Text(item.subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
-                            DropdownRowMenu(
-                                filterLevels = filterLevels,
-                                selectedIndex =selectedIndex,
-                                changeSelectedIndex ={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-                                filterType = filterType
-                            )
-                        }
-                    }
-                }
+                clickablePopOutMenu()
             }
         }
 
