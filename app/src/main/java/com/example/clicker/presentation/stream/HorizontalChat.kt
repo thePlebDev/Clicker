@@ -83,7 +83,8 @@ fun HorizontalChat(
                 profanityFilterList=autoModViewModel.autoModUIState.value.profanityFilterList,
                 profanityFilterIndex = autoModViewModel.autoModUIState.value.profanityFilterIndex,
 
-                changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)}
+                changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
+                discriminationIndexData = autoModViewModel.discriminationIndexData.value
             )
 
         },

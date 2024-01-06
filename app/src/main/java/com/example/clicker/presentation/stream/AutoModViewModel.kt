@@ -11,8 +11,20 @@ enum class FilterType {
     HOSTILITY,
     DISCRIMINATION,
     SEXUAL,
-    PROFANITY
+    PROFANITY,
+    DISABILITY,
+    SEXUALITY,
+    MISOGYNY,
+    RACE
 }
+data class DiscriminationIndexData(
+    val disabilityIndex:Int =0,
+    val sexualityIndex:Int =1,
+    val misogynyIndex:Int = 2,
+    val raceIndex: Int = 3,
+)
+
+
 data class AutoModUIState(
     val sliderValue:Float = 0.0.toFloat(),
     val hostilityFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
@@ -42,6 +54,9 @@ class AutoModViewModel: ViewModel() {
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
     val autoModUIState: State<AutoModUIState> = _autoModUIState
 
+    private val _discriminationIndexData = mutableStateOf(DiscriminationIndexData())
+    val discriminationIndexData:State<DiscriminationIndexData> = _discriminationIndexData
+
     fun updateSliderValue(currentValue:Float){
         _autoModUIState.value = _autoModUIState.value.copy(
             sliderValue = currentValue
@@ -69,6 +84,26 @@ class AutoModViewModel: ViewModel() {
             FilterType.SEXUAL ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
                     sexualFilterIndex = newIndex
+                )
+            }
+            FilterType.DISABILITY ->{
+                _discriminationIndexData.value = _discriminationIndexData.value.copy(
+                    disabilityIndex = newIndex
+                )
+            }
+            FilterType.MISOGYNY ->{
+                _discriminationIndexData.value = _discriminationIndexData.value.copy(
+                    misogynyIndex = newIndex
+                )
+            }
+            FilterType.RACE ->{
+                _discriminationIndexData.value = _discriminationIndexData.value.copy(
+                    raceIndex = newIndex
+                )
+            }
+            FilterType.SEXUALITY ->{
+                _discriminationIndexData.value = _discriminationIndexData.value.copy(
+                    sexualityIndex = newIndex
                 )
             }
         }

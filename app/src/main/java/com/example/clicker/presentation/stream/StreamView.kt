@@ -169,6 +169,7 @@ fun StreamView(
                         profanityFilterIndex = autoModViewModel.autoModUIState.value.profanityFilterIndex,
 
                         changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
+                        discriminationIndexData = autoModViewModel.discriminationIndexData.value
                     )
 
                 },
