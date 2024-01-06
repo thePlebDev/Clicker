@@ -105,6 +105,7 @@ import kotlin.math.roundToInt
 @Composable
 fun StreamView(
     streamViewModel: StreamViewModel,
+    autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
@@ -139,7 +140,10 @@ fun StreamView(
 
     when (orientation) {
         Configuration.ORIENTATION_LANDSCAPE -> {
-            HorizontalChat(streamViewModel)
+            HorizontalChat(
+                streamViewModel,
+                autoModViewModel
+            )
         }
         else -> {
             // Below is the behemoth I am trying to rework
@@ -148,7 +152,24 @@ fun StreamView(
                 sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                 sheetContent ={
 
-                    AutoMod.Settings()
+                    AutoMod.Settings(
+                        sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
+                        changSliderPosition = {currentValue -> autoModViewModel.updateSliderValue(currentValue)},
+                        hostilityFilterList=autoModViewModel.autoModUIState.value.hostilityFilterList,
+                        hostilityFilterIndex =autoModViewModel.autoModUIState.value.hostilityFilterIndex,
+
+                        discriminationFilterList=autoModViewModel.autoModUIState.value.discriminationFilterList,
+                        discriminationFilterIndex = autoModViewModel.autoModUIState.value.discriminationFilterIndex,
+                        discriminationList = autoModViewModel.autoModUIState.value.discriminationList,
+
+                        sexualFilterList=autoModViewModel.autoModUIState.value.sexualFilterList,
+                        sexualFilterIndex= autoModViewModel.autoModUIState.value.sexualFilterIndex,
+
+                        profanityFilterList=autoModViewModel.autoModUIState.value.profanityFilterList,
+                        profanityFilterIndex = autoModViewModel.autoModUIState.value.profanityFilterIndex,
+
+                        changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
+                    )
 
                 },
                 sheetState = outerBottomModalState

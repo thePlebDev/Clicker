@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.FilterType
 
 
 /**
@@ -48,7 +49,7 @@ import com.example.clicker.R
  * and displaying text easier.
  * */
 data class TitleSubTitle(
-    val title: String, val subTitle: String
+    val title: String, val subTitle: String,val Index:Int
 )
 //1)Rule: brief description followed by the number of implementations
 /**
@@ -67,44 +68,138 @@ object AutoMod {
      * our user auto moderation experience
      *
      * - AutoScrollChatWithTextBox implements the [AutoModRows][Builders.AutoModRows] Builder
+     *
+     * @param sliderPosition a float value representing the current value of a [Slider]
+     * @param changSliderPosition a function used to change the value of the [sliderPosition] to the current value
      * */
     @Composable
-    fun Settings() {
+    fun Settings(
+        sliderPosition: Float,
+        changSliderPosition:(Float)->Unit,
 
-        var sliderPosition by remember { mutableFloatStateOf(0f) }
+        hostilityFilterList: List<String>,
+        hostilityFilterIndex:Int,
+
+        discriminationFilterList: List<String>,
+        discriminationFilterIndex:Int,
+
+        sexualFilterList: List<String>,
+        sexualFilterIndex:Int,
+
+        profanityFilterList: List<String>,
+        profanityFilterIndex:Int,
+
+        changeSelectedIndex:(Int,FilterType)->Unit,
+        discriminationList: List<TitleSubTitle>
+    ) {
+
         Builders.AutoModRows(
             slider ={
                 Parts.AutoModSlider(
                 sliderPosition,
-                changeSliderValue = {currentValue ->sliderPosition = currentValue}
+                changeSliderValue = {currentValue ->changSliderPosition(currentValue)}
             )
                     },
             hostilityRow = {
-                Parts.AutoModRow(
-                    title = "HOSTILITY",
-                    titleList = Constants.hostilityList
+                HostilityAutoModRow(
+                    titleList = Constants.hostilityList,
+                    filterLevels = hostilityFilterList,
+                    selectedIndex = hostilityFilterIndex,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
                 )
             },
             discriminationRow = {
-                Parts.AutoModRow(
-                    title ="DISCRIMINATION AND SLURS",
-                    titleList = Constants.discriminationList
+                DiscriminationAutoModRow(
+                    titleList = discriminationList,
+                    filterLevels = discriminationFilterList,
+                    selectedIndex = discriminationFilterIndex,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
                 )
             },
             sexualRow = {
-                Parts.AutoModRow(
-                    title = "SEXUAL CONTENT",
-                    titleList = Constants.sexualList
+                SexualAutoModRow(
+                    titleList = Constants.sexualList,
+                    filterLevels = sexualFilterList,
+                    selectedIndex = sexualFilterIndex,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
                 )
             },
             profanityRow={
-                Parts.AutoModRow(
-                    title = "PROFANITY",
-                    titleList = Constants.profanityList
+                ProfanityAutoModRow(
+                    titleList = Constants.profanityList,
+                    filterLevels = profanityFilterList,
+                    selectedIndex = profanityFilterIndex,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
                 )
             }
         )
+    }
 
+    @Composable
+    private fun HostilityAutoModRow(
+        titleList: List<TitleSubTitle>,
+        filterLevels: List<String>,
+        selectedIndex: Int,
+        changeSelectedIndex:(Int,FilterType)->Unit,
+    ){
+        Parts.AutoModRow(
+            title = "HOSTILITY",
+            titleList = titleList,
+            filterLevels = filterLevels,
+            selectedIndex = selectedIndex,
+            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
+            filterType = FilterType.HOSTILITY
+        )
+    }
+    @Composable
+    private fun DiscriminationAutoModRow(
+        titleList: List<TitleSubTitle>,
+        filterLevels: List<String>,
+        selectedIndex: Int,
+        changeSelectedIndex:(Int,FilterType)->Unit,
+    ){
+        Parts.AutoModRow(
+            title = "DISCRIMINATION AND SLURS",
+            titleList = titleList,
+            filterLevels = filterLevels,
+            selectedIndex = selectedIndex,
+            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
+            filterType = FilterType.DISCRIMINATION
+        )
+    }
+
+    @Composable
+    private fun SexualAutoModRow(
+        titleList: List<TitleSubTitle>,
+        filterLevels: List<String>,
+        selectedIndex: Int,
+        changeSelectedIndex:(Int,FilterType)->Unit,
+    ){
+        Parts.AutoModRow(
+            title = "SEXUAL CONTENT",
+            titleList = titleList,
+            filterLevels = filterLevels,
+            selectedIndex = selectedIndex,
+            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
+            filterType = FilterType.SEXUAL
+        )
+    }
+
+    @Composable
+    private fun ProfanityAutoModRow(
+        titleList: List<TitleSubTitle>,
+        filterLevels: List<String>,
+        selectedIndex: Int,
+        changeSelectedIndex:(Int,FilterType)->Unit,
+    ){
+        Parts.AutoModRow(
+            title = "PROFANITY",
+            titleList = titleList,
+            filterLevels = filterLevels,
+            selectedIndex = selectedIndex,
+            changeSelectedIndex={newIndex,filter -> changeSelectedIndex(newIndex,filter)},
+            filterType = FilterType.PROFANITY
+        )
     }
 
     /**
@@ -173,7 +268,12 @@ object AutoMod {
         @Composable
         fun AutoModRow(
             title:String,
-            titleList: List<TitleSubTitle>
+            titleList: List<TitleSubTitle>,
+            filterLevels: List<String>,
+            selectedIndex: Int,
+            changeSelectedIndex:(Int,FilterType)->Unit,
+            filterType: FilterType
+
         ){
             var expandedState by remember {
                 mutableStateOf(false)
@@ -191,7 +291,12 @@ object AutoMod {
                 )
 
                 ConditionalRows(
-                    expandedState, titleList
+                    expandedState,
+                    titleList,
+                    filterLevels,
+                    selectedIndex = selectedIndex,
+                    changeSelectedIndex ={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                    filterType = filterType
                 )
 
             }
@@ -203,10 +308,14 @@ object AutoMod {
          * - Contains 1 extra part: [DropDownRow]
          * */
         @Composable
-        fun DropdownRowMenu() {
+        fun DropdownRowMenu(
+            filterLevels:List<String>,
+            selectedIndex: Int,
+            changeSelectedIndex:(Int,FilterType)->Unit,
+            filterType: FilterType,
+        ) {
             var expanded by remember { mutableStateOf(false) }
-            val filterLevels = Constants.filteringLevels
-            var selectedIndex by remember { mutableStateOf(0) }
+
             Box(modifier = Modifier
                 .wrapContentSize(Alignment.TopStart)
                 .padding(horizontal = 10.dp)) {
@@ -226,7 +335,7 @@ object AutoMod {
                 ) {
                     filterLevels.forEachIndexed { index, s ->
                         DropdownMenuItem(onClick = {
-                            selectedIndex = index
+                            changeSelectedIndex(index,filterType)
                             expanded = false
                         },
                             text = {
@@ -259,7 +368,11 @@ object AutoMod {
         @Composable
         fun ConditionalRows(
             expandedState:Boolean,
-            titleList: List<TitleSubTitle>
+            titleList: List<TitleSubTitle>,
+            filterLevels: List<String>,
+            selectedIndex: Int,
+            changeSelectedIndex:(Int,FilterType)->Unit,
+            filterType: FilterType,
         ){
             if(expandedState){
                 for(item in titleList){
@@ -269,7 +382,12 @@ object AutoMod {
                         Column(){
                             Text(item.title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
                             Text(item.subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
-                            DropdownRowMenu()
+                            DropdownRowMenu(
+                                filterLevels = filterLevels,
+                                selectedIndex =selectedIndex,
+                                changeSelectedIndex ={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                                filterType = filterType
+                            )
                         }
                     }
                 }
@@ -434,29 +552,29 @@ object AutoMod {
          * A list of [TitleSubTitle] objects used to explain to the user what constitutes as discrimination
          * */
         val discriminationList = listOf<TitleSubTitle>(
-            TitleSubTitle("Disability","Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities"),
-            TitleSubTitle("Sexuality, sex, or gender","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression"),
-            TitleSubTitle("Misogyny","Demonstrating hatred or prejudice against women, including sexual objectification"),
-            TitleSubTitle("Race, ethnicity, or religion","Demonstrating hatred or prejudice based on race, ethnicity, or religion"),
+            TitleSubTitle("Disability","Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",0),
+            TitleSubTitle("Sexuality, sex, or gender","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",0),
+            TitleSubTitle("Misogyny","Demonstrating hatred or prejudice against women, including sexual objectification",0),
+            TitleSubTitle("Race, ethnicity, or religion","Demonstrating hatred or prejudice based on race, ethnicity, or religion",0),
         )
         /**
          * A list of [TitleSubTitle] objects used to explain to the user what constitutes as hostility
          * */
         val hostilityList = listOf<TitleSubTitle>(
-            TitleSubTitle("Aggression","Threatening, inciting, or promoting violence or other harm"),
-            TitleSubTitle("Bullying","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression"),
+            TitleSubTitle("Aggression","Threatening, inciting, or promoting violence or other harm",0),
+            TitleSubTitle("Bullying","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",0),
         )
         /**
          * A list of [TitleSubTitle] objects used to explain to the user what constitutes as sexual
          * */
         val sexualList = listOf<TitleSubTitle>(
-            TitleSubTitle("Sex-based terms","Sexual acts, anatomy"),
+            TitleSubTitle("Sex-based terms","Sexual acts, anatomy",0),
         )
         /**
          * A list of [TitleSubTitle] objects used to explain to the user what constitutes as profanity
          * */
         val profanityList = listOf<TitleSubTitle>(
-            TitleSubTitle("Swearing","Swear words, &*^!#@%*"),
+            TitleSubTitle("Swearing","Swear words, &*^!#@%*",0),
         )
         /**
          * A list of Strings representing all the available levels of filtering

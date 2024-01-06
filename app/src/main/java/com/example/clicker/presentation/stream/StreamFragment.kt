@@ -41,6 +41,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val binding get() = _binding!!
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
+    private val autoModViewModel:AutoModViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +71,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             resources = resources,
             binding = binding,
             streamViewModel = streamViewModel,
+            autoModViewModel = autoModViewModel,
             homeViewModel = homeViewModel
         )
 
@@ -155,6 +157,7 @@ fun setOrientation(
     resources: Resources,
     binding: FragmentStreamBinding,
     streamViewModel: StreamViewModel,
+    autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel
 ): FrameLayout {
     binding.composeView.apply {
@@ -162,6 +165,7 @@ fun setOrientation(
             AppTheme{
                 StreamView(
                     streamViewModel,
+                    autoModViewModel,
                     homeViewModel
                 )
 

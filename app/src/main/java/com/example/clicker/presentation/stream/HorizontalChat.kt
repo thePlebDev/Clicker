@@ -33,7 +33,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HorizontalChat(
-    streamViewModel: StreamViewModel
+    streamViewModel: StreamViewModel,
+    autoModViewModel:AutoModViewModel
 ){
     val twitchUserChat = streamViewModel.listChats.toList()
     val lazyColumnListState = rememberLazyListState()
@@ -66,7 +67,24 @@ fun HorizontalChat(
     ModalBottomSheetLayout(
         sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
         sheetContent ={
-            AutoMod.Settings()
+            AutoMod.Settings(
+                sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
+                changSliderPosition = {currentValue -> autoModViewModel.updateSliderValue(currentValue)},
+                hostilityFilterList=autoModViewModel.autoModUIState.value.hostilityFilterList,
+                hostilityFilterIndex =autoModViewModel.autoModUIState.value.hostilityFilterIndex,
+
+                discriminationFilterList=autoModViewModel.autoModUIState.value.discriminationFilterList,
+                discriminationFilterIndex = autoModViewModel.autoModUIState.value.discriminationFilterIndex,
+                discriminationList = autoModViewModel.autoModUIState.value.discriminationList,
+
+                sexualFilterList=autoModViewModel.autoModUIState.value.sexualFilterList,
+                sexualFilterIndex= autoModViewModel.autoModUIState.value.sexualFilterIndex,
+
+                profanityFilterList=autoModViewModel.autoModUIState.value.profanityFilterList,
+                profanityFilterIndex = autoModViewModel.autoModUIState.value.profanityFilterIndex,
+
+                changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)}
+            )
 
         },
         sheetState = outerBottomModalState
