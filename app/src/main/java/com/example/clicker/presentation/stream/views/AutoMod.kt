@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -43,6 +45,10 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.stream.DiscriminationIndexData
 import com.example.clicker.presentation.stream.FilterType
+import com.example.clicker.presentation.stream.HostilityIndexData
+import com.example.clicker.presentation.stream.ProfanityIndexData
+import com.example.clicker.presentation.stream.SexualIndexData
+import com.example.clicker.presentation.stream.views.AutoMod.Parts.DropDownRow
 
 
 /**
@@ -77,22 +83,15 @@ object AutoMod {
     fun Settings(
         sliderPosition: Float,
         changSliderPosition:(Float)->Unit,
-
-        hostilityFilterList: List<String>,
-        hostilityFilterIndex:Int,
-
         discriminationFilterList: List<String>,
-        discriminationFilterIndex:Int,
-
-        sexualFilterList: List<String>,
-        sexualFilterIndex:Int,
-
-        profanityFilterList: List<String>,
-        profanityFilterIndex:Int,
 
         changeSelectedIndex:(Int,FilterType)->Unit,
-        discriminationList: List<TitleSubTitle>,
-        discriminationIndexData: DiscriminationIndexData
+
+        discriminationIndexData: DiscriminationIndexData,
+        hostilityIndexData: HostilityIndexData,
+        sexualIndexData: SexualIndexData,
+        profanityIndexData: ProfanityIndexData,
+        sliderText:String
 
     ) {
 
@@ -100,16 +99,17 @@ object AutoMod {
             slider ={
                 Parts.AutoModSlider(
                 sliderPosition,
-                changeSliderValue = {currentValue ->changSliderPosition(currentValue)}
+                changeSliderValue = {currentValue ->changSliderPosition(currentValue)},
+                    sliderText =sliderText
             )
                     },
             hostilityRow = {
-//                HostilityAutoModRow(
-//                    titleList = Constants.hostilityList,
-//                    filterLevels = hostilityFilterList,
-//                    selectedIndex = hostilityFilterIndex,
-//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-//                )
+                HostilityAutoModRow(
+                    filterLevels = discriminationFilterList,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                    hostilityIndexData = hostilityIndexData
+                )
+
             },
             discriminationRow = {
                 DiscriminationAutoModRow(
@@ -119,168 +119,139 @@ object AutoMod {
                 )
             },
             sexualRow = {
-//                SexualAutoModRow(
-//                    titleList = Constants.sexualList,
-//                    filterLevels = sexualFilterList,
-//                    selectedIndex = sexualFilterIndex,
-//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-//                )
+                SexAutoModRow(
+                    filterLevels = discriminationFilterList,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                    sexualIndexData = sexualIndexData
+                )
+
             },
             profanityRow={
-//                ProfanityAutoModRow(
-//                    titleList = Constants.profanityList,
-//                    filterLevels = profanityFilterList,
-//                    selectedIndex = profanityFilterIndex,
-//                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
-//                )
+
+                ProfanityAutoModRow(
+                    filterLevels = discriminationFilterList,
+                    changeSelectedIndex={selectedIndex,filterType -> changeSelectedIndex(selectedIndex,filterType)},
+                    profanityIndexData = profanityIndexData
+                )
+            }
+        )
+    }
+    @Composable
+    private fun HostilityAutoModRow(
+        filterLevels: List<String>,
+        changeSelectedIndex:(Int,FilterType)->Unit,
+        hostilityIndexData: HostilityIndexData
+    ){
+        Builders.ConditionalExpandableColumn(
+            titleRow ={changeExpandableValue ->
+                Parts.ClickableRow(
+                    changeExpandedState = {
+                        changeExpandableValue()
+                    },
+                    title = "Hostility"
+                )
+            },
+            autoModColumnChoices={
+                Parts.HostilityDataColumns(
+                    filterLevels = filterLevels,
+                    hostilityIndexData = hostilityIndexData,
+                    changeSelectedIndex ={index,filterType ->changeSelectedIndex(index,filterType)}
+                )
+
             }
         )
     }
 
-    // I like this way because it allows for more individuality when trying to change things
-    @Composable
-    private fun HostilityAutoModRow(
-        titleList: List<TitleSubTitle>,
-        filterLevels: List<String>,
-        selectedIndex: Int,
-        changeSelectedIndex:(Int,FilterType)->Unit,
-    ){
-        Parts.AutoModRow(
-            title = "HOSTILITY",
-            clickablePopOutMenu={}
-        )
-    }
     @Composable
     private fun DiscriminationAutoModRow(
         filterLevels: List<String>,
         changeSelectedIndex:(Int,FilterType)->Unit,
         discriminationIndexData: DiscriminationIndexData
     ){
-        Parts.AutoModRow(
-            title = "DISCRIMINATION AND SLURS",
-            clickablePopOutMenu={
-                    DiscriminationDataColumns(
-                        filterLevels, discriminationIndexData, changeSelectedIndex
-                    )
+        Builders.ConditionalExpandableColumn(
+            titleRow = {changeExpandableValue ->
+                Parts.ClickableRow(
+                    changeExpandedState = {
+                        changeExpandableValue()
+                    },
+                    title = "DISCRIMINATION AND SLURS"
+                )
+            },
+            autoModColumnChoices={
+                Parts.DiscriminationDataColumns(
+                    filterLevels, discriminationIndexData, changeSelectedIndex
+                )
             }
         )
     }
 
     @Composable
-    fun DiscriminationDataColumns(
+    private fun SexAutoModRow(
         filterLevels: List<String>,
-        discriminationIndexData: DiscriminationIndexData,
-        changeSelectedIndex: (Int, FilterType) -> Unit,
-    ){
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom=10.dp)){
-
-            IndividualDropDownItem(
-                filterLevels = filterLevels,
-                selectedIndex = discriminationIndexData.disabilityIndex,
-                changeSelectedIndex = { selectedIndex, filterType ->
-                    changeSelectedIndex(
-                        selectedIndex,
-                        filterType
-                    )
-                },
-                title ="Disability",
-                subTitle = "Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",
-                filterType = FilterType.DISABILITY
-            )
-            IndividualDropDownItem(
-                filterLevels = filterLevels,
-                selectedIndex = discriminationIndexData.sexualityIndex,
-                changeSelectedIndex = { selectedIndex, filterType ->
-                    changeSelectedIndex(
-                        selectedIndex,
-                        filterType
-                    )
-                },
-                title ="Sexuality, sex, or gender",
-                subTitle = "Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",
-                filterType = FilterType.SEXUALITY
-            )
-            IndividualDropDownItem(
-                filterLevels = filterLevels,
-                selectedIndex = discriminationIndexData.misogynyIndex,
-                changeSelectedIndex = { selectedIndex, filterType ->
-                    changeSelectedIndex(
-                        selectedIndex,
-                        filterType
-                    )
-                },
-                title ="Misogyny",
-                subTitle = "Demonstrating hatred or prejudice against women, including sexual objectification",
-                filterType = FilterType.MISOGYNY
-            )
-            IndividualDropDownItem(
-                filterLevels = filterLevels,
-                selectedIndex = discriminationIndexData.raceIndex,
-                changeSelectedIndex = { selectedIndex, filterType ->
-                    changeSelectedIndex(
-                        selectedIndex,
-                        filterType
-                    )
-                },
-                title ="Race, ethnicity, or religion",
-                subTitle = "Demonstrating hatred or prejudice based on race, ethnicity, or religion",
-                filterType = FilterType.RACE
-            )
-        }
-    }
-
-    @Composable
-    fun IndividualDropDownItem(
-        filterLevels: List<String>,
-        selectedIndex: Int,
-        changeSelectedIndex: (Int, FilterType) -> Unit,
-        title: String,
-        subTitle:String,
-        filterType:FilterType
-    ){
-        Column() {
-            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
-            Text(subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
-            Parts.DropdownRowMenu(
-                filterLevels = filterLevels,
-                selectedIndex = selectedIndex,
-                changeSelectedIndex = { selectedIndex, filter ->
-                    changeSelectedIndex(
-                        selectedIndex,
-                        filter
-                    )
-                },
-                filterType = filterType
-            )
-        }
-
-    }
-
-    @Composable
-    private fun SexualAutoModRow(
-        titleList: List<TitleSubTitle>,
-        filterLevels: List<String>,
-        selectedIndex: Int,
         changeSelectedIndex:(Int,FilterType)->Unit,
+        sexualIndexData: SexualIndexData,
     ){
-        Parts.AutoModRow(
-            title = "SEXUAL CONTENT",
-            clickablePopOutMenu={}
+        Builders.ConditionalExpandableColumn(
+            titleRow ={changeExpandableValue->
+                Parts.ClickableRow(
+                    changeExpandedState = {
+                        changeExpandableValue()
+                    },
+                    title = "SEXUAL CONTENT"
+                )
+            },
+            autoModColumnChoices={
+                Parts.SexDataColumns(
+                    filterLevels,
+                    sexualIndexData,
+                    changeSelectedIndex
+                )
+
+            }
         )
+
     }
 
     @Composable
     private fun ProfanityAutoModRow(
-        titleList: List<TitleSubTitle>,
         filterLevels: List<String>,
-        selectedIndex: Int,
         changeSelectedIndex:(Int,FilterType)->Unit,
+        profanityIndexData: ProfanityIndexData,
     ){
-        Parts.AutoModRow(
-            title = "PROFANITY",
-            clickablePopOutMenu ={}
+        Builders.ConditionalExpandableColumn(
+            titleRow ={changeExpandableValue->
+                Parts.ClickableRow(
+                    changeExpandedState = {
+                        changeExpandableValue()
+                    },
+                    title = "PROFANITY"
+                )
+            },
+            autoModColumnChoices={
+                Parts.ProfanityDataColumns(
+                    filterLevels,
+                    profanityIndexData,
+                    changeSelectedIndex
+                )
+
+            }
         )
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Builders represents the most generic parts of [AutoMod] and should be thought of as UI layout guides used
@@ -307,49 +278,21 @@ object AutoMod {
             sexualRow:@Composable () -> Unit,
             profanityRow:@Composable () -> Unit,
         ){
-            LazyColumn(modifier = Modifier.padding(5.dp)) {
-                item{
+            Column(
+                modifier = Modifier.padding(5.dp).verticalScroll(rememberScrollState())
+            ) {
                     slider()
-                }
-                item{
                     hostilityRow()
-                }
-                item{
                     discriminationRow()
-                }
-                item{
                     sexualRow()
-                }
-                item{
                     profanityRow()
-                }
-
             }
         }
-    }
 
-    /**
-     * Parts represents the most individual parts of [AutoMod] and should be thought of as the individual
-     * pieces that are used inside of a [Builders] to create the top level implementations that are used in the code base
-     * */
-    private object Parts{
-        //Rule) Brief description, followed by how many parts are used and any params
-
-
-        /**
-         * A composable meant to act as the layout for [ClickableRow] and [ConditionalRows]. Also, to internally hold the
-         * state for both of them
-         *
-         * - Contains 2 extra parts: [ClickableRow] and [ConditionalRows]
-         *
-         * @param title a String to show the user which Row this represents
-         * @param titleList a list of [TitleSubTitle] objects that will be conditionally shown to the user
-         * */
         @Composable
-        fun AutoModRow(
-            title:String,
-            clickablePopOutMenu: @Composable () -> Unit,
-
+        fun ConditionalExpandableColumn(
+            titleRow:@Composable (changeExpandedState: () -> Unit) -> Unit,
+            autoModColumnChoices:@Composable () -> Unit,
         ){
             var expandedState by remember {
                 mutableStateOf(false)
@@ -358,20 +301,226 @@ object AutoMod {
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(15.dp)) {
-
-                ClickableRow(
+                titleRow(
                     changeExpandedState = {
                         expandedState = !expandedState
-                    },
-                    title =title
+                    }
                 )
+                if(expandedState){
+                    autoModColumnChoices()
+                }
+            }
 
-                ConditionalRows(
-                    expandedState,
-                    clickablePopOutMenu={clickablePopOutMenu()}
+        }
+    }/**END OF BUILDER*/
+
+    /**
+     * Parts represents the most individual parts of [AutoMod] and should be thought of as the individual
+     * pieces that are used inside of a [Builders] to create the top level implementations that are used in the code base
+     * */
+    private object Parts{
+        //Rule) Brief description, followed by how many parts are used and any params
+
+        @Composable
+        fun ProfanityDataColumns(
+            filterLevels: List<String>,
+            profanityIndexData: ProfanityIndexData,
+            changeSelectedIndex: (Int, FilterType) -> Unit,
+        ){
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)) {
+
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = profanityIndexData.swearing,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title = "Swearing",
+                    subTitle = "Swear words, &*^!#@%*",
+                    filterType = FilterType.SWEARING
                 )
 
             }
+        }
+        @Composable
+        fun SexDataColumns(
+            filterLevels: List<String>,
+            sexualIndexData: SexualIndexData,
+            changeSelectedIndex: (Int, FilterType) -> Unit,
+        ){
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)) {
+
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = sexualIndexData.sexBasedTerms,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title = "Sex-based terms",
+                    subTitle = "Sexual acts, anatomy",
+                    filterType = FilterType.SEXUALITY
+                )
+
+            }
+        }
+
+        @Composable
+        fun DiscriminationDataColumns(
+            filterLevels: List<String>,
+            discriminationIndexData: DiscriminationIndexData,
+            changeSelectedIndex: (Int, FilterType) -> Unit,
+        ){
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)){
+
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = discriminationIndexData.disabilityIndex,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Disability",
+                    subTitle = "Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",
+                    filterType = FilterType.DISABILITY
+                )
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = discriminationIndexData.sexualityIndex,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Sexuality, sex, or gender",
+                    subTitle = "Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",
+                    filterType = FilterType.SEXUALITY
+                )
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = discriminationIndexData.misogynyIndex,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Misogyny",
+                    subTitle = "Demonstrating hatred or prejudice against women, including sexual objectification",
+                    filterType = FilterType.MISOGYNY
+                )
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = discriminationIndexData.raceIndex,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Race, ethnicity, or religion",
+                    subTitle = "Demonstrating hatred or prejudice based on race, ethnicity, or religion",
+                    filterType = FilterType.RACE
+                )
+            }
+        }
+
+        @Composable
+        fun HostilityDataColumns(
+            filterLevels: List<String>,
+            hostilityIndexData: HostilityIndexData,
+            changeSelectedIndex: (Int, FilterType) -> Unit,
+        ){
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)){
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = hostilityIndexData.aggression,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Aggression",
+                    subTitle = "Threatening, inciting, or promoting violence or other harm",
+                    filterType = FilterType.AGGRESSION
+                )
+
+                Parts.IndividualDropDownItem(
+                    filterLevels = filterLevels,
+                    selectedIndex = hostilityIndexData.bullying,
+                    changeSelectedIndex = { selectedIndex, filterType ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filterType
+                        )
+                    },
+                    title ="Bullying",
+                    subTitle = "Name-calling, insults, or antagonization",
+                    filterType = FilterType.BULLYING
+                )
+
+            }
+
+        }
+
+        /**
+         * IndividualDropDownItem represents a category in the user's AutoMod settings. Each IndividualDropDownItem will have a
+         * [title] telling the user what category it represents and a [subTitle] going into further detail. IndividualDropDownItem
+         * also contains a [DropdownRowMenu][Parts.DropdownRowMenu] which the user can click and adjust their AutoMod settings
+         * accordingly to their moderation needs.
+         *
+         * - Contains 1 extra part: [DropdownRowMenu][Parts.DropdownRowMenu]
+         *
+         * @param filterLevels a list representing the levels of moderation available to the user
+         * @param selectedIndex a Int used to determine which level of moderation the user has selected for this IndividualDropDownItem
+         * @param changeSelectedIndex a function used to change the [selectedIndex] through the user of Int and [filterType]
+         * @param title a String used to identify to the user which category of AutoMod this represents
+         * @param subTitle a String expanding on the [title]
+         * @param filterType a [FilterType] object used by the [changeSelectedIndex] function to identify which AutoMod category this
+         * IndividualDropDownItem represents in the ViewModel and change it
+         * */
+        @Composable
+        fun IndividualDropDownItem(
+            filterLevels: List<String>,
+            selectedIndex: Int,
+            changeSelectedIndex: (Int, FilterType) -> Unit,
+            title: String,
+            subTitle:String,
+            filterType:FilterType
+        ){
+            Column() {
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                Text(subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
+                Parts.DropdownRowMenu(
+                    filterLevels = filterLevels,
+                    selectedIndex = selectedIndex,
+                    changeSelectedIndex = { selectedIndex, filter ->
+                        changeSelectedIndex(
+                            selectedIndex,
+                            filter
+                        )
+                    },
+                    filterType = filterType
+                )
+            }
+
         }
 
         /**
@@ -396,6 +545,7 @@ object AutoMod {
                     expandMenu = {expanded = true}
                 )
 
+                //todo: This determines the width of the expanded menu to choose from
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
@@ -406,7 +556,8 @@ object AutoMod {
                         )
                 ) {
                     filterLevels.forEachIndexed { index, s ->
-                        DropdownMenuItem(onClick = {
+                        DropdownMenuItem(
+                            onClick = {
                             changeSelectedIndex(index,filterType)
                             expanded = false
                         },
@@ -436,15 +587,7 @@ object AutoMod {
          *
          * @param expandedState a boolean that is used to determine if infromation from [titleList] should be shown to the user
          * */
-        @Composable
-        fun ConditionalRows(
-            expandedState:Boolean,
-            clickablePopOutMenu: @Composable () -> Unit,
-        ){
-            if(expandedState){
-                clickablePopOutMenu()
-            }
-        }
+
 
         /**
          * A composable meant to show and give the user access to a [Slider] and show information based on the value of the slider
@@ -455,42 +598,28 @@ object AutoMod {
         @Composable
         fun AutoModSlider(
             sliderPosition:Float,
-            changeSliderValue:(Float) ->Unit
+            changeSliderValue:(Float) ->Unit,
+            sliderText:String
         ){
             Column(modifier =Modifier.fillMaxWidth()){
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
                     Text("Your AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
-                    Slider(
-                        value = sliderPosition,
-                        onValueChange = { changeSliderValue(it) },
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.onPrimary,
-                            activeTrackColor = MaterialTheme.colorScheme.secondary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                        ),
-                        steps = 3,
-                        valueRange = 0f..10f
-                    )
                 }
+                Slider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    value = sliderPosition,
+                    onValueChange = { changeSliderValue(it) },
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.onPrimary,
+                        activeTrackColor = MaterialTheme.colorScheme.secondary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                    steps = 3,
+                    valueRange = 0f..10f
+                )
 
+                Text(text = sliderText,modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
 
-                when(sliderPosition){
-                    0.0.toFloat() ->{
-                        Text(text = "No filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    2.5.toFloat() ->{
-                        Text(text = "Less filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    5.0.toFloat() ->{
-                        Text(text = "Some filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    7.5.toFloat() ->{
-                        Text(text = "More filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    10.0.toFloat() ->{
-                        Text(text = "Max filtering",color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                }
 
             }
 
