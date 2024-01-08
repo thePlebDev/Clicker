@@ -10,10 +10,11 @@ import androidx.lifecycle.ViewModel
 import com.example.clicker.presentation.stream.views.TitleSubTitle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+/**
+ * a class that is used by [updateSelectedIndex][AutoModViewModel.updateSelectedIndex] to represent which section of the
+ * AutoMod settings are being changed
+ * */
 enum class FilterType {
-    HOSTILITY,
-    DISCRIMINATION,
-    PROFANITY,
     DISABILITY,
     SEXUALITY,
     MISOGYNY,
@@ -22,19 +23,36 @@ enum class FilterType {
     BULLYING,
     SWEARING
 }
+
+/**
+ *  A object that represents all the values of the Discrimination section
+ * of AutoMod
+ * */
 data class DiscriminationIndexData(
     val disabilityIndex:Int =0,
     val sexualityIndex:Int =0,
     val misogynyIndex:Int = 0,
     val raceIndex: Int = 0,
 )
+/**
+ *  A object that represents all the values of the Hostility section
+ * of AutoMod
+ * */
 data class HostilityIndexData(
     val aggression:Int =0,
     val bullying:Int =0,
 )
+/**
+ *  A object that represents all the values of the Sexual content section
+ * of AutoMod
+ * */
 data class SexualIndexData(
     val sexBasedTerms:Int =0
 )
+/**
+ *  A object that represents all the values of the Profanity section
+ * of AutoMod
+ * */
 data class ProfanityIndexData(
     val swearing:Int =0
 )
@@ -161,21 +179,7 @@ class AutoModViewModel: ViewModel() {
 
 
         when(filterType){
-            FilterType.DISCRIMINATION ->{
-                _autoModUIState.value = _autoModUIState.value.copy(
-                    discriminationFilterIndex = newIndex
-                )
-            }
-            FilterType.HOSTILITY ->{
-                _autoModUIState.value = _autoModUIState.value.copy(
-                    hostilityFilterIndex = newIndex
-                )
-            }
-            FilterType.PROFANITY->{
-                _autoModUIState.value = _autoModUIState.value.copy(
-                    profanityFilterIndex = newIndex
-                )
-            }
+
             FilterType.DISABILITY ->{
                 _discriminationIndexData.value = _discriminationIndexData.value.copy(
                     disabilityIndex = newIndex

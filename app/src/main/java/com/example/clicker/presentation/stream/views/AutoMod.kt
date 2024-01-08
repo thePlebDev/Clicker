@@ -65,6 +65,12 @@ data class TitleSubTitle(
  * - AutoMod contains 1 public top level implementation:
  * 1) [Settings]
  *
+ * - AutoMod contains 4 top level private implementations:
+ * 1) [ProfanityAutoModRow]
+ * 2) [HostilityAutoModRow]
+ * 3) [DiscriminationAutoModRow]
+ * 4) [SexAutoModRow]
+ *
  * */
 object AutoMod {
 
@@ -136,6 +142,15 @@ object AutoMod {
             }
         )
     }
+    /**
+     * HostilityAutoModRow is the private implementation that represents all the choices to the user regarding
+     * the AutoMod Hostility settings
+     *
+     * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+     * @param changeSelectedIndex a function used to change the values inside of the [hostilityIndexData] object
+     * @param hostilityIndexData a [HostilityIndexData] object representing the selected levels of filtering for the
+     * Hostility section of AutoMod
+     * */
     @Composable
     private fun HostilityAutoModRow(
         filterLevels: List<String>,
@@ -162,6 +177,15 @@ object AutoMod {
         )
     }
 
+    /**
+     * DiscriminationAutoModRow is the private implementation that represents all the choices to the user regarding
+     * the AutoMod Discrimination settings
+     *
+     * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+     * @param changeSelectedIndex a function used to change the values inside of the [discriminationIndexData] object
+     * @param discriminationIndexData a [DiscriminationIndexData] object representing the selected levels of filtering for the
+     * Discrimination section of AutoMod
+     * */
     @Composable
     private fun DiscriminationAutoModRow(
         filterLevels: List<String>,
@@ -185,6 +209,15 @@ object AutoMod {
         )
     }
 
+    /**
+     * SexAutoModRow is the private implementation that represents all the choices to the user regarding
+     * the AutoMod Sexuality settings
+     *
+     * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+     * @param changeSelectedIndex a function used to change the values inside of the [sexualIndexData] object
+     * @param sexualIndexData a [SexualIndexData] object representing the selected levels of filtering for the
+     * Sexuality section of AutoMod
+     * */
     @Composable
     private fun SexAutoModRow(
         filterLevels: List<String>,
@@ -212,6 +245,15 @@ object AutoMod {
 
     }
 
+    /**
+     * ProfanityAutoModRow is the private implementation that represents all the choices to the user regarding
+     * the AutoMod Profanity settings
+     *
+     * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+     * @param changeSelectedIndex a function used to change the values inside of the [profanityIndexData] object
+     * @param profanityIndexData a [ProfanityIndexData] object representing the selected levels of filtering for the
+     * Profanity section of AutoMod
+     * */
     @Composable
     private fun ProfanityAutoModRow(
         filterLevels: List<String>,
@@ -237,20 +279,6 @@ object AutoMod {
             }
         )
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     /**
@@ -289,6 +317,17 @@ object AutoMod {
             }
         }
 
+        /**
+         * ConditionalExpandableColumn is the basic layout for each individual AutoMod choice shown to the user.
+         *
+         * A example of what the typical UI looks like
+         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#AutoModRows)
+         *
+         * @param titleRow a composable that will be shown to the user and identifying what level of filtering they have
+         * chosen. Also, titleRow is given a function, ***changeExpandedState: () -> Unit***, which is used to change a
+         * conditional state determining when [autoModColumnChoices] is shown to the user
+         * @param autoModColumnChoices a composable that will show the user their AutoMod choices when [titleRow] is clicked
+         * */
         @Composable
         fun ConditionalExpandableColumn(
             titleRow:@Composable (changeExpandedState: () -> Unit) -> Unit,
@@ -321,6 +360,16 @@ object AutoMod {
     private object Parts{
         //Rule) Brief description, followed by how many parts are used and any params
 
+        /**
+         * ProfanityDataColumns represents each individual choice the user has under the Profanity setting of their AutoMod
+         *
+         * - Contains 1 extra part: [IndividualDropDownItem]
+         *
+         * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+         * @param changeSelectedIndex a function used to change the values inside of the [profanityIndexData] object
+         * @param profanityIndexData a [ProfanityIndexData] object representing the selected levels of filtering for the
+         * Profanity section of AutoMod
+         * */
         @Composable
         fun ProfanityDataColumns(
             filterLevels: List<String>,
@@ -347,6 +396,17 @@ object AutoMod {
 
             }
         }
+
+        /**
+         * SexDataColumns represents each individual choice the user has under the Sexuality setting of their AutoMod
+         *
+         * - Contains 1 extra part: [IndividualDropDownItem]
+         *
+         * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+         * @param changeSelectedIndex a function used to change the values inside of the [sexualIndexData] object
+         * @param sexualIndexData a [SexualIndexData] object representing the selected levels of filtering for the
+         * Sexuality section of AutoMod
+         * */
         @Composable
         fun SexDataColumns(
             filterLevels: List<String>,
@@ -374,6 +434,16 @@ object AutoMod {
             }
         }
 
+        /**
+         * DiscriminationDataColumns represents each individual choice the user has under the Discrimination setting of their AutoMod
+         *
+         * - Contains 1 extra part: [IndividualDropDownItem]
+         *
+         * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+         * @param changeSelectedIndex a function used to change the values inside of the [discriminationIndexData] object
+         * @param discriminationIndexData a [DiscriminationIndexData] object representing the selected levels of filtering for the
+         * Discrimination section of AutoMod
+         * */
         @Composable
         fun DiscriminationDataColumns(
             filterLevels: List<String>,
@@ -439,6 +509,16 @@ object AutoMod {
             }
         }
 
+        /**
+         * HostilityDataColumns represents each individual choice the user has under the Hostility setting of their AutoMod
+         *
+         * - Contains 1 extra part: [IndividualDropDownItem]
+         *
+         * @param filterLevels a List of String representing all the levels of filtering available to the AutoMod feature
+         * @param changeSelectedIndex a function used to change the values inside of the [hostilityIndexData] object
+         * @param hostilityIndexData a [HostilityIndexData] object representing the selected levels of filtering for the
+         * Discrimination section of AutoMod
+         * */
         @Composable
         fun HostilityDataColumns(
             filterLevels: List<String>,
@@ -580,13 +660,6 @@ object AutoMod {
             }
 
         }
-        /**
-         * A composable meant to conditionally display information from [titleList]. Shown based on the current state of [expandedState]
-         *
-         * - Contains 1 extra part: [DropdownRowMenu]
-         *
-         * @param expandedState a boolean that is used to determine if infromation from [titleList] should be shown to the user
-         * */
 
 
         /**
@@ -603,7 +676,7 @@ object AutoMod {
         ){
             Column(modifier =Modifier.fillMaxWidth()){
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                    Text("Your AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                    Text("AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
                 }
                 Slider(
                     modifier = Modifier.padding(horizontal = 20.dp),
