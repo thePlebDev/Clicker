@@ -5,7 +5,45 @@ import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.UpdateChatSettings
 import com.example.clicker.util.Response
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.Flow
+/**
+ * AutoModSettings is used to represent data received from the ***https://api.twitch.tv/helix/moderation/automod/settings***
+ * end point
+ * - Read more about the end point on the official documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#get-automod-settings)
+ * */
+data class AutoModSettings(
+    val data: List<IndividualAutoModSettings>
+)
+
+/**
+ * IndividualAutoModSettings is used to represent the individual AutoMod settings received from the ***https://api.twitch.tv/helix/moderation/automod/settings***
+ * end point
+ * - Read more about the end point on the official documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#get-automod-settings)
+ * */
+data class IndividualAutoModSettings(
+    @SerializedName("broadcaster_id")
+    val broadcasterId: String,
+    @SerializedName("moderator_id")
+    val moderatorId: String,
+    @SerializedName("overall_level")
+    val overallLevel: String?,
+    @SerializedName("sexuality_sex_or_gender")
+    val sexualitySexOrGender: Int,
+    @SerializedName("race_ethnicity_or_religion")
+    val raceEthnicityOrReligion: Int,
+    @SerializedName("sex_based_terms")
+    val sexBasedTerms: Int,
+
+
+    val disability: Int,
+    val aggression: Int,
+    val misogyny:Int,
+    val bullying:Int,
+    val swearing:Int
+
+
+)
 
 interface TwitchStream {
 
@@ -44,4 +82,11 @@ interface TwitchStream {
         userId: String
 
     ): Flow<Response<Boolean>>
+
+    suspend fun getAutoModSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+    ):Flow<Response<AutoModSettings>>
 }
