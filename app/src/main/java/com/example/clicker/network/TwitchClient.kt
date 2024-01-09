@@ -1,5 +1,6 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.domain.AutoModSettings
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsResponse
 import com.example.clicker.network.models.FollowedLiveStreams
@@ -87,6 +88,15 @@ interface TwitchClient {
         @Query("moderator_id") moderatorId: String,
         @Query("user_id") userId: String
     ): Response<Void>
+
+    @GET("moderation/automod/settings")
+    suspend fun getAutoModSettings(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorId: String,
+    ):Response<AutoModSettings>
+
 }
 
 data class BanUser(

@@ -146,8 +146,6 @@ class StreamViewModel @Inject constructor(
 
 
 
-
-
     private var currentUsername: String = ""
 
     val textFieldValue = mutableStateOf(
@@ -186,6 +184,10 @@ class StreamViewModel @Inject constructor(
         _advancedChatSettingsState.value =advancedChatSettings
     }
 
+
+    init{
+//        getAutoModStatus()
+    }
 
 
 
@@ -634,6 +636,35 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         Log.d("messageResult", messageResult.toString())
     }
 
+    fun getAutoModStatus(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId:String
+    ){
+        Log.d("getAutoModSettings","CALLED")
+
+        Log.d("getAutoModSettings","AuthToken -> ${oAuthToken}")
+        Log.d("getAutoModSettings","clientId ->${clientId}")
+        Log.d("getAutoModSettings","broadcasterId -> ${broadcasterId}")
+        Log.d("getAutoModSettings","moderatorId ->${moderatorId}")
+        viewModelScope.launch {
+            twitchRepoImpl.getAutoModSettings(
+                oAuthToken = oAuthToken,
+                clientId =clientId,
+                broadcasterId =broadcasterId,
+                moderatorId =moderatorId
+            ).collect{
+
+            }
+        }
+
+
+    }
+    /**
+     * updateChannelNameAndClientIdAndUserId is the method that gets called whenever the user clicks on a stream title when
+     * they want to navigate to the streamer's page. It updates the ***clientId*** ***broadcasterId*** and ***userId***
+     * */
     fun updateChannelNameAndClientIdAndUserId(
         channelName: String,
         clientId: String,
@@ -647,9 +678,38 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             broadcasterId = broadcasterId,
             userId = userId
         )
+//todo implement the new Data
+        if(_uiState.value.oAuthToken.isEmpty()){
+            Log.d("getAutoModSettings","EMPTY -> getToken() called")
+            getToken(
+                clientId = clientId,
+                broadcasterId = broadcasterId,
+                moderatorId = userId
+            )
+        }
 
-        getChatSettings(clientId, broadcasterId)
+        //getChatSettings(clientId, broadcasterId)
         listChats.clear()
+
+    }
+   private fun getToken(
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String
+    ){
+        viewModelScope.launch {
+            tokenDataStore.getOAuthToken().collect { oAuthToken ->
+                _uiState.value = _uiState.value.copy(
+                    oAuthToken = oAuthToken
+                )
+                getAutoModStatus(
+                    oAuthToken = oAuthToken,
+                    clientId =clientId,
+                    broadcasterId =broadcasterId,
+                    moderatorId =moderatorId
+                )
+            }
+        }
     }
     fun retryGettingChatSetting() {
         getChatSettings(
@@ -657,6 +717,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             broadcasterId = _uiState.value.broadcasterId
         )
     }
+
 
     /**
      * getChatSettings() is a private function used by [updateChannelNameAndClientIdAndUserId] and [retryGettingChatSetting] to
@@ -702,6 +763,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                 }
             }
         }
+
     }
 
     fun closeSettingsAlertHeader(){

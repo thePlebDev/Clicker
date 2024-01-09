@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.domain.AutoModSettings
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
@@ -273,4 +274,44 @@ class TwitchRepoImpl @Inject constructor(
             emit(Response.Failure(Exception("Unable to ban user")))
         }
     }
+
+    override suspend fun getAutoModSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String
+    ): Flow<Response<AutoModSettings>> =flow{
+        emit(Response.Loading)
+        val response = twitchClient.getAutoModSettings(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId = moderatorId,
+        )
+        if(response.isSuccessful){
+            val data = response.body()
+            Log.d("getAutoModSettings","success data ->${data?.data}")
+        }else{
+
+            when(response.code()){
+                400 ->{}
+                401 ->{}
+                403 ->{}
+            }
+            Log.d("getAutoModSettings","FAIL message ->${response.message()}")
+            Log.d("getAutoModSettings","FAIL code ->${response.code()}")
+            Log.d("getAutoModSettings","FAIL response ->${response}")
+            emit(Response.Failure(Exception("Unable to delete message")))
+        }
+    }.catch { cause ->
+
+            // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+            if (cause is UnknownHostException) {
+                Log.d("getAutoModSettings", "UnknownHostException")
+                emit(Response.Failure(Exception("Network connection error")))
+            } else {
+                Log.d("getAutoModSettings", "Exception Happened")
+                emit(Response.Failure(Exception("Unable to get AutoMod settings")))
+            }
+        }
 }

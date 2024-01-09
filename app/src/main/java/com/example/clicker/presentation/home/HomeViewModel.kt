@@ -94,6 +94,7 @@ class HomeViewModel @Inject constructor(
             withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
                 Log.d("testingGetLiveStreams", "userid ->${_authenticatedUser.value?.userId}")
                 Log.d("testingGetLiveStreams", "clientId ->${_authenticatedUser.value?.clientId}")
+                Log.d("testingGetLiveStreams", "authorizationBearer ->${_authenticatedUser.value?.oAuthToken}")
                 twitchRepoImpl
                     .getFollowedLiveStreams(
                         authorizationToken = _authenticatedUser.value?.oAuthToken ?: "",
@@ -138,6 +139,9 @@ class HomeViewModel @Inject constructor(
     ) {
         try {
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
+                Log.d("testingGetLiveStreams", "userid ->${_authenticatedUser.value?.userId}")
+                Log.d("testingGetLiveStreams", "clientId ->${_authenticatedUser.value?.clientId}")
+                Log.d("testingGetLiveStreams", "authorizationBearer ->${_authenticatedUser.value?.oAuthToken}")
                 twitchRepoImpl.getFollowedLiveStreams(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
