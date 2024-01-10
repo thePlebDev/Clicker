@@ -294,14 +294,24 @@ class TwitchRepoImpl @Inject constructor(
         }else{
 
             when(response.code()){
-                400 ->{}
-                401 ->{}
-                403 ->{}
+                400 ->{
+                    Log.d("getAutoModSettings","Bad Request")
+                    emit(Response.Failure(Exception("You are not a moderator")))
+                }
+                401 ->{
+                    Log.d("getAutoModSettings","UnAuthorized")
+                    emit(Response.Failure(Exception("You are not a moderator")))
+                }
+                403 ->{
+                    Log.d("getAutoModSettings","Forbidden you are not a moderator")
+                    emit(Response.Failure(Exception("You are not a moderator")))
+                }
+                else ->{
+                    Log.d("getAutoModSettings","Unable to get Mod settings")
+                    emit(Response.Failure(Exception("You are not a moderator")))
+                }
             }
-            Log.d("getAutoModSettings","FAIL message ->${response.message()}")
-            Log.d("getAutoModSettings","FAIL code ->${response.code()}")
-            Log.d("getAutoModSettings","FAIL response ->${response}")
-            emit(Response.Failure(Exception("Unable to delete message")))
+
         }
     }.catch { cause ->
 

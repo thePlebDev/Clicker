@@ -97,16 +97,18 @@ object AutoMod {
         hostilityIndexData: HostilityIndexData,
         sexualIndexData: SexualIndexData,
         profanityIndexData: ProfanityIndexData,
-        sliderText:String
+        sliderText:String,
+        isModerator:Boolean
 
     ) {
 
         Builders.AutoModRows(
             slider ={
                 Parts.AutoModSlider(
-                sliderPosition,
-                changeSliderValue = {currentValue ->changSliderPosition(currentValue)},
-                    sliderText =sliderText
+                    sliderPosition,
+                    changeSliderValue = {currentValue ->changSliderPosition(currentValue)},
+                    sliderText =sliderText,
+                    isModerator = isModerator
             )
                     },
             hostilityRow = {
@@ -672,7 +674,8 @@ object AutoMod {
         fun AutoModSlider(
             sliderPosition:Float,
             changeSliderValue:(Float) ->Unit,
-            sliderText:String
+            sliderText:String,
+            isModerator: Boolean
         ){
             Column(modifier =Modifier.fillMaxWidth()){
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
@@ -681,6 +684,7 @@ object AutoMod {
                 Slider(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     value = sliderPosition,
+                    enabled = isModerator,
                     onValueChange = { changeSliderValue(it) },
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.onPrimary,

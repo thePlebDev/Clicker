@@ -77,6 +77,7 @@ import com.example.clicker.presentation.home.views.HomeComponents.HomeViewImplem
 
 import com.example.clicker.presentation.home.views.HomeComponents.Parts.DisableForceRegister
 import com.example.clicker.presentation.home.views.HomeComponents.Parts.LoginWithTwitchBottomModalButton
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 
 import kotlinx.coroutines.launch
@@ -91,6 +92,7 @@ fun ValidationView(
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
     quarterTotalScreenHeight:Int,
+    autoModViewModel: AutoModViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -129,6 +131,11 @@ fun ValidationView(
                 clientId,
                 broadcasterId,
                 userId
+            )
+            autoModViewModel.updateAutoModCredentials(
+                moderatorId = userId,
+                broadcasterId = broadcasterId,
+                clientId = clientId
             )
         },
         streamersListLoading = homeViewModel.state.value.streamersListLoading,

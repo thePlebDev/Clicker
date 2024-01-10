@@ -73,14 +73,15 @@ fun HorizontalChat(
 
                 hostilityIndexData = autoModViewModel.hostilityIndexData.value,
 
-                discriminationFilterList=autoModViewModel.autoModUIState.value.discriminationFilterList,
+                discriminationFilterList=autoModViewModel.autoModUIState.value.filterList,
 
                 changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
                 discriminationIndexData = autoModViewModel.discriminationIndexData.value,
 
                 sexualIndexData = autoModViewModel.sexBasedIndexData.value,
                 profanityIndexData = autoModViewModel.profanityIndexData.value,
-                sliderText = autoModViewModel.autoModUIState.value.sliderText
+                sliderText = autoModViewModel.autoModUIState.value.sliderText,
+                isModerator = autoModViewModel.autoModCredentials.value.isModerator
             )
 
         },

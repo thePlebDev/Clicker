@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream
 
+import android.util.Log
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
@@ -7,9 +8,17 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.presentation.stream.views.TitleSubTitle
+import com.example.clicker.util.Response
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
 /**
  * a class that is used by [updateSelectedIndex][AutoModViewModel.updateSelectedIndex] to represent which section of the
  * AutoMod settings are being changed
@@ -57,16 +66,18 @@ data class ProfanityIndexData(
     val swearing:Int =0
 )
 
+data class AutoModCredentials(
+    val oAuthToken:String = "",
+    val broadcastId:String="",
+    val clientId:String="",
+    val moderatorId:String="",
+    val isModerator:Boolean = false
+)
 
 data class AutoModUIState(
     val sliderValue:Float = 0.0.toFloat(),
     val sliderText:String = "No filtering",
-    val hostilityFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-    val hostilityFilterIndex:Int =0,
-
-
-    val discriminationFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-    val discriminationFilterIndex:Int=0,
+    val filterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
     val discriminationList:List<TitleSubTitle> = listOf<TitleSubTitle>(
         TitleSubTitle("Disability","Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",0),
         TitleSubTitle("Sexuality, sex, or gender","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",0),
@@ -80,10 +91,15 @@ data class AutoModUIState(
     val profanityFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
     val profanityFilterIndex:Int=0,
 
-    val selectedIndex:Int =0
+    val selectedIndex:Int =0,
+
 )
 
-class AutoModViewModel: ViewModel() {
+@HiltViewModel
+class AutoModViewModel @Inject constructor(
+    private val tokenDataStore: TwitchDataStore,
+    private val twitchRepoImpl: TwitchStream,
+): ViewModel() {
 
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
     val autoModUIState: State<AutoModUIState> = _autoModUIState
@@ -101,6 +117,80 @@ class AutoModViewModel: ViewModel() {
     private val _profanityIndexData = mutableStateOf(ProfanityIndexData())
     val profanityIndexData:State<ProfanityIndexData> = _profanityIndexData
 
+    private val _autoModCredentials = mutableStateOf(AutoModCredentials())
+     val autoModCredentials = _autoModCredentials
+
+    init{
+        fetOAuthToken()
+    }
+
+    private fun fetOAuthToken() {
+        viewModelScope.launch {
+            tokenDataStore.getOAuthToken().collect { oAuthToken ->
+                Log.d("updateAutoModCredentials",oAuthToken)
+                _autoModCredentials.value = _autoModCredentials.value.copy(
+                    oAuthToken = oAuthToken
+                )
+            }
+        }
+    }
+
+    fun updateAutoModCredentials(
+        moderatorId: String,
+        clientId: String,
+        broadcasterId: String
+    ){
+
+        if(_autoModCredentials.value.oAuthToken.isNotEmpty()){
+            _autoModCredentials.value = _autoModCredentials.value.copy(
+                broadcastId =broadcasterId,
+                moderatorId = moderatorId,
+                clientId =  clientId
+
+            )
+            // make the request
+            getAutoModStatus(
+                oAuthToken = _autoModCredentials.value.oAuthToken,
+                clientId =clientId,
+                broadcasterId =broadcasterId,
+                moderatorId = moderatorId
+            )
+        }
+
+
+
+    }
+    private fun getAutoModStatus(
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId:String
+    ){
+        viewModelScope.launch {
+            twitchRepoImpl.getAutoModSettings(
+                oAuthToken = oAuthToken,
+                clientId =clientId,
+                broadcasterId =broadcasterId,
+                moderatorId =moderatorId
+            ).collect{response ->
+
+                
+                when (response){
+                    is Response.Loading ->{
+
+                    }
+                    is Response.Success ->{
+
+                    }
+                    is Response.Failure ->{
+
+                    }
+                }
+            }
+        }
+
+
+    }
 
     fun updateSliderValue(currentValue:Float){
         when(currentValue){
