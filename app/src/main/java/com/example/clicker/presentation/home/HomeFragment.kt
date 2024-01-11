@@ -23,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
+    private val autoModViewModel: AutoModViewModel by activityViewModels()
     private val dataStoreViewModel: DataStoreViewModel by activityViewModels()
     private val workerViewModel: WorkerViewModel by activityViewModels()
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
@@ -107,6 +109,7 @@ class HomeFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         addToLinks = { context.startActivity(domainIntent) },
                         quarterTotalScreenHeight,
+                        autoModViewModel =autoModViewModel,
 
 
                     )

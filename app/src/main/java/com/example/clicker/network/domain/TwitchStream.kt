@@ -35,7 +35,6 @@ data class IndividualAutoModSettings(
     @SerializedName("sex_based_terms")
     val sexBasedTerms: Int,
 
-
     val disability: Int,
     val aggression: Int,
     val misogyny:Int,

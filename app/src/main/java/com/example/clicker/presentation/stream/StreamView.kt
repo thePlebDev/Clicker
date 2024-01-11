@@ -156,15 +156,19 @@ fun StreamView(
                         sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
                         changSliderPosition = {currentValue -> autoModViewModel.updateSliderValue(currentValue)},
 
-                        hostilityIndexData = autoModViewModel.hostilityIndexData.value,
-
-                        discriminationFilterList=autoModViewModel.autoModUIState.value.discriminationFilterList,
+                        discriminationFilterList=autoModViewModel.autoModUIState.value.filterList,
 
                         changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
-                        discriminationIndexData = autoModViewModel.discriminationIndexData.value,
-                        sexualIndexData = autoModViewModel.sexBasedIndexData.value,
-                        profanityIndexData = autoModViewModel.profanityIndexData.value,
-                        sliderText = autoModViewModel.autoModUIState.value.sliderText
+
+                        sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
+                        swearingIndex = autoModViewModel.autoModUIState.value.swearing,
+                        aggressionIndex =autoModViewModel.autoModUIState.value.aggression,
+                        bullyingIndex = autoModViewModel.autoModUIState.value.bullying,
+                        disabilityIndex =autoModViewModel.autoModUIState.value.disability,
+                        sexualityIndex =autoModViewModel.autoModUIState.value.sexuality,
+                        misogynyIndex =autoModViewModel.autoModUIState.value.misogyny,
+                        raceIndex =autoModViewModel.autoModUIState.value.race,
+                        isModerator = autoModViewModel.autoModCredentials.value.isModerator
                     )
 
                 },
