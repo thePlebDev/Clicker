@@ -13,6 +13,7 @@ import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.presentation.stream.views.TitleSubTitle
 import com.example.clicker.util.Response
+import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,7 @@ import javax.inject.Inject
 enum class FilterType {
     DISABILITY,
     SEXUALITY,
+    SEXBASEDTERMS,
     MISOGYNY,
     RACE,
     AGGRESSION,
@@ -33,38 +35,6 @@ enum class FilterType {
     SWEARING
 }
 
-/**
- *  A object that represents all the values of the Discrimination section
- * of AutoMod
- * */
-data class DiscriminationIndexData(
-    val disabilityIndex:Int =0,
-    val sexualityIndex:Int =0,
-    val misogynyIndex:Int = 0,
-    val raceIndex: Int = 0,
-)
-/**
- *  A object that represents all the values of the Hostility section
- * of AutoMod
- * */
-data class HostilityIndexData(
-    val aggression:Int =0,
-    val bullying:Int =0,
-)
-/**
- *  A object that represents all the values of the Sexual content section
- * of AutoMod
- * */
-data class SexualIndexData(
-    val sexBasedTerms:Int =0
-)
-/**
- *  A object that represents all the values of the Profanity section
- * of AutoMod
- * */
-data class ProfanityIndexData(
-    val swearing:Int =0
-)
 
 data class AutoModCredentials(
     val oAuthToken:String = "",
@@ -76,22 +46,21 @@ data class AutoModCredentials(
 
 data class AutoModUIState(
     val sliderValue:Float = 0.0.toFloat(),
-    val sliderText:String = "No filtering",
     val filterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-    val discriminationList:List<TitleSubTitle> = listOf<TitleSubTitle>(
-        TitleSubTitle("Disability","Demonstrating hatred or prejudice based on perceived or actual mental or physical abilities",0),
-        TitleSubTitle("Sexuality, sex, or gender","Demonstrating hatred or prejudice based on sexual identity, sexual orientation, gender identity, or gender expression",0),
-        TitleSubTitle("Misogyny","Demonstrating hatred or prejudice against women, including sexual objectification",0),
-        TitleSubTitle("Race, ethnicity, or religion","Demonstrating hatred or prejudice based on race, ethnicity, or religion",0),
-    ),
+    // PROFANITY
+    val swearing:Int =0,
+    //SEXUALITY
+    val sexBasedTerms:Int =0,
+    //HOSTILITY
+    val aggression:Int =0,
+    val bullying: Int =0,
+    //DISCRIMINATION
+    val disability:Int =0,
+    val sexuality:Int =0,
+    val misogyny:Int = 0,
+    val race: Int = 0,
 
-    val sexualFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-    val sexualFilterIndex:Int=0,
 
-    val profanityFilterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-    val profanityFilterIndex:Int=0,
-
-    val selectedIndex:Int =0,
 
 )
 
@@ -103,19 +72,6 @@ class AutoModViewModel @Inject constructor(
 
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
     val autoModUIState: State<AutoModUIState> = _autoModUIState
-
-
-    private val _discriminationIndexData = mutableStateOf(DiscriminationIndexData())
-    val discriminationIndexData:State<DiscriminationIndexData> = _discriminationIndexData
-
-    private val _hostilityIndexData = mutableStateOf(HostilityIndexData())
-    val hostilityIndexData:State<HostilityIndexData> = _hostilityIndexData
-
-    private val _sexBasedIndexData = mutableStateOf(SexualIndexData())
-    val sexBasedIndexData:State<SexualIndexData> = _sexBasedIndexData
-
-    private val _profanityIndexData = mutableStateOf(ProfanityIndexData())
-    val profanityIndexData:State<ProfanityIndexData> = _profanityIndexData
 
     private val _autoModCredentials = mutableStateOf(AutoModCredentials())
      val autoModCredentials = _autoModCredentials
@@ -174,15 +130,31 @@ class AutoModViewModel @Inject constructor(
                 moderatorId =moderatorId
             ).collect{response ->
 
-                
+
                 when (response){
                     is Response.Loading ->{
+                        Log.d("getAutoModStatus","LOADING")
 
                     }
                     is Response.Success ->{
+                        Log.d("getAutoModStatus","SUCCESS")
+                        val data = response.data.data[0]
+                        val (
+                            overallLevel,
+                            sexualitySexOrGender, raceEthnicityOrReligion,disability,misogyny, //discrimination
+                            sexBasedTerms, //sexuality
+                            aggression,bullying, //hostility
+                            swearing // profanity
+                        ) = data
+
+
+                        Log.d("getAutoModStatus","SUCCESS data --> ${data}")
+
+
 
                     }
                     is Response.Failure ->{
+                        Log.d("getAutoModStatus","FAIL")
 
                     }
                 }
@@ -197,14 +169,12 @@ class AutoModViewModel @Inject constructor(
             0.0.toFloat() ->{
 
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderText = "No filtering",
                     sliderValue = currentValue
                 )
                 setAllIndexData(0)
             }
             2.5.toFloat() ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderText = "Less filtering",
                     sliderValue = currentValue
                 )
                 setAllIndexData(1)
@@ -212,7 +182,6 @@ class AutoModViewModel @Inject constructor(
             5.0.toFloat() ->{
 
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderText = "Some filtering",
                     sliderValue = currentValue
                 )
                 setAllIndexData(2)
@@ -220,14 +189,12 @@ class AutoModViewModel @Inject constructor(
             7.5.toFloat() ->{
 
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderText = "More filtering",
                     sliderValue = currentValue
                 )
                 setAllIndexData(3)
             }
             10.0.toFloat() ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderText = "Max filtering",
                     sliderValue = currentValue
                 )
                 setAllIndexData(4)
@@ -242,26 +209,27 @@ class AutoModViewModel @Inject constructor(
         setAllProfanityIndexData(newIndex)
     }
     private fun setAllDiscriminationIndexData(newIndex:Int){
-        _discriminationIndexData.value = _discriminationIndexData.value.copy(
-            disabilityIndex = newIndex,
-           sexualityIndex= newIndex,
-          misogynyIndex= newIndex,
-          raceIndex= newIndex,
+
+        _autoModUIState.value = _autoModUIState.value.copy(
+            disability = newIndex,
+            sexuality = newIndex,
+            misogyny= newIndex,
+            race= newIndex,
         )
     }
     private fun setAllHostilityIndexData(newIndex:Int){
-        _hostilityIndexData.value = _hostilityIndexData.value.copy(
+        _autoModUIState.value = _autoModUIState.value.copy(
             aggression = newIndex,
             bullying = newIndex
         )
     }
     private fun setAllSexualIndexData(newIndex: Int){
-        _sexBasedIndexData.value = _sexBasedIndexData.value.copy(
+        _autoModUIState.value = _autoModUIState.value.copy(
             sexBasedTerms = newIndex
         )
     }
     private fun setAllProfanityIndexData(newIndex: Int){
-        _profanityIndexData.value = _profanityIndexData.value.copy(
+        _autoModUIState.value = _autoModUIState.value.copy(
             swearing = newIndex
         )
     }
@@ -271,40 +239,50 @@ class AutoModViewModel @Inject constructor(
         when(filterType){
 
             FilterType.DISABILITY ->{
-                _discriminationIndexData.value = _discriminationIndexData.value.copy(
-                    disabilityIndex = newIndex
+
+                _autoModUIState.value = _autoModUIState.value.copy(
+                    disability = newIndex,
                 )
             }
             FilterType.MISOGYNY ->{
-                _discriminationIndexData.value = _discriminationIndexData.value.copy(
-                    misogynyIndex = newIndex
+                _autoModUIState.value = _autoModUIState.value.copy(
+                    misogyny= newIndex,
                 )
             }
             FilterType.RACE ->{
-                _discriminationIndexData.value = _discriminationIndexData.value.copy(
-                    raceIndex = newIndex
+
+                _autoModUIState.value = _autoModUIState.value.copy(
+                    race= newIndex,
                 )
             }
             FilterType.SEXUALITY ->{
-                _sexBasedIndexData.value = _sexBasedIndexData.value.copy(
-                    sexBasedTerms = newIndex
+                _autoModUIState.value = _autoModUIState.value.copy(
+                    sexuality = newIndex,
                 )
             }
             FilterType.AGGRESSION ->{
-                _hostilityIndexData.value = _hostilityIndexData.value.copy(
+
+                _autoModUIState.value = _autoModUIState.value.copy(
                     aggression = newIndex
                 )
             }
             FilterType.BULLYING ->{
-                _hostilityIndexData.value = _hostilityIndexData.value.copy(
+
+                _autoModUIState.value = _autoModUIState.value.copy(
                     bullying = newIndex
                 )
             }
             FilterType.SWEARING ->{
-                _profanityIndexData.value = _profanityIndexData.value.copy(
+                _autoModUIState.value = _autoModUIState.value.copy(
                     swearing = newIndex
                 )
             }
+            FilterType.SEXBASEDTERMS ->{
+                _autoModUIState.value = _autoModUIState.value.copy(
+                    sexBasedTerms = newIndex
+                )
+            }
+
         }
 
 
