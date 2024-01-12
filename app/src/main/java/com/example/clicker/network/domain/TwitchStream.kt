@@ -27,7 +27,7 @@ data class IndividualAutoModSettings(
     @SerializedName("moderator_id")
     val moderatorId: String,
     @SerializedName("overall_level")
-    val overallLevel: String?,
+    val overallLevel: Int?,
     @SerializedName("sexuality_sex_or_gender")
     val sexualitySexOrGender: Int,
     @SerializedName("race_ethnicity_or_religion")
@@ -40,9 +40,30 @@ data class IndividualAutoModSettings(
     val misogyny:Int,
     val bullying:Int,
     val swearing:Int
-
-
 )
+
+//data class UpdateAutoModSettings(
+//    val data: List<UpdateAutoModSettingsItem>
+//)
+//
+//data class UpdateAutoModSettingsItem(
+//    @SerializedName("broadcaster_id")
+//    val broadcasterId: String,
+//    @SerializedName("moderator_id")
+//    val moderatorId: String,
+//    val overallLevel: Int?,
+//    val disability: Int,
+//    val aggression: Int,
+//    @SerializedName("sexuality_sex_or_gender")
+//    val sexualitySexOrGender: Int,
+//    val misogyny: Int,
+//    val bullying: Int,
+//    val swearing: Int,
+//    @SerializedName("race_ethnicity_or_religion")
+//    val raceEthnicityOrReligion: Int,
+//    @SerializedName("sex_based_terms")
+//    val sexBasedTerms: Int
+//)
 
 interface TwitchStream {
 
@@ -87,5 +108,11 @@ interface TwitchStream {
         clientId: String,
         broadcasterId: String,
         moderatorId: String,
+    ):Flow<Response<AutoModSettings>>
+
+    suspend fun updateAutoModSettings(
+        oAuthToken: String,
+        clientId: String,
+        autoModSettings: IndividualAutoModSettings
     ):Flow<Response<AutoModSettings>>
 }

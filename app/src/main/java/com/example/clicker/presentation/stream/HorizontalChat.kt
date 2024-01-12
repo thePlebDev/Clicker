@@ -75,6 +75,7 @@ fun HorizontalChat(
                 discriminationFilterList=autoModViewModel.autoModUIState.value.filterList,
 
                 changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
+                updateAutoModSettings = {autoModViewModel.updateAutoMod()},
 
                 sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
                 swearingIndex = autoModViewModel.autoModUIState.value.swearing,
@@ -84,6 +85,7 @@ fun HorizontalChat(
                 sexualityIndex =autoModViewModel.autoModUIState.value.sexuality,
                 misogynyIndex =autoModViewModel.autoModUIState.value.misogyny,
                 raceIndex =autoModViewModel.autoModUIState.value.race,
+                filterText=autoModViewModel.autoModUIState.value.filterText,
                 isModerator = autoModViewModel.autoModCredentials.value.isModerator
             )
 
