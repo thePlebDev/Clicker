@@ -1,6 +1,7 @@
 package com.example.clicker.network
 
 import com.example.clicker.network.domain.AutoModSettings
+import com.example.clicker.network.domain.IndividualAutoModSettings
 import com.example.clicker.network.models.ChatSettings
 import com.example.clicker.network.models.ChatSettingsResponse
 import com.example.clicker.network.models.FollowedLiveStreams
@@ -16,6 +17,7 @@ import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 import retrofit2.http.Url
 
@@ -95,6 +97,14 @@ interface TwitchClient {
         @Header("Client-Id") clientId: String,
         @Query("broadcaster_id") broadcasterId: String,
         @Query("moderator_id") moderatorId: String,
+    ):Response<AutoModSettings>
+
+    @Headers("Content-Type: application/json")
+    @PUT("moderation/automod/settings")
+    suspend fun updateAutoModSettings(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Body autoModSettings: IndividualAutoModSettings
     ):Response<AutoModSettings>
 
 }

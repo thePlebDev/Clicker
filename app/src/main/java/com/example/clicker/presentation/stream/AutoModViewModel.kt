@@ -1,15 +1,20 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.domain.AutoModSettings
+import com.example.clicker.network.domain.IndividualAutoModSettings
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.presentation.stream.views.TitleSubTitle
 import com.example.clicker.util.Response
@@ -41,11 +46,12 @@ data class AutoModCredentials(
     val broadcastId:String="",
     val clientId:String="",
     val moderatorId:String="",
-    val isModerator:Boolean = false
+    val isModerator:Boolean = true
 )
 
 data class AutoModUIState(
     val sliderValue:Float = 0.0.toFloat(),
+    val filterText:String = "No filtering",
     val filterList:List<String> = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
     // PROFANITY
     val swearing:Int =0,
@@ -137,24 +143,32 @@ class AutoModViewModel @Inject constructor(
 
                     }
                     is Response.Success ->{
-                        Log.d("getAutoModStatus","SUCCESS")
                         val data = response.data.data[0]
-                        val (
-                            overallLevel,
-                            sexualitySexOrGender, raceEthnicityOrReligion,disability,misogyny, //discrimination
-                            sexBasedTerms, //sexuality
-                            aggression,bullying, //hostility
-                            swearing // profanity
-                        ) = data
+                        val overallLevel = data.overallLevel?.toFloat() ?: 0f
+                        Log.d("updateSliderValue","SliderValue Success-> $overallLevel")
+
+                        updateSliderValue(overallLevel)
+                        _autoModUIState.value = _autoModUIState.value.copy(
+                            swearing = data.swearing,
+                            aggression = data.aggression,
+                            bullying = data.bullying,
+                            sexBasedTerms = data.sexBasedTerms,
+                            sexuality = data.sexualitySexOrGender,
+                            race = data.raceEthnicityOrReligion,
+                            disability = data.disability,
+                            misogyny = data.misogyny,
 
 
-                        Log.d("getAutoModStatus","SUCCESS data --> ${data}")
-
-
+                        )
+                        _autoModCredentials.value = _autoModCredentials.value.copy(
+                            isModerator = true
+                        )
 
                     }
                     is Response.Failure ->{
-                        Log.d("getAutoModStatus","FAIL")
+                        _autoModCredentials.value = _autoModCredentials.value.copy(
+                            isModerator = false
+                        )
 
                     }
                 }
@@ -163,42 +177,106 @@ class AutoModViewModel @Inject constructor(
 
 
     }
+    fun updateAutoMod(){
+        updateAutoModSettings(
+            broadcastId =_autoModCredentials.value.broadcastId,
+            moderatorId =_autoModCredentials.value.moderatorId,
+            clientId =_autoModCredentials.value.clientId,
+            oAuthToken =_autoModCredentials.value.oAuthToken,
+        )
+    }
+    private fun updateAutoModSettings(
+        broadcastId:String,
+        moderatorId:String,
+        clientId: String,
+        oAuthToken: String
+    ){
+        viewModelScope.launch {
+
+            Log.d("updateAutoModSettingsRequest","oAuthToken ->$oAuthToken")
+            Log.d("updateAutoModSettingsRequest","clientId ->$clientId")
+            Log.d("updateAutoModSettingsRequest","moderatorId ->$moderatorId")
+            Log.d("updateAutoModSettingsRequest","broadcastId ->$broadcastId")
+
+            val updatedIndividualAutoModSettings = IndividualAutoModSettings(
+                broadcasterId = broadcastId,
+                moderatorId = moderatorId,
+                overallLevel=null,
+                sexualitySexOrGender = _autoModUIState.value.sexuality,
+                raceEthnicityOrReligion = _autoModUIState.value.race,
+                sexBasedTerms = _autoModUIState.value.sexBasedTerms,
+                disability = _autoModUIState.value.disability,
+                aggression =_autoModUIState.value.aggression,
+                misogyny = _autoModUIState.value.misogyny,
+                bullying = _autoModUIState.value.bullying,
+                swearing = _autoModUIState.value.swearing
+            )
+
+
+
+            twitchRepoImpl.updateAutoModSettings(
+                oAuthToken = oAuthToken,
+                clientId = clientId,
+                autoModSettings =updatedIndividualAutoModSettings
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{
+
+
+                    }
+                    is Response.Success ->{
+
+                    }
+                    is Response.Failure ->{
+
+                    }
+                }
+            }
+        }
+    }
 
     fun updateSliderValue(currentValue:Float){
+        Log.d("updateSliderValue","updateSliderValue() -> $currentValue")
         when(currentValue){
-            0.0.toFloat() ->{
-
+            0f ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderValue = currentValue
+                    sliderValue = currentValue,
+                    filterText = "AutoMod is off"
                 )
                 setAllIndexData(0)
             }
-            2.5.toFloat() ->{
+            1f ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderValue = currentValue
+                    sliderValue = currentValue,
+                    filterText ="A little moderation"
                 )
                 setAllIndexData(1)
             }
-            5.0.toFloat() ->{
 
+            2f ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderValue = currentValue
+                    sliderValue = currentValue,
+                    filterText ="Some moderation"
                 )
                 setAllIndexData(2)
             }
-            7.5.toFloat() ->{
 
+            3f ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderValue = currentValue
+                    sliderValue = currentValue,
+                    filterText ="More moderation"
                 )
                 setAllIndexData(3)
             }
-            10.0.toFloat() ->{
+
+            4f ->{
                 _autoModUIState.value = _autoModUIState.value.copy(
-                    sliderValue = currentValue
+                    sliderValue = currentValue,
+                    filterText ="A lot of moderation"
                 )
                 setAllIndexData(4)
             }
+
         }
 
     }

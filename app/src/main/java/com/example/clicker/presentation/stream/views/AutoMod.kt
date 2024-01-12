@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -92,6 +93,7 @@ object AutoMod {
         discriminationFilterList: List<String>,
 
         changeSelectedIndex:(Int,FilterType)->Unit,
+        updateAutoModSettings:() ->Unit,
 
 
         swearingIndex: Int,
@@ -102,7 +104,8 @@ object AutoMod {
         sexualityIndex: Int,
         misogynyIndex: Int,
         raceIndex: Int,
-        isModerator:Boolean
+        isModerator:Boolean,
+        filterText: String
 
     ) {
 
@@ -111,7 +114,8 @@ object AutoMod {
                 Parts.AutoModSlider(
                     sliderPosition,
                     changeSliderValue = {currentValue ->changSliderPosition(currentValue)},
-                    isModerator = isModerator
+                    isModerator = isModerator,
+                    filterText = filterText
             )
                     },
             hostilityRow = {
@@ -151,7 +155,9 @@ object AutoMod {
             },
             updateButton ={modifier ->
                 Parts.UpdateSettingsButton(
-                    updateAutoModSettings = {},
+                    updateAutoModSettings = {
+                        updateAutoModSettings()
+                    },
                     modifier=modifier
                 )
             },
@@ -736,8 +742,11 @@ object AutoMod {
         fun AutoModSlider(
             sliderPosition:Float,
             changeSliderValue:(Float) ->Unit,
-            isModerator: Boolean
+            isModerator: Boolean,
+            filterText:String,
         ){
+            var sliderValue by remember{ mutableFloatStateOf(0f) }
+            Log.d("AutoModSlider","slider value --> $sliderValue")
             Column(modifier =Modifier.fillMaxWidth()){
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
                     Text("AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
@@ -752,28 +761,11 @@ object AutoMod {
                         activeTrackColor = MaterialTheme.colorScheme.secondary,
                         inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
                     ),
+                    valueRange = 0f..4f,
                     steps = 3,
-                    valueRange = 0f..10f
                 )
+                Text(text = filterText,modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
 
-                when(sliderPosition){
-                    0.0.toFloat() ->{
-                        Text(text = "No filtering",modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    2.5.toFloat() ->{
-                        Text(text = "Less filtering",modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    5.0.toFloat() ->{
-                        Text(text = "Some filtering",modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    7.5.toFloat() ->{
-                        Text(text = "More filtering",modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-                    }
-                    10.toFloat() ->{
-                        Text(text = "Max filtering",modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-
-                    }
-                }
 
 
 

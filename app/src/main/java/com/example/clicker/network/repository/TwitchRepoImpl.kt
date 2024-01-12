@@ -5,6 +5,7 @@ import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.AutoModSettings
+import com.example.clicker.network.domain.IndividualAutoModSettings
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
@@ -328,4 +329,36 @@ class TwitchRepoImpl @Inject constructor(
                 emit(Response.Failure(Exception("Unable to get AutoMod settings")))
             }
         }
+
+    override suspend fun updateAutoModSettings(
+        oAuthToken: String,
+        clientId: String,
+        autoModSettings: IndividualAutoModSettings
+    ): Flow<Response<AutoModSettings>> = flow{
+        emit(Response.Loading)
+        val response = twitchClient.updateAutoModSettings(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            autoModSettings = autoModSettings
+        )
+        if(response.isSuccessful){
+            response.body()?.let{
+                emit(Response.Success(it))
+                Log.d("updateAutoModSettingsRequest","Success ->${response.code()}")
+            }
+        }else{
+            Log.d("updateAutoModSettingsRequest","FAILED ->${response.code()}")
+            emit(Response.Failure(Exception("Failed to update")))
+        }
+    }.catch { cause ->
+
+        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
+        if (cause is UnknownHostException) {
+            Log.d("getAutoModSettings", "UnknownHostException")
+            emit(Response.Failure(Exception("Network connection error")))
+        } else {
+            Log.d("getAutoModSettings", "Exception Happened")
+            emit(Response.Failure(Exception("Unable to get AutoMod settings")))
+        }
+    }
 }
