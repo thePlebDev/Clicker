@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -342,7 +343,9 @@ object AutoMod {
         ){
             Box(){
                 Column(
-                    modifier = Modifier.padding(5.dp).verticalScroll(rememberScrollState())
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     slider()
                     hostilityRow()

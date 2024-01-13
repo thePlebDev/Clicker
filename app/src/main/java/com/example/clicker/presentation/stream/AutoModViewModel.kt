@@ -197,11 +197,6 @@ class AutoModViewModel @Inject constructor(
     ){
         viewModelScope.launch {
 
-            Log.d("updateAutoModSettingsRequest","oAuthToken ->$oAuthToken")
-            Log.d("updateAutoModSettingsRequest","clientId ->$clientId")
-            Log.d("updateAutoModSettingsRequest","moderatorId ->$moderatorId")
-            Log.d("updateAutoModSettingsRequest","broadcastId ->$broadcastId")
-
             val updatedIndividualAutoModSettings = IndividualAutoModSettings(
                 broadcasterId = broadcastId,
                 moderatorId = moderatorId,
@@ -224,7 +219,7 @@ class AutoModViewModel @Inject constructor(
                 ).collect{response ->
                     when(response){
                         is Response.Loading ->{
-                            
+
                         }
                         is Response.Success ->{
 
