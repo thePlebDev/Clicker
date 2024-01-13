@@ -20,9 +20,11 @@ import com.example.clicker.presentation.stream.views.TitleSubTitle
 import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -74,6 +76,7 @@ data class AutoModUIState(
 class AutoModViewModel @Inject constructor(
     private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
+    private val ioDispatcher: CoroutineDispatcher,
 ): ViewModel() {
 
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
@@ -129,53 +132,54 @@ class AutoModViewModel @Inject constructor(
         moderatorId:String
     ){
         viewModelScope.launch {
-            twitchRepoImpl.getAutoModSettings(
-                oAuthToken = oAuthToken,
-                clientId =clientId,
-                broadcasterId =broadcasterId,
-                moderatorId =moderatorId
-            ).collect{response ->
+            withContext(ioDispatcher){
+                twitchRepoImpl.getAutoModSettings(
+                    oAuthToken = oAuthToken,
+                    clientId =clientId,
+                    broadcasterId =broadcasterId,
+                    moderatorId =moderatorId
+                ).collect{response ->
 
 
-                when (response){
-                    is Response.Loading ->{
-                        Log.d("getAutoModStatus","LOADING")
+                    when (response){
+                        is Response.Loading ->{
+                            Log.d("getAutoModStatus","LOADING")
 
-                    }
-                    is Response.Success ->{
-                        val data = response.data.data[0]
-                        val overallLevel = data.overallLevel?.toFloat() ?: 0f
-                        Log.d("updateSliderValue","SliderValue Success-> $overallLevel")
+                        }
+                        is Response.Success ->{
+                            val data = response.data.data[0]
+                            val overallLevel = data.overallLevel?.toFloat() ?: 0f
+                            Log.d("updateSliderValue","SliderValue Success-> $overallLevel")
 
-                        updateSliderValue(overallLevel)
-                        _autoModUIState.value = _autoModUIState.value.copy(
-                            swearing = data.swearing,
-                            aggression = data.aggression,
-                            bullying = data.bullying,
-                            sexBasedTerms = data.sexBasedTerms,
-                            sexuality = data.sexualitySexOrGender,
-                            race = data.raceEthnicityOrReligion,
-                            disability = data.disability,
-                            misogyny = data.misogyny,
+                            updateSliderValue(overallLevel)
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                swearing = data.swearing,
+                                aggression = data.aggression,
+                                bullying = data.bullying,
+                                sexBasedTerms = data.sexBasedTerms,
+                                sexuality = data.sexualitySexOrGender,
+                                race = data.raceEthnicityOrReligion,
+                                disability = data.disability,
+                                misogyny = data.misogyny,
 
 
-                        )
-                        _autoModCredentials.value = _autoModCredentials.value.copy(
-                            isModerator = true
-                        )
+                                )
+                            _autoModCredentials.value = _autoModCredentials.value.copy(
+                                isModerator = true
+                            )
 
-                    }
-                    is Response.Failure ->{
-                        _autoModCredentials.value = _autoModCredentials.value.copy(
-                            isModerator = false
-                        )
+                        }
+                        is Response.Failure ->{
+                            _autoModCredentials.value = _autoModCredentials.value.copy(
+                                isModerator = false
+                            )
 
+                        }
                     }
                 }
             }
+
         }
-
-
     }
     fun updateAutoMod(){
         updateAutoModSettings(
@@ -212,26 +216,26 @@ class AutoModViewModel @Inject constructor(
                 swearing = _autoModUIState.value.swearing
             )
 
+            withContext(ioDispatcher){
+                twitchRepoImpl.updateAutoModSettings(
+                    oAuthToken = oAuthToken,
+                    clientId = clientId,
+                    autoModSettings =updatedIndividualAutoModSettings
+                ).collect{response ->
+                    when(response){
+                        is Response.Loading ->{
+                            
+                        }
+                        is Response.Success ->{
 
+                        }
+                        is Response.Failure ->{
 
-            twitchRepoImpl.updateAutoModSettings(
-                oAuthToken = oAuthToken,
-                clientId = clientId,
-                autoModSettings =updatedIndividualAutoModSettings
-            ).collect{response ->
-                when(response){
-                    is Response.Loading ->{
-
-
-                    }
-                    is Response.Success ->{
-
-                    }
-                    is Response.Failure ->{
-
+                        }
                     }
                 }
             }
+
         }
     }
 
