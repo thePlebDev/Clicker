@@ -317,19 +317,16 @@ object TextChat{
             showOuterBottomModalState: () ->Unit
         ){
             val scope = rememberCoroutineScope()
-//            if (modStatus != null && modStatus == true) {
-//                AsyncImage(
-//                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-//                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
-//                )
-//            }
-            AsyncImage(
-                modifier = Modifier.clickable {
-                    showOuterBottomModalState()
-                },
-                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                contentDescription = stringResource(R.string.moderator_badge_icon_description)
-            )
+            if (modStatus != null && modStatus == true) {
+                AsyncImage(
+                    modifier = Modifier.clickable {
+                        showOuterBottomModalState()
+                    },
+                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
+                )
+            }
+
         }
     }// end of TextChatParts
 

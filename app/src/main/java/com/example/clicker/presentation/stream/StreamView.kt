@@ -121,7 +121,7 @@ fun StreamView(
         skipHalfExpanded = true
     )
     val outerBottomModalState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Expanded,
+        initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
     var oneClickActionsChecked by remember { mutableStateOf(true) }
@@ -150,6 +150,7 @@ fun StreamView(
             // be warned, the code below is not for those weak of heart
             ModalBottomSheetLayout(
                 sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                sheetGesturesEnabled =false,
                 sheetContent ={
 
                     AutoMod.Settings(
@@ -346,9 +347,11 @@ fun SideModal(
     drawerContent:@Composable () -> Unit,
 
 ){
+    val enabled = drawerState.currentValue == androidx.compose.material3.DrawerValue.Open
     ModalNavigationDrawer(
         drawerState =drawerState,
-        drawerContent ={
+        gesturesEnabled = enabled,
+                drawerContent ={
             ModalDrawerSheet{
                 drawerContent()
             }

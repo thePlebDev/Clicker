@@ -152,7 +152,7 @@ object ChatSettingsContainer {
         Builders.ChatSettingsSwitchBox(
             showUndoButtonSwitch ={
                 Parts.SwitchPart(
-                                enableSwitches =true,
+                                enableSwitches =userIsModerator,
                                 checked = showUndoButtonStatus,
                                 switchLabel = "Show undo button",
                                 switchFunction ={showUndoButton(it)}
