@@ -283,11 +283,8 @@ fun StreamView(
                                         newText
                                     )
                                 },
-                                clickedAutoCompleteText = { fullText, clickedText ->
-                                    streamViewModel.autoTextChange(
-                                        fullText,
-                                        clickedText
-                                    )
+                                clickedAutoCompleteText = { username ->
+                                    streamViewModel.autoTextChange(username)
                                 },
                                 addChatter = { username, message ->
                                     streamViewModel.addChatter(
@@ -379,7 +376,7 @@ fun TextChat(
     bottomModalState: ModalBottomSheetState,
     filteredChatList: List<String>,
     filterMethod: (String, String) -> Unit,
-    clickedAutoCompleteText: (String, String) -> String,
+    clickedAutoCompleteText: (String) -> Unit,
     addChatter: (String, String) -> Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     textFieldValue: MutableState<TextFieldValue>,
@@ -416,10 +413,9 @@ fun TextChat(
         modStatus = modStatus,
         filteredChatList = filteredChatList,
         filterMethod = { username, newText -> filterMethod(username, newText) },
-        clickedAutoCompleteText = { fullText, clickedText ->
+        clickedAutoCompleteText = { username ->
             clickedAutoCompleteText(
-                fullText,
-                clickedText
+                username
             )
         },
         textFieldValue = textFieldValue,

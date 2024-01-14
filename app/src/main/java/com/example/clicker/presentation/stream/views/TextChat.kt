@@ -71,7 +71,7 @@ object TextChat{
         modifier: Modifier,
         filteredChatList: List<String>,
         textFieldValue: MutableState<TextFieldValue>,
-        clickedAutoCompleteText: (String, String) -> String,
+        clickedAutoCompleteText: (String) -> Unit,
         modStatus: Boolean?,
         filterMethod: (String, String) -> Unit,
         sendMessageToWebSocket: (String) -> Unit,
@@ -84,11 +84,9 @@ object TextChat{
             filteredRow = {
                 TextChatParts.FilteredMentionLazyRow(
                     filteredChatList = filteredChatList,
-                    textFieldValue = textFieldValue,
-                    clickedAutoCompleteText = { addedValue, currentValue ->
+                    clickedAutoCompleteText = { username ->
                         clickedAutoCompleteText(
-                            addedValue,
-                            currentValue
+                            username
                         )
                     }
                 )
@@ -170,33 +168,26 @@ object TextChat{
 
 
         /**
-         * This composable represents a stylized text item that has the ability to auto complete the [textFieldValue]
-         * when this text is clicked
+         * This composable represents a clickable username shown to the user. When the [username] is clicked it will
+         * automatically be added to the users text that they are typing
          *
-         * @param textFieldValue the value that will get auto completed when this text is clicked
          * @param clickedAutoCompleteText a function that will do the auto completing when this text is clicked
-         * @param text the String shown to the user. This String will represent a user in chat and is clickable
+         * @param username the String shown to the user. This represents a username of a user in chat.
          * */
         @Composable
         fun ClickedAutoText(
-            textFieldValue: MutableState<TextFieldValue>,
-            clickedAutoCompleteText: (String, String) -> String,
-            text:String
+            clickedAutoCompleteText: (String) -> Unit,
+            username:String
         ){
             Box(Modifier.background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp)){
                 Text(
-                    text =text,
+                    text =username,
                     Modifier
                         .clip(RoundedCornerShape(5.dp))
                         .background(Color.DarkGray)
                         .padding(horizontal=10.dp,vertical=5.dp)
                         .clickable {
-                            textFieldValue.value = TextFieldValue(
-                                text = clickedAutoCompleteText(textFieldValue.value.text, text),
-                                selection = TextRange(
-                                    (textFieldValue.value.text + "$text ").length
-                                )
-                            )
+                            clickedAutoCompleteText(username)
                         }
                     ,
                     color = Color.White,
@@ -213,22 +204,20 @@ object TextChat{
          * composable
          *
          * @param filteredChatList a list of Strings meant to represent all of the users in chat
-         * @param textFieldValue passed to [TextChatParts.ClickedAutoText] and is the current text typed by the user
          * @param clickedAutoCompleteText a function passed to [TextChatParts.ClickedAutoText] that enables autocomplete on click
          * */
         @Composable
         fun FilteredMentionLazyRow(
             filteredChatList: List<String>,
-            textFieldValue: MutableState<TextFieldValue>,
-            clickedAutoCompleteText: (String, String) -> String,
+            clickedAutoCompleteText: (String) -> Unit,
         ){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                 items(filteredChatList) {
 
                         TextChatParts.ClickedAutoText(
-                            textFieldValue =textFieldValue,
-                            clickedAutoCompleteText ={oldValue, currentValue ->clickedAutoCompleteText(oldValue, currentValue)},
-                            text =it
+                            clickedAutoCompleteText ={
+                                    username ->clickedAutoCompleteText(username)},
+                            username =it
                         )
 
 
@@ -291,7 +280,6 @@ object TextChat{
             textFieldValue: MutableState<TextFieldValue>,
             filterMethod: (String, String) -> Unit,
             newFilterMethod:(TextFieldValue) ->Unit,
-            parsing:Boolean =false,
         ){
             val customTextSelectionColors = TextSelectionColors(
                 handleColor = MaterialTheme.colorScheme.secondary,
@@ -301,38 +289,17 @@ object TextChat{
                 TextField(
 
                     modifier = modifier,
-                    maxLines =1,
-                    singleLine = true,
+                    singleLine = false,
                     value = textFieldValue.value,
                     shape = RoundedCornerShape(8.dp),
                     onValueChange = { newText ->
-                        Log.d("textFieldValueTesting","---------START--------")
-                        Log.d("textFieldValueTesting","text ->${newText.text}")
-                        Log.d("textFieldValueTesting","selection ->${newText.selection}") //this is the range
-                        Log.d("textFieldValueTesting","composition -> ${newText.composition}")
-                        Log.d("textFieldValueTesting","annotatedString -> ${newText.annotatedString}")
-                        Log.d("textFieldValueTesting","---------END--------")
                         filterMethod("username", newText.text)
                         newFilterMethod(newText)
                         textFieldValue.value = TextFieldValue(
                             text = newText.text,
                             selection = newText.selection
                         )
-//                        textFieldValue.value = TextFieldValue(
-//                            annotatedString = buildAnnotatedString {
-//                                if(parsing){
-//                                    withStyle(style = SpanStyle(color = Color.Blue, fontSize = 17.sp)) {
-//
-//                                        append(newText.text)
-//                                    }
-//                                }else{
-//                                    append(newText.text)
-//                                }
-//
-//                            },
-//                            selection = newText.selection
-//                        )
-                        // text = newText
+
                     },
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = Color.White,

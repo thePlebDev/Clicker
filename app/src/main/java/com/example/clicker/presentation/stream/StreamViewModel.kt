@@ -157,6 +157,9 @@ class StreamViewModel @Inject constructor(
 
     private var currentUsername: String = ""
 
+    /**
+     * represents what the user is typing in the text field
+     * */
     val textFieldValue = mutableStateOf(
         TextFieldValue(
             text = "",
@@ -392,63 +395,63 @@ class StreamViewModel @Inject constructor(
     var parsingIndex:Int =0
     var startParsing:Boolean = false
     fun newParsingAgain(textFieldValue: TextFieldValue){
-        val selectedText = textFieldValue.getSelectedText() //this is only triggered if the user selects and highlights text
-        val afterSelection = textFieldValue.getTextAfterSelection(1)
-        val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
-        val annotatedString = textFieldValue.annotatedString
+        try{
+            val selectedText = textFieldValue.getSelectedText() //this is only triggered if the user selects and highlights text
+            val afterSelection = textFieldValue.getTextAfterSelection(1)
+            val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
+            val annotatedString = textFieldValue.annotatedString
 
-        if(textFieldValue.selection.start < parsingIndex && startParsing){
-            Log.d("newParsingAgain","-----------END PARSING----------")
-            filteredChatList.clear()
-            startParsing = false
-        }
-        if (currentCharacter.toString() == " " && startParsing){
-            Log.d("newParsingAgain","-----------END PARSING----------")
-            filteredChatList.clear()
-            startParsing = false
-        }
-        if(startParsing){
-            Log.d("newParsingAgain","-----------PARSING----------")
-            val username =textFieldValue.text.subSequence(parsingIndex,textFieldValue.selection.end)
-            Log.d("newParsingAgain","username -> $username")
+            if(textFieldValue.selection.start < parsingIndex && startParsing){
+                Log.d("newParsingAgain","-----------END PARSING----------")
+                filteredChatList.clear()
+                startParsing = false
+            }
+            if (currentCharacter.toString() == " " && startParsing){
+                Log.d("newParsingAgain","-----------END PARSING----------")
+                filteredChatList.clear()
+                startParsing = false
+            }
+            if(startParsing){
+                Log.d("newParsingAgain","-----------PARSING----------")
+                val username =textFieldValue.text.subSequence(parsingIndex,textFieldValue.selection.end)
+                Log.d("newParsingAgain","username -> $username")
 
-           val usernameRegex = Regex("^$username")
-            filteredChatList.removeIf{
-                !it.contains(usernameRegex)
+                val usernameRegex = Regex("^$username",RegexOption.IGNORE_CASE)
+                filteredChatList.removeIf{
+                    !it.contains(usernameRegex)
+                }
+
+                Log.d("newParsingAgain","username -> ${filteredChatList.toList()}")
+
+            }
+            if(currentCharacter.toString() == "@"){
+                Log.d("newParsingAgain","-----------BEGIN PARSING----------")
+                filteredChatList.addAll(allChatters.toList())
+                parsingIndex =textFieldValue.selection.start
+                startParsing = true
             }
 
-            Log.d("newParsingAgain","username -> ${filteredChatList.toList()}")
-
+        }catch (e:Exception){
+            filteredChatList.clear()
         }
-        if(currentCharacter.toString() == "@"){
-            Log.d("newParsingAgain","-----------BEGIN PARSING----------")
-            filteredChatList.addAll(allChatters.toList())
-            parsingIndex =textFieldValue.selection.start
-            startParsing = true
-        }
-
-
 
 
     }
+    /**
+     * autoTextChange is function that is used to change the value of [textFieldValue] with [username]
+     *
+     * @param username  a string meant to represent the username that was clicked on by the user
+     * */
+    fun autoTextChange(username: String) {
+        val currentCharacterIndex = textFieldValue.value.selection.end
 
-    //TODO: CHAT METHOD
-    fun autoTextChange(fullText: String, clickedText: String): String {
-        val pattern = Pattern.compile("\\s|@")
-        val pattern2 = Regex("@(\\s)|@")
-        val lastFind = pattern2.findAll(fullText).last()
-        val foundIndex = filterMethodStartingIndex.value
-        //val subString = fullText.subSequence(foundIndex,clickedText.length)
-        Log.d("FOUNDLASTONETest", "$foundIndex")
+        val replacedString =textFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
+        textFieldValue.value = textFieldValue.value.copy(
+            text = replacedString,
+            selection = TextRange(replacedString.length)
+        )
+        filteredChatList.clear()
 
-        val foundOne = lastFind.value
-        val range = lastFind.range
-
-        val newerString = fullText.removeRange(range)
-        Log.d("FOUNDLASTONE", "$newerString")
-        val newString = newerString + "@$clickedText "
-
-        return newString
     }
 
     init {
