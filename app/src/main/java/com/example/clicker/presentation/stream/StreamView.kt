@@ -328,7 +328,8 @@ fun StreamView(
                                     scope.launch {
                                         outerBottomModalState.show()
                                     }
-                                }
+                                },
+                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)}
                             )
                         }
                     )
@@ -397,7 +398,8 @@ fun TextChat(
     oneClickTimeoutUser: (String) -> Unit,
     showUndoButton:Boolean,
     noChatMode:Boolean,
-    showOuterBottomModalState:() ->Unit
+    showOuterBottomModalState:() ->Unit,
+    newFilterMethod:(TextFieldValue) ->Unit
 
 ) {
 
@@ -426,7 +428,8 @@ fun TextChat(
         undoBan = {undoBan()},
         showUndoButton =showUndoButton,
         noChatMode =noChatMode,
-        showOuterBottomModalState ={showOuterBottomModalState()}
+        showOuterBottomModalState ={showOuterBottomModalState()},
+        newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)}
     )
 
 }

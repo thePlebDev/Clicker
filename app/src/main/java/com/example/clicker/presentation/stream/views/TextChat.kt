@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.stream.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -27,11 +29,17 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import kotlinx.coroutines.launch
@@ -68,7 +76,8 @@ object TextChat{
         filterMethod: (String, String) -> Unit,
         sendMessageToWebSocket: (String) -> Unit,
         showModal: () -> Unit,
-        showOuterBottomModalState:() ->Unit
+        showOuterBottomModalState:() ->Unit,
+        newFilterMethod:(TextFieldValue) ->Unit
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,
@@ -95,6 +104,7 @@ object TextChat{
                     modifier = boxModifier,
                     textFieldValue = textFieldValue,
                     filterMethod ={username, newText -> filterMethod(username,newText)},
+                    newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)}
 
                 )
             },
@@ -173,21 +183,30 @@ object TextChat{
             clickedAutoCompleteText: (String, String) -> String,
             text:String
         ){
-            Text(
-                text,
-                modifier = Modifier
-                    .padding(5.dp)
-                    .clickable {
-                        textFieldValue.value = TextFieldValue(
-                            text = clickedAutoCompleteText(textFieldValue.value.text, text),
-                            selection = TextRange(
-                                (textFieldValue.value.text + "$text ").length
+            Box(Modifier.background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp)){
+                Text(
+                    text =text,
+                    Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(Color.DarkGray)
+                        .padding(horizontal=10.dp,vertical=5.dp)
+                        .clickable {
+                            textFieldValue.value = TextFieldValue(
+                                text = clickedAutoCompleteText(textFieldValue.value.text, text),
+                                selection = TextRange(
+                                    (textFieldValue.value.text + "$text ").length
+                                )
                             )
-                        )
-                    },
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+                        }
+                    ,
+                    color = Color.White,
+
+                )
+            }
+
+
         }
+
         /**
          * A [LazyRow] used to represent all the usernames of every chatter in chat. This will be triggered to be shown
          * when a user enters the ***@*** character. This composable is also made up of the [TextChatParts.ClickedAutoText]
@@ -205,11 +224,14 @@ object TextChat{
         ){
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                 items(filteredChatList) {
-                    TextChatParts.ClickedAutoText(
-                        textFieldValue =textFieldValue,
-                        clickedAutoCompleteText ={oldValue, currentValue ->clickedAutoCompleteText(oldValue, currentValue)},
-                        text =it
-                    )
+
+                        TextChatParts.ClickedAutoText(
+                            textFieldValue =textFieldValue,
+                            clickedAutoCompleteText ={oldValue, currentValue ->clickedAutoCompleteText(oldValue, currentValue)},
+                            text =it
+                        )
+
+
                 }
             }
         }
@@ -268,6 +290,8 @@ object TextChat{
             modifier: Modifier,
             textFieldValue: MutableState<TextFieldValue>,
             filterMethod: (String, String) -> Unit,
+            newFilterMethod:(TextFieldValue) ->Unit,
+            parsing:Boolean =false,
         ){
             val customTextSelectionColors = TextSelectionColors(
                 handleColor = MaterialTheme.colorScheme.secondary,
@@ -282,11 +306,32 @@ object TextChat{
                     value = textFieldValue.value,
                     shape = RoundedCornerShape(8.dp),
                     onValueChange = { newText ->
+                        Log.d("textFieldValueTesting","---------START--------")
+                        Log.d("textFieldValueTesting","text ->${newText.text}")
+                        Log.d("textFieldValueTesting","selection ->${newText.selection}") //this is the range
+                        Log.d("textFieldValueTesting","composition -> ${newText.composition}")
+                        Log.d("textFieldValueTesting","annotatedString -> ${newText.annotatedString}")
+                        Log.d("textFieldValueTesting","---------END--------")
                         filterMethod("username", newText.text)
+                        newFilterMethod(newText)
                         textFieldValue.value = TextFieldValue(
                             text = newText.text,
                             selection = newText.selection
                         )
+//                        textFieldValue.value = TextFieldValue(
+//                            annotatedString = buildAnnotatedString {
+//                                if(parsing){
+//                                    withStyle(style = SpanStyle(color = Color.Blue, fontSize = 17.sp)) {
+//
+//                                        append(newText.text)
+//                                    }
+//                                }else{
+//                                    append(newText.text)
+//                                }
+//
+//                            },
+//                            selection = newText.selection
+//                        )
                         // text = newText
                     },
                     colors = TextFieldDefaults.textFieldColors(

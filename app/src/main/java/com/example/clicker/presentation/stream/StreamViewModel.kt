@@ -10,6 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.getSelectedText
+import androidx.compose.ui.text.input.getTextAfterSelection
+import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.substring
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -143,6 +146,12 @@ class StreamViewModel @Inject constructor(
      * */
     private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
     val advancedChatSettingsState = _advancedChatSettingsState
+
+    /**
+     * determine if the user is user is trying to message another user
+     * */
+    private val _parsing = mutableStateOf(false)
+    val parsing = _parsing
 
 
 
@@ -375,33 +384,52 @@ class StreamViewModel @Inject constructor(
 
     //TODO: CHAT METHOD
     var atIndex: Int? = null
+
+    //TODO: REWORK THIS CHATTING METHOD
     fun filterChatters(username: String, text: String) {
-        Log.d("mostRecentChats", text)
-        if (text.isNotBlank()) {
-            // TODO: MAKE THIS A GLOBAL VARIABLE
-            val lastCharacter = text[text.length - 1].toString()
-//
-            if (lastCharacter == " ") {
-                filteredChatList.clear()
-                atIndex = null
-            }
-//
-            if (lastCharacter == "@") {
-                atIndex = text.length
-                filteredChatList.addAll(allChatters.toList())
-            }
 
-            if (atIndex != null && lastCharacter != "@") {
-                val substring = text.subSequence(atIndex!!, text.lastIndex)
+    }
+    var parsingIndex:Int =0
+    var startParsing:Boolean = false
+    fun newParsingAgain(textFieldValue: TextFieldValue){
+        val selectedText = textFieldValue.getSelectedText() //this is only triggered if the user selects and highlights text
+        val afterSelection = textFieldValue.getTextAfterSelection(1)
+        val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
+        val annotatedString = textFieldValue.annotatedString
 
-                val newList = mutableStateListOf<String>()
-                newList.addAll(allChatters.filter { it.contains(substring) })
-                filteredChatList.clear()
-                filteredChatList.addAll(newList.toList())
-            }
-        } else {
+        if(textFieldValue.selection.start < parsingIndex && startParsing){
+            Log.d("newParsingAgain","-----------END PARSING----------")
             filteredChatList.clear()
+            startParsing = false
         }
+        if (currentCharacter.toString() == " " && startParsing){
+            Log.d("newParsingAgain","-----------END PARSING----------")
+            filteredChatList.clear()
+            startParsing = false
+        }
+        if(startParsing){
+            Log.d("newParsingAgain","-----------PARSING----------")
+            val username =textFieldValue.text.subSequence(parsingIndex,textFieldValue.selection.end)
+            Log.d("newParsingAgain","username -> $username")
+
+           val usernameRegex = Regex("^$username")
+            filteredChatList.removeIf{
+                !it.contains(usernameRegex)
+            }
+
+            Log.d("newParsingAgain","username -> ${filteredChatList.toList()}")
+
+        }
+        if(currentCharacter.toString() == "@"){
+            Log.d("newParsingAgain","-----------BEGIN PARSING----------")
+            filteredChatList.addAll(allChatters.toList())
+            parsingIndex =textFieldValue.selection.start
+            startParsing = true
+        }
+
+
+
+
     }
 
     //TODO: CHAT METHOD
@@ -476,7 +504,7 @@ class StreamViewModel @Inject constructor(
         }
     }
 
-    suspend fun monitorSocketForChatMessages(){
+    private suspend fun monitorSocketForChatMessages(){
         webSocket.state.collect { twitchUserMessage ->
             Log.d("loggedMessage", "${twitchUserMessage.id}")
 
@@ -985,58 +1013,6 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
 
 
 
-    fun filterMethodBetter(text:String,currentCharacter:Char,currentIndex:Int){
-
-        filterAgain(text,currentCharacter.toString(),currentIndex)
-
-
-    }
-    fun filterAgain(text: String,currentCharacter:String,currentIndex: Int){
-        try{
-            if(text.isEmpty()){
-                autoCompleteChat.setShowFilteredUsernames(true)
-            }
-            val subString:CharSequence
-            if(currentCharacter == "@"){
-
-                autoCompleteChat.setShowFilteredUsernames(true)
-
-                filterMethodStartingIndex.value = currentIndex
-
-
-            }
-
-            if(autoCompleteChat.showFilteredUsernames.value  == true){
-
-                subString = text.subSequence(filterMethodStartingIndex.value,currentIndex).removePrefix("@")
-
-
-                Log.d("filterIndexingText","substring ----> $subString")
-                val filteredList = allChatters.filter { item -> item.startsWith(subString,true) }
-                val newList = mutableStateListOf<String>()
-                newList.addAll(filteredList)
-                filteredChatList.clear()
-                autoCompleteChat.clearFilteredChatList()
-                autoCompleteChat.addAllToFilteredChatList(newList.toList())
-                filteredChatList.addAll(newList.toList())
-//            Log.d("filterIndexingText","allChatters ----> ${allChatters.toList()}")
-                Log.d("filterIndexingText","filteredList ----> $filteredList")
-            }
-
-            if(currentCharacter == " "){
-                filteredChatList.clear()
-                autoCompleteChat.setShowFilteredUsernames(false)
-            }
-        }catch (e:Exception){
-            filteredChatList.clear()
-            autoCompleteChat.setShowFilteredUsernames(false)
-        }
-
-
-
-
-
-    }
 
 }
 

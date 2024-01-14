@@ -144,7 +144,8 @@ object MainChat{
         drawerState: androidx.compose.material3.DrawerState,
         showUndoButton:Boolean,
         noChatMode:Boolean,
-        showOuterBottomModalState:() ->Unit
+        showOuterBottomModalState:() ->Unit,
+        newFilterMethod:(TextFieldValue) ->Unit
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -192,7 +193,8 @@ object MainChat{
                     showModal ={
                         coroutineScope.launch { drawerState.open() }
                     },
-                    showOuterBottomModalState ={showOuterBottomModalState()}
+                    showOuterBottomModalState ={showOuterBottomModalState()},
+                    newFilterMethod={newTextValue -> newFilterMethod(newTextValue)}
                 )
 
             }, // end of enter chat
