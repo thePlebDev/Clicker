@@ -229,7 +229,8 @@ fun HorizontalChat(
                             scope.launch {
                                 outerBottomModalState.show()
                             }
-                        }
+                        },
+                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)}
                     )
                 }
             )
