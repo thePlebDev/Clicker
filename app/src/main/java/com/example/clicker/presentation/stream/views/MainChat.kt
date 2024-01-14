@@ -138,7 +138,7 @@ object MainChat{
         modStatus: Boolean?,
         filteredChatList: List<String>,
         filterMethod: (String, String) -> Unit,
-        clickedAutoCompleteText: (String, String) -> String,
+        clickedAutoCompleteText: (String) -> Unit,
         textFieldValue: MutableState<TextFieldValue>,
         channelName: String?,
         drawerState: androidx.compose.material3.DrawerState,
@@ -181,10 +181,9 @@ object MainChat{
                     modifier = boxModifier,
                     filteredChatList = filteredChatList,
                     textFieldValue = textFieldValue,
-                    clickedAutoCompleteText = { addedValue, currentValue ->
+                    clickedAutoCompleteText = { username ->
                         clickedAutoCompleteText(
-                            addedValue,
-                            currentValue
+                            username
                         )
                     },
                     modStatus = modStatus,

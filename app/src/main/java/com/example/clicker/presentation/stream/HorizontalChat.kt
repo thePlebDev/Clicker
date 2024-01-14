@@ -183,10 +183,9 @@ fun HorizontalChat(
                                 newText
                             )
                         },
-                        clickedAutoCompleteText = { fullText, clickedText ->
+                        clickedAutoCompleteText = { username ->
                             streamViewModel.autoTextChange(
-                                fullText,
-                                clickedText
+                                username
                             )
                         },
                         addChatter = { username, message ->
