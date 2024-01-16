@@ -139,13 +139,16 @@ fun StreamView(
     }
 
     when (orientation) {
+
         Configuration.ORIENTATION_LANDSCAPE -> {
+
             HorizontalChat(
                 streamViewModel,
                 autoModViewModel
             )
         }
         else -> {
+
             // Below is the behemoth I am trying to rework
             // be warned, the code below is not for those weak of heart
             ModalBottomSheetLayout(

@@ -181,7 +181,7 @@ object TextChat{
         fun ForwardSlash(commandList:List<ForwardSlashCommands>){
             val primaryColor = MaterialTheme.colorScheme.primary
             val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-            
+
             if(commandList.isNotEmpty()){
                 LazyColumn(modifier = Modifier
                     .clip(RoundedCornerShape(5.dp))

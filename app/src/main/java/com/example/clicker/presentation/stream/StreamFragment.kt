@@ -11,9 +11,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.webkit.WebView
@@ -43,8 +41,23 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
 
+
+    private fun orientationCheck(){
+        val currentOrientation = resources.configuration.orientation
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Landscape
+            Log.d("ORIENTATIONCHANGE", "HORIZONTAL")
+            streamViewModel.setOrientation(isHorizontal = true)
+        } else {
+            // Portrait
+            Log.d("ORIENTATIONCHANGE", "STRAIGHT")
+            streamViewModel.setOrientation(isHorizontal = false)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        orientationCheck()
     }
 
     @SuppressLint("SetJavaScriptEnabled", "SuspiciousIndentation")
