@@ -183,6 +183,13 @@ class StreamViewModel @Inject constructor(
 
      val forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
 
+    private var _deviceIsHorizontal = mutableStateOf(false)
+    val deviceIsHorizontal:State<Boolean> = _deviceIsHorizontal
+
+    fun setOrientation(isHorizontal:Boolean){
+        _deviceIsHorizontal.value = isHorizontal
+    }
+
 
 
 
@@ -443,14 +450,11 @@ class StreamViewModel @Inject constructor(
             }
 
             if(!startParsing && currentCharacter.toString() == "/"){
-                slashCommandState = true
-                slashCommandIndex = textFieldValue.selection.start
-                forwardSlashCommands.clear()
-                forwardSlashCommands.addAll(forwardSlashCommandList)
+                startSlashParsingNCheckOrientation(textFieldValue)
             }
 
             if(slashCommandState){
-                filterForwardSlashCommands(textFieldValue)
+                filterForwardSlashCommands(textFieldValue,_deviceIsHorizontal.value)
             }
 
         }catch (e:Exception){
@@ -461,6 +465,19 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    private fun startSlashParsingNCheckOrientation(textFieldValue: TextFieldValue){
+        slashCommandState = true
+        slashCommandIndex = textFieldValue.selection.start
+        forwardSlashCommands.clear()
+        filteredChatList.clear()
+        if(_deviceIsHorizontal.value){
+            val listOfCommands = forwardSlashCommandList.map { it.title }
+            filteredChatList.addAll(listOfCommands)
+        }else{
+            forwardSlashCommands.addAll(forwardSlashCommandList)
+        }
+    }
+
     /**
      * showFilteredChatListNStartParsing is a private function called when the current character the user is
      * typing is equal to ***@***. It sets [parsingIndex] to the current character index,[startParsing] to true
@@ -468,13 +485,23 @@ class StreamViewModel @Inject constructor(
      *
      * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing
      * */
-    private fun filterForwardSlashCommands(textFieldValue: TextFieldValue){
+    private fun filterForwardSlashCommands(
+        textFieldValue: TextFieldValue,
+        deviceIsHorizontal:Boolean
+    ){
 
         val parsingCommand =textFieldValue.text.subSequence(slashCommandIndex,textFieldValue.selection.end)
         val currentCharacterRegex = Regex("^/$parsingCommand",RegexOption.IGNORE_CASE)
-        forwardSlashCommands.removeIf{
-            !it.title.contains(currentCharacterRegex)
+        if(deviceIsHorizontal){
+            filteredChatList.removeIf{
+                !it.contains(currentCharacterRegex)
+            }
+        }else{
+            forwardSlashCommands.removeIf{
+                !it.title.contains(currentCharacterRegex)
+            }
         }
+
 
     }
     /**
@@ -486,6 +513,7 @@ class StreamViewModel @Inject constructor(
      * */
     private fun showFilteredChatListNStartParsing(textFieldValue: TextFieldValue){
         Log.d("newParsingAgain","-----------BEGIN PARSING----------")
+        filteredChatList.clear()
         filteredChatList.addAll(allChatters.toList())
         parsingIndex =textFieldValue.selection.start
         startParsing = true
@@ -504,6 +532,7 @@ class StreamViewModel @Inject constructor(
         filteredChatList.removeIf{
             !it.contains(usernameRegex)
         }
+
 
 
     }
