@@ -1,6 +1,8 @@
 package com.example.clicker.presentation.stream.views
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,12 +39,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.ForwardSlashCommands
 import kotlinx.coroutines.launch
 
 /**
@@ -60,7 +65,6 @@ object TextChat{
      * @param textFieldValue a value of what the user is currently typing
      * @param clickedAutoCompleteText a function to do autocomplete to the [textFieldValue] when run
      * @param modStatus a boolean that determines if the user is a moderator or not
-     * @param filterMethod a method used to filter out the proper  usernames from [filteredChatList]
      * @param sendMessageToWebSocket a function that is used to send the message to the websocket hooked up to the TwitchIRC server
      * @param showModal a function to run to show the bottom modal when a individual chat message is clicked
      * @param showOuterBottomModalState a function used to show the a bottom layout sheet
@@ -73,11 +77,11 @@ object TextChat{
         textFieldValue: MutableState<TextFieldValue>,
         clickedAutoCompleteText: (String) -> Unit,
         modStatus: Boolean?,
-        filterMethod: (String, String) -> Unit,
         sendMessageToWebSocket: (String) -> Unit,
         showModal: () -> Unit,
         showOuterBottomModalState:() ->Unit,
-        newFilterMethod:(TextFieldValue) ->Unit
+        newFilterMethod:(TextFieldValue) ->Unit,
+        forwardSlashCommands: List<ForwardSlashCommands>
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,
@@ -101,7 +105,6 @@ object TextChat{
                 TextChatParts.StylizedTextField(
                     modifier = boxModifier,
                     textFieldValue = textFieldValue,
-                    filterMethod ={username, newText -> filterMethod(username,newText)},
                     newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)}
 
                 )
@@ -111,6 +114,11 @@ object TextChat{
                     textFieldValue =textFieldValue,
                     chat = {item -> sendMessageToWebSocket(item)},
                     showModal ={showModal()}
+                )
+            },
+            forwardSlashCommands = {
+                TextChatParts.ForwardSlash(
+                    commandList = forwardSlashCommands
                 )
             }
         )
@@ -146,13 +154,15 @@ object TextChat{
         fun EnterChat(
             modifier: Modifier,
             filteredRow:@Composable () -> Unit,
-
+            forwardSlashCommands:@Composable () -> Unit,
             showModStatus:@Composable () -> Unit,
             stylizedTextField:@Composable (modifier:Modifier) -> Unit,
             showIconBasedOnTextLength:@Composable () -> Unit,
         ) {
 
+
             Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
+                forwardSlashCommands()
                 filteredRow()
                 Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
                     verticalAlignment = Alignment.CenterVertically){
@@ -164,7 +174,30 @@ object TextChat{
         }
     }
 
+
+
     private object TextChatParts{
+        @Composable
+        fun ForwardSlash(commandList:List<ForwardSlashCommands>){
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+            
+            if(commandList.isNotEmpty()){
+                LazyColumn(modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color.DarkGray)
+                    .padding(10.dp)){
+                    items(commandList){command ->
+                        Text(command.title, fontSize = 18.sp, color = onPrimaryColor, fontWeight = FontWeight.ExtraBold)
+                        Text(command.subtitle, fontSize = 16.sp, color = onPrimaryColor, modifier = Modifier.padding(start=5.dp,bottom=5.dp))
+                    }
+                }
+            }
+
+
+
+
+        }
 
 
         /**
@@ -179,13 +212,16 @@ object TextChat{
             clickedAutoCompleteText: (String) -> Unit,
             username:String
         ){
-            Box(Modifier.background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp)){
+            Box(
+                Modifier
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(horizontal = 5.dp)){
                 Text(
                     text =username,
                     Modifier
                         .clip(RoundedCornerShape(5.dp))
                         .background(Color.DarkGray)
-                        .padding(horizontal=10.dp,vertical=5.dp)
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                         .clickable {
                             clickedAutoCompleteText(username)
                         }
@@ -271,14 +307,13 @@ object TextChat{
          *
          * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
          * @param textFieldValue The value that the user it currently typing in
-         * @param filterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
+         * @param newFilterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
          *
          * */
         @Composable
         fun StylizedTextField(
             modifier: Modifier,
             textFieldValue: MutableState<TextFieldValue>,
-            filterMethod: (String, String) -> Unit,
             newFilterMethod:(TextFieldValue) ->Unit,
         ){
             val customTextSelectionColors = TextSelectionColors(
@@ -293,7 +328,6 @@ object TextChat{
                     value = textFieldValue.value,
                     shape = RoundedCornerShape(8.dp),
                     onValueChange = { newText ->
-                        filterMethod("username", newText.text)
                         newFilterMethod(newText)
                         textFieldValue.value = TextFieldValue(
                             text = newText.text,

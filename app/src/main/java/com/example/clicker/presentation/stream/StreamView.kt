@@ -277,12 +277,6 @@ fun StreamView(
                                 modStatus = modStatus,
                                 bottomModalState = bottomModalState,
                                 filteredChatList = filteredChat,
-                                filterMethod = { username, newText ->
-                                    streamViewModel.filterChatters(
-                                        username,
-                                        newText
-                                    )
-                                },
                                 clickedAutoCompleteText = { username ->
                                     streamViewModel.autoTextChange(username)
                                 },
@@ -326,7 +320,8 @@ fun StreamView(
                                         outerBottomModalState.show()
                                     }
                                 },
-                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)}
+                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+                                forwardSlashCommands = streamViewModel.forwardSlashCommands
                             )
                         }
                     )
@@ -375,7 +370,6 @@ fun TextChat(
     modStatus: Boolean?,
     bottomModalState: ModalBottomSheetState,
     filteredChatList: List<String>,
-    filterMethod: (String, String) -> Unit,
     clickedAutoCompleteText: (String) -> Unit,
     addChatter: (String, String) -> Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
@@ -396,7 +390,8 @@ fun TextChat(
     showUndoButton:Boolean,
     noChatMode:Boolean,
     showOuterBottomModalState:() ->Unit,
-    newFilterMethod:(TextFieldValue) ->Unit
+    newFilterMethod:(TextFieldValue) ->Unit,
+    forwardSlashCommands: List<ForwardSlashCommands>
 
 ) {
 
@@ -412,7 +407,6 @@ fun TextChat(
         sendMessageToWebSocket ={ text -> sendMessageToWebSocket(text) },
         modStatus = modStatus,
         filteredChatList = filteredChatList,
-        filterMethod = { username, newText -> filterMethod(username, newText) },
         clickedAutoCompleteText = { username ->
             clickedAutoCompleteText(
                 username
@@ -425,7 +419,8 @@ fun TextChat(
         showUndoButton =showUndoButton,
         noChatMode =noChatMode,
         showOuterBottomModalState ={showOuterBottomModalState()},
-        newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)}
+        newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)},
+        forwardSlashCommands =forwardSlashCommands
     )
 
 }

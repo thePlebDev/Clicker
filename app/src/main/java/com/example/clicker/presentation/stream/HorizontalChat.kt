@@ -177,12 +177,6 @@ fun HorizontalChat(
                         modStatus = modStatus,
                         bottomModalState = bottomModalState,
                         filteredChatList = filteredChat,
-                        filterMethod = { username, newText ->
-                            streamViewModel.filterChatters(
-                                username,
-                                newText
-                            )
-                        },
                         clickedAutoCompleteText = { username ->
                             streamViewModel.autoTextChange(
                                 username
@@ -229,7 +223,8 @@ fun HorizontalChat(
                                 outerBottomModalState.show()
                             }
                         },
-                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)}
+                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+                        forwardSlashCommands = streamViewModel.forwardSlashCommands
                     )
                 }
             )

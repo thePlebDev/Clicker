@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.presentation.stream.ForwardSlashCommands
 
 
 import kotlinx.coroutines.delay
@@ -137,7 +138,6 @@ object MainChat{
         sendMessageToWebSocket: (String) -> Unit,
         modStatus: Boolean?,
         filteredChatList: List<String>,
-        filterMethod: (String, String) -> Unit,
         clickedAutoCompleteText: (String) -> Unit,
         textFieldValue: MutableState<TextFieldValue>,
         channelName: String?,
@@ -145,7 +145,8 @@ object MainChat{
         showUndoButton:Boolean,
         noChatMode:Boolean,
         showOuterBottomModalState:() ->Unit,
-        newFilterMethod:(TextFieldValue) ->Unit
+        newFilterMethod:(TextFieldValue) ->Unit,
+        forwardSlashCommands: List<ForwardSlashCommands>
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -187,13 +188,14 @@ object MainChat{
                         )
                     },
                     modStatus = modStatus,
-                    filterMethod = { username, text -> filterMethod(username, text) },
+
                     sendMessageToWebSocket = {chatMessage -> sendMessageToWebSocket(chatMessage)},
                     showModal ={
                         coroutineScope.launch { drawerState.open() }
                     },
                     showOuterBottomModalState ={showOuterBottomModalState()},
-                    newFilterMethod={newTextValue -> newFilterMethod(newTextValue)}
+                    newFilterMethod={newTextValue -> newFilterMethod(newTextValue)},
+                    forwardSlashCommands =forwardSlashCommands
                 )
 
             }, // end of enter chat
@@ -249,8 +251,8 @@ object MainChat{
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Red)
             ) {
+
                 autoScrollingChat()
                 enterChat(
                     Modifier
