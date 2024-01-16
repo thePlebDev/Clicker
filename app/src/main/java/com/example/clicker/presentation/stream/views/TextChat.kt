@@ -188,8 +188,14 @@ object TextChat{
                     .background(Color.DarkGray)
                     .padding(10.dp)){
                     items(commandList){command ->
-                        Text(command.title, fontSize = 18.sp, color = onPrimaryColor, fontWeight = FontWeight.ExtraBold)
-                        Text(command.subtitle, fontSize = 16.sp, color = onPrimaryColor, modifier = Modifier.padding(start=5.dp,bottom=5.dp))
+                        Column(
+                            modifier = Modifier.clickable {
+                                Log.d("ForwardSlashClick","clicked --> ${command.clickValue}")
+                            }
+                        ){
+                            Text(command.title, fontSize = 18.sp, color = onPrimaryColor, fontWeight = FontWeight.ExtraBold)
+                            Text(command.subtitle, fontSize = 16.sp, color = onPrimaryColor, modifier = Modifier.padding(start=5.dp,bottom=5.dp))
+                        }
                     }
                 }
             }

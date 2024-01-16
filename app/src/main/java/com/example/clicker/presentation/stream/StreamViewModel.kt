@@ -109,7 +109,8 @@ data class ClickedUIState(
 )
 data class ForwardSlashCommands(
     val title:String,
-    val subtitle:String
+    val subtitle:String,
+    val clickValue:String
 )
 
 @HiltViewModel
@@ -388,15 +389,18 @@ class StreamViewModel @Inject constructor(
     val forwardSlashCommandList = listOf<ForwardSlashCommands>(
         ForwardSlashCommands(
             title ="/block [username]",
-            subtitle = "Block a user from interacting with you on Twitch"
+            subtitle = "Block a user from interacting with you on Twitch",
+            clickValue = "/block"
         ),
         ForwardSlashCommands(
             title ="/unblock [username]",
-            subtitle = "Block a user from interacting with you on Twitch"
+            subtitle = "Remove user from your block list                          ",
+            clickValue = "/unblock"
         ),
         ForwardSlashCommands(
             title ="/color [color]",
-            subtitle = "Change your username color, i.e, blue, green, ect"
+            subtitle = "Change your username color, i.e, blue, green, ect",
+            clickValue = "/color"
         ),
     )
     var parsingIndex:Int =0
@@ -426,19 +430,19 @@ class StreamViewModel @Inject constructor(
 
 
             if(currentCharacter.toString()==""){
-                negateSlashCommandStateNClearForwardSlashCommands()
+                //negateSlashCommandStateNClearForwardSlashCommands()
                 endParsingNClearFilteredChatList()
             }
 
 
             if(textFieldValue.selection.start < parsingIndex && startParsing){
                 endParsingNClearFilteredChatList()
-                negateSlashCommandStateNClearForwardSlashCommands()
+               // negateSlashCommandStateNClearForwardSlashCommands()
             }
 
             if (currentCharacter.toString() == " " && startParsing){
                 endParsingNClearFilteredChatList()
-                negateSlashCommandStateNClearForwardSlashCommands()
+               // negateSlashCommandStateNClearForwardSlashCommands()
             }
             /**---------set parsing to false should be above this line----------------*/
             if(startParsing){
@@ -449,13 +453,13 @@ class StreamViewModel @Inject constructor(
                 showFilteredChatListNStartParsing(textFieldValue)
             }
 
-            if(!startParsing && currentCharacter.toString() == "/"){
-                startSlashParsingNCheckOrientation(textFieldValue)
-            }
-
-            if(slashCommandState){
-                filterForwardSlashCommands(textFieldValue,_deviceIsHorizontal.value)
-            }
+//            if(!startParsing && currentCharacter.toString() == "/"){
+//                startSlashParsingNCheckOrientation(textFieldValue)
+//            }
+//
+//            if(slashCommandState){
+//                filterForwardSlashCommands(textFieldValue,_deviceIsHorizontal.value)
+//            }
 
         }catch (e:Exception){
             endParsingNClearFilteredChatList()
@@ -465,6 +469,14 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     * startSlashParsingNCheckOrientation main function is to set the [slashCommandState] to true and the
+     * [slashCommandIndex] to the selection of the [textFieldValue]. The secondary function is to check the
+     * device orientation by using the [_deviceIsHorizontal] conditional. If true, [filteredChatList] is added to.
+     * If false, [forwardSlashCommands] is added to
+     *
+     * @param textFieldValue the value that the user is currently typing
+     * */
     private fun startSlashParsingNCheckOrientation(textFieldValue: TextFieldValue){
         slashCommandState = true
         slashCommandIndex = textFieldValue.selection.start
