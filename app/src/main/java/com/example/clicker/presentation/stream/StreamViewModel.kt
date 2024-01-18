@@ -386,38 +386,12 @@ class StreamViewModel @Inject constructor(
 
     }
 
-    val forwardSlashCommandList = listOf<ForwardSlashCommands>(
-        ForwardSlashCommands(
-            title ="/block [username]",
-            subtitle = "Block a user from interacting with you on Twitch",
-            clickValue = "/block"
-        ),
-        ForwardSlashCommands(
-            title ="/unblock [username]",
-            subtitle = "Remove user from your block list                          ",
-            clickValue = "/unblock"
-        ),
-        ForwardSlashCommands(
-            title ="/color [color]",
-            subtitle = "Change your username color, i.e, blue, green, ect",
-            clickValue = "/color"
-        ),
-    )
+
     var parsingIndex:Int =0
     var startParsing:Boolean = false
 
     var slashCommandState:Boolean = false
     var slashCommandIndex:Int =0
-    private fun checkForParsing(currentCharacter:String){
-        if(currentCharacter == "/" && slashCommandState){
-            forwardSlashCommands.clear()
-
-            forwardSlashCommands.addAll(forwardSlashCommandList)
-            Log.d("forwardSlashCommandList",forwardSlashCommands.toString())
-        }
-
-
-    }
 
 
 
@@ -430,19 +404,18 @@ class StreamViewModel @Inject constructor(
 
 
             if(currentCharacter.toString()==""){
-                //negateSlashCommandStateNClearForwardSlashCommands()
                 endParsingNClearFilteredChatList()
             }
 
 
             if(textFieldValue.selection.start < parsingIndex && startParsing){
                 endParsingNClearFilteredChatList()
-               // negateSlashCommandStateNClearForwardSlashCommands()
+
             }
 
             if (currentCharacter.toString() == " " && startParsing){
                 endParsingNClearFilteredChatList()
-               // negateSlashCommandStateNClearForwardSlashCommands()
+
             }
             /**---------set parsing to false should be above this line----------------*/
             if(startParsing){
@@ -453,13 +426,6 @@ class StreamViewModel @Inject constructor(
                 showFilteredChatListNStartParsing(textFieldValue)
             }
 
-//            if(!startParsing && currentCharacter.toString() == "/"){
-//                startSlashParsingNCheckOrientation(textFieldValue)
-//            }
-//
-//            if(slashCommandState){
-//                filterForwardSlashCommands(textFieldValue,_deviceIsHorizontal.value)
-//            }
 
         }catch (e:Exception){
             endParsingNClearFilteredChatList()
@@ -469,53 +435,8 @@ class StreamViewModel @Inject constructor(
 
     }
 
-    /**
-     * startSlashParsingNCheckOrientation main function is to set the [slashCommandState] to true and the
-     * [slashCommandIndex] to the selection of the [textFieldValue]. The secondary function is to check the
-     * device orientation by using the [_deviceIsHorizontal] conditional. If true, [filteredChatList] is added to.
-     * If false, [forwardSlashCommands] is added to
-     *
-     * @param textFieldValue the value that the user is currently typing
-     * */
-    private fun startSlashParsingNCheckOrientation(textFieldValue: TextFieldValue){
-        slashCommandState = true
-        slashCommandIndex = textFieldValue.selection.start
-        forwardSlashCommands.clear()
-        filteredChatList.clear()
-        if(_deviceIsHorizontal.value){
-            val listOfCommands = forwardSlashCommandList.map { it.title }
-            filteredChatList.addAll(listOfCommands)
-        }else{
-            forwardSlashCommands.addAll(forwardSlashCommandList)
-        }
-    }
-
-    /**
-     * showFilteredChatListNStartParsing is a private function called when the current character the user is
-     * typing is equal to ***@***. It sets [parsingIndex] to the current character index,[startParsing] to true
-     * and adds all the current usernames in chat to [filteredChatList]
-     *
-     * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing
-     * */
-    private fun filterForwardSlashCommands(
-        textFieldValue: TextFieldValue,
-        deviceIsHorizontal:Boolean
-    ){
-
-        val parsingCommand =textFieldValue.text.subSequence(slashCommandIndex,textFieldValue.selection.end)
-        val currentCharacterRegex = Regex("^/$parsingCommand",RegexOption.IGNORE_CASE)
-        if(deviceIsHorizontal){
-            filteredChatList.removeIf{
-                !it.contains(currentCharacterRegex)
-            }
-        }else{
-            forwardSlashCommands.removeIf{
-                !it.title.contains(currentCharacterRegex)
-            }
-        }
 
 
-    }
     /**
      * showFilteredChatListNStartParsing is a private function called when the current character the user is
      * typing is equal to ***@***. It sets [parsingIndex] to the current character index,[startParsing] to true
