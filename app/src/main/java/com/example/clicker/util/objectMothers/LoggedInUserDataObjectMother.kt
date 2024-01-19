@@ -1,6 +1,6 @@
 package com.example.clicker.util.objectMothers
 
-import com.example.clicker.network.websockets.models.LoggedInUserData
+import com.example.clicker.network.models.websockets.LoggedInUserData
 
 class LoggedInUserDataObjectMother private constructor() {
 

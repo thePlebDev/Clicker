@@ -1,4 +1,4 @@
-package com.example.clicker.network.websockets.models
+package com.example.clicker.network.models.websockets
 
 import com.example.clicker.network.websockets.MessageType
 

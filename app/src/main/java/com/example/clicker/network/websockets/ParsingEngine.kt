@@ -2,9 +2,9 @@ package com.example.clicker.network.websockets
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import com.example.clicker.network.websockets.models.LoggedInUserData
-import com.example.clicker.network.websockets.models.RoomState
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.models.websockets.LoggedInUserData
+import com.example.clicker.network.models.websockets.RoomState
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import javax.inject.Inject
 import okhttp3.WebSocket
@@ -15,7 +15,7 @@ import okhttp3.WebSocket
 class ParsingEngine @Inject constructor() {
     var globalId = 1
     val initialState = mutableStateOf("")
-    private var initialRoomState:RoomState = RoomState(false,false,false,false,0,0)
+    private var initialRoomState: RoomState = RoomState(false,false,false,false,0,0)
 
     /**
      * clearChatTesting() a triggered inside of [TwitchWebSocket] once a " CLEARCHAT " command is found.

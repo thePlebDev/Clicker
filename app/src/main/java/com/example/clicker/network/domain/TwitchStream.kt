@@ -1,13 +1,12 @@
 package com.example.clicker.network.domain
 
-import com.example.clicker.network.BanUser
+import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.util.Response
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.Flow
 
 

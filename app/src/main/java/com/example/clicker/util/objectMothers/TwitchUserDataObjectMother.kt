@@ -1,7 +1,7 @@
 package com.example.clicker.util.objectMothers
 
 import com.example.clicker.network.websockets.MessageType
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.models.websockets.TwitchUserData
 
 class TwitchUserDataObjectMother private constructor() {
 

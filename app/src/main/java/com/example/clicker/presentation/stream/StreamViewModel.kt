@@ -14,15 +14,15 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.BanUser
-import com.example.clicker.network.BanUserData
+import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.websockets.MessageType
-import com.example.clicker.network.websockets.domain.TwitchSocket
-import com.example.clicker.network.websockets.models.LoggedInUserData
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.domain.TwitchSocket
+import com.example.clicker.network.models.websockets.LoggedInUserData
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -608,7 +608,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
     chatList.add(data)
 }
-    fun notifyChatOfBanTimeoutEvent(chatList: SnapshotStateList<TwitchUserData>,message: String?){
+    fun notifyChatOfBanTimeoutEvent(chatList: SnapshotStateList<TwitchUserData>, message: String?){
         val data = TwitchUserDataObjectMother
             .addMessageType(MessageType.JOIN)
             .addUserType(message)

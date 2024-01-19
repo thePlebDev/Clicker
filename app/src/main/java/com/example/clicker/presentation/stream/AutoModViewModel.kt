@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.domain.AutoModSettings
-import com.example.clicker.network.domain.IndividualAutoModSettings
+
 import com.example.clicker.network.domain.TwitchStream
+import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.presentation.stream.views.TitleSubTitle
 import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName

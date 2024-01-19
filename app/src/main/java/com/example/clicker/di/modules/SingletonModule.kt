@@ -3,14 +3,14 @@ package com.example.clicker.di.modules
 import android.content.Context
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
-import com.example.clicker.network.websockets.domain.TwitchSocket
+import com.example.clicker.network.domain.TwitchSocket
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

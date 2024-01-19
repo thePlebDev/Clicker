@@ -1,6 +1,6 @@
 package com.example.clicker
 
-import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.repository.TwitchRepoImpl
