@@ -1,8 +1,8 @@
-package com.example.clicker.network.websockets.domain
+package com.example.clicker.network.domain
 
-import com.example.clicker.network.websockets.models.LoggedInUserData
-import com.example.clicker.network.websockets.models.RoomState
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.models.websockets.LoggedInUserData
+import com.example.clicker.network.models.websockets.RoomState
+import com.example.clicker.network.models.websockets.TwitchUserData
 import kotlinx.coroutines.flow.StateFlow
 
 /**

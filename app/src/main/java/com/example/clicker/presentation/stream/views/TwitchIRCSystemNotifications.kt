@@ -11,7 +11,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -34,8 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
-import com.example.clicker.network.websockets.models.TwitchUserAnnouncement
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.stream.views.MainChat.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.SwipeToDelete.SwipeToDeleteChatMessages
 

@@ -1,8 +1,8 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
-import com.example.clicker.network.BanUser
-import com.example.clicker.network.TwitchClient
+import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream

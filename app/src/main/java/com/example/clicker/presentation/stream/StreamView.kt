@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.TextFieldValue
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs

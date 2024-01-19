@@ -1,4 +1,4 @@
-package com.example.clicker.network
+package com.example.clicker.network.clients
 
 
 import com.example.clicker.network.models.twitchStream.ChatSettings

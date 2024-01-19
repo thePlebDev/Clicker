@@ -1,5 +1,6 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData

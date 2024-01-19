@@ -1,12 +1,11 @@
 package com.example.clicker.network.websockets
 
 import android.util.Log
-import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.websockets.domain.TwitchSocket
-import com.example.clicker.network.websockets.models.LoggedInUserData
-import com.example.clicker.network.websockets.models.RoomState
-import com.example.clicker.network.websockets.models.TwitchUserData
+import com.example.clicker.network.domain.TwitchSocket
+import com.example.clicker.network.models.websockets.LoggedInUserData
+import com.example.clicker.network.models.websockets.RoomState
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -16,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request

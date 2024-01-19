@@ -1,7 +1,5 @@
 package com.example.clicker.presentation.stream.views
 
-import android.content.res.Resources
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -45,8 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.websockets.models.TwitchUserData
-import com.example.clicker.util.SwipeableActionsState
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.launch
 import kotlin.math.abs
