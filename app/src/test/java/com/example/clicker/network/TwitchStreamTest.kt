@@ -1,8 +1,11 @@
 package com.example.clicker.network
 
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.FollowedLiveStreams
 import com.example.clicker.network.models.StreamData
+import com.example.clicker.network.models.ValidatedUser
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.util.Response
 import com.google.gson.Gson
@@ -17,18 +20,19 @@ import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class TwitchStreamTest {
-    object RetrofitHelper {
+object RetrofitHelper {
 
-        fun testClientInstance(url: String): TwitchClient {
-            return Retrofit.Builder()
-                .baseUrl(url)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build().create(TwitchClient::class.java)
-        }
+    fun testClientInstance(url: String): TwitchClient {
+        return Retrofit.Builder()
+            .baseUrl(url)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(TwitchClient::class.java)
     }
+}
+class TwitchStreamTest {
 
-    private lateinit var underTest: TwitchRepo
+
+    private lateinit var underTest: TwitchStream
     private lateinit var twitchClient: TwitchClient
     private lateinit var mockWebServer: MockWebServer
 
@@ -53,9 +57,7 @@ class TwitchStreamTest {
 
         /**GIVEN*/
 
-        val response = FollowedLiveStreams(
-            data = listOf<StreamData>()
-        )
+        val response = ValidatedUser("","", listOf(""),"",2)
         val expectedJson = Gson().toJson(response)
 
         // Enqueue a MockResponse with the expected JSON
@@ -66,7 +68,7 @@ class TwitchStreamTest {
 
         /**WHEN*/
         /**WHEN*/
-        val actualResponse = underTest.getFollowedLiveStreams("dsfgsg", "trewtfds", "gfdsgf").last()
+        val actualResponse = underTest.getChatSettings("","","").last()
 
         /**THEN*/
 
