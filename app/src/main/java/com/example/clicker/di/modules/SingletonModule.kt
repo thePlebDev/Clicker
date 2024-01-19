@@ -11,6 +11,8 @@ import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.domain.TwitchSocket
+import com.example.clicker.network.repository.TwitchAuthenticationImpl
+import com.example.clicker.network.repository.TwitchStreamImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,13 +51,13 @@ object SingletonModule {
     }
 
     @Provides
-    fun provideTwitchAuthRepo(twitchRepoImpl: TwitchRepoImpl): TwitchAuthentication {
-        return twitchRepoImpl
+    fun provideTwitchAuthRepo(twitchAuthenticationImpl: TwitchAuthenticationImpl): TwitchAuthentication {
+        return twitchAuthenticationImpl
     }
 
     @Provides
-    fun provideTwitchStreamRepo(twitchRepoImpl: TwitchRepoImpl): TwitchStream {
-        return twitchRepoImpl
+    fun provideTwitchStreamRepo(twitchStreamImpl: TwitchStreamImpl): TwitchStream {
+        return twitchStreamImpl
     }
 
     @Provides
