@@ -3,16 +3,13 @@ package com.example.clicker.presentation.authentication
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.domain.TwitchTokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.ValidatedUser
-import com.example.clicker.presentation.MainDispatcherRule
+import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.util.Response
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -102,7 +99,7 @@ class AuthenticationViewModelTest {
     fun testing_get_live_channels_found_stored_oAuthToken() = runTest{// Takes scheduler from Main
         // Any TestDispatcher created here also takes the scheduler from Main
         /**GIVEN*/
-        val validatedUser =ValidatedUser("","", listOf(""),"",32)
+        val validatedUser = ValidatedUser("","", listOf(""),"",32)
 
         val fakeAuthenticationToken ="fdsa85930fjw[tnv;0"
         `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit(fakeAuthenticationToken)})

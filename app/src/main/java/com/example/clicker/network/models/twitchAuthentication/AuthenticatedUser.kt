@@ -1,4 +1,4 @@
-package com.example.clicker.network.models
+package com.example.clicker.network.models.twitchAuthentication
 
 data class AuthenticatedUser(
     val clientId: String,

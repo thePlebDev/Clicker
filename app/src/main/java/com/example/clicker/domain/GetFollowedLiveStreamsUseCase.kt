@@ -1,12 +1,11 @@
 package com.example.clicker.domain
 
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.FollowedLiveStreams
-import com.example.clicker.network.models.toStreamInfo
+import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
+import com.example.clicker.network.models.twitchRepo.toStreamInfo
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import javax.inject.Inject
-import kotlinx.coroutines.flow.map
 
 class GetFollowedLiveStreamsUseCase @Inject constructor(
     private val twitchRepoImpl: TwitchRepo

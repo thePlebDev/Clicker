@@ -1,4 +1,4 @@
-package com.example.clicker.network.models
+package com.example.clicker.network.models.twitchRepo
 
 import com.example.clicker.presentation.home.StreamInfo
 import com.google.gson.annotations.SerializedName

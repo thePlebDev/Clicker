@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,7 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
-import com.example.clicker.network.models.ChatSettingsData
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.presentation.stream.AdvancedChatSettings
 
 
@@ -142,7 +141,7 @@ object ChatSettingsContainer {
     private fun SettingsSwitches(
         enableSwitches:Boolean,
         showChatSettingAlert: Boolean,
-        chatSettingsData:ChatSettingsData,
+        chatSettingsData: ChatSettingsData,
         updateChatSettings:(ChatSettingsData)->Unit,
         closeAlertHeader:()->Unit,
         showUndoButton: (Boolean) -> Unit,

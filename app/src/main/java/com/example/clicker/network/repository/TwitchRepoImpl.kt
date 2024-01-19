@@ -2,18 +2,18 @@ package com.example.clicker.network.repository
 
 import android.util.Log
 import com.example.clicker.network.BanUser
-import com.example.clicker.network.BanUserResponse
 import com.example.clicker.network.TwitchClient
-import com.example.clicker.network.domain.AutoModSettings
-import com.example.clicker.network.domain.IndividualAutoModSettings
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
-import com.example.clicker.network.models.FollowedLiveStreams
-import com.example.clicker.network.models.StreamData
-import com.example.clicker.network.models.UpdateChatSettings
-import com.example.clicker.network.models.ValidatedUser
-import com.example.clicker.network.models.toStreamInfo
+import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
+import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.network.models.twitchStream.UpdateChatSettings
+import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.models.twitchRepo.toStreamInfo
+import com.example.clicker.network.models.twitchStream.AutoModSettings
+import com.example.clicker.network.models.twitchStream.BanUserResponse
+import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response

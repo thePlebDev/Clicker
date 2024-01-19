@@ -2,7 +2,7 @@ package com.example.clicker
 
 import com.example.clicker.network.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.FollowedLiveStreams
+import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.first

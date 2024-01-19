@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel

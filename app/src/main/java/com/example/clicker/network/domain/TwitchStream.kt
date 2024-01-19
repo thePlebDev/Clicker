@@ -1,52 +1,48 @@
 package com.example.clicker.network.domain
 
 import com.example.clicker.network.BanUser
-import com.example.clicker.network.BanUserResponse
-import com.example.clicker.network.models.ChatSettings
-import com.example.clicker.network.models.UpdateChatSettings
+import com.example.clicker.network.models.twitchStream.AutoModSettings
+import com.example.clicker.network.models.twitchStream.BanUserResponse
+import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
+import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.Flow
-/**
- * AutoModSettings is used to represent data received from the ***https://api.twitch.tv/helix/moderation/automod/settings***
- * end point
- * - Read more about the end point on the official documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#get-automod-settings)
- * */
-data class AutoModSettings(
-    val data: List<IndividualAutoModSettings>
-)
+
 
 /**
- * IndividualAutoModSettings is used to represent the individual AutoMod settings received from the ***https://api.twitch.tv/helix/moderation/automod/settings***
- * end point
- * - Read more about the end point on the official documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#get-automod-settings)
+ * TwitchStream is the interface that acts as the API for all the methods needed to interact with Twitch's Stream API
+ *
+ * @property getChatSettings a function meant to get the chat settings of the stream currently views
+ * @property updateChatSettings a function meant to update the currently viewed chat settings
+ * @property deleteChatMessage a function meant to delete a specific chat message
+ * @property banUser a function meant to ban a specific user
+ * @property unBanUser a function meant to unban a specific user
+ * @property getAutoModSettings a function meant to get the AutoMod settings of the currently viewed stream
+ * @property updateAutoModSettings a function meant to update the AutoMod settings of the currently viewed stream
  * */
-data class IndividualAutoModSettings(
-    @SerializedName("broadcaster_id")
-    val broadcasterId: String,
-    @SerializedName("moderator_id")
-    val moderatorId: String,
-    @SerializedName("overall_level")
-    val overallLevel: Int?,
-    @SerializedName("sexuality_sex_or_gender")
-    val sexualitySexOrGender: Int,
-    @SerializedName("race_ethnicity_or_religion")
-    val raceEthnicityOrReligion: Int,
-    @SerializedName("sex_based_terms")
-    val sexBasedTerms: Int,
-
-    val disability: Int,
-    val aggression: Int,
-    val misogyny:Int,
-    val bullying:Int,
-    val swearing:Int
-)
-
 
 interface TwitchStream {
 
+    /**
+     * - getChatSettings represents a GET method. A function meant to get the chat settings of the stream currently views
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * */
     suspend fun getChatSettings(oAuthToken: String, clientId: String, broadcasterId: String): Flow<Response<ChatSettings>>
 
+    /**
+     * - updateChatSettings represents a PATCH method. a function meant to update the currently viewed chat settings
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param body a [UpdateChatSettings] object that represents the new settings
+     * */
     suspend fun updateChatSettings(
         oAuthToken: String,
         clientId: String,
@@ -55,6 +51,16 @@ interface TwitchStream {
         body: UpdateChatSettings
     ): Flow<Response<Boolean>>
 
+
+    /**
+     * - deleteChatMessage represents a DELETE method. a function meant to delete a specific chat message
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param messageId a String used to represent the unique identifier of the message to be deleted
+     * */
     suspend fun deleteChatMessage(
         oAuthToken: String,
         clientId: String,
@@ -64,6 +70,16 @@ interface TwitchStream {
 
     ): Flow<Response<Boolean>>
 
+
+    /**
+     * - banUser represents a POST method. a function meant to ban a specific user
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param body a [BanUser] object meant to represent details of the ban and the user to be banned
+     * */
     suspend fun banUser(
         oAuthToken: String,
         clientId: String,
@@ -72,6 +88,15 @@ interface TwitchStream {
         body: BanUser
     ): Flow<Response<BanUserResponse>>
 
+    /**
+     * - unBanUser represents a POST method. a function meant to unban a specific user
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param userId a String representing the Id of the user to be unbanned with this method call
+     * */
     suspend fun unBanUser(
         oAuthToken: String,
         clientId: String,
@@ -81,6 +106,14 @@ interface TwitchStream {
 
     ): Flow<Response<Boolean>>
 
+    /**
+     * - getAutoModSettings represents a GET method. a function meant to get the AutoMod settings of the currently viewed stream
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * */
     suspend fun getAutoModSettings(
         oAuthToken: String,
         clientId: String,
@@ -88,6 +121,14 @@ interface TwitchStream {
         moderatorId: String,
     ):Flow<Response<AutoModSettings>>
 
+
+    /**
+     * - updateAutoModSettings represents a PUT method. a function meant to update the AutoMod settings of the currently viewed stream
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param autoModSettings A [AutoModSettings] object used to represent the new updated AutoMod settings for the channel
+     * */
     suspend fun updateAutoModSettings(
         oAuthToken: String,
         clientId: String,
