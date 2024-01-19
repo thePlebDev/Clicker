@@ -42,28 +42,6 @@ data class IndividualAutoModSettings(
     val swearing:Int
 )
 
-//data class UpdateAutoModSettings(
-//    val data: List<UpdateAutoModSettingsItem>
-//)
-//
-//data class UpdateAutoModSettingsItem(
-//    @SerializedName("broadcaster_id")
-//    val broadcasterId: String,
-//    @SerializedName("moderator_id")
-//    val moderatorId: String,
-//    val overallLevel: Int?,
-//    val disability: Int,
-//    val aggression: Int,
-//    @SerializedName("sexuality_sex_or_gender")
-//    val sexualitySexOrGender: Int,
-//    val misogyny: Int,
-//    val bullying: Int,
-//    val swearing: Int,
-//    @SerializedName("race_ethnicity_or_religion")
-//    val raceEthnicityOrReligion: Int,
-//    @SerializedName("sex_based_terms")
-//    val sexBasedTerms: Int
-//)
 
 interface TwitchStream {
 
