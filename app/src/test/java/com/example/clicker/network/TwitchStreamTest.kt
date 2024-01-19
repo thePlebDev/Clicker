@@ -1,11 +1,8 @@
 package com.example.clicker.network
 
-import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
-import com.example.clicker.network.models.FollowedLiveStreams
-import com.example.clicker.network.models.StreamData
-import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.util.Response
 import com.google.gson.Gson
@@ -56,14 +53,18 @@ class TwitchStreamTest {
         /**GIVEN*/
 
         /**GIVEN*/
+        val response =  ChatSettings(
+            data = listOf<ChatSettingsData>()
+        )
 
-        val response = ValidatedUser("","", listOf(""),"",2)
+        //val response = ValidatedUser("","", listOf(""),"",2)
         val expectedJson = Gson().toJson(response)
 
         // Enqueue a MockResponse with the expected JSON
         val expectedServerResponse = MockResponse()
             .setResponseCode(200)
             .setBody(expectedJson)
+
         mockWebServer.enqueue(expectedServerResponse)
 
         /**WHEN*/

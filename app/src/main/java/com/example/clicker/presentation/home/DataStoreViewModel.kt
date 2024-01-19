@@ -7,16 +7,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.models.AuthenticatedUser
+import com.example.clicker.network.models.twitchAuthentication.AuthenticatedUser
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch

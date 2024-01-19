@@ -1,33 +1,25 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.text.input.getTextAfterSelection
 import androidx.compose.ui.text.input.getTextBeforeSelection
-import androidx.compose.ui.text.substring
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.R
-import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.BanUser
 import com.example.clicker.network.BanUserData
 import com.example.clicker.network.domain.TwitchStream
-import com.example.clicker.network.models.ChatSettingsData
-import com.example.clicker.network.models.UpdateChatSettings
-import com.example.clicker.network.models.UpdatedChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.websockets.MessageType
-import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.websockets.domain.TwitchSocket
 import com.example.clicker.network.websockets.models.LoggedInUserData
 import com.example.clicker.network.websockets.models.TwitchUserData
@@ -35,7 +27,6 @@ import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.regex.Pattern
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
@@ -57,7 +48,7 @@ data class ChattingUser(
 data class ModChatSettings(
     val showChatSettingAlert: Boolean = false,
     val showUndoButton:Boolean = false,
-    val data:ChatSettingsData = ChatSettingsData(
+    val data: ChatSettingsData = ChatSettingsData(
         slowMode = false,slowModeWaitTime = null,
         followerMode = false, followerModeDuration =null ,
         subscriberMode = false,emoteMode=false

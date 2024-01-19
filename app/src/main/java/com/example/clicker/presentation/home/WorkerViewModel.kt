@@ -2,16 +2,12 @@ package com.example.clicker.presentation.home
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.work.WorkInfo
-import com.example.clicker.data.TokenDataStore
-import com.example.clicker.data.TokenValidationWorker
-import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.models.AuthenticatedUser
-import com.example.clicker.network.models.StreamData
+import com.example.clicker.network.models.twitchAuthentication.AuthenticatedUser
+import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

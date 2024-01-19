@@ -1,12 +1,14 @@
 package com.example.clicker.network
 
-import com.example.clicker.network.domain.AutoModSettings
-import com.example.clicker.network.domain.IndividualAutoModSettings
-import com.example.clicker.network.models.ChatSettings
-import com.example.clicker.network.models.ChatSettingsResponse
-import com.example.clicker.network.models.FollowedLiveStreams
-import com.example.clicker.network.models.UpdateChatSettings
-import com.example.clicker.network.models.ValidatedUser
+
+import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsResponse
+import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
+import com.example.clicker.network.models.twitchStream.UpdateChatSettings
+import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.models.twitchStream.AutoModSettings
+import com.example.clicker.network.models.twitchStream.BanUserResponse
+import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -226,14 +228,4 @@ data class BanUserData(
     val duration: Int? = null
 )
 
-data class BanUserResponse(
-    val data: List<BanUserResponseData>
-)
 
-data class BanUserResponseData(
-    val broadcaster_id: String,
-    val moderator_id: String,
-    val user_id: String,
-    val created_at: String,
-    val end_time: String? // Note that end_time can be null
-)

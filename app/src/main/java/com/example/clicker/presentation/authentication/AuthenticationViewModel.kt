@@ -6,11 +6,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.data.TokenValidationWorker
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.domain.TwitchTokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.models.ValidatedUser
+import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.home.MainBusState
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
