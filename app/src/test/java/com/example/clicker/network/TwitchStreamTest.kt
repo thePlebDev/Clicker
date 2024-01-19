@@ -11,13 +11,13 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class TwitchRepoImplTest {
+class TwitchStreamTest {
     object RetrofitHelper {
 
         fun testClientInstance(url: String): TwitchClient {
@@ -32,7 +32,7 @@ class TwitchRepoImplTest {
     private lateinit var twitchClient: TwitchClient
     private lateinit var mockWebServer: MockWebServer
 
-//
+    //
     @Before
     fun setUp() {
         mockWebServer = MockWebServer()
@@ -41,7 +41,7 @@ class TwitchRepoImplTest {
         underTest = TwitchRepoImpl(twitchClient)
     }
 
-//
+    //
     @After
     fun tearDown() {
         mockWebServer.shutdown()
@@ -49,6 +49,8 @@ class TwitchRepoImplTest {
 
     @Test
     fun testingGetAllFollowedStreamsSuccess() = runTest {
+        /**GIVEN*/
+
         /**GIVEN*/
 
         val response = FollowedLiveStreams(
@@ -63,13 +65,12 @@ class TwitchRepoImplTest {
         mockWebServer.enqueue(expectedServerResponse)
 
         /**WHEN*/
+        /**WHEN*/
         val actualResponse = underTest.getFollowedLiveStreams("dsfgsg", "trewtfds", "gfdsgf").last()
 
         /**THEN*/
-        assertEquals(Response.Success(response), actualResponse)
+
+        /**THEN*/
+        Assert.assertEquals(Response.Success(response), actualResponse)
     }
-
-
-
-
 }
