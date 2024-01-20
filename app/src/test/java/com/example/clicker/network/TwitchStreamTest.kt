@@ -5,6 +5,7 @@ import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.TwitchRepoImpl
+import com.example.clicker.network.repository.TwitchStreamImpl
 import com.example.clicker.util.Response
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.last
@@ -40,7 +41,7 @@ class TwitchStreamTest {
         mockWebServer = MockWebServer()
         mockWebServer.start()
         twitchClient = RetrofitHelper.testClientInstance(mockWebServer.url("/").toString())
-        underTest = TwitchRepoImpl(twitchClient)
+        underTest = TwitchStreamImpl(twitchClient)
     }
 
     //
