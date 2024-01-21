@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
+import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
@@ -58,7 +59,8 @@ class TwitchRepoImpl @Inject constructor(
                     Exception("Network Error! Please check your connection and try again")
                 )
             )
-        } else {
+        }
+        else {
             emit(Response.Failure(Exception("Error getting streams! Please try again")))
         }
     }
