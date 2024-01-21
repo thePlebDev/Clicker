@@ -1,7 +1,9 @@
 package com.example.clicker.network
 
+import com.example.clicker.di.modules.SingletonModule
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.interceptors.LoggingInterceptor
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.repository.TwitchRepoImpl
@@ -9,6 +11,7 @@ import com.example.clicker.util.Response
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
+import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -20,10 +23,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class TwitchRepoImplTest {
     object RetrofitHelper {
+        val loggingClient = OkHttpClient.Builder()
+            .addInterceptor(LoggingInterceptor())
+            .build()
 
         fun testClientInstance(url: String): TwitchClient {
             return Retrofit.Builder()
                 .baseUrl(url)
+               .client(loggingClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build().create(TwitchClient::class.java)
         }

@@ -11,6 +11,10 @@ import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.domain.TwitchSocket
+import com.example.clicker.network.interceptors.LiveNetworkMonitor
+import com.example.clicker.network.interceptors.LoggingInterceptor
+import com.example.clicker.network.interceptors.NetworkMonitor
+import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
 import dagger.Module
@@ -21,6 +25,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -28,12 +33,25 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 object SingletonModule {
 
+    @Provides
+    fun provideNetworkMonitor(
+        @ApplicationContext appContext: Context
+    ): NetworkMonitor{
+        return LiveNetworkMonitor(appContext)
+    }
+
     @Singleton
     @Provides
-    fun providesTwitchClient(): TwitchClient {
+    fun providesTwitchClient(
+        liveNetworkMonitor: NetworkMonitor
+    ): TwitchClient {
+         val monitorClient = OkHttpClient.Builder()
+            .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
+            .build()
         return Retrofit.Builder()
             .baseUrl("https://api.twitch.tv/helix/")
             .addConverterFactory(GsonConverterFactory.create())
+            .client(monitorClient)
             .build().create(TwitchClient::class.java)
     }
 
@@ -71,4 +89,6 @@ object SingletonModule {
     ): TwitchSocket {
         return TwitchWebSocket(tokenDataStore,twitchParsingEngine)
     }
+
+
 }
