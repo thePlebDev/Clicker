@@ -41,36 +41,7 @@ import retrofit2.http.Url
  * */
 interface TwitchClient {
 
-    // TODO:NEED TO DO SPECIAL TESTING WITH A INTERCEPTOR FOR THE METHODS WITH THE DYNAMIC URLS
-    // TODO: THIS WILL DO DONE WHEN I ADD A NETWORK MONITOR INTERCEPTOR
-    /**
-     * - represented as a GET method. This function is used to verify the validity of the [authorization] token with
-     * the Twitch servers
-     *
-     * @param url a String used to represent a dynamic URL.
-     * @param authorization a String used to represent the OAuth token that is being sent to be validated
-     * */
-    @GET
-    suspend fun validateToken(
-        @Url url: String = "https://id.twitch.tv/oauth2/validate",
-        @Header("Authorization") authorization: String
-    ): Response<ValidatedUser>
 
-    /**
-     * - logout represents a POST method. This function meant to end the users logged in session with the Twitch server
-     *
-     * @param url a String used to represent a dynamic URL of where this request is being sent.
-     * @param clientId a String used to represent the clientId(unique identifier) of this application
-     * @param token a String used to represent the OAuth token that uniquely identifies this user's granted abilities
-     * */
-    @Headers("Content-Typ: application/x-www-form-urlencoded")
-    @FormUrlEncoded
-    @POST
-    suspend fun logout(
-        @Url url: String = "https://id.twitch.tv/oauth2/revoke",
-        @Field("client_id") clientId: String,
-        @Field("token") token: String
-    ): Response<Void>
 
     /**
      * - getFollowedStreams represents a GET method. a function meant to get all of the user's live followed streams

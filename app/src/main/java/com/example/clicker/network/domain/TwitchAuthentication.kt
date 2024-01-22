@@ -17,7 +17,9 @@ interface TwitchAuthentication {
      *
      * @param token a String representing a oAuth token
      * */
-    suspend fun validateToken(token: String): Flow<Response<ValidatedUser>>
+    suspend fun validateToken(
+        url:String="https://id.twitch.tv/oauth2/validate",
+        token: String): Flow<Response<ValidatedUser>>
 
     /**
      * logout is a function that is called to end the user's logged in session

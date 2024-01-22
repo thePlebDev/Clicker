@@ -25,7 +25,7 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val token = inputData.getString("token")
         Log.d("doWorkToken", " doWorkToken --> $token")
-        val response = twitchRepoImpl.validateToken(token!!)
+        val response = twitchRepoImpl.validateToken("https://id.twitch.tv/oauth2/validate",token!!)
             .drop(1) // skip the first emission of LOADING
             .firstOrNull() // will catch either SUCCESS OF FAILURE
 

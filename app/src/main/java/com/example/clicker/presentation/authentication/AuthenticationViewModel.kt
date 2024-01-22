@@ -150,7 +150,7 @@ class AuthenticationViewModel @Inject constructor(
         oAuthenticationToken: String
     ) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken(oAuthenticationToken).collect { response ->
+            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken).collect { response ->
 
                 when (response) {
                     is Response.Loading -> {
