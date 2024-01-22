@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -14,9 +15,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 
+/**
+ * TwitchAuthenticationImpl the implementation class of [TwitchAuthentication]. This class contains all the methods
+ * relating to Twitch's authentication system
+ * */
 class TwitchAuthenticationImpl @Inject constructor(
     private val twitchClient: TwitchAuthenticationClient
 ): TwitchAuthentication {
@@ -33,24 +39,7 @@ class TwitchAuthenticationImpl @Inject constructor(
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->
-        if(cause is NoNetworkException){
-            emit(
-                Response.Failure(
-                    Exception("Network Error, please try again later")
-                )
-            )
-        }
-        Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
-        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            emit(
-                Response.Failure(
-                    Exception("Network Error! Please check your connection and try again")
-                )
-            )
-        } else {
-            emit(Response.Failure(Exception("Logout Error! Please try again")))
-        }
+        handleException(cause)
     }
 
     override suspend fun validateToken(
@@ -74,22 +63,9 @@ class TwitchAuthenticationImpl @Inject constructor(
         }
     }.catch { cause ->
 
-        if(cause is NoNetworkException){
+        handleException(cause)
 
-            emit(
-                Response.Failure(
-                    Exception("Network Error, please try again later")
-                )
-            )
-        }
-        if (cause is UnknownHostException) {
-            emit(
-                Response.Failure(
-                    Exception("Network Error! Please check your connection and try again")
-                )
-            )
-        } else {
-            emit(Response.Failure(Exception("Error! Please try again")))
-        }
     }
 }
+
+

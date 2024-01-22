@@ -8,8 +8,14 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.Url
 
+/**
+ * TwitchAuthenticationClient is the interface meant to act as the HTTP client that interacts with the Twitch Authentication
+ * servers.All methods regarding authentication with reside inside of this interface
+ *
+ *  @property validateToken a function meant to validate a token with the Twitch servers
+ * @property logout a function meant to end the users logged in session
+ * */
 interface TwitchAuthenticationClient {
 
     /**

@@ -1,9 +1,13 @@
 package com.example.clicker.network.repository
 
+import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.interceptors.NetworkMonitor
+import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
+import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.repository.util.TwitchAuthenticationClientBuilder
 import com.example.clicker.util.Response
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.last
@@ -27,42 +31,18 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 
 
-class NetworkTesting(): NetworkMonitor {
-    override fun isConnected(): Boolean {
-        return false
-    }
-
-}
-
-
-
 class TwitchAuthenticationImplTest {
     private lateinit var underTest: TwitchAuthentication
-    private lateinit var twitchClient: TwitchClient
+    private lateinit var twitchClient: TwitchAuthenticationClient
     private lateinit var mockWebServer: MockWebServer
 
-    object RetrofitHelper {
-        val loggingClient = OkHttpClient.Builder()
-            //.addInterceptor(NetworkMonitorInterceptor(NetworkTesting()))
-            .build()
-
-        fun testClientInstance(url: String): TwitchClient {
-            return Retrofit.Builder()
-                .baseUrl(url)
-                .client(loggingClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build().create(TwitchClient::class.java)
-        }
-    }
     @Before
     fun setUp() {
         mockWebServer = MockWebServer()
         mockWebServer.start()
-        twitchClient = RetrofitHelper.testClientInstance(mockWebServer.url("/").toString())
-        underTest = TwitchAuthenticationImpl(twitchClient)
+
     }
 
-    //
     @After
     fun tearDown() {
         mockWebServer.shutdown()
@@ -70,23 +50,40 @@ class TwitchAuthenticationImplTest {
 
     @Test
     fun validateTokenNoNetworkResponse()= runTest {
+
         /**GIVEN*/
-
-        val response = ValidatedUser("","", listOf(),"",2)
-        val expectedJson = Gson().toJson(response)
-
-        // Enqueue a MockResponse with the expected JSON
-        val expectedServerResponse = MockResponse()
-            .setResponseCode(200)
-            .setBody(expectedJson)
-        mockWebServer.enqueue(expectedServerResponse)
+        twitchClient = TwitchAuthenticationClientBuilder
+            .addFailingNetworkInterceptor()
+            .buildClientWithURL(mockWebServer.url("/").toString()
+            )
+        underTest = TwitchAuthenticationImpl(twitchClient)
+        val expectedResponse = "Network error, please try again later"
 
         /**WHEN*/
-        val dynamicUrl = "/dynamic/endpoint"
         val actualResponse = underTest.validateToken("","").last()
-        val expectedResponse =Response.Success(response)
 
-        Assert.assertEquals(expectedResponse, actualResponse)
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse, actualResponse.toString())
+    }
+
+    @Test
+    fun validateLogoutNoNetworkResponse() = runTest {
+        /**GIVEN*/
+        twitchClient = TwitchAuthenticationClientBuilder
+            .addFailingNetworkInterceptor()
+            .buildClientWithURL(mockWebServer.url("/").toString()
+            )
+        underTest = TwitchAuthenticationImpl(twitchClient)
+        val expectedResponse = "Network error, please try again later"
+
+        /**WHEN*/
+        val actualResponse = underTest.logout("","").last()
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse, actualResponse.toString())
+
     }
 }
 
