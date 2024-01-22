@@ -83,7 +83,7 @@ class DataStoreViewModel @Inject constructor(
     }
 
     private suspend fun validateOAuthToken(oAuthUserToken: String) {
-        twitchRepoImpl.validateToken(oAuthUserToken).collect { response ->
+        twitchRepoImpl.validateToken("https://id.twitch.tv/oauth2/validate",oAuthUserToken).collect { response ->
             when (response) {
                 is Response.Loading -> {
                     Log.d("validateOAuthUserToken", "LOADING")

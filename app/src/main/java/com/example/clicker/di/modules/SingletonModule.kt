@@ -3,6 +3,7 @@ package com.example.clicker.di.modules
 import android.content.Context
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -40,7 +41,7 @@ object SingletonModule {
         return LiveNetworkMonitor(appContext)
     }
 
-    @Singleton
+    @Singleton //scope binding
     @Provides
     fun providesTwitchClient(
         liveNetworkMonitor: NetworkMonitor
@@ -53,6 +54,21 @@ object SingletonModule {
             .addConverterFactory(GsonConverterFactory.create())
             .client(monitorClient)
             .build().create(TwitchClient::class.java)
+    }
+
+    @Singleton //scope binding
+    @Provides
+    fun providesTwitchAuthenticationClient(
+        liveNetworkMonitor: NetworkMonitor
+    ): TwitchAuthenticationClient {
+        val monitorClient = OkHttpClient.Builder()
+            .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
+            .build()
+        return Retrofit.Builder()
+            .baseUrl("https://id.twitch.tv/oauth2/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(monitorClient)
+            .build().create(TwitchAuthenticationClient::class.java)
     }
 
     @Singleton

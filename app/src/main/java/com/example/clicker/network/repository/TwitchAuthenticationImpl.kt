@@ -1,6 +1,7 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.interceptors.NoNetworkException
@@ -10,13 +11,14 @@ import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import java.net.UnknownHostException
 import javax.inject.Inject
 
 class TwitchAuthenticationImpl @Inject constructor(
-    private val twitchClient: TwitchClient
+    private val twitchClient: TwitchAuthenticationClient
 ): TwitchAuthentication {
 
     override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
@@ -31,6 +33,13 @@ class TwitchAuthenticationImpl @Inject constructor(
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->
+        if(cause is NoNetworkException){
+            emit(
+                Response.Failure(
+                    Exception("Network Error, please try again later")
+                )
+            )
+        }
         Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
         if (cause is UnknownHostException) {
@@ -44,7 +53,10 @@ class TwitchAuthenticationImpl @Inject constructor(
         }
     }
 
-    override suspend fun validateToken(token: String): Flow<Response<ValidatedUser>> = flow {
+    override suspend fun validateToken(
+        url :String,
+        token: String,
+    ): Flow<Response<ValidatedUser>> = flow {
         logCoroutineInfo("CoroutineDebugging", "Fetching from remote")
 
 
@@ -61,11 +73,12 @@ class TwitchAuthenticationImpl @Inject constructor(
             Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
     }.catch { cause ->
+
         if(cause is NoNetworkException){
-            Log.d("NoNetworkException","NO NETWORK AVALIABLE")
+
             emit(
                 Response.Failure(
-                    Exception("Network Error! Please check your connection and try again")
+                    Exception("Network Error, please try again later")
                 )
             )
         }
