@@ -28,8 +28,6 @@ import retrofit2.http.Url
  * TwitchClient is the interface that Retrofit will use and turn into a HTTP client. Specifically, this interface
  * is meant to interact with the Twitch API servers
  *
- * @property validateToken a function meant to validate a token with the Twitch servers
- * @property logout a function meant to end the users logged in session
  * @property getFollowedStreams a function meant to get all of the user's live followed streams
  * @property getChatSettings a function meant to get the chat settings of the stream currently views
  * @property updateChatSettings a function meant to update the currently viewed chat settings
