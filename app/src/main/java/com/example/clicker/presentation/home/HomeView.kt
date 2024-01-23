@@ -161,7 +161,8 @@ fun ValidationView(
         updateAuthenticatedUser={
             val certifiedUser = authenticationViewModel.validatedUser()
             homeViewModel.updateAuthenticatedUser(certifiedUser)
-        }
+        },
+        screenDensity = homeViewModel.state.value.screenDensity
 
 
 
