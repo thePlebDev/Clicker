@@ -41,6 +41,7 @@ data class HomeUIState(
     val hideModal: Boolean = false,
     val width: Int = 0,
     val aspectHeight: Int = 0,
+    val screenDensity: Float = 0f,
     val loadingLoginText: String = "Getting authentication token",
     val loginStep: Response<Boolean>? = Response.Loading,
     val failedNetworkRequest: Boolean = false,
@@ -63,6 +64,7 @@ class HomeViewModel @Inject constructor(
 
     private val _authenticatedUser = MutableStateFlow<CertifiedUser?>(null)
     val authenticatedUser: StateFlow<CertifiedUser?> = _authenticatedUser
+
 
     fun registerDomian(isRegistered: Boolean) {
         _uiState.value = _uiState.value.copy(
@@ -188,10 +190,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updateAspectWidthHeight(width: Int, aspectHeight: Int) {
+    fun updateAspectWidthHeight(width: Int, aspectHeight: Int,screenDensity:Float) {
         _uiState.value = _uiState.value.copy(
             aspectHeight = aspectHeight,
-            width = width
+            width = width,
+            screenDensity =screenDensity
         )
     }
 }

@@ -157,14 +157,14 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        val screenDensity =Resources.getSystem().displayMetrics.density
 
         val uri: Uri? = activity?.intent?.data
 
         val width = Resources.getSystem().displayMetrics.widthPixels / 2
         val aspectHeight = (width * 0.5625).toInt()
 
-        val verticalHeight = (width * 1.77777777778).toInt()
-        homeViewModel.updateAspectWidthHeight(width, aspectHeight)
+        homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
 
         Log.d("Twitchval", "uri -> $uri")
 

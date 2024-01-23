@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.home.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -115,7 +116,8 @@ object ScaffoldComponents {
         height:Int,
         width:Int,
         showFailedNetworkRequestMessage: Boolean,
-        quarterTotalScreenHeight:Int
+        quarterTotalScreenHeight:Int,
+        screenDensity:Float
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -183,7 +185,8 @@ object ScaffoldComponents {
                     clientId =clientId,
                     userId = userId,
                     height = height,
-                    width = width
+                    width = width,
+                    density =screenDensity
 
                 )
             },
@@ -307,7 +310,7 @@ object ScaffoldComponents {
             userId: String,
             height: Int,
             width: Int,
-
+            density:Float
 
             ){
             LazyColumn(
@@ -350,7 +353,8 @@ object ScaffoldComponents {
                                     userId = userId,
                                     height = height,
                                     width = width,
-                                    onNavigate = {id -> onNavigate(id)}
+                                    onNavigate = {id -> onNavigate(id)},
+                                    density =density
                                 )
 //
                             }
@@ -391,7 +395,8 @@ object ScaffoldComponents {
             userId:String,
             onNavigate: (Int) -> Unit,
             height: Int,
-            width: Int
+            width: Int,
+            density:Float
 
 
         ){
@@ -410,7 +415,8 @@ object ScaffoldComponents {
                     url = streamItem.url,
                     height = height,
                     width = width,
-                    viewCount = streamItem.views
+                    viewCount = streamItem.views,
+                    density =density
                 )
                 Parts.StreamTitleWithInfo(
                     streamerName = streamItem.streamerName,
@@ -481,18 +487,21 @@ object ScaffoldComponents {
             height: Int,
             width: Int,
             viewCount:Int,
+            density:Float
         ){
+            Log.d("ImageHeightWidth","url -> $url")
             Box() {
-
+                val adjustedHeight = height/density
+                val adjustedWidth = width/density
                 SubcomposeAsyncImage(
                     model = url,
                     loading = {
-                        Card(
-                            modifier = Modifier
-                                .height((height / 2.8).dp)
-                                .width((width / 2.8).dp),
-                            backgroundColor = MaterialTheme.colorScheme.primary
-                        ) {
+                        Column(modifier = Modifier
+                            .height((adjustedHeight).dp)
+                            .width((adjustedWidth).dp)
+                            .background(MaterialTheme.colorScheme.primary)
+                        ){
+
                         }
                     },
                     contentDescription = stringResource(R.string.sub_compose_async_image_description)

@@ -47,6 +47,8 @@ interface TwitchClient {
      * @param authorization a String used to represent the OAuth token that uniquely identifies this user's granted abilities
      * @param clientId a String used to represent the clientId(unique identifier) of this application
      * @param userId a String used to represent the OAuth token that uniquely identifies this user
+     *
+     * @return a [Response] object containing [FollowedLiveStreams]
      * */
     @GET("streams/followed")
     suspend fun getFollowedStreams(

@@ -94,7 +94,8 @@ object HomeComponents {
         height:Int,
         logout: () -> Unit,
         userIsAuthenticated: Boolean,
-        updateAuthenticatedUser: () -> Unit
+        updateAuthenticatedUser: () -> Unit,
+        screenDensity:Float
 
     ){
         Builder.HomeModalBottomSheetBuilder(
@@ -137,6 +138,7 @@ object HomeComponents {
                     updateAuthenticatedUser={
                         updateAuthenticatedUser()
                     },
+                    screenDensity =screenDensity
 
                 )
 

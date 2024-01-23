@@ -15,6 +15,7 @@ import com.example.clicker.network.models.twitchRepo.toStreamInfo
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
+import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.Response
@@ -53,19 +54,6 @@ class TwitchRepoImpl @Inject constructor(
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->
-        if (cause is UnknownHostException) {
-            emit(
-                Response.Failure(
-                    Exception("Network Error! Please check your connection and try again")
-                )
-            )
-        }
-        else {
-            emit(Response.Failure(Exception("Error getting streams! Please try again")))
-        }
+        handleException(cause)
     }
-
-
-
-
 }
