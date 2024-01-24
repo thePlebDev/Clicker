@@ -2,6 +2,7 @@ package com.example.clicker.presentation.home
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Insets
 import android.net.Uri
@@ -51,7 +52,9 @@ class HomeFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val currentOrientation = getResources().getConfiguration().orientation;
     }
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreateView(
@@ -164,7 +167,7 @@ class HomeFragment : Fragment() {
         val width = Resources.getSystem().displayMetrics.widthPixels / 2
         val aspectHeight = (width * 0.5625).toInt()
 
-        homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
+        homeViewModel.updateAspectWidthHeight(540, 303,screenDensity)
 
         Log.d("Twitchval", "uri -> $uri")
 
@@ -177,6 +180,5 @@ class HomeFragment : Fragment() {
             authenticationViewModel.setOAuthToken(authCode)
         }
     }
-    fun launchCustomTab() {
-    }
+
 }

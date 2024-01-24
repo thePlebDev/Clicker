@@ -191,15 +191,27 @@ class HomeViewModel @Inject constructor(
     }
 
     fun updateAspectWidthHeight(width: Int, aspectHeight: Int,screenDensity:Float) {
+
         _uiState.value = _uiState.value.copy(
             aspectHeight = aspectHeight,
             width = width,
             screenDensity =screenDensity
         )
     }
+    fun updateUrlWidthHeight(aspectWidth: Int, aspectHeight: Int){
+        val replacedWidthHeightList = _newUrlList.value?.map {
+            it.changeUrlWidthHeight(
+                aspectWidth,
+                aspectHeight
+            )
+        }
+
+        _newUrlList.tryEmit(replacedWidthHeightList)
+    }
 }
 
 fun StreamInfo.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamInfo {
+
     return StreamInfo(
         streamerName = this.streamerName,
         streamTitle = this.streamTitle,
