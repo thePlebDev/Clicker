@@ -8,6 +8,7 @@ import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
+import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -37,16 +38,8 @@ class TwitchStreamImpl @Inject constructor(
         }
     }.catch { cause ->
         Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
-        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            emit(
-                Response.Failure(
-                    Exception("Network Error! Please check your connection and try again")
-                )
-            )
-        } else {
-            emit(Response.Failure(Exception("Logout Error! Please try again")))
-        }
+
+        handleException(cause)
     }
 
     override suspend fun updateChatSettings(
@@ -73,12 +66,7 @@ class TwitchStreamImpl @Inject constructor(
         }
     }.catch { cause ->
         Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
-        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            emit(Response.Failure(Exception("response.message()")))
-        } else {
-            emit(Response.Failure(Exception("response.message()")))
-        }
+        handleException(cause)
     }
 
     override suspend fun deleteChatMessage(
@@ -105,11 +93,7 @@ class TwitchStreamImpl @Inject constructor(
     }.catch { cause ->
 
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            emit(Response.Failure(Exception("Failed. Network connection error")))
-        } else {
-            emit(Response.Failure(Exception("Unable to delete message")))
-        }
+        handleException(cause)
     }
 
     override suspend fun banUser(
@@ -139,13 +123,7 @@ class TwitchStreamImpl @Inject constructor(
     }.catch { cause ->
 
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            Log.d("BANUSEREXCEPTION", "UnknownHostException")
-            emit(Response.Failure(Exception("Network connection error")))
-        } else {
-            Log.d("BANUSEREXCEPTION", "Exception Happened")
-            emit(Response.Failure(Exception("Unable to ban user")))
-        }
+        handleException(cause)
     }
 
     override suspend fun unBanUser(
@@ -171,13 +149,7 @@ class TwitchStreamImpl @Inject constructor(
     }.catch { cause ->
 
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            Log.d("BANUSEREXCEPTION", "UnknownHostException")
-            emit(Response.Failure(Exception("Network connection error")))
-        } else {
-            Log.d("BANUSEREXCEPTION", "Exception Happened")
-            emit(Response.Failure(Exception("Unable to ban user")))
-        }
+        handleException(cause)
     }
 
     override suspend fun getAutoModSettings(
@@ -202,36 +174,12 @@ class TwitchStreamImpl @Inject constructor(
 
         }else{
 
-            when(response.code()){
-                400 ->{
-                    Log.d("getAutoModSettings","Bad Request")
-                    emit(Response.Failure(Exception("You are not a moderator")))
-                }
-                401 ->{
-                    Log.d("getAutoModSettings","UnAuthorized")
-                    emit(Response.Failure(Exception("You are not a moderator")))
-                }
-                403 ->{
-                    Log.d("getAutoModSettings","Forbidden you are not a moderator")
-                    emit(Response.Failure(Exception("You are not a moderator")))
-                }
-                else ->{
-                    Log.d("getAutoModSettings","Unable to get Mod settings")
-                    emit(Response.Failure(Exception("You are not a moderator")))
-                }
-            }
+            emit(Response.Failure(Exception("You are not a moderator")))
 
         }
     }.catch { cause ->
 
-        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            Log.d("getAutoModSettings", "UnknownHostException")
-            emit(Response.Failure(Exception("Network connection error")))
-        } else {
-            Log.d("getAutoModSettings", "Exception Happened")
-            emit(Response.Failure(Exception("Unable to get AutoMod settings")))
-        }
+        handleException(cause)
     }
 
     override suspend fun updateAutoModSettings(
@@ -257,12 +205,6 @@ class TwitchStreamImpl @Inject constructor(
     }.catch { cause ->
 
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        if (cause is UnknownHostException) {
-            Log.d("getAutoModSettings", "UnknownHostException")
-            emit(Response.Failure(Exception("Network connection error")))
-        } else {
-            Log.d("getAutoModSettings", "Exception Happened")
-            emit(Response.Failure(Exception("Unable to get AutoMod settings")))
-        }
+        handleException(cause)
     }
 }
