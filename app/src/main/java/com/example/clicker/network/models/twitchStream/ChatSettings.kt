@@ -27,7 +27,10 @@ data class ChatSettingsData(
 //    val uniqueChatMode: Boolean
 )
 
-
+/**
+ * Represent the data that is sent as the body to the endpoint: PATCH https://api.twitch.tv/helix/chat/settings
+ * - Read more in the documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#update-chat-settings)
+ * */
 data class UpdateChatSettings(
     val emote_mode: Boolean,
     val follower_mode: Boolean,

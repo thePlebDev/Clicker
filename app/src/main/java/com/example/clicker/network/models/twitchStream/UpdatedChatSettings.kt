@@ -3,6 +3,8 @@ package com.example.clicker.network.models.twitchStream
 import com.google.gson.annotations.SerializedName
 
 /**
+ * - CURRENTLY NOT BEING USED BUT DO NOT DELETE! This will be used in the future when more options are given to the user
+ *
  * The UpdatedChatSettings holds all the data that needs to be sent to the Twitch servers to update the current chat settings.
  * Can read more about it in the Twitch documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#update-chat-settings)
  * */

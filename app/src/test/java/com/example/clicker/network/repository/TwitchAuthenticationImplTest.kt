@@ -57,14 +57,14 @@ class TwitchAuthenticationImplTest {
             .buildClientWithURL(mockWebServer.url("/").toString()
             )
         underTest = TwitchAuthenticationImpl(twitchClient)
-        val expectedResponse = "Network error, please try again later"
+        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
 
         /**WHEN*/
         val actualResponse = underTest.validateToken("","").last()
 
 
         /**THEN*/
-        Assert.assertEquals(expectedResponse, actualResponse.toString())
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
 
     @Test
@@ -75,14 +75,14 @@ class TwitchAuthenticationImplTest {
             .buildClientWithURL(mockWebServer.url("/").toString()
             )
         underTest = TwitchAuthenticationImpl(twitchClient)
-        val expectedResponse = "Network error, please try again later"
+        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
 
         /**WHEN*/
         val actualResponse = underTest.logout("","").last()
 
 
         /**THEN*/
-        Assert.assertEquals(expectedResponse, actualResponse.toString())
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 }
