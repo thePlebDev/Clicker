@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
@@ -36,14 +37,13 @@ data class StreamInfo(
     val broadcasterId: String
 )
 data class HomeUIState(
-    val userLogginIn: Boolean = false,
-    val userProfile: String? = null,
+
     val hideModal: Boolean = false,
     val width: Int = 0,
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
-    val loadingLoginText: String = "Getting authentication token",
-    val loginStep: Response<Boolean>? = Response.Loading,
+
+
     val failedNetworkRequest: Boolean = false,
     val streamersListLoading: Response<Boolean> = Response.Loading,
     val domainIsRegistered: Boolean = false
@@ -53,7 +53,8 @@ data class HomeUIState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val tokenDataStore: TwitchDataStore,
 ) : ViewModel() {
 
     private val _newUrlList = MutableStateFlow<List<StreamInfo>?>(null)
@@ -86,6 +87,28 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+    init{
+        getOAuthToken()
+    }
+
+    private fun getOAuthToken() = viewModelScope.launch {
+        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
+
+//            if (storedOAuthToken.length > 2) {
+//
+//
+//            } else {
+//
+//            }
+            //this below will normaly go inside the else statement
+            _uiState.value = _uiState.value.copy(
+                streamersListLoading = Response.Failure(
+                    Exception("You are new here! Please login with Twitch to get access to your streams")
+                )
+            )
+
         }
     }
 

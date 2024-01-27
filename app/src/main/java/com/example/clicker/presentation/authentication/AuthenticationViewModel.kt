@@ -28,7 +28,6 @@ data class AuthenticationUIState(
 
     val showLoginButton: Boolean = true,
 
-    val loginStep1: Response<Boolean> = Response.Loading,
     val logoutError: Boolean = false,
 
     val authenticationCode: String = "", //this is the oAuthToken
@@ -83,7 +82,7 @@ class AuthenticationViewModel @Inject constructor(
          * starts the observing of the hot flow, mutableAuthenticatedUserFlow
          * */
         collectAuthenticatedUserFlow()
-        getOAuthToken()
+        //getOAuthToken()
     }
 
     private fun collectAuthenticatedUserFlow() = viewModelScope.launch {
@@ -116,32 +115,42 @@ class AuthenticationViewModel @Inject constructor(
         return user
     }
 
-    // 2) implement the methods
-    /**
-     * This is the first function to run during the login sequence
-     *
-     * upon a successful retrieval of a stored OAuth token. It is emitted to mutableAuthenticatedUserFlow as oAuthToken
-     *
-     * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
-     * */
-    private fun getOAuthToken() = viewModelScope.launch {
-        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
 
-            if (storedOAuthToken.length > 2) {
-                mutableAuthenticatedUserFlow.tryEmit(
-                    mutableAuthenticatedUserFlow.value.copy(
-                        oAuthToken = storedOAuthToken
-                    )
-                )
-            } else {
-                _authenticationUIState.value = _authenticationUIState.value.copy(
-                    showLoginModal = true,
-                    modalText = "You're new here!"
-                )
-            }
+
+
+    /**KEEP beginLogout IN THIS VIEWMODEL*/
+    fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
+//
+        _authenticationUIState.value = _authenticationUIState.value.copy(
+            showLoginModal = true,
+            modalText = "Logging out..."
+
+        )
+        withContext(ioDispatcher + CoroutineName("BeginLogout")) {
+            authentication.logout(
+                clientId = clientId,
+                token = oAuthToken
+            )
+                .collect { response ->
+                    when (response) {
+                        is Response.Loading -> {}
+                        is Response.Success -> {
+                            _authenticationUIState.value = _authenticationUIState.value.copy(
+                                modalText = "Success! Login with Twitch",
+                                authenticated = false
+                            )
+                        }
+                        is Response.Failure -> {
+                            _authenticationUIState.value = _authenticationUIState.value.copy(
+                                modalText = "Logout Error! Please try again",
+                                logoutError = true,
+                                authenticated = true
+                            )
+                        }
+                    }
+                }
         }
     }
-
     /**
      * The second method to be called in the authentication flow.
      * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
@@ -185,41 +194,31 @@ class AuthenticationViewModel @Inject constructor(
         }
     } // end validateOAuthToken
 
-    // BEGIN LOGOUT STAGE
-    fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
-//
-        _authenticationUIState.value = _authenticationUIState.value.copy(
-            showLoginModal = true,
-            modalText = "Logging out..."
+    // 2) implement the methods
+    /**
+     * This is the first function to run during the login sequence
+     *
+     * upon a successful retrieval of a stored OAuth token. It is emitted to mutableAuthenticatedUserFlow as oAuthToken
+     *
+     * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
+     * */
+    private fun getOAuthToken() = viewModelScope.launch {
+        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
 
-        )
-        withContext(ioDispatcher + CoroutineName("BeginLogout")) {
-            authentication.logout(
-                clientId = clientId,
-                token = oAuthToken
-            )
-                .collect { response ->
-                    when (response) {
-                        is Response.Loading -> {}
-                        is Response.Success -> {
-                            _authenticationUIState.value = _authenticationUIState.value.copy(
-                                modalText = "Success! Login with Twitch",
-                                authenticated = false
-                            )
-                        }
-                        is Response.Failure -> {
-                            _authenticationUIState.value = _authenticationUIState.value.copy(
-                                modalText = "Logout Error! Please try again",
-                                loginStep1 = Response.Failure(Exception("Error Logging out")),
-                                logoutError = true,
-                                authenticated = true
-                            )
-                        }
-                    }
-                }
+            if (storedOAuthToken.length > 2) {
+                mutableAuthenticatedUserFlow.tryEmit(
+                    mutableAuthenticatedUserFlow.value.copy(
+                        oAuthToken = storedOAuthToken
+                    )
+                )
+            } else {
+                _authenticationUIState.value = _authenticationUIState.value.copy(
+                    showLoginModal = true,
+                    modalText = "You're new here!"
+                )
+            }
         }
     }
-
     /**
      * Below could be possibly moved
      */

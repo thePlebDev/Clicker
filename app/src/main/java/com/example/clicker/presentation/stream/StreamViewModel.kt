@@ -662,6 +662,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
         if(_advancedChatSettingsState.value.noChatMode){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
+            //no actions are to be commited in this conditional branch
         }else{
             tokenDataStore.getUsername().collect { username ->
                 if (username.isNotEmpty()) {
