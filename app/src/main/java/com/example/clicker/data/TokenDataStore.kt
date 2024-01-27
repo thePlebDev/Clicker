@@ -38,11 +38,7 @@ class TokenDataStore @Inject constructor(
             tokens[oAuthTokenKey] = oAuthToken
         }
     }
-    override suspend fun setOneClickAction(isOneClickOn:Boolean){
-        context.dataStore.edit { item ->
-            item[oneClickActionsKey] = isOneClickOn
-        }
-    }
+
     override fun getOAuthToken(): Flow<String> {
         val oAuthToken: Flow<String> = context.dataStore.data
             .map { preferences ->
@@ -50,13 +46,7 @@ class TokenDataStore @Inject constructor(
             }
         return oAuthToken
     }
-    override fun getOneClickAction():Flow<Boolean>{
-        val isOneClickOn: Flow<Boolean> = context.dataStore.data
-            .map { preferences ->
-                preferences[oneClickActionsKey] ?: false
-            }
-        return isOneClickOn
-    }
+
 
 
     override suspend fun setUsername(username: String) {

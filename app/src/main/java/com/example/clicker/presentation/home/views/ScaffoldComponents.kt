@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home.views
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerValue
@@ -32,6 +34,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -135,10 +139,10 @@ object ScaffoldComponents {
             changeRequest = { boolean -> request = boolean },
             changeIsRefreshing = { boolean -> pullingState.isRefreshing = boolean }
         )
-
-        if (userIsLoggedIn) {
-            updateAuthenticatedUser()
-        }
+/**THIS IS WHERE WE ARE GIVING THE HOMEVIEWMODEL THE OAuth TOKEN*/
+//        if (userIsLoggedIn) {
+//            updateAuthenticatedUser()
+//        }
         Builders.ScaffoldBuilder(
             scaffoldState =scaffoldState,
             nestedScrollConnection =nestedScrollConnection,
@@ -191,7 +195,7 @@ object ScaffoldComponents {
                 )
             },
             animatedErrorMessage ={modifier ->
-                HomeComponents.Parts.AnimatedErrorMessage(
+                Parts.AnimatedErrorMessage(
                     modifier = modifier,
                     showFailedNetworkRequestMessage =showFailedNetworkRequestMessage,
                     errorMessage =stringResource(R.string.failed_request)
@@ -362,8 +366,11 @@ object ScaffoldComponents {
                         }
                     }
                     is Response.Failure -> {
+
                         item {
-                            Parts.GettingStreamsError()
+                            Parts.GettingStreamsError(
+                                errorMessage =urlListLoading.e.message ?:"Error! please pull down to refresh"
+                            )
                         }
                     }
                 }
@@ -430,6 +437,46 @@ object ScaffoldComponents {
                     .fillMaxWidth()
                     .height(10.dp)
             )
+        }
+
+        /**
+         * - Contains 0 extra parts
+         *
+         * - AnimatedErrorMessage is an animated Error message that will only be shown to the user where an error from fetching
+         * the network occurs
+         *
+         * @param modifier a modifier used to determine where this composable should be displayed
+         * @param showFailedNetworkRequestMessage a Boolean used to determine if the error message should show or not.
+         * @param errorMessage a String displaying the actual error message
+         * */
+        @Composable
+        fun AnimatedErrorMessage(
+            modifier: Modifier,
+            showFailedNetworkRequestMessage: Boolean,
+            errorMessage:String
+        ){
+            AnimatedVisibility(
+                visible = showFailedNetworkRequestMessage,
+                modifier = modifier
+                    .padding(5.dp)
+
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    elevation = 10.dp,
+                    backgroundColor = MaterialTheme.colorScheme.secondary
+                ) {
+                    Text(
+                        errorMessage,
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+            }
         }
 
 
@@ -528,30 +575,32 @@ object ScaffoldComponents {
          *
          * */
         @Composable
-        fun GettingStreamsError() {
+        fun GettingStreamsError(
+            errorMessage: String
+        ) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(15.dp)
+                    .padding(5.dp)
                     .clickable { },
                 elevation = 10.dp
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondary).padding(5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
+                        imageVector = Icons.Default.Warning,
                         contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(35.dp)
                     )
-                    Text(stringResource(R.string.error_pull_to_refresh), fontSize = 20.sp)
+                    Text(errorMessage, fontSize = 20.sp,color=MaterialTheme.colorScheme.onSecondary)
                     Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
+                        imageVector = Icons.Default.Warning,
                         contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(35.dp)
                     )
                 }

@@ -204,46 +204,6 @@ object HomeComponents {
      object Parts{
 
 
-        /**
-         * - Contains 0 extra parts
-         *
-         * - AnimatedErrorMessage is an animated Error message that will only be shown to the user where an error from fetching
-         * the network occurs
-         *
-         * @param modifier a modifier used to determine where this composable should be displayed
-         * @param showFailedNetworkRequestMessage a Boolean used to determine if the error message should show or not.
-         * @param errorMessage a String displaying the actual error message
-         * */
-        @Composable
-        fun AnimatedErrorMessage(
-            modifier: Modifier,
-            showFailedNetworkRequestMessage: Boolean,
-            errorMessage:String
-        ){
-            AnimatedVisibility(
-                visible = showFailedNetworkRequestMessage,
-                modifier = modifier
-                    .padding(5.dp)
-
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    elevation = 10.dp,
-                    backgroundColor = Color.LightGray
-                ) {
-                    Text(
-                        errorMessage,
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
-                        color = Color.Red,
-                        modifier = Modifier.padding(10.dp)
-                    )
-                }
-            }
-        }
-
 
 
         /**
