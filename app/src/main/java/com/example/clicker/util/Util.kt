@@ -28,6 +28,7 @@ fun <T, R : Any> Flow<T>.mapWithRetry(
     var shallRetry: Boolean
     var lastValue: R? = null
     do {
+        Log.d("mapWithRetryRetry","RETRY NUMBER -> $attempt")
         val tr = action(data)
         shallRetry = predicate(tr, (++attempt).toInt())
         if (!shallRetry) lastValue = tr

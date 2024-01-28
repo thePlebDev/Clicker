@@ -16,6 +16,7 @@ import com.example.clicker.network.interceptors.LiveNetworkMonitor
 import com.example.clicker.network.interceptors.LoggingInterceptor
 import com.example.clicker.network.interceptors.NetworkMonitor
 import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
+import com.example.clicker.network.interceptors.RetryInterceptor
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
 import dagger.Module
@@ -63,6 +64,7 @@ object SingletonModule {
     ): TwitchAuthenticationClient {
         val monitorClient = OkHttpClient.Builder()
             .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
+            .addInterceptor(RetryInterceptor(3))
             .build()
         return Retrofit.Builder()
             .baseUrl("https://id.twitch.tv/oauth2/")

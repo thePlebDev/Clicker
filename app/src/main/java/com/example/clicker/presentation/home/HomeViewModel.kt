@@ -14,6 +14,7 @@ import com.example.clicker.presentation.authentication.CertifiedUser
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
+import com.example.clicker.util.mapWithRetry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import javax.inject.Inject
@@ -151,7 +152,8 @@ class HomeViewModel @Inject constructor(
         oAuthenticationToken: String
     ) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken).collect { response ->
+            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken)
+                .collect { response ->
 
                 when (response) {
                     is NetworkResponse.Loading -> {

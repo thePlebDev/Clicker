@@ -4,7 +4,6 @@ import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -20,7 +19,10 @@ class NetworkMonitorInterceptor @Inject constructor(
 
     @Throws(NoNetworkException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
+
         val request: Request = chain.request()
+
+
 
         if(liveNetworkMonitor.isConnected()){
             return chain.proceed(request)
@@ -28,6 +30,7 @@ class NetworkMonitorInterceptor @Inject constructor(
 
             throw NoNetworkException("Network Error")
         }
+
 
     }
 }
