@@ -46,7 +46,6 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
-    private val dataStoreViewModel: DataStoreViewModel by activityViewModels()
     private val workerViewModel: WorkerViewModel by activityViewModels()
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
 

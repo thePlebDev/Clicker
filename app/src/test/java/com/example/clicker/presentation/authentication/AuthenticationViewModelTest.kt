@@ -4,6 +4,7 @@ import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.domain.TwitchTokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -105,7 +106,7 @@ class AuthenticationViewModelTest {
         `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit(fakeAuthenticationToken)})
         `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
             .thenReturn(flow{
-                emit(Response.Success(validatedUser))
+                emit(NetworkResponse.Success(validatedUser))
             })
 
 
@@ -137,7 +138,7 @@ class AuthenticationViewModelTest {
         `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit(fakeAuthenticationToken)})
         `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
             .thenReturn(flow{
-                emit(Response.Failure(Exception("failed to validate")))
+                emit(NetworkResponse.Failure(Exception("failed to validate")))
             })
 
 

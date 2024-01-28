@@ -38,6 +38,7 @@ import com.example.clicker.R
 
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 /**
  * - Contains 1 implementation:
@@ -84,7 +85,7 @@ object HomeComponents {
         onNavigate: (Int) -> Unit,
         quarterTotalScreenHeight: Int,
         updateStreamerName: (String, String, String, String) -> Unit,
-        streamersListLoading: Response<Boolean>,
+        streamersListLoading: NetworkResponse<Boolean>,
         urlList: List<StreamInfo>?,
         clientId: String,
         userId: String,
@@ -229,7 +230,7 @@ object HomeComponents {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    modalText,
+                    "Login with Twitch",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 30.sp,
                     modifier = Modifier

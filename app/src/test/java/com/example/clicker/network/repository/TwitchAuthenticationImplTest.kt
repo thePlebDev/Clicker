@@ -8,6 +8,7 @@ import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.TwitchAuthenticationClientBuilder
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.last
@@ -57,14 +58,17 @@ class TwitchAuthenticationImplTest {
             .buildClientWithURL(mockWebServer.url("/").toString()
             )
         underTest = TwitchAuthenticationImpl(twitchClient)
-        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
+
+
+
 
         /**WHEN*/
         val actualResponse = underTest.validateToken("","").last()
+        val expected = actualResponse is NetworkResponse.NetworkFailure
 
 
         /**THEN*/
-        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        Assert.assertEquals(true, expected)
     }
 
     @Test

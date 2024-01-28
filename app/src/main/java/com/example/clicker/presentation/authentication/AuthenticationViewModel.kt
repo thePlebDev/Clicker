@@ -151,6 +151,7 @@ class AuthenticationViewModel @Inject constructor(
                 }
         }
     }
+    //TODO: validateOAuthToken() IS TO BE DELETE FROM THIS VIEWMODEL
     /**
      * The second method to be called in the authentication flow.
      * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
@@ -161,35 +162,7 @@ class AuthenticationViewModel @Inject constructor(
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
             authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken).collect { response ->
 
-                when (response) {
-                    is Response.Loading -> {
-                        // the loading state is to be left empty because it is being handled by the HomeViewModel
-                    }
-                    is Response.Success -> {
-                        logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
-                        Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
 
-                        _authenticationUIState.value = _authenticationUIState.value.copy(
-                            authenticationCode = oAuthenticationToken,
-                            showLoginModal = false,
-                            modalText = "Login with Twitch"
-                        )
-                        mutableAuthenticatedUserFlow.tryEmit(
-                            mutableAuthenticatedUserFlow.value.copy(
-                                authUser = response.data
-                            )
-                        )
-                        tokenDataStore.setUsername(response.data.login)
-                    }
-                    is Response.Failure -> {
-                        Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
-
-                        _authenticationUIState.value = _authenticationUIState.value.copy(
-                            showLoginModal = true,
-                            modalText = "Oops! Please login again"
-                        )
-                    }
-                }
             }
         }
     } // end validateOAuthToken

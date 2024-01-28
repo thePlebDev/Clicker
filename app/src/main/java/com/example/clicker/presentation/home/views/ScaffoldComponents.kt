@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.util.PullToRefreshNestedScrollConnection
 import com.example.clicker.util.Response
@@ -112,7 +113,7 @@ object ScaffoldComponents {
         updateAuthenticatedUser:()->Unit,
         pullToRefreshRequest: (suspend () -> Unit) -> Unit,
         urlList: List<StreamInfo>?,
-        urlListLoading: Response<Boolean>,
+        urlListLoading: NetworkResponse<Boolean>,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         clientId:String,
@@ -307,7 +308,7 @@ object ScaffoldComponents {
         @Composable
         fun LiveChannelsLazyColumn(
             urlList: List<StreamInfo>?,
-            urlListLoading: Response<Boolean>,
+            urlListLoading: NetworkResponse<Boolean>,
             onNavigate: (Int) -> Unit,
             updateStreamerName: (String, String, String, String) -> Unit,
             clientId: String,
@@ -322,7 +323,7 @@ object ScaffoldComponents {
                     .fillMaxHeight()
             ) {
                 when (urlListLoading) {
-                    is Response.Loading -> {
+                    is NetworkResponse.Loading -> {
                         item {
                             //todo:This is its own item
                             Row(
@@ -336,7 +337,7 @@ object ScaffoldComponents {
                             }
                         }
                     }
-                    is Response.Success -> {
+                    is NetworkResponse.Success -> {
                         if (urlList != null) {
 
                             if (urlList.isEmpty()) {
@@ -365,7 +366,7 @@ object ScaffoldComponents {
                             // end of the lazy column
                         }
                     }
-                    is Response.Failure -> {
+                    is NetworkResponse.Failure -> {
 
                         item {
                             Parts.GettingStreamsError(
@@ -373,7 +374,11 @@ object ScaffoldComponents {
                             )
                         }
                     }
+                    is NetworkResponse.NetworkFailure -> {
+
+                    }
                 }
+
             }
         }
         /**

@@ -97,7 +97,7 @@ fun ValidationView(
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val modalText = authenticationViewModel.authenticationUIState.value.modalText
-    val showModalState = authenticationViewModel.authenticationUIState.value.showLoginModal
+    val showModalState = homeViewModel.state.value.showLoginModal
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
     if (showModalState) {
         LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
