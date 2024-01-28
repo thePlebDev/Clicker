@@ -91,6 +91,7 @@ object HomeComponents {
         userId: String,
         pullToRefreshRequest: (suspend () -> Unit) -> Unit,
         showFailedNetworkRequestMessage: Boolean,
+        failedNetworkRequestMessage:String,
         width:Int,
         height:Int,
         logout: () -> Unit,
@@ -127,6 +128,7 @@ object HomeComponents {
                     },
                     quarterTotalScreenHeight =quarterTotalScreenHeight,
                     showFailedNetworkRequestMessage = showFailedNetworkRequestMessage,
+                    failedNetworkRequestMessage =failedNetworkRequestMessage,
                     height = height,
                     width = width,
                     logout = {

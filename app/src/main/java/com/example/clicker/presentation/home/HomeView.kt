@@ -149,6 +149,7 @@ fun ValidationView(
             )
         },
         showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
+        failedNetworkRequestMessage =homeViewModel.state.value.failedNetworkRequestMessage,
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         logout = {
