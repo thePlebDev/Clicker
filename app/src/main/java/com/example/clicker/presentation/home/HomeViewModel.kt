@@ -7,10 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
+import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import javax.inject.Inject
@@ -20,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -45,8 +49,10 @@ data class HomeUIState(
 
 
     val failedNetworkRequest: Boolean = false,
-    val streamersListLoading: Response<Boolean> = Response.Loading,
-    val domainIsRegistered: Boolean = false
+    val streamersListLoading: NetworkResponse<Boolean> = NetworkResponse.Loading,
+    val showLoginModal: Boolean = false,
+    val domainIsRegistered: Boolean = false,
+    val oAuthToken: String = ""
 
 )
 
@@ -55,6 +61,7 @@ class HomeViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchRepo,
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
+    private val authentication: TwitchAuthentication,
 ) : ViewModel() {
 
     private val _newUrlList = MutableStateFlow<List<StreamInfo>?>(null)
@@ -65,6 +72,8 @@ class HomeViewModel @Inject constructor(
 
     private val _authenticatedUser = MutableStateFlow<CertifiedUser?>(null)
     val authenticatedUser: StateFlow<CertifiedUser?> = _authenticatedUser
+
+    private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
 
 
     fun registerDomian(isRegistered: Boolean) {
@@ -93,24 +102,92 @@ class HomeViewModel @Inject constructor(
         getOAuthToken()
     }
 
+    init {
+        monitorForValidatedUser()
+    }
+    private fun monitorForValidatedUser(){
+        viewModelScope.launch {
+            _validatedUser.collect{nullableValidatedUser ->
+                nullableValidatedUser?.also{
+                    getLiveStreams(
+                        clientId = it.clientId,
+                        userId = it.userId,
+                        oAuthToken = _uiState.value.oAuthToken
+                    )
+                }
+            }
+        }
+    }
+
     private fun getOAuthToken() = viewModelScope.launch {
         tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
 
-//            if (storedOAuthToken.length > 2) {
-//
-//
-//            } else {
-//
-//            }
-            //this below will normaly go inside the else statement
-            _uiState.value = _uiState.value.copy(
-                streamersListLoading = Response.Failure(
-                    Exception("You are new here! Please login with Twitch to get access to your streams")
+            if (storedOAuthToken.length > 2) {
+                //need to call the validateToken
+                validateOAuthToken(storedOAuthToken)
+
+
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    streamersListLoading = NetworkResponse.Failure(
+                        Exception("You're new! Please login with Twitch")
+                    ),
+                    showLoginModal = true
                 )
-            )
+
+
+            }
+
 
         }
     }
+
+    /**
+     * The second method to be called in the authentication flow.
+     * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
+     * */
+    private fun validateOAuthToken(
+        oAuthenticationToken: String
+    ) = viewModelScope.launch {
+        withContext(ioDispatcher + CoroutineName("TokenValidator")) {
+            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken).collect { response ->
+
+                when (response) {
+                    is NetworkResponse.Loading -> {
+                        // the loading state is to be left empty because its initial state is loading
+                    }
+                    is NetworkResponse.Success -> {
+                        logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
+
+                        _uiState.value = _uiState.value.copy(
+                            oAuthToken = oAuthenticationToken
+                        )
+                        _validatedUser.tryEmit(response.data)
+
+
+                        // I think we need the below for the streamViewModel
+                        //tokenDataStore.setUsername(response.data.login)
+                    }
+                    is NetworkResponse.Failure -> {
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
+
+                        _uiState.value = _uiState.value.copy(
+                            streamersListLoading = NetworkResponse.Failure(
+                                Exception("Please login with Twitch")
+                            ),
+                            showLoginModal = true
+                        )
+                    }
+                    is NetworkResponse.NetworkFailure ->{
+                        _uiState.value = _uiState.value.copy(
+                            failedNetworkRequest =true
+                        )
+                    }
+                }
+            }
+        }
+    } // end validateOAuthToken
 
     // THIS IS THE END
 
@@ -190,7 +267,7 @@ class HomeViewModel @Inject constructor(
                             }
 
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = Response.Success(true)
+                                streamersListLoading = NetworkResponse.Success(true)
                             )
                             _newUrlList.tryEmit(replacedWidthHeightList)
                         }
@@ -198,9 +275,9 @@ class HomeViewModel @Inject constructor(
                         is Response.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 failedNetworkRequest = true,
-                                streamersListLoading = response
+
                             )
-                            print("before the delay")
+
                             delay(2000)
                             _uiState.value = _uiState.value.copy(
                                 failedNetworkRequest = false

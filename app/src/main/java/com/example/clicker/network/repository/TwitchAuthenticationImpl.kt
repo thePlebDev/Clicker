@@ -7,7 +7,9 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.handleException
+import com.example.clicker.network.repository.util.handleNoNetworkException
 import com.example.clicker.util.LogWrap
+import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import kotlinx.coroutines.delay
@@ -45,25 +47,25 @@ class TwitchAuthenticationImpl @Inject constructor(
     override suspend fun validateToken(
         url :String,
         token: String,
-    ): Flow<Response<ValidatedUser>> = flow {
+    ): Flow<NetworkResponse<ValidatedUser>> = flow {
         logCoroutineInfo("CoroutineDebugging", "Fetching from remote")
 
 
-        emit(Response.Loading)
+        emit(NetworkResponse.Loading)
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
         val response = twitchClient.validateToken(
             authorization = "OAuth $token"
         )
         if (response.isSuccessful) {
             LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
-            emit(Response.Success(response.body()!!))
+            emit(NetworkResponse.Success(response.body()!!))
         } else {
-            emit(Response.Failure(Exception("Error! Please login again")))
+            emit(NetworkResponse.Failure(Exception("Error! Please login again")))
             Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
     }.catch { cause ->
 
-        handleException(cause)
+        handleNoNetworkException(cause)
 
     }
 }

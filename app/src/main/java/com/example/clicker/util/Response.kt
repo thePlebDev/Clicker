@@ -22,3 +22,20 @@ sealed class Response<out T> {
         val e: Exception
     ) : Response<Nothing>()
 }
+
+sealed class NetworkResponse<out T> {
+
+    object Loading : NetworkResponse<Nothing>()
+
+    data class Success<out T>(
+        val data: T
+    ) : NetworkResponse<T>()
+
+    data class Failure(
+        val e: Exception
+    ) : NetworkResponse<Nothing>()
+
+    data class NetworkFailure(
+        val e: Exception
+    ) : NetworkResponse<Nothing>()
+}
