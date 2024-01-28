@@ -59,9 +59,6 @@ class TwitchAuthenticationImplTest {
             )
         underTest = TwitchAuthenticationImpl(twitchClient)
 
-
-
-
         /**WHEN*/
         val actualResponse = underTest.validateToken("","").last()
         val expected = actualResponse is NetworkResponse.NetworkFailure

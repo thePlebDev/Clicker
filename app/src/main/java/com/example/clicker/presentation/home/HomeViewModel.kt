@@ -49,6 +49,7 @@ data class HomeUIState(
 
 
     val failedNetworkRequest: Boolean = false,
+    val failedNetworkRequestMessage:String ="Network error, please try again later",
     val streamersListLoading: NetworkResponse<Boolean> = NetworkResponse.Loading,
     val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
@@ -182,6 +183,10 @@ class HomeViewModel @Inject constructor(
                     is NetworkResponse.NetworkFailure ->{
                         _uiState.value = _uiState.value.copy(
                             failedNetworkRequest =true
+                        )
+                        delay(3000)
+                        _uiState.value = _uiState.value.copy(
+                            failedNetworkRequest =false
                         )
                     }
                 }

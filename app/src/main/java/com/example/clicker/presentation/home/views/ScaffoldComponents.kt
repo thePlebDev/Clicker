@@ -121,6 +121,7 @@ object ScaffoldComponents {
         height:Int,
         width:Int,
         showFailedNetworkRequestMessage: Boolean,
+        failedNetworkRequestMessage:String,
         quarterTotalScreenHeight:Int,
         screenDensity:Float
 
@@ -199,7 +200,7 @@ object ScaffoldComponents {
                 Parts.AnimatedErrorMessage(
                     modifier = modifier,
                     showFailedNetworkRequestMessage =showFailedNetworkRequestMessage,
-                    errorMessage =stringResource(R.string.failed_request)
+                    errorMessage =failedNetworkRequestMessage
                 )
             }
 
@@ -477,7 +478,7 @@ object ScaffoldComponents {
                         errorMessage,
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = Color.Red,
                         modifier = Modifier.padding(10.dp)
                     )
                 }
