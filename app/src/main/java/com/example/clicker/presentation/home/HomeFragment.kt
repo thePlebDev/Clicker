@@ -176,7 +176,7 @@ class HomeFragment : Fragment() {
             val authCode = uri.fragment?.subSequence(13, 43).toString()
             Log.d("OAuthCode", uri.toString())
 
-            authenticationViewModel.setOAuthToken(authCode)
+            homeViewModel.setOAuthToken(authCode)
         }
     }
 

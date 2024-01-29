@@ -72,7 +72,6 @@ object HomeComponents {
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
      * @param logout a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
      * @param userIsAuthenticated a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param updateAuthenticatedUser a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -96,7 +95,6 @@ object HomeComponents {
         height:Int,
         logout: () -> Unit,
         userIsAuthenticated: Boolean,
-        updateAuthenticatedUser: () -> Unit,
         screenDensity:Float
 
     ){
@@ -138,9 +136,7 @@ object HomeComponents {
                         loginWithTwitch()
                     },
                     userIsLoggedIn =userIsAuthenticated,
-                    updateAuthenticatedUser={
-                        updateAuthenticatedUser()
-                    },
+
                     screenDensity =screenDensity
 
                 )

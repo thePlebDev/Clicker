@@ -77,45 +77,6 @@ class AuthenticationViewModel @Inject constructor(
 
     val mutableAuthenticatedUserFlow = MutableStateFlow(authenticatedUserFlow.value)
 
-    init {
-        /**
-         * starts the observing of the hot flow, mutableAuthenticatedUserFlow
-         * */
-        collectAuthenticatedUserFlow()
-        //getOAuthToken()
-    }
-
-    private fun collectAuthenticatedUserFlow() = viewModelScope.launch {
-        mutableAuthenticatedUserFlow.collect { mainState ->
-            mainState.oAuthToken?.let { notNullToken ->
-                validateOAuthToken(
-                    notNullToken
-                )
-
-                // todo:send off the worker request
-                tokenValidationWorker.enqueueRequest(notNullToken)
-            }
-            mainState.authUser?.let { user ->
-                _authenticationUIState.value = _authenticationUIState.value.copy(
-                    clientId = user.clientId,
-                    userId = user.userId,
-                    authenticated = true
-                )
-                // todo:the getLivesStreams() code will not run in this viewModel
-            }
-        }
-    }
-
-    fun validatedUser(): CertifiedUser {
-        val user = CertifiedUser(
-            oAuthToken = _authenticationUIState.value.authenticationCode,
-            clientId = _authenticationUIState.value.clientId,
-            userId = _authenticationUIState.value.userId
-        )
-        return user
-    }
-
-
 
 
     /**KEEP beginLogout IN THIS VIEWMODEL*/
@@ -151,62 +112,5 @@ class AuthenticationViewModel @Inject constructor(
                 }
         }
     }
-    //TODO: validateOAuthToken() IS TO BE DELETE FROM THIS VIEWMODEL
-    /**
-     * The second method to be called in the authentication flow.
-     * This function is used to make a request to Twitch's API and validate the oAuthenticationToken
-     * */
-    fun validateOAuthToken(
-        oAuthenticationToken: String
-    ) = viewModelScope.launch {
-        withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken).collect { response ->
 
-
-            }
-        }
-    } // end validateOAuthToken
-
-    // 2) implement the methods
-    /**
-     * This is the first function to run during the login sequence
-     *
-     * upon a successful retrieval of a stored OAuth token. It is emitted to mutableAuthenticatedUserFlow as oAuthToken
-     *
-     * upon a failed retrieval of a stored OAuth token. _loginUIState is updated accordingly
-     * */
-    private fun getOAuthToken() = viewModelScope.launch {
-        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
-
-            if (storedOAuthToken.length > 2) {
-                mutableAuthenticatedUserFlow.tryEmit(
-                    mutableAuthenticatedUserFlow.value.copy(
-                        oAuthToken = storedOAuthToken
-                    )
-                )
-            } else {
-                _authenticationUIState.value = _authenticationUIState.value.copy(
-                    showLoginModal = true,
-                    modalText = "You're new here!"
-                )
-            }
-        }
-    }
-    /**
-     * Below could be possibly moved
-     */
-    fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
-        // need to make a call to exchange the authCode for a validationToken
-        _authenticationUIState.value = _authenticationUIState.value.copy(
-            showLoginModal = false,
-            modalText = "Login with Twitch"
-        )
-        Log.d("setOAuthToken", "token -> $oAuthToken")
-        tokenDataStore.setOAuthToken(oAuthToken)
-        mutableAuthenticatedUserFlow.tryEmit(
-            mutableAuthenticatedUserFlow.value.copy(
-                oAuthToken = oAuthToken
-            )
-        )
-    }
 } // end of the view model
