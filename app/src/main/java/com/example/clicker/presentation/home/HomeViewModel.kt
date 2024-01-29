@@ -72,10 +72,12 @@ class HomeViewModel @Inject constructor(
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
 
-    private val _authenticatedUser = MutableStateFlow<CertifiedUser?>(null)
-    val authenticatedUser: StateFlow<CertifiedUser?> = _authenticatedUser
+
 
     private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
+    val validatedUser = _validatedUser.value
+    private val _oAuthToken = MutableStateFlow<String?>(null)
+    val oAuthToken:String? =  _oAuthToken.value
 
 
     fun registerDomian(isRegistered: Boolean) {
@@ -83,50 +85,63 @@ class HomeViewModel @Inject constructor(
             domainIsRegistered = isRegistered
         )
     }
-    fun updateAuthenticatedUser(certifiedUser: CertifiedUser) {
-        _authenticatedUser.tryEmit(certifiedUser)
-    }
 
+    init{
+        monitorForOAuthToken()
+    }
     init {
-        viewModelScope.launch {
-            _authenticatedUser.collect { authUser ->
-                authUser?.also {
-                    getLiveStreams(
-                        userId = it.userId,
-                        clientId = it.clientId,
-                        oAuthToken = it.oAuthToken
-                    )
-                }
-            }
-        }
+        monitorForValidatedUser()
     }
     init{
         getOAuthToken()
     }
 
-    init {
-        monitorForValidatedUser()
-    }
+
+/**
+ * monitorForValidatedUser is a private function that upon the initialization of this viewModel is meant to monitor the [_validatedUser] hot flow for any non null values
+ * to be emitted. Once a non null value is emitted to [_validatedUser] this function will then call [getLiveStreams]
+ * */
     private fun monitorForValidatedUser(){
         viewModelScope.launch {
             _validatedUser.collect{nullableValidatedUser ->
-                nullableValidatedUser?.also{
+                nullableValidatedUser?.also{nonNullValidatedUser ->
                     getLiveStreams(
-                        clientId = it.clientId,
-                        userId = it.userId,
+                        clientId = nonNullValidatedUser.clientId,
+                        userId = nonNullValidatedUser.userId,
                         oAuthToken = _uiState.value.oAuthToken
                     )
                 }
             }
         }
     }
+    /**
+     * monitorForOAuthToken is a private function that upon the initialization of this viewModel is meant to monitor the [_oAuthToken] hot flow for any non null values. Once
+     * a new non null value is emitted to [_oAuthToken], [validateOAuthToken] will be called
+     * */
+    private fun monitorForOAuthToken(){
+        viewModelScope.launch {
+            _oAuthToken.collect{nullableOAuthToken ->
+                nullableOAuthToken?.also { nonNullOAuthToken ->
+                    validateOAuthToken(nonNullOAuthToken)
+                }
 
+            }
+        }
+    }
+
+
+    /**
+     * getOAuthToken is a private function that upon the initialization of this viewModel is meant to try and retrieve the locally
+     * stored oAuth token from [tokenDataStore]. If successful the oAuth token is emitted to [_oAuthToken]. If a oAuth token
+     * is not found then the user is notified by telling them they need to sign in
+     * */
     private fun getOAuthToken() = viewModelScope.launch {
         tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
 
             if (storedOAuthToken.length > 2) {
                 //need to call the validateToken
-                validateOAuthToken(storedOAuthToken)
+                //this should emit a value to a HOT storedOAuthToken flow which then runs the validateOAuthToken
+                _oAuthToken.tryEmit(storedOAuthToken)
 
 
             } else {
@@ -142,6 +157,20 @@ class HomeViewModel @Inject constructor(
 
 
         }
+    }
+    /**
+     * setOAuthToken is a function called to set the locally stored authentication token
+     *
+     * @param oAuthToken a string representing the authentication token that is to be stored locally
+     */
+    fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
+        // need to make a call to exchange the authCode for a validationToken
+        _uiState.value = _uiState.value.copy(
+            showLoginModal = false,
+        )
+        Log.d("setOAuthToken", "token -> $oAuthToken")
+        tokenDataStore.setOAuthToken(oAuthToken)
+        _oAuthToken.tryEmit(oAuthToken)
     }
 
     /**
@@ -170,7 +199,8 @@ class HomeViewModel @Inject constructor(
 
 
                         // I think we need the below for the streamViewModel
-                        //tokenDataStore.setUsername(response.data.login)
+                        //todo:THIS SHOULD GET REMOVED. TOO MUCH IS GOING ON INSIDE OF THIS FUNCTION
+                        tokenDataStore.setUsername(response.data.login)
                     }
                     is NetworkResponse.Failure -> {
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
@@ -201,14 +231,12 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshGetLiveStreams(resetUI: suspend() -> Unit) {
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
-                Log.d("testingGetLiveStreams", "userid ->${_authenticatedUser.value?.userId}")
-                Log.d("testingGetLiveStreams", "clientId ->${_authenticatedUser.value?.clientId}")
-                Log.d("testingGetLiveStreams", "authorizationBearer ->${_authenticatedUser.value?.oAuthToken}")
+
                 twitchRepoImpl
                     .getFollowedLiveStreams(
-                        authorizationToken = _authenticatedUser.value?.oAuthToken ?: "",
-                        clientId = _authenticatedUser.value?.clientId ?: "",
-                        userId = _authenticatedUser.value?.userId ?: ""
+                        authorizationToken = _oAuthToken.value ?: "",
+                        clientId = _validatedUser.value?.clientId ?:"",
+                        userId = _validatedUser.value?.userId ?:""
                     )
                     .collect { response ->
                         when (response) {
@@ -248,9 +276,7 @@ class HomeViewModel @Inject constructor(
     ) {
         try {
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
-                Log.d("testingGetLiveStreams", "userid ->${_authenticatedUser.value?.userId}")
-                Log.d("testingGetLiveStreams", "clientId ->${_authenticatedUser.value?.clientId}")
-                Log.d("testingGetLiveStreams", "authorizationBearer ->${_authenticatedUser.value?.oAuthToken}")
+
                 twitchRepoImpl.getFollowedLiveStreams(
                     authorizationToken = oAuthToken,
                     clientId = clientId,

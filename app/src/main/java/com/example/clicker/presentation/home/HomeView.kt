@@ -140,8 +140,8 @@ fun ValidationView(
         },
         streamersListLoading = homeViewModel.state.value.streamersListLoading,
         urlList =homeViewModel.newUrlList.collectAsState().value,
-        clientId = homeViewModel.authenticatedUser.value?.clientId ?: "",
-        userId = homeViewModel.authenticatedUser.value?.userId ?: "",
+        clientId = homeViewModel.validatedUser?.clientId ?: "",
+        userId = homeViewModel.validatedUser?.userId ?: "",
         pullToRefreshRequest ={
                 resetUI: suspend () -> Unit ->
             homeViewModel.pullToRefreshGetLiveStreams(
@@ -159,10 +159,6 @@ fun ValidationView(
             )
         },
         userIsAuthenticated =userIsAuthenticated,
-        updateAuthenticatedUser={
-            val certifiedUser = authenticationViewModel.validatedUser()
-            homeViewModel.updateAuthenticatedUser(certifiedUser)
-        },
         screenDensity = homeViewModel.state.value.screenDensity
 
 

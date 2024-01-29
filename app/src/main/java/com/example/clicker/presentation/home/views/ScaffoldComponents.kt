@@ -89,7 +89,6 @@ object ScaffoldComponents {
      * @param logout a function that is used to log out the current user of their session
      * @param login a function that is used to log in the current user into their twitch account
      * @param userIsLoggedIn a boolean to determine if the user is logged in or not
-     * @param updateAuthenticatedUser a function used to updated the authenticated user. This is useful for different users using the same device
      * @param pullToRefreshRequest a suspending function that is used to make a request to the Twitch servers to fetch the live channels.
      * The actual method it is calling is [pullToRefreshGetLiveStreams][com.example.clicker.presentation.home.HomeViewModel.pullToRefreshGetLiveStreams]
      * @param urlList it is a nullable list of all the live channels returned by the twitch server
@@ -110,7 +109,6 @@ object ScaffoldComponents {
         logout:()->Unit,
         login: () -> Unit,
         userIsLoggedIn: Boolean,
-        updateAuthenticatedUser:()->Unit,
         pullToRefreshRequest: (suspend () -> Unit) -> Unit,
         urlList: List<StreamInfo>?,
         urlListLoading: NetworkResponse<Boolean>,
@@ -141,10 +139,7 @@ object ScaffoldComponents {
             changeRequest = { boolean -> request = boolean },
             changeIsRefreshing = { boolean -> pullingState.isRefreshing = boolean }
         )
-/**THIS IS WHERE WE ARE GIVING THE HOMEVIEWMODEL THE OAuth TOKEN*/
-//        if (userIsLoggedIn) {
-//            updateAuthenticatedUser()
-//        }
+
         Builders.ScaffoldBuilder(
             scaffoldState =scaffoldState,
             nestedScrollConnection =nestedScrollConnection,
