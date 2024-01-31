@@ -20,12 +20,14 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -46,7 +48,7 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
-    private val workerViewModel: WorkerViewModel by activityViewModels()
+    private val networkMonitorViewModel: NetworkMonitorViewModel by activityViewModels()
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +64,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        networkMonitorViewModel.startService()
+
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
 
@@ -159,6 +163,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        networkMonitorViewModel.startService()
         val screenDensity =Resources.getSystem().displayMetrics.density
 
         val uri: Uri? = activity?.intent?.data

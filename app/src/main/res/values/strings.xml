@@ -2,6 +2,8 @@
     <string name="app_name">Modderz</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- TODO:SERVICE descriptions below -->
+    <string name="network_monitor_service">Notifies user of network changes.</string>
 
     <!-- TODO: HomeView Strings below -->
 

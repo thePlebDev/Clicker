@@ -1,9 +1,16 @@
 package com.example.clicker.presentation.home
 
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
@@ -11,6 +18,7 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
+import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -78,6 +86,13 @@ class HomeViewModel @Inject constructor(
     val validatedUser = _validatedUser.value
     private val _oAuthToken = MutableStateFlow<String?>(null)
     val oAuthToken:String? =  _oAuthToken.value
+    /**BELOW IS THE NETWORK REQUEST BUILDER*/
+
+
+
+
+
+    /**ABOVE IS THE NETWORK REQUEST BUILDER*/
 
 
     fun registerDomian(isRegistered: Boolean) {
@@ -321,6 +336,7 @@ class HomeViewModel @Inject constructor(
             }
         } catch (e: IOException) {
         }
+
     }
 
     fun updateAspectWidthHeight(width: Int, aspectHeight: Int,screenDensity:Float) {
@@ -341,7 +357,14 @@ class HomeViewModel @Inject constructor(
 
         _newUrlList.tryEmit(replacedWidthHeightList)
     }
-}
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("onclearedCalled","DEATH TO US ALL")
+    }
+
+
+} /***END OF VIEWMODEL**/
 
 fun StreamInfo.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamInfo {
 
