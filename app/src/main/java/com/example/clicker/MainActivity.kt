@@ -2,6 +2,7 @@ package com.example.clicker
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState
 import android.graphics.Bitmap
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.services.NetworkMonitorService
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -23,6 +25,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()
+    private lateinit var serviceIntent:Intent
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
@@ -75,7 +79,11 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+
+
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         installSplashScreen()
 
@@ -89,4 +97,5 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
 }
