@@ -21,7 +21,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.clicker.broadcastRecievers.NetworkReceiver
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.services.NetworkMonitorService
 import dagger.hilt.android.AndroidEntryPoint

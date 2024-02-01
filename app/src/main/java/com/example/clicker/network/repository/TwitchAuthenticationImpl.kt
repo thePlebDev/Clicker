@@ -63,6 +63,8 @@ class TwitchAuthenticationImpl @Inject constructor(
         val response = twitchClient.validateToken(
             authorization = "OAuth $token"
         )
+        Log.d("validateTokenImpl","token ->$token")
+        Log.d("validateTokenImpl","code ->${response.code()} message -> ${response.message()}")
         if (response.isSuccessful) {
             LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
             emit(NetworkResponse.Success(response.body()!!))

@@ -92,9 +92,11 @@ class HomeViewModel @Inject constructor(
     val oAuthToken:String? =  _oAuthToken.value
     /**BELOW IS THE NETWORK REQUEST BUILDER*/
 
-    init{
-        monitorForNetworkConnection()
-    }
+
+    /**
+     * monitorForNetworkConnection is a private function that is called to monitor the hot state from [networkMonitorRepo].
+     *
+     * */
     private fun monitorForNetworkConnection(){
         viewModelScope.launch {
             withContext(ioDispatcher){
@@ -105,10 +107,11 @@ class HomeViewModel @Inject constructor(
                     }
                     if(!currentConnectionState && isConnectionLive){
                         //network reconnected
-                        Log.d("monitorForNetworkConnection","reconnected")
                         _uiState.value = _uiState.value.copy(
                             networkConnectionState = true
                         )
+                        refreshFromConnection()
+
                     }
                     if(currentConnectionState && !isConnectionLive){
                         // network disconnection
@@ -120,6 +123,34 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+        }
+    }
+
+    /**
+     * refreshFromConnection is a private function that will get called when [monitorForNetworkConnection] detects a
+     * reconnection to the network. First it will get the locally stored OAuth token, then if [validatedUser] is
+     * not null [getLiveStreams] is called. If [validatedUser] is null then [validateOAuthToken] is run.
+     * */
+    private fun refreshFromConnection(){
+        viewModelScope.launch {
+            tokenDataStore.getOAuthToken().collect{oAuthToken ->
+                if(oAuthToken.length > 2 ){
+                    when(validatedUser){
+                        null ->{
+                            validateOAuthToken(oAuthToken)
+                        }
+                        else ->{
+                            getLiveStreams(
+                                clientId = validatedUser.clientId,
+                                userId = validatedUser.clientId,
+                                oAuthToken =oAuthToken
+                            )
+                        }
+                    }
+                }
+
+
+            }
         }
     }
 
@@ -139,6 +170,9 @@ class HomeViewModel @Inject constructor(
     init{
         getOAuthToken()
     }
+    init {
+        monitorForNetworkConnection()
+    }
 
 
 /**
@@ -149,6 +183,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _validatedUser.collect{nullableValidatedUser ->
                 nullableValidatedUser?.also{nonNullValidatedUser ->
+                    Log.d("nullableValidatedUser","RUNNING")
                     getLiveStreams(
                         clientId = nonNullValidatedUser.clientId,
                         userId = nonNullValidatedUser.userId,
@@ -158,6 +193,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
     /**
      * monitorForOAuthToken is a private function that upon the initialization of this viewModel is meant to monitor the [_oAuthToken] hot flow for any non null values. Once
      * a new non null value is emitted to [_oAuthToken], [validateOAuthToken] will be called
@@ -181,6 +217,8 @@ class HomeViewModel @Inject constructor(
      * */
     private fun getOAuthToken() = viewModelScope.launch {
         tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
+            Log.d("monitorForNetworkConnection","getOAuthToken  ---> TOKKEN:$storedOAuthToken")
+
 
             if (storedOAuthToken.length > 2) {
                 //need to call the validateToken
@@ -227,6 +265,7 @@ class HomeViewModel @Inject constructor(
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
             authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken)
                 .collect { response ->
+                    Log.d("monitorForNetworkConnection","validateOAuthTokenResponse ->${response}")
 
                 when (response) {
                     is NetworkResponse.Loading -> {
