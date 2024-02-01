@@ -29,4 +29,6 @@ interface TwitchAuthentication {
      * @param clientId a String representing the unique identifier of this device
      * */
     fun logout(clientId: String, token: String): Flow<Response<String>>
+
+    fun testingLogging():Unit
 }

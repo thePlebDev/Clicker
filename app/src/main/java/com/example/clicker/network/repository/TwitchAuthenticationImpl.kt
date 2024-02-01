@@ -44,6 +44,10 @@ class TwitchAuthenticationImpl @Inject constructor(
         handleException(cause)
     }
 
+    override fun testingLogging() {
+        Log.d("SERVICEAUTHENTICATIONSERVICE", "LOGGING")
+    }
+
     override suspend fun validateToken(
         url :String,
         token: String,

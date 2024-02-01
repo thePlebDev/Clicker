@@ -14,19 +14,11 @@ import javax.inject.Inject
 class NetworkMonitorViewModel (
     application: Application
 ): AndroidViewModel(application) {
-
-    init{
-        Log.d("NetworkMonitorViewModel","STARTING")
-    }
-
     fun startService(){
         val context:Application = getApplication()
         context.startService(Intent(context, NetworkMonitorService::class.java))
 
     }
-
-
-
     override fun onCleared() {
         super.onCleared()
         val context:Application = getApplication()

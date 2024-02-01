@@ -2,9 +2,10 @@ package com.example.clicker.presentation.home
 
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Configuration
+import android.content.IntentFilter
 import android.content.res.Resources
 import android.graphics.Insets
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -20,13 +21,14 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
+import com.example.clicker.broadcastRecievers.NetworkReceiver
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,6 +56,7 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val currentOrientation = getResources().getConfiguration().orientation;
+        Log.d("HomeFragmentLifeCycle","onCreate")
     }
 
 
@@ -64,7 +67,9 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        networkMonitorViewModel.startService()
+        //networkMonitorViewModel.startService()
+        context?.startService(Intent(context, NetworkMonitorService::class.java))
+
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -160,11 +165,19 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("HomeFragmentLifeCycle","onPause")
+    }
+
 
     override fun onResume() {
         super.onResume()
-        networkMonitorViewModel.startService()
+        Log.d("HomeFragmentLifeCycle","onResume")
+        //networkMonitorViewModel.startService()
         val screenDensity =Resources.getSystem().displayMetrics.density
+        //networkMonitorViewModel.startService(serviceIntent)
+        context?.startService(Intent(context, NetworkMonitorService::class.java))
 
         val uri: Uri? = activity?.intent?.data
 
