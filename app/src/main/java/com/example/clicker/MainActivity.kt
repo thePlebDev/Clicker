@@ -3,11 +3,16 @@ package com.example.clicker
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +21,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.clicker.broadcastRecievers.NetworkReceiver
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.services.NetworkMonitorService
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()
-    private lateinit var serviceIntent:Intent
+
+
 
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -81,6 +88,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+        // Registers BroadcastReceiver to track network connection changes.
+
+
 
 
 
@@ -96,6 +106,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
 }
