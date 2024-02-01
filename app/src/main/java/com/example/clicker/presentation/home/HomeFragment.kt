@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
-import com.example.clicker.broadcastRecievers.NetworkReceiver
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
