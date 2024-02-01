@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
@@ -62,7 +63,9 @@ data class HomeUIState(
     val streamersListLoading: NetworkResponse<Boolean> = NetworkResponse.Loading,
     val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
-    val oAuthToken: String = ""
+    val oAuthToken: String = "",
+
+    val networkConnectionState:Boolean = true,
 
 )
 
@@ -72,6 +75,7 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
+    private val networkMonitorRepo: NetworkMonitorRepo
 ) : ViewModel() {
 
     private val _newUrlList = MutableStateFlow<List<StreamInfo>?>(null)
@@ -88,11 +92,36 @@ class HomeViewModel @Inject constructor(
     val oAuthToken:String? =  _oAuthToken.value
     /**BELOW IS THE NETWORK REQUEST BUILDER*/
 
+    init{
+        monitorForNetworkConnection()
+    }
+    private fun monitorForNetworkConnection(){
+        viewModelScope.launch {
+            withContext(ioDispatcher){
+                networkMonitorRepo.networkAvailable.collect{isConnectionLive ->
+                    val currentConnectionState = _uiState.value.networkConnectionState
+                    if(currentConnectionState && isConnectionLive){
+                        //do nothing. THis is the initial state
+                    }
+                    if(!currentConnectionState && isConnectionLive){
+                        //network reconnected
+                        Log.d("monitorForNetworkConnection","reconnected")
+                        _uiState.value = _uiState.value.copy(
+                            networkConnectionState = true
+                        )
+                    }
+                    if(currentConnectionState && !isConnectionLive){
+                        // network disconnection
+                        Log.d("monitorForNetworkConnection","disconnected")
+                        _uiState.value = _uiState.value.copy(
+                            networkConnectionState = false
+                        )
+                    }
+                }
+            }
 
-
-
-
-    /**ABOVE IS THE NETWORK REQUEST BUILDER*/
+        }
+    }
 
 
     fun registerDomian(isRegistered: Boolean) {

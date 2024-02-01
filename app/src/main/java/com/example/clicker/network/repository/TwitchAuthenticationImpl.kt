@@ -12,11 +12,15 @@ import com.example.clicker.util.LogWrap
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
@@ -28,6 +32,7 @@ import javax.inject.Inject
 class TwitchAuthenticationImpl @Inject constructor(
     private val twitchClient: TwitchAuthenticationClient
 ): TwitchAuthentication {
+
 
     override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
         emit(Response.Loading)
@@ -44,9 +49,7 @@ class TwitchAuthenticationImpl @Inject constructor(
         handleException(cause)
     }
 
-    override fun testingLogging() {
-        Log.d("SERVICEAUTHENTICATIONSERVICE", "LOGGING")
-    }
+
 
     override suspend fun validateToken(
         url :String,

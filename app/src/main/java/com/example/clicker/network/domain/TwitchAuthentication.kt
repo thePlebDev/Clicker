@@ -4,6 +4,7 @@ import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * TwitchAuthentication is the interface that acts as the API for all the methods needed to interact with Twitch's authentication API
@@ -30,5 +31,5 @@ interface TwitchAuthentication {
      * */
     fun logout(clientId: String, token: String): Flow<Response<String>>
 
-    fun testingLogging():Unit
+
 }
