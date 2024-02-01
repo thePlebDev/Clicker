@@ -1,10 +1,12 @@
 package com.example.clicker.di.modules
 
 import android.content.Context
+import android.util.Log
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
@@ -13,10 +15,10 @@ import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.interceptors.LiveNetworkMonitor
-import com.example.clicker.network.interceptors.LoggingInterceptor
 import com.example.clicker.network.interceptors.NetworkMonitor
 import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.interceptors.RetryInterceptor
+import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
 import dagger.Module
@@ -81,6 +83,12 @@ object SingletonModule {
         return TokenDataStore(appContext)
     }
 
+    @Singleton
+    @Provides
+    fun providesNetworkMonitorRepo(): NetworkMonitorRepo {
+        return NetworkMonitorImpl()
+    }
+
     @Provides
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
@@ -88,6 +96,7 @@ object SingletonModule {
 
     @Provides
     fun provideTwitchAuthRepo(twitchAuthenticationImpl: TwitchAuthenticationImpl): TwitchAuthentication {
+        Log.d("provideTwitchAuthRepo","${twitchAuthenticationImpl.hashCode()}")
         return twitchAuthenticationImpl
     }
 

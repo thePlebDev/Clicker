@@ -18,37 +18,7 @@ class LiveNetworkMonitor @Inject constructor(
 ):NetworkMonitor {
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     //todo: move below
-    val networkRequest = NetworkRequest.Builder()
-        .build()
-    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        // network is available for use
-        override fun onAvailable(network: Network) {
-            super.onAvailable(network)
-            Log.d("LiveNetworkMonitornetworkRequestManager","Available")
-        }
 
-        // Network capabilities have changed for the network
-        override fun onCapabilitiesChanged(
-            network: Network,
-            networkCapabilities: NetworkCapabilities
-        ) {
-            super.onCapabilitiesChanged(network, networkCapabilities)
-            val unmetered = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-        }
-
-        // lost network connection
-        override fun onLost(network: Network) {
-            super.onLost(network)
-            Log.d("LiveNetworkMonitornetworkRequestManager","Lost")
-        }
-    }
-    init{
-        stuff()
-    }
-
-    fun stuff(){
-        connectivityManager.requestNetwork(networkRequest, networkCallback)
-    }
 
     //todo: move above
 
