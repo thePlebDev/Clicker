@@ -547,9 +547,11 @@ object ScaffoldComponents {
                         Column(modifier = Modifier
                             .height((adjustedHeight).dp)
                             .width((adjustedWidth).dp)
-                            .background(MaterialTheme.colorScheme.primary)
+                            .background(MaterialTheme.colorScheme.primary),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ){
-
+                            CircularProgressIndicator()
                         }
                     },
                     contentDescription = stringResource(R.string.sub_compose_async_image_description)
