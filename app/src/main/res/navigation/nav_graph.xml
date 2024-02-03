@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_homeFragment_to_streamFragment"
             app:destination="@id/streamFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_modChannelsFragment"
+            app:destination="@id/modChannelsFragment" />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
@@ -21,6 +24,14 @@
         tools:layout="@layout/fragment_stream" >
         <action
             android:id="@+id/action_streamFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/modChannelsFragment"
+        android:name="com.example.clicker.presentation.modChannels.ModChannelsFragment"
+        android:label="ModChannelsFragment" >
+        <action
+            android:id="@+id/action_modChannelsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
 </navigation>
