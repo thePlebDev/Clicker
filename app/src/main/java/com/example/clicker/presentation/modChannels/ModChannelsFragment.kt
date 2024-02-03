@@ -13,8 +13,9 @@ import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentModChannelsBinding
 import com.example.clicker.ui.theme.AppTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.clicker.presentation.modChannels.views.ModChannelView
+import com.example.clicker.presentation.home.HomeViewModel
 
 
 /**
@@ -26,6 +27,7 @@ class ModChannelsFragment : Fragment() {
 
     private var _binding: FragmentModChannelsBinding? = null
     private val binding get() = _binding!!
+    private val homeViewModel: HomeViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +47,8 @@ class ModChannelsFragment : Fragment() {
             setContent {
                 AppTheme{
                     ModChannelView(
-                        onNavigate = { dest -> findNavController().navigate(dest) }
+                        onNavigate = { dest -> findNavController().navigate(dest) },
+                        homeViewModel = homeViewModel
                     )
                 }
             }
@@ -55,6 +58,11 @@ class ModChannelsFragment : Fragment() {
 
 
         return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }
