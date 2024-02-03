@@ -304,7 +304,7 @@ object ScaffoldComponents {
 
     /**
      * Parts represents the most individual parts of [ScaffoldComponents] and should be thought of as the individual
-     * pieces that are used inside of a [Builder] to create a [ScaffoldComponents] implementation
+     * pieces that are used inside of a [Builders] to create a [ScaffoldComponents] implementation
      * */
     private object Parts{
 
@@ -496,13 +496,14 @@ object ScaffoldComponents {
                     Text("Home",color = MaterialTheme.colorScheme.onPrimary)
                 }
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.moderator_secondary_color),
                         "Moderation Icon",
                         tint= MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(35.dp).clickable { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) }
+                        modifier = Modifier.size(35.dp)
                     )
                     Text("Mod Channels",color = MaterialTheme.colorScheme.onPrimary)
                 }

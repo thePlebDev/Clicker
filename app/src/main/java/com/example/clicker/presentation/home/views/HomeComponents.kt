@@ -72,6 +72,7 @@ object HomeComponents {
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
      * @param logout a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
      * @param userIsAuthenticated a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param screenDensity a float meant to represent the screen density of the current device
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
