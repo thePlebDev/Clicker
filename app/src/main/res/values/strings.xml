@@ -43,10 +43,6 @@
     <string name="error_pull_to_refresh">Error! Pull to refresh </string>
 
 
-
-
-
-
     <!-- TODO: StreamView Strings below -->
 
     <!-- StreamView BottomModalContent composable -->
@@ -69,7 +65,6 @@
     <string name="follower_mode">Follower mode: </string>
     <string name="subscriber_mode">Subscriber mode: </string>
     <string name="emote_mode">Emote mode: </string>
-
 
 
     <!-- StreamView MessageAlertText composable -->

@@ -174,7 +174,9 @@ object ScaffoldComponents {
                     scaffoldState = scaffoldState
                 )
             },
-            bottomBar = {Parts.CustomBottomBar()},
+            bottomBar = {Parts.CustomBottomBar(
+               onNavigate= {id -> onNavigate(id)}
+            )},
             pullDownTwoRefresh ={modifier ->
                 Parts.PullDownToRequest(
                     request = request,
@@ -472,7 +474,9 @@ object ScaffoldComponents {
          * - CustomBottomBar is a custom bottom bar for a [Scaffold] and is meant to act as the home activities Navigation
          * */
         @Composable
-        fun CustomBottomBar(){
+        fun CustomBottomBar(
+            onNavigate: (Int) -> Unit,
+        ){
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -498,7 +502,7 @@ object ScaffoldComponents {
                         painter = painterResource(id = R.drawable.moderator_secondary_color),
                         "Moderation Icon",
                         tint= MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(35.dp)
+                        modifier = Modifier.size(35.dp).clickable { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) }
                     )
                     Text("Mod Channels",color = MaterialTheme.colorScheme.onPrimary)
                 }
