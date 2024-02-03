@@ -13,6 +13,7 @@ import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentModChannelsBinding
 import com.example.clicker.ui.theme.AppTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.navigation.fragment.findNavController
 import com.example.clicker.presentation.modChannels.views.ModChannelView
 
 
@@ -43,7 +44,9 @@ class ModChannelsFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 AppTheme{
-                    ModChannelView()
+                    ModChannelView(
+                        onNavigate = { dest -> findNavController().navigate(dest) }
+                    )
                 }
             }
         }
