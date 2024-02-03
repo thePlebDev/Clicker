@@ -33,5 +33,8 @@
         <action
             android:id="@+id/action_modChannelsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_modChannelsFragment_to_streamFragment"
+            app:destination="@id/streamFragment" />
     </fragment>
 </navigation>
