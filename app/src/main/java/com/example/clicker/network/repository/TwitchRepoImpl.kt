@@ -2,6 +2,8 @@ package com.example.clicker.network.repository
 
 import android.util.Log
 import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.clients.GetModChannels
+import com.example.clicker.network.clients.GetModChannelsData
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -50,6 +52,31 @@ class TwitchRepoImpl @Inject constructor(
 
         if (response.isSuccessful) {
             emit(Response.Success(exported))
+        } else {
+            emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
+        }
+    }.catch { cause ->
+        handleException(cause)
+    }
+
+    override suspend fun getModeratedChannels(
+        authorizationToken: String,
+        clientId: String,
+        userId: String
+    ):Flow<Response<GetModChannels>> = flow{
+        emit(Response.Loading)
+        val emptyBody = GetModChannels(data= listOf())
+        val response = twitchClient.getModeratedChannels(
+            authorizationToken = "Bearer $authorizationToken",
+            clientId = clientId,
+            userId = userId
+        )
+        val body = response.body() ?: emptyBody
+        Log.d("getModeratedChannels","code --->${response.code()}")
+        Log.d("getModeratedChannels","message -> ${response.message()}")
+        Log.d("getModeratedChannels","errorbody -> ${response.errorBody()}")
+        if (response.isSuccessful) {
+            emit(Response.Success(body))
         } else {
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
         }

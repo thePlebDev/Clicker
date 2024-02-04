@@ -34,6 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -66,6 +67,10 @@ data class HomeUIState(
     val oAuthToken: String = "",
 
     val networkConnectionState:Boolean = true,
+
+    val offlineModChannelList:List<String> =listOf(),
+    val liveModChannelList:List<StreamInfo> = listOf(),
+    val modChannelResponseState:Response<Boolean> = Response.Loading
 
 )
 
@@ -126,6 +131,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+
     /**
      * refreshFromConnection is a private function that will get called when [monitorForNetworkConnection] detects a
      * reconnection to the network. First it will get the locally stored OAuth token, then if [validatedUser] is
@@ -173,7 +179,68 @@ class HomeViewModel @Inject constructor(
     init {
         monitorForNetworkConnection()
     }
+    init{
+        monitorNewList()
+    }
 
+
+    private fun monitorNewList() {
+        viewModelScope.launch {
+            _newUrlList.collect{streamList ->
+                streamList?.let{nonNullableStreamList ->
+
+                    for(streamer in nonNullableStreamList){
+                        Log.d("STREAMERNAMES","${streamer.streamerName}")
+                    }
+                    twitchRepoImpl.getModeratedChannels(
+                        authorizationToken = _oAuthToken.value ?: "",
+                        clientId = _validatedUser.value?.clientId ?:"",
+                        userId = _validatedUser.value?.userId ?:""
+                    ).collect{response ->
+
+                        when(response){
+                            is Response.Loading ->{
+                                Log.d("getModeratedChannels","RESPONSE -> LOADING")
+                            }
+                            is Response.Success ->{
+                                Log.d("getModeratedChannels","RESPONSE -> SUCCESS")
+                                Log.d("getModeratedChannels","RESPONSE -> ${response.data.data}")
+
+                                val offlineModList = mutableListOf<String>()
+                                val onlineList = mutableListOf<StreamInfo>()
+                                for(modChannel in response.data.data ){
+                                    offlineModList.add(modChannel.broadcasterName)
+                                    _newUrlList.value?.forEach {
+                                        if(it.streamerName == modChannel.broadcasterName){
+                                            onlineList.add(it)
+                                            offlineModList.remove(modChannel.broadcasterName)
+                                        }
+                                    }
+
+                                }
+
+
+                                    _uiState.value = _uiState.value.copy(
+                                        offlineModChannelList = offlineModList,
+                                        liveModChannelList = onlineList,
+                                        modChannelResponseState = Response.Success(true)
+                                    )
+
+                            }
+                            is Response.Failure ->{
+                                Log.d("getModeratedChannels","RESPONSE -> FAILURE")
+                                _uiState.value = _uiState.value.copy(
+
+                                    modChannelResponseState = Response.Failure(Exception("Failed"))
+                                )
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
 
 /**
  * monitorForValidatedUser is a private function that upon the initialization of this viewModel is meant to monitor the [_validatedUser] hot flow for any non null values
