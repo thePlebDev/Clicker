@@ -9,6 +9,7 @@ import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -180,7 +181,26 @@ interface TwitchClient {
         @Body autoModSettings: IndividualAutoModSettings
     ):Response<AutoModSettings>
 
+    @GET("moderation/channels")
+    suspend fun getModeratedChannels(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("user_id") userId: String
+    ):Response<GetModChannels>
+
 }
+data class GetModChannels(
+    val data:List<GetModChannelsData>
+)
+data class GetModChannelsData(
+
+    @SerializedName("broadcaster_id")
+    val broadcasterId: String,
+    @SerializedName("broadcaster_login")
+    val broadcasterLogin: String,
+    @SerializedName("broadcaster_name")
+    val broadcasterName: String,
+)
 
 data class BanUser(
     val data: BanUserData

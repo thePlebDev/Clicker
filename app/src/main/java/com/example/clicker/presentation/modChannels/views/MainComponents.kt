@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
@@ -43,13 +44,18 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.presentation.home.StreamInfo
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
+import com.example.clicker.util.Response
 
 import kotlinx.coroutines.launch
 
@@ -70,7 +76,7 @@ object ModChannelComponents{
      * - Contains 3 parts:
      * 1) [CustomTopBar][Parts.CustomTopBar]
      * 2) [CustomBottomBar][Parts.CustomBottomBar]
-     * 3) [ModChannelsList][Parts.ModChannelsList]
+     * 3) [ModChannelsResponse][Parts.ModChannelsResponse]
      *
      * @param onNavigate a function used to navigate from the home page to the individual stream view
      * @param height a Int representing the height in a aspect ratio that will make the images look nice
@@ -82,7 +88,10 @@ object ModChannelComponents{
         onNavigate: (Int) -> Unit,
         height: Int,
         width: Int,
-        density:Float
+        density:Float,
+        offlineModChannelList:List<String>,
+        liveModChannelList:List<StreamInfo>,
+        modChannelResponseState: Response<Boolean>
     ){
         Builders.ScaffoldBuilder(
             topBar = {
@@ -96,8 +105,15 @@ object ModChannelComponents{
                 )
             },
             modChannelList={ contentPadding ->
-                Parts.ModChannelsList(
-                    contentPadding,height, width, density
+                Parts.ModChannelsResponse(
+                    contentPadding,
+                    height,
+                    width,
+                    density,
+                    offlineModChannelList = offlineModChannelList,
+                    liveModChannelList=liveModChannelList,
+                    modChannelResponseState =modChannelResponseState
+
                 )
             }
         )
@@ -150,6 +166,70 @@ object ModChannelComponents{
     private object Parts{
 
         /**
+         * - Contains 1 extra parts:
+         * 1) [ModChannelList]
+         *
+         * - ModChannelsResponse is a composable function used to show the current state of the data to
+         * to the user. Either LOADING,SUCCESS OR FAILURE. All dependent on the network call to get channels where the
+         * user is a moderator
+         *
+         * @param contentPadding it is a nullable list of all the live channels returned by the twitch server
+         * @param density a Float representing the screen density of the current device
+         * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
+         * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+         * @param offlineModChannelList subject to change
+         * @param liveModChannelList subject to change
+         * @param modChannelResponseState a [Response] object used to determine if there is any data to be shown to the user
+         * or not
+         * */
+        @Composable
+        fun ModChannelsResponse(
+            contentPadding: PaddingValues,
+            height: Int,
+            width: Int,
+            density:Float,
+            offlineModChannelList:List<String>,
+            liveModChannelList:List<StreamInfo>,
+            modChannelResponseState: Response<Boolean>
+
+        ){
+            when(modChannelResponseState){
+                is Response.Loading ->{
+                    //loading animation
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        CircularProgressIndicator()
+
+                    }
+                }
+                is Response.Success ->{
+                    //have the lazy column here
+                    ModChannelList(
+                        contentPadding = contentPadding,
+                        height=height,
+                        width= width,
+                        density=density,
+                        offlineModChannelList=offlineModChannelList,
+                        liveModChannelList=liveModChannelList
+                    )
+                }
+                is Response.Failure ->{
+                    //failure telling the user
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        Text("FAILURE")
+
+                    }
+                }
+            }
+
+        }
+
+        /**
          * - Contains 3 extra parts:
          * 1) [ModHeader]
          * 2) [EmptyList]
@@ -162,47 +242,48 @@ object ModChannelComponents{
          * @param density a Float representing the screen density of the current device
          * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
          * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
-         * @param liveList subject to change
-         * @param offLineList subject to change
+         * @param offlineModChannelList subject to change
+         * @param liveModChannelList subject to change
          * */
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
-        fun ModChannelsList(
+        fun ModChannelList(
             contentPadding: PaddingValues,
             height: Int,
             width: Int,
             density:Float,
-            liveList:List<String> = listOf("Bob","Soda","Urza","Poppin","Hasan","CohCarnage"),
-            offLineList:List<String> = listOf("Bob","Soda","Urza","Poppin","Hasan","CohCarnage")
-
+            offlineModChannelList:List<String>,
+            liveModChannelList:List<StreamInfo>,
         ){
             LazyColumn(modifier = Modifier.padding(contentPadding)) {
                 stickyHeader {
                     ModHeader("Live")
                 }
-                if(liveList.isEmpty()){
+                if(liveModChannelList.isEmpty()){
                     item{
                         EmptyList(
                             message ="No live moderated channels found"
                         )
                     }
                 }
-                items(liveList){channelName ->
+                items(liveModChannelList){streamInfo ->
 
                     LiveModChannelItem(
                         height,
                         width,
                         density,
-                        channelName = channelName,
-                        streamTitle="It do be like that ",
-                        gameTitle ="Panzer another"
+                        channelName = streamInfo.streamerName,
+                        streamTitle=streamInfo.streamTitle,
+                        gameTitle =streamInfo.gameTitle,
+                        viewCount = streamInfo.views,
+                        url = streamInfo.url
                     )
                 }
 
                 stickyHeader {
                     ModHeader("Offline")
                 }
-                if(offLineList.isEmpty()){
+                if(offlineModChannelList.isEmpty()){
                     item{
                         EmptyList(
                             message ="No offline moderated channels found"
@@ -211,7 +292,7 @@ object ModChannelComponents{
                 }
 
 
-                items(offLineList){channelName ->
+                items(offlineModChannelList){channelName ->
                     OfflineModChannelItem(
                         height,
                         width,
@@ -220,11 +301,8 @@ object ModChannelComponents{
                     )
                 }
 
-
-
             }
         }
-
         /**
          * - Contains 2 extra parts:
          * 1) [OfflineModChannelImage]
@@ -240,7 +318,7 @@ object ModChannelComponents{
         @Composable
         fun OfflineModChannelItem(
             //updateStreamerName: (String, String, String, String) -> Unit,
-            // streamItem: StreamInfo,
+         //    streamItem: StreamInfo,
 //    clientId: String,
 //    userId:String,
 //    onNavigate: (Int) -> Unit,
@@ -277,6 +355,9 @@ object ModChannelComponents{
          * @param channelName a String meant to represent the name of the channel shown to the user
          * @param streamTitle a String meant to represent the name of the title of the stream
          * @param gameTitle a String meant to represent the name of the title of the game
+         *
+         * @param url a String used to load the screen shot of what the streamer is playing
+         * @param viewCount a Int meant to represent how many users are viewing the stream
          * */
         @Composable
         fun LiveModChannelItem(
@@ -286,11 +367,20 @@ object ModChannelComponents{
             channelName:String,
             streamTitle:String,
             gameTitle:String,
+            url:String,
+            viewCount: Int
         ){
             Row(
                 modifier = Modifier.padding(10.dp).clickable {}
             ){
-                OfflineModChannelImage(height,width, density)
+               // OfflineModChannelImage(height,width, density)
+                OnlineModChannelImage(
+                    height = height,
+                    width = width,
+                    density = density,
+                    url= url,
+                    viewCount = viewCount
+                )
                 StreamInfo(channelName,streamTitle,gameTitle)
             }
             Spacer(
@@ -521,7 +611,8 @@ object ModChannelComponents{
         fun OfflineModChannelImage(
             height: Int,
             width: Int,
-            density:Float
+            density:Float,
+
         ){
             val adjustedHeight = height/density
             val adjustedWidth = width/density
@@ -533,6 +624,46 @@ object ModChannelComponents{
                 }
                 Spacer(modifier=Modifier.height(10.dp))
             }
+        }
+        @Composable
+        fun OnlineModChannelImage(
+            height: Int,
+            width: Int,
+            density:Float,
+            viewCount:Int,
+            url:String
+        ){
+            Box() {
+                val adjustedHeight = height/density
+                val adjustedWidth = width/density
+                SubcomposeAsyncImage(
+                    model = url,
+                    loading = {
+                        Column(modifier = Modifier
+                            .height((adjustedHeight).dp)
+                            .width((adjustedWidth).dp)
+                            .background(MaterialTheme.colorScheme.primary),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            CircularProgressIndicator()
+                        }
+                    },
+                    contentDescription = stringResource(R.string.sub_compose_async_image_description)
+                )
+                Text(
+                    "${viewCount}",
+                    style = TextStyle(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(5.dp)
+                )
+            }
+
         }
 
     }/***END OF THE PARTS****/

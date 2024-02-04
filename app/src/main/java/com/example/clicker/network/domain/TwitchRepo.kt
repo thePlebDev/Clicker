@@ -1,5 +1,6 @@
 package com.example.clicker.network.domain
 
+import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -24,4 +25,17 @@ interface TwitchRepo {
         clientId: String,
         userId: String
     ): Flow<Response<List<StreamInfo>>>
+
+    /**
+     * - getModeratedChannels() Gets a list of channels that the specified user has moderator privileges in.
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param userId a String used to represent the unique identifier of the current logged in user
+     * */
+    suspend fun getModeratedChannels(
+        authorizationToken: String,
+        clientId: String,
+        userId: String
+    ):Flow<Response<GetModChannels>>
 }
