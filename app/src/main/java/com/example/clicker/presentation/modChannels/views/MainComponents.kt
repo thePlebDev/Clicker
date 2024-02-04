@@ -31,6 +31,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +49,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -53,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.home.disableClickAndRipple
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
 import com.example.clicker.util.Response
@@ -330,7 +335,9 @@ object ModChannelComponents{
 
         ){
             Row(
-                modifier = Modifier.padding(10.dp).clickable {}
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clickable {}
             ){
                 OfflineModChannelImage(height,width, density)
                 StreamerName(channelName)
@@ -371,7 +378,9 @@ object ModChannelComponents{
             viewCount: Int
         ){
             Row(
-                modifier = Modifier.padding(10.dp).clickable {}
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clickable {}
             ){
                // OfflineModChannelImage(height,width, density)
                 OnlineModChannelImage(
@@ -430,6 +439,9 @@ object ModChannelComponents{
         }
 
 
+
+
+
         /**
          * - Contains 0 extra parts:
          *
@@ -462,7 +474,8 @@ object ModChannelComponents{
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clip(shape = RoundedCornerShape(5.dp))
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(5.dp))
                     .background(color = MaterialTheme.colorScheme.primary)
 
             ){
@@ -618,7 +631,11 @@ object ModChannelComponents{
             val adjustedWidth = width/density
             Column() {
                 Box(
-                    modifier = Modifier.height(adjustedHeight.dp).width(adjustedWidth.dp).clip(RectangleShape).background(Color.DarkGray)
+                    modifier = Modifier
+                        .height(adjustedHeight.dp)
+                        .width(adjustedWidth.dp)
+                        .clip(RectangleShape)
+                        .background(Color.DarkGray)
                 ){
                     Text("Offline",modifier = Modifier.align(Alignment.Center), fontSize = 20.sp,color = Color.White)
                 }

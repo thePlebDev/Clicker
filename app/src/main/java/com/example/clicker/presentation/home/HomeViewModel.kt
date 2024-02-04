@@ -179,9 +179,9 @@ class HomeViewModel @Inject constructor(
     init {
         monitorForNetworkConnection()
     }
-    init{
-        monitorNewList()
-    }
+//    init{
+//        monitorNewList()
+//    }
 
 
     private fun monitorNewList() {
