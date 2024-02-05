@@ -157,7 +157,8 @@ object ModChannelComponents{
                     bottomBar()
                 },
             ) { contentPadding ->
-                modChannelList(contentPadding)
+                //modChannelList(contentPadding)
+                TestingPullToRefresh(contentPadding)
             }
         }
     } /***END OF THE BUILDERS****/
@@ -622,7 +623,7 @@ object ModChannelComponents{
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
+                    .height(100.dp).background(MaterialTheme.colorScheme.primary),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ){
