@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.modChannels.views
 
 
+import android.util.Log
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -52,6 +53,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -144,18 +146,26 @@ private class PullToRefreshNestedScrollConnection(
     override fun onPreScroll(
         available: Offset,
         source: NestedScrollSource
-    ): Offset = when {
+    ): Offset{
+
+        return when{
+            !enabled -> Offset.Zero
+            // If we're refreshing, consume y
+            state.isRefreshing -> Offset(0f, available.y)
+            // If the user is pulling up, handle it
+            source == NestedScrollSource.Drag && available.y < 0 -> dragUp(available)
+            else -> Offset.Zero
+        }
         // If pulling isn't enabled, return zero
-        !enabled -> Offset.Zero
-        // If we're refreshing, consume y
-        state.isRefreshing -> Offset(0f, available.y)
-        // If the user is pulling up, handle it
-        source == NestedScrollSource.Drag && available.y < 0 -> dragUp(available)
-        else -> Offset.Zero
+
+
+
+
     }
 
     private fun dragUp(available: Offset): Offset {
         state.isPullInProgress = true
+
 
         val newOffset = (available.y * dragMultiplier + state.contentOffset).coerceAtLeast(0f)
         val dragConsumed = newOffset - state.contentOffset
@@ -374,55 +384,16 @@ fun PullToRefreshIndicator(
             )
         }
         BasicText(
-            text = "Pull to refresh",
+            text = when {
+                    state.isPullInProgress && state.contentOffset >= refreshTriggerPx -> "Release to refresh"
+                    state.isRefreshing -> "Refreshing"
+                    else -> "Pull to refresh"
+                }
+            ,
             style = textStyle
         )
     }
 }
 
 
-@Composable
-fun Content(contentPadding: PaddingValues) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(30) { index ->
-            Card(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = index.toString(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.dp, vertical = 30.dp),
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun TestingPullToRefresh(
-    padding: PaddingValues
-){
-    var refreshing by remember { mutableStateOf(false) }
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            delay(1200)
-            refreshing = false
-        }
-    }
-
-    PullToRefresh(
-        state = rememberPullToRefreshState(isRefreshing = refreshing),
-        onRefresh = { refreshing = true },
-        indicatorPadding = padding
-    ) {
-        Content(padding)
-    }
-}

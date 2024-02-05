@@ -50,7 +50,9 @@ fun ModChannelView(
             density = homeViewModel.state.value.screenDensity,
             offlineModChannelList = homeViewModel.state.value.offlineModChannelList,
             liveModChannelList = homeViewModel.state.value.liveModChannelList,
-            modChannelResponseState = homeViewModel.state.value.modChannelResponseState
+            modChannelResponseState = homeViewModel.state.value.modChannelResponseState,
+            refreshing = homeViewModel.state.value.refreshing,
+            refreshFunc = {homeViewModel.pullToRefreshModChannels()}
 
         )
     }

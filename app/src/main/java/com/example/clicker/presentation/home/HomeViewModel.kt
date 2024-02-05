@@ -70,7 +70,8 @@ data class HomeUIState(
 
     val offlineModChannelList:List<String> =listOf(),
     val liveModChannelList:List<StreamInfo> = listOf(),
-    val modChannelResponseState:Response<Boolean> = Response.Loading
+    val modChannelResponseState:Response<Boolean> = Response.Loading,
+    val refreshing:Boolean = false,
 
 )
 
@@ -179,65 +180,91 @@ class HomeViewModel @Inject constructor(
     init {
         monitorForNetworkConnection()
     }
-//    init{
-//        monitorNewList()
-//    }
+    init{
+        monitorNewList()
+    }
 
+    fun pullToRefreshModChannels(){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                refreshing = true
+            )
+            delay(1000)
+            getLiveStreams(
+                clientId = _validatedUser.value?.clientId ?:"",
+                userId = _validatedUser.value?.userId ?:"",
+                oAuthToken = _oAuthToken.value ?: "",
+            )
+
+//            getModeratedChannels(
+//                oAuthToken = _oAuthToken.value ?: "",
+//                clientId = _validatedUser.value?.clientId ?:"",
+//                userId = _validatedUser.value?.userId ?:""
+//            )
+        }
+    }
 
     private fun monitorNewList() {
         viewModelScope.launch {
             _newUrlList.collect{streamList ->
                 streamList?.let{nonNullableStreamList ->
 
-                    for(streamer in nonNullableStreamList){
-                        Log.d("STREAMERNAMES","${streamer.streamerName}")
-                    }
-                    twitchRepoImpl.getModeratedChannels(
-                        authorizationToken = _oAuthToken.value ?: "",
+                    getModeratedChannels(
+                        oAuthToken = _oAuthToken.value ?: "",
                         clientId = _validatedUser.value?.clientId ?:"",
                         userId = _validatedUser.value?.userId ?:""
-                    ).collect{response ->
+                    )
 
-                        when(response){
-                            is Response.Loading ->{
-                                Log.d("getModeratedChannels","RESPONSE -> LOADING")
-                            }
-                            is Response.Success ->{
-                                Log.d("getModeratedChannels","RESPONSE -> SUCCESS")
-                                Log.d("getModeratedChannels","RESPONSE -> ${response.data.data}")
+                }
+            }
+        }
+    }
+    private fun getModeratedChannels(
+        oAuthToken: String,
+        clientId:String,
+        userId: String
+    ){
+        viewModelScope.launch {
+            withContext(ioDispatcher){
+                twitchRepoImpl.getModeratedChannels(
+                    authorizationToken = oAuthToken,
+                    clientId = clientId,
+                    userId = userId
+                ).collect{response ->
 
-                                val offlineModList = mutableListOf<String>()
-                                val onlineList = mutableListOf<StreamInfo>()
-                                for(modChannel in response.data.data ){
-                                    offlineModList.add(modChannel.broadcasterName)
-                                    _newUrlList.value?.forEach {
-                                        if(it.streamerName == modChannel.broadcasterName){
-                                            onlineList.add(it)
-                                            offlineModList.remove(modChannel.broadcasterName)
-                                        }
+                    when(response){
+                        is Response.Loading ->{}
+                        is Response.Success ->{
+
+                            val offlineModList = mutableListOf<String>()
+                            val onlineList = mutableListOf<StreamInfo>()
+                            for(modChannel in response.data.data ){
+                                offlineModList.add(modChannel.broadcasterName)
+                                _newUrlList.value?.forEach {
+                                    if(it.streamerName == modChannel.broadcasterName){
+                                        onlineList.add(it)
+                                        offlineModList.remove(modChannel.broadcasterName)
                                     }
-
                                 }
 
-
-                                    _uiState.value = _uiState.value.copy(
-                                        offlineModChannelList = offlineModList,
-                                        liveModChannelList = onlineList,
-                                        modChannelResponseState = Response.Success(true)
-                                    )
-
                             }
-                            is Response.Failure ->{
-                                Log.d("getModeratedChannels","RESPONSE -> FAILURE")
-                                _uiState.value = _uiState.value.copy(
+                            _uiState.value = _uiState.value.copy(
+                                offlineModChannelList = offlineModList,
+                                liveModChannelList = onlineList,
+                                modChannelResponseState = Response.Success(true),
+                                refreshing = false
+                            )
+                        }
+                        is Response.Failure ->{
+                            Log.d("getModeratedChannels","RESPONSE -> FAILURE")
+                            _uiState.value = _uiState.value.copy(
 
-                                    modChannelResponseState = Response.Failure(Exception("Failed"))
-                                )
-                            }
+                                modChannelResponseState = Response.Failure(Exception("Failed")),
+                                refreshing = false
+                            )
                         }
                     }
                 }
-
             }
         }
     }
@@ -450,7 +477,8 @@ class HomeViewModel @Inject constructor(
                             }
 
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkResponse.Success(true)
+                                streamersListLoading = NetworkResponse.Success(true),
+                                refreshing = false
                             )
                             _newUrlList.tryEmit(replacedWidthHeightList)
                         }
@@ -458,6 +486,7 @@ class HomeViewModel @Inject constructor(
                         is Response.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 failedNetworkRequest = true,
+                                refreshing = false
 
                             )
 
