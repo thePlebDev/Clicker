@@ -198,6 +198,7 @@ object ModChannelComponents{
             modChannelResponseState: Response<Boolean>
 
         ){
+            ErrorPullToRefresh()
             when(modChannelResponseState){
                 is Response.Loading ->{
                     //loading animation
@@ -382,7 +383,6 @@ object ModChannelComponents{
                     .padding(10.dp)
                     .clickable {}
             ){
-               // OfflineModChannelImage(height,width, density)
                 OnlineModChannelImage(
                     height = height,
                     width = width,
@@ -398,6 +398,8 @@ object ModChannelComponents{
                     .height(10.dp)
             )
         }
+
+
         /**
          * - Contains 0 extra parts:
 
@@ -435,6 +437,50 @@ object ModChannelComponents{
                     modifier = Modifier.alpha(0.7f),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
+            }
+        }
+
+        /**
+         * - Contains 0 extra parts
+         *
+         * - ErrorPullToRefresh is a composable function that will appear to the user when a generic error
+         * has happened and they have to pull to make the request again
+         *
+         * */
+        @Composable
+        fun ErrorPullToRefresh() {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)
+                    .clickable { },
+                elevation = 10.dp,
+                backgroundColor = MaterialTheme.colorScheme.secondary
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(35.dp)
+                    )
+                    Text(
+                        "Error! Pull to refresh",
+                        fontSize = 20.sp,
+                        color =MaterialTheme.colorScheme.onSecondary
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(35.dp)
+                    )
+                }
             }
         }
 
