@@ -32,7 +32,7 @@ import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 @Composable
 fun ModChannelView(
     homeViewModel: HomeViewModel,
-    onNavigate: (Int) -> Unit,
+    onNavigate: () -> Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
 
@@ -44,7 +44,7 @@ fun ModChannelView(
     ) {
 
         ModChannelComponents.MainModView(
-            onNavigate = { destination -> onNavigate(destination) },
+            onNavigate = { onNavigate() },
             height = homeViewModel.state.value.aspectHeight,
             width = homeViewModel.state.value.width,
             density = homeViewModel.state.value.screenDensity,

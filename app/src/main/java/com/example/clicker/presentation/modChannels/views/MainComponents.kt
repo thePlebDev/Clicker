@@ -96,7 +96,7 @@ object ModChannelComponents{
      * */
     @Composable
     fun MainModView(
-        onNavigate: (Int) -> Unit,
+        onNavigate: () -> Unit,
         height: Int,
         width: Int,
         density:Float,
@@ -109,12 +109,12 @@ object ModChannelComponents{
         Builders.ScaffoldBuilder(
             topBar = {
                 Parts.CustomTopBar(
-                    onNavigate ={destination -> onNavigate(destination)}
+                    onNavigate ={ onNavigate()}
                 )
             },
             bottomBar={
                 Parts.CustomBottomBar(
-                    onNavigate ={destination -> onNavigate(destination)}
+                    onNavigate ={ onNavigate()}
                 )
             },
             pullToRefreshList = {contentPadding ->
@@ -651,7 +651,7 @@ object ModChannelComponents{
          * */
         @Composable
         fun CustomTopBar(
-            onNavigate: (Int) -> Unit
+            onNavigate: () -> Unit
         ) {
             Column(
                 modifier = Modifier
@@ -668,7 +668,8 @@ object ModChannelComponents{
                         modifier = Modifier
                             .size(35.dp)
                             .clickable {
-                                onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
+                               // onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
+                                onNavigate()
                             },
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
@@ -691,7 +692,7 @@ object ModChannelComponents{
          * */
         @Composable
         fun CustomBottomBar(
-            onNavigate: (Int) -> Unit,
+            onNavigate: () -> Unit,
         ){
             Row(
                 modifier = Modifier
@@ -703,7 +704,10 @@ object ModChannelComponents{
             ){
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier=Modifier.clickable { onNavigate(R.id.action_modChannelsFragment_to_homeFragment) }
+                    modifier=Modifier.clickable {
+                        //onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
+                        onNavigate()
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Home,
