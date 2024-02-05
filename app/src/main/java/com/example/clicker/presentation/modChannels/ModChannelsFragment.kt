@@ -40,6 +40,7 @@ class ModChannelsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
         _binding = FragmentModChannelsBinding.inflate(inflater, container, false)
         val view = binding.root
         binding.composeView.apply {
@@ -47,7 +48,7 @@ class ModChannelsFragment : Fragment() {
             setContent {
                 AppTheme{
                     ModChannelView(
-                        onNavigate = { dest -> findNavController().navigate(dest) },
+                        onNavigate = {  findNavController().popBackStack() },
                         homeViewModel = homeViewModel
                     )
                 }
