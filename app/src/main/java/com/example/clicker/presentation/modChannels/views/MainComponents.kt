@@ -37,7 +37,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -61,6 +66,7 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
 import com.example.clicker.util.Response
+import kotlinx.coroutines.delay
 
 import kotlinx.coroutines.launch
 
@@ -96,7 +102,9 @@ object ModChannelComponents{
         density:Float,
         offlineModChannelList:List<String>,
         liveModChannelList:List<StreamInfo>,
-        modChannelResponseState: Response<Boolean>
+        modChannelResponseState: Response<Boolean>,
+        refreshing:Boolean,
+        refreshFunc:()->Unit,
     ){
         Builders.ScaffoldBuilder(
             topBar = {
@@ -109,18 +117,24 @@ object ModChannelComponents{
                     onNavigate ={destination -> onNavigate(destination)}
                 )
             },
-            modChannelList={ contentPadding ->
-                Parts.ModChannelsResponse(
-                    contentPadding,
-                    height,
-                    width,
-                    density,
-                    offlineModChannelList = offlineModChannelList,
-                    liveModChannelList=liveModChannelList,
-                    modChannelResponseState =modChannelResponseState
+            pullToRefreshList = {contentPadding ->
+                TestingPullToRefresh(
+                    padding =contentPadding,
+                    refreshing = refreshing,
+                    refreshFunc = {refreshFunc()}
+                ){
+                    Parts.ModChannelsResponse(
+                        contentPadding,
+                        height,
+                        width,
+                        density,
+                        offlineModChannelList = offlineModChannelList,
+                        liveModChannelList=liveModChannelList,
+                        modChannelResponseState =modChannelResponseState
 
-                )
-            }
+                    )
+                }
+            },
         )
     }
 
@@ -145,7 +159,7 @@ object ModChannelComponents{
         fun ScaffoldBuilder(
             topBar:@Composable () -> Unit,
             bottomBar:@Composable () -> Unit,
-            modChannelList:@Composable (contentPadding:PaddingValues) -> Unit,
+            pullToRefreshList:@Composable (contentPadding:PaddingValues) -> Unit,
         ){
 
             Scaffold(
@@ -157,11 +171,31 @@ object ModChannelComponents{
                     bottomBar()
                 },
             ) { contentPadding ->
-                //modChannelList(contentPadding)
-                TestingPullToRefresh(contentPadding)
+
+                pullToRefreshList(contentPadding)
+
             }
         }
     } /***END OF THE BUILDERS****/
+
+
+    @Composable
+    fun TestingPullToRefresh(
+        padding: PaddingValues,
+        refreshing:Boolean,
+        refreshFunc:()->Unit,
+        content:@Composable () -> Unit,
+    ){
+
+
+        PullToRefresh(
+            state = rememberPullToRefreshState(isRefreshing = refreshing),
+            onRefresh = { refreshFunc() },
+            indicatorPadding = padding
+        ) {
+            content()
+        }
+    }
 
 
 
@@ -188,6 +222,7 @@ object ModChannelComponents{
          * @param modChannelResponseState a [Response] object used to determine if there is any data to be shown to the user
          * or not
          * */
+        @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun ModChannelsResponse(
             contentPadding: PaddingValues,
@@ -199,38 +234,76 @@ object ModChannelComponents{
             modChannelResponseState: Response<Boolean>
 
         ){
-            ErrorPullToRefresh()
-            when(modChannelResponseState){
-                is Response.Loading ->{
-                    //loading animation
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ){
-                        CircularProgressIndicator()
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = contentPadding){
+                when(modChannelResponseState){
+                    is Response.Loading ->{
+                        item{
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ){
+                                CircularProgressIndicator()
+
+                            }
+                        }
 
                     }
-                }
-                is Response.Success ->{
-                    //have the lazy column here
-                    ModChannelList(
-                        contentPadding = contentPadding,
-                        height=height,
-                        width= width,
-                        density=density,
-                        offlineModChannelList=offlineModChannelList,
-                        liveModChannelList=liveModChannelList
-                    )
-                }
-                is Response.Failure ->{
-                    //failure telling the user
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ){
-                        Text("FAILURE")
+                    is Response.Success ->{
+                        stickyHeader {
+                            ModHeader("Live")
+                        }
+                        if(liveModChannelList.isEmpty()){
+                            item{
+                                EmptyList(
+                                    message ="No live moderated channels found"
+                                )
+                            }
+                        }
+                        items(liveModChannelList){streamInfo ->
+
+                            LiveModChannelItem(
+                                height,
+                                width,
+                                density,
+                                channelName = streamInfo.streamerName,
+                                streamTitle=streamInfo.streamTitle,
+                                gameTitle =streamInfo.gameTitle,
+                                viewCount = streamInfo.views,
+                                url = streamInfo.url
+                            )
+                        }
+
+                        stickyHeader {
+                            ModHeader("Offline")
+                        }
+                        if(offlineModChannelList.isEmpty()){
+                            item{
+                                EmptyList(
+                                    message ="No offline moderated channels found"
+                                )
+                            }
+                        }
+
+
+                        items(offlineModChannelList){channelName ->
+                            OfflineModChannelItem(
+                                height,
+                                width,
+                                density,
+                                channelName = channelName
+                            )
+                        }
 
                     }
+                    is Response.Failure ->{
+                        item{
+                            ErrorPullToRefresh()
+                        }
+
+                    }
+
                 }
             }
 
@@ -262,7 +335,7 @@ object ModChannelComponents{
             offlineModChannelList:List<String>,
             liveModChannelList:List<StreamInfo>,
         ){
-            LazyColumn(modifier = Modifier.padding(contentPadding)) {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
                 stickyHeader {
                     ModHeader("Live")
                 }
@@ -623,7 +696,8 @@ object ModChannelComponents{
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp).background(MaterialTheme.colorScheme.primary),
+                    .height(100.dp)
+                    .background(MaterialTheme.colorScheme.primary),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ){
