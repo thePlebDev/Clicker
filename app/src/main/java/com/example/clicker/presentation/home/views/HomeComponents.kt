@@ -94,7 +94,9 @@ object HomeComponents {
         height:Int,
         logout: () -> Unit,
         userIsAuthenticated: Boolean,
-        screenDensity:Float
+        screenDensity:Float,
+        homeRefreshing:Boolean,
+        homeRefreshFunc:()->Unit,
 
     ){
         Builder.HomeModalBottomSheetBuilder(
@@ -131,7 +133,9 @@ object HomeComponents {
                     },
                     userIsLoggedIn =userIsAuthenticated,
 
-                    screenDensity =screenDensity
+                    screenDensity =screenDensity,
+                    homeRefreshing =homeRefreshing,
+                    homeRefreshFunc = {homeRefreshFunc()}
 
                 )
 

@@ -75,7 +75,10 @@ data class HomeUIState(
     val liveModChannelList:List<StreamInfo> = listOf(),
     val modChannelResponseState:Response<Boolean> = Response.Loading,
     val refreshing:Boolean = false,
-    val modChannelShowBottomModal:Boolean = false
+    val modChannelShowBottomModal:Boolean = false,
+
+    val homeRefreshing:Boolean = false,
+
 
 )
 
@@ -432,9 +435,12 @@ class HomeViewModel @Inject constructor(
 
     // THIS IS THE END
 
-    fun pullToRefreshGetLiveStreams(resetUI: suspend() -> Unit) {
+    fun pullToRefreshGetLiveStreams() {
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
+                _uiState.value = _uiState.value.copy(
+                    homeRefreshing = true
+                )
 
                 twitchRepoImpl
                     .getFollowedLiveStreams(
@@ -453,15 +459,19 @@ class HomeViewModel @Inject constructor(
                                         _uiState.value.aspectHeight
                                     )
                                 }
-                                resetUI()
+                                _uiState.value = _uiState.value.copy(
+                                    homeRefreshing = false
+                                )
+
                                 _newUrlList.tryEmit(replacedWidthHeightList)
                             }
                             is Response.Failure -> {
                                 Log.d("testingGetLiveStreams", "FAILED")
                                 _uiState.value = _uiState.value.copy(
-                                    failedNetworkRequest = true
+                                    failedNetworkRequest = true,
+                                    homeRefreshing = false
                                 )
-                                resetUI()
+
                                 delay(2000)
                                 _uiState.value = _uiState.value.copy(
                                     failedNetworkRequest = false
