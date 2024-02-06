@@ -7,6 +7,8 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.util.Log
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +75,7 @@ data class HomeUIState(
     val liveModChannelList:List<StreamInfo> = listOf(),
     val modChannelResponseState:Response<Boolean> = Response.Loading,
     val refreshing:Boolean = false,
+    val modChannelShowBottomModal:Boolean = false
 
 )
 
@@ -188,15 +191,39 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshModChannels(){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
-                refreshing = true
+                refreshing = true,
             )
-            getLiveStreams(
-                clientId = _validatedUser.value?.clientId ?:"",
-                userId = _validatedUser.value?.userId ?:"",
-                oAuthToken = _oAuthToken.value ?: "",
-            )
+            if(_uiState.value.modChannelShowBottomModal){
+                runFakeRequest()
+            }
+            else{
+                getLiveStreams(
+                    clientId = _validatedUser.value?.clientId ?:"",
+                    userId = _validatedUser.value?.userId ?:"",
+                    oAuthToken = _oAuthToken.value ?: "",
+                )
+            }
+
+
 
         }
+    }
+
+    /**
+     * runFakeRequest() is a suspending function used to simulate a request to the servers. It is called from
+     * [pullToRefreshModChannels]
+     * - This function should only get called if _uiState.value.modChannelShowBottomModal is set to true, which means that
+     * the user has not authenticated with Twitch yet.
+     * */
+    private suspend fun runFakeRequest(){
+        _uiState.value = _uiState.value.copy(
+            modChannelShowBottomModal = false,
+        )
+        delay(1000)
+        _uiState.value = _uiState.value.copy(
+            refreshing = false,
+            modChannelShowBottomModal = true,
+        )
     }
 
     private fun monitorNewList() {
@@ -204,6 +231,7 @@ class HomeViewModel @Inject constructor(
             _newUrlList.collect{streamList ->
                 streamList?.let{nonNullableStreamList ->
 
+                    delay(1000)
                     getModeratedChannels(
                       //  oAuthToken = _oAuthToken.value ?: "",
                         oAuthToken="",
@@ -254,14 +282,16 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Failure ->{
                             Log.d("getModeratedChannels","RESPONSE -> FAILURE")
                             _uiState.value = _uiState.value.copy(
-
-                                modChannelResponseState = Response.Failure(Exception("Failed")),
+                                modChannelResponseState = Response.Failure(Exception("Error! Pull to refresh")),
                                 refreshing = false
                             )
                         }
                         is NetworkAuthResponse.NetworkFailure ->{}
                         is NetworkAuthResponse.Auth401Failure ->{
-                            Log.d("Authentication401Interceptor","HOME VIEW MODEL 401 ERROR")
+                            _uiState.value = _uiState.value.copy(
+                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
+                                modChannelShowBottomModal = true
+                            )
                         }
                     }
                 }

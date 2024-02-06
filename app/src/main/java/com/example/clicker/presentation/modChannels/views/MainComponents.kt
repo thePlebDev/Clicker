@@ -299,7 +299,8 @@ object ModChannelComponents{
                     }
                     is Response.Failure ->{
                         item{
-                            ErrorPullToRefresh()
+                            val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
+                            ErrorPullToRefresh(message)
                         }
 
                     }
@@ -522,7 +523,9 @@ object ModChannelComponents{
          *
          * */
         @Composable
-        fun ErrorPullToRefresh() {
+        fun ErrorPullToRefresh(
+            errorMessage:String
+        ) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -544,7 +547,7 @@ object ModChannelComponents{
                         modifier = Modifier.size(35.dp)
                     )
                     Text(
-                        "Error! Pull to refresh",
+                        errorMessage,
                         fontSize = 20.sp,
                         color =MaterialTheme.colorScheme.onSecondary
                     )
