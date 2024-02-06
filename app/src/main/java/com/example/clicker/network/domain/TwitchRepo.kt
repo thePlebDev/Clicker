@@ -2,6 +2,7 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
@@ -37,5 +38,5 @@ interface TwitchRepo {
         authorizationToken: String,
         clientId: String,
         userId: String
-    ):Flow<Response<GetModChannels>>
+    ):Flow<NetworkAuthResponse<GetModChannels>>
 }
