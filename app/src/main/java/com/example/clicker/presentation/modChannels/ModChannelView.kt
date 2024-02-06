@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.modChannels
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -34,7 +38,30 @@ fun ModChannelView(
     homeViewModel: HomeViewModel,
     onNavigate: () -> Unit,
 ){
-    val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
+    val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+    val showModal = homeViewModel.state.value.modChannelShowBottomModal
+
+
+        Log.d("showModalConditional","showModal --> true")
+        LaunchedEffect(showModal) { // the key define when the block is relaunched
+            // Your coroutine code here
+            Log.d("showModalConditional","showModal --> $showModal")
+            when(showModal){
+                true ->{
+                    scope.launch {
+                        bottomModalState.show()
+                    }
+                }
+                false ->{
+                    scope.launch {
+                        bottomModalState.hide()
+                    }
+                }
+            }
+
+        }
+
 
     ModalBottomSheetLayout(
         sheetState = bottomModalState,
@@ -70,7 +97,7 @@ fun BottomModalSheetContent(){
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Authentication session error.Please login with Twitch again",
+            "Authentication error. Please login with Twitch again",
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 20.sp,
             modifier = Modifier
