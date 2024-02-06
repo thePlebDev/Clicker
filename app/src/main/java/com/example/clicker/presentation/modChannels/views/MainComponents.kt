@@ -674,13 +674,13 @@ object ModChannelComponents{
                                // onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
                                 onNavigate()
                             },
-                        tint = MaterialTheme.colorScheme.onSecondary
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
                         "Channels you mod for",
                         fontSize = 25.sp,
                         modifier = Modifier.padding(start = 20.dp),
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
