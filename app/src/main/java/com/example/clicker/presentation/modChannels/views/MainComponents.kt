@@ -118,7 +118,7 @@ object ModChannelComponents{
                 )
             },
             pullToRefreshList = {contentPadding ->
-                TestingPullToRefresh(
+                PullToRefreshComponent(
                     padding =contentPadding,
                     refreshing = refreshing,
                     refreshFunc = {refreshFunc()}
@@ -180,7 +180,7 @@ object ModChannelComponents{
 
 
     @Composable
-    fun TestingPullToRefresh(
+    fun PullToRefreshComponent(
         padding: PaddingValues,
         refreshing:Boolean,
         refreshFunc:()->Unit,

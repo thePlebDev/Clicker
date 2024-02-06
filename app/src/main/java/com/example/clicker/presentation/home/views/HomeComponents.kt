@@ -83,13 +83,11 @@ object HomeComponents {
         domainIsRegistered: Boolean,
         addToLinks: () -> Unit,
         onNavigate: (Int) -> Unit,
-        quarterTotalScreenHeight: Int,
         updateStreamerName: (String, String, String, String) -> Unit,
         streamersListLoading: NetworkResponse<Boolean>,
         urlList: List<StreamInfo>?,
         clientId: String,
         userId: String,
-        pullToRefreshRequest: (suspend () -> Unit) -> Unit,
         showFailedNetworkRequestMessage: Boolean,
         failedNetworkRequestMessage:String,
         width:Int,
@@ -121,11 +119,6 @@ object HomeComponents {
                     urlList =urlList,
                     clientId = clientId,
                     userId = userId,
-                    pullToRefreshRequest ={
-                            resetUI: suspend () -> Unit ->
-                        pullToRefreshRequest(resetUI)
-                    },
-                    quarterTotalScreenHeight =quarterTotalScreenHeight,
                     showFailedNetworkRequestMessage = showFailedNetworkRequestMessage,
                     failedNetworkRequestMessage =failedNetworkRequestMessage,
                     height = height,

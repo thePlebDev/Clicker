@@ -185,7 +185,7 @@ class HomeViewModel @Inject constructor(
         monitorForNetworkConnection()
     }
     init{
-        monitorNewList()
+        //monitorNewList()
     }
 
     fun pullToRefreshModChannels(){
@@ -230,11 +230,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _newUrlList.collect{streamList ->
                 streamList?.let{nonNullableStreamList ->
-
-                    delay(1000)
                     getModeratedChannels(
-                      //  oAuthToken = _oAuthToken.value ?: "",
-                        oAuthToken="",
+                        oAuthToken = _oAuthToken.value ?: "",
                         clientId = _validatedUser.value?.clientId ?:"",
                         userId = _validatedUser.value?.userId ?:""
                     )
