@@ -164,7 +164,9 @@ fun ValidationView(
             )
         },
         userIsAuthenticated =userIsAuthenticated,
-        screenDensity = homeViewModel.state.value.screenDensity
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()}
 
 
 

@@ -126,7 +126,9 @@ object ScaffoldComponents {
         width:Int,
         showFailedNetworkRequestMessage: Boolean,
         failedNetworkRequestMessage:String,
-        screenDensity:Float
+        screenDensity:Float,
+        homeRefreshing:Boolean,
+        homeRefreshFunc:()->Unit,
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -156,30 +158,37 @@ object ScaffoldComponents {
                onNavigate= {id -> onNavigate(id)}
             )},
 
-            liveChannelsLazyColumn ={contentPadding ->
-                Parts.LiveChannelsLazyColumn(
-                    urlList =urlList,
-                    urlListLoading =urlListLoading,
-                    onNavigate = {id -> onNavigate(id)},
-                    updateStreamerName = {
-                            streamerName, clientIds, broadcasterId, userIds ->
-                        updateStreamerName(streamerName, clientIds, broadcasterId, userIds)
-                    },
-                    clientId =clientId,
-                    userId = userId,
-                    height = height,
-                    width = width,
-                    density =screenDensity,
-                    contentPadding =contentPadding
-
-                )
-            },
             animatedErrorMessage ={modifier ->
                 Parts.AnimatedErrorMessage(
                     modifier = modifier,
                     showFailedNetworkRequestMessage =showFailedNetworkRequestMessage,
                     errorMessage =failedNetworkRequestMessage
                 )
+            },
+            pullToRefreshList ={contentPadding ->
+                PullToRefreshComponent(
+                    padding = contentPadding,
+                    refreshing = homeRefreshing,
+                    refreshFunc = {homeRefreshFunc()}
+                ){
+                    Parts.LiveChannelsLazyColumn(
+                        urlList =urlList,
+                        urlListLoading =urlListLoading,
+                        onNavigate = {id -> onNavigate(id)},
+                        updateStreamerName = {
+                                streamerName, clientIds, broadcasterId, userIds ->
+                            updateStreamerName(streamerName, clientIds, broadcasterId, userIds)
+                        },
+                        clientId =clientId,
+                        userId = userId,
+                        height = height,
+                        width = width,
+                        density =screenDensity,
+                        contentPadding =contentPadding
+
+                    )
+
+                }
             }
 
         )
@@ -211,8 +220,8 @@ object ScaffoldComponents {
             drawerContent:@Composable () -> Unit,
             topBar:@Composable () -> Unit,
             bottomBar:@Composable () -> Unit,
-            liveChannelsLazyColumn:@Composable (contentPadding: PaddingValues) -> Unit,
             animatedErrorMessage:@Composable (modifier: Modifier) -> Unit,
+            pullToRefreshList:@Composable (contentPadding: PaddingValues) -> Unit,
         ){
 
             Scaffold(
@@ -229,15 +238,7 @@ object ScaffoldComponents {
                 },
             ) { contentPadding ->
 
-                PullToRefreshComponent(
-                    padding = contentPadding
-                ){
-
-                        liveChannelsLazyColumn(contentPadding)
-//                        animatedErrorMessage(
-//                            modifier = Modifier.align(Alignment.BottomCenter)
-//                        )
-                }
+                pullToRefreshList(contentPadding)
             }
         }
     }
@@ -245,22 +246,16 @@ object ScaffoldComponents {
 @Composable
 fun PullToRefreshComponent(
     padding: PaddingValues,
-//    refreshing:Boolean,
-//    refreshFunc:()->Unit,
+    refreshing:Boolean,
+    refreshFunc:()->Unit,
     content:@Composable () -> Unit,
 ){
-    var refreshing by remember { mutableStateOf(false) }
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            delay(1200)
-            refreshing = false
-        }
-    }
+
 
 
     PullToRefresh(
         state = rememberPullToRefreshState(isRefreshing = refreshing),
-        onRefresh = { refreshing = true },
+        onRefresh = { refreshFunc()},
         indicatorPadding = padding
     ) {
         content()
