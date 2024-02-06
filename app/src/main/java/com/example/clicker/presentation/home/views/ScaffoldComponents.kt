@@ -858,13 +858,13 @@ fun PullToRefreshComponent(
                         modifier = Modifier
                             .size(35.dp)
                             .clickable { scope.launch { scaffoldState.drawerState.open() } },
-                        tint = MaterialTheme.colorScheme.onSecondary
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
                         stringResource(R.string.live_channels),
                         fontSize = 25.sp,
                         modifier = Modifier.padding(start = 20.dp),
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -872,8 +872,3 @@ fun PullToRefreshComponent(
     }
 }
 
-@Composable
-fun TestingTabs(){
-
-
-}
