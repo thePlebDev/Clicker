@@ -18,6 +18,8 @@ import com.example.clicker.network.interceptors.LiveNetworkMonitor
 import com.example.clicker.network.interceptors.NetworkMonitor
 import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.interceptors.RetryInterceptor
+import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Interceptor
+import com.example.clicker.network.interceptors.responseCodeInterceptors.ResponseChecker
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
@@ -51,6 +53,7 @@ object SingletonModule {
     ): TwitchClient {
          val monitorClient = OkHttpClient.Builder()
             .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
+             .addInterceptor(Authentication401Interceptor(ResponseChecker()))
             .build()
         return Retrofit.Builder()
             .baseUrl("https://api.twitch.tv/helix/")

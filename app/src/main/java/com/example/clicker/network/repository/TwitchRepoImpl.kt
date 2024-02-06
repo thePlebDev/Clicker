@@ -18,8 +18,10 @@ import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.repository.util.handleException
+import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import java.net.UnknownHostException
@@ -63,8 +65,8 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ):Flow<Response<GetModChannels>> = flow{
-        emit(Response.Loading)
+    ):Flow<NetworkAuthResponse<GetModChannels>> = flow{
+        emit(NetworkAuthResponse.Loading)
         val emptyBody = GetModChannels(data= listOf())
         val response = twitchClient.getModeratedChannels(
             authorizationToken = "Bearer $authorizationToken",
@@ -76,11 +78,11 @@ class TwitchRepoImpl @Inject constructor(
         Log.d("getModeratedChannels","message -> ${response.message()}")
         Log.d("getModeratedChannels","errorbody -> ${response.errorBody()}")
         if (response.isSuccessful) {
-            emit(Response.Success(body))
+            emit(NetworkAuthResponse.Success(body))
         } else {
-            emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
+            emit(NetworkAuthResponse.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->
-        handleException(cause)
+        handleNetworkAuthExceptions(cause)
     }
 }

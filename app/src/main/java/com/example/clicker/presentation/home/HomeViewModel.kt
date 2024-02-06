@@ -20,6 +20,7 @@ import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.authentication.CertifiedUser
 import com.example.clicker.services.NetworkMonitorService
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -189,18 +190,12 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 refreshing = true
             )
-            delay(1000)
             getLiveStreams(
                 clientId = _validatedUser.value?.clientId ?:"",
                 userId = _validatedUser.value?.userId ?:"",
                 oAuthToken = _oAuthToken.value ?: "",
             )
 
-//            getModeratedChannels(
-//                oAuthToken = _oAuthToken.value ?: "",
-//                clientId = _validatedUser.value?.clientId ?:"",
-//                userId = _validatedUser.value?.userId ?:""
-//            )
         }
     }
 
@@ -210,7 +205,8 @@ class HomeViewModel @Inject constructor(
                 streamList?.let{nonNullableStreamList ->
 
                     getModeratedChannels(
-                        oAuthToken = _oAuthToken.value ?: "",
+                      //  oAuthToken = _oAuthToken.value ?: "",
+                        oAuthToken="",
                         clientId = _validatedUser.value?.clientId ?:"",
                         userId = _validatedUser.value?.userId ?:""
                     )
@@ -233,8 +229,8 @@ class HomeViewModel @Inject constructor(
                 ).collect{response ->
 
                     when(response){
-                        is Response.Loading ->{}
-                        is Response.Success ->{
+                        is NetworkAuthResponse.Loading ->{}
+                        is NetworkAuthResponse.Success ->{
 
                             val offlineModList = mutableListOf<String>()
                             val onlineList = mutableListOf<StreamInfo>()
@@ -255,13 +251,17 @@ class HomeViewModel @Inject constructor(
                                 refreshing = false
                             )
                         }
-                        is Response.Failure ->{
+                        is NetworkAuthResponse.Failure ->{
                             Log.d("getModeratedChannels","RESPONSE -> FAILURE")
                             _uiState.value = _uiState.value.copy(
 
                                 modChannelResponseState = Response.Failure(Exception("Failed")),
                                 refreshing = false
                             )
+                        }
+                        is NetworkAuthResponse.NetworkFailure ->{}
+                        is NetworkAuthResponse.Auth401Failure ->{
+                            Log.d("Authentication401Interceptor","HOME VIEW MODEL 401 ERROR")
                         }
                     }
                 }
