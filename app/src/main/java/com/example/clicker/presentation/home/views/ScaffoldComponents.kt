@@ -19,12 +19,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -50,6 +47,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,12 +72,11 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
-import com.example.clicker.util.PullToRefreshNestedScrollConnection
-import com.example.clicker.util.Response
-import com.example.clicker.util.rememberNestedScrollConnection
-import com.example.clicker.util.rememberPullToRefreshState
+import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -102,8 +99,6 @@ object ScaffoldComponents {
      * @param logout a function that is used to log out the current user of their session
      * @param login a function that is used to log in the current user into their twitch account
      * @param userIsLoggedIn a boolean to determine if the user is logged in or not
-     * @param pullToRefreshRequest a suspending function that is used to make a request to the Twitch servers to fetch the live channels.
-     * The actual method it is calling is [pullToRefreshGetLiveStreams][com.example.clicker.presentation.home.HomeViewModel.pullToRefreshGetLiveStreams]
      * @param urlList it is a nullable list of all the live channels returned by the twitch server
      * @param urlListLoading a [Response][com.example.clicker.util.Response] class to represent which state the request to the twitch server is
      * @param onNavigate a function used to navigate from the home page to the individual stream view
@@ -114,7 +109,6 @@ object ScaffoldComponents {
      * @param height a Int representing the height in a aspect ratio that will make the images look nice
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
      * @param showFailedNetworkRequestMessage a boolean that is used to determine if the user should show a error message or not
-     * @param quarterTotalScreenHeight a Int representing a quarter of the screen height and is used by [rememberNestedScrollConnection][com.example.clicker.util.rememberNestedScrollConnection]
      * to determine when the pull to refresh icon should change
      * */
     @Composable
@@ -122,7 +116,6 @@ object ScaffoldComponents {
         logout:()->Unit,
         login: () -> Unit,
         userIsLoggedIn: Boolean,
-        pullToRefreshRequest: (suspend () -> Unit) -> Unit,
         urlList: List<StreamInfo>?,
         urlListLoading: NetworkResponse<Boolean>,
         onNavigate: (Int) -> Unit,
@@ -133,30 +126,15 @@ object ScaffoldComponents {
         width:Int,
         showFailedNetworkRequestMessage: Boolean,
         failedNetworkRequestMessage:String,
-        quarterTotalScreenHeight:Int,
         screenDensity:Float
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-        var pullColor by remember { mutableStateOf(Color.Red) }
-        var request by remember { mutableStateOf(false) }
-        var pullingState = rememberPullToRefreshState()
-        val scope = rememberCoroutineScope()
-        val nestedScrollConnection = rememberNestedScrollConnection(
-            state = pullingState,
-            scope = scope,
-            animationMidPoint = (quarterTotalScreenHeight).toFloat(),
-            quarterScreenHeight = quarterTotalScreenHeight.toFloat(),
-            changeColor = { color -> pullColor = color },
 
-            changeRequest = { boolean -> request = boolean },
-            changeIsRefreshing = { boolean -> pullingState.isRefreshing = boolean }
-        )
+
 
         Builders.ScaffoldBuilder(
             scaffoldState =scaffoldState,
-            nestedScrollConnection =nestedScrollConnection,
-            pullingState =pullingState,
             drawerContent = {
                 Parts.ScaffoldDrawer(
                     logout = {
@@ -177,20 +155,8 @@ object ScaffoldComponents {
             bottomBar = {Parts.CustomBottomBar(
                onNavigate= {id -> onNavigate(id)}
             )},
-            pullDownTwoRefresh ={modifier ->
-                Parts.PullDownToRequest(
-                    request = request,
-                    changeRequest={state -> request = state},
-                    modifier = modifier,
-                    pullColor =pullColor,
-                    changeColor = {color -> pullColor = color},
-                    pullingState = pullingState,
-                    networkRequest={request ->
-                        pullToRefreshRequest(request)
-                    }
-                )
-            },
-            liveChannelsLazyColumn ={
+
+            liveChannelsLazyColumn ={contentPadding ->
                 Parts.LiveChannelsLazyColumn(
                     urlList =urlList,
                     urlListLoading =urlListLoading,
@@ -203,7 +169,8 @@ object ScaffoldComponents {
                     userId = userId,
                     height = height,
                     width = width,
-                    density =screenDensity
+                    density =screenDensity,
+                    contentPadding =contentPadding
 
                 )
             },
@@ -228,30 +195,23 @@ object ScaffoldComponents {
          * - ScaffoldBuilder is used inside of  [MainScaffoldComponent].
          *
          *
-         * @param pullingState a [PullToRefreshNestedScrollConnection][com.example.clicker.util.PullRefreshState] object
-         * that is used to move the offset of the outer box and give the pull to refresh icon its IOS look
-         *
-         * @param nestedScrollConnection a [PullToRefreshNestedScrollConnection][com.example.clicker.util.PullToRefreshNestedScrollConnection] object
+
          * that is used to enable to nested scrolling of the two layout boxes using the [NestedScrollConnection](https://developer.android.com/reference/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollConnection)
          * @param scaffoldState a [ScaffoldState] object representing the state of the scaffold
          * @param drawerContent a composable function that represent the drawer content of the scaffold
          * @param topBar a composable function that represent the topBar content of the scaffold
          * @param bottomBar a composable function that represent the bottomBar content of the scaffold
-         * @param pullDownTwoRefresh a composable function that represent the pull down to refresh functionality
          * @param liveChannelsLazyColumn a composable function that represent the main list of images and streamer information.
          * This will get covered by the scaffold
          * @param animatedErrorMessage a animated composable function that will appear if there is a error message received from the network
          * */
         @Composable
         fun ScaffoldBuilder(
-            pullingState: PullRefreshState,
-            nestedScrollConnection: PullToRefreshNestedScrollConnection,
             scaffoldState: ScaffoldState,
             drawerContent:@Composable () -> Unit,
             topBar:@Composable () -> Unit,
             bottomBar:@Composable () -> Unit,
-            pullDownTwoRefresh:@Composable (modifier: Modifier) -> Unit,
-            liveChannelsLazyColumn:@Composable () -> Unit,
+            liveChannelsLazyColumn:@Composable (contentPadding: PaddingValues) -> Unit,
             animatedErrorMessage:@Composable (modifier: Modifier) -> Unit,
         ){
 
@@ -268,37 +228,44 @@ object ScaffoldComponents {
                     bottomBar()
                 },
             ) { contentPadding ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .nestedScroll(nestedScrollConnection)
-                        .background(MaterialTheme.colorScheme.primary)
-                ) {
-                    //todo: move this userIsAuthenticated conditional
 
-                    pullDownTwoRefresh(modifier = Modifier.align(Alignment.TopCenter))
+                PullToRefreshComponent(
+                    padding = contentPadding
+                ){
 
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .offset { IntOffset(0, pullingState.contentOffset.toInt()) }
-                            .background(MaterialTheme.colorScheme.primary)
-                            .padding(start = 5.dp, end = 5.dp)
-
-                    ) {
-                        liveChannelsLazyColumn()
-                        animatedErrorMessage(
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                        )
-
-                    }
-
+                        liveChannelsLazyColumn(contentPadding)
+//                        animatedErrorMessage(
+//                            modifier = Modifier.align(Alignment.BottomCenter)
+//                        )
                 }
             }
         }
     }
+
+@Composable
+fun PullToRefreshComponent(
+    padding: PaddingValues,
+//    refreshing:Boolean,
+//    refreshFunc:()->Unit,
+    content:@Composable () -> Unit,
+){
+    var refreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            delay(1200)
+            refreshing = false
+        }
+    }
+
+
+    PullToRefresh(
+        state = rememberPullToRefreshState(isRefreshing = refreshing),
+        onRefresh = { refreshing = true },
+        indicatorPadding = padding
+    ) {
+        content()
+    }
+}
 
 
 
@@ -335,12 +302,14 @@ object ScaffoldComponents {
             userId: String,
             height: Int,
             width: Int,
-            density:Float
+            density:Float,
+            contentPadding: PaddingValues
 
             ){
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxHeight()
+                    .fillMaxSize(),
+                contentPadding = contentPadding
             ) {
 
                 when (urlListLoading) {
@@ -480,6 +449,7 @@ object ScaffoldComponents {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
                     .height(100.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround

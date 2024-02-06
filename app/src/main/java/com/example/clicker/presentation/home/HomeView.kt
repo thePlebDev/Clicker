@@ -104,7 +104,6 @@ fun ValidationView(
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
-    quarterTotalScreenHeight:Int,
     autoModViewModel: AutoModViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -137,7 +136,6 @@ fun ValidationView(
         domainIsRegistered =domainIsRegistered,
         addToLinks = { addToLinks() },
         onNavigate = {id -> onNavigate(id) },
-        quarterTotalScreenHeight =quarterTotalScreenHeight,
         updateStreamerName = { streamerName, clientId,broadcasterId,userId->
             streamViewModel.updateChannelNameAndClientIdAndUserId(
                 streamerName,
@@ -155,12 +153,6 @@ fun ValidationView(
         urlList =homeViewModel.newUrlList.collectAsState().value,
         clientId = homeViewModel.validatedUser?.clientId ?: "",
         userId = homeViewModel.validatedUser?.userId ?: "",
-        pullToRefreshRequest ={
-                resetUI: suspend () -> Unit ->
-            homeViewModel.pullToRefreshGetLiveStreams(
-                resetUI = resetUI
-            )
-        },
         showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
         failedNetworkRequestMessage =homeViewModel.state.value.failedNetworkRequestMessage,
         height = homeViewModel.state.value.aspectHeight,
