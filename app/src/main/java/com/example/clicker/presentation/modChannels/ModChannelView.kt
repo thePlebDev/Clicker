@@ -79,7 +79,8 @@ fun ModChannelView(
             liveModChannelList = homeViewModel.state.value.liveModChannelList,
             modChannelResponseState = homeViewModel.state.value.modChannelResponseState,
             refreshing = homeViewModel.state.value.refreshing,
-            refreshFunc = {homeViewModel.pullToRefreshModChannels()}
+            refreshFunc = {homeViewModel.pullToRefreshModChannels()},
+            showNetworkMessage = !homeViewModel.state.value.networkConnectionState
 
         )
     }
