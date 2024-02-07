@@ -166,7 +166,11 @@ fun ValidationView(
         userIsAuthenticated =userIsAuthenticated,
         screenDensity = homeViewModel.state.value.screenDensity,
         homeRefreshing =homeViewModel.state.value.homeRefreshing,
-        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()}
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+        networkMessageColor=Color.Red,
+        networkMessage ="Disconnected from network",
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState
+
 
 
 

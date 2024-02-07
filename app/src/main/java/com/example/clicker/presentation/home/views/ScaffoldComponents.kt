@@ -129,6 +129,9 @@ object ScaffoldComponents {
         screenDensity:Float,
         homeRefreshing:Boolean,
         homeRefreshFunc:()->Unit,
+        networkMessageColor:Color,
+        networkMessage: String,
+        showNetworkMessage:Boolean
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -169,7 +172,10 @@ object ScaffoldComponents {
                 PullToRefreshComponent(
                     padding = contentPadding,
                     refreshing = homeRefreshing,
-                    refreshFunc = {homeRefreshFunc()}
+                    refreshFunc = {homeRefreshFunc()},
+                    networkMessage = networkMessage,
+                    networkMessageColor = networkMessageColor,
+                    showNetworkMessage=showNetworkMessage
                 ){
                     Parts.LiveChannelsLazyColumn(
                         urlList =urlList,
@@ -248,6 +254,9 @@ fun PullToRefreshComponent(
     padding: PaddingValues,
     refreshing:Boolean,
     refreshFunc:()->Unit,
+    networkMessageColor:Color,
+    networkMessage: String,
+    showNetworkMessage:Boolean,
     content:@Composable () -> Unit,
 ){
 
@@ -258,7 +267,19 @@ fun PullToRefreshComponent(
         onRefresh = { refreshFunc()},
         indicatorPadding = padding
     ) {
-        content()
+        Box(modifier=Modifier.fillMaxSize().padding(padding)){
+
+            content()
+            if(!showNetworkMessage){
+                Parts.NetworkStatus(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    color =  networkMessageColor,
+                    networkMessage = networkMessage
+                )
+            }
+
+        }
+
     }
 }
 
@@ -298,7 +319,8 @@ fun PullToRefreshComponent(
             height: Int,
             width: Int,
             density:Float,
-            contentPadding: PaddingValues
+            contentPadding: PaddingValues,
+            homeConnectionState:Boolean = true,
 
             ){
             LazyColumn(
@@ -306,6 +328,7 @@ fun PullToRefreshComponent(
                     .fillMaxSize(),
                 contentPadding = contentPadding
             ) {
+
 
                 when (urlListLoading) {
                     is NetworkResponse.Loading -> {
@@ -366,6 +389,35 @@ fun PullToRefreshComponent(
                     }
                 }
 
+            }
+        }
+
+
+        @Composable
+        fun NetworkStatus(
+            modifier:Modifier,
+            color:Color,
+            networkMessage:String
+        ){
+            Card(
+                modifier = modifier
+                    .clickable{ },
+                elevation = 10.dp,
+                backgroundColor =color.copy(alpha = 0.8f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        "home icon",
+                        tint= MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Text(networkMessage,color = MaterialTheme.colorScheme.onPrimary)
+                }
             }
         }
 

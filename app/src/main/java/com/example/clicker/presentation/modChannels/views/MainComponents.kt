@@ -671,7 +671,6 @@ object ModChannelComponents{
                         modifier = Modifier
                             .size(35.dp)
                             .clickable {
-                               // onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
                                 onNavigate()
                             },
                         tint = MaterialTheme.colorScheme.onPrimary
@@ -708,7 +707,7 @@ object ModChannelComponents{
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier=Modifier.clickable {
-                        //onNavigate(R.id.action_modChannelsFragment_to_homeFragment)
+
                         onNavigate()
                     }
                 ) {
