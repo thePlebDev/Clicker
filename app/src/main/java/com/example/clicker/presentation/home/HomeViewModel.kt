@@ -413,7 +413,7 @@ class HomeViewModel @Inject constructor(
 
                         _uiState.value = _uiState.value.copy(
                             streamersListLoading = NetworkResponse.Failure(
-                                Exception("Please login with Twitch")
+                                Exception("Generic message")
                             ),
                             showLoginModal = true
                         )
@@ -430,6 +430,9 @@ class HomeViewModel @Inject constructor(
                     }
                     is NetworkAuthResponse.Auth401Failure ->{
                         _uiState.value = _uiState.value.copy(
+                            streamersListLoading = NetworkResponse.Failure(
+                                Exception("Error! Re-login with Twitch")
+                            ),
                             showLoginModal = true
                         )
                     }
