@@ -219,6 +219,10 @@ class HomeViewModel @Inject constructor(
             if(_uiState.value.showLoginModal ){
                 runFakeRequest()
             }
+
+            else if(_validatedUser.value?.clientId == null){
+                validateOAuthToken(_oAuthToken.value ?: "")
+            }
             else{
                 getLiveStreams(
                     clientId = _validatedUser.value?.clientId ?:"",
@@ -226,6 +230,8 @@ class HomeViewModel @Inject constructor(
                     oAuthToken = _oAuthToken.value ?: "",
                 )
             }
+
+
 
 
 
@@ -275,7 +281,7 @@ class HomeViewModel @Inject constructor(
     ){
         viewModelScope.launch {
             withContext(ioDispatcher){
-                delay(5000)
+//                delay(5000)
                 twitchRepoImpl.getModeratedChannels(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
@@ -439,7 +445,7 @@ class HomeViewModel @Inject constructor(
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
 
                         _uiState.value = _uiState.value.copy(
-                            oAuthToken = oAuthenticationToken
+                            oAuthToken = oAuthenticationToken,
                         )
                         _validatedUser.tryEmit(response.data)
 
@@ -455,15 +461,17 @@ class HomeViewModel @Inject constructor(
                             streamersListLoading = NetworkResponse.Failure(
                                 Exception("Error! Pull refresh")
                             ),
+                            homeRefreshing = false
 
                         )
                     }
                     is NetworkAuthResponse.NetworkFailure ->{
                         _uiState.value = _uiState.value.copy(
-                            homeNetworkErrorMessage="Network error",
-                            networkConnectionState =false
+                            homeNetworkErrorMessage="Network error  ",
+                            networkConnectionState =false,
+                            homeRefreshing = false
                         )
-                        delay(3000)
+                        delay(2000)
                         _uiState.value = _uiState.value.copy(
                             networkConnectionState =true
                         )
@@ -473,7 +481,8 @@ class HomeViewModel @Inject constructor(
                             streamersListLoading = NetworkResponse.Failure(
                                 Exception("Error! Re-login with Twitch")
                             ),
-                            showLoginModal = true
+                            showLoginModal = true,
+                            homeRefreshing = false
                         )
                     }
                 }
@@ -546,7 +555,7 @@ class HomeViewModel @Inject constructor(
                                 modRefreshing = false,
                                 homeRefreshing = false
                             )
-                            delay(3000)
+                            delay(2000)
                             _uiState.value = _uiState.value.copy(
                                 networkConnectionState =true
                             )
