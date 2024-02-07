@@ -413,9 +413,9 @@ class HomeViewModel @Inject constructor(
 
                         _uiState.value = _uiState.value.copy(
                             streamersListLoading = NetworkResponse.Failure(
-                                Exception("Generic message")
+                                Exception("Error! Pull refresh")
                             ),
-                            showLoginModal = true
+
                         )
                     }
                     is NetworkAuthResponse.NetworkFailure ->{
