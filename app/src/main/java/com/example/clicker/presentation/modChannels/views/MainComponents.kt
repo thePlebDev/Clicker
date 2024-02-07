@@ -105,6 +105,7 @@ object ModChannelComponents{
         modChannelResponseState: Response<Boolean>,
         refreshing:Boolean,
         refreshFunc:()->Unit,
+        showNetworkMessage:Boolean,
     ){
         Builders.ScaffoldBuilder(
             topBar = {
@@ -121,7 +122,8 @@ object ModChannelComponents{
                 PullToRefreshComponent(
                     padding =contentPadding,
                     refreshing = refreshing,
-                    refreshFunc = {refreshFunc()}
+                    refreshFunc = {refreshFunc()},
+                    showNetworkMessage =showNetworkMessage
                 ){
                     Parts.ModChannelsResponse(
                         contentPadding,
@@ -184,6 +186,7 @@ object ModChannelComponents{
         padding: PaddingValues,
         refreshing:Boolean,
         refreshFunc:()->Unit,
+        showNetworkMessage:Boolean,
         content:@Composable () -> Unit,
     ){
 
@@ -193,7 +196,13 @@ object ModChannelComponents{
             onRefresh = { refreshFunc() },
             indicatorPadding = padding
         ) {
-            content()
+            Box(modifier=Modifier.fillMaxSize().padding(padding)){
+                content()
+                if(showNetworkMessage){
+                    Parts.NetworkStatus(modifier = Modifier.align(Alignment.BottomCenter))
+                }
+            }
+
         }
     }
 
@@ -204,6 +213,36 @@ object ModChannelComponents{
      * pieces that are used inside of a [Builders] to create a [ModChannelComponents] implementation
      * */
     private object Parts{
+
+        @Composable
+        fun NetworkStatus(
+            modifier:Modifier,
+
+        ){
+            Card(
+                modifier = modifier
+                    .clickable{ },
+                elevation = 10.dp,
+                backgroundColor =Color.Red.copy(alpha = 0.8f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        "home icon",
+                        tint= MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    androidx.compose.material.Text(
+                        "Disconnected from network",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
 
         /**
          * - Contains 1 extra parts:
