@@ -153,8 +153,6 @@ fun ValidationView(
         urlList =homeViewModel.newUrlList.collectAsState().value,
         clientId = homeViewModel.validatedUser?.clientId ?: "",
         userId = homeViewModel.validatedUser?.userId ?: "",
-        showFailedNetworkRequestMessage = homeViewModel.state.value.failedNetworkRequest,
-        failedNetworkRequestMessage =homeViewModel.state.value.failedNetworkRequestMessage,
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         logout = {
@@ -168,7 +166,7 @@ fun ValidationView(
         homeRefreshing =homeViewModel.state.value.homeRefreshing,
         homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
         networkMessageColor=Color.Red,
-        networkMessage ="Disconnected from network",
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
         showNetworkMessage = homeViewModel.state.value.networkConnectionState
 
 

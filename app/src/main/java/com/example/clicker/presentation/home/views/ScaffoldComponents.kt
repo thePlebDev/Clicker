@@ -124,8 +124,6 @@ object ScaffoldComponents {
         userId:String,
         height:Int,
         width:Int,
-        showFailedNetworkRequestMessage: Boolean,
-        failedNetworkRequestMessage:String,
         screenDensity:Float,
         homeRefreshing:Boolean,
         homeRefreshFunc:()->Unit,
@@ -160,14 +158,6 @@ object ScaffoldComponents {
             bottomBar = {Parts.CustomBottomBar(
                onNavigate= {id -> onNavigate(id)}
             )},
-
-            animatedErrorMessage ={modifier ->
-                Parts.AnimatedErrorMessage(
-                    modifier = modifier,
-                    showFailedNetworkRequestMessage =showFailedNetworkRequestMessage,
-                    errorMessage =failedNetworkRequestMessage
-                )
-            },
             pullToRefreshList ={contentPadding ->
                 PullToRefreshComponent(
                     padding = contentPadding,
@@ -218,7 +208,6 @@ object ScaffoldComponents {
          * @param bottomBar a composable function that represent the bottomBar content of the scaffold
          * @param liveChannelsLazyColumn a composable function that represent the main list of images and streamer information.
          * This will get covered by the scaffold
-         * @param animatedErrorMessage a animated composable function that will appear if there is a error message received from the network
          * */
         @Composable
         fun ScaffoldBuilder(
@@ -226,7 +215,6 @@ object ScaffoldComponents {
             drawerContent:@Composable () -> Unit,
             topBar:@Composable () -> Unit,
             bottomBar:@Composable () -> Unit,
-            animatedErrorMessage:@Composable (modifier: Modifier) -> Unit,
             pullToRefreshList:@Composable (contentPadding: PaddingValues) -> Unit,
         ){
 
