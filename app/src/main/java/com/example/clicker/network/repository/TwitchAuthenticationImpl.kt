@@ -7,8 +7,10 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.handleException
+import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
 import com.example.clicker.network.repository.util.handleNoNetworkException
 import com.example.clicker.util.LogWrap
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -54,11 +56,11 @@ class TwitchAuthenticationImpl @Inject constructor(
     override suspend fun validateToken(
         url :String,
         token: String,
-    ): Flow<NetworkResponse<ValidatedUser>> = flow {
+    ): Flow<NetworkAuthResponse<ValidatedUser>> = flow {
         logCoroutineInfo("CoroutineDebugging", "Fetching from remote")
 
 
-        emit(NetworkResponse.Loading)
+        emit(NetworkAuthResponse.Loading)
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
         val response = twitchClient.validateToken(
             authorization = "OAuth $token"
@@ -67,14 +69,14 @@ class TwitchAuthenticationImpl @Inject constructor(
         Log.d("validateTokenImpl","code ->${response.code()} message -> ${response.message()}")
         if (response.isSuccessful) {
             LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
-            emit(NetworkResponse.Success(response.body()!!))
+            emit(NetworkAuthResponse.Success(response.body()!!))
         } else {
-            emit(NetworkResponse.Failure(Exception("Error! Please login again")))
+            emit(NetworkAuthResponse.Failure(Exception("Error! Please login again")))
             Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
     }.catch { cause ->
 
-        handleNoNetworkException(cause)
+        handleNetworkAuthExceptions(cause)
 
     }
 }
