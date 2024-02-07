@@ -386,15 +386,15 @@ class HomeViewModel @Inject constructor(
         oAuthenticationToken: String
     ) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken)
+            authentication.validateToken("https://id.twitch.tv/oauth2/validate","oAuthenticationToken")
                 .collect { response ->
                     Log.d("monitorForNetworkConnection","validateOAuthTokenResponse ->${response}")
 
                 when (response) {
-                    is NetworkResponse.Loading -> {
+                    is NetworkAuthResponse.Loading -> {
                         // the loading state is to be left empty because its initial state is loading
                     }
-                    is NetworkResponse.Success -> {
+                    is NetworkAuthResponse.Success -> {
                         logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
 
@@ -408,7 +408,7 @@ class HomeViewModel @Inject constructor(
                         //todo:THIS SHOULD GET REMOVED. TOO MUCH IS GOING ON INSIDE OF THIS FUNCTION
                         tokenDataStore.setUsername(response.data.login)
                     }
-                    is NetworkResponse.Failure -> {
+                    is NetworkAuthResponse.Failure -> {
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
 
                         _uiState.value = _uiState.value.copy(
@@ -418,7 +418,7 @@ class HomeViewModel @Inject constructor(
                             showLoginModal = true
                         )
                     }
-                    is NetworkResponse.NetworkFailure ->{
+                    is NetworkAuthResponse.NetworkFailure ->{
                         _uiState.value = _uiState.value.copy(
                             homeNetworkErrorMessage="Network error",
                             networkConnectionState =false
@@ -426,6 +426,11 @@ class HomeViewModel @Inject constructor(
                         delay(3000)
                         _uiState.value = _uiState.value.copy(
                             networkConnectionState =true
+                        )
+                    }
+                    is NetworkAuthResponse.Auth401Failure ->{
+                        _uiState.value = _uiState.value.copy(
+                            showLoginModal = true
                         )
                     }
                 }

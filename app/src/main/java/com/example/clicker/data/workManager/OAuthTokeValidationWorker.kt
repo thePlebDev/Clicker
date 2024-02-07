@@ -8,6 +8,7 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.clicker.network.domain.TwitchAuthentication
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.google.gson.Gson
@@ -31,12 +32,12 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
             .firstOrNull() // will catch either SUCCESS OF FAILURE
 
         return when (response) {
-            is NetworkResponse.Loading -> {
+            is NetworkAuthResponse.Loading -> {
                 Log.d("observeForeversWorker", "LOADING")
 
                 Result.success()
             }
-            is NetworkResponse.Success -> {
+            is NetworkAuthResponse.Success -> {
                 Log.d("observeForeversWorker", "SUCCESS")
                 Log.d("observeForeversWorker", response.data.toString())
 
@@ -47,7 +48,7 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
 
                 Result.success(outputData)
             }
-            is NetworkResponse.Failure -> {
+            is NetworkAuthResponse.Failure -> {
                 Log.d("observeForeversWorker", "FAILED")
                 Result.failure()
             }
