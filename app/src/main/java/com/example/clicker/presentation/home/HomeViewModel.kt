@@ -386,7 +386,7 @@ class HomeViewModel @Inject constructor(
         oAuthenticationToken: String
     ) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken("https://id.twitch.tv/oauth2/validate","oAuthenticationToken")
+            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken)
                 .collect { response ->
                     Log.d("monitorForNetworkConnection","validateOAuthTokenResponse ->${response}")
 
@@ -443,6 +443,7 @@ class HomeViewModel @Inject constructor(
 
     // THIS IS THE END
 
+    //todo: This should just call the getFollowedLiveStreams() method
     fun pullToRefreshGetLiveStreams() {
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
@@ -457,30 +458,30 @@ class HomeViewModel @Inject constructor(
                         userId = _validatedUser.value?.userId ?:""
                     )
                     .collect { response ->
-                        when (response) {
-                            is Response.Loading -> {
-                            }
-                            is Response.Success -> {
-                                val replacedWidthHeightList = response.data.map {
-                                    it.changeUrlWidthHeight(
-                                        _uiState.value.width,
-                                        _uiState.value.aspectHeight
-                                    )
-                                }
-                                _uiState.value = _uiState.value.copy(
-                                    homeRefreshing = false
-                                )
-
-                                _newUrlList.tryEmit(replacedWidthHeightList)
-                            }
-                            is Response.Failure -> {
-                                Log.d("testingGetLiveStreams", "FAILED")
-                                _uiState.value = _uiState.value.copy(
-                                    homeRefreshing = false
-                                )
-
-                            }
-                        }
+//                        when (response) {
+//                            is Response.Loading -> {
+//                            }
+//                            is Response.Success -> {
+//                                val replacedWidthHeightList = response.data.map {
+//                                    it.changeUrlWidthHeight(
+//                                        _uiState.value.width,
+//                                        _uiState.value.aspectHeight
+//                                    )
+//                                }
+//                                _uiState.value = _uiState.value.copy(
+//                                    homeRefreshing = false
+//                                )
+//
+//                                _newUrlList.tryEmit(replacedWidthHeightList)
+//                            }
+//                            is Response.Failure -> {
+//                                Log.d("testingGetLiveStreams", "FAILED")
+//                                _uiState.value = _uiState.value.copy(
+//                                    homeRefreshing = false
+//                                )
+//
+//                            }
+//                        }
                     }
             }
         }
@@ -495,14 +496,14 @@ class HomeViewModel @Inject constructor(
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
 
                 twitchRepoImpl.getFollowedLiveStreams(
-                    authorizationToken = oAuthToken,
+                    authorizationToken = "oAuthToken",
                     clientId = clientId,
                     userId = userId
                 ).collect { response ->
                     when (response) {
-                        is Response.Loading -> {
+                        is NetworkAuthResponse.Loading -> {
                         }
-                        is Response.Success -> {
+                        is NetworkAuthResponse.Success -> {
                             val liveStreamLists = response.data
                             Log.d(
                                 "AuthenticationViewModelGetLiveStreams",
@@ -523,10 +524,20 @@ class HomeViewModel @Inject constructor(
                             _newUrlList.tryEmit(replacedWidthHeightList)
                         }
                         // end
-                        is Response.Failure -> {
+                        is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 refreshing = false
                             )
+                        }
+                        is NetworkAuthResponse.NetworkFailure ->{}
+                        is NetworkAuthResponse.Auth401Failure->{
+                            _uiState.value = _uiState.value.copy(
+                                streamersListLoading = NetworkResponse.Failure(
+                                    Exception("Error! Re-login with Twitch")
+                                ),
+                                showLoginModal = true
+                            )
+
                         }
                     }
                 }

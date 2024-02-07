@@ -25,7 +25,7 @@ interface TwitchRepo {
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<List<StreamInfo>>>
+    ): Flow<NetworkAuthResponse<List<StreamInfo>>>
 
     /**
      * - getModeratedChannels() Gets a list of channels that the specified user has moderator privileges in.

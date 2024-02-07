@@ -39,8 +39,8 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<List<StreamInfo>>> = flow {
-        emit(Response.Loading)
+    ): Flow<NetworkAuthResponse<List<StreamInfo>>> = flow {
+        emit(NetworkAuthResponse.Loading)
 
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
@@ -53,12 +53,12 @@ class TwitchRepoImpl @Inject constructor(
         val exported = body.data.map { it.toStreamInfo() }
 
         if (response.isSuccessful) {
-            emit(Response.Success(exported))
+            emit(NetworkAuthResponse.Success(exported))
         } else {
-            emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
+            emit(NetworkAuthResponse.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->
-        handleException(cause)
+        handleNetworkAuthExceptions(cause)
     }
 
     override suspend fun getModeratedChannels(
