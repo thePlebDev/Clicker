@@ -496,7 +496,7 @@ class HomeViewModel @Inject constructor(
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
 
                 twitchRepoImpl.getFollowedLiveStreams(
-                    authorizationToken = "oAuthToken",
+                    authorizationToken = oAuthToken,
                     clientId = clientId,
                     userId = userId
                 ).collect { response ->
@@ -526,10 +526,23 @@ class HomeViewModel @Inject constructor(
                         // end
                         is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
-                                refreshing = false
+                                refreshing = false,
+                                streamersListLoading = NetworkResponse.Failure(
+                                    Exception("Error! Pull refresh")
+                                )
                             )
                         }
-                        is NetworkAuthResponse.NetworkFailure ->{}
+                        is NetworkAuthResponse.NetworkFailure ->{
+                            _uiState.value = _uiState.value.copy(
+                                homeNetworkErrorMessage="Network error",
+                                networkConnectionState =false,
+                                refreshing = false
+                            )
+                            delay(3000)
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState =true
+                            )
+                        }
                         is NetworkAuthResponse.Auth401Failure->{
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkResponse.Failure(
