@@ -70,7 +70,7 @@ data class HomeUIState(
     val offlineModChannelList:List<String> =listOf(),
     val liveModChannelList:List<StreamInfo> = listOf(),
     val modChannelResponseState:Response<Boolean> = Response.Loading,
-    val refreshing:Boolean = false,
+    val modRefreshing:Boolean = false,
     val modChannelShowBottomModal:Boolean = false,
 
     val homeRefreshing:Boolean = false,
@@ -187,13 +187,13 @@ class HomeViewModel @Inject constructor(
         monitorForNetworkConnection()
     }
     init{
-        //monitorNewList()
+        monitorNewList()
     }
 
     fun pullToRefreshModChannels(){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
-                refreshing = true,
+                modRefreshing = true,
             )
             if(_uiState.value.modChannelShowBottomModal ){
                 runFakeRequest()
@@ -245,7 +245,7 @@ class HomeViewModel @Inject constructor(
         )
         delay(1000)
         _uiState.value = _uiState.value.copy(
-            refreshing = false,
+            modRefreshing = false,
             modChannelShowBottomModal = true,
 
             showLoginModal = true,
@@ -275,11 +275,13 @@ class HomeViewModel @Inject constructor(
     ){
         viewModelScope.launch {
             withContext(ioDispatcher){
+                delay(5000)
                 twitchRepoImpl.getModeratedChannels(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
                     userId = userId
                 ).collect{response ->
+                    Log.d("getModeratedChannels","RESPONSE -> $response")
 
                     when(response){
                         is NetworkAuthResponse.Loading ->{}
@@ -301,21 +303,33 @@ class HomeViewModel @Inject constructor(
                                 offlineModChannelList = offlineModList,
                                 liveModChannelList = onlineList,
                                 modChannelResponseState = Response.Success(true),
-                                refreshing = false
+                                modRefreshing = false
                             )
                         }
                         is NetworkAuthResponse.Failure ->{
                             Log.d("getModeratedChannels","RESPONSE -> FAILURE")
                             _uiState.value = _uiState.value.copy(
                                 modChannelResponseState = Response.Failure(Exception("Error! Pull to refresh")),
-                                refreshing = false
+                                modRefreshing = false
                             )
                         }
-                        is NetworkAuthResponse.NetworkFailure ->{}
+                        is NetworkAuthResponse.NetworkFailure ->{
+                            _uiState.value = _uiState.value.copy(
+                                homeNetworkErrorMessage="Network error",
+                                networkConnectionState =false,
+                                modRefreshing = false
+                            )
+                            delay(3000)
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState =true
+                            )
+
+                        }
                         is NetworkAuthResponse.Auth401Failure ->{
                             _uiState.value = _uiState.value.copy(
                                 modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
-                                modChannelShowBottomModal = true
+                                modChannelShowBottomModal = true,
+                                modRefreshing = false
                             )
                         }
                     }
@@ -510,7 +524,7 @@ class HomeViewModel @Inject constructor(
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkResponse.Success(true),
-                                refreshing = false,
+                                modRefreshing = false,
                                 homeRefreshing = false
                             )
                             _newUrlList.tryEmit(replacedWidthHeightList)
@@ -518,7 +532,7 @@ class HomeViewModel @Inject constructor(
                         // end
                         is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
-                                refreshing = false,
+                                modRefreshing = false,
                                 homeRefreshing = false,
                                 streamersListLoading = NetworkResponse.Failure(
                                     Exception("Error! Pull refresh")
@@ -529,7 +543,7 @@ class HomeViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 homeNetworkErrorMessage="Network error",
                                 networkConnectionState =false,
-                                refreshing = false,
+                                modRefreshing = false,
                                 homeRefreshing = false
                             )
                             delay(3000)
