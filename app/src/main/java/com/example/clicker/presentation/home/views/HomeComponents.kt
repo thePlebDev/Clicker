@@ -88,8 +88,6 @@ object HomeComponents {
         urlList: List<StreamInfo>?,
         clientId: String,
         userId: String,
-        showFailedNetworkRequestMessage: Boolean,
-        failedNetworkRequestMessage:String,
         width:Int,
         height:Int,
         logout: () -> Unit,
@@ -124,8 +122,6 @@ object HomeComponents {
                     urlList =urlList,
                     clientId = clientId,
                     userId = userId,
-                    showFailedNetworkRequestMessage = showFailedNetworkRequestMessage,
-                    failedNetworkRequestMessage =failedNetworkRequestMessage,
                     height = height,
                     width = width,
                     logout = {

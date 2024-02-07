@@ -60,10 +60,6 @@ data class HomeUIState(
     val width: Int = 0,
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
-
-
-    val failedNetworkRequest: Boolean = false,
-    val failedNetworkRequestMessage:String ="Network error, please try again later",
     val streamersListLoading: NetworkResponse<Boolean> = NetworkResponse.Loading,
     val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
@@ -78,6 +74,7 @@ data class HomeUIState(
     val modChannelShowBottomModal:Boolean = false,
 
     val homeRefreshing:Boolean = false,
+    val homeNetworkErrorMessage:String ="Disconnected from network"
 
 
 )
@@ -121,7 +118,8 @@ class HomeViewModel @Inject constructor(
                     if(!currentConnectionState && isConnectionLive){
                         //network reconnected
                         _uiState.value = _uiState.value.copy(
-                            networkConnectionState = true
+                            networkConnectionState = true,
+                            homeNetworkErrorMessage = "Disconnected from network"
                         )
                         refreshFromConnection()
 
@@ -130,7 +128,8 @@ class HomeViewModel @Inject constructor(
                         // network disconnection
                         Log.d("monitorForNetworkConnection","disconnected")
                         _uiState.value = _uiState.value.copy(
-                            networkConnectionState = false
+                            networkConnectionState = false,
+                            homeNetworkErrorMessage = "Disconnected from network"
                         )
                     }
                 }
@@ -421,11 +420,12 @@ class HomeViewModel @Inject constructor(
                     }
                     is NetworkResponse.NetworkFailure ->{
                         _uiState.value = _uiState.value.copy(
-                            failedNetworkRequest =true
+                            homeNetworkErrorMessage="Network error",
+                            networkConnectionState =false
                         )
                         delay(3000)
                         _uiState.value = _uiState.value.copy(
-                            failedNetworkRequest =false
+                            networkConnectionState =true
                         )
                     }
                 }
@@ -468,14 +468,9 @@ class HomeViewModel @Inject constructor(
                             is Response.Failure -> {
                                 Log.d("testingGetLiveStreams", "FAILED")
                                 _uiState.value = _uiState.value.copy(
-                                    failedNetworkRequest = true,
                                     homeRefreshing = false
                                 )
 
-                                delay(2000)
-                                _uiState.value = _uiState.value.copy(
-                                    failedNetworkRequest = false
-                                )
                             }
                         }
                     }
@@ -522,14 +517,7 @@ class HomeViewModel @Inject constructor(
                         // end
                         is Response.Failure -> {
                             _uiState.value = _uiState.value.copy(
-                                failedNetworkRequest = true,
                                 refreshing = false
-
-                            )
-
-                            delay(2000)
-                            _uiState.value = _uiState.value.copy(
-                                failedNetworkRequest = false
                             )
                         }
                     }
