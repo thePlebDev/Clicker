@@ -97,6 +97,9 @@ object HomeComponents {
         screenDensity:Float,
         homeRefreshing:Boolean,
         homeRefreshFunc:()->Unit,
+        networkMessageColor:Color,
+        networkMessage: String,
+        showNetworkMessage:Boolean
 
     ){
         Builder.HomeModalBottomSheetBuilder(
@@ -135,7 +138,10 @@ object HomeComponents {
 
                     screenDensity =screenDensity,
                     homeRefreshing =homeRefreshing,
-                    homeRefreshFunc = {homeRefreshFunc()}
+                    homeRefreshFunc = {homeRefreshFunc()},
+                    networkMessageColor =networkMessageColor,
+                    networkMessage = networkMessage,
+                    showNetworkMessage =showNetworkMessage
 
                 )
 
