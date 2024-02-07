@@ -22,6 +22,7 @@ class NetworkMonitorInterceptor @Inject constructor(
 
         val request: Request = chain.request()
 
+        Log.d("Authentication401Interceptor","NetworkMonitorInterceptor")
 
 
         if(liveNetworkMonitor.isConnected()){
