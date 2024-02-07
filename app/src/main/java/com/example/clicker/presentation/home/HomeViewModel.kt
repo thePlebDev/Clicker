@@ -195,7 +195,28 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 refreshing = true,
             )
-            if(_uiState.value.modChannelShowBottomModal){
+            if(_uiState.value.modChannelShowBottomModal ){
+                runFakeRequest()
+            }
+            else{
+                getLiveStreams(
+                    clientId = _validatedUser.value?.clientId ?:"",
+                    userId = _validatedUser.value?.userId ?:"",
+                    oAuthToken = _oAuthToken.value ?: "",
+                )
+            }
+
+
+
+        }
+    }
+
+    private fun pullToRefreshHome(){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                homeRefreshing = true,
+            )
+            if(_uiState.value.showLoginModal ){
                 runFakeRequest()
             }
             else{
@@ -220,11 +241,16 @@ class HomeViewModel @Inject constructor(
     private suspend fun runFakeRequest(){
         _uiState.value = _uiState.value.copy(
             modChannelShowBottomModal = false,
+            showLoginModal = false,
         )
         delay(1000)
         _uiState.value = _uiState.value.copy(
             refreshing = false,
             modChannelShowBottomModal = true,
+
+            showLoginModal = true,
+            homeRefreshing = false
+
         )
     }
 
@@ -447,42 +473,7 @@ class HomeViewModel @Inject constructor(
     fun pullToRefreshGetLiveStreams() {
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
-                _uiState.value = _uiState.value.copy(
-                    homeRefreshing = true
-                )
-
-                twitchRepoImpl
-                    .getFollowedLiveStreams(
-                        authorizationToken = _oAuthToken.value ?: "",
-                        clientId = _validatedUser.value?.clientId ?:"",
-                        userId = _validatedUser.value?.userId ?:""
-                    )
-                    .collect { response ->
-//                        when (response) {
-//                            is Response.Loading -> {
-//                            }
-//                            is Response.Success -> {
-//                                val replacedWidthHeightList = response.data.map {
-//                                    it.changeUrlWidthHeight(
-//                                        _uiState.value.width,
-//                                        _uiState.value.aspectHeight
-//                                    )
-//                                }
-//                                _uiState.value = _uiState.value.copy(
-//                                    homeRefreshing = false
-//                                )
-//
-//                                _newUrlList.tryEmit(replacedWidthHeightList)
-//                            }
-//                            is Response.Failure -> {
-//                                Log.d("testingGetLiveStreams", "FAILED")
-//                                _uiState.value = _uiState.value.copy(
-//                                    homeRefreshing = false
-//                                )
-//
-//                            }
-//                        }
-                    }
+                pullToRefreshHome()
             }
         }
     }
@@ -519,7 +510,8 @@ class HomeViewModel @Inject constructor(
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkResponse.Success(true),
-                                refreshing = false
+                                refreshing = false,
+                                homeRefreshing = false
                             )
                             _newUrlList.tryEmit(replacedWidthHeightList)
                         }
@@ -527,6 +519,7 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 refreshing = false,
+                                homeRefreshing = false,
                                 streamersListLoading = NetworkResponse.Failure(
                                     Exception("Error! Pull refresh")
                                 )
@@ -536,7 +529,8 @@ class HomeViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 homeNetworkErrorMessage="Network error",
                                 networkConnectionState =false,
-                                refreshing = false
+                                refreshing = false,
+                                homeRefreshing = false
                             )
                             delay(3000)
                             _uiState.value = _uiState.value.copy(
@@ -548,6 +542,7 @@ class HomeViewModel @Inject constructor(
                                 streamersListLoading = NetworkResponse.Failure(
                                     Exception("Error! Re-login with Twitch")
                                 ),
+                                homeRefreshing = false,
                                 showLoginModal = true
                             )
 
