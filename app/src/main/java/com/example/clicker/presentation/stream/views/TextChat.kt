@@ -8,6 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -116,11 +119,6 @@ object TextChat{
                     showModal ={showModal()}
                 )
             },
-            forwardSlashCommands = {
-                TextChatParts.ForwardSlash(
-                    commandList = forwardSlashCommands
-                )
-            }
         )
     }
 
@@ -154,15 +152,14 @@ object TextChat{
         fun EnterChat(
             modifier: Modifier,
             filteredRow:@Composable () -> Unit,
-            forwardSlashCommands:@Composable () -> Unit,
             showModStatus:@Composable () -> Unit,
             stylizedTextField:@Composable (modifier:Modifier) -> Unit,
             showIconBasedOnTextLength:@Composable () -> Unit,
         ) {
 
 
+
             Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
-                forwardSlashCommands()
                 filteredRow()
                 Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
                     verticalAlignment = Alignment.CenterVertically){
@@ -177,33 +174,7 @@ object TextChat{
 
 
     private object TextChatParts{
-        @Composable
-        fun ForwardSlash(commandList:List<ForwardSlashCommands>){
-            val primaryColor = MaterialTheme.colorScheme.primary
-            val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
-            if(commandList.isNotEmpty()){
-                LazyColumn(modifier = Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color.DarkGray)
-                    .padding(10.dp)){
-                    items(commandList){command ->
-                        Column(
-                            modifier = Modifier.clickable {
-                                Log.d("ForwardSlashClick","clicked --> ${command.clickValue}")
-                            }
-                        ){
-                            Text(command.title, fontSize = 18.sp, color = onPrimaryColor, fontWeight = FontWeight.ExtraBold)
-                            Text(command.subtitle, fontSize = 16.sp, color = onPrimaryColor, modifier = Modifier.padding(start=5.dp,bottom=5.dp))
-                        }
-                    }
-                }
-            }
-
-
-
-
-        }
 
 
         /**
@@ -327,6 +298,10 @@ object TextChat{
                 backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
             )
             CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+
+
+
+
                 TextField(
 
                     modifier = modifier,
@@ -353,6 +328,7 @@ object TextChat{
                         Text(stringResource(R.string.send_a_message), color = Color.White)
                     }
                 )
+
             }
 
         }
