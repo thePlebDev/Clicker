@@ -428,6 +428,11 @@ class HomeViewModel @Inject constructor(
         Log.d("setOAuthToken", "token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthToken.tryEmit(oAuthToken)
+        _uiState.value = _uiState.value.copy(
+            modChannelShowBottomModal = false,
+            showLoginModal = false
+
+        )
     }
 
     /**
@@ -473,6 +478,7 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                     is NetworkAuthResponse.NetworkFailure ->{
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> NetworkFailure.....")
                         _uiState.value = _uiState.value.copy(
                             homeNetworkErrorMessage="Network error  ",
                             networkConnectionState =false,
@@ -485,12 +491,18 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                     is NetworkAuthResponse.Auth401Failure ->{
+                        Log.d("VALIDATINGTOKEN", "TOKEN ---> Auth401Failure.....")
                         _uiState.value = _uiState.value.copy(
                             streamersListLoading = NetworkResponse.Failure(
                                 Exception("Error! Re-login with Twitch")
                             ),
                             showLoginModal = true,
                             homeRefreshing = false,
+
+                            modChannelResponseState = Response.Failure(
+                                Exception("Error! Re-login with Twitch")
+                            ),
+                            modChannelShowBottomModal = true,
                             modRefreshing = false
                         )
                     }
@@ -575,7 +587,11 @@ class HomeViewModel @Inject constructor(
                                     Exception("Error! Re-login with Twitch")
                                 ),
                                 homeRefreshing = false,
-                                showLoginModal = true
+                                showLoginModal = true,
+
+                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
+                                modChannelShowBottomModal = true,
+                                modRefreshing = false
                             )
 
                         }

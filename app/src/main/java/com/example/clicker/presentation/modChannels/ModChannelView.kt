@@ -37,13 +37,14 @@ import kotlinx.coroutines.launch
 fun ModChannelView(
     homeViewModel: HomeViewModel,
     onNavigate: () -> Unit,
+    loginWithTwitch: () -> Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val showModal = homeViewModel.state.value.modChannelShowBottomModal
 
 
-        Log.d("showModalConditional","showModal --> true")
+    Log.d("showModalConditional","showModal --> true")
         LaunchedEffect(showModal) { // the key define when the block is relaunched
             // Your coroutine code here
             Log.d("showModalConditional","showModal --> $showModal")
@@ -66,7 +67,7 @@ fun ModChannelView(
     ModalBottomSheetLayout(
         sheetState = bottomModalState,
         sheetContent = {
-            BottomModalSheetContent()
+            BottomModalSheetContent(loginWithTwitch= { loginWithTwitch() })
         }
     ) {
 
@@ -88,7 +89,9 @@ fun ModChannelView(
 }
 
 @Composable
-fun BottomModalSheetContent(){
+fun BottomModalSheetContent(
+    loginWithTwitch: () -> Unit,
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -97,24 +100,17 @@ fun BottomModalSheetContent(){
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            "Authentication error. Please login with Twitch again",
+        androidx.compose.material.Text(
+            "Login with Twitch",
             color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 20.sp,
+            fontSize = 30.sp,
             modifier = Modifier
                 .padding(bottom = 10.dp)
                 .fillMaxWidth(),
             textAlign = TextAlign.Center
         )
-        Button(
-            onClick = {  },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
-            )
-        ) {
-            Text(
-                text = stringResource(R.string.login_with_twitch),
-                color = MaterialTheme.colorScheme.onSecondary,fontSize = 20.sp)
+        androidx.compose.material.Button(onClick = { loginWithTwitch() }) {
+            androidx.compose.material.Text(text = stringResource(R.string.login_with_twitch))
         }
     }
 }
