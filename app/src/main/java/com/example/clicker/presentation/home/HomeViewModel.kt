@@ -198,7 +198,13 @@ class HomeViewModel @Inject constructor(
             if(_uiState.value.modChannelShowBottomModal ){
                 runFakeRequest()
             }
+            else if(_validatedUser.value?.clientId == null){
+                validateOAuthToken(_oAuthToken.value ?: "")
+                Log.d("pullToRefreshModChannels","clientId is null")
+            }
+
             else{
+                Log.d("pullToRefreshModChannels","getLiveStreams()")
                 getLiveStreams(
                     clientId = _validatedUser.value?.clientId ?:"",
                     userId = _validatedUser.value?.userId ?:"",
@@ -461,7 +467,8 @@ class HomeViewModel @Inject constructor(
                             streamersListLoading = NetworkResponse.Failure(
                                 Exception("Error! Pull refresh")
                             ),
-                            homeRefreshing = false
+                            homeRefreshing = false,
+                            modRefreshing = false
 
                         )
                     }
@@ -469,7 +476,8 @@ class HomeViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             homeNetworkErrorMessage="Network error  ",
                             networkConnectionState =false,
-                            homeRefreshing = false
+                            homeRefreshing = false,
+                            modRefreshing = false
                         )
                         delay(2000)
                         _uiState.value = _uiState.value.copy(
@@ -482,7 +490,8 @@ class HomeViewModel @Inject constructor(
                                 Exception("Error! Re-login with Twitch")
                             ),
                             showLoginModal = true,
-                            homeRefreshing = false
+                            homeRefreshing = false,
+                            modRefreshing = false
                         )
                     }
                 }
