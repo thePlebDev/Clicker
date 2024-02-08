@@ -430,7 +430,8 @@ class HomeViewModel @Inject constructor(
         _oAuthToken.tryEmit(oAuthToken)
         _uiState.value = _uiState.value.copy(
             modChannelShowBottomModal = false,
-            showLoginModal = false
+            showLoginModal = false,
+            modChannelResponseState = Response.Loading
 
         )
     }
@@ -589,7 +590,7 @@ class HomeViewModel @Inject constructor(
                                 homeRefreshing = false,
                                 showLoginModal = true,
 
-                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
+                                modChannelResponseState = Response.Failure(Exception("Error! Re-login with Twitch")),
                                 modChannelShowBottomModal = true,
                                 modRefreshing = false
                             )

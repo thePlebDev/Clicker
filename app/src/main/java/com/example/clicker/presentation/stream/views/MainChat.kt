@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -242,6 +243,14 @@ object MainChat{
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 77.dp)
                 )
+                //todo: the lazy column
+                Parts.ForwardSlash(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 77.dp),
+                    nameList = listOf<String>()
+                )
+                //todo: end of the lazy column
                 draggableButton()
                 if(noChatMode){
                     Text(
@@ -263,6 +272,50 @@ object MainChat{
      * pieces that are used inside of a [Builders] to create a [MainChat] implementation
      * */
     private object Parts{
+
+
+
+        @Composable
+        fun ForwardSlash(
+            modifier:Modifier,
+            nameList: List<String>
+        ){
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+            ){
+
+                item{
+                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)){
+                        Text("/ban [username] [reason]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Permanently ban a user from chat",color = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
+                item{
+                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
+                        Text("/unban [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Remove a timeout or a ban on a user",color = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
+                item{
+                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
+                        Text("/monitor [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Start monitoring a user's messages",color = MaterialTheme.colorScheme.onPrimary)
+                    }
+                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
+                        Text("/unmonitor [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Stop monitoring a user's messages",color = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
+
+
+            }
+
+        }
         /**
          * - Contains 1 extra part [AlertRowHeader][Parts.AlertRowHeader]
          *

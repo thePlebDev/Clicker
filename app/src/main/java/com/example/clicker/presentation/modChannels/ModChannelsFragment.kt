@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -57,17 +58,19 @@ class ModChannelsFragment : Fragment() {
                         "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels"
                     )
                 )
+                val intent = CustomTabsIntent.Builder().build()
+                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels"
 
                 AppTheme{
                     ModChannelView(
                         onNavigate = {  findNavController().popBackStack() },
                         homeViewModel = homeViewModel,
                         loginWithTwitch = {
-                            startActivity(twitchIntent)
-//                            intent.launchUrl(
-//                                requireActivity(),
-//                                Uri.parse(authorizationUrl)
-//                            )
+                           // startActivity(twitchIntent)
+                            intent.launchUrl(
+                                requireActivity(),
+                                Uri.parse(authorizationUrl)
+                            )
                         }
                     )
                 }
