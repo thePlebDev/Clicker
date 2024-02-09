@@ -276,9 +276,7 @@ object MainChat{
      * pieces that are used inside of a [Builders] to create a [MainChat] implementation
      * */
     private object Parts{
-
-
-
+        
         @Composable
         fun ForwardSlash(
             modifier:Modifier,
@@ -288,7 +286,8 @@ object MainChat{
             LazyColumn(
                 modifier = modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
+                    .background(MaterialTheme.colorScheme.primary),
+                reverseLayout = true
             ){
                 items(forwardSlashCommandList){command ->
                     Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)){
