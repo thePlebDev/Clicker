@@ -215,6 +215,7 @@ fun StreamView(
                                 clickedAutoCompleteText = { username ->
                                     streamViewModel.autoTextChange(username)
                                 },
+
                                 addChatter = { username, message ->
                                     streamViewModel.addChatter(
                                         username,
@@ -256,7 +257,12 @@ fun StreamView(
                                     }
                                 },
                                 newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-                                forwardSlashCommands = streamViewModel.forwardSlashCommands
+                                forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                                clickedCommandAutoCompleteText={ command ->
+                                    streamViewModel.autoTextChangeCommand(
+                                        command
+                                    )
+                                }
                             )
                         }
                     )
@@ -326,7 +332,8 @@ fun TextChat(
     noChatMode:Boolean,
     showOuterBottomModalState:() ->Unit,
     newFilterMethod:(TextFieldValue) ->Unit,
-    forwardSlashCommands: List<ForwardSlashCommands>
+    forwardSlashCommands: List<ForwardSlashCommands>,
+    clickedCommandAutoCompleteText:(String)->Unit,
 
 ) {
 
@@ -355,7 +362,12 @@ fun TextChat(
         noChatMode =noChatMode,
         showOuterBottomModalState ={showOuterBottomModalState()},
         newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)},
-        forwardSlashCommandsList =forwardSlashCommands
+        forwardSlashCommandsList =forwardSlashCommands,
+        clickedCommandAutoCompleteText={ command ->
+            clickedCommandAutoCompleteText(
+                command
+            )
+        }
     )
 
 }

@@ -102,12 +102,13 @@ data class ClickedUIState(
 data class ForwardSlashCommands(
     val title:String,
     val subtitle:String,
+    val clickedValue:String,
 )
 val listOfCommands = listOf(
-    ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat"),
-    ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user"),
-    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a users messages"),
-    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a users messages")
+    ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
+    ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
+    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a users messages",clickedValue="monitor"),
+    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a users messages",clickedValue="unmonitor")
 )
 
 @HiltViewModel
@@ -423,7 +424,7 @@ class StreamViewModel @Inject constructor(
                 //todo here
                 parseNFilterCommandList(textFieldValue)
             }
-            
+
             if(currentCharacter.toString()==""){
                 Log.d("newParsingAgainThing","end currentCharacter")
                 endParsingNClearFilteredChatList()
@@ -540,6 +541,20 @@ class StreamViewModel @Inject constructor(
             selection = TextRange(replacedString.length)
         )
         filteredChatList.clear()
+
+    }
+
+    fun autoTextChangeCommand(command: String) {
+        val currentCharacterIndex = textFieldValue.value.selection.end
+
+        val replacedString =textFieldValue.value.text.replaceRange(slashCommandIndex,currentCharacterIndex,"$command ")
+        textFieldValue.value = textFieldValue.value.copy(
+            text = replacedString,
+            selection = TextRange(replacedString.length)
+        )
+        _forwardSlashCommands.clear()
+        filteredChatList.clear()
+        slashCommandIndex=0
 
     }
 
