@@ -84,7 +84,6 @@ object TextChat{
         showModal: () -> Unit,
         showOuterBottomModalState:() ->Unit,
         newFilterMethod:(TextFieldValue) ->Unit,
-        forwardSlashCommands: List<ForwardSlashCommands>
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,

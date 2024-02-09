@@ -355,7 +355,7 @@ fun TextChat(
         noChatMode =noChatMode,
         showOuterBottomModalState ={showOuterBottomModalState()},
         newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)},
-        forwardSlashCommands =forwardSlashCommands
+        forwardSlashCommandsList =forwardSlashCommands
     )
 
 }

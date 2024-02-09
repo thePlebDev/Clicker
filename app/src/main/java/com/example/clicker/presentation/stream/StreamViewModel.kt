@@ -42,6 +42,7 @@ data class ChattingUser(
     val message: String
 )
 
+
 /**
  * ChatSettings holds all the data representing the current mod related chat settings
  * */
@@ -101,7 +102,12 @@ data class ClickedUIState(
 data class ForwardSlashCommands(
     val title:String,
     val subtitle:String,
-    val clickValue:String
+)
+val listOfCommands = listOf(
+    ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat"),
+    ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user"),
+    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a users messages"),
+    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a users messages")
 )
 
 @HiltViewModel
@@ -173,7 +179,8 @@ class StreamViewModel @Inject constructor(
      * */
     var filteredChatList = mutableStateListOf<String>()
 
-     val forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
+     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
+    val forwardSlashCommands = _forwardSlashCommands
 
     private var _deviceIsHorizontal = mutableStateOf(false)
     val deviceIsHorizontal:State<Boolean> = _deviceIsHorizontal
@@ -392,20 +399,53 @@ class StreamViewModel @Inject constructor(
             val afterSelection = textFieldValue.getTextAfterSelection(1)
             val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
             val annotatedString = textFieldValue.annotatedString
+            Log.d("newParsingAgainThing","$currentCharacter")
 
-
+            if(currentCharacter.toString()=="/"){
+                Log.d("newParsingAgain",currentCharacter.toString())
+                slashCommandState = true
+                slashCommandIndex =textFieldValue.selection.start
+                _forwardSlashCommands.addAll(listOfCommands)
+            }
+            if(currentCharacter.toString() == " "){
+                Log.d("newParsingAgainThing","currentCharacter.toString() == blank space")
+                _forwardSlashCommands.clear()
+                slashCommandState = false
+                slashCommandIndex =0
+            }
+            if(currentCharacter.toString() == "" && slashCommandState){
+                Log.d("newParsingAgainThing","end currentCharacter and slashCommandState true")
+                _forwardSlashCommands.clear()
+                slashCommandState = false
+                slashCommandIndex =0
+            }
+            if(slashCommandState){
+                //todo here
+                parseNFilterCommandList(textFieldValue)
+            }
+            
             if(currentCharacter.toString()==""){
+                Log.d("newParsingAgainThing","end currentCharacter")
                 endParsingNClearFilteredChatList()
+                _forwardSlashCommands.clear()
+                slashCommandState = false
+                slashCommandIndex =0
             }
 
 
             if(textFieldValue.selection.start < parsingIndex && startParsing){
+                Log.d("newParsingAgainThing","textFieldValue.selection.start < parsingIndex && startParsing")
                 endParsingNClearFilteredChatList()
+                _forwardSlashCommands.clear()
+                slashCommandState = false
 
             }
 
             if (currentCharacter.toString() == " " && startParsing){
+                Log.d("newParsingAgainThing","currentCharacter.toString() == blankspace && startParsing")
                 endParsingNClearFilteredChatList()
+                _forwardSlashCommands.clear()
+                slashCommandState = false
 
             }
             /**---------set parsing to false should be above this line----------------*/
@@ -414,6 +454,7 @@ class StreamViewModel @Inject constructor(
             }
 
             if(currentCharacter.toString() == "@"){
+                _forwardSlashCommands.clear()
                 showFilteredChatListNStartParsing(textFieldValue)
             }
 
@@ -457,7 +498,17 @@ class StreamViewModel @Inject constructor(
             !it.contains(usernameRegex)
         }
 
+    }
+/**BELOW IS THE COMMAND LIST!!!!!*/
+    private fun parseNFilterCommandList(textFieldValue: TextFieldValue){
+        val command ="/"+textFieldValue.text.subSequence(slashCommandIndex,textFieldValue.selection.end)
+        Log.d("parseNFilterCommandList","command ----> $command")
 
+        //val commandRegex = Regex("$command",RegexOption.IGNORE_CASE)
+        val commandRegex = Regex("^$command",RegexOption.IGNORE_CASE)
+        _forwardSlashCommands.removeIf{
+            !it.title.contains(commandRegex)
+        }
 
     }
     /**
@@ -474,7 +525,6 @@ class StreamViewModel @Inject constructor(
      * */
     private fun negateSlashCommandStateNClearForwardSlashCommands(){
         slashCommandState = false
-        forwardSlashCommands.clear()
     }
     /**
      * autoTextChange is function that is used to change the value of [textFieldValue] with [username]
