@@ -224,7 +224,12 @@ fun HorizontalChat(
                             }
                         },
                         newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-                        forwardSlashCommands = streamViewModel.forwardSlashCommands
+                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                        clickedCommandAutoCompleteText={ command ->
+                            streamViewModel.autoTextChangeCommand(
+                                command
+                            )
+                        }
                     )
                 }
             )

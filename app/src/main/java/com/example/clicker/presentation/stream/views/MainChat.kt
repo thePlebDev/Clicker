@@ -125,7 +125,8 @@ object MainChat{
         noChatMode:Boolean,
         showOuterBottomModalState:() ->Unit,
         newFilterMethod:(TextFieldValue) ->Unit,
-        forwardSlashCommandsList: List<ForwardSlashCommands>
+        forwardSlashCommandsList: List<ForwardSlashCommands>,
+        clickedCommandAutoCompleteText:(String)->Unit,
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -196,7 +197,10 @@ object MainChat{
             forwardSlashCommands = {alignCenterwithPaddingModifier ->
                 Parts.ForwardSlash(
                     modifier =alignCenterwithPaddingModifier,
-                    forwardSlashCommandList = forwardSlashCommandsList
+                    forwardSlashCommandList = forwardSlashCommandsList,
+                    clickedCommandAutoCompleteText ={
+                            command ->clickedCommandAutoCompleteText(command)
+                    }
                 )
             }
         )
@@ -276,11 +280,12 @@ object MainChat{
      * pieces that are used inside of a [Builders] to create a [MainChat] implementation
      * */
     private object Parts{
-        
+
         @Composable
         fun ForwardSlash(
             modifier:Modifier,
-            forwardSlashCommandList: List<ForwardSlashCommands>
+            forwardSlashCommandList: List<ForwardSlashCommands>,
+            clickedCommandAutoCompleteText:(String)->Unit,
         ){
 
             LazyColumn(
@@ -290,7 +295,12 @@ object MainChat{
                 reverseLayout = true
             ){
                 items(forwardSlashCommandList){command ->
-                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)){
+                    Column(modifier = Modifier
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .clickable {
+                            clickedCommandAutoCompleteText(command.clickedValue)
+                        }
+                    ){
                         Text(command.title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
                         Text(command.subtitle,color = MaterialTheme.colorScheme.onPrimary)
                     }
