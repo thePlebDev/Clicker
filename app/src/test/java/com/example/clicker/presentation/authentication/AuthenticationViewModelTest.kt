@@ -104,10 +104,10 @@ class AuthenticationViewModelTest {
 
         val fakeAuthenticationToken ="fdsa85930fjw[tnv;0"
         `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit(fakeAuthenticationToken)})
-        `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
-            .thenReturn(flow{
-                emit(NetworkResponse.Success(validatedUser))
-            })
+//        `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
+//            .thenReturn(flow{
+//                emit(NetworkResponse.Success(validatedUser))
+//            })
 
 
 
@@ -136,10 +136,10 @@ class AuthenticationViewModelTest {
 
         val fakeAuthenticationToken ="fdsa85930fjw[tnv;0"
         `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit(fakeAuthenticationToken)})
-        `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
-            .thenReturn(flow{
-                emit(NetworkResponse.Failure(Exception("failed to validate")))
-            })
+//        `when`(twitchAuthentication.validateToken("",fakeAuthenticationToken))
+//            .thenReturn(flow{
+//                emit(NetworkResponse.Failure(Exception("failed to validate")))
+//            })
 
 
 

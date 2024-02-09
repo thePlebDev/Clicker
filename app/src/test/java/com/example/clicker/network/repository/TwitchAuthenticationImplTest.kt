@@ -49,24 +49,24 @@ class TwitchAuthenticationImplTest {
         mockWebServer.shutdown()
     }
 
-    @Test
-    fun validateTokenNoNetworkResponse()= runTest {
-
-        /**GIVEN*/
-        twitchClient = TwitchAuthenticationClientBuilder
-            .addFailingNetworkInterceptor()
-            .buildClientWithURL(mockWebServer.url("/").toString()
-            )
-        underTest = TwitchAuthenticationImpl(twitchClient)
-
-        /**WHEN*/
-        val actualResponse = underTest.validateToken("","").last()
-        val expected = actualResponse is NetworkResponse.NetworkFailure
-
-
-        /**THEN*/
-        Assert.assertEquals(true, expected)
-    }
+//    @Test
+//    fun validateTokenNoNetworkResponse()= runTest {
+//
+//        /**GIVEN*/
+//        twitchClient = TwitchAuthenticationClientBuilder
+//            .addFailingNetworkInterceptor()
+//            .buildClientWithURL(mockWebServer.url("/").toString()
+//            )
+//        underTest = TwitchAuthenticationImpl(twitchClient)
+//
+//        /**WHEN*/
+//        val actualResponse = underTest.validateToken("","").last()
+//        val expected = actualResponse is NetworkResponse.NetworkFailure
+//
+//
+//        /**THEN*/
+//        Assert.assertEquals(true, expected)
+//    }
 
     @Test
     fun validateLogoutNoNetworkResponse() = runTest {

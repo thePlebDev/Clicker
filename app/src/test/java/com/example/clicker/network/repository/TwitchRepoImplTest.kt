@@ -1,8 +1,10 @@
 package com.example.clicker.network.repository
 
+import android.util.Log
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.util.TwitchStreamClientBuilder
+import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
@@ -50,6 +52,17 @@ class TwitchRepoImplTest {
 
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun TestingTheLexicalAnanysis(){
+        val scanner = Scanner("/monitor @马思唯 马思唯 7777")
+        scanner.scanTokens()
+        val tokenList =scanner.tokenList
+        println("$tokenList")
+
+        Assert.assertEquals(tokenList.size,4)
+
     }
 
 
