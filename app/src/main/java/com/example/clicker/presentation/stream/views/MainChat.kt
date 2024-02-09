@@ -125,7 +125,7 @@ object MainChat{
         noChatMode:Boolean,
         showOuterBottomModalState:() ->Unit,
         newFilterMethod:(TextFieldValue) ->Unit,
-        forwardSlashCommands: List<ForwardSlashCommands>
+        forwardSlashCommandsList: List<ForwardSlashCommands>
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -174,7 +174,6 @@ object MainChat{
                     },
                     showOuterBottomModalState ={showOuterBottomModalState()},
                     newFilterMethod={newTextValue -> newFilterMethod(newTextValue)},
-                    forwardSlashCommands =forwardSlashCommands
                 )
 
             }, // end of enter chat
@@ -193,7 +192,13 @@ object MainChat{
                     )
 
             },
-            noChatMode = noChatMode
+            noChatMode = noChatMode,
+            forwardSlashCommands = {alignCenterwithPaddingModifier ->
+                Parts.ForwardSlash(
+                    modifier =alignCenterwithPaddingModifier,
+                    forwardSlashCommandList = forwardSlashCommandsList
+                )
+            }
         )
     }
 
@@ -225,6 +230,7 @@ object MainChat{
             enterChat:@Composable (modifier:Modifier) -> Unit,
             scrollToBottom:@Composable (modifier:Modifier) -> Unit,
             draggableButton:@Composable () -> Unit,
+            forwardSlashCommands:@Composable (modifier:Modifier) -> Unit,
         ){
             determineScrollState()
             Box(
@@ -243,13 +249,11 @@ object MainChat{
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 77.dp)
                 )
-                //todo: the lazy column
-                Parts.ForwardSlash(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 77.dp),
-                    nameList = listOf<String>()
+                //todo:forward slash command
+                forwardSlashCommands(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 77.dp)
                 )
+
                 //todo: end of the lazy column
                 draggableButton()
                 if(noChatMode){
@@ -278,40 +282,20 @@ object MainChat{
         @Composable
         fun ForwardSlash(
             modifier:Modifier,
-            nameList: List<String>
+            forwardSlashCommandList: List<ForwardSlashCommands>
         ){
-            val primaryColor = MaterialTheme.colorScheme.primary
-            val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
             LazyColumn(
                 modifier = modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
             ){
-
-                item{
+                items(forwardSlashCommandList){command ->
                     Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)){
-                        Text("/ban [username] [reason]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
-                        Text("Permanently ban a user from chat",color = MaterialTheme.colorScheme.onPrimary)
+                        Text(command.title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text(command.subtitle,color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
-                item{
-                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
-                        Text("/unban [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
-                        Text("Remove a timeout or a ban on a user",color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                }
-                item{
-                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
-                        Text("/monitor [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
-                        Text("Start monitoring a user's messages",color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                    Column(modifier = Modifier.padding(horizontal = 10.dp,vertical =5.dp)){
-                        Text("/unmonitor [username]", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
-                        Text("Stop monitoring a user's messages",color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                }
-
 
             }
 
