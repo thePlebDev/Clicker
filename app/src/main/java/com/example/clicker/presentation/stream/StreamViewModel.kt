@@ -26,7 +26,6 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TokenCommand
-import com.example.clicker.presentation.stream.util.TokenCommandTypes
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -112,8 +111,6 @@ data class ForwardSlashCommands(
 val listOfCommands = listOf(
     ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
     ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
-    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a users messages",clickedValue="monitor"),
-    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a users messages",clickedValue="unmonitor")
 )
 
 @HiltViewModel
@@ -743,39 +740,98 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             }
         }
     }
-    private fun monitoringTokens(tokenCommand: StateFlow<TextCommands>){
+    private fun monitoringTokens(tokenCommand: StateFlow<TextCommands>,chatMessage:String){
         viewModelScope.launch {
             tokenCommand.collect{tokenCommand ->
                 when(tokenCommand){
                     is TextCommands.UNRECOGNIZEDCOMMAND ->{
                         Log.d("monitoringTokens", "UNRECOGNIZEDCOMMAND")
                         Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                        val message = TwitchUserDataObjectMother
+                            .addUserType(chatMessage)
+                            .addColor("#BF40BF")
+                            .addDisplayName("Unrecognized command")
+                            .addMod("mod")
+                            .addMessageType(MessageType.ANNOUNCEMENT)
+                            .build()
+                        listChats.add(message)
                     }
                     is TextCommands.Ban ->{
-                        Log.d("monitoringTokens", "Ban")
-                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                        Log.d("monitoringTokens", "reason -->${tokenCommand.reason}")
+
+                        val userId = listChats.find { it.displayName == tokenCommand.username }?.userId
+                        if(userId ==null){
+                            val message = TwitchUserDataObjectMother
+                                .addUserType("${tokenCommand.username} not found in this session")
+                                .addColor("#BF40BF")
+                                .addDisplayName("Unrecognized username")
+                                .addMod("mod")
+                                .addMessageType(MessageType.USER)
+                                .build()
+                            listChats.add(message)
+                        }else{
+                            Log.d("monitoringTokens", "userId -->$userId")
+                            val message = TwitchUserDataObjectMother
+                                .addUserType(chatMessage)
+                                .addColor("#BF40BF")
+                                .addDisplayName(currentUsername)
+                                .addMod("mod")
+                                .addMessageType(MessageType.USER)
+                                .build()
+                            listChats.add(message)
+                            banUserSlashCommand(userId = userId, reason = tokenCommand.reason)
+                        }
+
                     }
                     is TextCommands.UnBan ->{
-                        Log.d("monitoringTokens", "UnBan")
-                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                    }
-                    is TextCommands.MONITOR ->{
-                        Log.d("monitoringTokens", "MONITOR")
-                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                    }
-                    is TextCommands.UNMONITOR ->{
-                        Log.d("monitoringTokens", "UNMONITOR")
-                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                        Log.d("monitoringTokens", "tokenCommand.username -->${tokenCommand.username}")
+                        val userId = listChats.find { it.displayName == tokenCommand.username }?.userId
+                        if(userId ==null){
+                            val message = TwitchUserDataObjectMother
+                                .addUserType("${tokenCommand.username} not found in this session")
+                                .addColor("#BF40BF")
+                                .addDisplayName("Unrecognized username")
+                                .addMod("mod")
+                                .addMessageType(MessageType.ANNOUNCEMENT)
+                                .build()
+                            listChats.add(message)
+                        }else{
+                            //todo: add the unban features
+                            val message = TwitchUserDataObjectMother
+                                .addUserType(chatMessage)
+                                .addColor("#BF40BF")
+                                .addDisplayName(currentUsername)
+                                .addMod("mod")
+                                .addMessageType(MessageType.USER)
+                                .build()
+                            listChats.add(message)
+                            unBanUserSlashCommand(userId)
+                            Log.d("monitoringTokens", "userId -->$userId")
+                        }
                     }
                     is TextCommands.NOUSERNAME ->{
                         Log.d("monitoringTokens", "NOUSERNAME")
                         Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                        val message = TwitchUserDataObjectMother
+                            .addUserType(chatMessage)
+                            .addColor("#BF40BF")
+                            .addDisplayName("Username not found")
+                            .addMod("mod")
+                            .addMessageType(MessageType.ANNOUNCEMENT)
+                            .build()
+                        listChats.add(message)
                     }
                     is TextCommands.NORMALMESSAGE ->{
                         Log.d("monitoringTokens", "NORMALMESSAGE")
                         webSocket.sendMessage(tokenCommand.username)
                         Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                        val message = TwitchUserDataObjectMother
+                            .addUserType(chatMessage)
+                            .addColor("#BF40BF")
+                            .addDisplayName(currentUsername)
+                            .addMod("mod")
+                            .addMessageType(MessageType.USER)
+                            .build()
+                        listChats.add(message)
                     }
                     //todo: should have a normal command that just sends information to the websocket
                     is TextCommands.INITIALVALUE ->{
@@ -794,35 +850,34 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         scanner.scanTokens()
         val tokenList = scanner.tokenList
         tokenCommand.checkForSlashCommands(tokenList)
-        monitoringTokens(tokenCommand.tokenCommand)
+        monitoringTokens(tokenCommand.tokenCommand,chatMessage)
 
        // val messageResult = webSocket.sendMessage(chatMessage)
         textFieldValue.value = TextFieldValue(
             text = "",
             selection = TextRange(0)
         )
-        listChats.add(
-            TwitchUserData(
-                badgeInfo = null,
-                badges = null,
-                clientNonce = null,
-                color = "#BF40BF",
-                displayName = currentUsername,
-                emotes = null,
-                firstMsg = null,
-                flags = null,
-                id = null,
-                mod = "mod",
-                returningChatter = null,
-                roomId = null,
-                subscriber = false,
-                tmiSentTs = null,
-                turbo = false,
-                userId = null,
-                userType = chatMessage,
-                messageType = MessageType.USER
-            )
-        )
+
+//        TwitchUserData(
+//            badgeInfo = null,
+//            badges = null,
+//            clientNonce = null,
+//            color = "#BF40BF",
+//            displayName = currentUsername,
+//            emotes = null,
+//            firstMsg = null,
+//            flags = null,
+//            id = null,
+//            mod = "mod",
+//            returningChatter = null,
+//            roomId = null,
+//            subscriber = false,
+//            tmiSentTs = null,
+//            turbo = false,
+//            userId = null,
+//            userType = chatMessage,
+//            messageType = MessageType.USER
+//        )
       //  Log.d("messageResult", messageResult.toString())
     }
 
@@ -1074,6 +1129,95 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
     }
 
 }
+
+    private fun unBanUserSlashCommand(userId: String) = viewModelScope.launch{
+        withContext(ioDispatcher + CoroutineName("UnBanUser")) {
+            twitchRepoImpl.unBanUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                userId = userId //TODO:PASS IT IN
+
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {
+                        Log.d("TESTINGTHEUNBANRESPONSE", "LOADING")
+                    }
+                    is Response.Success -> {
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            undoBanResponse = true
+                        )
+
+                        val unBanSuccessMessage =TwitchUserDataObjectMother.addColor("#FFBB86FC")
+                            .addDisplayName("Room update")
+                            .addUserType("Unban successful")
+                            .addMessageType(MessageType.NOTICE)
+                            .build()
+                        listChats.add(unBanSuccessMessage)
+                    }
+                    is Response.Failure -> {
+                        Log.d("TESTINGTHEUNBANRESPONSE", "FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "Fail. User may be unbanned"
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+    private suspend fun banUserSlashCommand(userId: String, reason:String){
+        Log.d("banUserSlashCommand","oAuthToken-->  ${_uiState.value.oAuthToken}")
+        Log.d("banUserSlashCommand","clientId-->${_uiState.value.clientId}")
+        Log.d("banUserSlashCommand","userId -->${_uiState.value.userId}")
+        Log.d("banUserSlashCommand","broadcasterId -->${_uiState.value.broadcasterId}")
+        viewModelScope.launch {
+            withContext(ioDispatcher + CoroutineName("BanUser")) {
+                val banUserNew = BanUser(
+                    data = BanUserData( //TODO:SHOULD BE PASSED IN
+                        user_id =userId,
+                        reason = reason,
+                        duration = 0
+
+                    )
+                )
+                twitchRepoImpl.banUser(
+                    oAuthToken = _uiState.value.oAuthToken,
+                    clientId = _uiState.value.clientId,
+                    moderatorId = _uiState.value.userId,
+                    broadcasterId = _uiState.value.broadcasterId,
+                    body = banUserNew
+                ).collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            Log.d("BANUSERRESPONSE", "LOADING")
+                        }
+                        is Response.Success -> {
+                            Log.d("BANUSERRESPONSE", "SUCCESS")
+                            _uiState.value = _uiState.value.copy(
+                                banResponse = Response.Success(true),
+                                banReason = "",
+                                undoBanResponse = false
+                            )
+                        }
+                        is Response.Failure -> {
+                            Log.d("BANUSERRESPONSE", "FAILED")
+                            _uiState.value = _uiState.value.copy(
+                                showStickyHeader = true,
+                                undoBanResponse = false,
+                                banResponseMessage = "ban attempt unsuccessful"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+    }
 
     //TODO: TWICH METHOD
     fun banUser(banUser: BanUser) = viewModelScope.launch {

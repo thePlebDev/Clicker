@@ -97,7 +97,7 @@ class HomeViewModel @Inject constructor(
 
 
     private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
-    val validatedUser = _validatedUser.value
+    val validatedUser = _validatedUser
     private val _oAuthToken = MutableStateFlow<String?>(null)
     val oAuthToken:String? =  _oAuthToken.value
     /**BELOW IS THE NETWORK REQUEST BUILDER*/
@@ -154,8 +154,8 @@ class HomeViewModel @Inject constructor(
                         }
                         else ->{
                             getLiveStreams(
-                                clientId = validatedUser.clientId,
-                                userId = validatedUser.clientId,
+                                clientId = _validatedUser.value?.clientId ?:"",
+                                userId = _validatedUser.value?.clientId ?:"",
                                 oAuthToken =oAuthToken
                             )
                         }
@@ -454,11 +454,13 @@ class HomeViewModel @Inject constructor(
                     }
                     is NetworkAuthResponse.Success -> {
                         logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
-                        Log.d("VALIDATINGTOKEN", "TOKEN ---> SUCCESS.....")
+                        Log.d("VALIDATINGTOKEN", "clientId --> ${response.data.clientId}")
+                        Log.d("VALIDATINGTOKEN", "userId --> ${response.data.userId}")
 
                         _uiState.value = _uiState.value.copy(
                             oAuthToken = oAuthenticationToken,
                         )
+
                         _validatedUser.tryEmit(response.data)
 
 

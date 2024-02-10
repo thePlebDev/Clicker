@@ -7,17 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
  * TokenType represents types that are used inside the lexical analysis of the chat messages
  * */
 enum class TokenType {
-    BAN, UNBAN, MONITOR, UNMONITOR,USERNAME,TEXT, UNRECOGNIZED
+    BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED
 }
 
-/**
- * TokenCommandTypes are based on [TokenType]. TokenCommandTypes will be emitted to let the system know what kind
- * of command it should send to the twitch server
- *
- * */
-enum class TokenCommandTypes{
-    BAN, UNBAN, MONITOR, UNMONITOR,NOUSERNAME,UNRECOGNIZEDCOMMAND,INITIALVALUE,NORMALMESSAGE
-}
 
 data class Token(
     val tokenType: TokenType,
@@ -26,8 +18,6 @@ data class Token(
  sealed class TextCommands(val username: String="",val reason: String =""){
      class Ban(username:String,reason:String):TextCommands(username,reason)
      class UnBan(username:String):TextCommands(username)
-     class MONITOR(username:String):TextCommands(username)
-     class UNMONITOR(username:String):TextCommands(username)
      class UNRECOGNIZEDCOMMAND(command:String):TextCommands(command)
      class NORMALMESSAGE(message:String) : TextCommands(message)
      object NOUSERNAME : TextCommands()
@@ -41,8 +31,6 @@ class Scanner(private val source: String) {
     init {
         map["/ban"] = Token(TokenType.BAN,"/ban")
         map["/unban"] = Token(TokenType.UNBAN,"/unban")
-        map["/monitor"] = Token(TokenType.MONITOR,"/monitor")
-        map["/unmonitor"] = Token(TokenType.UNMONITOR,"/unmonitor")
         map["@username"] = Token(TokenType.USERNAME,"/username")
     }
     private val tokens = mutableListOf<Token>()
@@ -158,7 +146,7 @@ class TokenCommand(){
                         .map{ it.lexeme }
                         .joinToString(separator = " ")
 
-                    _tokenCommand.tryEmit(TextCommands.Ban(username=username,reason=reason))
+                    _tokenCommand.tryEmit(TextCommands.Ban(username=username.replace("@", ""),reason=reason))
                 }
                 else{
                     //todo: tell user that there is no username
@@ -174,37 +162,7 @@ class TokenCommand(){
                 if(username != null){
                     //todo: send unBan command
 
-                    _tokenCommand.tryEmit(TextCommands.UnBan(username=username))
-                }
-                else{
-                    //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                }
-            }
-            hasMonitorTokenType(tokenList)->{
-                //make monitor request
-                // get username
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send monitor command
-
-                    _tokenCommand.tryEmit(TextCommands.MONITOR(username=username))
-                }
-                else{
-                    //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                }
-            }
-            hasUnMonitorTokenType(tokenList)->{
-                //make unMonitor request
-                // get username
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send unMonitor command
-
-                    _tokenCommand.tryEmit(TextCommands.UNMONITOR(username=username))
+                    _tokenCommand.tryEmit(TextCommands.UnBan(username=username.replace("@", "")))
                 }
                 else{
                     //todo: tell user that there is no username
@@ -227,12 +185,12 @@ class TokenCommand(){
     private fun hasUnbanTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.UNBAN }
     }
-    private fun hasMonitorTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.MONITOR }
-    }
-    private fun hasUnMonitorTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.UNMONITOR }
-    }
+//    private fun hasMonitorTokenType(tokens: List<Token>): Boolean {
+//        return tokens.any { it.tokenType == TokenType.MONITOR }
+//    }
+//    private fun hasUnMonitorTokenType(tokens: List<Token>): Boolean {
+//        return tokens.any { it.tokenType == TokenType.UNMONITOR }
+//    }
     private fun hasUnrecognizedTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.UNRECOGNIZED }
     }
