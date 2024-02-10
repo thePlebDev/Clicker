@@ -440,8 +440,10 @@ fun PullToRefreshComponent(
 
 
         ){
+
             Row(
                 modifier = Modifier.clickable {
+
                     updateStreamerName(
                         streamItem.streamerName,
                         clientId,

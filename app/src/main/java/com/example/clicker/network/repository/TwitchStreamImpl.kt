@@ -111,6 +111,9 @@ class TwitchStreamImpl @Inject constructor(
             moderatorId = moderatorId,
             body = body
         )
+        Log.d("banUserImpl","code -->${response.code()}")
+        Log.d("banUserImpl","message -->${response.message()}")
+        Log.d("banUserImpl","body -->${response.body()}")
 
         if (response.isSuccessful) {
             val data = response.body()

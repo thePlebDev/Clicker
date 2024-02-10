@@ -128,6 +128,8 @@ fun ValidationView(
     }
 
     val userIsAuthenticated = authenticationViewModel.authenticationUIState.value.authenticated
+    val userId = homeViewModel.validatedUser.collectAsState().value?.userId
+    val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
 
     HomeViewImplementation(
         bottomModalState =bottomModalState,
@@ -151,8 +153,8 @@ fun ValidationView(
         },
         streamersListLoading = homeViewModel.state.value.streamersListLoading,
         urlList =homeViewModel.newUrlList.collectAsState().value,
-        clientId = homeViewModel.validatedUser?.clientId ?: "",
-        userId = homeViewModel.validatedUser?.userId ?: "",
+        clientId = clientId ?: "",
+        userId = userId ?: "",
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         logout = {
