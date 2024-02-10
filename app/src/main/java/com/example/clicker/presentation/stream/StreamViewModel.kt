@@ -23,6 +23,10 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.stream.util.Scanner
+import com.example.clicker.presentation.stream.util.TextCommands
+import com.example.clicker.presentation.stream.util.TokenCommand
+import com.example.clicker.presentation.stream.util.TokenCommandTypes
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -34,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -737,12 +742,61 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                 }
             }
         }
+    }
+    private fun monitoringTokens(tokenCommand: StateFlow<TextCommands>){
+        viewModelScope.launch {
+            tokenCommand.collect{tokenCommand ->
+                when(tokenCommand){
+                    is TextCommands.UNRECOGNIZEDCOMMAND ->{
+                        Log.d("monitoringTokens", "UNRECOGNIZEDCOMMAND")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    is TextCommands.Ban ->{
+                        Log.d("monitoringTokens", "Ban")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                        Log.d("monitoringTokens", "reason -->${tokenCommand.reason}")
+                    }
+                    is TextCommands.UnBan ->{
+                        Log.d("monitoringTokens", "UnBan")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    is TextCommands.MONITOR ->{
+                        Log.d("monitoringTokens", "MONITOR")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    is TextCommands.UNMONITOR ->{
+                        Log.d("monitoringTokens", "UNMONITOR")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    is TextCommands.NOUSERNAME ->{
+                        Log.d("monitoringTokens", "NOUSERNAME")
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    is TextCommands.NORMALMESSAGE ->{
+                        Log.d("monitoringTokens", "NORMALMESSAGE")
+                        webSocket.sendMessage(tokenCommand.username)
+                        Log.d("monitoringTokens", "username -->${tokenCommand.username}")
+                    }
+                    //todo: should have a normal command that just sends information to the websocket
+                    is TextCommands.INITIALVALUE ->{
+                        Log.d("monitoringTokens", "INITIALVALUE")
 
+                    }
+                }
+            }
+        }
     }
 
     //TODO: SOCKET METHOD
     fun sendMessage(chatMessage: String) {
-        val messageResult = webSocket.sendMessage(chatMessage)
+        val scanner = Scanner(chatMessage)
+        val tokenCommand = TokenCommand()
+        scanner.scanTokens()
+        val tokenList = scanner.tokenList
+        tokenCommand.checkForSlashCommands(tokenList)
+        monitoringTokens(tokenCommand.tokenCommand)
+
+       // val messageResult = webSocket.sendMessage(chatMessage)
         textFieldValue.value = TextFieldValue(
             text = "",
             selection = TextRange(0)
@@ -769,7 +823,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                 messageType = MessageType.USER
             )
         )
-        Log.d("messageResult", messageResult.toString())
+      //  Log.d("messageResult", messageResult.toString())
     }
 
 
