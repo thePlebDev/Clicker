@@ -49,7 +49,6 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
-    private val networkMonitorViewModel: NetworkMonitorViewModel by activityViewModels()
     private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,7 +115,7 @@ class HomeFragment : Fragment() {
                         streamViewModel = streamViewModel,
                         authenticationViewModel = authenticationViewModel,
                         loginWithTwitch = {
-                           // startActivity(twitchIntent2)
+                            startActivity(twitchIntent2)
                             intent.launchUrl(
                                 requireActivity(),
                                 Uri.parse(authorizationUrl)

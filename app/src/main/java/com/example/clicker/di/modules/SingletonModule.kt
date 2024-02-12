@@ -23,6 +23,8 @@ import com.example.clicker.network.interceptors.responseCodeInterceptors.Respons
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
+import com.example.clicker.presentation.AuthenticationEvent
+import com.example.clicker.presentation.AuthenticationEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -98,6 +100,7 @@ object SingletonModule {
         return twitchRepoImpl
     }
 
+    @Singleton
     @Provides
     fun provideTwitchAuthRepo(twitchAuthenticationImpl: TwitchAuthenticationImpl): TwitchAuthentication {
         Log.d("provideTwitchAuthRepo","${twitchAuthenticationImpl.hashCode()}")
@@ -122,4 +125,9 @@ object SingletonModule {
     }
 
 
+    @Singleton
+    @Provides
+    fun provideAuthenticationEvent(): AuthenticationEvent {
+        return AuthenticationEventBus()
+    }
 }

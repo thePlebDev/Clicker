@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.network.clients.GetModChannelsData
+import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -31,9 +32,27 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 class TwitchRepoImpl @Inject constructor(
-    private val twitchClient: TwitchClient
+    private val twitchClient: TwitchClient,
+    private val twitchAuthenticationClient: TwitchAuthenticationClient
 ) : TwitchRepo  {
 
+    override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
+        emit(Response.Loading)
+        Log.d("logoutResponse", "LOADING")
+
+        val response = twitchAuthenticationClient.logout(clientId = clientId, token = token)
+        if (response.isSuccessful) {
+            Log.d("logoutResponse", "SUCCESS ->${response.message()}")
+            emit(Response.Success("true"))
+        } else {
+            Log.d("logoutResponse", "message ->${response.message()}")
+            Log.d("logoutResponse", "code ->${response.code()}")
+            Log.d("logoutResponse", "FAILED ->${response.body()}")
+            emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
+        }
+    }.catch { cause ->
+        handleException(cause)
+    }
 
     override suspend fun getFollowedLiveStreams(
         authorizationToken: String,

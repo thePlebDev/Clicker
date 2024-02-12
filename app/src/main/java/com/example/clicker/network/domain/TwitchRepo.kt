@@ -39,4 +39,6 @@ interface TwitchRepo {
         clientId: String,
         userId: String
     ):Flow<NetworkAuthResponse<GetModChannels>>
+
+    fun logout(clientId: String, token: String): Flow<Response<String>>
 }

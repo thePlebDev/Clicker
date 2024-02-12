@@ -20,6 +20,7 @@ import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.authentication.CertifiedUser
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
@@ -75,7 +76,8 @@ data class HomeUIState(
 
     val homeRefreshing:Boolean = false,
     val homeNetworkErrorMessage:String ="Disconnected from network",
-    val logoutDialogIsOpen:Boolean=false
+    val logoutDialogIsOpen:Boolean=false,
+
 
 
 
@@ -87,7 +89,8 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val networkMonitorRepo: NetworkMonitorRepo
+    private val networkMonitorRepo: NetworkMonitorRepo,
+    private val authenticationEventBus: AuthenticationEvent
 ) : ViewModel() {
 
     private val _newUrlList = MutableStateFlow<List<StreamInfo>?>(null)
@@ -95,6 +98,8 @@ class HomeViewModel @Inject constructor(
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
+
+
 
 
 
@@ -113,6 +118,93 @@ class HomeViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             logoutDialogIsOpen = true
         )
+    }
+
+    init{
+        viewModelScope.launch {
+            authenticationEventBus.authenticationStatus.collect{nullableAuthenticationStatus ->
+                nullableAuthenticationStatus?.also { authenticationStatus ->
+                    when(authenticationStatus){
+                        is Response.Loading ->{
+                            _uiState.value = _uiState.value.copy(
+                                modChannelResponseState = Response.Loading,
+                                streamersListLoading = NetworkResponse.Loading
+                            )
+                        }
+                        is Response.Success ->{
+                            _uiState.value = _uiState.value.copy(
+                                streamersListLoading = NetworkResponse.Failure(
+                                    Exception("Success! Login with Twitch")
+                                ),
+                                showLoginModal = true,
+                                homeRefreshing = false,
+
+                                modChannelResponseState = Response.Failure(
+                                    Exception("Success! Login with Twitch")
+                                ),
+                                modChannelShowBottomModal = true,
+                                modRefreshing = false,
+                            )
+                            _validatedUser.value = null
+
+                        }
+                        is Response.Failure ->{
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = false,
+                                homeNetworkErrorMessage = "Logout failed"
+                            )
+                            delay(2000)
+
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
+        Log.d("beginLogout","clientId  $clientId")
+        Log.d("beginLogout","oAuthToken  $oAuthToken")
+
+
+       // withContext(ioDispatcher + CoroutineName("BeginLogout")) {
+            authentication.logout(
+                clientId = clientId,
+                token = oAuthToken
+            )
+                .collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            _uiState.value = _uiState.value.copy(
+                                modChannelResponseState = Response.Loading
+
+                            )
+                        }
+                        is Response.Success -> {
+                            _uiState.value = _uiState.value.copy(
+                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
+                                modChannelShowBottomModal = true,
+                                modRefreshing = false
+                            )
+                            _validatedUser.value = null
+                        }
+                        is Response.Failure -> {
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = false,
+                                homeNetworkErrorMessage = "Logout failed"
+                            )
+                            delay(2000)
+
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = true,
+                            )
+                        }
+                    }
+                }
+       // }
     }
 
     /**

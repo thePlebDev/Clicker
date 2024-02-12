@@ -10,6 +10,7 @@ import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.domain.TwitchTokenValidationWorker
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.home.MainBusState
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.Exception
 
 data class AuthenticationUIState(
 
@@ -52,15 +54,23 @@ data class CertifiedUser(
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val authentication: TwitchAuthentication,
-    private val tokenDataStore: TwitchDataStore,
-    private val tokenValidationWorker: TwitchTokenValidationWorker,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val authenticationEventBus: AuthenticationEvent
 ) : ViewModel() {
 
     private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(
         AuthenticationUIState()
     )
     val authenticationUIState: State<AuthenticationUIState> = _authenticationUIState
+
+    init{
+        viewModelScope.launch {
+            authenticationEventBus.authenticationStatus.collect{
+                Log.d("authenticationEventBus","AuthenticationViewModel-Bus --->$it")
+            }
+        }
+    }
+
 
     // 1)CREATE THE AUTHENTICATION STATE
     private val authenticatedUserFlow = combine(
@@ -94,14 +104,18 @@ class AuthenticationViewModel @Inject constructor(
             )
                 .collect { response ->
                     when (response) {
-                        is Response.Loading -> {}
+                        is Response.Loading -> {
+                            authenticationEventBus.setLoggedInt(Response.Loading)
+                        }
                         is Response.Success -> {
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Success! Login with Twitch",
                                 authenticated = false
                             )
+                            authenticationEventBus.setLoggedInt(Response.Success(true))
                         }
                         is Response.Failure -> {
+                            authenticationEventBus.setLoggedInt(Response.Failure(Exception("Failed to logout")))
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Logout Error! Please try again",
                                 logoutError = true,
