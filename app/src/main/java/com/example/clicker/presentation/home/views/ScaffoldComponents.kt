@@ -113,7 +113,7 @@ object ScaffoldComponents {
      * */
     @Composable
     fun MainScaffoldComponent(
-        logout:()->Unit,
+        showLogoutDialog:()->Unit,
         login: () -> Unit,
         userIsLoggedIn: Boolean,
         urlList: List<StreamInfo>?,
@@ -140,8 +140,8 @@ object ScaffoldComponents {
             scaffoldState =scaffoldState,
             drawerContent = {
                 Parts.ScaffoldDrawer(
-                    logout = {
-                        logout()
+                    showLogoutDialog = {
+                        showLogoutDialog()
                     },
                     loginWithTwitch = {
                         login()
@@ -840,7 +840,7 @@ fun PullToRefreshComponent(
          * */
         @Composable
         fun ScaffoldDrawer(
-            logout: () -> Unit,
+            showLogoutDialog: () -> Unit,
             loginWithTwitch: () -> Unit,
             scaffoldState: ScaffoldState,
             userIsLoggedIn: Boolean
@@ -852,7 +852,7 @@ fun PullToRefreshComponent(
 
                     Parts.AccountActionCard(
                         scaffoldState,
-                        accountAction = { logout() },
+                        accountAction = { showLogoutDialog() },
                         title = stringResource(R.string.logout_icon_description),
                         iconImageVector = Icons.Default.ExitToApp
                     )

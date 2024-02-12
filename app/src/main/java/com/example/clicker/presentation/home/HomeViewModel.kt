@@ -74,7 +74,9 @@ data class HomeUIState(
     val modChannelShowBottomModal:Boolean = false,
 
     val homeRefreshing:Boolean = false,
-    val homeNetworkErrorMessage:String ="Disconnected from network"
+    val homeNetworkErrorMessage:String ="Disconnected from network",
+    val logoutDialogIsOpen:Boolean=false
+
 
 
 )
@@ -102,6 +104,16 @@ class HomeViewModel @Inject constructor(
     val oAuthToken:String? =  _oAuthToken.value
     /**BELOW IS THE NETWORK REQUEST BUILDER*/
 
+    fun hideLogoutDialog(){
+        _uiState.value = _uiState.value.copy(
+            logoutDialogIsOpen = false
+        )
+    }
+    fun showLogoutDialog(){
+        _uiState.value = _uiState.value.copy(
+            logoutDialogIsOpen = true
+        )
+    }
 
     /**
      * monitorForNetworkConnection is a private function that is called to monitor the hot state from [networkMonitorRepo].

@@ -127,7 +127,7 @@ fun ValidationView(
         }
     }
 
-    val userIsAuthenticated = authenticationViewModel.authenticationUIState.value.authenticated
+    val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
 
@@ -169,7 +169,12 @@ fun ValidationView(
         homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
         networkMessageColor=Color.Red,
         networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-        showNetworkMessage = homeViewModel.state.value.networkConnectionState
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
+
 
 
 
