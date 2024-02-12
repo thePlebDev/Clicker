@@ -20,6 +20,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.StreamViewModel
 
 
 /**
@@ -32,6 +33,7 @@ class ModChannelsFragment : Fragment() {
     private var _binding: FragmentModChannelsBinding? = null
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by activityViewModels()
+    private val streamViewModel: StreamViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,15 +65,17 @@ class ModChannelsFragment : Fragment() {
 
                 AppTheme{
                     ModChannelView(
-                        onNavigate = {  findNavController().popBackStack() },
+                        popBackStackNavigation = {  findNavController().popBackStack() },
                         homeViewModel = homeViewModel,
+                        streamViewModel =streamViewModel,
                         loginWithTwitch = {
                            // startActivity(twitchIntent)
                             intent.launchUrl(
                                 requireActivity(),
                                 Uri.parse(authorizationUrl)
                             )
-                        }
+                        },
+                        onNavigate = { dest -> findNavController().navigate(dest) }
                     )
                 }
             }

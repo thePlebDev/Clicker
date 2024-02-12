@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.launch
 
 
@@ -36,12 +38,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun ModChannelView(
     homeViewModel: HomeViewModel,
-    onNavigate: () -> Unit,
+    streamViewModel: StreamViewModel,
+    popBackStackNavigation: () -> Unit,
+    onNavigate: (Int) -> Unit,
     loginWithTwitch: () -> Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val showModal = homeViewModel.state.value.modChannelShowBottomModal
+
+    val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
+    val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
 
 
     Log.d("showModalConditional","showModal --> true")
@@ -72,7 +79,7 @@ fun ModChannelView(
     ) {
 
         ModChannelComponents.MainModView(
-            onNavigate = { onNavigate() },
+            popBackStackNavigation = { popBackStackNavigation() },
             height = homeViewModel.state.value.aspectHeight,
             width = homeViewModel.state.value.width,
             density = homeViewModel.state.value.screenDensity,
@@ -81,7 +88,19 @@ fun ModChannelView(
             modChannelResponseState = homeViewModel.state.value.modChannelResponseState,
             refreshing = homeViewModel.state.value.modRefreshing,
             refreshFunc = {homeViewModel.pullToRefreshModChannels()},
-            showNetworkMessage = !homeViewModel.state.value.networkConnectionState
+            showNetworkMessage = !homeViewModel.state.value.networkConnectionState,
+            updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                streamViewModel.updateChannelNameAndClientIdAndUserId(
+                    streamerName,
+                    clientId,
+                    broadcasterId,
+                    userId
+                )
+                                 },
+            onNavigate ={destination ->onNavigate(destination)},
+            clientId=clientId,
+            userId=userId
+
 
         )
     }
