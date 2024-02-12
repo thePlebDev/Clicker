@@ -130,6 +130,7 @@ fun ValidationView(
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
+    val oAuthToken = homeViewModel.state.value.oAuthToken
 
     HomeViewImplementation(
         bottomModalState =bottomModalState,
@@ -159,9 +160,12 @@ fun ValidationView(
         width = homeViewModel.state.value.width,
         logout = {
             authenticationViewModel.beginLogout(
-                clientId = authenticationViewModel.authenticationUIState.value.clientId,
-                oAuthToken = authenticationViewModel.authenticationUIState.value.authenticationCode
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
             )
+            //homeViewModel.logout()
+            homeViewModel.hideLogoutDialog()
+
         },
         userIsAuthenticated =userIsAuthenticated,
         screenDensity = homeViewModel.state.value.screenDensity,

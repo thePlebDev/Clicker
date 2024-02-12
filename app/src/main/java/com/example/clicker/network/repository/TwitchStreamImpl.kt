@@ -17,7 +17,8 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 
 class TwitchStreamImpl @Inject constructor(
-    private val twitchClient: TwitchClient
+    private val twitchClient: TwitchClient,
+
 ): TwitchStream {
     override suspend fun getChatSettings(
         oAuthToken: String,

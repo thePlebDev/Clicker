@@ -13,6 +13,7 @@ class Authentication401Interceptor(
     @Throws(Authentication401Exception::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val request: Request = chain.request()
+        Log.d("Authentication401InterceptorURL","url -->${request.url}")
         // Proceed with the request
         val response: Response = chain.proceed(request)
         val code = response.code

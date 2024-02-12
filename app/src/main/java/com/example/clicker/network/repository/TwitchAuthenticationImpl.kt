@@ -38,13 +38,16 @@ class TwitchAuthenticationImpl @Inject constructor(
 
     override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
         emit(Response.Loading)
+        Log.d("logoutResponse", "LOADING")
 
         val response = twitchClient.logout(clientId = clientId, token = token)
         if (response.isSuccessful) {
             Log.d("logoutResponse", "SUCCESS ->${response.message()}")
             emit(Response.Success("true"))
         } else {
-            Log.d("logoutResponse", "FAILED ->${response.message()}")
+            Log.d("logoutResponse", "message ->${response.message()}")
+            Log.d("logoutResponse", "code ->${response.code()}")
+            Log.d("logoutResponse", "FAILED ->${response.body()}")
             emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
         }
     }.catch { cause ->

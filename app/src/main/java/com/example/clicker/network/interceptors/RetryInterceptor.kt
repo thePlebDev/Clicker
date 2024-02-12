@@ -15,10 +15,19 @@ class RetryInterceptor(private val maxRetries: Int) : Interceptor {
             val request = chain.request()
             // try the request
             var response = chain.proceed(request)
+        Log.d("StartingInterception","count --> starting")
+        Log.d("StartingInterception","code --> ${response.code}")
+        Log.d("StartingInterception","request --> ${response.request}")
+        Log.d("StartingInterception","message -->${response.message}")
+        Log.d("StartingInterception","body -->${response.body}")
 
             var tryCount = 0;
             while (!response.isSuccessful && tryCount < maxRetries) {
-                Log.d("StartingInterception","$tryCount")
+                Log.d("StartingInterception","count --> $tryCount")
+                Log.d("StartingInterception","code --> ${response.code}")
+                Log.d("StartingInterception","request --> ${response.request}")
+                Log.d("StartingInterception","message -->${response.message}")
+                Log.d("StartingInterception","body -->${response.body}")
                 tryCount++
 
                 // retry the request
