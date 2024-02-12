@@ -90,14 +90,22 @@ object HomeComponents {
         userId: String,
         width:Int,
         height:Int,
-        logout: () -> Unit,
+
         userIsAuthenticated: Boolean,
         screenDensity:Float,
         homeRefreshing:Boolean,
         homeRefreshFunc:()->Unit,
         networkMessageColor:Color,
         networkMessage: String,
-        showNetworkMessage:Boolean
+        showNetworkMessage:Boolean,
+
+
+        logout: () -> Unit,
+        logoutDialogIsOpen:Boolean,
+        hideLogoutDialog:()->Unit,
+        showLogoutDialog: () -> Unit,
+        currentUsername:String
+
 
     ){
         Builder.HomeModalBottomSheetBuilder(
@@ -124,8 +132,8 @@ object HomeComponents {
                     userId = userId,
                     height = height,
                     width = width,
-                    logout = {
-                        logout()
+                    showLogoutDialog = {
+                        showLogoutDialog()
                     },
                     login = {
                         loginWithTwitch()
@@ -146,6 +154,19 @@ object HomeComponents {
                 Parts.DisableForceRegister(
                     addToLinks = { addToLinks() }
                 )
+            },
+            logoutDialog ={
+
+                    HomeDialogs.LogoutDialog(
+                        logoutDialogIsOpen =logoutDialogIsOpen,
+                        closeDialog = {hideLogoutDialog()},
+                        logout={
+                            logout()
+                        },
+                        currentUsername =currentUsername
+                    )
+
+
             },
             bottomModalState =bottomModalState,
             domainIsRegistered =domainIsRegistered
@@ -175,6 +196,7 @@ object HomeComponents {
             loginBottomModal:@Composable () -> Unit,
             scaffoldHomeView:@Composable () -> Unit,
             forceRegisterLinks:@Composable () -> Unit,
+            logoutDialog:@Composable () -> Unit,
             bottomModalState: ModalBottomSheetState,
             domainIsRegistered: Boolean
         ){
@@ -190,6 +212,7 @@ object HomeComponents {
             if (!domainIsRegistered) {
                 forceRegisterLinks()
             }
+            logoutDialog()
 
 
         }
