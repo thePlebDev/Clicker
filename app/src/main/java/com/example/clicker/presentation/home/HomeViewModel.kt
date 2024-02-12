@@ -165,47 +165,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
-        Log.d("beginLogout","clientId  $clientId")
-        Log.d("beginLogout","oAuthToken  $oAuthToken")
-
-
-       // withContext(ioDispatcher + CoroutineName("BeginLogout")) {
-            authentication.logout(
-                clientId = clientId,
-                token = oAuthToken
-            )
-                .collect { response ->
-                    when (response) {
-                        is Response.Loading -> {
-                            _uiState.value = _uiState.value.copy(
-                                modChannelResponseState = Response.Loading
-
-                            )
-                        }
-                        is Response.Success -> {
-                            _uiState.value = _uiState.value.copy(
-                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
-                                modChannelShowBottomModal = true,
-                                modRefreshing = false
-                            )
-                            _validatedUser.value = null
-                        }
-                        is Response.Failure -> {
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState = false,
-                                homeNetworkErrorMessage = "Logout failed"
-                            )
-                            delay(2000)
-
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState = true,
-                            )
-                        }
-                    }
-                }
-       // }
-    }
 
     /**
      * monitorForNetworkConnection is a private function that is called to monitor the hot state from [networkMonitorRepo].

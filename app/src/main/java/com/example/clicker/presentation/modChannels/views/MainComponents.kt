@@ -96,7 +96,7 @@ object ModChannelComponents{
      * */
     @Composable
     fun MainModView(
-        onNavigate: () -> Unit,
+        popBackStackNavigation: () -> Unit,
         height: Int,
         width: Int,
         density:Float,
@@ -106,16 +106,20 @@ object ModChannelComponents{
         refreshing:Boolean,
         refreshFunc:()->Unit,
         showNetworkMessage:Boolean,
+        updateStreamerName: (String, String,String,String) -> Unit,
+        onNavigate: (Int) -> Unit,
+        clientId: String,
+        userId: String,
     ){
         Builders.ScaffoldBuilder(
             topBar = {
                 Parts.CustomTopBar(
-                    onNavigate ={ onNavigate()}
+                    onNavigate ={ popBackStackNavigation()}
                 )
             },
             bottomBar={
                 Parts.CustomBottomBar(
-                    onNavigate ={ onNavigate()}
+                    onNavigate ={ popBackStackNavigation()}
                 )
             },
             pullToRefreshList = {contentPadding ->
@@ -132,11 +136,20 @@ object ModChannelComponents{
                         density,
                         offlineModChannelList = offlineModChannelList,
                         liveModChannelList=liveModChannelList,
-                        modChannelResponseState =modChannelResponseState
+                        modChannelResponseState =modChannelResponseState,
+                        updateStreamerName ={
+                                streamerName,clientId,broadcasterId,userId ->
+                            updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                        },
+                        onNavigate={destination -> onNavigate(destination)},
+                        userId = userId,
+                        clientId = clientId
 
                     )
                 }
             },
+
         )
     }
 
@@ -270,7 +283,11 @@ object ModChannelComponents{
             density:Float,
             offlineModChannelList:List<String>,
             liveModChannelList:List<StreamInfo>,
-            modChannelResponseState: Response<Boolean>
+            modChannelResponseState: Response<Boolean>,
+            updateStreamerName: (String, String,String,String) -> Unit,
+            onNavigate: (Int) -> Unit,
+            clientId:String,
+            userId:String,
 
         ){
             LazyColumn(
@@ -302,15 +319,25 @@ object ModChannelComponents{
                         }
                         items(liveModChannelList){streamInfo ->
 
+
                             LiveModChannelItem(
-                                height,
-                                width,
-                                density,
-                                channelName = streamInfo.streamerName,
+                                height =height,
+                                width=width,
+                                density= density,
+                                streamerName = streamInfo.streamerName,
+                                broadcasterId = streamInfo.broadcasterId,
                                 streamTitle=streamInfo.streamTitle,
                                 gameTitle =streamInfo.gameTitle,
                                 viewCount = streamInfo.views,
-                                url = streamInfo.url
+                                url = streamInfo.url,
+                                updateStreamerName ={
+                                        streamerName,clientId,broadcasterId,userId ->
+                                    updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                                },
+                                onNavigate ={destination -> onNavigate(destination)},
+                                clientId =clientId,
+                                userId=userId,
                             )
                         }
 
@@ -349,80 +376,7 @@ object ModChannelComponents{
 
         }
 
-        /**
-         * - Contains 3 extra parts:
-         * 1) [ModHeader]
-         * 2) [EmptyList]
-         * 3) [LiveModChannelItem]
-         *
-         * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
-         * retrieved from the Twitch server
-         *
-         * @param contentPadding it is a nullable list of all the live channels returned by the twitch server
-         * @param density a Float representing the screen density of the current device
-         * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
-         * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
-         * @param offlineModChannelList subject to change
-         * @param liveModChannelList subject to change
-         * */
-        @OptIn(ExperimentalFoundationApi::class)
-        @Composable
-        fun ModChannelList(
-            contentPadding: PaddingValues,
-            height: Int,
-            width: Int,
-            density:Float,
-            offlineModChannelList:List<String>,
-            liveModChannelList:List<StreamInfo>,
-        ){
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-                stickyHeader {
-                    ModHeader("Live")
-                }
-                if(liveModChannelList.isEmpty()){
-                    item{
-                        EmptyList(
-                            message ="No live moderated channels found"
-                        )
-                    }
-                }
-                items(liveModChannelList){streamInfo ->
 
-                    LiveModChannelItem(
-                        height,
-                        width,
-                        density,
-                        channelName = streamInfo.streamerName,
-                        streamTitle=streamInfo.streamTitle,
-                        gameTitle =streamInfo.gameTitle,
-                        viewCount = streamInfo.views,
-                        url = streamInfo.url
-                    )
-                }
-
-                stickyHeader {
-                    ModHeader("Offline")
-                }
-                if(offlineModChannelList.isEmpty()){
-                    item{
-                        EmptyList(
-                            message ="No offline moderated channels found"
-                        )
-                    }
-                }
-
-
-                items(offlineModChannelList){channelName ->
-                    OfflineModChannelItem(
-                        height,
-                        width,
-                        density,
-                        channelName = channelName
-                    )
-                }
-
-            }
-        }
         /**
          * - Contains 2 extra parts:
          * 1) [OfflineModChannelImage]
@@ -437,11 +391,6 @@ object ModChannelComponents{
          * */
         @Composable
         fun OfflineModChannelItem(
-            //updateStreamerName: (String, String, String, String) -> Unit,
-         //    streamItem: StreamInfo,
-//    clientId: String,
-//    userId:String,
-//    onNavigate: (Int) -> Unit,
             height: Int,
             width: Int,
             density:Float,
@@ -483,19 +432,33 @@ object ModChannelComponents{
          * */
         @Composable
         fun LiveModChannelItem(
+            broadcasterId:String,
             height: Int,
             width: Int,
             density:Float,
-            channelName:String,
+            streamerName:String,
             streamTitle:String,
             gameTitle:String,
             url:String,
-            viewCount: Int
+            viewCount: Int,
+            updateStreamerName: (String, String,String,String) -> Unit,
+            onNavigate: (Int) -> Unit,
+            clientId:String,
+            userId:String,
         ){
             Row(
                 modifier = Modifier
                     .padding(10.dp)
-                    .clickable {}
+                    .clickable {
+                        //todo: navigate to stream and update all the necessary information
+                        updateStreamerName(
+                            streamerName,
+                            clientId,
+                            broadcasterId,
+                            userId
+                        )
+                        onNavigate(R.id.action_modChannelsFragment_to_streamFragment)
+                    }
             ){
                 OnlineModChannelImage(
                     height = height,
@@ -504,7 +467,7 @@ object ModChannelComponents{
                     url= url,
                     viewCount = viewCount
                 )
-                StreamInfo(channelName,streamTitle,gameTitle)
+                StreamInfo(streamerName,streamTitle,gameTitle)
             }
             Spacer(
                 modifier = Modifier
