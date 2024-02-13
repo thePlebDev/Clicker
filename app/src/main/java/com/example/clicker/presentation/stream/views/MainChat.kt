@@ -127,6 +127,7 @@ object MainChat{
         newFilterMethod:(TextFieldValue) ->Unit,
         forwardSlashCommandsList: List<ForwardSlashCommands>,
         clickedCommandAutoCompleteText:(String)->Unit,
+
     ){
         val lazyColumnListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -154,7 +155,8 @@ object MainChat{
                     restartWebSocket ={restartWebSocket()},
                     bottomModalState =bottomModalState,
                     updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
-                    deleteMessage ={messageId -> deleteMessage(messageId)}
+                    deleteMessage ={messageId -> deleteMessage(messageId)},
+
                 )
             },
             enterChat ={boxModifier ->
@@ -594,7 +596,7 @@ object MainChat{
                                     banned,
                                     isMod
                                 )
-                            }
+                            },
                         )
 
                     }

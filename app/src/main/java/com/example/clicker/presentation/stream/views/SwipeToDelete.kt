@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -72,6 +75,7 @@ object SwipeToDelete{
         bottomModalState: ModalBottomSheetState,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         deleteMessage: (String) -> Unit,
+
     ) {
         // no logic here, this should be a clean API wrapper
 
@@ -94,7 +98,7 @@ object SwipeToDelete{
                             isBanned,
                             isMod
                         )
-                    }
+                    },
                 )
             }
         )
@@ -229,6 +233,7 @@ object SwipeToDelete{
             fontSize: TextUnit,
             updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
+
             ){
             val coroutineScope = rememberCoroutineScope()
             Card(
@@ -256,7 +261,7 @@ object SwipeToDelete{
                     TextWithChatBadges(
                         twitchUser = twitchUser,
                         color = color,
-                        fontSize = fontSize
+                        fontSize = fontSize,
                     )
                 }
             }
@@ -308,7 +313,7 @@ object SwipeToDelete{
         fun TextWithChatBadges(
             twitchUser: TwitchUserData,
             color: Color,
-            fontSize: TextUnit
+            fontSize: TextUnit,
 
         ){
             Row(
@@ -320,6 +325,7 @@ object SwipeToDelete{
                     message = " ${twitchUser.userType}",
                     isMod = twitchUser.mod == "1",
                     isSub = twitchUser.subscriber == true,
+                    isMonitored =twitchUser.isMonitored,
                     color = color,
                     textSize = fontSize
                 )
@@ -344,6 +350,7 @@ object SwipeToDelete{
             message: String,
             isMod: Boolean,
             isSub: Boolean,
+            isMonitored:Boolean,
             color: Color,
             textSize: TextUnit
         ) {
@@ -352,8 +359,13 @@ object SwipeToDelete{
             val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
             val modId = "modIcon"
             val subId = "subIcon"
+            val monitorId ="monitorIcon"
             val text = buildAnnotatedString {
                 // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
+                if(isMonitored){
+                    appendInlineContent(monitorId, "[monitorIcon]")
+                }
+
                 if (isMod) {
                     appendInlineContent(modId, "[icon]")
                 }
@@ -408,7 +420,27 @@ object SwipeToDelete{
                                 .padding(2.dp)
                         )
                     }
+                ),
+                Pair(
+
+                    monitorId,
+                    InlineTextContent(
+
+                        Placeholder(
+                            width = 30.sp,
+                            height = 30.sp,
+                            placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.visibility_24),
+                            "contentDescription",
+                            tint= Color.Yellow,
+                            modifier = Modifier.size(35.dp)
+                        )
+                    }
                 )
+
             )
 
             Text(

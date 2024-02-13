@@ -264,7 +264,7 @@ fun StreamView(
                                     streamViewModel.autoTextChangeCommand(
                                         command
                                     )
-                                }
+                                },
                             )
                         }
                     )
@@ -369,7 +369,7 @@ fun TextChat(
             clickedCommandAutoCompleteText(
                 command
             )
-        }
+        },
     )
 
 }
