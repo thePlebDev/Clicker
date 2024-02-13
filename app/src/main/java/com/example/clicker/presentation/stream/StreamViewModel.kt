@@ -612,10 +612,7 @@ class StreamViewModel @Inject constructor(
             withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
                 _channelName.collect { channelName ->
                     channelName?.let {
-
                             startWebSocket(channelName)
-
-
                     }
                 }
             }
@@ -630,6 +627,9 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    /**monitorSocketForChatMessages is a function that checks for types of messages that come from the
+     * websocket.
+     * */
     private suspend fun monitorSocketForChatMessages(){
         webSocket.state.collect { twitchUserMessage ->
             Log.d("loggedMessage", "${twitchUserMessage.id}")
@@ -637,6 +637,9 @@ class StreamViewModel @Inject constructor(
             if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
                 clickedUsernameChats.add(twitchUserMessage.userType!!)
+            }
+            if(monitoredUsers.contains(twitchUserMessage.displayName)){
+                twitchUserMessage.isMonitored = true
             }
             when(twitchUserMessage.messageType){
                 MessageType.CLEARCHAT ->{

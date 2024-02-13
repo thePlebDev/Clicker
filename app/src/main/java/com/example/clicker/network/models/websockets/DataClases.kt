@@ -71,11 +71,12 @@ data class TwitchUserData(
     val turbo: Boolean,
     val userId: String?,
     var userType: String?,
-    val messageType: MessageType,
+    var messageType: MessageType,
     val deleted: Boolean = false,
     val banned: Boolean = false,
     val bannedDuration: Int? = null,
-    val systemMessage: String? = null
+    val systemMessage: String? = null,
+    var isMonitored:Boolean = false
 )
 
 /**

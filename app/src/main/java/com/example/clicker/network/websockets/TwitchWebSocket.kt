@@ -85,7 +85,8 @@ enum class MessageType {
     /**
      * Will be used when the entire chat room is to be cleared by a moderator
      * */
-    CLEARCHATALL
+    CLEARCHATALL,
+
 }
 
 class TwitchWebSocket @Inject constructor(

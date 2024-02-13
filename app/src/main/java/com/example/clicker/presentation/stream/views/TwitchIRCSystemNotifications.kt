@@ -24,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -89,6 +91,8 @@ object SystemChats {
         bottomModalState: ModalBottomSheetState,
         deleteMessage: (String) -> Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+
+
     ){
         Builders.MainChatting(
             twitchUser =twitchUser,
@@ -105,6 +109,7 @@ object SystemChats {
                         )
                     },
                     deleteMessage = { messageId -> deleteMessage(messageId) },
+
                 )
             },
             noticeMessage = {
@@ -156,7 +161,8 @@ object SystemChats {
                 SystemChats.JoinMessage(
                     message = twitchUser.userType!!
                 )
-            }
+            },
+
         )
 
     }
@@ -319,6 +325,87 @@ object SystemChats {
         )
     }
 
+    /**
+     * Composable function meant to display a message to the user once a [MONITORED][com.example.clicker.network.websockets.MessageType.MONITORED]
+     * tag is added to the message. This UI is meant to demonstrate to the user that a specific user is being monitored by
+     * the mod
+     *
+     * @param message String personal message sent from the user. Meant to be displayed to the rest of chat
+     *
+     * */
+    @Composable
+    private fun MonitoredMessage(
+        message: String,
+        displayName: String
+
+    ) {
+
+        TwitchIRCSystemNotificationsBuilder.SystemChat(
+            messageHeader ={
+                MessageHeaderWithPainterIcon(
+                    painter =painterResource(id = R.drawable.visibility_24),
+                    message = "Monitored User",
+                    contentDescription = "monitored user"
+                )
+            },
+            messageText ={
+                MonitoredUserMessageText(
+                    personalMessage =message,
+                    displayName =displayName
+                )
+            }
+        )
+    }
+
+    @Composable
+    fun MonitoredUserMessageText(
+        displayName: String,
+        personalMessage:String,
+    ){
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = 17.sp)) {
+                    append(" $displayName :")
+                }
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = 17.sp)) {
+
+                    append(" $personalMessage")
+                }
+            }
+        )
+
+    }
+
+    /**
+     * A [Row] containing a Icon and Text Composable, this should be used to quickly convey short and important information to the user
+     *
+     * @param contentDescription a String used to describe the image vector being used as the Icon
+     * @param message a String used to represent the information shown to the user. This should only be one word or two
+     * @param painter a [Painter] used to represent an icon from the drawable package
+     * */
+    @Composable
+    fun MessageHeaderWithPainterIcon(
+        painter:Painter,
+        message:String,
+        contentDescription:String
+    ){
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                painter = painter,
+                contentDescription,
+                tint= Color.Yellow,
+                modifier = Modifier.size(30.dp)
+            )
+            Text(message, color = Color.White, fontSize = 20.sp)
+        }
+
+    }
+
 
     /**
      * Composable function meant to display a message to the user once a [USERNOTICE tags](https://dev.twitch.tv/docs/irc/tags/#usernotice-tags) of ***subgift***
@@ -400,6 +487,7 @@ object SystemChats {
             errorMessage:@Composable () -> Unit,
             joinMessage:@Composable () -> Unit,
 
+
             ){
             when (twitchUser.messageType) {
                 MessageType.NOTICE -> { //added
@@ -432,7 +520,6 @@ object SystemChats {
                 MessageType.JOIN -> {
                     joinMessage()
                 }
-
                 else -> {}
             } // end of the WHEN BLOCK
 
@@ -538,7 +625,7 @@ object SystemChats {
             iconImageVector: ImageVector,
             message:String
         ){
-            Icons.Default.Lock
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start,
