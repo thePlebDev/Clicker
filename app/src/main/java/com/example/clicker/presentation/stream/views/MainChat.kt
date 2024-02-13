@@ -297,7 +297,7 @@ object MainChat{
                 reverseLayout = true
             ){
                 items(forwardSlashCommandList){command ->
-                    Column(modifier = Modifier
+                    Column(modifier = Modifier.fillMaxWidth()
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                         .clickable {
                             clickedCommandAutoCompleteText(command.clickedValue)

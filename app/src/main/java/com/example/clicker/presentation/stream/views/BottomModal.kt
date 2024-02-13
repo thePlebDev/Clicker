@@ -400,7 +400,9 @@ object BottomModal{
                         onClick = {
                             updateShouldMonitorUser()
                         }) {
-                        Text("Monitor",color = MaterialTheme.colorScheme.onSecondary)
+                        Text(
+                            if(shouldMonitorUser)"UnMonitor" else "Monitor",
+                            color = MaterialTheme.colorScheme.onSecondary)
                     }
                 }
 

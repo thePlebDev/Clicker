@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
  * TokenType represents types that are used inside the lexical analysis of the chat messages
  * */
 enum class TokenType {
-    BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED
+    BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED,MONITOR,UNMONITOR
 }
 
 
@@ -20,6 +20,9 @@ data class Token(
      class UnBan(username:String):TextCommands(username)
      class UNRECOGNIZEDCOMMAND(command:String):TextCommands(command)
      class NORMALMESSAGE(message:String) : TextCommands(message)
+
+     class MONITOR(username: String):TextCommands(username)
+     class UnMONITOR(username: String):TextCommands(username)
      object NOUSERNAME : TextCommands()
      object INITIALVALUE : TextCommands()
 
@@ -32,6 +35,9 @@ class Scanner(private val source: String) {
         map["/ban"] = Token(TokenType.BAN,"/ban")
         map["/unban"] = Token(TokenType.UNBAN,"/unban")
         map["@username"] = Token(TokenType.USERNAME,"/username")
+
+        map["/monitor"] = Token(TokenType.MONITOR,"/monitor")
+        map["/unmonitor"] = Token(TokenType.UNMONITOR,"/unmonitor")
     }
     private val tokens = mutableListOf<Token>()
     val tokenList:List<Token> = tokens
@@ -169,6 +175,32 @@ class TokenCommand(){
                     _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
                 }
             }
+            hasMonitorTokenType(tokenList) ->{
+                val username =tokenList
+                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
+                if(username != null){
+                    //todo: send unBan command
+
+                    _tokenCommand.tryEmit(TextCommands.MONITOR(username=username.replace("@", "")))
+                }
+                else{
+                    //todo: tell user that there is no username
+                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                }
+            }
+            hasUnMonitorTokenType(tokenList) ->{
+                val username =tokenList
+                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
+                if(username != null){
+                    //todo: send unBan command
+
+                    _tokenCommand.tryEmit(TextCommands.UnMONITOR(username=username.replace("@", "")))
+                }
+                else{
+                    //todo: tell user that there is no username
+                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                }
+            }
 
             else->{
                 val message = tokenList.map { it.lexeme }.joinToString(separator = " ")
@@ -179,6 +211,12 @@ class TokenCommand(){
 
     }
 
+    private fun hasMonitorTokenType(tokens: List<Token>): Boolean {
+        return tokens.any { it.tokenType == TokenType.MONITOR }
+    }
+    private fun hasUnMonitorTokenType(tokens: List<Token>): Boolean {
+        return tokens.any { it.tokenType == TokenType.UNMONITOR }
+    }
     private fun hasBanTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.BAN }
     }

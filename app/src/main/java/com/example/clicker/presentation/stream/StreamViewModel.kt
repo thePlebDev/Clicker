@@ -112,6 +112,8 @@ data class ForwardSlashCommands(
 val listOfCommands = listOf(
     ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
     ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
+    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a user's messages (only visible to you)",clickedValue="monitor"),
+    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a user's messages",clickedValue="unmonitor")
 )
 
 @HiltViewModel
@@ -760,6 +762,15 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             }
         }
     }
+    /**
+     * monitoringTokens() is a function meant to check the current user's chat messages for any /commands(/ban,/unban...)
+     *
+     *
+     * @param tokenCommand is a hot flow of [TextCommands] which only contains one instance of [TextCommands]. This instance
+     * is used to determine what the code should do
+     *
+     * @param chatMessage is a String representing what the user typed
+     * */
     private fun monitoringTokens(tokenCommand: StateFlow<TextCommands>,chatMessage:String){
         val isMod = _uiState.value.loggedInUserData?.mod ?: false
 
@@ -883,6 +894,33 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                             .build()
                         listChats.add(message)
                     }
+                    is TextCommands.MONITOR ->{
+                       Log.d("MONITOR","Monitor --> ${tokenCommand.username}")
+                        monitoredUsers.add(tokenCommand.username)
+
+                        val message = TwitchUserDataObjectMother
+                            .addUserType(chatMessage)
+                            .addColor("#BF40BF")
+                            .addDisplayName(currentUsername)
+                            .addMod("mod")
+                            .addMessageType(MessageType.USER)
+                            .build()
+                        listChats.add(message)
+                    }
+                    is TextCommands.UnMONITOR ->{
+                        Log.d("MONITOR","UN-MONITOR --> ${tokenCommand.username}")
+                        monitoredUsers.remove(tokenCommand.username)
+
+                        val message = TwitchUserDataObjectMother
+                            .addUserType(chatMessage)
+                            .addColor("#BF40BF")
+                            .addDisplayName(currentUsername)
+                            .addMod("mod")
+                            .addMessageType(MessageType.USER)
+                            .build()
+                        listChats.add(message)
+                    }
+
                     //todo: should have a normal command that just sends information to the websocket
                     is TextCommands.INITIALVALUE ->{
                         Log.d("monitoringTokens", "INITIALVALUE")
