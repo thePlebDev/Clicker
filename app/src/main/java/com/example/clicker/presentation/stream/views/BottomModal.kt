@@ -26,9 +26,15 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -109,20 +115,16 @@ object BottomModal{
         banReason: String,
         changeBanReason: (String) -> Unit,
         banUser: (BanUser) -> Unit,
-        clickedUserId: String
+        clickedUserId: String,
+        updateShouldMonitorUser: () -> Unit,
+        shouldMonitorUser:Boolean
     ){
         BottomModalBuilders.BottomModalContent(
 
             // TODO: this should 100% not be filteredChat. Need to create new variable
             clickedUsernameChats = clickedUsernameChats,
-            clickedUsername = clickedUsername,
-            bottomModalState = bottomModalState,
-            textFieldValue = textFieldValue,
-            closeBottomModal = { closeBottomModal() },
-            banned = banned,
-            unbanUser = { unbanUser() },
-            isMod = isMod,
-            openTimeoutDialog = {openTimeoutDialog()},
+
+
             timeoutDialogContent ={
                 if(timeOutDialogOpen){
                     Dialogs.TimeoutDialog(
@@ -148,7 +150,6 @@ object BottomModal{
                     )
                 }
             },
-            openBanDialog = {openBanDialog()},
             banDialogContent ={
                 if(banDialogOpen){
                     Dialogs.BanDialog(
@@ -165,7 +166,26 @@ object BottomModal{
                         },
                     )
                 }
+            },
+            clickedUsernameBanner ={
+                BottomModalParts.ContentBanner(
+                    clickedUsername = clickedUsername,
+                    bottomModalState = bottomModalState,
+                    textFieldValue = textFieldValue
 
+                )
+            },
+            clickedUserBottomBanner ={
+                BottomModalParts.ContentBottom(
+                    banned =banned,
+                    isMod =isMod,
+                    closeBottomModal ={closeBottomModal()},
+                    unbanUser ={unbanUser()},
+                    openTimeoutDialog={openTimeoutDialog()},
+                    openBanDialog ={openBanDialog()},
+                    updateShouldMonitorUser = {updateShouldMonitorUser()},
+                    shouldMonitorUser = shouldMonitorUser
+                )
             }
 
         )
@@ -187,17 +207,12 @@ object BottomModal{
         @Composable
         fun BottomModalContent(
             clickedUsernameChats: List<String>,
-            clickedUsername: String,
-            bottomModalState: ModalBottomSheetState,
-            textFieldValue: MutableState<TextFieldValue>,
-            banned: Boolean,
-            isMod: Boolean,
-            closeBottomModal: () -> Unit,
-            unbanUser: () -> Unit,
-            openTimeoutDialog:() -> Unit,
+
             timeoutDialogContent:@Composable () -> Unit,
-            openBanDialog:() -> Unit,
+
             banDialogContent:@Composable () -> Unit,
+            clickedUsernameBanner: @Composable () -> Unit,
+            clickedUserBottomBanner: @Composable () -> Unit,
 
             ) {
 
@@ -210,21 +225,8 @@ object BottomModal{
                     .fillMaxWidth()
                     .padding(10.dp)
             ) {
-
-                BottomModalParts.ContentBanner(
-                    clickedUsername = clickedUsername,
-                    bottomModalState = bottomModalState,
-                    textFieldValue = textFieldValue
-
-                )
-                BottomModalParts.ContentBottom(
-                    banned =banned,
-                    isMod =isMod,
-                    closeBottomModal ={closeBottomModal()},
-                    unbanUser ={unbanUser()},
-                    openTimeoutDialog={openTimeoutDialog()},
-                    openBanDialog ={openBanDialog()}
-                )
+                clickedUsernameBanner()
+                clickedUserBottomBanner()
 
                 BottomModalParts.ClickedUserMessages(clickedUsernameChats)
             } // END OF THE COLUMN
@@ -337,45 +339,74 @@ object BottomModal{
             unbanUser: () -> Unit,
             openTimeoutDialog:() -> Unit,
             openBanDialog:() -> Unit,
+            shouldMonitorUser:Boolean,
+            updateShouldMonitorUser:()->Unit
         ){
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary)
-                if (isMod) {
-                    Row() {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                            onClick = {
-                                openTimeoutDialog()
-                            },
-                            modifier = Modifier.padding(end = 20.dp)
-                        ) {
-                            Text(stringResource(R.string.timeout),color = MaterialTheme.colorScheme.onSecondary)
-                        }
-                        if (banned) {
+
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary)
+                    if (isMod) {
+                        Row() {
                             Button(
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                                 onClick = {
-                                    closeBottomModal()
-                                    unbanUser()
-                                }) {
-                                Text(stringResource(R.string.unban),color = MaterialTheme.colorScheme.onSecondary)
+                                    openTimeoutDialog()
+                                },
+                                modifier = Modifier.padding(end = 20.dp)
+                            ) {
+                                Text(stringResource(R.string.timeout),color = MaterialTheme.colorScheme.onSecondary)
                             }
-                        } else {
-                            Button(
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                                onClick = {
-                                    openBanDialog()
-                                }) {
-                                Text(stringResource(R.string.ban),color = MaterialTheme.colorScheme.onSecondary)
+                            if (banned) {
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                                    onClick = {
+                                        closeBottomModal()
+                                        unbanUser()
+                                    }) {
+                                    Text(stringResource(R.string.unban),color = MaterialTheme.colorScheme.onSecondary)
+                                }
+                            } else {
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                                    onClick = {
+                                        openBanDialog()
+                                    }) {
+                                    Text(stringResource(R.string.ban),color = MaterialTheme.colorScheme.onSecondary)
+                                }
                             }
                         }
                     }
                 }
-            }
+                Row(modifier=Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.visibility_24),
+                            "Moderation Icon",
+                            tint= if(shouldMonitorUser) Color.Yellow else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(35.dp)
+                        )
+
+
+                    Button(
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                        onClick = {
+                            updateShouldMonitorUser()
+                        }) {
+                        Text("Monitor",color = MaterialTheme.colorScheme.onSecondary)
+                    }
+                }
+
+
+            }/**End of the column**/
+
         }
     }
 

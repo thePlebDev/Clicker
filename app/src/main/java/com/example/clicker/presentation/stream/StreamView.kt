@@ -163,7 +163,9 @@ fun StreamView(
                             banReason = streamViewModel.state.value.banReason,
                             changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
                             banUser = { banUser -> streamViewModel.banUser(banUser) },
-                            clickedUserId = streamViewModel.clickedUIState.value.clickedUserId
+                            clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
+                            shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
+                            updateShouldMonitorUser = {streamViewModel.updateShouldMonitorUser()}
                         )
 
                     }

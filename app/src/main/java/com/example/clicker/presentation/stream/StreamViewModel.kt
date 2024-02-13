@@ -101,7 +101,8 @@ data class ClickedUIState(
     val clickedUsername:String ="", //websocket
     val clickedUserId: String ="",
     val clickedUsernameBanned: Boolean=false,
-    val clickedUsernameIsMod:Boolean =false
+    val clickedUsernameIsMod:Boolean =false,
+    val shouldMonitorUser:Boolean = false,
 )
 data class ForwardSlashCommands(
     val title:String,
@@ -201,6 +202,11 @@ class StreamViewModel @Inject constructor(
 
     private val allChatters = mutableStateListOf<String>()
 
+    private val monitoredUsers = mutableStateListOf<String>()
+     val shouldMonitorUser:State<Boolean>
+        get() = mutableStateOf(monitoredUsers.contains(_clickedUIState.value.clickedUsername))
+
+
 
 
 
@@ -211,6 +217,17 @@ class StreamViewModel @Inject constructor(
      */
     fun updateAdvancedChatSettings(advancedChatSettings: AdvancedChatSettings){
         _advancedChatSettingsState.value =advancedChatSettings
+    }
+    fun updateShouldMonitorUser(){
+        val clickedUsername = _clickedUIState.value.clickedUsername
+        val alreadyMonitored =monitoredUsers.contains(clickedUsername)
+
+        if(alreadyMonitored){
+            monitoredUsers.remove(clickedUsername)
+        }else{
+            monitoredUsers.add(clickedUsername)
+        }
+
     }
 
 

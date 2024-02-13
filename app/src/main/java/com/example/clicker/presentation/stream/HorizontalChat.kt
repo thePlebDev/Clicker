@@ -141,7 +141,9 @@ fun HorizontalChat(
                     banReason = streamViewModel.state.value.banReason,
                     changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
                     banUser = { banUser -> streamViewModel.banUser(banUser) },
-                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId
+                    clickedUserId = streamViewModel.clickedUIState.value.clickedUserId,
+                    shouldMonitorUser = streamViewModel.clickedUIState.value.shouldMonitorUser,
+                    updateShouldMonitorUser = {streamViewModel.updateShouldMonitorUser()}
                 )
             }
         ) {
