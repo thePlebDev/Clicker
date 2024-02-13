@@ -89,7 +89,6 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val networkMonitorRepo: NetworkMonitorRepo,
     private val authenticationEventBus: AuthenticationEvent
 ) : ViewModel() {
 
@@ -166,40 +165,7 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    /**
-     * monitorForNetworkConnection is a private function that is called to monitor the hot state from [networkMonitorRepo].
-     *
-     * */
-    private fun monitorForNetworkConnection(){
-        viewModelScope.launch {
-            withContext(ioDispatcher){
-                networkMonitorRepo.networkAvailable.collect{isConnectionLive ->
-                    val currentConnectionState = _uiState.value.networkConnectionState
-                    if(currentConnectionState && isConnectionLive){
-                        //do nothing. THis is the initial state
-                    }
-                    if(!currentConnectionState && isConnectionLive){
-                        //network reconnected
-                        _uiState.value = _uiState.value.copy(
-                            networkConnectionState = true,
-                            homeNetworkErrorMessage = "Disconnected from network"
-                        )
-                        refreshFromConnection()
 
-                    }
-                    if(currentConnectionState && !isConnectionLive){
-                        // network disconnection
-                        Log.d("monitorForNetworkConnection","disconnected")
-                        _uiState.value = _uiState.value.copy(
-                            networkConnectionState = false,
-                            homeNetworkErrorMessage = "Disconnected from network"
-                        )
-                    }
-                }
-            }
-
-        }
-    }
 
 
     /**
@@ -245,9 +211,6 @@ class HomeViewModel @Inject constructor(
     }
     init{
         getOAuthToken()
-    }
-    init {
-        monitorForNetworkConnection()
     }
     init{
         monitorNewList()
