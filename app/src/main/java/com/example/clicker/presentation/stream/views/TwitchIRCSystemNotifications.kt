@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
