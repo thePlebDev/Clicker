@@ -12,6 +12,7 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.home.MainBusState
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -104,24 +105,33 @@ class AuthenticationViewModel @Inject constructor(
             )
                 .collect { response ->
                     when (response) {
-                        is Response.Loading -> {
+                        is NetworkAuthResponse.Loading -> {
                             authenticationEventBus.setLoggedInt(Response.Loading)
                         }
-                        is Response.Success -> {
+                        is NetworkAuthResponse.Success -> {
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Success! Login with Twitch",
                                 authenticated = false
                             )
                             authenticationEventBus.setLoggedInt(Response.Success(true))
                         }
-                        is Response.Failure -> {
+                        is NetworkAuthResponse.Failure -> {
                             authenticationEventBus.setLoggedInt(Response.Failure(Exception("Failed to logout")))
                             _authenticationUIState.value = _authenticationUIState.value.copy(
                                 modalText = "Logout Error! Please try again",
                                 logoutError = true,
                                 authenticated = true
                             )
+                            authenticationEventBus.setLoggedInt(Response.Success(false))
                         }
+                        is NetworkAuthResponse.NetworkFailure->{
+                            authenticationEventBus.setLoggedInt(Response.Success(false))
+                        }
+                        is NetworkAuthResponse.Auth401Failure ->{
+                            authenticationEventBus.setLoggedInt(Response.Success(true))
+                        }
+
+
                     }
                 }
         }

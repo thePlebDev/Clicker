@@ -180,7 +180,7 @@ class TwitchAuthenticationImplTest {
     /**TESTING TwitchAuthentication.logout()*/
 
     @Test
-    fun `when logout() is run but NetworkInterceptor throw an error`()= runTest{
+    fun `when logout() is run but NetworkInterceptor throws an error`()= runTest{
 
         /**GIVEN*/
         val retrofitClient: TwitchAuthenticationClient = TwitchClientBuilderUtil
@@ -192,7 +192,7 @@ class TwitchAuthenticationImplTest {
 
         //The expected response and body from calling underTest.validateToken("","")
         val expectedBody = ValidatedUser("","", listOf(""),"",0)
-        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
+        val expectedResponse = NetworkAuthResponse.NetworkFailure(Exception("Network error, please try again later"))
 
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
@@ -217,7 +217,32 @@ class TwitchAuthenticationImplTest {
 
         //The expected response and body from calling underTest.validateToken("","")
         val expectedBody = ValidatedUser("","", listOf(""),"",0)
-        val expectedResponse = Response.Failure(Exception("Improper Authentication"))
+        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Authentication error, please try again later"))
+
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody(jsonBody))
+        /**WHEN*/
+        val actualResponse = underTest.logout("","").last()
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+
+    }
+
+    @Test
+    fun `when logout() is run but a 500 response is returned`()= runTest{
+
+        /**GIVEN*/
+        val retrofitClient: TwitchAuthenticationClient = TwitchClientBuilderUtil
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchAuthenticationImpl(retrofitClient)
+
+        //The expected response and body from calling underTest.validateToken("","")
+        val expectedBody = ValidatedUser("","", listOf(""),"",0)
+        val expectedResponse = NetworkAuthResponse.Failure(Exception("Error! Please try again"))
 
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
