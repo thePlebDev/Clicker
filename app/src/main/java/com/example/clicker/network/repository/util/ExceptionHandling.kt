@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.FlowCollector
 
             emit(Response.Failure(Exception("Network error, please try again later")))
         }
+        is Authentication401Exception ->{
+            emit(Response.Failure(Exception("Improper Authentication")))
+        }
 
         else -> {
             emit(Response.Failure(Exception("Error! Please try again")))
@@ -33,16 +36,7 @@ import kotlinx.coroutines.flow.FlowCollector
  *
  * @param cause the [Throwable] object that will be used to emit the proper response
  * */
-suspend fun <T>FlowCollector<NetworkResponse<T>>.handleNoNetworkException(cause: Throwable) {
-    when (cause) {
-        is NoNetworkException -> {
-            emit(NetworkResponse.NetworkFailure(Exception("Network error, please try again later")))
-        }
-        else -> {
-            emit(NetworkResponse.Failure(Exception("Error! Please try again")))
-        }
-    }
-}
+
 
 /**
  * handleException is a extension function on [FlowCollector]. This function is used to emit [Response] in response

@@ -403,7 +403,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _oAuthToken.collect{nullableOAuthToken ->
                 nullableOAuthToken?.also { nonNullOAuthToken ->
-                    validateOAuthToken("nonNullOAuthToken")
+                    validateOAuthToken(nonNullOAuthToken)
                 }
 
             }

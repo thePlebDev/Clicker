@@ -8,7 +8,7 @@ import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
-import com.example.clicker.network.repository.util.handleNoNetworkException
+
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
@@ -73,7 +73,7 @@ class TwitchAuthenticationImpl @Inject constructor(
             LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
             emit(NetworkAuthResponse.Success(response.body()!!))
         } else {
-            emit(NetworkAuthResponse.Failure(Exception("Error! Please login again")))
+            emit(NetworkAuthResponse.Failure(Exception("Error! Please try again")))
             Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
     }.catch { cause ->

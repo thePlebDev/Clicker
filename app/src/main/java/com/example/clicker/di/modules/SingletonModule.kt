@@ -70,9 +70,9 @@ object SingletonModule {
         liveNetworkMonitor: NetworkMonitor
     ): TwitchAuthenticationClient {
         val monitorClient = OkHttpClient.Builder()
-            .addInterceptor(RetryInterceptor())
             .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
-            .addInterceptor(Authentication401Interceptor(ResponseChecker()))
+            .addNetworkInterceptor(Authentication401Interceptor(ResponseChecker()))
+
             .build()
         return Retrofit.Builder()
             .baseUrl("https://id.twitch.tv/oauth2/")
