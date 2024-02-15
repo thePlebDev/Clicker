@@ -14,66 +14,35 @@ import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-/**
- * TwitchAuthenticationClientBuilder is a object declaration helper class. Using the Builder pattern,
- * this class allows us to easily create [TwitchAuthenticationClient] and add a failing [Interceptor]
- * */
-object TwitchAuthenticationClientBuilder{
-    private val retroFitClient = Retrofit.Builder()
 
-    fun buildClientWithURL(url:String): TwitchAuthenticationClient {
-        return retroFitClient.baseUrl(url)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(TwitchAuthenticationClient::class.java)
-    }
-    fun addFailingNetworkInterceptor():TwitchAuthenticationClientBuilder{
-        val failingNetworkClient = object: NetworkMonitor {
-            override fun isConnected(): Boolean {
-                return false
-            }
-        }
-        val client = OkHttpClient.Builder()
-            .addInterceptor(NetworkMonitorInterceptor(failingNetworkClient))
-            .build()
-        retroFitClient.client(client)
-        return this
-    }
-}
+
 
 /**
- * TwitchStreamClientBuilder is a object declaration helper class. Using the Builder pattern,
- * this class allows us to easily create [TwitchStreamClientBuilder] and add a failing application level [Interceptor]
+ * TwitchClientBuilderUtil is a object declaration helper class. Using the Builder pattern,
+ * this class allows us to easily create [TwitchClientBuilderUtil] and add a failing application level [Interceptor]
  * */
-object TwitchStreamClientBuilder{
-    private val retroFitClient = Retrofit.Builder()
-
-    fun buildClientWithURL(url:String): TwitchClient {
-        return retroFitClient.baseUrl(url)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(TwitchClient::class.java)
-    }
-    fun addFailingNetworkInterceptor():TwitchStreamClientBuilder{
-        val failingNetworkClient = object: NetworkMonitor {
-            override fun isConnected(): Boolean {
-                return false
-            }
-        }
-        val client = OkHttpClient.Builder()
-            .addInterceptor(NetworkMonitorInterceptor(failingNetworkClient))
-            .build()
-        retroFitClient.client(client)
-        return this
-    }
-}
 
 object TwitchClientBuilderUtil{
+    /**The fake http client make for tests involving [TwitchAuthenticationClient]*/
     private val retroFitClient = Retrofit.Builder()
+
+    /**The a client added to [retroFitClient] and is used to add interceptors*/
     private var client = OkHttpClient.Builder()
 
+    /**
+     * sets the `fake` url for our [retroFitClient]
+     *
+     * @param url sets the fake url for our client. Must use mockWebServer: mockWebServer.url("/").toString()
+     * */
     fun addMockedUrl(url:String):TwitchClientBuilderUtil{
         retroFitClient.baseUrl(url)
         return this
     }
+    /**
+     * addNetworkInterceptor adds a [NetworkMonitorInterceptor] to the [client] and represents an controllable network interceptor
+     *
+     * @param networkIsOnline a Boolean used to represent if the network is live or not
+     * */
     fun addNetworkInterceptor(networkIsOnline: Boolean):TwitchClientBuilderUtil{
         val networkMonitor = object: NetworkMonitor {
             override fun isConnected(): Boolean {
@@ -85,10 +54,16 @@ object TwitchClientBuilderUtil{
         return this
     }
 
+    /**
+     * addAuthentication401Interceptor adds a [Authentication401Interceptor] to the [client] and represents an controllable
+     * interceptor that checks for the response code 401
+     *
+     * @param responseCodeIs401 a Boolean used to fake if the response code is 401 or not
+     * */
     fun addAuthentication401Interceptor(responseCodeIs401: Boolean):TwitchClientBuilderUtil{
         val auth401Checker = object: AuthenticationInterceptor{
             override fun responseCodeIs401(code: Int): Boolean {
-                return codeIs401
+                return responseCodeIs401
             }
 
 
@@ -97,6 +72,12 @@ object TwitchClientBuilderUtil{
         return this
     }
 
+    /**
+     * build() is called to build the [client] and the [retroFitClient] and deliver a fully functioning [TwitchAuthenticationClient]
+     *
+     *
+     * @return a [TwitchAuthenticationClient] which is used to mock calls to the a actual web server
+     * */
     fun build():TwitchAuthenticationClient{
 
         retroFitClient.client(client.build())
