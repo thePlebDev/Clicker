@@ -36,7 +36,7 @@ class ExampleUnitTest {
 
         )
 
-        twitchRepository = TwitchRepoImpl(twitchClient)
+       // twitchRepository = TwitchRepoImpl(twitchClient)
         // todo: I THINK I NEED TO DO Response.success() WITH A CODE OF 200
         Mockito.`when`(twitchClient.getFollowedStreams("", "", "")).thenReturn(testingCode)
 

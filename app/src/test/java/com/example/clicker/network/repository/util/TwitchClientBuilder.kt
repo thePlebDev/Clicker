@@ -61,3 +61,20 @@ object TwitchStreamClientBuilder{
     }
 }
 
+object TwitchClientBuilderUtil{
+    private val retroFitClient = Retrofit.Builder()
+
+    fun addMockedUrl(url:String):TwitchClientBuilderUtil{
+        retroFitClient.baseUrl(url)
+        return this
+    }
+
+    fun build():TwitchAuthenticationClient{
+        return retroFitClient
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TwitchAuthenticationClient::class.java)
+    }
+
+}
+
