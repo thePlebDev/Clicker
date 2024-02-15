@@ -3,7 +3,6 @@ package com.example.clicker.network.repository
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
-import com.example.clicker.network.repository.util.TwitchAuthenticationClientBuilder
 import com.example.clicker.network.repository.util.TwitchClientBuilderUtil
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
