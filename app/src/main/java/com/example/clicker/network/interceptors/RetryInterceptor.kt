@@ -7,10 +7,13 @@ import okhttp3.Response
 import java.io.IOException
 
 
-class RetryInterceptor(private val retry:Retry =RetryWithThreeRequests()) : Interceptor {
+class RetryInterceptor(
+    private val retry:Retry =RetryWithThreeRequests()
+) : Interceptor {
 
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
+        Log.d("checkingInterceptors","RetryInterceptor")
         val request = chain.request()
         val isSuccess = retry.requestWithThreeRetries(chain, request)
         if (!isSuccess) {
