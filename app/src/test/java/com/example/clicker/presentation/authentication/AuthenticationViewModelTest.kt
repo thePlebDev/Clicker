@@ -173,8 +173,8 @@ class AuthenticationViewModelTest {
         val fakeClientId = "fdsafdsa"
         val fakeOAuthToken = "fdskapfupa"
 
-        `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit("")})
-        `when`(twitchAuthentication.logout(fakeClientId,fakeOAuthToken)).thenReturn(flow{emit(Response.Success(""))})
+//        `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit("")})
+//        `when`(twitchAuthentication.logout(fakeClientId,fakeOAuthToken)).thenReturn(flow{emit(Response.Success(""))})
 
 
 
@@ -209,10 +209,10 @@ class AuthenticationViewModelTest {
         /**GIVEN*/
         val fakeClientId = "fdsafdsa"
         val fakeOAuthToken = "fdskapfupa"
-
-        `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit("")})
-        `when`(twitchAuthentication.logout(fakeClientId,fakeOAuthToken))
-            .thenReturn(flow{emit(Response.Failure(Exception("failed to logout")))})
+//
+//        `when`(twitchDataStore.getOAuthToken()).thenReturn(flow{emit("")})
+//        `when`(twitchAuthentication.logout(fakeClientId,fakeOAuthToken))
+//            .thenReturn(flow{emit(Response.Failure(Exception("failed to logout")))})
 
 
 

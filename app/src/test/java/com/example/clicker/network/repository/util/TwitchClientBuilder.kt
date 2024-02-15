@@ -85,7 +85,7 @@ object TwitchClientBuilderUtil{
         return this
     }
 
-    fun addAuthentication401Interceptor(codeIs401: Boolean):TwitchClientBuilderUtil{
+    fun addAuthentication401Interceptor(responseCodeIs401: Boolean):TwitchClientBuilderUtil{
         val auth401Checker = object: AuthenticationInterceptor{
             override fun responseCodeIs401(code: Int): Boolean {
                 return codeIs401
