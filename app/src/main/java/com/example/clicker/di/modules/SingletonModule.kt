@@ -70,7 +70,7 @@ object SingletonModule {
         liveNetworkMonitor: NetworkMonitor
     ): TwitchAuthenticationClient {
         val monitorClient = OkHttpClient.Builder()
-            .addInterceptor(RetryInterceptor(3))
+            .addInterceptor(RetryInterceptor())
             .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
             .addInterceptor(Authentication401Interceptor(ResponseChecker()))
             .build()

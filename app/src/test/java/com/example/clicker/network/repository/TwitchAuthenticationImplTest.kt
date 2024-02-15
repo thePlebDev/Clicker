@@ -71,9 +71,13 @@ class TwitchAuthenticationImplTest {
         return gson.toJson(body)
     }
 
-    
 
-    //
+
+    //successful tests with all the interceptors
+    @Test
+    fun `when validateToken() returns a successful response with all interceptors`()= runTest{
+
+    }
 }
 
 
