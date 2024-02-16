@@ -58,7 +58,7 @@ class TwitchRepoImpl @Inject constructor(
         if (response.isSuccessful) {
             emit(NetworkAuthResponse.Success(exported))
         } else {
-            emit(NetworkAuthResponse.Failure(Exception("Error!, code: {${response.code()}}")))
+            emit(NetworkAuthResponse.Failure(Exception("Error!, Please try again")))
         }
     }.catch { cause ->
         handleNetworkAuthExceptions(cause)
@@ -82,7 +82,7 @@ class TwitchRepoImpl @Inject constructor(
         if (response.isSuccessful) {
             emit(NetworkAuthResponse.Success(body))
         } else {
-            emit(NetworkAuthResponse.Failure(Exception("Error!, code: {${response.code()}}")))
+            emit(NetworkAuthResponse.Failure(Exception("Error!, Please try again")))
         }
     }.catch { cause ->
         handleNetworkAuthExceptions(cause)
