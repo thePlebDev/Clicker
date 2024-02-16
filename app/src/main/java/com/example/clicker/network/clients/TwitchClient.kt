@@ -42,21 +42,7 @@ interface TwitchClient {
 
 
 
-    /**
-     * - getFollowedStreams represents a GET method. a function meant to get all of the user's live followed streams
-     *
-     * @param authorization a String used to represent the OAuth token that uniquely identifies this user's granted abilities
-     * @param clientId a String used to represent the clientId(unique identifier) of this application
-     * @param userId a String used to represent the OAuth token that uniquely identifies this user
-     *
-     * @return a [Response] object containing [FollowedLiveStreams]
-     * */
-    @GET("streams/followed")
-    suspend fun getFollowedStreams(
-        @Header("Authorization") authorization: String,
-        @Header("Client-Id") clientId: String,
-        @Query("user_id") userId: String
-    ): Response<FollowedLiveStreams>
+
 
     /**
      * - getChatSettings represents a GET method. A function meant to get the chat settings of the stream currently views
@@ -181,12 +167,7 @@ interface TwitchClient {
         @Body autoModSettings: IndividualAutoModSettings
     ):Response<AutoModSettings>
 
-    @GET("moderation/channels")
-    suspend fun getModeratedChannels(
-        @Header("Authorization") authorizationToken: String,
-        @Header("Client-Id") clientId: String,
-        @Query("user_id") userId: String
-    ):Response<GetModChannels>
+
 
 }
 data class GetModChannels(
