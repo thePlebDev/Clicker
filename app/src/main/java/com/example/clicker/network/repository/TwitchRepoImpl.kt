@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.network.clients.GetModChannelsData
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
@@ -32,27 +33,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 class TwitchRepoImpl @Inject constructor(
-    private val twitchClient: TwitchClient,
-    private val twitchAuthenticationClient: TwitchAuthenticationClient
+    private val twitchClient: TwitchHomeClient,
 ) : TwitchRepo  {
-
-    override fun logout(clientId: String, token: String): Flow<Response<String>> = flow {
-        emit(Response.Loading)
-        Log.d("logoutResponse", "LOADING")
-
-        val response = twitchAuthenticationClient.logout(clientId = clientId, token = token)
-        if (response.isSuccessful) {
-            Log.d("logoutResponse", "SUCCESS ->${response.message()}")
-            emit(Response.Success("true"))
-        } else {
-            Log.d("logoutResponse", "message ->${response.message()}")
-            Log.d("logoutResponse", "code ->${response.code()}")
-            Log.d("logoutResponse", "FAILED ->${response.body()}")
-            emit(Response.Failure(Exception("Error!, code: {${response.code()}}")))
-        }
-    }.catch { cause ->
-        handleException(cause)
-    }
 
     override suspend fun getFollowedLiveStreams(
         authorizationToken: String,
@@ -61,11 +43,13 @@ class TwitchRepoImpl @Inject constructor(
     ): Flow<NetworkAuthResponse<List<StreamInfo>>> = flow {
         emit(NetworkAuthResponse.Loading)
 
+
         val response = twitchClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId
         )
+        Log.d("TwitchRepoImpl","getFollowedLiveStreams code -->${response.code()}")
 
         val emptyBody = FollowedLiveStreams(listOf<StreamData>())
         val body = response.body() ?: emptyBody
@@ -92,10 +76,9 @@ class TwitchRepoImpl @Inject constructor(
             clientId = clientId,
             userId = userId
         )
+        Log.d("TwitchRepoImpl","getModeratedChannels code -->${response.code()}")
         val body = response.body() ?: emptyBody
-        Log.d("getModeratedChannels","code --->${response.code()}")
-        Log.d("getModeratedChannels","message -> ${response.message()}")
-        Log.d("getModeratedChannels","errorbody -> ${response.errorBody()}")
+
         if (response.isSuccessful) {
             emit(NetworkAuthResponse.Success(body))
         } else {
