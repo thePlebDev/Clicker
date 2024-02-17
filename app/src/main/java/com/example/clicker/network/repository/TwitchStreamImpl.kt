@@ -198,10 +198,10 @@ class TwitchStreamImpl @Inject constructor(
             autoModSettings = autoModSettings
         )
         if(response.isSuccessful){
-            response.body()?.let{
-                emit(Response.Success(it))
+
+                emit(Response.Success(response.body()!!))
                 Log.d("updateAutoModSettingsRequest","Success ->${response.code()}")
-            }
+
         }else{
             Log.d("updateAutoModSettingsRequest","FAILED ->${response.code()}")
             emit(Response.Failure(Exception("Failed to update")))
