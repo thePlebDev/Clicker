@@ -172,9 +172,9 @@ class TwitchStreamImpl @Inject constructor(
         if(response.isSuccessful){
             val data = response.body()
             Log.d("getAutoModSettings","success data ->${data?.data}")
-            data?.let{
-                emit(Response.Success(it))
-            }
+
+            emit(Response.Success(data!!))
+
 
         }else{
 
