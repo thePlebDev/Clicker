@@ -22,15 +22,11 @@ class NetworkMonitorInterceptor @Inject constructor(
 
         val request: Request = chain.request()
 
-        Log.d("NetworkMonitorInterceptor","NetworkMonitorInterceptor")
-        Log.d("checkingInterceptors","NetworkMonitorInterceptor")
-
 
         if(liveNetworkMonitor.isConnected()){
             return chain.proceed(request)
         }else{
 
-            Log.d("NetworkMonitorInterceptor","Network Error")
             throw NoNetworkException("Network Error")
         }
 
