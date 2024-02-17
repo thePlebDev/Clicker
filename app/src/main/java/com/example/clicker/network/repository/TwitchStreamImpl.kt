@@ -118,9 +118,9 @@ class TwitchStreamImpl @Inject constructor(
 
         if (response.isSuccessful) {
             val data = response.body()
-            data?.let {
-                emit(Response.Success(it))
-            }
+
+            emit(Response.Success(data!!))
+
         } else {
             emit(Response.Failure(Exception("Unable to ban user")))
         }
