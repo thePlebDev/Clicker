@@ -5,6 +5,7 @@ import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchStream
+import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
@@ -28,16 +29,20 @@ class TwitchStreamImplTest {
 
     /**WHAT TO TEST FOR ALL METHODS IN TwitchStream*/
     //1) success with  all interceptors
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser(),unBanUser()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),
+    // banUser(),unBanUser(),getAutoModSettings()
 
     //2) network interceptor throws errors
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser(),unBanUser()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // ,banUser(),unBanUser(),getAutoModSettings()
 
     //3) 401 interceptor throws error
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser(),unBanUser()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),
+    // banUser(),unBanUser(),getAutoModSettings()
 
     //4) 500 response error
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser(),unBanUser()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // ,banUser(),unBanUser(),getAutoModSettings()
 
     //5) if applicable, test empty body response
     // (DONE FOR getChatSettings(),banUser()
@@ -172,7 +177,7 @@ class TwitchStreamImplTest {
     }
 
     @Test
-    fun `getChatSettings() but the call empty body`()= runTest{
+    fun `getChatSettings() but the call returns an empty response body`()= runTest{
         /**GIVEN*/
         // make the retrofit client
         val retrofitClient: TwitchClient = TwitchClientBuilder
@@ -641,6 +646,142 @@ class TwitchStreamImplTest {
 
         /**WHEN*/
         val actualResponse = underTest.unBanUser("","","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    /*************************TESTING unbanUser()*****************************************************/
+
+    @Test
+    fun `getAutoModSettings() returns a successful response with all interceptors`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedBody = AutoModSettings(listOf())
+        val expectedResponse = Response.Success(expectedBody)
+        val jsonBody = createJsonBodyFrom(expectedBody)
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.getAutoModSettings("","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `getAutoModSettings() but NetworkInterceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(false)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedBody = AutoModSettings(listOf())
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.getAutoModSettings("","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `getAutoModSettings() but Authentication401Interceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(true)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedBody = AutoModSettings(listOf())
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        val expectedResponse = Response.Failure(Exception("Improper Authentication"))
+
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.getAutoModSettings("","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `getAutoModSettings() but the call returns a 500 response code`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedBody = AutoModSettings(listOf())
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        val expectedResponse = Response.Failure(Exception("You are not a moderator"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody(jsonBody))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.getAutoModSettings("","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `getAutoModSettings() but the call returns an empty response body`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedResponse = Response.Failure(Exception("Error! Please try again"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(""))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.getAutoModSettings("","","","").last()
 
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
