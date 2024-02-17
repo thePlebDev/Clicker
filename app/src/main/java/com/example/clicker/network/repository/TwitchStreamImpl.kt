@@ -63,7 +63,7 @@ class TwitchStreamImpl @Inject constructor(
         if (response.isSuccessful) {
             emit(Response.Success(true))
         } else {
-            emit(Response.Failure(Exception(response.message())))
+            emit(Response.Failure(Exception("Error! Please try again")))
         }
     }.catch { cause ->
         Log.d("GETTINGLIVESTREAMS", "CAUSE IS CAUSE")
