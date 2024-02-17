@@ -1,8 +1,11 @@
 package com.example.clicker.network.repository
 
 
+import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchStream
+import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.repository.util.TwitchClientBuilder
@@ -25,19 +28,19 @@ class TwitchStreamImplTest {
 
     /**WHAT TO TEST FOR ALL METHODS IN TwitchStream*/
     //1) success with  all interceptors
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser()
 
     //2) network interceptor throws errors
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser()
 
     //3) 401 interceptor throws error
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser()
 
     //4) 500 response error
-    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage(),banUser()
 
     //5) if applicable, test empty body response
-    // (DONE FOR getChatSettings()
+    // (DONE FOR getChatSettings(),banUser()
 
 
     @Before
@@ -425,6 +428,113 @@ class TwitchStreamImplTest {
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
 
+    /*************************TESTING banUser()*****************************************************/
+
+    @Test
+    fun `banUser() returns a successful response with all interceptors`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedBody = BanUserResponse(data= listOf())
+        val expectedResponse = Response.Success(expectedBody)
+
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+        val banUserBody = BanUser(data = BanUserData("","",0))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.banUser("","","","",banUserBody).last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `banUser() but NetworkInterceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(false)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedBody = BanUserResponse(data= listOf())
+        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
+
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+        val banUserBody = BanUser(data = BanUserData("","",0))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.banUser("","","","",banUserBody).last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `banUser() but Authentication401Interceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(true)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedBody = ChatSettings(data = listOf())
+        val expectedResponse = Response.Failure(Exception("Improper Authentication"))
+
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(jsonBody))
+        val banUserBody = BanUser(data = BanUserData("","",0))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.banUser("","","","",banUserBody).last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+    @Test
+    fun `banUser() but the call returns an empty response body`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedResponse = Response.Failure(Exception("Error! Please try again"))
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(""))
+        val banUserBody = BanUser(data = BanUserData("","",0))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.banUser("","","","",banUserBody).last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
 
 
 }
