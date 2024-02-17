@@ -25,16 +25,16 @@ class TwitchStreamImplTest {
 
     /**WHAT TO TEST FOR ALL METHODS IN TwitchStream*/
     //1) success with  all interceptors
-    // (DONE FOR getChatSettings(),updateChatSettings()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
 
     //2) network interceptor throws errors
-    // (DONE FOR getChatSettings(),updateChatSettings()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
 
     //3) 401 interceptor throws error
-    // (DONE FOR getChatSettings(),updateChatSettings()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
 
     //4) 500 response error
-    // (DONE FOR getChatSettings(),updateChatSettings()
+    // (DONE FOR getChatSettings(),updateChatSettings(),deleteChatMessage()
 
     //5) if applicable, test empty body response
     // (DONE FOR getChatSettings()
@@ -164,7 +164,6 @@ class TwitchStreamImplTest {
         val actualResponse = underTest.getChatSettings("","","").last()
 
 
-
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
@@ -198,7 +197,10 @@ class TwitchStreamImplTest {
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
 
-    /**TESTING updateChatSettings()*/
+
+    /*************************TESTING updateChatSettings()*****************************************************/
+
+
     @Test
     fun `updateChatSettings() returns a successful response with all interceptors`()= runTest{
         /**GIVEN*/
@@ -319,4 +321,110 @@ class TwitchStreamImplTest {
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
+
+    /*************************TESTING deleteChatMessage()*****************************************************/
+    @Test
+    fun `deleteChatMessage() returns a successful response with all interceptors`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedResponse = Response.Success(true)
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse())
+
+
+        /**WHEN*/
+        val actualResponse = underTest.deleteChatMessage("","","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `deleteChatMessage() but NetworkInterceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(false)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected  response
+        val expectedResponse = Response.Failure(Exception("Network error, please try again later"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse())
+
+
+        /**WHEN*/
+        val actualResponse = underTest.deleteChatMessage("","","","","").last()
+
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `deleteChatMessage() but Authentication401Interceptor throws exception`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(true)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedResponse = Response.Failure(Exception("Improper Authentication"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse())
+
+
+        /**WHEN*/
+        val actualResponse = underTest.deleteChatMessage("","","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    @Test
+    fun `deleteChatMessage() but the call returns a 500 response code`()= runTest{
+        /**GIVEN*/
+        // make the retrofit client
+        val retrofitClient: TwitchClient = TwitchClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchStreamImpl(retrofitClient)
+
+        //make the expected body and response
+        val expectedResponse = Response.Failure(Exception("Unable to delete message"))
+
+        // Schedule a successful response
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+
+
+        /**WHEN*/
+        val actualResponse = underTest.deleteChatMessage("","","","","").last()
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+
+
 }
