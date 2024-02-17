@@ -10,6 +10,8 @@ import com.example.clicker.network.interceptors.RetryInterceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Interceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.AuthenticationInterceptor
 import com.example.clicker.network.repository.util.TwitchClientBuilderUtil.client
+import com.example.clicker.network.repository.util.TwitchHomeClientBuilder.client
+import com.example.clicker.network.repository.util.TwitchHomeClientBuilder.retroFitClient
 import com.google.gson.Gson
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -161,5 +163,69 @@ object TwitchHomeClientBuilder {
             .build()
             .create(TwitchHomeClient::class.java)
     }
+}
+
+object TwitchClientBuilder{
+    /**The fake http client make for tests involving [TwitchAuthenticationClient]*/
+    private val retroFitClient = Retrofit.Builder()
+
+    /**The a client added to [retroFitClient] and is used to add interceptors*/
+    private var client = OkHttpClient.Builder()
+
+    /**
+     * sets the `fake` url for our [retroFitClient]
+     *
+     * @param url sets the fake url for our client. Must use mockWebServer: mockWebServer.url("/").toString()
+     * */
+    fun addMockedUrl(url:String):TwitchClientBuilder{
+        retroFitClient.baseUrl(url)
+        return this
+    }
+
+    /**
+     * addNetworkInterceptor adds a [NetworkMonitorInterceptor] to the [client] and represents an controllable network interceptor
+     *
+     * @param networkIsOnline a Boolean used to represent if the network is live or not
+     * */
+    fun addNetworkInterceptor(networkIsOnline: Boolean):TwitchClientBuilder{
+        val networkMonitor = object: NetworkMonitor {
+            override fun isConnected(): Boolean {
+                return networkIsOnline
+            }
+        }
+        client.addInterceptor(NetworkMonitorInterceptor(networkMonitor))
+
+        return this
+    }
+
+    /**
+     * addAuthentication401Interceptor adds a [Authentication401Interceptor] to the [client] and represents an controllable
+     * interceptor that checks for the response code 401
+     *
+     * @param responseCodeIs401 a Boolean used to fake if the response code is 401 or not
+     * */
+    fun addAuthentication401Interceptor(responseCodeIs401: Boolean):TwitchClientBuilder{
+        val auth401Checker = object: AuthenticationInterceptor{
+            override fun responseCodeIs401(code: Int): Boolean {
+                return responseCodeIs401
+            }
+
+
+        }
+        client.addInterceptor(Authentication401Interceptor(auth401Checker))
+        return this
+    }
+
+
+
+    fun build():TwitchClient{
+
+        retroFitClient.client(client.build())
+        return retroFitClient
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TwitchClient::class.java)
+    }
+
 }
 
