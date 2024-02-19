@@ -351,31 +351,41 @@ class StreamViewModel @Inject constructor(
     //TWITCH METHOD
     fun deleteChatMessage(messageId: String) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("DeleteChatMessage")) {
-            twitchRepoImpl.deleteChatMessage(
-                oAuthToken = _uiState.value.oAuthToken,
-                clientId = _uiState.value.clientId,
-                broadcasterId = _uiState.value.broadcasterId,
-                moderatorId = _uiState.value.userId,
-                messageId = messageId
-            ).collect { response ->
+            val isMod = _uiState.value.loggedInUserData?.mod ?: false
+            if(isMod){
+                twitchRepoImpl.deleteChatMessage(
+                    oAuthToken = _uiState.value.oAuthToken,
+                    clientId = _uiState.value.clientId,
+                    broadcasterId = _uiState.value.broadcasterId,
+                    moderatorId = _uiState.value.userId,
+                    messageId = messageId
+                ).collect { response ->
 
-                when (response) {
-                    is Response.Loading -> {
-                        Log.d("deleteChatMessage", "LOADING")
-                    }
-                    is Response.Success -> {
-                        Log.d("deleteChatMessage", "SUCCESS")
-                    }
-                    is Response.Failure -> {
-                        Log.d("deleteChatMessage", "FAILURE")
-                        _uiState.value = _uiState.value.copy(
-                            showStickyHeader = true,
-                            undoBanResponse = false,
-                            banResponseMessage = "${response.e.message}"
-                        )
+                    when (response) {
+                        is Response.Loading -> {
+                            Log.d("deleteChatMessage", "LOADING")
+                        }
+                        is Response.Success -> {
+                            Log.d("deleteChatMessage", "SUCCESS")
+                        }
+                        is Response.Failure -> {
+                            Log.d("deleteChatMessage", "FAILURE")
+                            _uiState.value = _uiState.value.copy(
+                                showStickyHeader = true,
+                                undoBanResponse = false,
+                                banResponseMessage = "Message delete failed"
+                            )
+                        }
                     }
                 }
+            }else{
+                _uiState.value = _uiState.value.copy(
+                    showStickyHeader = true,
+                    undoBanResponse = false,
+                    banResponseMessage = "Not a moderator"
+                )
             }
+
         }
     }
 
@@ -1139,6 +1149,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
     fun timeoutUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
+            val isMod:Boolean = _uiState.value.loggedInUserData?.mod ?: false
             val timeoutUser = BanUser(
                 data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
                     user_id = _clickedUIState.value.clickedUserId,
@@ -1146,83 +1157,49 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
                     duration = _uiState.value.timeoutDuration
                 )
             )
-            twitchRepoImpl.banUser(
-                oAuthToken = _uiState.value.oAuthToken,
-                clientId = _uiState.value.clientId,
-                moderatorId = _uiState.value.userId,
-                broadcasterId = _uiState.value.broadcasterId,
-                body = timeoutUser
-            ).collect { response ->
-                when (response) {
-                    is Response.Loading -> {
-                        Log.d("TIMEOUTUSERRESPONSE", "LOADING")
-                    }
-                    is Response.Success -> {
-                        Log.d("TIMEOUTUSERRESPONSE", "SUCCESS")
-                        _uiState.value = _uiState.value.copy(
-                            banResponse = Response.Success(true),
-                            timeoutReason = "",
-                            undoBanResponse = false
-                        )
-                    }
-                    is Response.Failure -> {
-                        Log.d("TIMEOUTUSERRESPONSE", "FAILED")
-                        _uiState.value = _uiState.value.copy(
-                            showStickyHeader = true,
-                            undoBanResponse = false,
-                            banResponseMessage = "${response.e.message}"
-                        )
+            if(isMod){
+                twitchRepoImpl.banUser(
+                    oAuthToken = _uiState.value.oAuthToken,
+                    clientId = _uiState.value.clientId,
+                    moderatorId = _uiState.value.userId,
+                    broadcasterId = _uiState.value.broadcasterId,
+                    body = timeoutUser
+                ).collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            Log.d("TIMEOUTUSERRESPONSE", "LOADING")
+                        }
+                        is Response.Success -> {
+                            Log.d("TIMEOUTUSERRESPONSE", "SUCCESS")
+                            _uiState.value = _uiState.value.copy(
+                                banResponse = Response.Success(true),
+                                timeoutReason = "",
+                                undoBanResponse = false
+                            )
+                        }
+                        is Response.Failure -> {
+                            Log.d("TIMEOUTUSERRESPONSE", "FAILED")
+                            _uiState.value = _uiState.value.copy(
+                                showStickyHeader = true,
+                                undoBanResponse = false,
+                                banResponseMessage = "Timeout user failed"
+                            )
+                        }
                     }
                 }
+            }else{
+                _uiState.value = _uiState.value.copy(
+                    showStickyHeader = true,
+                    undoBanResponse = false,
+                    banResponseMessage = "Not a moderator"
+                )
             }
-        }
+            }
+
     }
 
 fun oneClickBanUser(userId:String) = viewModelScope.launch{
 
-    _clickedUIState.value = _clickedUIState.value.copy(
-        clickedUserId =userId
-    )
-
-    val banUserNew = BanUser(
-        data = BanUserData( //TODO: THIS DATA SHOULD BE PASSED INTO THE METHOD
-            user_id = userId,
-            reason = "",
-            duration = 0
-        )
-    )
-
-    withContext(ioDispatcher + CoroutineName("BanUser")) {
-        twitchRepoImpl.banUser(
-            oAuthToken = _uiState.value.oAuthToken,
-            clientId = _uiState.value.clientId,
-            moderatorId = _uiState.value.userId,
-            broadcasterId = _uiState.value.broadcasterId,
-            body = banUserNew
-        ).collect { response ->
-            when (response) {
-                is Response.Loading -> {
-                    Log.d("BANUSERRESPONSE", "LOADING")
-                }
-                is Response.Success -> {
-                    Log.d("BANUSERRESPONSE", "SUCCESS")
-                    _uiState.value = _uiState.value.copy(
-                        banResponse = Response.Success(true),
-                        banReason = "",
-                        undoBanResponse = false
-                    )
-                }
-                is Response.Failure -> {
-                    Log.d("BANUSERRESPONSE", "FAILED")
-                    _uiState.value = _uiState.value.copy(
-                        showStickyHeader = true,
-                        undoBanResponse = false,
-                        banResponseMessage = "ban attempt unsuccessful"
-                    )
-                }
-            }
-        }
-    }
 
 }
 
@@ -1273,6 +1250,7 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
         Log.d("banUserSlashCommand","broadcasterId -->${_uiState.value.broadcasterId}")
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("BanUser")) {
+
                 val banUserNew = BanUser(
                     data = BanUserData( //TODO:SHOULD BE PASSED IN
                         user_id =userId,
@@ -1281,6 +1259,7 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
 
                     )
                 )
+
                 twitchRepoImpl.banUser(
                     oAuthToken = _uiState.value.oAuthToken,
                     clientId = _uiState.value.clientId,
@@ -1327,36 +1306,46 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
         )
         Log.d("deleteChatMessageException", "PbanUser.user_id---> ${banUserNew.data.user_id}")
         // Log.d("deleteChatMessageException", "clickedUserId ${clickedUserId}")
+        val isMod:Boolean = _uiState.value.loggedInUserData?.mod ?: false
         withContext(ioDispatcher + CoroutineName("BanUser")) {
-            twitchRepoImpl.banUser(
-                oAuthToken = _uiState.value.oAuthToken,
-                clientId = _uiState.value.clientId,
-                moderatorId = _uiState.value.userId,
-                broadcasterId = _uiState.value.broadcasterId,
-                body = banUserNew
-            ).collect { response ->
-                when (response) {
-                    is Response.Loading -> {
-                        Log.d("BANUSERRESPONSE", "LOADING")
-                    }
-                    is Response.Success -> {
-                        Log.d("BANUSERRESPONSE", "SUCCESS")
-                        _uiState.value = _uiState.value.copy(
-                            banResponse = Response.Success(true),
-                            banReason = "",
-                            undoBanResponse = false
-                        )
-                    }
-                    is Response.Failure -> {
-                        Log.d("BANUSERRESPONSE", "FAILED")
-                        _uiState.value = _uiState.value.copy(
-                            showStickyHeader = true,
-                            undoBanResponse = false,
-                            banResponseMessage = "ban attempt unsuccessful"
-                        )
+            if(isMod){
+                twitchRepoImpl.banUser(
+                    oAuthToken = _uiState.value.oAuthToken,
+                    clientId = _uiState.value.clientId,
+                    moderatorId = _uiState.value.userId,
+                    broadcasterId = _uiState.value.broadcasterId,
+                    body = banUserNew
+                ).collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            Log.d("BANUSERRESPONSE", "LOADING")
+                        }
+                        is Response.Success -> {
+                            Log.d("BANUSERRESPONSE", "SUCCESS")
+                            _uiState.value = _uiState.value.copy(
+                                banResponse = Response.Success(true),
+                                banReason = "",
+                                undoBanResponse = false
+                            )
+                        }
+                        is Response.Failure -> {
+                            Log.d("BANUSERRESPONSE", "FAILED")
+                            _uiState.value = _uiState.value.copy(
+                                showStickyHeader = true,
+                                undoBanResponse = false,
+                                banResponseMessage = "Ban attempt unsuccessful"
+                            )
+                        }
                     }
                 }
+            }else{
+                _uiState.value = _uiState.value.copy(
+                    showStickyHeader = true,
+                    undoBanResponse = false,
+                    banResponseMessage = "Not a moderator"
+                )
             }
+
         }
     }
     //TODO: TWICH METHOD
