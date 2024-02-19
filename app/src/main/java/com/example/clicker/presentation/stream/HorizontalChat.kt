@@ -231,7 +231,9 @@ fun HorizontalChat(
                             streamViewModel.autoTextChangeCommand(
                                 command
                             )
-                        }
+                        },
+                        toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
+                        toggleBanDialog={streamViewModel.openBanDialog.value = true}
                     )
                 }
             )

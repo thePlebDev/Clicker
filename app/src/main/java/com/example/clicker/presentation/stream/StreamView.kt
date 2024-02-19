@@ -265,6 +265,8 @@ fun StreamView(
                                         command
                                     )
                                 },
+                                toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
+                                toggleBanDialog={streamViewModel.openBanDialog.value = true}
                             )
                         }
                     )
@@ -336,6 +338,8 @@ fun TextChat(
     newFilterMethod:(TextFieldValue) ->Unit,
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText:(String)->Unit,
+    toggleTimeoutDialog:()->Unit,
+    toggleBanDialog:()->Unit,
 
 ) {
 
@@ -370,6 +374,8 @@ fun TextChat(
                 command
             )
         },
+        toggleTimeoutDialog={toggleTimeoutDialog()},
+        toggleBanDialog={toggleBanDialog()},
     )
 
 }

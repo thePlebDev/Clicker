@@ -83,10 +83,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -142,62 +145,61 @@ fun ValidationView(
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
-    DraggableTextLowLevel{modifier ->
-        Text("TESTING", fontSize = 30.sp,modifier = modifier, color = Color.Red)
-    }
 
-//    HomeViewImplementation(
-//        bottomModalState =bottomModalState,
-//        modalText =modalText,
-//        loginWithTwitch ={loginWithTwitch()},
-//        domainIsRegistered =domainIsRegistered,
-//        addToLinks = { addToLinks() },
-//        onNavigate = {id -> onNavigate(id) },
-//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-//            streamViewModel.updateChannelNameAndClientIdAndUserId(
-//                streamerName,
-//                clientId,
-//                broadcasterId,
-//                userId
-//            )
-//            autoModViewModel.updateAutoModCredentials(
-//                moderatorId = userId,
-//                broadcasterId = broadcasterId,
-//                clientId = clientId
-//            )
-//        },
-//        streamersListLoading = homeViewModel.state.value.streamersListLoading,
-//        urlList =homeViewModel.newUrlList.collectAsState().value,
-//        clientId = clientId ?: "",
-//        userId = userId ?: "",
-//        height = homeViewModel.state.value.aspectHeight,
-//        width = homeViewModel.state.value.width,
-//        logout = {
-//            authenticationViewModel.beginLogout(
-//                clientId = clientId?:"",
-//                oAuthToken = oAuthToken
-//            )
-//            //homeViewModel.logout()
-//            homeViewModel.hideLogoutDialog()
-//
-//        },
-//        userIsAuthenticated =userIsAuthenticated,
-//        screenDensity = homeViewModel.state.value.screenDensity,
-//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-//        networkMessageColor=Color.Red,
-//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
-//
-//
-//
-//
-//
-//    )
+
+
+    HomeViewImplementation(
+        bottomModalState =bottomModalState,
+        modalText =modalText,
+        loginWithTwitch ={loginWithTwitch()},
+        domainIsRegistered =domainIsRegistered,
+        addToLinks = { addToLinks() },
+        onNavigate = {id -> onNavigate(id) },
+        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+            streamViewModel.updateChannelNameAndClientIdAndUserId(
+                streamerName,
+                clientId,
+                broadcasterId,
+                userId
+            )
+            autoModViewModel.updateAutoModCredentials(
+                moderatorId = userId,
+                broadcasterId = broadcasterId,
+                clientId = clientId
+            )
+        },
+        streamersListLoading = homeViewModel.state.value.streamersListLoading,
+        urlList =homeViewModel.newUrlList.collectAsState().value,
+        clientId = clientId ?: "",
+        userId = userId ?: "",
+        height = homeViewModel.state.value.aspectHeight,
+        width = homeViewModel.state.value.width,
+        logout = {
+            authenticationViewModel.beginLogout(
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
+            )
+            //homeViewModel.logout()
+            homeViewModel.hideLogoutDialog()
+
+        },
+        userIsAuthenticated =userIsAuthenticated,
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+        networkMessageColor=Color.Red,
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
+
+
+
+
+
+    )
 }
 
 
@@ -211,12 +213,29 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 }
 
 @Composable
-private fun DraggableTextLowLevel(
+fun TestingSwipeToAction(){
+    SwipeToActionText(
+        banAction = {},
+        timeoutAction = {},
+        deleteAction = {}
+    ){
+        CardDemo()
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun SwipeToActionText(
+    banAction:()->Unit,
+    timeoutAction:()->Unit,
+    deleteAction:()->Unit,
+
     content:@Composable (modifier:Modifier) -> Unit,
 
-) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-       // var offsetX  = remember { mutableStateOf(0f) }
+    ) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 10.dp)) {
         val coroutineScope = rememberCoroutineScope()
         val stoppedDragging = remember{ mutableStateOf(false) }
         val offsetX  =  remember { Animatable(0f) }
@@ -230,7 +249,8 @@ private fun DraggableTextLowLevel(
 
             offsetX.value <= -deleteThreshold ||offsetX.value >= deleteThreshold ->{
                 if(stoppedDragging.value){
-                    Log.d("DraggableTextLowLevel","DELETE ")
+
+                    deleteAction()
                     stoppedDragging.value = false
 
                 }else{
@@ -242,14 +262,14 @@ private fun DraggableTextLowLevel(
 
             offsetX.value >= timeoutThreshold ->{ //swiping left to right
                 if(stoppedDragging.value){
-                    Log.d("DraggableTextLowLevel","TIMEOUT")
+                    timeoutAction()
                     stoppedDragging.value = false
                 }
                 color=Color.Cyan
             }
             offsetX.value <= -banThreshold ->{ //swiping from right to left
                 if(stoppedDragging.value){
-                    Log.d("DraggableTextLowLevel","BAN")
+                    banAction()
                     stoppedDragging.value = false
                 }
                 color=Color.Green
@@ -266,13 +286,17 @@ private fun DraggableTextLowLevel(
                 painter = painterResource(id = banIconId),
                 "Moderation Icon",
                 tint= MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(35.dp).align(Alignment.CenterEnd)
+                modifier = Modifier
+                    .size(35.dp)
+                    .align(Alignment.CenterEnd)
             )
             Icon(
                 painter = painterResource(id = timeoutIconId),
                 "Moderation Icon",
                 tint= MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(35.dp).align(Alignment.CenterStart)
+                modifier = Modifier
+                    .size(35.dp)
+                    .align(Alignment.CenterStart)
             )
 
             Box(
@@ -280,7 +304,6 @@ private fun DraggableTextLowLevel(
                     .absoluteOffset { IntOffset(offsetX.value.roundToInt(), 0) }
                     .background(Color.Black)
                     .fillMaxWidth()
-                    .height(50.dp)
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragEnd = {
@@ -296,14 +319,14 @@ private fun DraggableTextLowLevel(
                                 }
 
                             },
-                            onDragStart = {stoppedDragging.value = false}
+                            onDragStart = { stoppedDragging.value = false }
                         ) { change, dragAmount ->
                             change.consume()
                             coroutineScope.launch {
-                                val amountToChange = if (offsetX.value >deleteThreshold || offsetX.value < -deleteThreshold) (dragAmount.x/3) else dragAmount.x
+                                val amountToChange =
+                                    if (offsetX.value > deleteThreshold || offsetX.value < -deleteThreshold) (dragAmount.x / 3) else dragAmount.x
                                 offsetX.snapTo(offsetX.value + amountToChange)
                             }
-
 
 
                         }
@@ -313,5 +336,41 @@ private fun DraggableTextLowLevel(
             }
         }
 
+    }
+}
+
+
+@Composable
+fun CardDemo() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable{ },
+        elevation = 10.dp,
+        backgroundColor = Color.Green
+    ) {
+        Column(
+            modifier = Modifier.padding(15.dp)
+        ) {
+            Text(
+                buildAnnotatedString {
+                    append("welcome to ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900, color = Color(0xFF4552B8))
+                    ) {
+                        append("Jetpack Compose Playground")
+                    }
+                }
+            )
+            Text(
+                buildAnnotatedString {
+                    append("Now you are in the ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
+                        append("Card")
+                    }
+                    append(" section")
+                }
+            )
+        }
     }
 }

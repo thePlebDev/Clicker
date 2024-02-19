@@ -40,8 +40,6 @@ class SwipeableActionsState internal constructor() {
      */
     val offset: State<Float> get() = offsetState
     private var offsetState = mutableStateOf(0f)
-    private var canSwipeTowardsRight = true
-    private var canSwipeTowardsLeft = true
 
 
 
@@ -50,12 +48,10 @@ class SwipeableActionsState internal constructor() {
 
 
         val targetOffset = offsetState.value + delta
-        val isAllowed = isResettingOnRelease ||
-            targetOffset > 0f && canSwipeTowardsRight ||
-            targetOffset < 0f && canSwipeTowardsLeft
-        // Add some resistance if needed
+        val isAllowed = isResettingOnRelease || targetOffset > 0f  || targetOffset < 0f
 
 
+        //adding to the offset is what is making it move
         offsetState.value += if (isAllowed) delta else delta / 10
     }
 
@@ -81,10 +77,7 @@ class SwipeableActionsState internal constructor() {
     }
 }
 
-@Composable
-fun rememberPullToRefreshState(): PullRefreshState {
-    return remember { PullRefreshState() }
-}
+
 
 class PullRefreshState internal constructor() {
     private val _contentOffset = Animatable(0f)
@@ -114,80 +107,3 @@ class PullRefreshState internal constructor() {
     }
 }
 
-@Composable
-fun rememberNestedScrollConnection(
-    scope: CoroutineScope,
-    state: PullRefreshState,
-    animationMidPoint: Float,
-    quarterScreenHeight: Float,
-    changeColor: (Color) -> Unit,
-    changeIsRefreshing: (Boolean) -> Unit,
-
-    changeRequest: (Boolean) -> Unit
-): PullToRefreshNestedScrollConnection {
-    return remember {
-        PullToRefreshNestedScrollConnection(
-            scope,
-            state,
-            animationMidPoint,
-            quarterScreenHeight,
-            changeColor,
-            changeRequest,
-            changeIsRefreshing
-        )
-    }
-}
-
-class PullToRefreshNestedScrollConnection(
-    private val scope: CoroutineScope,
-    private val state: PullRefreshState,
-    private val animationMidPoint: Float,
-    private val quarterScreenHeight: Float,
-    private val changeColor: (Color) -> Unit,
-
-    private val changeRequest: (Boolean) -> Unit,
-    private val changeIsRefreshing: (Boolean) -> Unit
-) : NestedScrollConnection {
-
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-        Log.d("REFRESHINGSTATETHINGS", "PRE-SCROLL --->${available.y}")
-        return super.onPreScroll(available, source)
-    }
-
-    override fun onPostScroll(
-        consumed: Offset,
-        available: Offset,
-        source: NestedScrollSource
-    ): Offset {
-        if (NestedScrollSource.Drag == source && available.y > 0) {
-            Log.d("REFRESHINGSTATETHINGS", "${available.y}")
-            if (state.contentOffset >= quarterScreenHeight) {
-                changeColor(Color.Green)
-
-                changeIsRefreshing(true)
-            }
-            scope.launch {
-                state.dispatchScrollDelta(available.y * 0.3f)
-            }
-        }
-        return super.onPostScroll(consumed, available, source)
-    }
-
-    override suspend fun onPreFling(available: Velocity): Velocity {
-        if (state.isRefreshing) {
-            scope.launch {
-                // request = true
-                changeRequest(true)
-                state.dispatchToMid(animationMidPoint)
-            }
-        } else {
-            scope.launch {
-                // request = true
-                state.dispatchToResting()
-                changeColor(Color.White)
-            }
-        }
-
-        return super.onPreFling(available)
-    }
-}
