@@ -1,20 +1,26 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +52,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
@@ -69,9 +76,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -94,6 +104,7 @@ import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -131,68 +142,63 @@ fun ValidationView(
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
+    DraggableTextLowLevel{modifier ->
+        Text("TESTING", fontSize = 30.sp,modifier = modifier, color = Color.Red)
+    }
 
-    HomeViewImplementation(
-        bottomModalState =bottomModalState,
-        modalText =modalText,
-        loginWithTwitch ={loginWithTwitch()},
-        domainIsRegistered =domainIsRegistered,
-        addToLinks = { addToLinks() },
-        onNavigate = {id -> onNavigate(id) },
-        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-            streamViewModel.updateChannelNameAndClientIdAndUserId(
-                streamerName,
-                clientId,
-                broadcasterId,
-                userId
-            )
-            autoModViewModel.updateAutoModCredentials(
-                moderatorId = userId,
-                broadcasterId = broadcasterId,
-                clientId = clientId
-            )
-        },
-        streamersListLoading = homeViewModel.state.value.streamersListLoading,
-        urlList =homeViewModel.newUrlList.collectAsState().value,
-        clientId = clientId ?: "",
-        userId = userId ?: "",
-        height = homeViewModel.state.value.aspectHeight,
-        width = homeViewModel.state.value.width,
-        logout = {
-            authenticationViewModel.beginLogout(
-                clientId = clientId?:"",
-                oAuthToken = oAuthToken
-            )
-            //homeViewModel.logout()
-            homeViewModel.hideLogoutDialog()
-
-        },
-        userIsAuthenticated =userIsAuthenticated,
-        screenDensity = homeViewModel.state.value.screenDensity,
-        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-        networkMessageColor=Color.Red,
-        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
-
-
-
-
-
-    )
+//    HomeViewImplementation(
+//        bottomModalState =bottomModalState,
+//        modalText =modalText,
+//        loginWithTwitch ={loginWithTwitch()},
+//        domainIsRegistered =domainIsRegistered,
+//        addToLinks = { addToLinks() },
+//        onNavigate = {id -> onNavigate(id) },
+//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+//            streamViewModel.updateChannelNameAndClientIdAndUserId(
+//                streamerName,
+//                clientId,
+//                broadcasterId,
+//                userId
+//            )
+//            autoModViewModel.updateAutoModCredentials(
+//                moderatorId = userId,
+//                broadcasterId = broadcasterId,
+//                clientId = clientId
+//            )
+//        },
+//        streamersListLoading = homeViewModel.state.value.streamersListLoading,
+//        urlList =homeViewModel.newUrlList.collectAsState().value,
+//        clientId = clientId ?: "",
+//        userId = userId ?: "",
+//        height = homeViewModel.state.value.aspectHeight,
+//        width = homeViewModel.state.value.width,
+//        logout = {
+//            authenticationViewModel.beginLogout(
+//                clientId = clientId?:"",
+//                oAuthToken = oAuthToken
+//            )
+//            //homeViewModel.logout()
+//            homeViewModel.hideLogoutDialog()
+//
+//        },
+//        userIsAuthenticated =userIsAuthenticated,
+//        screenDensity = homeViewModel.state.value.screenDensity,
+//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+//        networkMessageColor=Color.Red,
+//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
+//
+//
+//
+//
+//
+//    )
 }
-
-
-
-
-
-
-
-
 
 
 fun Modifier.disableClickAndRipple(): Modifier = composed {
@@ -202,4 +208,110 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
         interactionSource = remember { MutableInteractionSource() },
         onClick = { }
     )
+}
+
+@Composable
+private fun DraggableTextLowLevel(
+    content:@Composable (modifier:Modifier) -> Unit,
+
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+       // var offsetX  = remember { mutableStateOf(0f) }
+        val coroutineScope = rememberCoroutineScope()
+        val stoppedDragging = remember{ mutableStateOf(false) }
+        val offsetX  =  remember { Animatable(0f) }
+        var color = MaterialTheme.colorScheme.primary
+        val deleteThreshold = 350f
+        val banThreshold = 200f
+        val timeoutThreshold = 200f
+        var banIconId = R.drawable.ban_24
+        var timeoutIconId = R.drawable.time_out_24
+        when{
+
+            offsetX.value <= -deleteThreshold ||offsetX.value >= deleteThreshold ->{
+                if(stoppedDragging.value){
+                    Log.d("DraggableTextLowLevel","DELETE ")
+                    stoppedDragging.value = false
+
+                }else{
+                    color = Color.Red
+                    banIconId = R.drawable.delete_outline_24
+                    timeoutIconId = R.drawable.delete_outline_24
+                }
+            }
+
+            offsetX.value >= timeoutThreshold ->{ //swiping left to right
+                if(stoppedDragging.value){
+                    Log.d("DraggableTextLowLevel","TIMEOUT")
+                    stoppedDragging.value = false
+                }
+                color=Color.Cyan
+            }
+            offsetX.value <= -banThreshold ->{ //swiping from right to left
+                if(stoppedDragging.value){
+                    Log.d("DraggableTextLowLevel","BAN")
+                    stoppedDragging.value = false
+                }
+                color=Color.Green
+            }
+
+
+
+        }
+
+        Box(
+            modifier = Modifier.background(color)
+        ){
+            Icon(
+                painter = painterResource(id = banIconId),
+                "Moderation Icon",
+                tint= MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(35.dp).align(Alignment.CenterEnd)
+            )
+            Icon(
+                painter = painterResource(id = timeoutIconId),
+                "Moderation Icon",
+                tint= MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(35.dp).align(Alignment.CenterStart)
+            )
+
+            Box(
+                Modifier
+                    .absoluteOffset { IntOffset(offsetX.value.roundToInt(), 0) }
+                    .background(Color.Black)
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                stoppedDragging.value = true
+                                coroutineScope.launch {
+                                    offsetX.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            delayMillis = 0
+                                        )
+                                    )
+                                }
+
+                            },
+                            onDragStart = {stoppedDragging.value = false}
+                        ) { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                val amountToChange = if (offsetX.value >deleteThreshold || offsetX.value < -deleteThreshold) (dragAmount.x/3) else dragAmount.x
+                                offsetX.snapTo(offsetX.value + amountToChange)
+                            }
+
+
+
+                        }
+                    }
+            ){
+                content(modifier =Modifier.align(Alignment.Center))
+            }
+        }
+
+    }
 }
