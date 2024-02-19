@@ -127,6 +127,8 @@ object MainChat{
         newFilterMethod:(TextFieldValue) ->Unit,
         forwardSlashCommandsList: List<ForwardSlashCommands>,
         clickedCommandAutoCompleteText:(String)->Unit,
+        toggleTimeoutDialog:()->Unit,
+        toggleBanDialog:()->Unit,
 
     ){
         val lazyColumnListState = rememberLazyListState()
@@ -156,6 +158,8 @@ object MainChat{
                     bottomModalState =bottomModalState,
                     updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
                     deleteMessage ={messageId -> deleteMessage(messageId)},
+                    toggleTimeoutDialog={toggleTimeoutDialog()},
+                    toggleBanDialog={toggleBanDialog()}
 
                 )
             },
@@ -552,6 +556,8 @@ object MainChat{
             bottomModalState: ModalBottomSheetState,
             updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
             deleteMessage: (String) -> Unit,
+            toggleTimeoutDialog:()->Unit,
+            toggleBanDialog:()->Unit,
         ){
             val coroutineScope = rememberCoroutineScope()
             LazyColumn(
@@ -597,6 +603,8 @@ object MainChat{
                                     isMod
                                 )
                             },
+                            toggleTimeoutDialog={toggleTimeoutDialog()},
+                            toggleBanDialog={ toggleBanDialog() },
                         )
 
                     }

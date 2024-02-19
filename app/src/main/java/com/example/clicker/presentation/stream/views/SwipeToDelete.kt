@@ -1,11 +1,15 @@
 package com.example.clicker.presentation.stream.views
 
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
@@ -32,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -75,6 +81,8 @@ object SwipeToDelete{
         bottomModalState: ModalBottomSheetState,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         deleteMessage: (String) -> Unit,
+        toggleTimeoutDialog:()->Unit,
+        toggleBanDialog:()->Unit,
 
     ) {
         // no logic here, this should be a clean API wrapper
@@ -84,6 +92,16 @@ object SwipeToDelete{
             twitchUser = twitchUser,
             deleteMessage ={messageId ->deleteMessage(messageId)},
             twitchUserId = twitchUser.id,
+            toggleTimeoutDialog={toggleTimeoutDialog()},
+            toggleBanDialog={ toggleBanDialog() },
+            updateClickedUser = {  username, userId,isBanned,isMod ->
+                updateClickedUser(
+                    username,
+                    userId,
+                    isBanned,
+                    isMod
+                )
+            },
             cardThatMoves={ color, offset,fontSize ->
                 SwipeToDeleteParts.ClickableCard(
                     twitchUser =twitchUser,
@@ -102,7 +120,9 @@ object SwipeToDelete{
                 )
             }
         )
+
     }
+
 
     /**
      * SwipeToDeleteBuilder is the most generic section of all the [SwipeToDelete] composables. It is meant to
@@ -125,7 +145,10 @@ object SwipeToDelete{
         fun DetectSwipeBox(
             twitchUser: TwitchUserData,
             deleteMessage: (String) -> Unit,
+            toggleTimeoutDialog:()->Unit,
+            toggleBanDialog:()->Unit,
             twitchUserId:String?,
+            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
             cardThatMoves:@Composable (color:Color,offset: Float,fontSize: TextUnit,) -> Unit,
 
             ){
@@ -142,9 +165,19 @@ object SwipeToDelete{
             var offset = state.offset.value
 
             val swipeThreshold = 130.dp
+            val timeoutThreshold = (-65).dp
+            val banThreshold = 65.dp
+
+
+
             val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
+            val timeoutSwipeThresholdPx = LocalDensity.current.run { timeoutThreshold.toPx() }
+            val banSwipeThresholdPx = LocalDensity.current.run { banThreshold.toPx() }
+            Log.d("DETECTOFFSET","offset --->${offset}")
 
             val thresholdCrossed = abs(offset) > swipeThresholdPx
+            val timeoutThresholdCrossed = offset < timeoutSwipeThresholdPx
+            val banThresholdCrossed = offset > banSwipeThresholdPx
 
             var backgroundColor by remember { mutableStateOf(Color.Black) }
             var fontSize = 17.sp
@@ -152,7 +185,14 @@ object SwipeToDelete{
             if (thresholdCrossed) {
                 backgroundColor = Color.Red
 
-            } else {
+            }
+            else if(timeoutThresholdCrossed){
+                backgroundColor = Color.Green
+            }
+            else if(banThresholdCrossed){
+                backgroundColor = Color.Magenta
+            }
+            else {
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary
             }
 
@@ -185,7 +225,29 @@ object SwipeToDelete{
                                 if (thresholdCrossed) {
                                     state.resetOffset()
                                     deleteMessage(twitchUserId ?: "")
+                                    Log.d("DetectSwipeBoxDragStop", "DELETE")
+                                } else if (timeoutThresholdCrossed) {
+                                    state.resetOffset()
+                                    Log.d("DetectSwipeBoxDragStop", "TIMEOUT")
+                                    updateClickedUser(
+                                        twitchUser.displayName.toString(),
+                                        twitchUser.userId.toString(),
+                                        twitchUser.banned,
+                                        twitchUser.mod != "1"
+                                    )
+                                    toggleTimeoutDialog()
+                                } else if (banThresholdCrossed) {
+                                    state.resetOffset()
+                                    updateClickedUser(
+                                        twitchUser.displayName.toString(),
+                                        twitchUser.userId.toString(),
+                                        twitchUser.banned,
+                                        twitchUser.mod != "1"
+                                    )
+                                    toggleBanDialog()
+                                    Log.d("DetectSwipeBoxDragStop", "BAN")
                                 } else {
+                                    Log.d("DetectSwipeBoxDragStop", "RESET")
                                     state.resetOffset()
                                 }
                             }
@@ -266,6 +328,7 @@ object SwipeToDelete{
                 }
             }
         }
+
 
         /**
          * CheckIfUserDeleted is the composable that will be used to determine if there should be extra information shown

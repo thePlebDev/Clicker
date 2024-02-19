@@ -92,6 +92,8 @@ object SystemChats {
         bottomModalState: ModalBottomSheetState,
         deleteMessage: (String) -> Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        toggleTimeoutDialog:()->Unit,
+        toggleBanDialog:()->Unit,
 
 
     ){
@@ -110,6 +112,8 @@ object SystemChats {
                         )
                     },
                     deleteMessage = { messageId -> deleteMessage(messageId) },
+                    toggleTimeoutDialog={toggleTimeoutDialog()},
+                    toggleBanDialog={toggleBanDialog()}
 
                 )
             },
