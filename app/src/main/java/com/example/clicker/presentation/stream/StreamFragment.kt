@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.stream
 
 import android.animation.LayoutTransition
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.res.Configuration
@@ -81,6 +82,29 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         val url = "https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
 
+        fun animateHeight(
+            layoutParams: ConstraintLayout.LayoutParams,
+            finalHeight:Int,
+            overlapView:View
+        ){
+            val initialHeight = layoutParams.height
+
+
+           // Create a ValueAnimator for height
+            val heightAnimator = ValueAnimator.ofInt(initialHeight, finalHeight).apply {
+                duration = 100 // Animation duration in milliseconds
+
+                addUpdateListener { animation ->
+                    val value = animation.animatedValue as Int
+                    layoutParams.height = value
+                    overlapView.layoutParams = layoutParams
+                }
+            }
+
+            // Start the height animator
+            heightAnimator.start()
+
+        }
 
         // val view = binding.root
 
@@ -122,18 +146,49 @@ class StreamFragment : Fragment(), View.OnClickListener {
             /**method for the single tap*/
             clickableWebView.singleTapMethod={
                 val overlayIsVisible = overlapView.visibility ==View.VISIBLE
-                if(overlayIsVisible ){
-                    autoModViewModel.setOverlayToHidden()
-                    overlapView.visibility = View.INVISIBLE
+                val overlayHeight = overlapView.height
+                val determinedHeight = (rootConstraintLayout.height * 0.5).toInt()
+                val layoutParams = overlapView.layoutParams as ConstraintLayout.LayoutParams
+
+                //todo:example of not what to do
+//                val overlayLayout = ConstraintLayout.LayoutParams(
+//                    ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+//                    1,
+//                )
+//                val largeOverlayLayout = ConstraintLayout.LayoutParams(
+//                    overlapView.layoutParams.width,
+//                    determinedHeight,
+//                )
+
+                if(overlayHeight == 1){
+                    animateHeight(
+                        layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                        finalHeight = determinedHeight,
+                        overlapView = overlapView
+                    )
+                    autoModViewModel.setOverlayToVisible()
+
 
                 }else{
-                    autoModViewModel.setOverlayToVisible()
-                    overlapView.visibility = View.VISIBLE
+                    animateHeight(
+                        layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                        finalHeight = 1,
+                        overlapView = overlapView
+                    )
+                    autoModViewModel.setOverlayToHidden()
 
-                }
+
+
+                }//todo:end
+
             }
+
             autoModViewModel.singleTapHideVisibility ={
-                overlapView.visibility = View.INVISIBLE
+                animateHeight(
+                    layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                    finalHeight = 1,
+                    overlapView = overlapView
+                )
             }
             /**collapsed method*/
             clickableWebView.collapsedMethod = {
