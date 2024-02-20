@@ -24,6 +24,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintWidth_percent="0.6"
             />
+        <View
+            android:id="@+id/overlapView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#B3000000"
+            app:layout_constraintTop_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.4"/>
+
 
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/compose_view"

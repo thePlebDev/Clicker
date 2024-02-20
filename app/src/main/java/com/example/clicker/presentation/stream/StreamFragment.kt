@@ -90,6 +90,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
+        val overlapView:View = view.findViewById(R.id.overlapView)
 
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -110,6 +111,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
                 //View.VISIBLE, View.INVISIBLE, View.GONE
                 composeView.visibility = View.INVISIBLE
+                overlapView.visibility = View.INVISIBLE
 
                 myWebView.layoutParams = layoutParams
             }
@@ -125,6 +127,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 )
 
                 composeView.visibility = View.VISIBLE
+                overlapView.visibility = View.VISIBLE
                 myWebView.layoutParams = webViewLayout
 
             }

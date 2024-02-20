@@ -1,6 +1,9 @@
 package com.example.clicker.presentation.stream
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -20,6 +23,8 @@ class ClickableWebView: WebView {
 
     var expandedMethod ={}
     var collapsedMethod={}
+
+
 
 private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
     override fun onDown(e: MotionEvent): Boolean {
