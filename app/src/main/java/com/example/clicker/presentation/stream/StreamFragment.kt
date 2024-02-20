@@ -41,6 +41,10 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
 
+    override fun onResume() {
+        super.onResume()
+        autoModViewModel.setOverlayToVisible()
+    }
 
     private fun orientationCheck(){
         val currentOrientation = resources.configuration.orientation
@@ -111,11 +115,26 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
                 //View.VISIBLE, View.INVISIBLE, View.GONE
                 composeView.visibility = View.INVISIBLE
-                overlapView.visibility = View.INVISIBLE
 
                 myWebView.layoutParams = layoutParams
             }
 
+            /**method for the single tap*/
+            clickableWebView.singleTapMethod={
+                val overlayIsVisible = overlapView.visibility ==View.VISIBLE
+                if(overlayIsVisible ){
+                    autoModViewModel.setOverlayToHidden()
+                    overlapView.visibility = View.INVISIBLE
+
+                }else{
+                    autoModViewModel.setOverlayToVisible()
+                    overlapView.visibility = View.VISIBLE
+
+                }
+            }
+            autoModViewModel.singleTapHideVisibility ={
+                overlapView.visibility = View.INVISIBLE
+            }
             /**collapsed method*/
             clickableWebView.collapsedMethod = {
                 val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
@@ -126,12 +145,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
                     ConstraintLayout.LayoutParams.MATCH_PARENT
                 )
 
+
                 composeView.visibility = View.VISIBLE
-                overlapView.visibility = View.VISIBLE
                 myWebView.layoutParams = webViewLayout
 
             }
         }
+
 
 
 

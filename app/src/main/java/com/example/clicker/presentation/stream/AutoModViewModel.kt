@@ -21,6 +21,7 @@ import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -85,9 +86,37 @@ class AutoModViewModel @Inject constructor(
     private val _autoModCredentials = mutableStateOf(AutoModCredentials())
      val autoModCredentials = _autoModCredentials
 
+    // Backing property to avoid state updates from other classes
+    private val _overlayIsVisible = MutableStateFlow(false)
+    // The UI collects from this StateFlow to get its state updates
+
+    var singleTapHideVisibility={}
+
     init{
         fetOAuthToken()
     }
+
+    init {
+        viewModelScope.launch {
+            _overlayIsVisible.collect{overlayVisible ->
+                Log.d("_overlayIsVisible","_overlayIsVisible -->${_overlayIsVisible.value}")
+                if(overlayVisible){
+                    delay(3000)
+                    singleTapHideVisibility()
+                    _overlayIsVisible.tryEmit(false)
+                }
+            }
+        }
+    }
+    fun setOverlayToVisible(){
+        _overlayIsVisible.tryEmit(true)
+        Log.d("setOverlayToVisible","setOverlayToVisible -->${_overlayIsVisible.value}")
+    }
+    fun setOverlayToHidden(){
+        _overlayIsVisible.tryEmit(false)
+        Log.d("setOverlayToHidden","setOverlayToVisible -->${_overlayIsVisible.value}")
+    }
+
 
     private fun fetOAuthToken() {
         viewModelScope.launch {
