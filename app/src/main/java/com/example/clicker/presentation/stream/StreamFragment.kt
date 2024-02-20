@@ -99,8 +99,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             (clickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
             clickableWebView.expandedMethod = {
                 Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
-
-
+                clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
 
 
 //            Create layout parameters to match parent
