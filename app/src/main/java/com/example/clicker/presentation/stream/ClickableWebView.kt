@@ -23,6 +23,7 @@ class ClickableWebView: WebView {
 
     var expandedMethod ={}
     var collapsedMethod={}
+    var singleTapMethod={}
 
 
 
@@ -48,6 +49,13 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
 
         return true
     }
+
+    override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+        Log.d("onSingleTapConfirmed","TAPPING")
+        singleTapMethod()
+        return super.onSingleTapConfirmed(e)
+    }
+
 }
 
     private val detector: GestureDetector = GestureDetector(context, myListener)
@@ -61,6 +69,7 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
 
     override fun performClick(): Boolean {
         return super.performClick()
+
     }
 
 }
