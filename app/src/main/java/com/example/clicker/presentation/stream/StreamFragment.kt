@@ -19,6 +19,7 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.sp
@@ -81,7 +82,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
         // val channelName =streamViewModel.channelName.value
 
-        val channelName = streamViewModel.channelName.value!!
+        val channelName = streamViewModel.channelName.value
         Log.d("CHANNELNAMENONENGLISH", "channelName -->$channelName")
 
         val url = "https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
@@ -158,7 +159,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             clickableWebView.singleTapMethod={
                 val overlayIsVisible = overlapView.visibility ==View.VISIBLE
                 val overlayHeight = overlapView.height
-                val determinedHeight = (rootConstraintLayout.height * 0.8).toInt()
+                val determinedHeight = (rootConstraintLayout.height * 0.9).toInt()
                 val layoutParams = overlapView.layoutParams as ConstraintLayout.LayoutParams
 
                 //todo:example of not what to do
@@ -280,7 +281,9 @@ fun setOrientation(
     binding.overlapComposeView?.apply {
         setContent {
             AppTheme{
-                OverlayView()
+                OverlayView(
+                    streamViewModel
+                )
 
             }
 

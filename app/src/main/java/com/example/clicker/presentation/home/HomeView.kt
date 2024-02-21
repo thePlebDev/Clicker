@@ -168,6 +168,7 @@ fun ValidationView(
                 clientId = clientId
             )
         },
+        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
         streamersListLoading = homeViewModel.state.value.streamersListLoading,
         urlList =homeViewModel.newUrlList.collectAsState().value,
         clientId = clientId ?: "",

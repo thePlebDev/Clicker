@@ -36,11 +36,11 @@ class TwitchRepoImpl @Inject constructor(
     private val twitchClient: TwitchHomeClient,
 ) : TwitchRepo  {
 
-    override suspend fun getFollowedLiveStreams(
+     override suspend fun getFollowedLiveStreams(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<NetworkAuthResponse<List<StreamInfo>>> = flow {
+    ): Flow<NetworkAuthResponse<List<StreamData>>> = flow {
         emit(NetworkAuthResponse.Loading)
 
 
@@ -53,10 +53,10 @@ class TwitchRepoImpl @Inject constructor(
 
         val emptyBody = FollowedLiveStreams(listOf<StreamData>())
         val body = response.body() ?: emptyBody
-        val exported = body.data.map { it.toStreamInfo() }
+        val exported = body.data.map { it.toStreamInfo() } //todo:will delete this later
 
         if (response.isSuccessful) {
-            emit(NetworkAuthResponse.Success(exported))
+            emit(NetworkAuthResponse.Success(body.data))
         } else {
             emit(NetworkAuthResponse.Failure(Exception("Error!, Please try again")))
         }

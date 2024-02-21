@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 
@@ -101,7 +102,7 @@ object ModChannelComponents{
         width: Int,
         density:Float,
         offlineModChannelList:List<String>,
-        liveModChannelList:List<StreamInfo>,
+        liveModChannelList:List<StreamData>,
         modChannelResponseState: Response<Boolean>,
         refreshing:Boolean,
         refreshFunc:()->Unit,
@@ -282,7 +283,7 @@ object ModChannelComponents{
             width: Int,
             density:Float,
             offlineModChannelList:List<String>,
-            liveModChannelList:List<StreamInfo>,
+            liveModChannelList:List<StreamData>,
             modChannelResponseState: Response<Boolean>,
             updateStreamerName: (String, String,String,String) -> Unit,
             onNavigate: (Int) -> Unit,
@@ -324,12 +325,12 @@ object ModChannelComponents{
                                 height =height,
                                 width=width,
                                 density= density,
-                                streamerName = streamInfo.streamerName,
-                                broadcasterId = streamInfo.broadcasterId,
-                                streamTitle=streamInfo.streamTitle,
-                                gameTitle =streamInfo.gameTitle,
-                                viewCount = streamInfo.views,
-                                url = streamInfo.url,
+                                streamerName = streamInfo.userLogin,
+                                broadcasterId = streamInfo.userId,
+                                streamTitle=streamInfo.title,
+                                gameTitle =streamInfo.gameName,
+                                viewCount = streamInfo.viewerCount,
+                                url = streamInfo.thumbNailUrl,
                                 updateStreamerName ={
                                         streamerName,clientId,broadcasterId,userId ->
                                     updateStreamerName(streamerName,clientId,broadcasterId,userId)
