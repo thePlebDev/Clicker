@@ -26,7 +26,7 @@ fun OverlayView(){
 
 @Composable
 fun TestingOverlayUI(){
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal =10.dp)) {
         Text("AlveusSanctuary", fontSize = 25.sp,color = Color.White,maxLines = 1,overflow = TextOverflow.Ellipsis)
         Text("Animal Ambassador 24/7 Live Cams | !alveus !vid !hat !merch !plush", fontSize = 17.sp,color = Color.White,maxLines = 1,overflow = TextOverflow.Ellipsis)
         Text("Animals, Aquariums, and Zoos", fontSize = 17.sp,color = Color.White,maxLines = 1,overflow = TextOverflow.Ellipsis)

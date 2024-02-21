@@ -122,12 +122,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
-        val overlapView:View = view.findViewById(R.id.overlapView)
-        val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
+
 
 
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val overlapView:View = view.findViewById(R.id.overlapView)
+            val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
             // Do some stuff
             val clickableWebView: ClickableWebView = myWebView as ClickableWebView
