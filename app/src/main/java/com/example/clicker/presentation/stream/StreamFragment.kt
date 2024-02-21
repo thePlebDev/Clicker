@@ -18,7 +18,10 @@ import android.view.WindowInsets
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
@@ -27,6 +30,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.views.overlay.OverlayView
 import com.example.clicker.ui.theme.AppTheme
 
 /**
@@ -119,6 +123,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
         val overlapView:View = view.findViewById(R.id.overlapView)
+        val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
+
 
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -129,6 +135,9 @@ class StreamFragment : Fragment(), View.OnClickListener {
             clickableWebView.expandedMethod = {
                 Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
                 clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+
+                val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+                overlayComposeParams.width =rootConstraintLayout.width
 
 
 //            Create layout parameters to match parent
@@ -141,13 +150,14 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 composeView.visibility = View.INVISIBLE
 
                 myWebView.layoutParams = layoutParams
+                overlayComposeView.layoutParams = overlayComposeParams
             }
 
             /**method for the single tap*/
             clickableWebView.singleTapMethod={
                 val overlayIsVisible = overlapView.visibility ==View.VISIBLE
                 val overlayHeight = overlapView.height
-                val determinedHeight = (rootConstraintLayout.height * 0.5).toInt()
+                val determinedHeight = (rootConstraintLayout.height * 0.8).toInt()
                 val layoutParams = overlapView.layoutParams as ConstraintLayout.LayoutParams
 
                 //todo:example of not what to do
@@ -193,6 +203,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
             /**collapsed method*/
             clickableWebView.collapsedMethod = {
                 val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
+                val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+                overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
 
 
                 val webViewLayout = ConstraintLayout.LayoutParams(
@@ -203,6 +215,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
                 composeView.visibility = View.VISIBLE
                 myWebView.layoutParams = webViewLayout
+                overlayComposeView.layoutParams = overlayComposeParams
 
             }
         }
@@ -258,6 +271,15 @@ fun setOrientation(
                     autoModViewModel,
                     homeViewModel
                 )
+
+            }
+
+        }
+    }
+    binding.overlapComposeView?.apply {
+        setContent {
+            AppTheme{
+                OverlayView()
 
             }
 
