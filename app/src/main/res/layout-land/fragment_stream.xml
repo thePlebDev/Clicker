@@ -34,7 +34,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.8">
+            app:layout_constraintHeight_percent="0.9">
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/overlapComposeView"
                 android:animateLayoutChanges="true"

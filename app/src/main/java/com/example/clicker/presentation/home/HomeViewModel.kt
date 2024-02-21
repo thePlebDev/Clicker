@@ -1,27 +1,17 @@
 package com.example.clicker.presentation.home
 
-import android.content.Context
-import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.util.Log
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.AuthenticationEvent
-import com.example.clicker.presentation.authentication.CertifiedUser
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
@@ -69,7 +59,7 @@ data class HomeUIState(
     val networkConnectionState:Boolean = true,
 
     val offlineModChannelList:List<String> =listOf(),
-    val liveModChannelList:List<StreamInfo> = listOf(),
+    val liveModChannelList:List<StreamData> = listOf(),
     val modChannelResponseState:Response<Boolean> = Response.Loading,
     val modRefreshing:Boolean = false,
     val modChannelShowBottomModal:Boolean = false,
@@ -92,8 +82,8 @@ class HomeViewModel @Inject constructor(
     private val authenticationEventBus: AuthenticationEvent
 ) : ViewModel() {
 
-    private val _newUrlList = MutableStateFlow<List<StreamInfo>?>(null)
-    val newUrlList: StateFlow<List<StreamInfo>?> = _newUrlList
+    private val _newUrlList = MutableStateFlow<List<StreamData>?>(null)
+    val newUrlList: StateFlow<List<StreamData>?> = _newUrlList
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
@@ -326,11 +316,11 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Success ->{
 
                             val offlineModList = mutableListOf<String>()
-                            val onlineList = mutableListOf<StreamInfo>()
+                            val onlineList = mutableListOf<StreamData>()
                             for(modChannel in response.data.data ){
                                 offlineModList.add(modChannel.broadcasterName)
                                 _newUrlList.value?.forEach {
-                                    if(it.streamerName == modChannel.broadcasterName){
+                                    if(it.userName == modChannel.broadcasterName){
                                         onlineList.add(it)
                                         offlineModList.remove(modChannel.broadcasterName)
                                     }
@@ -657,17 +647,15 @@ class HomeViewModel @Inject constructor(
     }
 
 
-} /***END OF VIEWMODEL**/
+}
 
-fun StreamInfo.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamInfo {
+/***END OF VIEWMODEL**/
 
-    return StreamInfo(
-        streamerName = this.streamerName,
-        streamTitle = this.streamTitle,
-        gameTitle = this.gameTitle,
-        views = this.views,
-        url = this.url.replace("{width}", "$aspectWidth").replace("{height}", "$aspectHeight"),
-        broadcasterId = this.broadcasterId
+fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamData {
+
+    return copy(
+        thumbNailUrl = thumbNailUrl.replace("{width}", "$aspectWidth")
+            .replace("{height}", "$aspectHeight")
     )
 }
 

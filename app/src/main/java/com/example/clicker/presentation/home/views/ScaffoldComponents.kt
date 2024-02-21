@@ -71,11 +71,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
+import com.example.clicker.presentation.stream.ClickedStreamInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -116,10 +118,11 @@ object ScaffoldComponents {
         showLogoutDialog:()->Unit,
         login: () -> Unit,
         userIsLoggedIn: Boolean,
-        urlList: List<StreamInfo>?,
+        urlList: List<StreamData>?,
         urlListLoading: NetworkResponse<Boolean>,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
+        updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
         clientId:String,
         userId:String,
         height:Int,
@@ -175,6 +178,7 @@ object ScaffoldComponents {
                                 streamerName, clientIds, broadcasterId, userIds ->
                             updateStreamerName(streamerName, clientIds, broadcasterId, userIds)
                         },
+                        updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
                         clientId =clientId,
                         userId = userId,
                         height = height,
@@ -298,10 +302,11 @@ fun PullToRefreshComponent(
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun LiveChannelsLazyColumn(
-            urlList: List<StreamInfo>?,
+            urlList: List<StreamData>?,
             urlListLoading: NetworkResponse<Boolean>,
             onNavigate: (Int) -> Unit,
             updateStreamerName: (String, String, String, String) -> Unit,
+            updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
             clientId: String,
             userId: String,
             height: Int,
@@ -342,7 +347,7 @@ fun PullToRefreshComponent(
                                 }
                             }
 
-                            items(urlList,key = { streamItem -> streamItem.broadcasterId }) { streamItem ->
+                            items(urlList,key = { streamItem -> streamItem.userId }) { streamItem ->
 
 
                                 Parts.LiveChannelRowItem(
@@ -351,6 +356,7 @@ fun PullToRefreshComponent(
                                         updateStreamerName(streamerName,clientId,broadcasterId,userId)
 
                                     },
+                                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
                                     streamItem = streamItem,
                                     clientId =clientId,
                                     userId = userId,
@@ -430,7 +436,8 @@ fun PullToRefreshComponent(
         @Composable
         fun LiveChannelRowItem(
             updateStreamerName: (String, String, String, String) -> Unit,
-            streamItem: StreamInfo,
+            updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+            streamItem: StreamData,
             clientId: String,
             userId:String,
             onNavigate: (Int) -> Unit,
@@ -442,27 +449,36 @@ fun PullToRefreshComponent(
 
             Row(
                 modifier = Modifier.clickable {
+                    updateClickedStreamInfo(
+                        ClickedStreamInfo(
+                            channelName = streamItem.userLogin,
+                            streamTitle = streamItem.title,
+                            category =  streamItem.gameName,
+                            tags = streamItem.tags,
+                            adjustedUrl = streamItem.thumbNailUrl
+                        )
+                    )
 
                     updateStreamerName(
-                        streamItem.streamerName,
+                        streamItem.userLogin,
                         clientId,
-                        streamItem.broadcasterId,
+                        streamItem.userId,
                         userId
                     )
                     onNavigate(R.id.action_homeFragment_to_streamFragment)
                 }
             ){
                 Parts.ImageWithViewCount(
-                    url = streamItem.url,
+                    url = streamItem.thumbNailUrl,
                     height = height,
                     width = width,
-                    viewCount = streamItem.views,
+                    viewCount = streamItem.viewerCount,
                     density =density
                 )
                 Parts.StreamTitleWithInfo(
-                    streamerName = streamItem.streamerName,
-                    streamTitle = streamItem.streamTitle,
-                    gameTitle = streamItem.gameTitle
+                    streamerName = streamItem.userLogin,
+                    streamTitle = streamItem.title,
+                    gameTitle = streamItem.gameName
                 )
 
             }

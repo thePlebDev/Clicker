@@ -104,6 +104,14 @@ data class ClickedUIState(
     val clickedUsernameIsMod:Boolean =false,
     val shouldMonitorUser:Boolean = false,
 )
+
+data class ClickedStreamInfo(
+    val channelName: String ="",
+    val streamTitle:String ="",
+    val category:String="",
+    val tags:List<String> = listOf(),
+    val adjustedUrl:String=""
+)
 data class ForwardSlashCommands(
     val title:String,
     val subtitle:String,
@@ -149,6 +157,13 @@ class StreamViewModel @Inject constructor(
     //all the related chat settings code
     private val _modChatSettingsState = mutableStateOf(ModChatSettings())
     val modChatSettingsState = _modChatSettingsState
+
+    private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
+    val clickedStreamInfo = _clickedStreamInfo
+    fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
+        //todo: need to do some adjusting for the thumbnail url
+        _clickedStreamInfo.value =clickedStreamInfo
+    }
 
     /**
      * The UI state that represents all the data meant for the [ChatSettingsContainer.EnhancedChatSettingsBox] composable

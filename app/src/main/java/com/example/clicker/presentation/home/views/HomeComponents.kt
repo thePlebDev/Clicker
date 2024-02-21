@@ -34,10 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.models.twitchRepo.StreamData
 
 
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 /**
@@ -84,8 +86,9 @@ object HomeComponents {
         addToLinks: () -> Unit,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
+        updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
         streamersListLoading: NetworkResponse<Boolean>,
-        urlList: List<StreamInfo>?,
+        urlList: List<StreamData>?,
         clientId: String,
         userId: String,
         width:Int,
@@ -126,6 +129,7 @@ object HomeComponents {
                             userId
                         )
                     },
+                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
                     urlListLoading = streamersListLoading,
                     urlList =urlList,
                     clientId = clientId,
