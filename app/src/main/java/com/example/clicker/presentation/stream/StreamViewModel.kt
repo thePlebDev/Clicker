@@ -419,7 +419,9 @@ class StreamViewModel @Inject constructor(
     ) {
 
         clickedUsernameChats.clear()
-        val messages = listChats.filter { it.displayName == clickedUsername }.map { if (it.deleted) it.userType!! + " (deleted by mod)" else it.userType!! }
+        val messages = listChats.filter {
+            it.displayName == clickedUsername }
+            .map { if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
         clickedUsernameChats.addAll(messages)
         _clickedUIState.value = _clickedUIState.value.copy(
@@ -659,7 +661,7 @@ class StreamViewModel @Inject constructor(
      * */
     private suspend fun monitorSocketForChatMessages(){
         webSocket.state.collect { twitchUserMessage ->
-            Log.d("loggedMessage", "${twitchUserMessage.id}")
+            Log.d("loggedMessage", " tmiSentTs --> ${twitchUserMessage.tmiSentTs}")
 
             if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 

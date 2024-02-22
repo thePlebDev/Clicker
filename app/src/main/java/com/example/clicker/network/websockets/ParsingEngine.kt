@@ -8,6 +8,10 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import javax.inject.Inject
 import okhttp3.WebSocket
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
@@ -243,6 +247,8 @@ class ParsingEngine @Inject constructor() {
         val pattern = "([^;@]+)=([^;]+)".toRegex()
         val privateMsgPattern = "(#$channelName :)(.+)".toRegex()
 
+//        Log.d("privateMessageParsing","string --> $text")
+
         val matchResults = pattern.findAll(text)
         val privateMsgResult = privateMsgPattern.find(text)
 
@@ -367,3 +373,4 @@ class ParsingEngine @Inject constructor() {
         }
     }
 }
+
