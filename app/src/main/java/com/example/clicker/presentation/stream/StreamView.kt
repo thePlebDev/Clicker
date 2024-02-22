@@ -273,7 +273,8 @@ fun StreamView(
                                 channelName = streamViewModel.clickedStreamInfo.value.channelName,
                                 streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
                                 category = streamViewModel.clickedStreamInfo.value.category,
-                                tags = streamViewModel.clickedStreamInfo.value.tags
+                                tags = streamViewModel.clickedStreamInfo.value.tags,
+                                showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
                             )
                         }
                     )
