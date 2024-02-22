@@ -30,6 +30,7 @@ import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.presentation.stream.views.MainChat
+import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
@@ -267,6 +268,12 @@ fun StreamView(
                                 },
                                 toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
                                 toggleBanDialog={streamViewModel.openBanDialog.value = true}
+                            )
+                            VerticalOverlayView(
+                                channelName = streamViewModel.clickedStreamInfo.value.channelName,
+                                streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+                                category = streamViewModel.clickedStreamInfo.value.category,
+                                tags = streamViewModel.clickedStreamInfo.value.tags
                             )
                         }
                     )
