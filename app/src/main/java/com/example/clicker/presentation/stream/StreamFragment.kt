@@ -18,11 +18,7 @@ import android.view.WindowInsets
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
@@ -31,7 +27,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.presentation.stream.views.overlay.OverlayView
+import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.ui.theme.AppTheme
 
 /**
@@ -281,7 +277,7 @@ fun setOrientation(
     binding.overlapComposeView?.apply {
         setContent {
             AppTheme{
-                OverlayView(
+                HorizontalOverlayView(
                     streamViewModel
                 )
 
