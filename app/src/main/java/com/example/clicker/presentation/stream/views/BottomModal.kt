@@ -23,6 +23,7 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -36,8 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
@@ -227,8 +231,10 @@ object BottomModal{
             ) {
                 clickedUsernameBanner()
                 clickedUserBottomBanner()
+                Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
 
                 BottomModalParts.ClickedUserMessages(clickedUsernameChats)
+
             } // END OF THE COLUMN
 
 
@@ -257,16 +263,25 @@ object BottomModal{
                         shape = RoundedCornerShape(8.dp)
                     )
             ) {
-                items(clickedUsernameChats) {
-                    Text(
-                        it,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 5.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 15.sp
+                items(clickedUsernameChats) {message->
 
+                    Text(
+
+                        buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = 17.sp)) {
+                                append("Message: ")
+                            }
+
+
+                            withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
+                                append(message)
+                            }
+
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(5.dp)
                     )
+
+
                 }
             }
         }
@@ -349,7 +364,6 @@ object BottomModal{
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary)
                     if (isMod) {
                         Row() {
                             Button(

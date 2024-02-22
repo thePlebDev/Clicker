@@ -48,7 +48,7 @@
     <!-- StreamView BottomModalContent composable -->
     <string name="user_icon_description">User icon</string>
     <string name="reply">Reply</string>
-    <string name="recent_messages">Recent Messages</string>
+    <string name="recent_messages">Recent Messages:</string>
     <string name="timeout">Timeout</string>
     <string name="unban">Unban</string>
     <string name="ban">Ban</string>
