@@ -50,23 +50,19 @@ fun VerticalTestingOverlayUI(
             channelName,
             fontSize = 25.sp,
             color = Color.White,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+
         )
         Text(
             streamTitle,
             fontSize = 15.sp,
             color = Color.White,
             lineHeight = 15.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+
         )
         Text(
             category,
             fontSize = 13.sp,
             color = Color.White.copy(alpha = 0.8f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(vertical = 5.dp)
         )
         FlowRow(
