@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 
 import android.webkit.WebView
 
@@ -61,16 +62,20 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
     private val detector: GestureDetector = GestureDetector(context, myListener)
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return detector.onTouchEvent(event).let { result ->
-            performClick()
-            true
+
+        return detector.onTouchEvent(event).let { result -> // passing the touch event to our detector
+            performClick() //allowing for accessibility events
+            true//indicating that the click event has been consumed
         }
     }
 
+
     override fun performClick(): Boolean {
+
         return super.performClick()
 
     }
+
 
 }
 

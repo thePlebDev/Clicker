@@ -1,5 +1,9 @@
 package com.example.clicker.presentation.stream.views.overlays
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,12 +31,31 @@ fun VerticalOverlayView(
     streamTitle:String,
     category:String,
     tags:List<String>,
+    showStreamDetails:Boolean
 ){
-    Box(modifier = Modifier.fillMaxWidth().background(Color.Black)){
-        VerticalTestingOverlayUI(
-            channelName, streamTitle, category, tags
+    AnimatedVisibility(
+        visible = showStreamDetails,
+        enter = slideInVertically(
+            initialOffsetY = { -it },
+            animationSpec = tween(durationMillis = 300)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { -it },
+            animationSpec = tween(durationMillis = 300)
         )
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().background(Color.Black)
+        ){
+            VerticalTestingOverlayUI(
+                channelName, streamTitle, category, tags
+            )
+        }
     }
+
+
+
+
 }
 
 @OptIn(ExperimentalLayoutApi::class)

@@ -87,34 +87,61 @@ class AutoModViewModel @Inject constructor(
      val autoModCredentials = _autoModCredentials
 
     // Backing property to avoid state updates from other classes
-    private val _overlayIsVisible = MutableStateFlow(false)
+    private val _horizontalOverlayIsVisible = MutableStateFlow(false)
     // The UI collects from this StateFlow to get its state updates
+    private val _verticalOverlayIsVisible = MutableStateFlow(false)
+     val verticalOverlayIsVisible = _verticalOverlayIsVisible
 
-    var singleTapHideVisibility={}
+
+    var singleTapHideHorizontalVisibility={}
+
+
 
     init{
         fetOAuthToken()
     }
-
     init {
         viewModelScope.launch {
-            _overlayIsVisible.collect{overlayVisible ->
-                Log.d("_overlayIsVisible","_overlayIsVisible -->${_overlayIsVisible.value}")
-                if(overlayVisible){
+            _verticalOverlayIsVisible.collect{verticalOverlayIsVisible ->
+                Log.d("_overlayIsVisible","_overlayIsVisible -->${verticalOverlayIsVisible}")
+                if(verticalOverlayIsVisible){
                     delay(3000)
-                    singleTapHideVisibility()
-                    _overlayIsVisible.tryEmit(false)
+                    _verticalOverlayIsVisible.tryEmit(false)
                 }
             }
         }
     }
-    fun setOverlayToVisible(){
-        _overlayIsVisible.tryEmit(true)
-        Log.d("setOverlayToVisible","setOverlayToVisible -->${_overlayIsVisible.value}")
+
+    init {
+        viewModelScope.launch {
+            _horizontalOverlayIsVisible.collect{horizontalOverlayIsVisible ->
+                Log.d("_overlayIsVisible","_overlayIsVisible -->${_horizontalOverlayIsVisible.value}")
+                if(horizontalOverlayIsVisible){
+                    delay(3000)
+                    singleTapHideHorizontalVisibility()
+                    _horizontalOverlayIsVisible.tryEmit(false)
+                }
+            }
+        }
     }
-    fun setOverlayToHidden(){
-        _overlayIsVisible.tryEmit(false)
-        Log.d("setOverlayToHidden","setOverlayToVisible -->${_overlayIsVisible.value}")
+    // the horizontal overlay UI
+    fun setHorizontalOverlayToVisible(){
+        _horizontalOverlayIsVisible.tryEmit(true)
+        Log.d("setOverlayToVisible","setOverlayToVisible -->${_horizontalOverlayIsVisible.value}")
+    }
+    fun setHorizontalOverlayToHidden(){
+        _horizontalOverlayIsVisible.tryEmit(false)
+        Log.d("setOverlayToHidden","setOverlayToVisible -->${_horizontalOverlayIsVisible.value}")
+    }
+
+    //the vertical overlay UI
+    fun setVerticalOverlayToVisible(){
+        _verticalOverlayIsVisible.tryEmit(true)
+        Log.d("setOverlayToVisible","setOverlayToVisible -->${_verticalOverlayIsVisible.value}")
+    }
+    fun setVerticalOverlayToHidden(){
+        _verticalOverlayIsVisible.tryEmit(false)
+        Log.d("setOverlayToHidden","setOverlayToVisible -->${_verticalOverlayIsVisible.value}")
     }
 
 

@@ -32,8 +32,8 @@ import com.example.clicker.ui.theme.AppTheme
 
 /**
  * A simple [Fragment] subclass.
- * Use the [StreamFragment.newInstance] factory method to
  * create an instance of this fragment.
+ * [View.OnClickListener] is used for the back button on the stream
  */
 class StreamFragment : Fragment(), View.OnClickListener {
 
@@ -45,7 +45,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
-        autoModViewModel.setOverlayToVisible()
+        autoModViewModel.setHorizontalOverlayToVisible()
+        autoModViewModel.setVerticalOverlayToVisible()
     }
 
     private fun orientationCheck(){
@@ -174,7 +175,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
                         finalHeight = determinedHeight,
                         overlapView = overlapView
                     )
-                    autoModViewModel.setOverlayToVisible()
+                    autoModViewModel.setHorizontalOverlayToVisible()
 
 
                 }else{
@@ -183,7 +184,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
                         finalHeight = 1,
                         overlapView = overlapView
                     )
-                    autoModViewModel.setOverlayToHidden()
+                    autoModViewModel.setHorizontalOverlayToHidden()
 
 
 
@@ -191,7 +192,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
             }
 
-            autoModViewModel.singleTapHideVisibility ={
+            autoModViewModel.singleTapHideHorizontalVisibility ={
                 animateHeight(
                     layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
                     finalHeight = 1,
@@ -216,6 +217,20 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 overlayComposeView.layoutParams = overlayComposeParams
 
             }
+        }else{
+
+            val clickableWebView: ClickableWebView = myWebView as ClickableWebView
+            clickableWebView.singleTapMethod={
+                if(autoModViewModel.verticalOverlayIsVisible.value){
+                    autoModViewModel.setVerticalOverlayToHidden()
+                }else{
+                    autoModViewModel.setVerticalOverlayToVisible()
+                }
+                clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+
+            }
+            val backButton: ImageButton? = view.findViewById(R.id.backButton)
+            backButton?.setOnClickListener(this)
         }
 
 
@@ -227,13 +242,10 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         /**above should happen on the double tap*/
 
-
         setWebView(
             myWebView = myWebView,
             url = url
         )
-        val backButton: ImageButton? = view.findViewById(R.id.backButton)
-        backButton?.setOnClickListener(this)
 
         return view
     }
