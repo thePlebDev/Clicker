@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.stream
 
 import android.animation.LayoutTransition
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -11,10 +12,13 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -29,6 +33,7 @@ import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.ui.theme.AppTheme
+
 
 /**
  * A simple [Fragment] subclass.
@@ -115,11 +120,30 @@ class StreamFragment : Fragment(), View.OnClickListener {
             binding = binding,
             streamViewModel = streamViewModel,
             autoModViewModel = autoModViewModel,
-            homeViewModel = homeViewModel
+            homeViewModel = homeViewModel,
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
+
+        val streamManagerUI: View = view.findViewById(R.id.compose_view_stream_manager)
+        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+        streamManagerUI.translationY = height
+
+         val myListener =  object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean {
+                return true
+            }
+        }
+        val detector: GestureDetector = GestureDetector(context, myListener)
+
+
+
+
+
+
+
+
 
 
 
@@ -128,8 +152,15 @@ class StreamFragment : Fragment(), View.OnClickListener {
             val overlapView:View = view.findViewById(R.id.overlapView)
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
+
+
+
+
+
+
             // Do some stuff
             val clickableWebView: ClickableWebView = myWebView as ClickableWebView
+
             (clickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
             clickableWebView.expandedMethod = {
                 Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
@@ -231,6 +262,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
             }
             val backButton: ImageButton? = view.findViewById(R.id.backButton)
             backButton?.setOnClickListener(this)
+
+
         }
 
 
@@ -271,15 +304,33 @@ fun setOrientation(
     binding: FragmentStreamBinding,
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
 ): FrameLayout {
+
+
     binding.composeView.apply {
         setContent {
             AppTheme{
                 StreamView(
                     streamViewModel,
                     autoModViewModel,
-                    homeViewModel
+                    homeViewModel,
+                    showStreamManager={
+                        val streamManagerUI: View = binding.root.findViewById(R.id.compose_view_stream_manager)
+//                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+//                        streamManagerUI.translationY = 0f
+                        /**THE ANIMATION*/
+                        val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
+//
+                        //// Create ObjectAnimator for translationY property
+                        val animator = ObjectAnimator.ofFloat(streamManagerUI, "translationY", newTranslationY.toFloat())
+
+                        // Set the duration of the animation
+                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
+
+                        // Start the animation
+                        animator.start()
+                    }
                 )
 
             }

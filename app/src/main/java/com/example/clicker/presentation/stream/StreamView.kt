@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 fun StreamView(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    showStreamManager:()->Unit
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
@@ -187,7 +188,9 @@ fun StreamView(
                                     userIsModerator = modStatus ?: false
                                 )
                             }else{
-                                StreamManagerUI()
+                                StreamManagerUI(
+                                    showStreamManager={showStreamManager()}
+                                )
 
                             }
                             //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO

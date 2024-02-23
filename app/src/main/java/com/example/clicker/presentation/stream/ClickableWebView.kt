@@ -63,9 +63,9 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
-        return detector.onTouchEvent(event).let { result -> // passing the touch event to our detector
-            performClick() //allowing for accessibility events
-            true//indicating that the click event has been consumed
+        return detector.onTouchEvent(event).let { result ->
+            performClick()
+            true
         }
     }
 
