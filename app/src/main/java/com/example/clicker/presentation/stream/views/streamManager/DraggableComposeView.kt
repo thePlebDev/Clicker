@@ -7,10 +7,11 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.MotionEventCompat
 
 
-class DraggableComposeView: View {
+class DraggableComposeView: ConstraintLayout {
 
     constructor(context: Context?) : super(context!!) {}
     constructor(context: Context?, attrs: AttributeSet?) : super(
@@ -26,7 +27,9 @@ class DraggableComposeView: View {
 
 
 
+
     // The "active pointer" is the one moving the object.
+
 
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
@@ -35,8 +38,9 @@ class DraggableComposeView: View {
 
         val action = ev.action
 
-
+        Log.d("ACTIONDOWN","change in X -->${ev.rawX} change in Y   -->${ev.rawY}")
         when (action) {
+
 
             MotionEvent.ACTION_UP-> {
                 performClick();

@@ -22,7 +22,17 @@ import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
@@ -32,6 +42,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
+import com.example.clicker.presentation.stream.views.streamManager.EditStreamInfo
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -126,16 +137,11 @@ class StreamFragment : Fragment(), View.OnClickListener {
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
 
-        val streamManagerUI: View = view.findViewById(R.id.compose_view_stream_manager)
+        val streamManagerUI: View = view.findViewById(R.id.nested_draggable_compose_view)
         val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
         streamManagerUI.translationY = height
 
-         val myListener =  object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDown(e: MotionEvent): Boolean {
-                return true
-            }
-        }
-        val detector: GestureDetector = GestureDetector(context, myListener)
+
 
 
 
@@ -299,6 +305,7 @@ private fun removeComposeWidthConstraint(view: ComposeView) {
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun setOrientation(
     resources: Resources,
     binding: FragmentStreamBinding,
@@ -307,6 +314,7 @@ fun setOrientation(
     homeViewModel: HomeViewModel,
 ): FrameLayout {
 
+    val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
 
     binding.composeView.apply {
         setContent {
@@ -316,14 +324,15 @@ fun setOrientation(
                     autoModViewModel,
                     homeViewModel,
                     showStreamManager={
-                        val streamManagerUI: View = binding.root.findViewById(R.id.compose_view_stream_manager)
+
 //                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
 //                        streamManagerUI.translationY = 0f
                         /**THE ANIMATION*/
+
                         val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
 //
                         //// Create ObjectAnimator for translationY property
-                        val animator = ObjectAnimator.ofFloat(streamManagerUI, "translationY", newTranslationY.toFloat())
+                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
 
                         // Set the duration of the animation
                         animator.duration = 300 // Adjust the duration as needed (in milliseconds)
@@ -343,6 +352,31 @@ fun setOrientation(
                 HorizontalOverlayView(
                     streamViewModel
                 )
+
+            }
+
+        }
+    }
+    binding.nestedDraggableComposeView?.apply {
+        setContent {
+            AppTheme{
+                EditStreamInfo(
+                    closeEditStreamInfo={
+                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+                        val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
+//
+                        //// Create ObjectAnimator for translationY property
+                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY)
+
+                        // Set the duration of the animation
+                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
+
+                        // Start the animation
+                        animator.start()
+                    }
+                )
+
+
 
             }
 
