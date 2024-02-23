@@ -120,7 +120,7 @@ object MainChat{
         clickedAutoCompleteText: (String) -> Unit,
         textFieldValue: MutableState<TextFieldValue>,
         channelName: String?,
-        drawerState: androidx.compose.material3.DrawerState,
+        openSideDrawer:() ->Unit,
         showUndoButton:Boolean,
         noChatMode:Boolean,
         showOuterBottomModalState:() ->Unit,
@@ -177,7 +177,7 @@ object MainChat{
 
                     sendMessageToWebSocket = {chatMessage -> sendMessageToWebSocket(chatMessage)},
                     showModal ={
-                        coroutineScope.launch { drawerState.open() }
+                        openSideDrawer()
                     },
                     showOuterBottomModalState ={showOuterBottomModalState()},
                     newFilterMethod={newTextValue -> newFilterMethod(newTextValue)},

@@ -11,6 +11,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,8 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.sp
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.AutoMod
@@ -31,6 +34,7 @@ import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialo
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
+import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
@@ -48,6 +52,7 @@ fun StreamView(
     val filteredChat = streamViewModel.filteredChatList
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
     val scope = rememberCoroutineScope()
+    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 
     val bottomModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -87,30 +92,7 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                 sheetGesturesEnabled =false,
-                sheetContent ={
-
-                    AutoMod.Settings(
-                        sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
-                        changSliderPosition = {currentValue -> autoModViewModel.updateSliderValue(currentValue)},
-
-                        discriminationFilterList=autoModViewModel.autoModUIState.value.filterList,
-
-                        changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
-                        updateAutoModSettings = {autoModViewModel.updateAutoMod()},
-
-                        sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
-                        swearingIndex = autoModViewModel.autoModUIState.value.swearing,
-                        aggressionIndex =autoModViewModel.autoModUIState.value.aggression,
-                        bullyingIndex = autoModViewModel.autoModUIState.value.bullying,
-                        disabilityIndex =autoModViewModel.autoModUIState.value.disability,
-                        sexualityIndex =autoModViewModel.autoModUIState.value.sexuality,
-                        misogynyIndex =autoModViewModel.autoModUIState.value.misogyny,
-                        raceIndex =autoModViewModel.autoModUIState.value.race,
-                        filterText=autoModViewModel.autoModUIState.value.filterText,
-                        isModerator = autoModViewModel.autoModCredentials.value.isModerator
-                    )
-
-                },
+                sheetContent ={},
                 sheetState = outerBottomModalState
             ) {
 
@@ -172,37 +154,44 @@ fun StreamView(
                     }
                 ) {
 
+
                     SideModal(
                         drawerState = drawerState,
                         drawerContent = {
 
+                            if(showAdvancedChatSettings){
+                                ChatSettingsContainer.EnhancedChatSettingsBox(
+                                    enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
+                                    showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
+                                    chatSettingsData = streamViewModel.modChatSettingsState.value.data,
+                                    updateChatSettings = { newData ->
+                                        streamViewModel.toggleChatSettings(
+                                            newData
+                                        )
+                                    },
+                                    closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
+                                    showUndoButton = { showStatus ->
+                                        streamViewModel.showUndoButton(
+                                            showStatus
+                                        )
+                                    },
+                                    showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
+                                    noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                                    setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
+                                    advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                                    updateAdvancedChatSettings = { data ->
+                                        streamViewModel.updateAdvancedChatSettings(
+                                            data
+                                        )
+                                    },
+                                    userIsModerator = modStatus ?: false
+                                )
+                            }else{
+                                StreamManagerUI()
+
+                            }
                             //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
-                            ChatSettingsContainer.EnhancedChatSettingsBox(
-                                enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
-                                showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
-                                chatSettingsData = streamViewModel.modChatSettingsState.value.data,
-                                updateChatSettings = { newData ->
-                                    streamViewModel.toggleChatSettings(
-                                        newData
-                                    )
-                                },
-                                closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
-                                showUndoButton = { showStatus ->
-                                    streamViewModel.showUndoButton(
-                                        showStatus
-                                    )
-                                },
-                                showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
-                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                                setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
-                                advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                                updateAdvancedChatSettings = { data ->
-                                    streamViewModel.updateAdvancedChatSettings(
-                                        data
-                                    )
-                                },
-                                userIsModerator = modStatus ?: false
-                            )
+
 
                         },
                         contentCoveredBySideModal = {
@@ -211,7 +200,7 @@ fun StreamView(
                                 sendMessageToWebSocket = { string ->
                                     streamViewModel.sendMessage(string)
                                 },
-                                drawerState = drawerState,
+
                                 modStatus = modStatus,
                                 bottomModalState = bottomModalState,
                                 filteredChatList = filteredChat,
@@ -256,7 +245,8 @@ fun StreamView(
                                 noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                                 showOuterBottomModalState = {
                                     scope.launch {
-                                        outerBottomModalState.show()
+                                        showAdvancedChatSettings = false
+                                        drawerState.open()
                                     }
                                 },
                                 newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
@@ -267,7 +257,13 @@ fun StreamView(
                                     )
                                 },
                                 toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
-                                toggleBanDialog={streamViewModel.openBanDialog.value = true}
+                                toggleBanDialog={streamViewModel.openBanDialog.value = true},
+                                openSideDrawer={
+                                    scope.launch {
+                                        showAdvancedChatSettings = true
+                                        drawerState.open()
+                                    }
+                                }
                             )
                             VerticalOverlayView(
                                 channelName = streamViewModel.clickedStreamInfo.value.channelName,
@@ -319,7 +315,7 @@ fun SideModal(
 fun TextChat(
     twitchUserChat: List<TwitchUserData>,
     sendMessageToWebSocket: (String) -> Unit,
-    drawerState: DrawerState,
+    openSideDrawer:()->Unit,
     modStatus: Boolean?,
     bottomModalState: ModalBottomSheetState,
     filteredChatList: List<String>,
@@ -370,7 +366,9 @@ fun TextChat(
         },
         textFieldValue = textFieldValue,
         channelName = channelName,
-        drawerState =drawerState,
+        openSideDrawer={
+            openSideDrawer()
+        },
         undoBan = {undoBan()},
         showUndoButton =showUndoButton,
         noChatMode =noChatMode,

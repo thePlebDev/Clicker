@@ -43,6 +43,7 @@ fun HorizontalChat(
     val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
     val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
     val textFieldValue = streamViewModel.textFieldValue
+    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 
     val bottomModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -67,30 +68,7 @@ fun HorizontalChat(
     ModalBottomSheetLayout(
         sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
         sheetGesturesEnabled =false,
-        sheetContent ={
-            AutoMod.Settings(
-                sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
-                changSliderPosition = {currentValue -> autoModViewModel.updateSliderValue(currentValue)},
-
-
-                discriminationFilterList=autoModViewModel.autoModUIState.value.filterList,
-
-                changeSelectedIndex = {newIndex,filterType -> autoModViewModel.updateSelectedIndex(newIndex,filterType)},
-                updateAutoModSettings = {autoModViewModel.updateAutoMod()},
-
-                sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
-                swearingIndex = autoModViewModel.autoModUIState.value.swearing,
-                aggressionIndex =autoModViewModel.autoModUIState.value.aggression,
-                bullyingIndex = autoModViewModel.autoModUIState.value.bullying,
-                disabilityIndex =autoModViewModel.autoModUIState.value.disability,
-                sexualityIndex =autoModViewModel.autoModUIState.value.sexuality,
-                misogynyIndex =autoModViewModel.autoModUIState.value.misogyny,
-                raceIndex =autoModViewModel.autoModUIState.value.race,
-                filterText=autoModViewModel.autoModUIState.value.filterText,
-                isModerator = autoModViewModel.autoModCredentials.value.isModerator
-            )
-
-        },
+        sheetContent ={},
         sheetState = outerBottomModalState
     ) {
 
@@ -150,24 +128,33 @@ fun HorizontalChat(
             SideModal(
                 drawerState = drawerState,
                 drawerContent = {
-                    ChatSettingsContainer.EnhancedChatSettingsBox(
-                        enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
-                        showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
-                        chatSettingsData = streamViewModel.modChatSettingsState.value.data,
-                        updateChatSettings = { newData -> streamViewModel.toggleChatSettings(newData) },
-                        closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
-                        showUndoButton = { showStatus -> streamViewModel.showUndoButton(showStatus) },
-                        showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
-                        noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                        setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
-                        advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                        updateAdvancedChatSettings = { data ->
-                            streamViewModel.updateAdvancedChatSettings(
-                                data
-                            )
-                        },
-                        userIsModerator = modStatus ?: false
-                    )
+                    if(showAdvancedChatSettings){
+                        ChatSettingsContainer.EnhancedChatSettingsBox(
+                            enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
+                            showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
+                            chatSettingsData = streamViewModel.modChatSettingsState.value.data,
+                            updateChatSettings = { newData -> streamViewModel.toggleChatSettings(newData) },
+                            closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
+                            showUndoButton = { showStatus -> streamViewModel.showUndoButton(showStatus) },
+                            showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
+                            noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                            setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
+                            advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                            updateAdvancedChatSettings = { data ->
+                                streamViewModel.updateAdvancedChatSettings(
+                                    data
+                                )
+                            },
+                            userIsModerator = modStatus ?: false
+                        )
+                    }else{
+                        androidx.compose.material3.Text(
+                            "STREAM MANAGER UI",
+                            fontSize = 30.sp,
+                            color = Color.Red
+                        )
+                    }
+
                 },
                 contentCoveredBySideModal = {
                     TextChat(
@@ -175,7 +162,6 @@ fun HorizontalChat(
                         sendMessageToWebSocket = { string ->
                             streamViewModel.sendMessage(string)
                         },
-                        drawerState = drawerState,
                         modStatus = modStatus,
                         bottomModalState = bottomModalState,
                         filteredChatList = filteredChat,
@@ -222,7 +208,8 @@ fun HorizontalChat(
                         noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                         showOuterBottomModalState = {
                             scope.launch {
-                                outerBottomModalState.show()
+                                showAdvancedChatSettings = false
+                                drawerState.open()
                             }
                         },
                         newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
@@ -233,7 +220,13 @@ fun HorizontalChat(
                             )
                         },
                         toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
-                        toggleBanDialog={streamViewModel.openBanDialog.value = true}
+                        toggleBanDialog={streamViewModel.openBanDialog.value = true},
+                        openSideDrawer={
+                            scope.launch {
+                                showAdvancedChatSettings = true
+                                drawerState.open()
+                            }
+                        }
                     )
                 }
             )

@@ -365,7 +365,7 @@ object BottomModal{
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     if (isMod) {
-                        Row() {
+                        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
                             Button(
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                                 onClick = {
