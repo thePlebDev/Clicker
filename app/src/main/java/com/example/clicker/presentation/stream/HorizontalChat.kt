@@ -26,6 +26,7 @@ import com.example.clicker.presentation.stream.views.AutoMod
 
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
+import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
 import kotlinx.coroutines.launch
 
 
@@ -148,10 +149,8 @@ fun HorizontalChat(
                             userIsModerator = modStatus ?: false
                         )
                     }else{
-                        androidx.compose.material3.Text(
-                            "STREAM MANAGER UI",
-                            fontSize = 30.sp,
-                            color = Color.Red
+                        StreamManagerUI(
+                            showStreamManager = {}
                         )
                     }
 

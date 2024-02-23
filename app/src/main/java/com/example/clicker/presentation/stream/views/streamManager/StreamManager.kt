@@ -27,18 +27,26 @@ import com.example.clicker.R
 
 
 @Composable
-fun StreamManagerUI(){
-    CardDemo()
+fun StreamManagerUI(
+    showStreamManager:()->Unit
+){
+    CardDemo(
+        showStreamManager={showStreamManager()}
+    )
 
 }
 
 @Composable
-fun CardDemo() {
+fun CardDemo(
+    showStreamManager:()->Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp)
-            .clickable { },
+            .clickable {
+                showStreamManager()
+            },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         ),
