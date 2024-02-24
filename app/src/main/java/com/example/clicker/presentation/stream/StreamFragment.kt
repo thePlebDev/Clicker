@@ -125,6 +125,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
         }
 
         // val view = binding.root
+        val orientationIsLandscape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         val view = setOrientation(
             resources = resources,
@@ -132,29 +133,14 @@ class StreamFragment : Fragment(), View.OnClickListener {
             streamViewModel = streamViewModel,
             autoModViewModel = autoModViewModel,
             homeViewModel = homeViewModel,
+            orientationIsLandscape =orientationIsLandscape
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
 
-        val streamManagerUI: View = view.findViewById(R.id.nested_draggable_compose_view)
-        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-        streamManagerUI.translationY = height
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (orientationIsLandscape) {
             val overlapView:View = view.findViewById(R.id.overlapView)
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
@@ -255,6 +241,10 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
             }
         }else{
+            /**THIS conditional means that the phone is vertical */
+            val streamManagerUI: View = view.findViewById(R.id.nested_draggable_compose_view)
+            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+            streamManagerUI.translationY = height
 
             val clickableWebView: ClickableWebView = myWebView as ClickableWebView
             clickableWebView.singleTapMethod={
@@ -312,9 +302,10 @@ fun setOrientation(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel,
+    orientationIsLandscape:Boolean
 ): FrameLayout {
 
-    val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
+    //val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
 
     binding.composeView.apply {
         setContent {
@@ -324,21 +315,24 @@ fun setOrientation(
                     autoModViewModel,
                     homeViewModel,
                     showStreamManager={
+                        if(!orientationIsLandscape){
 
-//                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-//                        streamManagerUI.translationY = 0f
-                        /**THE ANIMATION*/
+                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
+                            /**THE ANIMATION*/
 
                         val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
-//
+
                         //// Create ObjectAnimator for translationY property
                         val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
 
-                        // Set the duration of the animation
+
                         animator.duration = 300 // Adjust the duration as needed (in milliseconds)
 
-                        // Start the animation
+//                        // Start the animation
                         animator.start()
+                        }
+
+
                     }
                 )
 
@@ -362,6 +356,7 @@ fun setOrientation(
             AppTheme{
                 EditStreamInfo(
                     closeEditStreamInfo={
+                        val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
                         val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
                         val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
 //
