@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.stream.views
+package com.example.clicker.presentation.stream.views.dialogs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -77,48 +77,56 @@ object Dialogs{
             TimeListData(604800, stringResource(R.string.one_week))
         )
         DialogBuilder.RadioButtonDialog(
-            dialogHeaderContent ={DialogParts.DialogHeader(username,
-                stringResource(R.string.timeout_text),onPrimary)},
-            dialogSubHeaderContent={
+            dialogHeaderContent = {
+                DialogParts.DialogHeader(
+                    username,
+                    stringResource(R.string.timeout_text), onPrimary
+                )
+            },
+            dialogSubHeaderContent = {
                 DialogParts.SubHeader(
                     secondary = secondary,
                     onPrimary = onPrimary,
                     subTitleText = stringResource(R.string.duration_text)
                 )
             },
-            dialogRadioButtonsContent={
+            dialogRadioButtonsContent = {
                 DialogParts.DialogRadioButtons(
                     onPrimary = onPrimary,
                     secondary = secondary,
                     dialogDuration = timeoutDuration,
-                    changeDialogDuration={duration ->changeTimeoutDuration(duration)},
-                    timeList =timeList
+                    changeDialogDuration = { duration -> changeTimeoutDuration(duration) },
+                    timeList = timeList
                 )
             },
-            dialogTextFieldContent={
+            dialogTextFieldContent = {
                 OutlinedTextField(
-                    colors= TextFieldDefaults.textFieldColors(
-                        textColor = onPrimary, focusedLabelColor = onPrimary,
-                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary,
+                        focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary,
+                        unfocusedIndicatorColor = onPrimary,
+                        unfocusedLabelColor = onPrimary
+                    ),
                     value = timeoutReason,
                     onValueChange = { changeTimeoutReason(it) },
                     label = { Text(stringResource(R.string.reason)) }
                 )
             },
-            dialogConfirmCancelContent={
+            dialogConfirmCancelContent = {
                 DialogParts.DialogConfirmCancel(
                     secondary = secondary,
                     onSecondary = onSecondary,
-                    onDismissRequest ={onDismissRequest()},
-                    closeDialog = {closeDialog()},
-                    confirmAction = {timeOutUser()},
+                    onDismissRequest = { onDismissRequest() },
+                    closeDialog = { closeDialog() },
+                    confirmAction = { timeOutUser() },
                     confirmText = stringResource(R.string.timeout_confirm),
                     cancelText = stringResource(R.string.cancel)
                 )
             },
-            onDismissRequest={onDismissRequest()},
+            onDismissRequest = { onDismissRequest() },
             secondary = secondary,
-            primary =  primary
+            primary = primary
 
         )
 
@@ -157,8 +165,12 @@ object Dialogs{
         )
 
         DialogBuilder.RadioButtonDialog(
-            dialogHeaderContent = {DialogParts.DialogHeader(username,
-                stringResource(R.string.ban),onPrimary) },
+            dialogHeaderContent = {
+                DialogParts.DialogHeader(
+                    username,
+                    stringResource(R.string.ban), onPrimary
+                )
+            },
             dialogSubHeaderContent = {
                 DialogParts.SubHeader(
                     secondary = secondary,
@@ -171,26 +183,30 @@ object Dialogs{
                     onPrimary = onPrimary,
                     secondary = secondary,
                     dialogDuration = 0,
-                    changeDialogDuration={},
-                    timeList =timeList
+                    changeDialogDuration = {},
+                    timeList = timeList
                 )
             },
             dialogTextFieldContent = {
                 OutlinedTextField(
-                    colors= TextFieldDefaults.textFieldColors(
-                        textColor = onPrimary, focusedLabelColor = onPrimary,
-                        focusedIndicatorColor = onPrimary, unfocusedIndicatorColor = onPrimary, unfocusedLabelColor = onPrimary),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary,
+                        focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary,
+                        unfocusedIndicatorColor = onPrimary,
+                        unfocusedLabelColor = onPrimary
+                    ),
                     value = banReason,
                     onValueChange = { changeBanReason(it) },
-                    label = { Text(stringResource(R.string.reason),color = onPrimary) }
+                    label = { Text(stringResource(R.string.reason), color = onPrimary) }
                 )
             },
             dialogConfirmCancelContent = {
                 DialogParts.DialogConfirmCancel(
                     secondary = secondary,
                     onSecondary = onSecondary,
-                    onDismissRequest ={onDismissRequest()},
-                    closeDialog = {closeDialog()},
+                    onDismissRequest = { onDismissRequest() },
+                    closeDialog = { closeDialog() },
                     cancelText = stringResource(R.string.cancel),
                     confirmText = stringResource(R.string.ban),
                     confirmAction = {
@@ -206,7 +222,7 @@ object Dialogs{
                 )
             },
             onDismissRequest = { onDismissRequest() },
-            primary =primary ,
+            primary = primary,
             secondary = secondary,
 
             )

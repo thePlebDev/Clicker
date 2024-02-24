@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,6 +50,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
@@ -57,6 +59,7 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,6 +67,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,6 +99,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
@@ -105,6 +110,7 @@ import com.example.clicker.presentation.home.views.HomeComponents.Parts.DisableF
 import com.example.clicker.presentation.home.views.HomeComponents.Parts.LoginWithTwitchBottomModalButton
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
 
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -195,10 +201,7 @@ fun ValidationView(
         hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
         currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
-
-
-
-
+    
 
     )
 }
@@ -213,165 +216,4 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
-@Composable
-fun TestingSwipeToAction(){
-    SwipeToActionText(
-        banAction = {},
-        timeoutAction = {},
-        deleteAction = {}
-    ){
-        CardDemo()
-    }
-}
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun SwipeToActionText(
-    banAction:()->Unit,
-    timeoutAction:()->Unit,
-    deleteAction:()->Unit,
-
-    content:@Composable (modifier:Modifier) -> Unit,
-
-    ) {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 10.dp)) {
-        val coroutineScope = rememberCoroutineScope()
-        val stoppedDragging = remember{ mutableStateOf(false) }
-        val offsetX  =  remember { Animatable(0f) }
-        var color = MaterialTheme.colorScheme.primary
-        val deleteThreshold = 350f
-        val banThreshold = 200f
-        val timeoutThreshold = 200f
-        var banIconId = R.drawable.ban_24
-        var timeoutIconId = R.drawable.time_out_24
-        when{
-
-            offsetX.value <= -deleteThreshold ||offsetX.value >= deleteThreshold ->{
-                if(stoppedDragging.value){
-
-                    deleteAction()
-                    stoppedDragging.value = false
-
-                }else{
-                    color = Color.Red
-                    banIconId = R.drawable.delete_outline_24
-                    timeoutIconId = R.drawable.delete_outline_24
-                }
-            }
-
-            offsetX.value >= timeoutThreshold ->{ //swiping left to right
-                if(stoppedDragging.value){
-                    timeoutAction()
-                    stoppedDragging.value = false
-                }
-                color=Color.Cyan
-            }
-            offsetX.value <= -banThreshold ->{ //swiping from right to left
-                if(stoppedDragging.value){
-                    banAction()
-                    stoppedDragging.value = false
-                }
-                color=Color.Green
-            }
-
-
-
-        }
-
-        Box(
-            modifier = Modifier.background(color)
-        ){
-            Icon(
-                painter = painterResource(id = banIconId),
-                "Moderation Icon",
-                tint= MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(35.dp)
-                    .align(Alignment.CenterEnd)
-            )
-            Icon(
-                painter = painterResource(id = timeoutIconId),
-                "Moderation Icon",
-                tint= MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(35.dp)
-                    .align(Alignment.CenterStart)
-            )
-
-            Box(
-                Modifier
-                    .absoluteOffset { IntOffset(offsetX.value.roundToInt(), 0) }
-                    .background(Color.Black)
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragEnd = {
-                                stoppedDragging.value = true
-                                coroutineScope.launch {
-                                    offsetX.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            delayMillis = 0
-                                        )
-                                    )
-                                }
-
-                            },
-                            onDragStart = { stoppedDragging.value = false }
-                        ) { change, dragAmount ->
-                            change.consume()
-                            coroutineScope.launch {
-                                val amountToChange =
-                                    if (offsetX.value > deleteThreshold || offsetX.value < -deleteThreshold) (dragAmount.x / 3) else dragAmount.x
-                                offsetX.snapTo(offsetX.value + amountToChange)
-                            }
-
-
-                        }
-                    }
-            ){
-                content(modifier =Modifier.align(Alignment.Center))
-            }
-        }
-
-    }
-}
-
-
-@Composable
-fun CardDemo() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .clickable{ },
-        elevation = 10.dp,
-        backgroundColor = Color.Green
-    ) {
-        Column(
-            modifier = Modifier.padding(15.dp)
-        ) {
-            Text(
-                buildAnnotatedString {
-                    append("welcome to ")
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900, color = Color(0xFF4552B8))
-                    ) {
-                        append("Jetpack Compose Playground")
-                    }
-                }
-            )
-            Text(
-                buildAnnotatedString {
-                    append("Now you are in the ")
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
-                        append("Card")
-                    }
-                    append(" section")
-                }
-            )
-        }
-    }
-}
