@@ -373,7 +373,9 @@ fun setOrientation(
 
                         // Start the animation
                         animator.start()
-                    }
+                    },
+                    streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
+                    updateText = {}
                 )
 
 
