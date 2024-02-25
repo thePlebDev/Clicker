@@ -164,6 +164,13 @@ class StreamViewModel @Inject constructor(
         //todo: need to do some adjusting for the thumbnail url
         _clickedStreamInfo.value =clickedStreamInfo
     }
+    private val _showAutoModSettings = mutableStateOf(false)
+    val showAutoModSettings = _showAutoModSettings
+
+    fun setAutoModSettings(show:Boolean){
+        _showAutoModSettings.value = show
+    }
+
 
     /**
      * The UI state that represents all the data meant for the [ChatSettingsContainer.EnhancedChatSettingsBox] composable

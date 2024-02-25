@@ -189,7 +189,14 @@ fun StreamView(
                                 )
                             }else{
                                 StreamManagerUI(
-                                    showStreamManager={showStreamManager()}
+                                    showEditStreamInfo={
+                                        streamViewModel.setAutoModSettings(false)
+                                        showStreamManager()
+                                    },
+                                    showEditAutoModInfo={
+                                        streamViewModel.setAutoModSettings(true)
+                                        showStreamManager()
+                                    }
                                 )
 
                             }

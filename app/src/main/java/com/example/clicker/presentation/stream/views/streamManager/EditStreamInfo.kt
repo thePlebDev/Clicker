@@ -16,9 +16,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,10 +43,45 @@ import com.example.clicker.R
 
 
 @Composable
-fun EditStreamInfo(
-    closeEditStreamInfo:()->Unit,
+fun ManageStreamInformation(
+    closeStreamInfo:()->Unit,
     streamTitle:String,
-    updateText:(String)->Unit
+    updateText:(String)->Unit,
+    showAutoModSettings:Boolean
+){
+    if(showAutoModSettings){
+        EditAutoModSettings(
+            closeStreamInfo={closeStreamInfo()}
+        )
+    }else{
+        EditStreamInfo(
+            closeStreamInfo ={closeStreamInfo()},
+            streamTitle = streamTitle,
+            updateText = updateText
+        )
+    }
+
+
+}
+@Composable
+fun EditAutoModSettings(
+    closeStreamInfo:()->Unit,
+){
+    Column(
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
+    ) {
+        InfoTitle(
+            closeStreamInfo={closeStreamInfo()},
+            title ="AutoMod Info",
+            contentDescription = "close auto mod info"
+        )
+    }
+}
+@Composable
+fun EditStreamInfo(
+    closeStreamInfo:()->Unit,
+    streamTitle:String,
+    updateText:(String)->Unit,
 ){
     Column(
         modifier =
@@ -52,47 +89,60 @@ fun EditStreamInfo(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary),
     ){
-        EditStreamInfoTitle(closeEditStreamInfo={closeEditStreamInfo()})
+        InfoTitle(
+            closeStreamInfo={closeStreamInfo()},
+            title ="Stream Info",
+            contentDescription = "close edit stream info"
+        )
         ChangeStreamTitleTextField(
             streamTitle =streamTitle,
             updateText={text ->updateText(text)}
         )
 
     }
-
 }
 
 @Composable
-fun EditStreamInfoTitle(
-    closeEditStreamInfo:()->Unit
+fun InfoTitle(
+    closeStreamInfo:()->Unit,
+    title:String,
+    contentDescription:String,
 ){
     Row(
-        modifier = Modifier.fillMaxWidth().background(Color.DarkGray).padding( 10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.DarkGray)
+            .padding(10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
         Row(verticalAlignment = Alignment.CenterVertically){
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close edit stream info",
+                contentDescription = contentDescription,
                 modifier = Modifier
                     .size(40.dp)
                     .clickable {
-                        closeEditStreamInfo()
+                        closeStreamInfo()
                     },
                 tint = MaterialTheme.colorScheme.onPrimary
             )
-            Text(text ="Stream Info",
+            Text(text =title,
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 25.sp,modifier = Modifier.padding(start=20.dp))
         }
 
-        Text(text ="Save",
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 25.sp,modifier = Modifier.padding(start=20.dp))
+        Button(
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            onClick = {},
+            shape = RoundedCornerShape(5.dp)
+        ) {
+            Text(text ="Save",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = 25.sp)
+            }
+        }
 
-
-    }
 }
 @Composable
 fun ChangeStreamTitleTextField(
@@ -106,7 +156,9 @@ fun ChangeStreamTitleTextField(
 
 
     Column(modifier = Modifier.fillMaxWidth()){
-        Row(modifier = Modifier.fillMaxWidth().padding(bottom=5.dp, top = 30.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 5.dp, top = 30.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ){
