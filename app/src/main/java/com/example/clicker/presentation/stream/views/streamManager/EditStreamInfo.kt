@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.views.AutoMod
 
 
 @Composable
@@ -68,12 +69,31 @@ fun EditAutoModSettings(
     closeStreamInfo:()->Unit,
 ){
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
     ) {
         InfoTitle(
             closeStreamInfo={closeStreamInfo()},
             title ="AutoMod Info",
             contentDescription = "close auto mod info"
+        )
+        AutoMod.Settings(
+            sliderPosition =0f,
+            changSliderPosition = {},
+            discriminationFilterList = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
+            changeSelectedIndex = {item,items ->},
+            updateAutoModSettings = {  },
+            swearingIndex = 0,
+            sexBasedTermsIndex = 0,
+            aggressionIndex = 0,
+            bullyingIndex = 0,
+            disabilityIndex = 0,
+            sexualityIndex = 0,
+            misogynyIndex = 0,
+            raceIndex = 0,
+            isModerator = true,
+            filterText = ""
         )
     }
 }

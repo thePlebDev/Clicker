@@ -155,12 +155,12 @@ object AutoMod {
                 )
             },
             updateButton ={modifier ->
-                Parts.UpdateSettingsButton(
-                    updateAutoModSettings = {
-                        updateAutoModSettings()
-                    },
-                    modifier=modifier
-                )
+//                Parts.UpdateSettingsButton(
+//                    updateAutoModSettings = {
+//                        updateAutoModSettings()
+//                    },
+//                    modifier=modifier
+//                )
             },
             isModerator = isModerator
         )
