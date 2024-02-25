@@ -149,9 +149,9 @@ fun HorizontalChat(
                             userIsModerator = modStatus ?: false
                         )
                     }else{
-                        StreamManagerUI(
-                            showStreamManager = {}
-                        )
+//                        StreamManagerUI(
+//                            showStreamManager = {}
+//                        )
                     }
 
                 },

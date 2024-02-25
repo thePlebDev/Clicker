@@ -42,7 +42,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
-import com.example.clicker.presentation.stream.views.streamManager.EditStreamInfo
+import com.example.clicker.presentation.stream.views.streamManager.ManageStreamInformation
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -354,8 +354,8 @@ fun setOrientation(
     binding.nestedDraggableComposeView?.apply {
         setContent {
             AppTheme{
-                EditStreamInfo(
-                    closeEditStreamInfo={
+                ManageStreamInformation(
+                    closeStreamInfo={
                         val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
                         val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
                         val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
@@ -370,7 +370,8 @@ fun setOrientation(
                         animator.start()
                     },
                     streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
-                    updateText = {}
+                    updateText = {},
+                    showAutoModSettings =streamViewModel.showAutoModSettings.value
                 )
 
 
