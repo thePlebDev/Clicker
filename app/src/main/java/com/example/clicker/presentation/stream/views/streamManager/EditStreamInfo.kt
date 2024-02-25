@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 
 
@@ -48,11 +49,37 @@ fun ManageStreamInformation(
     closeStreamInfo:()->Unit,
     streamTitle:String,
     updateText:(String)->Unit,
-    showAutoModSettings:Boolean
+    showAutoModSettings:Boolean,
+    changeSelectedIndex:(Int, FilterType)->Unit,
+
+    swearingIndex:Int,
+    sexBasedTermsIndex:Int,
+    aggressionIndex:Int,
+    bullyingIndex:Int,
+    disabilityIndex:Int,
+    sexualityIndex:Int,
+    misogynyIndex:Int,
+    raceIndex:Int,
+    sliderPosition: Float,
+    changSliderPosition:(Float)->Unit,
+    filterText:String
 ){
     if(showAutoModSettings){
         EditAutoModSettings(
-            closeStreamInfo={closeStreamInfo()}
+            closeStreamInfo={closeStreamInfo()},
+            changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
+            swearingIndex = swearingIndex,
+            sexBasedTermsIndex = sexBasedTermsIndex,
+            aggressionIndex = aggressionIndex,
+            bullyingIndex = bullyingIndex,
+            disabilityIndex = disabilityIndex,
+            sexualityIndex = sexualityIndex,
+            misogynyIndex = misogynyIndex,
+            raceIndex = raceIndex,
+            sliderPosition =sliderPosition,
+            changSliderPosition = {float -> changSliderPosition(float)},
+            filterText=filterText,
+
         )
     }else{
         EditStreamInfo(
@@ -67,6 +94,19 @@ fun ManageStreamInformation(
 @Composable
 fun EditAutoModSettings(
     closeStreamInfo:()->Unit,
+    changeSelectedIndex:(Int, FilterType)->Unit,
+    swearingIndex:Int,
+    sexBasedTermsIndex:Int,
+    aggressionIndex:Int,
+    bullyingIndex:Int,
+    disabilityIndex:Int,
+    sexualityIndex:Int,
+    misogynyIndex:Int,
+    raceIndex:Int,
+
+    sliderPosition: Float,
+    changSliderPosition:(Float)->Unit,
+    filterText:String,
 ){
     Column(
         modifier = Modifier
@@ -79,21 +119,21 @@ fun EditAutoModSettings(
             contentDescription = "close auto mod info"
         )
         AutoMod.Settings(
-            sliderPosition =0f,
-            changSliderPosition = {},
+            sliderPosition =sliderPosition,
+            changSliderPosition = {float -> changSliderPosition(float)},
             discriminationFilterList = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-            changeSelectedIndex = {item,items ->},
+            changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
             updateAutoModSettings = {  },
-            swearingIndex = 0,
-            sexBasedTermsIndex = 0,
-            aggressionIndex = 0,
-            bullyingIndex = 0,
-            disabilityIndex = 0,
-            sexualityIndex = 0,
-            misogynyIndex = 0,
-            raceIndex = 0,
+            swearingIndex = swearingIndex,
+            sexBasedTermsIndex = sexBasedTermsIndex,
+            aggressionIndex = aggressionIndex,
+            bullyingIndex = bullyingIndex,
+            disabilityIndex = disabilityIndex,
+            sexualityIndex = sexualityIndex,
+            misogynyIndex = misogynyIndex,
+            raceIndex = raceIndex,
             isModerator = true,
-            filterText = ""
+            filterText = filterText
         )
     }
 }

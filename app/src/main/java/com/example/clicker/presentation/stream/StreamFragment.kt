@@ -371,7 +371,19 @@ fun setOrientation(
                     },
                     streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
                     updateText = {},
-                    showAutoModSettings =streamViewModel.showAutoModSettings.value
+                    showAutoModSettings =streamViewModel.showAutoModSettings.value,
+                    changeSelectedIndex={item,filterType -> autoModViewModel.updateSelectedIndex(item,filterType)},
+                    swearingIndex = autoModViewModel.autoModUIState.value.swearing,
+                    sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
+                    aggressionIndex = autoModViewModel.autoModUIState.value.aggression,
+                    bullyingIndex = autoModViewModel.autoModUIState.value.bullying,
+                    disabilityIndex = autoModViewModel.autoModUIState.value.disability,
+                    sexualityIndex = autoModViewModel.autoModUIState.value.sexuality,
+                    misogynyIndex = autoModViewModel.autoModUIState.value.misogyny,
+                    raceIndex = autoModViewModel.autoModUIState.value.race,
+                    sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
+                    changSliderPosition = {floatValue -> autoModViewModel.updateSliderValue(floatValue)},
+                    filterText = autoModViewModel.autoModUIState.value.filterText,
                 )
 
 
