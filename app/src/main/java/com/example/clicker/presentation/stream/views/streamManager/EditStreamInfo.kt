@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.util.Response
 
 
 @Composable
@@ -62,7 +63,9 @@ fun ManageStreamInformation(
     raceIndex:Int,
     sliderPosition: Float,
     changSliderPosition:(Float)->Unit,
-    filterText:String
+    filterText:String,
+    isModerator: Response<Boolean>,
+    updateAutoModSettings:()->Unit
 ){
     if(showAutoModSettings){
         EditAutoModSettings(
@@ -79,6 +82,8 @@ fun ManageStreamInformation(
             sliderPosition =sliderPosition,
             changSliderPosition = {float -> changSliderPosition(float)},
             filterText=filterText,
+            isModerator =isModerator,
+            updateAutoModSettings={updateAutoModSettings()}
 
         )
     }else{
@@ -107,16 +112,20 @@ fun EditAutoModSettings(
     sliderPosition: Float,
     changSliderPosition:(Float)->Unit,
     filterText:String,
+    isModerator: Response<Boolean>,
+    updateAutoModSettings:()->Unit
 ){
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
     ) {
-        InfoTitle(
+        EditAutoModTitle(
             closeStreamInfo={closeStreamInfo()},
             title ="AutoMod Info",
-            contentDescription = "close auto mod info"
+            contentDescription = "close auto mod info",
+            isModerator =isModerator,
+            updateAutoModSettings ={updateAutoModSettings()}
         )
         AutoMod.Settings(
             sliderPosition =sliderPosition,
@@ -138,10 +147,51 @@ fun EditAutoModSettings(
     }
 }
 @Composable
+fun EditAutoModTitle(
+    closeStreamInfo:()->Unit,
+    title:String,
+    contentDescription:String,
+    isModerator: Response<Boolean>,
+    updateAutoModSettings:()->Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.DarkGray)
+            .padding(10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = contentDescription,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable {
+                        closeStreamInfo()
+                    },
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Text(text =title,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 25.sp,modifier = Modifier.padding(start=20.dp))
+        }
+
+        IsModeratorButton(
+            isModerator = isModerator,
+            updateAutoModSettings={updateAutoModSettings()}
+        )
+
+
+    }
+}
+@Composable
 fun EditStreamInfo(
     closeStreamInfo:()->Unit,
     streamTitle:String,
     updateText:(String)->Unit,
+
 ){
     Column(
         modifier =
@@ -152,7 +202,7 @@ fun EditStreamInfo(
         InfoTitle(
             closeStreamInfo={closeStreamInfo()},
             title ="Stream Info",
-            contentDescription = "close edit stream info"
+            contentDescription = "close edit stream info",
         )
         ChangeStreamTitleTextField(
             streamTitle =streamTitle,
@@ -200,8 +250,56 @@ fun InfoTitle(
             Text(text ="Save",
                 color = MaterialTheme.colorScheme.onSecondary,
                 fontSize = 25.sp)
+        }
+
+
+    }
+
+}
+
+@Composable
+fun IsModeratorButton(
+    isModerator: Response<Boolean>,
+    updateAutoModSettings:()->Unit,
+){
+    when(isModerator){
+        is Response.Loading ->{
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {},
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                Text(text ="LOADING",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 25.sp)
             }
         }
+        is Response.Success ->{
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    updateAutoModSettings()
+                },
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                Text(text ="Save",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 25.sp)
+            }
+        }
+        is Response.Failure ->{
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {},
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                Text(text ="FAILED",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 25.sp)
+            }
+        }
+    }
+
 
 }
 @Composable
