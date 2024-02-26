@@ -856,7 +856,7 @@ object AutoMod {
                 )
                 Text(
                     selectedText,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = Color.Black,
                     fontSize = 20.sp
                 )
                 Icon(
