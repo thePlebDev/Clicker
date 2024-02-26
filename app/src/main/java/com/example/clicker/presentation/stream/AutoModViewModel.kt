@@ -226,7 +226,7 @@ class AutoModViewModel @Inject constructor(
                             updateSliderValue(overallLevel)
                             _isModerator.value = Response.Success(true)
                             _autoModUIState.value = _autoModUIState.value.copy(
-                                updateAutoModSettingsStatus = Response.Success(true)
+                                updateAutoModSettingsStatus = null
                             )
                             _autoModUIState.value = _autoModUIState.value.copy(
                                 swearing = data.swearing,
