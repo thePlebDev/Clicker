@@ -370,6 +370,7 @@ fun setOrientation(
                         animator.start()
                     },
                     streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
+                    streamCategory=streamViewModel.clickedStreamInfo.value.category,
                     updateText = {},
                     showAutoModSettings =streamViewModel.showAutoModSettings.value,
                     changeSelectedIndex={item,filterType -> autoModViewModel.updateSelectedIndex(item,filterType)},

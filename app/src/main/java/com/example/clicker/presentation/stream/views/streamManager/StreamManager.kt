@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -33,11 +35,14 @@ fun StreamManagerUI(
     showEditAutoModInfo:()->Unit,
 
 ){
-    Column() {
+    Column(
+        modifier= Modifier.verticalScroll(rememberScrollState())
+    ) {
         EditStreamInfoCard(
             title="Edit Stream Info",
             contentDescription = "Edit Stream Info",
             iconPainter = painterResource(R.drawable.edit_24),
+            iconTextColor =Color.White,
             showStreamManager={showEditStreamInfo()},
 
         )
@@ -45,7 +50,15 @@ fun StreamManagerUI(
             title="Edit AutoMod Info",
             contentDescription = "Edit AutoMod Info",
             iconPainter = painterResource(R.drawable.moderator_white),
+            iconTextColor =Color.White,
             showStreamManager={showEditAutoModInfo()}
+        )
+        EditStreamInfoCard(
+            title="Mod View (coming soon)",
+            contentDescription = "Edit AutoMod Info",
+            iconPainter = painterResource(R.drawable.mod_view_24),
+            iconTextColor =Color.White.copy(0.4f),
+            showStreamManager={}
         )
     }
 
@@ -57,6 +70,7 @@ fun EditStreamInfoCard(
     title:String,
     contentDescription:String,
     iconPainter: Painter,
+    iconTextColor:Color,
     showStreamManager:()->Unit,
 ) {
     Card(
@@ -81,10 +95,10 @@ fun EditStreamInfoCard(
             Icon(
                 painter = iconPainter,
                 contentDescription,
-                tint= Color.White,
+                tint= iconTextColor,
                 modifier = Modifier.size(35.dp)
             )
-            Text(text =title, color = Color.White, fontSize = 25.sp)
+            Text(text =title, color = iconTextColor, fontSize = 25.sp)
 
         }
     }

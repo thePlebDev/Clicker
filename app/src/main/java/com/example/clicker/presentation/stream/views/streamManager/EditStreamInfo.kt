@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +58,7 @@ import kotlinx.coroutines.launch
 fun ManageStreamInformation(
     closeStreamInfo:()->Unit,
     streamTitle:String,
+    streamCategory:String,
     updateText:(String)->Unit,
     showAutoModSettings:Boolean,
     changeSelectedIndex:(Int, FilterType)->Unit,
@@ -103,7 +105,8 @@ fun ManageStreamInformation(
         EditStreamInfo(
             closeStreamInfo ={closeStreamInfo()},
             streamTitle = streamTitle,
-            updateText = updateText
+            updateText = updateText,
+            streamCategory = streamCategory
         )
     }
 
@@ -261,6 +264,7 @@ fun EditStreamInfo(
     closeStreamInfo:()->Unit,
     streamTitle:String,
     updateText:(String)->Unit,
+    streamCategory:String,
 
 ){
     Column(
@@ -278,6 +282,10 @@ fun EditStreamInfo(
             streamTitle =streamTitle,
             updateText={text ->updateText(text)}
         )
+//        ChangeStreamCategoryTextField(
+//            streamTitle =streamCategory,
+//            updateText={text ->updateText(text)}
+//        )
 
     }
 }
@@ -402,6 +410,70 @@ fun ChangeStreamTitleTextField(
         )
     }
 
+
+}
+@Composable
+fun ChangeStreamCategoryTextField(
+    streamTitle:String,
+    updateText:(String)->Unit
+) {
+    var text by remember { mutableStateOf(streamTitle) }
+
+
+
+    Column(modifier = Modifier.fillMaxWidth()){
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 5.dp, top = 30.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ){
+            Text("Category",fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary)
+
+        }
+
+        SimpleFilledTextFieldSampleTesting(
+            streamTitle=text,
+            updateText={newText -> text = newText}
+        )
+    }
+
+
+}
+
+@Composable
+fun SimpleFilledTextFieldSampleTesting(
+    streamTitle:String,
+    updateText:(String)->Unit
+) {
+    val secondaryColor =Color(0xFF6650a4)
+
+    val selectionColors = TextSelectionColors(
+        handleColor = secondaryColor, // Set the color of the selection handles
+        backgroundColor = secondaryColor // Set the background color of the selected text
+    )
+
+    Column(modifier = Modifier.fillMaxWidth()){
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = streamTitle,
+            singleLine = true,
+            onValueChange = {
+
+                    updateText(it)
+
+            },
+            shape = RoundedCornerShape(8.dp),
+            label = { },
+            colors = androidx.compose.material3.TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.secondary,
+                focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+                selectionColors = selectionColors
+            )
+        )
+        Spacer(modifier =Modifier.height(5.dp))
+    }
 
 }
 
