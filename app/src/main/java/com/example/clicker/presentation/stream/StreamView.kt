@@ -225,6 +225,7 @@ fun StreamView(
                                     )
                                 },
                                 updateClickedUser = { username, userId, banned, isMod ->
+
                                     streamViewModel.updateClickedChat(
                                         username,
                                         userId,
