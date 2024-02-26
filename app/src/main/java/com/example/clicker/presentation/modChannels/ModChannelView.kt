@@ -30,6 +30,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.launch
 
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
 fun ModChannelView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
+    autoModViewModel:AutoModViewModel,
     popBackStackNavigation: () -> Unit,
     onNavigate: (Int) -> Unit,
     loginWithTwitch: () -> Unit,
@@ -95,6 +97,12 @@ fun ModChannelView(
                     clientId,
                     broadcasterId,
                     userId
+                )
+                autoModViewModel.updateAutoModCredentials(
+                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                    moderatorId = streamViewModel.state.value.userId,
+                    broadcasterId = streamViewModel.state.value.broadcasterId,
                 )
                                  },
             onNavigate ={destination ->onNavigate(destination)},

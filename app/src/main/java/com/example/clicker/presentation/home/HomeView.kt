@@ -169,10 +169,12 @@ fun ValidationView(
                 userId
             )
             autoModViewModel.updateAutoModCredentials(
-                moderatorId = userId,
-                broadcasterId = broadcasterId,
-                clientId = clientId
+                oAuthToken = homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+                moderatorId = streamViewModel.state.value.userId,
+                broadcasterId = streamViewModel.state.value.broadcasterId,
             )
+
         },
         updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
         streamersListLoading = homeViewModel.state.value.streamersListLoading,

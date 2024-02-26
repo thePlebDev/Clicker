@@ -49,7 +49,6 @@ data class AutoModCredentials(
     val broadcastId:String="",
     val clientId:String="",
     val moderatorId:String="",
-    val isModerator:Boolean = true
 )
 
 data class AutoModUIState(
@@ -75,7 +74,6 @@ data class AutoModUIState(
 
 @HiltViewModel
 class AutoModViewModel @Inject constructor(
-    private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher,
 ): ViewModel() {
@@ -83,7 +81,7 @@ class AutoModViewModel @Inject constructor(
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
     val autoModUIState: State<AutoModUIState> = _autoModUIState
 
-    private val _autoModCredentials = mutableStateOf(AutoModCredentials())
+    private val _autoModCredentials:MutableStateFlow<AutoModCredentials?> = MutableStateFlow(null)
      val autoModCredentials = _autoModCredentials
 
     // Backing property to avoid state updates from other classes
@@ -96,10 +94,10 @@ class AutoModViewModel @Inject constructor(
     var singleTapHideHorizontalVisibility={}
 
 
-
-    init{
-        fetOAuthToken()
+    init {
+        monitorForNewAutoModCredentials()
     }
+
     init {
         viewModelScope.launch {
             _verticalOverlayIsVisible.collect{verticalOverlayIsVisible ->
@@ -145,42 +143,36 @@ class AutoModViewModel @Inject constructor(
     }
 
 
-    private fun fetOAuthToken() {
+    fun updateAutoModCredentials(
+        moderatorId: String,
+        clientId: String,
+        broadcasterId: String,
+        oAuthToken: String
+    ){
         viewModelScope.launch {
-            tokenDataStore.getOAuthToken().collect { oAuthToken ->
-                Log.d("updateAutoModCredentials",oAuthToken)
-                _autoModCredentials.value = _autoModCredentials.value.copy(
-                    oAuthToken = oAuthToken
-                )
+            val newAutoModCredentials = AutoModCredentials(oAuthToken,broadcasterId,clientId,moderatorId)
+            _autoModCredentials.emit(newAutoModCredentials)
+        }
+
+    }
+
+    private fun monitorForNewAutoModCredentials(){
+        viewModelScope.launch {
+            _autoModCredentials.collect{nullableCredentials ->
+                nullableCredentials?.let{nonNullCredentials ->
+                    Log.d("updateAutoModCredentials","new credentials ->$nonNullCredentials")
+                    getAutoModStatus(
+                        oAuthToken=nonNullCredentials.oAuthToken,
+                        clientId=nonNullCredentials.clientId,
+                        broadcasterId=nonNullCredentials.broadcastId,
+                        moderatorId=nonNullCredentials.moderatorId
+                    )
+                }
             }
         }
     }
 
-    fun updateAutoModCredentials(
-        moderatorId: String,
-        clientId: String,
-        broadcasterId: String
-    ){
 
-        if(_autoModCredentials.value.oAuthToken.isNotEmpty()){
-            _autoModCredentials.value = _autoModCredentials.value.copy(
-                broadcastId =broadcasterId,
-                moderatorId = moderatorId,
-                clientId =  clientId
-
-            )
-            // make the request
-            getAutoModStatus(
-                oAuthToken = _autoModCredentials.value.oAuthToken,
-                clientId =clientId,
-                broadcasterId =broadcasterId,
-                moderatorId = moderatorId
-            )
-        }
-
-
-
-    }
     private fun getAutoModStatus(
         oAuthToken:String,
         clientId: String,
@@ -205,7 +197,7 @@ class AutoModViewModel @Inject constructor(
                         is Response.Success ->{
                             val data = response.data.data[0]
                             val overallLevel = data.overallLevel?.toFloat() ?: 0f
-                            Log.d("updateSliderValue","SliderValue Success-> $overallLevel")
+                            Log.d("getAutoModStatus","SliderValue Success-> $overallLevel")
 
                             updateSliderValue(overallLevel)
                             _autoModUIState.value = _autoModUIState.value.copy(
@@ -220,15 +212,11 @@ class AutoModViewModel @Inject constructor(
 
 
                                 )
-                            _autoModCredentials.value = _autoModCredentials.value.copy(
-                                isModerator = true
-                            )
+
 
                         }
                         is Response.Failure ->{
-                            _autoModCredentials.value = _autoModCredentials.value.copy(
-                                isModerator = false
-                            )
+                            Log.d("getAutoModStatus","RESPONSE --> FAILED")
 
                         }
                     }
@@ -238,12 +226,12 @@ class AutoModViewModel @Inject constructor(
         }
     }
     fun updateAutoMod(){
-        updateAutoModSettings(
-            broadcastId =_autoModCredentials.value.broadcastId,
-            moderatorId =_autoModCredentials.value.moderatorId,
-            clientId =_autoModCredentials.value.clientId,
-            oAuthToken =_autoModCredentials.value.oAuthToken,
-        )
+//        updateAutoModSettings(
+//            broadcastId =_autoModCredentials.value.broadcastId,
+//            moderatorId =_autoModCredentials.value.moderatorId,
+//            clientId =_autoModCredentials.value.clientId,
+//            oAuthToken =_autoModCredentials.value.oAuthToken,
+//        )
     }
     private fun updateAutoModSettings(
         broadcastId:String,

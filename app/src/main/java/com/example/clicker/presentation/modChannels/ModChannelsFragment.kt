@@ -20,6 +20,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 
 
@@ -34,6 +35,7 @@ class ModChannelsFragment : Fragment() {
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
+    private val autoModViewModel: AutoModViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +77,8 @@ class ModChannelsFragment : Fragment() {
                                 Uri.parse(authorizationUrl)
                             )
                         },
-                        onNavigate = { dest -> findNavController().navigate(dest) }
+                        onNavigate = { dest -> findNavController().navigate(dest) },
+                        autoModViewModel = autoModViewModel
                     )
                 }
             }
