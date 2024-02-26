@@ -87,7 +87,10 @@ class AutoModViewModel @Inject constructor(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-     val autoModCredentials = _autoModCredentials
+    private val _autoModCredentialsState = mutableStateOf(AutoModCredentials())
+
+    private val _isModerator: MutableState<Response<Boolean>> = mutableStateOf(Response.Loading)
+    val isModerator:State<Response<Boolean>> = _isModerator
 
     // Backing property to avoid state updates from other classes
     private val _horizontalOverlayIsVisible = MutableStateFlow(false)
@@ -166,6 +169,12 @@ class AutoModViewModel @Inject constructor(
             _autoModCredentials.collect{nullableCredentials ->
                 nullableCredentials?.let{nonNullCredentials ->
                     Log.d("updateAutoModCredentials","new credentials ->$nonNullCredentials")
+                    _autoModCredentialsState.value = AutoModCredentials(
+                        oAuthToken = nonNullCredentials.oAuthToken,
+                        broadcastId = nonNullCredentials.broadcastId,
+                        clientId = nonNullCredentials.clientId,
+                        moderatorId = nonNullCredentials.moderatorId
+                    )
                     getAutoModStatus(
                         oAuthToken=nonNullCredentials.oAuthToken,
                         clientId=nonNullCredentials.clientId,
@@ -197,6 +206,7 @@ class AutoModViewModel @Inject constructor(
                     when (response){
                         is Response.Loading ->{
                             Log.d("getAutoModStatus","LOADING")
+                            _isModerator.value = Response.Loading
 
                         }
                         is Response.Success ->{
@@ -205,6 +215,7 @@ class AutoModViewModel @Inject constructor(
                             Log.d("getAutoModStatus","SliderValue Success-> $overallLevel")
 
                             updateSliderValue(overallLevel)
+                            _isModerator.value = Response.Success(true)
                             _autoModUIState.value = _autoModUIState.value.copy(
                                 swearing = data.swearing,
                                 aggression = data.aggression,
@@ -221,6 +232,7 @@ class AutoModViewModel @Inject constructor(
 
                         }
                         is Response.Failure ->{
+                            _isModerator.value = Response.Failure(Exception("You are not moderator"))
                             Log.d("getAutoModStatus","RESPONSE --> FAILED")
 
                         }
@@ -231,12 +243,12 @@ class AutoModViewModel @Inject constructor(
         }
     }
     fun updateAutoMod(){
-//        updateAutoModSettings(
-//            broadcastId =_autoModCredentials.value.broadcastId,
-//            moderatorId =_autoModCredentials.value.moderatorId,
-//            clientId =_autoModCredentials.value.clientId,
-//            oAuthToken =_autoModCredentials.value.oAuthToken,
-//        )
+        updateAutoModSettings(
+            broadcastId =_autoModCredentialsState.value.broadcastId,
+            moderatorId =_autoModCredentialsState.value.moderatorId,
+            clientId =_autoModCredentialsState.value.clientId,
+            oAuthToken =_autoModCredentialsState.value.oAuthToken,
+        )
     }
     private fun updateAutoModSettings(
         broadcastId:String,
@@ -268,13 +280,15 @@ class AutoModViewModel @Inject constructor(
                 ).collect{response ->
                     when(response){
                         is Response.Loading ->{
+                            _isModerator.value = Response.Loading
 
                         }
                         is Response.Success ->{
+                            _isModerator.value = Response.Success(true)
 
                         }
                         is Response.Failure ->{
-
+                            _isModerator.value = Response.Failure(Exception("Attempt failed"))
                         }
                     }
                 }

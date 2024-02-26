@@ -384,6 +384,8 @@ fun setOrientation(
                     sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
                     changSliderPosition = {floatValue -> autoModViewModel.updateSliderValue(floatValue)},
                     filterText = autoModViewModel.autoModUIState.value.filterText,
+                    isModerator = autoModViewModel.isModerator.value,
+                    updateAutoModSettings = {autoModViewModel.updateAutoMod()}
                 )
 
 
