@@ -69,6 +69,7 @@ data class AutoModUIState(
     val sexuality:Int =0,
     val misogyny:Int = 0,
     val race: Int = 0,
+    val updateAutoModSettingsStatus:Response<Boolean>? = null
 
 
 
@@ -185,6 +186,11 @@ class AutoModViewModel @Inject constructor(
             }
         }
     }
+    fun updateAutoModSettingsStatusToNull(){
+        _autoModUIState.value = _autoModUIState.value.copy(
+            updateAutoModSettingsStatus = null
+        )
+    }
 
 
     private fun getAutoModStatus(
@@ -207,6 +213,9 @@ class AutoModViewModel @Inject constructor(
                         is Response.Loading ->{
                             Log.d("getAutoModStatus","LOADING")
                             _isModerator.value = Response.Loading
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Loading
+                            )
 
                         }
                         is Response.Success ->{
@@ -216,6 +225,9 @@ class AutoModViewModel @Inject constructor(
 
                             updateSliderValue(overallLevel)
                             _isModerator.value = Response.Success(true)
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Success(true)
+                            )
                             _autoModUIState.value = _autoModUIState.value.copy(
                                 swearing = data.swearing,
                                 aggression = data.aggression,
@@ -233,6 +245,9 @@ class AutoModViewModel @Inject constructor(
                         }
                         is Response.Failure ->{
                             _isModerator.value = Response.Failure(Exception("You are not moderator"))
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Failure(Exception("You are not moderator"))
+                            )
                             Log.d("getAutoModStatus","RESPONSE --> FAILED")
 
                         }
@@ -281,14 +296,31 @@ class AutoModViewModel @Inject constructor(
                     when(response){
                         is Response.Loading ->{
                             _isModerator.value = Response.Loading
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Loading
+                            )
 
                         }
                         is Response.Success ->{
                             _isModerator.value = Response.Success(true)
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Success(true)
+                            )
+                            delay(2000)
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = null
+                            )
 
                         }
                         is Response.Failure ->{
                             _isModerator.value = Response.Failure(Exception("Attempt failed"))
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = Response.Failure(Exception("Attempt failed"))
+                            )
+                            delay(2000)
+                            _autoModUIState.value = _autoModUIState.value.copy(
+                                updateAutoModSettingsStatus = null
+                            )
                         }
                     }
                 }

@@ -6,8 +6,10 @@ import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,8 +23,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -31,6 +35,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,9 +45,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.util.Response
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -65,7 +73,9 @@ fun ManageStreamInformation(
     changSliderPosition:(Float)->Unit,
     filterText:String,
     isModerator: Response<Boolean>,
-    updateAutoModSettings:()->Unit
+    updateAutoModSettings:()->Unit,
+    updateAutoModSettingsStatus:Response<Boolean>?,
+    updateAutoModSettingsStatusToNull:()->Unit
 ){
     if(showAutoModSettings){
         EditAutoModSettings(
@@ -83,7 +93,10 @@ fun ManageStreamInformation(
             changSliderPosition = {float -> changSliderPosition(float)},
             filterText=filterText,
             isModerator =isModerator,
-            updateAutoModSettings={updateAutoModSettings()}
+            updateAutoModSettings={updateAutoModSettings()},
+            updateAutoModSettingsStatus=updateAutoModSettingsStatus,
+            updateAutoModSettingsStatusToNull ={updateAutoModSettingsStatusToNull()}
+
 
         )
     }else{
@@ -113,38 +126,95 @@ fun EditAutoModSettings(
     changSliderPosition:(Float)->Unit,
     filterText:String,
     isModerator: Response<Boolean>,
-    updateAutoModSettings:()->Unit
+    updateAutoModSettings:()->Unit,
+    updateAutoModSettingsStatus:Response<Boolean>?,
+    updateAutoModSettingsStatusToNull:()->Unit
 ){
-    Column(
-        modifier = Modifier
+    val scope = rememberCoroutineScope()
+    Scaffold(
+        topBar = {
+            EditAutoModTitle(
+                closeStreamInfo={closeStreamInfo()},
+                title ="AutoMod Info",
+                contentDescription = "close auto mod info",
+                isModerator =isModerator,
+                updateAutoModSettings ={updateAutoModSettings()}
+            )
+        }
+
+    ) {contentPadding ->
+        Box(modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
-    ) {
-        EditAutoModTitle(
-            closeStreamInfo={closeStreamInfo()},
-            title ="AutoMod Info",
-            contentDescription = "close auto mod info",
-            isModerator =isModerator,
-            updateAutoModSettings ={updateAutoModSettings()}
-        )
-        AutoMod.Settings(
-            sliderPosition =sliderPosition,
-            changSliderPosition = {float -> changSliderPosition(float)},
-            discriminationFilterList = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-            changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
-            updateAutoModSettings = {  },
-            swearingIndex = swearingIndex,
-            sexBasedTermsIndex = sexBasedTermsIndex,
-            aggressionIndex = aggressionIndex,
-            bullyingIndex = bullyingIndex,
-            disabilityIndex = disabilityIndex,
-            sexualityIndex = sexualityIndex,
-            misogynyIndex = misogynyIndex,
-            raceIndex = raceIndex,
-            isModerator = true,
-            filterText = filterText
-        )
+            .padding(contentPadding)){
+            Column(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(MaterialTheme.colorScheme.primary)
+
+            ) {
+
+                AutoMod.Settings(
+                    sliderPosition =sliderPosition,
+                    changSliderPosition = {float -> changSliderPosition(float)},
+                    discriminationFilterList = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
+                    changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
+                    updateAutoModSettings = {  },
+                    swearingIndex = swearingIndex,
+                    sexBasedTermsIndex = sexBasedTermsIndex,
+                    aggressionIndex = aggressionIndex,
+                    bullyingIndex = bullyingIndex,
+                    disabilityIndex = disabilityIndex,
+                    sexualityIndex = sexualityIndex,
+                    misogynyIndex = misogynyIndex,
+                    raceIndex = raceIndex,
+                    isModerator = true,
+                    filterText = filterText
+                )
+            } // end of column
+            when(updateAutoModSettingsStatus){
+                is Response.Loading ->{
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                is Response.Success ->{
+                    Text("Success",
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 5.dp)
+                            .background(Color.Green.copy(0.7f))
+                            .align(Alignment.Center)
+                            .clickable {
+                                scope.launch {
+                                    updateAutoModSettingsStatusToNull()
+                                }
+                            },
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+
+                }
+                is Response.Failure ->{
+                    Text("Failed",
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 5.dp)
+                            .background(Color.Red.copy(0.7f))
+                            .align(Alignment.Center)
+                            .clickable {
+                                scope.launch {
+                                    updateAutoModSettingsStatusToNull()
+                                }
+                            },
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+                else ->{
+
+                }
+            }
+
+        }//end of box
+
     }
+
 }
 @Composable
 fun EditAutoModTitle(
@@ -290,10 +360,12 @@ fun IsModeratorButton(
         is Response.Failure ->{
             Button(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {},
+                onClick = {
+                    updateAutoModSettings()
+                },
                 shape = RoundedCornerShape(5.dp)
             ) {
-                Text(text ="FAILED",
+                Text(text ="Retry",
                     color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 25.sp)
             }
