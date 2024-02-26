@@ -21,7 +21,9 @@ import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -81,7 +83,10 @@ class AutoModViewModel @Inject constructor(
     private val _autoModUIState: MutableState<AutoModUIState> = mutableStateOf(AutoModUIState())
     val autoModUIState: State<AutoModUIState> = _autoModUIState
 
-    private val _autoModCredentials:MutableStateFlow<AutoModCredentials?> = MutableStateFlow(null)
+    private val _autoModCredentials:MutableSharedFlow<AutoModCredentials?> = MutableSharedFlow(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
      val autoModCredentials = _autoModCredentials
 
     // Backing property to avoid state updates from other classes
