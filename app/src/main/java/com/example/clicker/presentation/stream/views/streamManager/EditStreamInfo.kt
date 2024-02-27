@@ -59,7 +59,7 @@ fun ManageStreamInformation(
     closeStreamInfo:()->Unit,
     streamTitle:String,
     streamCategory:String,
-    updateText:(String)->Unit,
+    updateStreamTitle:(String)->Unit,
     showAutoModSettings:Boolean,
     changeSelectedIndex:(Int, FilterType)->Unit,
 
@@ -77,7 +77,8 @@ fun ManageStreamInformation(
     isModerator: Response<Boolean>,
     updateAutoModSettings:()->Unit,
     updateAutoModSettingsStatus:Response<Boolean>?,
-    updateAutoModSettingsStatusToNull:()->Unit
+    updateAutoModSettingsStatusToNull:()->Unit,
+    updateChannelInfo:()->Unit,
 ){
     if(showAutoModSettings){
         EditAutoModSettings(
@@ -105,8 +106,10 @@ fun ManageStreamInformation(
         EditStreamInfo(
             closeStreamInfo ={closeStreamInfo()},
             streamTitle = streamTitle,
-            updateText = updateText,
-            streamCategory = streamCategory
+            updateStreamTitle = { newText -> updateStreamTitle(newText) },
+            streamCategory = streamCategory,
+            updateChannelInfo={updateChannelInfo()}
+
         )
     }
 
@@ -263,7 +266,8 @@ fun EditAutoModTitle(
 fun EditStreamInfo(
     closeStreamInfo:()->Unit,
     streamTitle:String,
-    updateText:(String)->Unit,
+    updateStreamTitle:(String)->Unit,
+    updateChannelInfo:()->Unit,
     streamCategory:String,
 
 ){
@@ -277,10 +281,11 @@ fun EditStreamInfo(
             closeStreamInfo={closeStreamInfo()},
             title ="Stream Info",
             contentDescription = "close edit stream info",
+            updateChannelInfo = {updateChannelInfo()}
         )
         ChangeStreamTitleTextField(
             streamTitle =streamTitle,
-            updateText={text ->updateText(text)}
+            updateStreamTitle={text ->updateStreamTitle(text)}
         )
 //        ChangeStreamCategoryTextField(
 //            streamTitle =streamCategory,
@@ -293,6 +298,7 @@ fun EditStreamInfo(
 @Composable
 fun InfoTitle(
     closeStreamInfo:()->Unit,
+    updateChannelInfo:()->Unit,
     title:String,
     contentDescription:String,
 ){
@@ -322,7 +328,9 @@ fun InfoTitle(
 
         Button(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            onClick = {},
+            onClick = {
+                updateChannelInfo()
+            },
             shape = RoundedCornerShape(5.dp)
         ) {
             Text(text ="Save",
@@ -385,11 +393,11 @@ fun IsModeratorButton(
 @Composable
 fun ChangeStreamTitleTextField(
     streamTitle:String,
-    updateText:(String)->Unit
+    updateStreamTitle:(String)->Unit
 ) {
-    var text by remember { mutableStateOf(streamTitle) }
-    var textLengthLeft by remember(text) {
-        mutableStateOf(141 - text.length)
+
+    var textLengthLeft by remember(streamTitle) {
+        mutableStateOf(141 - streamTitle.length)
     }
 
 
@@ -405,8 +413,10 @@ fun ChangeStreamTitleTextField(
         }
 
         CustomTextField(
-            streamTitle=text,
-            updateText={newText -> text = newText}
+            streamTitle=streamTitle,
+            updateText={
+                    newText -> updateStreamTitle(newText)
+            }
         )
     }
 
@@ -491,7 +501,7 @@ fun CustomTextField(
 
         androidx.compose.material.TextField(
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
+            singleLine = false,
             value = streamTitle,
             shape = RoundedCornerShape(8.dp),
             onValueChange = {

@@ -274,7 +274,8 @@ fun StreamView(
                                         showAdvancedChatSettings = true
                                         drawerState.open()
                                     }
-                                }
+                                },
+                                orientationIsVertical =true
                             )
                             VerticalOverlayView(
                                 channelName = streamViewModel.clickedStreamInfo.value.channelName,
@@ -355,6 +356,7 @@ fun TextChat(
     clickedCommandAutoCompleteText:(String)->Unit,
     toggleTimeoutDialog:()->Unit,
     toggleBanDialog:()->Unit,
+    orientationIsVertical:Boolean,
 
 ) {
 
@@ -393,6 +395,7 @@ fun TextChat(
         },
         toggleTimeoutDialog={toggleTimeoutDialog()},
         toggleBanDialog={toggleBanDialog()},
+        orientationIsVertical =orientationIsVertical
     )
 
 }

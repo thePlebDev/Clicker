@@ -1,6 +1,7 @@
 package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.clients.ChannelInformation
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettings
@@ -8,6 +9,9 @@ import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import retrofit2.http.Body
+import retrofit2.http.Header
+import retrofit2.http.Query
 
 
 /**
@@ -133,4 +137,13 @@ interface TwitchStream {
         clientId: String,
         autoModSettings: IndividualAutoModSettings
     ):Flow<Response<AutoModSettings>>
+
+    suspend fun updateChannelInformation(
+       authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        channelInformation: ChannelInformation
+    ):Flow<Response<Boolean>>
+
+
 }

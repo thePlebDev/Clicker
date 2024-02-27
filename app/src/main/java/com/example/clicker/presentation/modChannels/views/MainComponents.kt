@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.modChannels.views
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -66,6 +67,7 @@ import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
+import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 
@@ -108,6 +110,7 @@ object ModChannelComponents{
         refreshFunc:()->Unit,
         showNetworkMessage:Boolean,
         updateStreamerName: (String, String,String,String) -> Unit,
+        updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
         onNavigate: (Int) -> Unit,
         clientId: String,
         userId: String,
@@ -143,6 +146,7 @@ object ModChannelComponents{
                             updateStreamerName(streamerName,clientId,broadcasterId,userId)
 
                         },
+                        updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
                         onNavigate={destination -> onNavigate(destination)},
                         userId = userId,
                         clientId = clientId
@@ -286,6 +290,7 @@ object ModChannelComponents{
             liveModChannelList:List<StreamData>,
             modChannelResponseState: Response<Boolean>,
             updateStreamerName: (String, String,String,String) -> Unit,
+            updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
             onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
@@ -339,6 +344,8 @@ object ModChannelComponents{
                                 onNavigate ={destination -> onNavigate(destination)},
                                 clientId =clientId,
                                 userId=userId,
+                                streamItem = streamInfo,
+                                updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
                             )
                         }
 
@@ -443,6 +450,8 @@ object ModChannelComponents{
             url:String,
             viewCount: Int,
             updateStreamerName: (String, String,String,String) -> Unit,
+            updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+            streamItem: StreamData,
             onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
@@ -451,12 +460,22 @@ object ModChannelComponents{
                 modifier = Modifier
                     .padding(10.dp)
                     .clickable {
+                        Log.d("updateStreamerName","streamTitle --> $streamTitle")
                         //todo: navigate to stream and update all the necessary information
                         updateStreamerName(
                             streamerName,
                             clientId,
                             broadcasterId,
                             userId
+                        )
+                        updateClickedStreamInfo(
+                            ClickedStreamInfo(
+                                channelName = streamItem.userLogin,
+                                streamTitle = streamItem.title,
+                                category =  streamItem.gameName,
+                                tags = streamItem.tags,
+                                adjustedUrl = streamItem.thumbNailUrl
+                            )
                         )
                         onNavigate(R.id.action_modChannelsFragment_to_streamFragment)
                     }

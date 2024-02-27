@@ -84,6 +84,7 @@ object TextChat{
         showModal: () -> Unit,
         showOuterBottomModalState:() ->Unit,
         newFilterMethod:(TextFieldValue) ->Unit,
+        orientationIsVertical:Boolean
     ){
         TextChatBuilders.EnterChat(
             modifier = modifier,
@@ -100,7 +101,8 @@ object TextChat{
             showModStatus = {
                 TextChatParts.ShowModStatus(
                     modStatus =modStatus,
-                    showOuterBottomModalState={showOuterBottomModalState()}
+                    showOuterBottomModalState={showOuterBottomModalState()},
+                    orientationIsVertical =orientationIsVertical
                 )
             },
             stylizedTextField ={boxModifier ->
@@ -341,18 +343,22 @@ object TextChat{
         @Composable
         fun ShowModStatus(
             modStatus: Boolean?,
-            showOuterBottomModalState: () ->Unit
+            showOuterBottomModalState: () ->Unit,
+            orientationIsVertical:Boolean
         ){
             val scope = rememberCoroutineScope()
-          //  if (modStatus != null && modStatus == true) {
+            if (modStatus != null && modStatus == true) {
                 AsyncImage(
                     modifier = Modifier.clickable {
-                        showOuterBottomModalState()
+                        if (orientationIsVertical){
+                            showOuterBottomModalState()
+                        }
+
                     },
                     model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
                     contentDescription = stringResource(R.string.moderator_badge_icon_description)
                 )
-           // }
+            }
 
         }
     }// end of TextChatParts

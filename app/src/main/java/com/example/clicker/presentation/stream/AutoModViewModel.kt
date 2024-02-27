@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.ChannelInformation
 
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
@@ -190,6 +191,36 @@ class AutoModViewModel @Inject constructor(
         _autoModUIState.value = _autoModUIState.value.copy(
             updateAutoModSettingsStatus = null
         )
+    }
+    fun updateChannelInformation(
+        streamTitle:String,
+        oAuthToken:String,
+        clientId: String,
+        broadcasterId: String,
+    ){
+        viewModelScope.launch {
+            withContext(ioDispatcher){
+                twitchRepoImpl.updateChannelInformation(
+                    authorizationToken = oAuthToken,
+                    clientId = clientId,
+                    broadcasterId = broadcasterId,
+                    channelInformation = ChannelInformation(title = streamTitle)
+                ).collect{response ->
+                    when(response){
+                        is Response.Loading ->{
+                            Log.d("updateChannelInformation","LOADING")
+                        }
+                        is Response.Success ->{
+                            Log.d("updateChannelInformation","Success")
+                        }
+                        is Response.Failure ->{
+                            Log.d("updateChannelInformation","Failed")
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
 

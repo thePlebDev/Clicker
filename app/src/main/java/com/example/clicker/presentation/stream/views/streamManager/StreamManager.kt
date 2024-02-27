@@ -38,14 +38,7 @@ fun StreamManagerUI(
     Column(
         modifier= Modifier.verticalScroll(rememberScrollState())
     ) {
-        EditStreamInfoCard(
-            title="Edit Stream Info",
-            contentDescription = "Edit Stream Info",
-            iconPainter = painterResource(R.drawable.edit_24),
-            iconTextColor =Color.White,
-            showStreamManager={showEditStreamInfo()},
 
-        )
         EditStreamInfoCard(
             title="Edit AutoMod Info",
             contentDescription = "Edit AutoMod Info",
@@ -53,6 +46,16 @@ fun StreamManagerUI(
             iconTextColor =Color.White,
             showStreamManager={showEditAutoModInfo()}
         )
+        EditStreamInfoCard(
+            title="Edit Stream Info(coming soon)",
+            contentDescription = "Edit Stream Info",
+            iconPainter = painterResource(R.drawable.edit_24),
+            iconTextColor =Color.White.copy(0.4f),
+            showStreamManager={
+                //showEditStreamInfo()
+                              },
+
+            )
         EditStreamInfoCard(
             title="Mod View (coming soon)",
             contentDescription = "Edit AutoMod Info",
