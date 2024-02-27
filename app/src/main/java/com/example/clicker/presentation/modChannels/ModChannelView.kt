@@ -105,6 +105,7 @@ fun ModChannelView(
                     broadcasterId = streamViewModel.state.value.broadcasterId,
                 )
                                  },
+            updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={destination ->onNavigate(destination)},
             clientId=clientId,
             userId=userId

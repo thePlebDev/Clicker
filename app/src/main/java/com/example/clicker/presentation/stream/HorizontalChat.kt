@@ -225,7 +225,8 @@ fun HorizontalChat(
                                 showAdvancedChatSettings = true
                                 drawerState.open()
                             }
-                        }
+                        },
+                        orientationIsVertical = false
                     )
                 }
             )

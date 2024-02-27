@@ -170,6 +170,11 @@ class StreamViewModel @Inject constructor(
     fun setAutoModSettings(show:Boolean){
         _showAutoModSettings.value = show
     }
+    fun updateStreamTitle(newStreamTitle:String){
+        _clickedStreamInfo.value = _clickedStreamInfo.value.copy(
+            streamTitle = newStreamTitle
+        )
+    }
 
 
     /**

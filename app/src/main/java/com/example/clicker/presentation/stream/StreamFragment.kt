@@ -371,7 +371,7 @@ fun setOrientation(
                     },
                     streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
                     streamCategory=streamViewModel.clickedStreamInfo.value.category,
-                    updateText = {},
+                    updateStreamTitle = {newStreamTitle -> streamViewModel.updateStreamTitle(newStreamTitle)},
                     showAutoModSettings =streamViewModel.showAutoModSettings.value,
                     changeSelectedIndex={item,filterType -> autoModViewModel.updateSelectedIndex(item,filterType)},
                     swearingIndex = autoModViewModel.autoModUIState.value.swearing,
@@ -388,7 +388,15 @@ fun setOrientation(
                     isModerator = autoModViewModel.isModerator.value,
                     updateAutoModSettings = {autoModViewModel.updateAutoMod()},
                     updateAutoModSettingsStatus =autoModViewModel.autoModUIState.value.updateAutoModSettingsStatus,
-                    updateAutoModSettingsStatusToNull = {autoModViewModel.updateAutoModSettingsStatusToNull()}
+                    updateAutoModSettingsStatusToNull = {autoModViewModel.updateAutoModSettingsStatusToNull()},
+                    updateChannelInfo={
+                        autoModViewModel.updateChannelInformation(
+                            streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+                            oAuthToken = homeViewModel.state.value.oAuthToken,
+                            clientId = streamViewModel.state.value.clientId,
+                            broadcasterId = streamViewModel.state.value.userId
+                        )
+                    }
                 )
 
 

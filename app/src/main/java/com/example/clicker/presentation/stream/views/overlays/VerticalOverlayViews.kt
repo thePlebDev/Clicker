@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views.overlays
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -66,6 +67,7 @@ fun VerticalTestingOverlayUI(
     category: String,
     tags:List<String>
 ){
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 10.dp)) {
