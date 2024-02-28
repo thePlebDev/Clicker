@@ -28,16 +28,22 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
@@ -86,6 +92,7 @@ object TextChat{
         newFilterMethod:(TextFieldValue) ->Unit,
         orientationIsVertical:Boolean
     ){
+
         TextChatBuilders.EnterChat(
             modifier = modifier,
             filteredRow = {
@@ -364,3 +371,105 @@ object TextChat{
     }// end of TextChatParts
 
 }// end of Text Chat
+
+
+
+/*****TESTING THE BUMBLE DESIGN SYSTEM*******/
+
+@Stable
+object NavigationBarDefaults{
+    @Composable
+    fun Title(title:String,modifier:Modifier){
+        Text(text =title,style = MaterialTheme.typography.headlineSmall,modifier = modifier)
+    }
+
+    @Composable
+    fun IconButton(
+        icon: Painter,
+        onClick:()->Unit,
+        modifier: Modifier = Modifier,
+    ){
+
+        Icon(
+            painter = icon,
+            contentDescription = null,
+            modifier = modifier
+                .size(IconSize)
+                .clickable { onClick() }
+        )
+    }
+
+    private val IconSize = 40.dp
+
+}
+
+
+/*******SCOPING*******/
+//to eliminate the use of NavigationBarDefaults with scoping
+enum class ButtonSize { Compact, Regular }
+
+@Stable class ButtonScope(private val buttonSize: ButtonSize) {
+    @Composable fun Text(
+        text: String,
+
+    ) {
+        val again = buttonSize
+        // Use buttonSize provided via constructor
+        Text(text = text)
+    }
+
+    @Composable fun ButtonThingy(){
+        Text(text = "text")
+    }
+}
+fun ButtonScope.another(){
+    @Composable fun ButtonThingy(){
+        Text(text = "text")
+    }
+}
+
+//
+@Composable fun Button(
+
+    content: @Composable ButtonScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    buttonSize: ButtonSize
+) {
+
+    val padding =8.dp
+    val scope = remember() { ButtonScope(buttonSize) }
+
+    Box(modifier.padding(padding)) {
+
+               with(scope) {
+                   content()
+               }
+
+    }
+}
+
+@Composable
+fun TestingButton(){
+    Button(
+        content = {
+            another()
+        },
+        buttonSize = ButtonSize.Compact
+    )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

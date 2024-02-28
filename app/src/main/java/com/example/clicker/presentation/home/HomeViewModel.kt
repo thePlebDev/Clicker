@@ -108,6 +108,22 @@ class HomeViewModel @Inject constructor(
             logoutDialogIsOpen = true
         )
     }
+    //    init {
+    //TESTING THE MACRO BENCH MARK TESTING
+//        val list = StreamData(
+//            "","","","",
+//            "","","","",0,"",
+//            "","", listOf(""),listOf(""),false
+//        )
+//        val listOfStreamData = mutableListOf<StreamData>()
+//        for (i in 1..31) {
+//            listOfStreamData.add(list.copy(userId = (list.userId.toInt() + 1).toString()))
+//        }
+//        _newUrlList.tryEmit(listOfStreamData)
+//        _uiState.value = _uiState.value.copy(
+//            streamersListLoading = NetworkResponse.Success(true)
+//        )
+//    }
 
     init{
         viewModelScope.launch {
