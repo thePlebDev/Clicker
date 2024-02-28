@@ -216,3 +216,7 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 }
 
 
+@Composable
+fun Testing(){
+    Text("another one")
+}
