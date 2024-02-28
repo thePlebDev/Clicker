@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        google() // Required for the Android Gradle plugin
+        // other repositories if needed
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2'
+        // other dependencies if needed
+    }
+}
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -8,7 +19,8 @@ plugins {
 
 android {
     namespace 'com.example.clicker'
-    compileSdk 33
+    compileSdk 34
+    //compileSdkVersion 34 // Update the compileSdkVersion here
     buildFeatures {
         buildConfig = true
 
@@ -22,7 +34,7 @@ android {
     defaultConfig {
         applicationId "elliott.software.clicker"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 10
         versionName "1.9"
 
@@ -49,6 +61,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
+        }
+        benchmark {
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+            debuggable false
         }
     }
     compileOptions {
@@ -81,6 +98,8 @@ ktlint{
 }
 
 dependencies {
+    //this classpath is to get the profiler working. might have to delete
+    //classpath 'com.android.tools.build:gradle:8.0.1'
     def fragment_version = "1.5.7"
     def work_version = "2.8.1"
 
@@ -89,6 +108,9 @@ dependencies {
 
     //livedata
     implementation 'androidx.compose.runtime:runtime-livedata:1.0.0-beta01'
+
+    //profiler
+    implementation "androidx.profileinstaller:profileinstaller:1.3.1"
 
 
     implementation "com.google.dagger:hilt-android:2.44"
