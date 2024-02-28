@@ -518,7 +518,8 @@ class HomeViewModel @Inject constructor(
                             homeNetworkErrorMessage="Network error  ",
                             networkConnectionState =false,
                             homeRefreshing = false,
-                            modRefreshing = false
+                            modRefreshing = false,
+                            streamersListLoading = NetworkResponse.NetworkFailure(Exception("failed"))
                         )
                         delay(2000)
                         _uiState.value = _uiState.value.copy(
