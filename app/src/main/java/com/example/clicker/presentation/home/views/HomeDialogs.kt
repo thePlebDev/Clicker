@@ -28,9 +28,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.clicker.presentation.home.disableClickAndRipple
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.runtime.Stable
 
 
-object HomeDialogs{
+@Stable
+class HomeDialogs(){
 
     @Composable
     fun LogoutDialog(

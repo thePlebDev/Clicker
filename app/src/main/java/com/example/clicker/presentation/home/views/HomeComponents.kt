@@ -25,6 +25,8 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,14 +44,8 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
-/**
- * - Contains 1 implementation:
- * 1) [HomeViewImplementation]
- *
- * - HomeComponents represents a combination of [ScaffoldComponents] implementation and [HomeComponents] to
- * create the entire HomeView
- * */
-object HomeComponents {
+
+
 
     /**
      * - Implementation of [Builder.HomeModalBottomSheet].
@@ -111,15 +107,15 @@ object HomeComponents {
 
 
     ){
-        Builder.HomeModalBottomSheetBuilder(
+        HomeModalBottomSheetBuilder(
             loginBottomModal = {
-                Parts.LoginWithTwitchBottomModalButton(
+                LoginWithTwitchBottomModalButton(
                     modalText = modalText,
                     loginWithTwitch = { loginWithTwitch() }
                 )
             },
             scaffoldHomeView ={
-                ScaffoldComponents.MainScaffoldComponent(
+                MainScaffoldComponent(
                     onNavigate = {id -> onNavigate(id) },
                     updateStreamerName = { streamerName, clientId,broadcasterId,userId->
                         updateStreamerName(
@@ -155,13 +151,13 @@ object HomeComponents {
 
             },
             forceRegisterLinks ={
-                Parts.DisableForceRegister(
+                DisableForceRegister(
                     addToLinks = { addToLinks() }
                 )
             },
             logoutDialog ={
 
-                    HomeDialogs.LogoutDialog(
+                    LogoutDialog(
                         logoutDialogIsOpen =logoutDialogIsOpen,
                         closeDialog = {hideLogoutDialog()},
                         logout={
@@ -178,11 +174,6 @@ object HomeComponents {
     }
 
 
-    /**
-     * Below are the layout builders of the HomeView. Meaning they will act as the layout guidelines for specific parts
-     * of the `HomeView`
-     * */
-    private object Builder{
 
         /**
          * - HomeModalBottomSheetBuilder is used inside of  [HomeViewImplementation].
@@ -197,37 +188,47 @@ object HomeComponents {
         @OptIn(ExperimentalMaterialApi::class)
         @Composable
         fun HomeModalBottomSheetBuilder(
-            loginBottomModal:@Composable () -> Unit,
-            scaffoldHomeView:@Composable () -> Unit,
-            forceRegisterLinks:@Composable () -> Unit,
-            logoutDialog:@Composable () -> Unit,
+            loginBottomModal:@Composable Parts.() -> Unit,
+            scaffoldHomeView:@Composable MainScaffoldScope.() -> Unit,
+            forceRegisterLinks:@Composable Parts.() -> Unit,
+            logoutDialog:@Composable HomeDialogs.() -> Unit,
             bottomModalState: ModalBottomSheetState,
             domainIsRegistered: Boolean
         ){
+            val partsScope = remember() { Parts() }
+            val homeDialogScope = remember(){HomeDialogs()}
+            val mainScaffoldScope = remember(){MainScaffoldScope()}
             ModalBottomSheetLayout(
                 sheetState = bottomModalState,
                 sheetContent = {
-                    loginBottomModal()
+                    with(partsScope) {
+                        loginBottomModal()
+                    }
+
                 }
             ) {
-
-                scaffoldHomeView()
+                with(mainScaffoldScope){
+                    scaffoldHomeView()
+                }
             }
             if (!domainIsRegistered) {
-                forceRegisterLinks()
+                with(partsScope) {
+                    forceRegisterLinks()
+                }
             }
-            logoutDialog()
+            with(homeDialogScope) {
+                logoutDialog()
+            }
+
 
 
         }
 
 
-    }
-
     /**
      * The components inside of [Parts] represent all the composables that make up the the `HomeView` experience
      * */
-     object Parts{
+@Stable class Parts(){
 
 
 
@@ -351,4 +352,3 @@ object HomeComponents {
 
 
 
-}

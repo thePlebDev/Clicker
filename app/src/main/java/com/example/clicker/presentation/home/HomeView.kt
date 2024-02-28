@@ -103,11 +103,8 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
-import com.example.clicker.presentation.home.views.HomeComponents
-import com.example.clicker.presentation.home.views.HomeComponents.HomeViewImplementation
+import com.example.clicker.presentation.home.views.HomeViewImplementation
 
-import com.example.clicker.presentation.home.views.HomeComponents.Parts.DisableForceRegister
-import com.example.clicker.presentation.home.views.HomeComponents.Parts.LoginWithTwitchBottomModalButton
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
@@ -219,3 +216,7 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 }
 
 
+@Composable
+fun Testing(){
+    Text("another one")
+}
