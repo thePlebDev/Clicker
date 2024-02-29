@@ -91,6 +91,8 @@ import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
+import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
+import com.example.clicker.presentation.sharedViews.TopScaffoldBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -143,6 +145,7 @@ class MainScaffoldScope(){
 
     ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+        val scope = rememberCoroutineScope()
 
 
 
@@ -161,15 +164,51 @@ class MainScaffoldScope(){
                 )
             },
             topBar = {
-                CustomTopBar(
-                    scaffoldState = scaffoldState
+                IconTextTopBar(
+                    clickableIcon={
+                        ClickableIcon(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            imageVector = Icons.Filled.Menu,
+                            iconContentDescription = "Open left side drawer",
+                            onClick = {
+                                scope.launch { scaffoldState.drawerState.open() }
+                            }
+                        )
+                    },
+                    text={
+                        Text(
+                            stringResource(R.string.live_channels),
+                            fontSize = 25.sp,
+                            modifier = Modifier.padding(start = 20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+
+                    }
                 )
             },
             bottomBar = {
-                CustomBottomBar(
-                    onNavigate= {id -> onNavigate(id)
-                    }
-                )},
+                DualButtonNavigationBottomBar(
+                    bottomRowHeight = 100.dp,
+                    firstButton = {
+                        IconOverText(
+                            iconColor = MaterialTheme.colorScheme.secondary,
+                            text = "Home",
+                            imageVector = Icons.Default.Home,
+                            iconContentDescription = "Stay on home page",
+                            onClick = {}
+                        )
+                    },
+                    secondButton = {
+                        PainterResourceIconOverText(
+                            iconColor =MaterialTheme.colorScheme.onPrimary,
+                            text = "Mod Channels",
+                            painter = painterResource(R.drawable.moderator_white),
+                            iconContentDescription = "Navigate to mod channel page",
+                            onClick ={onNavigate(R.id.action_homeFragment_to_modChannelsFragment)}
+                        )
+                    },
+                )
+                        },
             pullToRefreshList ={contentPadding ->
                 PullToRefreshComponent(
                     padding = contentPadding,
@@ -218,8 +257,7 @@ class MainScaffoldScope(){
 
                 }
             },
-            scaffoldIconSize = 35.dp,
-            scaffoldBottomBarHeight = 100.dp
+
 
         )
     }
@@ -241,14 +279,14 @@ class MainScaffoldScope(){
     fun ScaffoldBuilder(
         scaffoldState: ScaffoldState,
         drawerContent:@Composable ScaffoldScope.() -> Unit,
-        topBar:@Composable ScaffoldBarsScope.() -> Unit,
-        bottomBar:@Composable ScaffoldBarsScope.() -> Unit,
+        topBar:@Composable TopScaffoldBarScope.() -> Unit,
+        bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
         pullToRefreshList:@Composable (contentPadding: PaddingValues) -> Unit,
-        scaffoldIconSize:Dp,
-        scaffoldBottomBarHeight:Dp
-    ){
-        val scaffoldBarsScope = remember() { ScaffoldBarsScope(scaffoldIconSize,scaffoldBottomBarHeight) }
+
+        ){
+        val scaffoldBarsScope = remember() { ScaffoldBottomBarScope(35.dp) }
         val scaffoldScope = remember() { ScaffoldScope() }
+        val topBarScaffoldScope = remember(){TopScaffoldBarScope(35.dp)}
 
         Scaffold(
             backgroundColor= MaterialTheme.colorScheme.primary,
@@ -260,7 +298,7 @@ class MainScaffoldScope(){
 
             },
             topBar = {
-                with(scaffoldBarsScope){
+                with(topBarScaffoldScope){
                     topBar()
                 }
             },
@@ -1063,94 +1101,6 @@ class LiveChannelsLazyColumnScope(){
 
 
 
-@Stable
-class ScaffoldBarsScope(
-    private val iconSize: Dp,
-    private val bottomRowHeight:Dp,
-    ){
-
-    @Composable
-    fun CustomBottomBar(
-        onNavigate: (Int) -> Unit,
-    ){
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .height(bottomRowHeight),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ){
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Home Icon",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(iconSize)
-                )
-                Text("Home",color = MaterialTheme.colorScheme.onPrimary)
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.clickable { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.moderator_secondary_color),
-                    "Moderation Icon",
-                    tint= MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(iconSize)
-                )
-                Text("Mod Channels",color = MaterialTheme.colorScheme.onPrimary)
-            }
-
-
-        }
-    }
-
-    /**
-     * - Contains 0 other parts
-     *
-     * - A part used to represent the topBar of a [Scaffold]
-     *
-     * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
-     * */
-
-    @Composable
-    fun CustomTopBar(
-        scaffoldState: ScaffoldState
-    ) {
-        val scope = rememberCoroutineScope()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(vertical = 10.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Filled.Menu,
-                    stringResource(R.string.menu_icon_description),
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clickable { scope.launch { scaffoldState.drawerState.open() } },
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    stringResource(R.string.live_channels),
-                    fontSize = 25.sp,
-                    modifier = Modifier.padding(start = 20.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
-    }
-
-
-}
 
 
 
