@@ -90,7 +90,7 @@ fun ModChannelView(
             modChannelResponseState = homeViewModel.state.value.modChannelResponseState,
             refreshing = homeViewModel.state.value.modRefreshing,
             refreshFunc = {homeViewModel.pullToRefreshModChannels()},
-            showNetworkMessage = !homeViewModel.state.value.networkConnectionState,
+            showNetworkMessage = homeViewModel.state.value.networkConnectionState,
             updateStreamerName = { streamerName, clientId,broadcasterId,userId->
                 streamViewModel.updateChannelNameAndClientIdAndUserId(
                     streamerName,
@@ -108,7 +108,9 @@ fun ModChannelView(
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={destination ->onNavigate(destination)},
             clientId=clientId,
-            userId=userId
+            userId=userId,
+            networkMessageColor=Color.Red,
+            networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
 
 
         )

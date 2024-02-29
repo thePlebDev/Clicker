@@ -3,12 +3,17 @@ package com.example.clicker.presentation.sharedViews
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
@@ -20,8 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.clicker.R
+import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
+import com.example.clicker.presentation.modChannels.views.PullToRefresh
+import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 
 
 @Stable
@@ -49,6 +59,7 @@ class ScaffoldBottomBarScope(
             with(firstButtonScope){
                 firstButton()
             }
+
             with(firstButtonScope){
                 secondButton()
             }
@@ -58,7 +69,7 @@ class ScaffoldBottomBarScope(
 }
 
 @Stable
-class TopScaffoldBarScope(
+class ScaffoldTopBarScope(
     private val iconSize: Dp
 ){
     @Composable
@@ -153,4 +164,92 @@ class ActionButtonsScope(
 
 
 
+}
+
+@Stable
+class NotificationsScope{
+
+    @Composable
+    fun NetworkStatus(
+        modifier:Modifier,
+        color:Color,
+        networkMessage:String
+    ){
+        Card(
+            modifier = modifier
+                .clickable{ },
+            elevation = 10.dp,
+            backgroundColor =color.copy(alpha = 0.8f)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    "home icon",
+                    tint= MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(30.dp)
+                )
+                Text(networkMessage,color = MaterialTheme.colorScheme.onPrimary)
+            }
+        }
+    }
+
+}
+
+@Stable
+class IndicatorScopes(){
+    @Composable
+    fun LazyListLoadingIndicator(){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(40.dp),
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
+
+    }
+
+}
+
+@Composable
+fun PullToRefreshComponent(
+    padding: PaddingValues,
+    refreshing:Boolean,
+    refreshFunc:()->Unit,
+    showNetworkMessage:Boolean,
+    networkStatus:@Composable NotificationsScope.(modifier:Modifier) -> Unit,
+    content:@Composable LiveChannelsLazyColumnScope.() -> Unit,
+){
+
+    val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
+    val networkStatusScope = remember() { NotificationsScope() }
+
+
+    PullToRefresh(
+        state = rememberPullToRefreshState(isRefreshing = refreshing),
+        onRefresh = { refreshFunc()},
+        indicatorPadding = padding
+    ) {
+        Box(modifier= Modifier
+            .fillMaxSize()
+            .padding(padding)){
+
+            with(lazyColumnScope){
+                content()
+            }
+            if(!showNetworkMessage){
+                with(networkStatusScope){
+                    networkStatus(Modifier.align(Alignment.BottomCenter))
+                }
+            }
+
+        }
+
+    }
 }

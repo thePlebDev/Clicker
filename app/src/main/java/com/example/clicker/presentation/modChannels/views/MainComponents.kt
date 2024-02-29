@@ -66,10 +66,14 @@ import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
+import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.NotificationsScope
+import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
-import com.example.clicker.presentation.sharedViews.TopScaffoldBarScope
+import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
@@ -117,6 +121,8 @@ object ModChannelComponents{
         onNavigate: (Int) -> Unit,
         clientId: String,
         userId: String,
+        networkMessageColor:Color,
+        networkMessage: String,
     ){
         Builders.ScaffoldBuilder(
             topBar = {
@@ -157,10 +163,17 @@ object ModChannelComponents{
             },
             pullToRefreshList = {contentPadding ->
                 PullToRefreshComponent(
-                    padding =contentPadding,
+                    padding = contentPadding,
                     refreshing = refreshing,
-                    refreshFunc = {refreshFunc()},
-                    showNetworkMessage =showNetworkMessage
+                    refreshFunc = { refreshFunc() },
+                    showNetworkMessage = showNetworkMessage,
+                    networkStatus = { modifier ->
+                        NetworkStatus(
+                            modifier = modifier,
+                            color = networkMessageColor,
+                            networkMessage = networkMessage
+                        )
+                    }
                 ){
                     Parts.ModChannelsResponse(
                         contentPadding,
@@ -178,7 +191,10 @@ object ModChannelComponents{
                         updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
                         onNavigate={destination -> onNavigate(destination)},
                         userId = userId,
-                        clientId = clientId
+                        clientId = clientId,
+                        loadingIndicator = {
+                            LazyListLoadingIndicator()
+                        }
 
                     )
                 }
@@ -207,15 +223,12 @@ object ModChannelComponents{
          * */
         @Composable
         fun ScaffoldBuilder(
-            topBar:@Composable TopScaffoldBarScope.() -> Unit,
-
+            topBar:@Composable ScaffoldTopBarScope.() -> Unit,
             bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
-
-
             pullToRefreshList:@Composable (contentPadding:PaddingValues) -> Unit,
         ){
             val bottomBarScope = remember(){ ScaffoldBottomBarScope(35.dp) }
-            val topScaffoldBarScope= remember(){TopScaffoldBarScope(35.dp)}
+            val topScaffoldBarScope= remember(){ScaffoldTopBarScope(35.dp)}
 
             Scaffold(
                 backgroundColor= MaterialTheme.colorScheme.primary,
@@ -237,70 +250,12 @@ object ModChannelComponents{
     } /***END OF THE BUILDERS****/
 
 
-    @Composable
-    fun PullToRefreshComponent(
-        padding: PaddingValues,
-        refreshing:Boolean,
-        refreshFunc:()->Unit,
-        showNetworkMessage:Boolean,
-        content:@Composable () -> Unit,
-    ){
-
-
-        PullToRefresh(
-            state = rememberPullToRefreshState(isRefreshing = refreshing),
-            onRefresh = { refreshFunc() },
-            indicatorPadding = padding
-        ) {
-            Box(modifier= Modifier
-                .fillMaxSize()
-                .padding(padding)){
-                content()
-                if(showNetworkMessage){
-                    Parts.NetworkStatus(modifier = Modifier.align(Alignment.BottomCenter))
-                }
-            }
-
-        }
-    }
-
-
 
     /**
      * Parts represents the most individual parts of [ModChannelComponents] and should be thought of as the individual
      * pieces that are used inside of a [Builders] to create a [ModChannelComponents] implementation
      * */
     private object Parts{
-
-        @Composable
-        fun NetworkStatus(
-            modifier:Modifier,
-
-        ){
-            Card(
-                modifier = modifier
-                    .clickable{ },
-                elevation = 10.dp,
-                backgroundColor =Color.Red.copy(alpha = 0.8f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        "home icon",
-                        tint= MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(30.dp)
-                    )
-                    androidx.compose.material.Text(
-                        "Disconnected from network",
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        }
 
         /**
          * - Contains 1 extra parts:
@@ -334,21 +289,20 @@ object ModChannelComponents{
             onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
+            loadingIndicator:@Composable IndicatorScopes.() -> Unit,
 
-        ){
+            ){
+            val indicatorScopes = remember() { IndicatorScopes() }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = contentPadding){
                 when(modChannelResponseState){
                     is Response.Loading ->{
                         item{
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ){
-                                CircularProgressIndicator()
-
+                            with(indicatorScopes){
+                                loadingIndicator()
                             }
+
                         }
 
                     }
@@ -707,98 +661,6 @@ object ModChannelComponents{
             }
         }
 
-        /**
-         * - Contains 0 extra parts:
-         *
-         * - CustomTopBar is a composable function meant to act as the top bar inside of a [Scaffold]
-         *
-         * @param onNavigate a function used to navigate between fragments
-         * */
-        @Composable
-        fun CustomTopBar(
-            onNavigate: () -> Unit
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(vertical = 10.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Filled.ArrowBack,
-                        "Navigate back to home Fragment",
-                        modifier = Modifier
-                            .size(35.dp)
-                            .clickable {
-                                onNavigate()
-                            },
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Text(
-                        "Channels you mod for",
-                        fontSize = 25.sp,
-                        modifier = Modifier.padding(start = 20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        }
-
-        /**
-         * - Contains 0 extra parts:
-         *
-         * - CustomBottomBar is a composable function meant to act as the bottom bar inside of a [Scaffold]
-         *
-         * @param onNavigate a function used to navigate between fragments
-         * */
-        @Composable
-        fun CustomBottomBar(
-            onNavigate: () -> Unit,
-        ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.primary),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround
-            ){
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier=Modifier.clickable {
-
-                        onNavigate()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Home,
-                        contentDescription = "Home Icon",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    androidx.compose.material.Text("Home", color = MaterialTheme.colorScheme.onPrimary)
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.moderator_secondary_color),
-                        "Moderation Icon",
-                        tint= MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    androidx.compose.material.Text(
-                        "Mod Channels",
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-
-
-            }
-        }
 
         /**
          * - Contains 0 extra parts:
@@ -875,6 +737,8 @@ object ModChannelComponents{
     }/***END OF THE PARTS****/
 
 }
+
+
 
 
 

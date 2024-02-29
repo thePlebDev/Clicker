@@ -2,6 +2,7 @@ package com.example.clicker.presentation.home.views
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -91,8 +92,11 @@ import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
+import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.NotificationsScope
+import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
-import com.example.clicker.presentation.sharedViews.TopScaffoldBarScope
+import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -152,7 +156,7 @@ class MainScaffoldScope(){
         ScaffoldBuilder(
             scaffoldState =scaffoldState,
             drawerContent = {
-                LoginLogoutScaffoldDrawer(
+                ScaffoldScope.LoginLogoutScaffoldDrawer(
                     showLogoutDialog = {
                         showLogoutDialog()
                     },
@@ -278,24 +282,21 @@ class MainScaffoldScope(){
     @Composable
     fun ScaffoldBuilder(
         scaffoldState: ScaffoldState,
-        drawerContent:@Composable ScaffoldScope.() -> Unit,
-        topBar:@Composable TopScaffoldBarScope.() -> Unit,
+        drawerContent:@Composable () -> Unit,
+        topBar:@Composable ScaffoldTopBarScope.() -> Unit,
         bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
         pullToRefreshList:@Composable (contentPadding: PaddingValues) -> Unit,
 
         ){
         val scaffoldBarsScope = remember() { ScaffoldBottomBarScope(35.dp) }
-        val scaffoldScope = remember() { ScaffoldScope() }
-        val topBarScaffoldScope = remember(){TopScaffoldBarScope(35.dp)}
+
+        val topBarScaffoldScope = remember(){ScaffoldTopBarScope(35.dp)}
 
         Scaffold(
             backgroundColor= MaterialTheme.colorScheme.primary,
             scaffoldState = scaffoldState,
             drawerContent = {
-                with(scaffoldScope){
                     drawerContent()
-                }
-
             },
             topBar = {
                 with(topBarScaffoldScope){
@@ -316,77 +317,6 @@ class MainScaffoldScope(){
 }
 
 
-
-@Composable
-fun PullToRefreshComponent(
-    padding: PaddingValues,
-    refreshing:Boolean,
-    refreshFunc:()->Unit,
-    showNetworkMessage:Boolean,
-    networkStatus:@Composable NotificationsScope.(modifier:Modifier) -> Unit,
-    content:@Composable LiveChannelsLazyColumnScope.() -> Unit,
-){
-
-    val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
-    val networkStatusScope = remember() { NotificationsScope() }
-
-
-    PullToRefresh(
-        state = rememberPullToRefreshState(isRefreshing = refreshing),
-        onRefresh = { refreshFunc()},
-        indicatorPadding = padding
-    ) {
-        Box(modifier= Modifier
-            .fillMaxSize()
-            .padding(padding)){
-
-            with(lazyColumnScope){
-                content()
-            }
-            if(!showNetworkMessage){
-                with(networkStatusScope){
-                    networkStatus(Modifier.align(Alignment.BottomCenter))
-                }
-            }
-
-        }
-
-    }
-}
-
-
-@Stable
-class NotificationsScope{
-
-    @Composable
-    fun NetworkStatus(
-        modifier:Modifier,
-        color:Color,
-        networkMessage:String
-    ){
-        Card(
-            modifier = modifier
-                .clickable{ },
-            elevation = 10.dp,
-            backgroundColor =color.copy(alpha = 0.8f)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    "home icon",
-                    tint= MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(30.dp)
-                )
-                Text(networkMessage,color = MaterialTheme.colorScheme.onPrimary)
-            }
-        }
-    }
-
-}
 
 
     /**
@@ -746,7 +676,7 @@ class NotificationsScope{
     }
 
 @Stable
-class ScaffoldScope(){
+object ScaffoldScope{
     /**
      * - Contains 1 extra part [AccountActionCard]
      *
@@ -861,13 +791,14 @@ class LiveChannelsLazyColumnScope(){
         urlList: List<StreamData>?,
         urlListLoading: NetworkResponse<Boolean>,
         contentPadding: PaddingValues,
-        loadingIndicator:@Composable LiveChannelsLazyColumnScope.() -> Unit,
+        loadingIndicator:@Composable IndicatorScopes.() -> Unit,
         emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
         liveChannelRowItem:@Composable LiveChannelsLazyColumnScope.(streamItem: StreamData) -> Unit,
         gettingStreamError:@Composable LiveChannelsLazyColumnScope.(message:String) -> Unit,
 
         ){
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
+        val indicatorScopes = remember() { IndicatorScopes() }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -880,7 +811,7 @@ class LiveChannelsLazyColumnScope(){
             when (urlListLoading) {
                 is NetworkResponse.Loading -> {
                     item {
-                        with(lazyColumnScope){
+                        with(indicatorScopes){
                             loadingIndicator()
                         }
                     }
@@ -930,19 +861,7 @@ class LiveChannelsLazyColumnScope(){
         }
     }
 
-    @Composable
-    fun LazyListLoadingIndicator(){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(40.dp),
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
 
-    }
 
     /**
      * - Contains 0 extra parts
@@ -957,7 +876,9 @@ class LiveChannelsLazyColumnScope(){
                 .fillMaxWidth()
                 .padding(15.dp)
                 .clickable { },
-            elevation = 10.dp
+            border = BorderStroke(2.dp,MaterialTheme.colorScheme.secondary),
+            elevation = 10.dp,
+            backgroundColor = MaterialTheme.colorScheme.primary
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -967,14 +888,14 @@ class LiveChannelsLazyColumnScope(){
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(35.dp)
                 )
-                Text(stringResource(R.string.no_live_streams), fontSize = 20.sp)
+                Text(stringResource(R.string.no_live_streams), fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(35.dp)
                 )
             }
