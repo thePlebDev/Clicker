@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +68,8 @@ import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
+import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
+import com.example.clicker.presentation.sharedViews.TopScaffoldBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
@@ -117,13 +120,39 @@ object ModChannelComponents{
     ){
         Builders.ScaffoldBuilder(
             topBar = {
-                Parts.CustomTopBar(
-                    onNavigate ={ popBackStackNavigation()}
+                IconTextTopBar(
+                    clickableIcon ={
+                        ClickableIcon(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            imageVector = Icons.Filled.ArrowBack,
+                            iconContentDescription = "Navigate back to home page",
+                            onClick = {popBackStackNavigation()}
+                        )
+                    },
+
                 )
             },
             bottomBar={
-                Parts.CustomBottomBar(
-                    onNavigate ={ popBackStackNavigation()}
+                DualButtonNavigationBottomBar(
+                    bottomRowHeight = 100.dp,
+                    firstButton = {
+                        IconOverText(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Home",
+                            imageVector = Icons.Default.Home,
+                            iconContentDescription = "Navigate back to home page",
+                            onClick = {popBackStackNavigation()}
+                                )
+                    },
+                    secondButton = {
+                        PainterResourceIconOverText(
+                            iconColor =MaterialTheme.colorScheme.secondary,
+                            text = "Mod Channels",
+                            painter = painterResource(R.drawable.moderator_white),
+                            iconContentDescription = "Click to stay on mod page",
+                            onClick ={}
+                                   )
+                    },
                 )
             },
             pullToRefreshList = {contentPadding ->
@@ -164,6 +193,7 @@ object ModChannelComponents{
      * Builder represents the most generic parts of [ModChannelComponents] and should be thought of as layout guides used
      * by the implementations above
      * */
+    @Stable
    private object Builders{
 
         /**
@@ -177,18 +207,26 @@ object ModChannelComponents{
          * */
         @Composable
         fun ScaffoldBuilder(
-            topBar:@Composable () -> Unit,
-            bottomBar:@Composable () -> Unit,
+            topBar:@Composable TopScaffoldBarScope.() -> Unit,
+
+            bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
+
+
             pullToRefreshList:@Composable (contentPadding:PaddingValues) -> Unit,
         ){
+            val bottomBarScope = remember(){ ScaffoldBottomBarScope(35.dp) }
+            val topScaffoldBarScope= remember(){TopScaffoldBarScope(35.dp)}
 
             Scaffold(
                 backgroundColor= MaterialTheme.colorScheme.primary,
                 topBar = {
-                    topBar()
+                    topScaffoldBarScope.topBar()
                 },
                 bottomBar = {
-                    bottomBar()
+                    with(bottomBarScope){
+                        bottomBar()
+                    }
+
                 },
             ) { contentPadding ->
 
@@ -214,7 +252,9 @@ object ModChannelComponents{
             onRefresh = { refreshFunc() },
             indicatorPadding = padding
         ) {
-            Box(modifier=Modifier.fillMaxSize().padding(padding)){
+            Box(modifier= Modifier
+                .fillMaxSize()
+                .padding(padding)){
                 content()
                 if(showNetworkMessage){
                     Parts.NetworkStatus(modifier = Modifier.align(Alignment.BottomCenter))
@@ -460,7 +500,7 @@ object ModChannelComponents{
                 modifier = Modifier
                     .padding(10.dp)
                     .clickable {
-                        Log.d("updateStreamerName","streamTitle --> $streamTitle")
+                        Log.d("updateStreamerName", "streamTitle --> $streamTitle")
                         //todo: navigate to stream and update all the necessary information
                         updateStreamerName(
                             streamerName,
@@ -472,7 +512,7 @@ object ModChannelComponents{
                             ClickedStreamInfo(
                                 channelName = streamItem.userLogin,
                                 streamTitle = streamItem.title,
-                                category =  streamItem.gameName,
+                                category = streamItem.gameName,
                                 tags = streamItem.tags,
                                 adjustedUrl = streamItem.thumbNailUrl
                             )
