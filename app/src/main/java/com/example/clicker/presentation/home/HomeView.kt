@@ -117,7 +117,6 @@ import kotlin.math.roundToInt
 fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
-    authenticationViewModel: AuthenticationViewModel,
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
@@ -125,7 +124,7 @@ fun ValidationView(
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val modalText = authenticationViewModel.authenticationUIState.value.modalText
+    val modalText = homeViewModel.authenticationUIState.value.modalText
     val showModalState = homeViewModel.state.value.showLoginModal
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
     if (showModalState) {
@@ -181,7 +180,7 @@ fun ValidationView(
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         logout = {
-            authenticationViewModel.beginLogout(
+            homeViewModel.beginLogout(
                 clientId = clientId?:"",
                 oAuthToken = oAuthToken
             )
