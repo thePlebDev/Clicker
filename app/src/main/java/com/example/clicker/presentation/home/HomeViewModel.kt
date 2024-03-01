@@ -12,6 +12,7 @@ import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.AuthenticationEvent
+import com.example.clicker.presentation.authentication.AuthenticationUIState
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
@@ -31,7 +32,24 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+data class AuthenticationUIState(
 
+    val showLoginButton: Boolean = true,
+
+    val logoutError: Boolean = false,
+
+    val authenticationCode: String = "", //this is the oAuthToken
+    val clientId: String = "",
+    val userId: String = "",
+
+    val authenticated: Boolean = false,
+
+    val showErrorModal: Boolean = false,
+
+    val showLoginModal: Boolean = false,
+    val modalText: String = "Login to continue"
+
+)
 /**
  * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
  * are fetched
@@ -79,7 +97,6 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val authenticationEventBus: AuthenticationEvent
 ) : ViewModel() {
 
     private val _newUrlList = MutableStateFlow<List<StreamData>?>(null)
@@ -87,6 +104,11 @@ class HomeViewModel @Inject constructor(
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
+
+    private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(
+        AuthenticationUIState()
+    )
+    val authenticationUIState: State<AuthenticationUIState> = _authenticationUIState
 
 
 
@@ -125,18 +147,28 @@ class HomeViewModel @Inject constructor(
 //        )
 //    }
 
-    init{
-        viewModelScope.launch {
-            authenticationEventBus.authenticationStatus.collect{nullableAuthenticationStatus ->
-                nullableAuthenticationStatus?.also { authenticationStatus ->
-                    when(authenticationStatus){
-                        is Response.Loading ->{
+
+    fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
+//
+        _authenticationUIState.value = _authenticationUIState.value.copy(
+            showLoginModal = true,
+            modalText = "Logging out..."
+
+        )
+        withContext(ioDispatcher + CoroutineName("BeginLogout")) {
+            authentication.logout(
+                clientId = clientId,
+                token = oAuthToken
+            )
+                .collect { response ->
+                    when (response) {
+                        is NetworkAuthResponse.Loading -> {
                             _uiState.value = _uiState.value.copy(
                                 modChannelResponseState = Response.Loading,
                                 streamersListLoading = NetworkResponse.Loading
                             )
                         }
-                        is Response.Success ->{
+                        is NetworkAuthResponse.Success -> {
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkResponse.Failure(
                                     Exception("Success! Login with Twitch")
@@ -151,9 +183,8 @@ class HomeViewModel @Inject constructor(
                                 modRefreshing = false,
                             )
                             _validatedUser.value = null
-
                         }
-                        is Response.Failure ->{
+                        is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 networkConnectionState = false,
                                 homeNetworkErrorMessage = "Logout failed"
@@ -164,9 +195,32 @@ class HomeViewModel @Inject constructor(
                                 networkConnectionState = true,
                             )
                         }
+                        is NetworkAuthResponse.NetworkFailure->{
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = false,
+                                homeNetworkErrorMessage = "Network Error"
+                            )
+                            delay(2000)
+
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = true,
+                            )
+                        }
+                        is NetworkAuthResponse.Auth401Failure ->{
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = false,
+                                homeNetworkErrorMessage = "Logout failed"
+                            )
+                            delay(2000)
+
+                            _uiState.value = _uiState.value.copy(
+                                networkConnectionState = true,
+                            )
+                        }
+
+
                     }
                 }
-            }
         }
     }
 

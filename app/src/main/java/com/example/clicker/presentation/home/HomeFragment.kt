@@ -49,7 +49,6 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
-    private val authenticationViewModel: AuthenticationViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,7 +112,6 @@ class HomeFragment : Fragment() {
                     ValidationView(
                         homeViewModel = homeViewModel,
                         streamViewModel = streamViewModel,
-                        authenticationViewModel = authenticationViewModel,
                         loginWithTwitch = {
                             startActivity(twitchIntent2)
                             intent.launchUrl(

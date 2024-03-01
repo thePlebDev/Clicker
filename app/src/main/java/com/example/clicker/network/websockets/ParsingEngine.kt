@@ -238,6 +238,7 @@ class ParsingEngine @Inject constructor() {
             .build()
     }
 
+  //  var textChatCount = 0
     /**
      * Parses the websocket data sent from twitch. Should run when a PRIVMSG command is sent
      * @property text the string to be parsed
@@ -246,6 +247,7 @@ class ParsingEngine @Inject constructor() {
     fun privateMessageParsing(text: String,channelName: String): TwitchUserData {
         val pattern = "([^;@]+)=([^;]+)".toRegex()
         val privateMsgPattern = "(#$channelName :)(.+)".toRegex()
+        //Log.d("TextChatNumber","total number of messages = ${textChatCount++} ")
 
 //        Log.d("privateMessageParsing","string --> $text")
 
