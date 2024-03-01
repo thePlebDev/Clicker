@@ -98,6 +98,7 @@ import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -132,7 +133,7 @@ class MainScaffoldScope(){
         login: () -> Unit,
         userIsLoggedIn: Boolean,
         urlList: List<StreamData>?,
-        urlListLoading: NetworkResponse<Boolean>,
+        urlListLoading: NetworkNewUserResponse<Boolean>,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
@@ -789,7 +790,7 @@ class LiveChannelsLazyColumnScope(){
     @Composable
     fun LiveChannelsLazyColumn(
         urlList: List<StreamData>?,
-        urlListLoading: NetworkResponse<Boolean>,
+        urlListLoading: NetworkNewUserResponse<Boolean>,
         contentPadding: PaddingValues,
         loadingIndicator:@Composable IndicatorScopes.() -> Unit,
         emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
@@ -809,14 +810,14 @@ class LiveChannelsLazyColumnScope(){
 
 
             when (urlListLoading) {
-                is NetworkResponse.Loading -> {
+                is NetworkNewUserResponse.Loading -> {
                     item {
                         with(indicatorScopes){
                             loadingIndicator()
                         }
                     }
                 }
-                is NetworkResponse.Success -> {
+                is NetworkNewUserResponse.Success -> {
                     if (urlList != null) {
 
                         if (urlList.isEmpty()) {
@@ -837,7 +838,7 @@ class LiveChannelsLazyColumnScope(){
                         // end of the lazy column
                     }
                 }
-                is NetworkResponse.Failure -> {
+                is NetworkNewUserResponse.Failure -> {
 
                     item {
 
@@ -847,7 +848,7 @@ class LiveChannelsLazyColumnScope(){
                         }
                     }
                 }
-                is NetworkResponse.NetworkFailure -> {
+                is NetworkNewUserResponse.NetworkFailure -> {
 
                     item{
                         with(lazyColumnScope){
@@ -855,6 +856,13 @@ class LiveChannelsLazyColumnScope(){
                         }
                     }
 
+                }
+                is NetworkNewUserResponse.NewUser ->{
+                    item{
+                        with(lazyColumnScope){
+                            gettingStreamError(urlListLoading.message)
+                        }
+                    }
                 }
             }
 
