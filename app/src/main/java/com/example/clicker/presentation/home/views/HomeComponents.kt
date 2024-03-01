@@ -104,7 +104,8 @@ import com.example.clicker.util.Response
         logoutDialogIsOpen:Boolean,
         hideLogoutDialog:()->Unit,
         showLogoutDialog: () -> Unit,
-        currentUsername:String
+        currentUsername:String,
+        showLoginModal:()->Unit,
 
 
     ){
@@ -146,7 +147,8 @@ import com.example.clicker.util.Response
                     homeRefreshFunc = {homeRefreshFunc()},
                     networkMessageColor =networkMessageColor,
                     networkMessage = networkMessage,
-                    showNetworkMessage =showNetworkMessage
+                    showNetworkMessage =showNetworkMessage,
+                    showLoginModal={showLoginModal()}
 
                 )
 
