@@ -15,6 +15,7 @@ import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.authentication.AuthenticationUIState
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -69,7 +70,7 @@ data class HomeUIState(
     val width: Int = 0,
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
-    val streamersListLoading: NetworkResponse<Boolean> = NetworkResponse.Loading,
+    val streamersListLoading: NetworkNewUserResponse<Boolean> = NetworkNewUserResponse.Loading,
     val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
     val oAuthToken: String = "",
@@ -89,7 +90,7 @@ data class HomeUIState(
 
 
 
-)
+    )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -147,6 +148,22 @@ class HomeViewModel @Inject constructor(
 //        )
 //    }
 
+    /**Initial state monitoring
+     * - These functions will monitor Hot StateFlows upon the creation of the HomeViewModel
+     * */
+    init{
+        monitorForOAuthToken()
+    }
+    init {
+        monitorForValidatedUser()
+    }
+    init{
+        monitorNewList()
+    }
+    init{
+        getOAuthToken()
+    }
+
 
     fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
 //
@@ -165,12 +182,12 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Loading -> {
                             _uiState.value = _uiState.value.copy(
                                 modChannelResponseState = Response.Loading,
-                                streamersListLoading = NetworkResponse.Loading
+                                streamersListLoading = NetworkNewUserResponse.Loading
                             )
                         }
                         is NetworkAuthResponse.Success -> {
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkResponse.Failure(
+                                streamersListLoading = NetworkNewUserResponse.Failure(
                                     Exception("Success! Login with Twitch")
                                 ),
                                 showLoginModal = true,
@@ -228,33 +245,6 @@ class HomeViewModel @Inject constructor(
 
 
 
-    /**
-     * refreshFromConnection is a private function that will get called when [monitorForNetworkConnection] detects a
-     * reconnection to the network. First it will get the locally stored OAuth token, then if [validatedUser] is
-     * not null [getLiveStreams] is called. If [validatedUser] is null then [validateOAuthToken] is run.
-     * */
-    private fun refreshFromConnection(){
-        viewModelScope.launch {
-            tokenDataStore.getOAuthToken().collect{oAuthToken ->
-                if(oAuthToken.length > 2 ){
-                    when(validatedUser){
-                        null ->{
-                            validateOAuthToken(oAuthToken)
-                        }
-                        else ->{
-                            getLiveStreams(
-                                clientId = _validatedUser.value?.clientId ?:"",
-                                userId = _validatedUser.value?.clientId ?:"",
-                                oAuthToken =oAuthToken
-                            )
-                        }
-                    }
-                }
-
-
-            }
-        }
-    }
 
 
     fun registerDomian(isRegistered: Boolean) {
@@ -263,18 +253,7 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    init{
-        monitorForOAuthToken()
-    }
-    init {
-        monitorForValidatedUser()
-    }
-    init{
-        getOAuthToken()
-    }
-    init{
-        monitorNewList()
-    }
+
 
     fun pullToRefreshModChannels(){
         viewModelScope.launch {
@@ -352,6 +331,10 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    /**
+     * monitorNewList is a private function that upon the initialization of this viewModel is meant to monitor the [_newUrlList] hot flow for any non null values
+     * to be emitted. Once a non null value is emitted to [_newUrlList] this function will then call [getModeratedChannels]
+     * */
     private fun monitorNewList() {
         viewModelScope.launch {
             _newUrlList.collect{streamList ->
@@ -489,8 +472,8 @@ class HomeViewModel @Inject constructor(
 
             } else {
                 _uiState.value = _uiState.value.copy(
-                    streamersListLoading = NetworkResponse.Failure(
-                        Exception("You're new! Please login with Twitch")
+                    streamersListLoading = NetworkNewUserResponse.NewUser(
+                        "New user! Login with Twitch"
                     ),
                     showLoginModal = true
                 )
@@ -558,7 +541,7 @@ class HomeViewModel @Inject constructor(
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
 
                         _uiState.value = _uiState.value.copy(
-                            streamersListLoading = NetworkResponse.Failure(
+                            streamersListLoading = NetworkNewUserResponse.Failure(
                                 Exception("Error! Pull refresh")
                             ),
                             homeRefreshing = false,
@@ -573,7 +556,7 @@ class HomeViewModel @Inject constructor(
                             networkConnectionState =false,
                             homeRefreshing = false,
                             modRefreshing = false,
-                            streamersListLoading = NetworkResponse.NetworkFailure(Exception("failed"))
+                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(Exception("failed"))
                         )
                         delay(2000)
                         _uiState.value = _uiState.value.copy(
@@ -583,7 +566,7 @@ class HomeViewModel @Inject constructor(
                     is NetworkAuthResponse.Auth401Failure ->{
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> Auth401Failure.....")
                         _uiState.value = _uiState.value.copy(
-                            streamersListLoading = NetworkResponse.Failure(
+                            streamersListLoading = NetworkNewUserResponse.Failure(
                                 Exception("Error! Re-login with Twitch")
                             ),
                             showLoginModal = true,
@@ -643,7 +626,7 @@ class HomeViewModel @Inject constructor(
                             }
 
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkResponse.Success(true),
+                                streamersListLoading = NetworkNewUserResponse.Success(true),
                                 modRefreshing = false,
                                 homeRefreshing = false
                             )
@@ -654,7 +637,7 @@ class HomeViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 modRefreshing = false,
                                 homeRefreshing = false,
-                                streamersListLoading = NetworkResponse.Failure(
+                                streamersListLoading = NetworkNewUserResponse.Failure(
                                     Exception("Error! Pull refresh")
                                 )
                             )
@@ -673,7 +656,7 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkAuthResponse.Auth401Failure->{
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkResponse.Failure(
+                                streamersListLoading = NetworkNewUserResponse.Failure(
                                     Exception("Error! Re-login with Twitch")
                                 ),
                                 homeRefreshing = false,

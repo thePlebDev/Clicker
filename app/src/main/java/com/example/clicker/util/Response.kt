@@ -85,4 +85,42 @@ sealed class NetworkAuthResponse<out T> {
 }
 
 
+/**
+ * Represents a network response and its specific error
+ *
+ * This class represents the 5 possible states of network responses in this application.
+ * - [NetworkNewUserResponse.Loading]
+ * - [NetworkNewUserResponse.NewUser]
+ * - [NetworkNewUserResponse.Success]
+ * - [NetworkNewUserResponse.Failure]
+ * - [NetworkNewUserResponse.NetworkFailure]
+ *
+ * @param T the value returned from the network request
+ *
+ *
+ */
+sealed class NetworkNewUserResponse<out T> {
+
+    object Loading : NetworkNewUserResponse<Nothing>()
+
+
+
+    data class Success<out T>(
+        val data: T
+    ) : NetworkNewUserResponse<T>()
+
+    data class NewUser(
+        val message:String
+    ): NetworkNewUserResponse<Nothing>()
+
+
+    data class Failure(
+        val e: Exception
+    ) : NetworkNewUserResponse<Nothing>()
+
+    data class NetworkFailure(
+        val e: Exception
+    ) : NetworkNewUserResponse<Nothing>()
+}
+
 

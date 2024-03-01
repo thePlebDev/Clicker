@@ -42,6 +42,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 
@@ -83,7 +84,7 @@ import com.example.clicker.util.Response
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-        streamersListLoading: NetworkResponse<Boolean>,
+        streamersListLoading: NetworkNewUserResponse<Boolean>,
         urlList: List<StreamData>?,
         clientId: String,
         userId: String,
