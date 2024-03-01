@@ -93,7 +93,9 @@ import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.NotificationsScope
+import com.example.clicker.presentation.sharedViews.NotifyUserScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
@@ -146,7 +148,8 @@ class MainScaffoldScope(){
         homeRefreshFunc:()->Unit,
         networkMessageColor:Color,
         networkMessage: String,
-        showNetworkMessage:Boolean
+        showNetworkMessage:Boolean,
+        showLoginModal:()->Unit,
 
     ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -257,6 +260,19 @@ class MainScaffoldScope(){
                         },
                         gettingStreamError = {message ->
                             this.GettingStreamsError(errorMessage = message)
+                        },
+                        newUserAlert={responseMessage ->
+                            NewUserAlert(
+                                iconSize = 35.dp,
+                                iconContentDescription = "Show the login modal",
+                                iconColor = MaterialTheme.colorScheme.onSecondary,
+                                iconImageVector = Icons.Default.AccountCircle,
+                                backgroundColor = MaterialTheme.colorScheme.secondary,
+                                fontSize = 20.sp,
+                                textColor = MaterialTheme.colorScheme.onSecondary,
+                                message = responseMessage,
+                                onClick ={showLoginModal()}
+                            )
                         }
                     )
 
@@ -796,10 +812,12 @@ class LiveChannelsLazyColumnScope(){
         emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
         liveChannelRowItem:@Composable LiveChannelsLazyColumnScope.(streamItem: StreamData) -> Unit,
         gettingStreamError:@Composable LiveChannelsLazyColumnScope.(message:String) -> Unit,
+        newUserAlert:@Composable (message:String) ->Unit,
 
         ){
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
         val indicatorScopes = remember() { IndicatorScopes() }
+        val newUserScope = remember() { NotifyUserScope(fontSize = 20.sp, iconSize = 35.dp) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -859,9 +877,12 @@ class LiveChannelsLazyColumnScope(){
                 }
                 is NetworkNewUserResponse.NewUser ->{
                     item{
-                        with(lazyColumnScope){
-                            gettingStreamError(urlListLoading.message)
-                        }
+//                        with(lazyColumnScope){
+//                            gettingStreamError(urlListLoading.message)
+//                        }
+
+                            newUserAlert(message = urlListLoading.message)
+
                     }
                 }
             }

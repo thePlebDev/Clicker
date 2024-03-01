@@ -198,7 +198,8 @@ fun ValidationView(
         logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
         hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found"
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+        showLoginModal = {homeViewModel.showLoginModal()}
 
 
     )

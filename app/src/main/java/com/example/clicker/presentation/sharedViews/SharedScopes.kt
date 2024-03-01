@@ -16,6 +16,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -26,8 +28,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.modChannels.views.PullToRefresh
@@ -43,11 +48,11 @@ class ScaffoldBottomBarScope(
     @Composable
     fun DualButtonNavigationBottomBar(
         bottomRowHeight: Dp,
-        firstButton:@Composable ActionButtonsScope.() -> Unit,
-        secondButton:@Composable ActionButtonsScope.() -> Unit,
+        firstButton:@Composable IconScope.() -> Unit,
+        secondButton:@Composable IconScope.() -> Unit,
 
     ){
-        val firstButtonScope = remember(){ActionButtonsScope(iconSize)}
+        val firstButtonScope = remember(){IconScope(iconSize)}
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -74,10 +79,10 @@ class ScaffoldTopBarScope(
 ){
     @Composable
     fun IconTextTopBar(
-        clickableIcon:@Composable ActionButtonsScope.() -> Unit,
+        clickableIcon:@Composable IconScope.() -> Unit,
         text: @Composable ()->Unit ={}
     ){
-        val buttonScope = remember(){ActionButtonsScope(iconSize = iconSize)}
+        val buttonScope = remember(){IconScope(iconSize = iconSize)}
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,9 +104,23 @@ class ScaffoldTopBarScope(
 
 
 @Stable
-class ActionButtonsScope(
+class IconScope(
     private val iconSize: Dp,
 ){
+
+    @Composable
+    fun BasicIcon(
+        color:Color,
+        imageVector: ImageVector,
+        contentDescription:String,
+    ){
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            tint = color,
+            modifier = Modifier.size(iconSize)
+        )
+    }
 
     @Composable
     fun IconOverText(
@@ -158,11 +177,18 @@ class ActionButtonsScope(
             imageVector = imageVector,
             contentDescription = iconContentDescription,
             tint = iconColor,
-            modifier = Modifier.size(iconSize).clickable { onClick() }
+            modifier = Modifier
+                .size(iconSize)
+                .clickable { onClick() }
         )
     }
 
 
+
+}
+
+@Composable
+fun UserMessage(){
 
 }
 
@@ -197,6 +223,80 @@ class NotificationsScope{
         }
     }
 
+}
+//stringResource(R.string.pull_to_refresh_icon_description)
+
+@Composable
+fun NewUserAlert(
+    iconSize: Dp,
+    iconContentDescription: String,
+    iconColor: Color,
+    iconImageVector: ImageVector,
+    backgroundColor: Color,
+    fontSize: TextUnit,
+    textColor:Color,
+    message: String,
+    onClick: () -> Unit,
+){
+    val scope = remember(){NotifyUserScope(iconSize,fontSize)}
+    with(scope){
+        MatchingIconTextCard(
+            textMessage =message,
+            textColor= textColor,
+            backgroundColor = backgroundColor,
+            onClick = {onClick()}
+        ) {
+            BasicIcon(
+                color =iconColor,
+                imageVector = iconImageVector,
+                contentDescription = iconContentDescription
+            )
+        }
+    }
+}
+@Stable
+class NotifyUserScope(
+    //so if I don't want to pass anything directly to MatchingIconTextCard, I should define it here
+//so put all the message, iconContentDescription, fontSize,iconSize and onClick here and then
+// pass it down to the MatchingIconTextCard()
+    private val iconSize:Dp,
+    private val fontSize: TextUnit,
+
+
+){
+    @Composable
+    fun MatchingIconTextCard(
+       textMessage:String,
+       textColor:Color,
+       backgroundColor:Color,
+       onClick: () -> Unit ={},
+       icon:@Composable IconScope.()->Unit,
+
+    ){
+        val iconScope = remember(){IconScope(iconSize)}
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .clickable {
+                    onClick()
+                },
+            elevation = 10.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(backgroundColor)
+                    .padding(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                iconScope.icon()
+                Text(textMessage, fontSize = fontSize,color=textColor)
+                iconScope.icon()
+            }
+        }
+    }
 }
 
 @Stable
