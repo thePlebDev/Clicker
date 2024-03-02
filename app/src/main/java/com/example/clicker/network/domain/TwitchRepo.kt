@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
  * end point that is not related to a individual users stream
  *
  * @property getFollowedLiveStreams a function meant to be called to get the logged in user's live channels
+ * @property getModeratedChannels a function meant to be called to get the logged in user's live and offline channels they mod for
  * */
 interface TwitchRepo {
 
