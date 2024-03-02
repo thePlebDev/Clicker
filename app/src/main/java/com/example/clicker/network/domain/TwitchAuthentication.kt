@@ -2,6 +2,7 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -23,8 +24,8 @@ interface TwitchAuthentication {
      * @return a flow containing a [NetworkAuthResponse] object of type [ValidatedUser]
      * */
     suspend fun validateToken(
-        url:String="https://id.twitch.tv/oauth2/validate",
-        token: String): Flow<NetworkAuthResponse<ValidatedUser>>
+        token: String
+    ): Flow<NetworkNewUserResponse<ValidatedUser>>
 
     /**
      * logout is a function that is called to end the user's logged in session

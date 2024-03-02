@@ -467,18 +467,15 @@ class HomeViewModel @Inject constructor(
         oAuthenticationToken: String
     ) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TokenValidator")) {
-            authentication.validateToken("https://id.twitch.tv/oauth2/validate",oAuthenticationToken)
+            authentication.validateToken(oAuthenticationToken)
                 .collect { response ->
                     Log.d("monitorForNetworkConnection","validateOAuthTokenResponse ->${response}")
 
                 when (response) {
-                    is NetworkAuthResponse.Loading -> {
+                    is NetworkNewUserResponse.Loading -> {
                         // the loading state is to be left empty because its initial state is loading
                     }
-                    is NetworkAuthResponse.Success -> {
-                        logCoroutineInfo("CoroutineDebugging", "GOT ITEMS from remote")
-                        Log.d("VALIDATINGTOKEN", "clientId --> ${response.data.clientId}")
-                        Log.d("VALIDATINGTOKEN", "userId --> ${response.data.userId}")
+                    is NetworkNewUserResponse.Success -> {
 
                         _uiState.value = _uiState.value.copy(
                             oAuthToken = oAuthenticationToken,
@@ -486,48 +483,33 @@ class HomeViewModel @Inject constructor(
 
                         _validatedUser.tryEmit(response.data)
 
-
-                        // I think we need the below for the streamViewModel
-                        //todo:THIS SHOULD GET REMOVED. TOO MUCH IS GOING ON INSIDE OF THIS FUNCTION
-                       // tokenDataStore.setUsername(response.data.login)
                     }
-                    is NetworkAuthResponse.Failure -> {
+                    is NetworkNewUserResponse.Failure -> {
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
 
                         _uiState.value = _uiState.value.copy(
-                            streamersListLoading = NetworkNewUserResponse.Failure(
-                                Exception("Error! Pull refresh")
-                            ),
+                            streamersListLoading = response,
                             homeRefreshing = false,
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
                             modRefreshing = false
                         )
                     }
-                    is NetworkAuthResponse.NetworkFailure ->{
+                    is NetworkNewUserResponse.NetworkFailure ->{
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> NetworkFailure.....")
                         _uiState.value = _uiState.value.copy(
-                            homeNetworkErrorMessage="Network error  ",
-                            networkConnectionState =false,
+
                             homeRefreshing = false,
-                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(
-                                Exception("Network Failure")
-                            )
+                            streamersListLoading = response
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
                             modRefreshing = false
                         )
-                        delay(2000)
-                        _uiState.value = _uiState.value.copy(
-                            networkConnectionState =true
-                        )
                     }
-                    is NetworkAuthResponse.Auth401Failure ->{
+                    is NetworkNewUserResponse.Auth401Failure ->{
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> Auth401Failure.....")
                         _uiState.value = _uiState.value.copy(
-                            streamersListLoading = NetworkNewUserResponse.Auth401Failure(
-                                Exception("Error! Re-login with Twitch")
-                            ),
+                            streamersListLoading = response,
                             homeRefreshing = false,
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
@@ -537,6 +519,9 @@ class HomeViewModel @Inject constructor(
                             modChannelShowBottomModal = true,
                             modRefreshing = false
                         )
+                    }
+                    is NetworkNewUserResponse.NewUser ->{
+
                     }
                 }
             }
