@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.GetModChannelsData
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
@@ -331,18 +332,23 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Loading ->{}
                         is NetworkAuthResponse.Success ->{
 
+                            val responseData =response.data.data
                             val offlineModList = mutableListOf<String>()
                             val onlineList = mutableListOf<StreamData>()
-                            for(modChannel in response.data.data ){
-                                offlineModList.add(modChannel.broadcasterName)
-                                liveFollowedStreamers.forEach {
-                                    if(it.userName == modChannel.broadcasterName){
-                                        onlineList.add(it)
-                                        offlineModList.remove(modChannel.broadcasterName)
-                                    }
-                                }
+                            
+                            val listOfModName = responseData.map{it.broadcasterName}
+                            val listOfStreamerName = liveFollowedStreamers.map { it.userName }
 
+                            for (name in listOfModName){
+                                if(listOfStreamerName.contains(name)){
+                                    val item = liveFollowedStreamers.first { it.userName == name }
+                                    onlineList.add(item)
+                                }else{
+                                    val offlineItem = responseData.first{it.broadcasterName ==name}
+                                    offlineModList.add(offlineItem.broadcasterName)
+                                }
                             }
+
                             _uiState.value = _uiState.value.copy(
                                 offlineModChannelList = offlineModList,
                                 liveModChannelList = onlineList,
@@ -381,6 +387,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+
 
 /**
  * monitorForValidatedUser is a private function that upon the initialization of this viewModel is meant to monitor the [_validatedUser] hot flow for any non null values
@@ -576,7 +584,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-   
+
     suspend fun getLiveStreams(
         clientId: String,
         userId: String,
