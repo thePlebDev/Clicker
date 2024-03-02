@@ -84,8 +84,7 @@ import com.example.clicker.util.Response
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-        streamersListLoading: NetworkNewUserResponse<Boolean>,
-        urlList: List<StreamData>?,
+        followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         clientId: String,
         userId: String,
         width:Int,
@@ -128,8 +127,8 @@ import com.example.clicker.util.Response
                         )
                     },
                     updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
-                    urlListLoading = streamersListLoading,
-                    urlList =urlList,
+                    followedStreamerList = followedStreamerList,
+
                     clientId = clientId,
                     userId = userId,
                     height = height,
