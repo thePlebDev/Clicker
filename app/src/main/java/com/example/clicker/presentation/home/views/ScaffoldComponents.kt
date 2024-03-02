@@ -134,8 +134,7 @@ class MainScaffoldScope(){
         showLogoutDialog:()->Unit,
         login: () -> Unit,
         userIsLoggedIn: Boolean,
-        urlList: List<StreamData>?,
-        urlListLoading: NetworkNewUserResponse<Boolean>,
+        followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
@@ -232,8 +231,7 @@ class MainScaffoldScope(){
                     }
                 ){
                     LiveChannelsLazyColumn(
-                        urlList =urlList,
-                        urlListLoading =urlListLoading,
+                        followedStreamerList =followedStreamerList,
                         contentPadding =contentPadding,
                         loadingIndicator = {
                             LazyListLoadingIndicator()
@@ -805,8 +803,7 @@ class LiveChannelsLazyColumnScope(){
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun LiveChannelsLazyColumn(
-        urlList: List<StreamData>?,
-        urlListLoading: NetworkNewUserResponse<Boolean>,
+        followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         contentPadding: PaddingValues,
         loadingIndicator:@Composable IndicatorScopes.() -> Unit,
         emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
@@ -827,7 +824,7 @@ class LiveChannelsLazyColumnScope(){
 
 
 
-            when (urlListLoading) {
+            when (followedStreamerList) {
                 is NetworkNewUserResponse.Loading -> {
                     item {
                         with(indicatorScopes){
@@ -836,9 +833,10 @@ class LiveChannelsLazyColumnScope(){
                     }
                 }
                 is NetworkNewUserResponse.Success -> {
-                    if (urlList != null) {
+                    val listData = followedStreamerList.data
+                    if (listData != null) {
 
-                        if (urlList.isEmpty()) {
+                        if (listData.isEmpty()) {
                             item {
                                 with(lazyColumnScope){
                                     emptyList()
@@ -846,7 +844,7 @@ class LiveChannelsLazyColumnScope(){
                             }
                         }
 
-                        items(urlList,key = { streamItem -> streamItem.userId }) { streamItem ->
+                        items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
 
                             with(lazyColumnScope){
                                 liveChannelRowItem(streamItem)
@@ -860,7 +858,7 @@ class LiveChannelsLazyColumnScope(){
 
                     item {
 
-                        val message =urlListLoading.e.message ?:"Error! please pull down to refresh"
+                        val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
                         with(lazyColumnScope){
                             gettingStreamError(message)
                         }
@@ -881,7 +879,7 @@ class LiveChannelsLazyColumnScope(){
 //                            gettingStreamError(urlListLoading.message)
 //                        }
 
-                            newUserAlert(message = urlListLoading.message)
+                            newUserAlert(message = followedStreamerList.message)
 
                     }
                 }

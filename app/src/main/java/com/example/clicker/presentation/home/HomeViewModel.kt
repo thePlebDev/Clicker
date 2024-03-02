@@ -70,7 +70,7 @@ data class HomeUIState(
     val width: Int = 0,
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
-    val streamersListLoading: NetworkNewUserResponse<Boolean> = NetworkNewUserResponse.Loading,
+    val streamersListLoading: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
     val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
     val oAuthToken: String = "",
@@ -335,19 +335,20 @@ class HomeViewModel @Inject constructor(
      * monitorNewList is a private function that upon the initialization of this viewModel is meant to monitor the [_newUrlList] hot flow for any non null values
      * to be emitted. Once a non null value is emitted to [_newUrlList] this function will then call [getModeratedChannels]
      * */
+    //todo: don't need this. can just run getModeratedChannels() after a successful getLiveStreams()
     private fun monitorNewList() {
-        viewModelScope.launch {
-            _newUrlList.collect{streamList ->
-                streamList?.let{nonNullableStreamList ->
-                    getModeratedChannels(
-                        oAuthToken = _oAuthToken.value ?: "",
-                        clientId = _validatedUser.value?.clientId ?:"",
-                        userId = _validatedUser.value?.userId ?:""
-                    )
-
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            _newUrlList.collect{streamList ->
+//                streamList?.let{nonNullableStreamList ->
+//                    getModeratedChannels(
+//                        oAuthToken = _oAuthToken.value ?: "",
+//                        clientId = _validatedUser.value?.clientId ?:"",
+//                        userId = _validatedUser.value?.userId ?:""
+//                    )
+//
+//                }
+//            }
+//        }
     }
     private fun getModeratedChannels(
         oAuthToken: String,
@@ -372,12 +373,12 @@ class HomeViewModel @Inject constructor(
                             val onlineList = mutableListOf<StreamData>()
                             for(modChannel in response.data.data ){
                                 offlineModList.add(modChannel.broadcasterName)
-                                _newUrlList.value?.forEach {
-                                    if(it.userName == modChannel.broadcasterName){
-                                        onlineList.add(it)
-                                        offlineModList.remove(modChannel.broadcasterName)
-                                    }
-                                }
+//                                _newUrlList.value?.forEach {
+//                                    if(it.userName == modChannel.broadcasterName){
+//                                        onlineList.add(it)
+//                                        offlineModList.remove(modChannel.broadcasterName)
+//                                    }
+//                                }
 
                             }
                             _uiState.value = _uiState.value.copy(
@@ -553,7 +554,7 @@ class HomeViewModel @Inject constructor(
 
                         // I think we need the below for the streamViewModel
                         //todo:THIS SHOULD GET REMOVED. TOO MUCH IS GOING ON INSIDE OF THIS FUNCTION
-                        tokenDataStore.setUsername(response.data.login)
+                       // tokenDataStore.setUsername(response.data.login)
                     }
                     is NetworkAuthResponse.Failure -> {
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> FAILED.....")
@@ -574,7 +575,7 @@ class HomeViewModel @Inject constructor(
                             networkConnectionState =false,
                             homeRefreshing = false,
                             modRefreshing = false,
-                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(Exception("failed"))
+                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(Exception("Network Failure"))
                         )
                         delay(2000)
                         _uiState.value = _uiState.value.copy(
@@ -613,6 +614,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    //todo: rework and get rid of the _newUrlList
     suspend fun getLiveStreams(
         clientId: String,
         userId: String,
@@ -630,11 +632,6 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Loading -> {
                         }
                         is NetworkAuthResponse.Success -> {
-                            val liveStreamLists = response.data
-                            Log.d(
-                                "AuthenticationViewModelGetLiveStreams",
-                                "size -> ${liveStreamLists.size}"
-                            )
 
                             val replacedWidthHeightList = response.data.map {
                                 it.changeUrlWidthHeight(
@@ -644,11 +641,11 @@ class HomeViewModel @Inject constructor(
                             }
 
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkNewUserResponse.Success(true),
+                                streamersListLoading = NetworkNewUserResponse.Success(replacedWidthHeightList),
                                 modRefreshing = false,
                                 homeRefreshing = false
                             )
-                            _newUrlList.tryEmit(replacedWidthHeightList)
+                          //  _newUrlList.tryEmit(replacedWidthHeightList)
                         }
                         // end
                         is NetworkAuthResponse.Failure -> {
@@ -701,16 +698,6 @@ class HomeViewModel @Inject constructor(
             width = width,
             screenDensity =screenDensity
         )
-    }
-    fun updateUrlWidthHeight(aspectWidth: Int, aspectHeight: Int){
-        val replacedWidthHeightList = _newUrlList.value?.map {
-            it.changeUrlWidthHeight(
-                aspectWidth,
-                aspectHeight
-            )
-        }
-
-        _newUrlList.tryEmit(replacedWidthHeightList)
     }
 
     override fun onCleared() {
