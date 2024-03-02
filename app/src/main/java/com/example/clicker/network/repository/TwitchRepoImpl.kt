@@ -45,8 +45,9 @@ class TwitchRepoImpl @Inject constructor(
     ): Flow<NetworkNewUserResponse<List<StreamData>>> = flow {
         emit(NetworkNewUserResponse.Loading)
          emit(
-             NetworkNewUserResponse.Auth401Failure(
-                 Exception("Error! Re-login with Twitch")
+             NetworkNewUserResponse.NetworkFailure(
+//                 Exception("Error! Pull refresh")
+                 Exception("dsakfd fdsa")
              )
          )
 

@@ -151,7 +151,6 @@ class MainScaffoldScope(){
         networkMessageColor:Color,
         networkMessage: String,
         showNetworkMessage:Boolean,
-        showLoginModal:()->Unit,
         bottomModalState: ModalBottomSheetState,
 
         ){

@@ -79,7 +79,6 @@ data class HomeUIState(
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
     val streamersListLoading: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-    val showLoginModal: Boolean = false,
     val domainIsRegistered: Boolean = false,
     val oAuthToken: String = "",
 
@@ -175,10 +174,9 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkAuthResponse.Success -> {
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkNewUserResponse.Failure(
-                                    Exception("Success! Login with Twitch")
+                                streamersListLoading = NetworkNewUserResponse.Auth401Failure(
+                                    Exception("Success! Please login with Twitch")
                                 ),
-                                showLoginModal = true,
                                 homeRefreshing = false,
 
                             )
@@ -250,15 +248,10 @@ class HomeViewModel @Inject constructor(
             _modChannelUIState.value = _modChannelUIState.value.copy(
                 modRefreshing = true,
             )
-            if(_modChannelUIState.value.modChannelShowBottomModal ){
-                runFakeRequest()
-            }
-            else if(_validatedUser.value?.clientId == null){
+             if(_validatedUser.value?.clientId == null){
                 validateOAuthToken(_oAuthToken.value ?: "")
                 Log.d("pullToRefreshModChannels","clientId is null")
-            }
-
-            else{
+            } else{
                 Log.d("pullToRefreshModChannels","getLiveStreams()")
                 getLiveStreams(
                     clientId = _validatedUser.value?.clientId ?:"",
@@ -277,11 +270,8 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 homeRefreshing = true,
             )
-            if(_uiState.value.showLoginModal ){
-                runFakeRequest()
-            }
 
-            else if(_validatedUser.value?.clientId == null){
+            if(_validatedUser.value?.clientId == null){
                 validateOAuthToken(_oAuthToken.value ?: "")
             }
             else{
@@ -305,25 +295,6 @@ class HomeViewModel @Inject constructor(
      * - This function should only get called if _uiState.value.modChannelShowBottomModal is set to true, which means that
      * the user has not authenticated with Twitch yet.
      * */
-    private suspend fun runFakeRequest(){
-        _uiState.value = _uiState.value.copy(
-            showLoginModal = false,
-        )
-        _modChannelUIState.value = _modChannelUIState.value.copy(
-            modChannelShowBottomModal = false,
-        )
-        delay(1000)
-        _uiState.value = _uiState.value.copy(
-
-            showLoginModal = true,
-            homeRefreshing = false
-
-        )
-        _modChannelUIState.value = _modChannelUIState.value.copy(
-            modRefreshing = false,
-            modChannelShowBottomModal = true,
-        )
-    }
 
     private fun getModeratedChannels(
         oAuthToken: String,
@@ -461,7 +432,6 @@ class HomeViewModel @Inject constructor(
                     streamersListLoading = NetworkNewUserResponse.NewUser(
                         "New user! Login with Twitch"
                     ),
-                    showLoginModal = true
                 )
 
 
@@ -477,37 +447,15 @@ class HomeViewModel @Inject constructor(
      */
     fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
         // need to make a call to exchange the authCode for a validationToken
-        _uiState.value = _uiState.value.copy(
-            showLoginModal = false,
-        )
+
         Log.d("setOAuthToken", "token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthToken.tryEmit(oAuthToken)
-        _uiState.value = _uiState.value.copy(
-            showLoginModal = false,
-        )
+
         _modChannelUIState.value = _modChannelUIState.value.copy(
             modChannelShowBottomModal = false,
             modChannelResponseState = Response.Loading
         )
-
-    }
-    fun showLoginModal() = viewModelScope.launch{
-        Log.d("ShowingTheModal","---->${_uiState.value.showLoginModal} ")
-        if(_uiState.value.showLoginModal){
-            _uiState.value = _uiState.value.copy(
-                showLoginModal = false,
-            )
-            delay(100)
-            _uiState.value = _uiState.value.copy(
-                showLoginModal = true,
-            )
-        }else{
-            _uiState.value = _uiState.value.copy(
-                showLoginModal = true,
-            )
-
-        }
 
     }
 
@@ -562,7 +510,9 @@ class HomeViewModel @Inject constructor(
                             homeNetworkErrorMessage="Network error  ",
                             networkConnectionState =false,
                             homeRefreshing = false,
-                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(Exception("Network Failure"))
+                            streamersListLoading = NetworkNewUserResponse.NetworkFailure(
+                                Exception("Network Failure")
+                            )
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
                             modRefreshing = false
@@ -575,10 +525,9 @@ class HomeViewModel @Inject constructor(
                     is NetworkAuthResponse.Auth401Failure ->{
                         Log.d("VALIDATINGTOKEN", "TOKEN ---> Auth401Failure.....")
                         _uiState.value = _uiState.value.copy(
-                            streamersListLoading = NetworkNewUserResponse.Failure(
+                            streamersListLoading = NetworkNewUserResponse.Auth401Failure(
                                 Exception("Error! Re-login with Twitch")
                             ),
-                            showLoginModal = true,
                             homeRefreshing = false,
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
@@ -649,9 +598,7 @@ class HomeViewModel @Inject constructor(
                         is NetworkNewUserResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 homeRefreshing = false,
-                                streamersListLoading = NetworkNewUserResponse.Failure(
-                                    Exception("Error! Pull refresh")
-                                )
+                                streamersListLoading = response
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
@@ -675,7 +622,6 @@ class HomeViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = response,
                                 homeRefreshing = false,
-                                showLoginModal = true,
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modChannelResponseState = Response.Failure(Exception("Error! Re-login with Twitch")),
