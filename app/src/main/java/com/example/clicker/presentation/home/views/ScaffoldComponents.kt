@@ -27,7 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerValue
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
@@ -129,6 +131,7 @@ class MainScaffoldScope(){
      * @param showFailedNetworkRequestMessage a boolean that is used to determine if the user should show a error message or not
      * to determine when the pull to refresh icon should change
      * */
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun MainScaffoldComponent(
         showLogoutDialog:()->Unit,
@@ -149,8 +152,9 @@ class MainScaffoldScope(){
         networkMessage: String,
         showNetworkMessage:Boolean,
         showLoginModal:()->Unit,
+        bottomModalState: ModalBottomSheetState,
 
-    ){
+        ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
 
@@ -269,9 +273,14 @@ class MainScaffoldScope(){
                                 fontSize = 20.sp,
                                 textColor = MaterialTheme.colorScheme.onSecondary,
                                 message = responseMessage,
-                                onClick ={showLoginModal()}
+                                onClick ={
+                                    scope.launch {
+                                        bottomModalState.show()
+                                    }
+                                }
                             )
-                        }
+                        },
+                        bottomModalState =bottomModalState
                     )
 
                 }
@@ -800,9 +809,10 @@ class LiveChannelsLazyColumnScope(){
      * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
      * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
      * */
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
     fun LiveChannelsLazyColumn(
+        bottomModalState: ModalBottomSheetState,
         followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         contentPadding: PaddingValues,
         loadingIndicator:@Composable IndicatorScopes.() -> Unit,
@@ -812,6 +822,7 @@ class LiveChannelsLazyColumnScope(){
         newUserAlert:@Composable (message:String) ->Unit,
 
         ){
+        val scope = rememberCoroutineScope()
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
         val indicatorScopes = remember() { IndicatorScopes() }
         val newUserScope = remember() { NotifyUserScope(fontSize = 20.sp, iconSize = 35.dp) }
@@ -875,12 +886,16 @@ class LiveChannelsLazyColumnScope(){
                 }
                 is NetworkNewUserResponse.NewUser ->{
                     item{
-//                        with(lazyColumnScope){
-//                            gettingStreamError(urlListLoading.message)
-//                        }
 
                             newUserAlert(message = followedStreamerList.message)
-
+                    }
+                }
+                is NetworkNewUserResponse.Auth401Failure ->{
+                    item{
+                        newUserAlert(message = followedStreamerList.e.message ?:"Error! Re-login with Twitch")
+                    }
+                    scope.launch {
+                        bottomModalState.show()
                     }
                 }
             }

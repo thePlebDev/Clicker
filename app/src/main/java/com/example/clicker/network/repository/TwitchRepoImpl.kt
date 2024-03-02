@@ -21,9 +21,11 @@ import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
+import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import java.net.UnknownHostException
@@ -40,28 +42,33 @@ class TwitchRepoImpl @Inject constructor(
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<NetworkAuthResponse<List<StreamData>>> = flow {
-        emit(NetworkAuthResponse.Loading)
+    ): Flow<NetworkNewUserResponse<List<StreamData>>> = flow {
+        emit(NetworkNewUserResponse.Loading)
+         emit(
+             NetworkNewUserResponse.Auth401Failure(
+                 Exception("Error! Re-login with Twitch")
+             )
+         )
 
 
-        val response = twitchClient.getFollowedStreams(
-            authorization = "Bearer $authorizationToken",
-            clientId = clientId,
-            userId = userId
-        )
-        Log.d("TwitchRepoImpl","getFollowedLiveStreams code -->${response.code()}")
-
-        val emptyBody = FollowedLiveStreams(listOf<StreamData>())
-        val body = response.body() ?: emptyBody
-        val exported = body.data.map { it.toStreamInfo() } //todo:will delete this later
-
-        if (response.isSuccessful) {
-            emit(NetworkAuthResponse.Success(body.data))
-        } else {
-            emit(NetworkAuthResponse.Failure(Exception("Error!, Please try again")))
-        }
+//        val response = twitchClient.getFollowedStreams(
+//            authorization = "Bearer $authorizationToken",
+//            clientId = clientId,
+//            userId = userId
+//        )
+//        Log.d("TwitchRepoImpl","getFollowedLiveStreams code -->${response.code()}")
+//
+//        val emptyBody = FollowedLiveStreams(listOf<StreamData>())
+//        val body = response.body() ?: emptyBody
+//
+//
+//        if (response.isSuccessful) {
+//            emit(NetworkNewUserResponse.Success(body.data))
+//        } else {
+//            emit(NetworkNewUserResponse.Failure(Exception("Error!, Please try again")))
+//        }
     }.catch { cause ->
-        handleNetworkAuthExceptions(cause)
+         handleNetworkNewUserExceptions(cause)
     }
 
     override suspend fun getModeratedChannels(

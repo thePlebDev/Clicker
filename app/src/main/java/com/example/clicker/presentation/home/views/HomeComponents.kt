@@ -147,7 +147,8 @@ import com.example.clicker.util.Response
                     networkMessageColor =networkMessageColor,
                     networkMessage = networkMessage,
                     showNetworkMessage =showNetworkMessage,
-                    showLoginModal={showLoginModal()}
+                    showLoginModal={showLoginModal()},
+                    bottomModalState =bottomModalState
 
                 )
 
