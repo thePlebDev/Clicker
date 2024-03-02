@@ -464,13 +464,13 @@ class HomeViewModel @Inject constructor(
             Log.d("monitorForNetworkConnection","getOAuthToken  ---> TOKKEN:$storedOAuthToken")
 
 
-//            if (storedOAuthToken.length > 2) {
-//                //need to call the validateToken
-//                //this should emit a value to a HOT storedOAuthToken flow which then runs the validateOAuthToken
-//                _oAuthToken.tryEmit(storedOAuthToken)
-//
-//
-//            } else {
+            if (storedOAuthToken.length > 2) {
+                //need to call the validateToken
+                //this should emit a value to a HOT storedOAuthToken flow which then runs the validateOAuthToken
+                _oAuthToken.tryEmit(storedOAuthToken)
+
+
+            } else {
                 _uiState.value = _uiState.value.copy(
                     streamersListLoading = NetworkNewUserResponse.NewUser(
                         "New user! Login with Twitch"
@@ -479,7 +479,7 @@ class HomeViewModel @Inject constructor(
                 )
 
 
-          //  }
+           }
 
 
         }
