@@ -123,25 +123,9 @@ fun ValidationView(
     autoModViewModel: AutoModViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val scope = rememberCoroutineScope()
     val modalText = homeViewModel.authenticationUIState.value.modalText
-    val showModalState = homeViewModel.state.value.showLoginModal
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
-    if (showModalState) {
-        LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
-            // Your coroutine code here
-            scope.launch {
-                bottomModalState.show()
-            }
-        }
-    } else {
-        LaunchedEffect(bottomModalState) { // the key define when the block is relaunched
-            // Your coroutine code here
-            scope.launch {
-                bottomModalState.hide()
-            }
-        }
-    }
+
 
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
@@ -198,7 +182,7 @@ fun ValidationView(
         hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
         currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-        showLoginModal = {homeViewModel.showLoginModal()}
+
 
 
     )
