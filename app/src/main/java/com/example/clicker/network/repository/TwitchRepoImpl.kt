@@ -44,30 +44,24 @@ class TwitchRepoImpl @Inject constructor(
         userId: String
     ): Flow<NetworkNewUserResponse<List<StreamData>>> = flow {
         emit(NetworkNewUserResponse.Loading)
-         emit(
-             NetworkNewUserResponse.NetworkFailure(
-//                 Exception("Error! Pull refresh")
-                 Exception("dsakfd fdsa")
-             )
-         )
 
 
-//        val response = twitchClient.getFollowedStreams(
-//            authorization = "Bearer $authorizationToken",
-//            clientId = clientId,
-//            userId = userId
-//        )
-//        Log.d("TwitchRepoImpl","getFollowedLiveStreams code -->${response.code()}")
-//
-//        val emptyBody = FollowedLiveStreams(listOf<StreamData>())
-//        val body = response.body() ?: emptyBody
-//
-//
-//        if (response.isSuccessful) {
-//            emit(NetworkNewUserResponse.Success(body.data))
-//        } else {
-//            emit(NetworkNewUserResponse.Failure(Exception("Error!, Please try again")))
-//        }
+        val response = twitchClient.getFollowedStreams(
+            authorization = "Bearer $authorizationToken",
+            clientId = clientId,
+            userId = userId
+        )
+        Log.d("TwitchRepoImpl","getFollowedLiveStreams code -->${response.code()}")
+
+        val emptyBody = FollowedLiveStreams(listOf<StreamData>())
+        val body = response.body() ?: emptyBody
+
+
+        if (response.isSuccessful) {
+            emit(NetworkNewUserResponse.Success(body.data))
+        } else {
+            emit(NetworkNewUserResponse.Failure(Exception("Error!, Please try again")))
+        }
     }.catch { cause ->
          handleNetworkNewUserExceptions(cause)
     }
