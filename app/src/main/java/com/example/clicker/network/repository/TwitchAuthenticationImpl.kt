@@ -8,9 +8,11 @@ import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
+import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 
 import com.example.clicker.util.LogWrap
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
@@ -57,13 +59,12 @@ class TwitchAuthenticationImpl @Inject constructor(
 
 
     override suspend fun validateToken(
-        url :String,
         token: String,
-    ): Flow<NetworkAuthResponse<ValidatedUser>> = flow {
+    ): Flow<NetworkNewUserResponse<ValidatedUser>> = flow {
         logCoroutineInfo("CoroutineDebugging", "Fetching from remote")
 
 
-        emit(NetworkAuthResponse.Loading)
+        emit(NetworkNewUserResponse.Loading)
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "IT DO BE LogWrap LOADING")
         val response = twitchClient.validateToken(
             authorization = "OAuth $token"
@@ -71,15 +72,15 @@ class TwitchAuthenticationImpl @Inject constructor(
 
         if (response.isSuccessful) {
             LogWrap.d("VALIDATINGTHETOKEN", "LOGWRAP SUCCESS")
-            emit(NetworkAuthResponse.Success(response.body()!!))
+            emit(NetworkNewUserResponse.Success(response.body()!!))
         } else {
-            emit(NetworkAuthResponse.Failure(Exception("Error! Please try again")))
+            emit(NetworkNewUserResponse.Failure(Exception("Error! Please try again")))
             Log.d("VALIDATINGTHETOKEN", "ERROR")
         }
     }.catch { cause ->
         LogWrap.d(tag = "VALIDATINGTHETOKEN", message = "cause --> ${cause.message}")
 
-        handleNetworkAuthExceptions(cause)
+        handleNetworkNewUserExceptions(cause)
 
     }
 }

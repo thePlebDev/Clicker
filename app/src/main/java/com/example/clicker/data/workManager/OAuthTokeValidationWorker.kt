@@ -9,6 +9,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import com.google.gson.Gson
@@ -25,19 +26,19 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val token = inputData.getString("token")
+        val token = inputData.getString("token") ?:""
         Log.d("doWorkToken", " doWorkToken --> $token")
-        val response = twitchRepoImpl.validateToken("https://id.twitch.tv/oauth2/validate",token!!)
+        val response = twitchRepoImpl.validateToken(token)
             .drop(1) // skip the first emission of LOADING
             .firstOrNull() // will catch either SUCCESS OF FAILURE
 
         return when (response) {
-            is NetworkAuthResponse.Loading -> {
+            is NetworkNewUserResponse.Loading -> {
                 Log.d("observeForeversWorker", "LOADING")
 
                 Result.success()
             }
-            is NetworkAuthResponse.Success -> {
+            is NetworkNewUserResponse.Success -> {
                 Log.d("observeForeversWorker", "SUCCESS")
                 Log.d("observeForeversWorker", response.data.toString())
 
@@ -48,7 +49,7 @@ class OAuthTokeValidationWorker @AssistedInject constructor(
 
                 Result.success(outputData)
             }
-            is NetworkAuthResponse.Failure -> {
+            is NetworkNewUserResponse.Failure -> {
                 Log.d("observeForeversWorker", "FAILED")
                 Result.failure()
             }
