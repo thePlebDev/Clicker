@@ -100,9 +100,6 @@ class HomeViewModel @Inject constructor(
     private val authentication: TwitchAuthentication,
 ) : ViewModel() {
 
-    private val _newUrlList = MutableStateFlow<List<StreamData>?>(null)
-    val newUrlList: StateFlow<List<StreamData>?> = _newUrlList
-
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
 
@@ -131,22 +128,7 @@ class HomeViewModel @Inject constructor(
             logoutDialogIsOpen = true
         )
     }
-    //    init {
-    //TESTING THE MACRO BENCH MARK TESTING
-//        val list = StreamData(
-//            "","","","",
-//            "","","","",0,"",
-//            "","", listOf(""),listOf(""),false
-//        )
-//        val listOfStreamData = mutableListOf<StreamData>()
-//        for (i in 1..31) {
-//            listOfStreamData.add(list.copy(userId = (list.userId.toInt() + 1).toString()))
-//        }
-//        _newUrlList.tryEmit(listOfStreamData)
-//        _uiState.value = _uiState.value.copy(
-//            streamersListLoading = NetworkResponse.Success(true)
-//        )
-//    }
+
 
     /**Initial state monitoring
      * - These functions will monitor Hot StateFlows upon the creation of the HomeViewModel
@@ -157,9 +139,7 @@ class HomeViewModel @Inject constructor(
     init {
         monitorForValidatedUser()
     }
-    init{
-        monitorNewList()
-    }
+
     init{
         getOAuthToken()
     }
@@ -331,29 +311,11 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    /**
-     * monitorNewList is a private function that upon the initialization of this viewModel is meant to monitor the [_newUrlList] hot flow for any non null values
-     * to be emitted. Once a non null value is emitted to [_newUrlList] this function will then call [getModeratedChannels]
-     * */
-    //todo: don't need this. can just run getModeratedChannels() after a successful getLiveStreams()
-    private fun monitorNewList() {
-//        viewModelScope.launch {
-//            _newUrlList.collect{streamList ->
-//                streamList?.let{nonNullableStreamList ->
-//                    getModeratedChannels(
-//                        oAuthToken = _oAuthToken.value ?: "",
-//                        clientId = _validatedUser.value?.clientId ?:"",
-//                        userId = _validatedUser.value?.userId ?:""
-//                    )
-//
-//                }
-//            }
-//        }
-    }
     private fun getModeratedChannels(
         oAuthToken: String,
         clientId:String,
-        userId: String
+        userId: String,
+        liveFollowedStreamers:List<StreamData>
     ){
         viewModelScope.launch {
             withContext(ioDispatcher){
@@ -373,12 +335,12 @@ class HomeViewModel @Inject constructor(
                             val onlineList = mutableListOf<StreamData>()
                             for(modChannel in response.data.data ){
                                 offlineModList.add(modChannel.broadcasterName)
-//                                _newUrlList.value?.forEach {
-//                                    if(it.userName == modChannel.broadcasterName){
-//                                        onlineList.add(it)
-//                                        offlineModList.remove(modChannel.broadcasterName)
-//                                    }
-//                                }
+                                liveFollowedStreamers.forEach {
+                                    if(it.userName == modChannel.broadcasterName){
+                                        onlineList.add(it)
+                                        offlineModList.remove(modChannel.broadcasterName)
+                                    }
+                                }
 
                             }
                             _uiState.value = _uiState.value.copy(
@@ -614,7 +576,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    //todo: rework and get rid of the _newUrlList
+   
     suspend fun getLiveStreams(
         clientId: String,
         userId: String,
@@ -645,7 +607,12 @@ class HomeViewModel @Inject constructor(
                                 modRefreshing = false,
                                 homeRefreshing = false
                             )
-                          //  _newUrlList.tryEmit(replacedWidthHeightList)
+                            getModeratedChannels(
+                                oAuthToken = _oAuthToken.value ?: "",
+                                clientId = _validatedUser.value?.clientId ?:"",
+                                userId = _validatedUser.value?.userId ?:"",
+                                liveFollowedStreamers = replacedWidthHeightList
+                    )
                         }
                         // end
                         is NetworkAuthResponse.Failure -> {
