@@ -63,10 +63,10 @@ suspend fun <T>FlowCollector<NetworkAuthResponse<T>>.handleNetworkAuthExceptions
 suspend fun <T>FlowCollector<NetworkNewUserResponse<T>>.handleNetworkNewUserExceptions(cause: Throwable) {
     when (cause) {
         is NoNetworkException -> {
-            emit(NetworkNewUserResponse.NetworkFailure(Exception("Network error, please try again later")))
+            emit(NetworkNewUserResponse.NetworkFailure(Exception("Network error! Pull down to refresh")))
         }
         is Authentication401Exception ->{
-            emit(NetworkNewUserResponse.Auth401Failure(Exception("Authentication error, please try again later")))
+            emit(NetworkNewUserResponse.Auth401Failure(Exception("Error! Re-login with Twitch")))
         }
 
         else -> {

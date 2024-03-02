@@ -875,10 +875,11 @@ class LiveChannelsLazyColumnScope(){
                     }
                 }
                 is NetworkNewUserResponse.NetworkFailure -> {
+                    val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
 
                     item{
                         with(lazyColumnScope){
-                            gettingStreamError("Error! Pull down to refresh")
+                            gettingStreamError(message)
                         }
                     }
 

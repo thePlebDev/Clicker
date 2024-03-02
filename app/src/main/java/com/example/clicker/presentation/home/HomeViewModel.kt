@@ -606,17 +606,13 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkNewUserResponse.NetworkFailure ->{
                             _uiState.value = _uiState.value.copy(
-                                homeNetworkErrorMessage="Network error",
-                                networkConnectionState =false,
-                                homeRefreshing = false
+                                homeRefreshing = false,
+                                streamersListLoading = response
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
                             )
-                            delay(2000)
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState =true
-                            )
+
                         }
                         is NetworkNewUserResponse.Auth401Failure->{
                             _uiState.value = _uiState.value.copy(
