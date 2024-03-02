@@ -3,6 +3,7 @@ package com.example.clicker.network.repository.util
 import com.example.clicker.network.interceptors.NoNetworkException
 import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Exception
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.FlowCollector
@@ -55,6 +56,21 @@ suspend fun <T>FlowCollector<NetworkAuthResponse<T>>.handleNetworkAuthExceptions
 
         else -> {
             emit(NetworkAuthResponse.Failure(Exception("Error! Please try again")))
+        }
+    }
+}
+
+suspend fun <T>FlowCollector<NetworkNewUserResponse<T>>.handleNetworkNewUserExceptions(cause: Throwable) {
+    when (cause) {
+        is NoNetworkException -> {
+            emit(NetworkNewUserResponse.NetworkFailure(Exception("Network error, please try again later")))
+        }
+        is Authentication401Exception ->{
+            emit(NetworkNewUserResponse.Auth401Failure(Exception("Authentication error, please try again later")))
+        }
+
+        else -> {
+            emit(NetworkNewUserResponse.Failure(Exception("Error! Please try again")))
         }
     }
 }

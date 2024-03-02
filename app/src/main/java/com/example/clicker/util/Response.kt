@@ -121,6 +121,10 @@ sealed class NetworkNewUserResponse<out T> {
     data class NetworkFailure(
         val e: Exception
     ) : NetworkNewUserResponse<Nothing>()
+
+    data class Auth401Failure(
+        val e: Exception
+    ) : NetworkNewUserResponse<Nothing>()
 }
 
 

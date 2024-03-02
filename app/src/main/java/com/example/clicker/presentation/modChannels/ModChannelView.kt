@@ -47,7 +47,7 @@ fun ModChannelView(
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val showModal = homeViewModel.state.value.modChannelShowBottomModal
+    val showModal = homeViewModel.modChannelUIState.value.modChannelShowBottomModal
 
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
@@ -85,10 +85,10 @@ fun ModChannelView(
             height = homeViewModel.state.value.aspectHeight,
             width = homeViewModel.state.value.width,
             density = homeViewModel.state.value.screenDensity,
-            offlineModChannelList = homeViewModel.state.value.offlineModChannelList,
-            liveModChannelList = homeViewModel.state.value.liveModChannelList,
-            modChannelResponseState = homeViewModel.state.value.modChannelResponseState,
-            refreshing = homeViewModel.state.value.modRefreshing,
+            offlineModChannelList = homeViewModel.modChannelUIState.value.offlineModChannelList,
+            liveModChannelList = homeViewModel.modChannelUIState.value.liveModChannelList,
+            modChannelResponseState = homeViewModel.modChannelUIState.value.modChannelResponseState,
+            refreshing = homeViewModel.modChannelUIState.value.modRefreshing,
             refreshFunc = {homeViewModel.pullToRefreshModChannels()},
             showNetworkMessage = homeViewModel.state.value.networkConnectionState,
             updateStreamerName = { streamerName, clientId,broadcasterId,userId->
