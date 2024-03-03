@@ -87,7 +87,7 @@ fun MinimalDialog(onDismissRequest: () -> Unit) {
                     Text(
                         text = "Create a New Poll",
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 25.sp, modifier = Modifier.padding(start = 20.dp)
+                        fontSize = MaterialTheme.typography.headlineLarge.fontSize, modifier = Modifier.padding(start = 20.dp)
                     )
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -149,8 +149,8 @@ fun PollQuestionTitle(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ){
-            Text(title,fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary)
-            Text("$textLengthLeft",fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary.copy(.6f))
+            Text(title,fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+            Text("$textLengthLeft",fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary.copy(.6f))
         }
         SimpleFilledTextFieldSampleTesting(
             text =text,
@@ -265,7 +265,7 @@ fun DropdownDemo() {
     val items = listOf("1m", "2m", "3m", "5m", "10m")
     var selectedIndex by remember { mutableStateOf(0) }
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Duration",fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary)
+        Text("Duration",fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
         Box(modifier = Modifier.fillMaxWidth()) {
             Text(items[selectedIndex],modifier = Modifier
                 .fillMaxWidth()

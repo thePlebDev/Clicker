@@ -180,7 +180,7 @@ object SwipeToDelete{
             val banThresholdCrossed = offset > banSwipeThresholdPx
 
             var backgroundColor by remember { mutableStateOf(Color.Black) }
-            var fontSize = 17.sp
+            var fontSize = MaterialTheme.typography.headlineSmall.fontSize
 
             if (thresholdCrossed) {
                 backgroundColor = Color.Red
@@ -208,7 +208,7 @@ object SwipeToDelete{
             if (twitchUser.deleted) {
                 dragState = modDragState
                 backgroundColor = Color.Red
-                fontSize = 14.sp
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize
             }
             Box(
                 Modifier
@@ -341,7 +341,7 @@ object SwipeToDelete{
             if (twitchUser.deleted) {
                 Text(
                     stringResource(R.string.moderator_deleted_comment),
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     modifier = Modifier.padding(start = 5.dp),
                     color = androidx.compose.material.MaterialTheme.colors.onPrimary
                 )
@@ -359,7 +359,7 @@ object SwipeToDelete{
         fun CheckIfUserIsBanned(twitchUser: TwitchUserData){
             if (twitchUser.banned) {
                 val duration = if (twitchUser.bannedDuration != null) "Banned for ${twitchUser.bannedDuration} seconds" else "Banned permanently"
-                Text(duration, fontSize = 20.sp, modifier = Modifier.padding(start = 5.dp))
+                Text(duration, fontSize = MaterialTheme.typography.headlineMedium.fontSize, modifier = Modifier.padding(start = 5.dp))
             }
         }
 
@@ -450,8 +450,8 @@ object SwipeToDelete{
                     InlineTextContent(
 
                         Placeholder(
-                            width = 20.sp,
-                            height = 20.sp,
+                            width = MaterialTheme.typography.headlineMedium.fontSize,
+                            height = MaterialTheme.typography.headlineMedium.fontSize,
                             placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                         )
                     ) {
@@ -470,8 +470,8 @@ object SwipeToDelete{
                     InlineTextContent(
 
                         Placeholder(
-                            width = 20.sp,
-                            height = 20.sp,
+                            width = MaterialTheme.typography.headlineMedium.fontSize,
+                            height = MaterialTheme.typography.headlineMedium.fontSize,
                             placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                         )
                     ) {
@@ -490,8 +490,8 @@ object SwipeToDelete{
                     InlineTextContent(
 
                         Placeholder(
-                            width = 30.sp,
-                            height = 30.sp,
+                            width = MaterialTheme.typography.headlineMedium.fontSize,
+                            height = MaterialTheme.typography.headlineMedium.fontSize,
                             placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                         )
                     ) {

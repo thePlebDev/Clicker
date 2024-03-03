@@ -264,12 +264,12 @@ object BottomModal{
                     Text(
 
                         buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = 17.sp)) {
+                            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
                                 append("Message: ")
                             }
 
 
-                            withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
+                            withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
                                 append(message)
                             }
 
@@ -312,7 +312,7 @@ object BottomModal{
                             .size(35.dp),
                         tint = MaterialTheme.colorScheme.secondary
                     )
-                    Text(clickedUsername, color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+                    Text(clickedUsername, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                 }
 
                 Button(

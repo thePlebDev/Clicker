@@ -58,7 +58,10 @@ class HomeDialogs(){
                             .padding(10.dp)
                             .background( MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("Currently logged in as: $currentUsername", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+                        Text("Currently logged in as: $currentUsername",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                        )
                         Spacer(modifier = Modifier.size(20.dp))
                         Row(modifier=Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -87,7 +90,7 @@ class HomeDialogs(){
             colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.primary))
 
         {
-            Text(text = message,color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+            Text(text = message,color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
         }
     }
 

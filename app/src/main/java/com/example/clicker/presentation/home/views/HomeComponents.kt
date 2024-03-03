@@ -259,7 +259,7 @@ import com.example.clicker.util.Response
                 Text(
                     "Login with Twitch",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 30.sp,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                         .fillMaxWidth(),
@@ -308,13 +308,13 @@ import com.example.clicker.util.Response
                     ) {
                         Text(
                             stringResource(R.string.you_must_add),
-                            fontSize = 25.sp,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Text(
                             stringResource(R.string.package_name),
-                            fontSize = 30.sp,
+                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
@@ -322,7 +322,7 @@ import com.example.clicker.util.Response
                         )
                         Text(
                             stringResource(R.string.enable_login_with_Android_12),
-                            fontSize = 25.sp,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             color = MaterialTheme.colorScheme.onPrimary,
                             textAlign = TextAlign.Center
                         )
@@ -331,7 +331,7 @@ import com.example.clicker.util.Response
                             modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
                             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary)
                         ) {
-                            Text(text =stringResource(R.string.add_to_links), fontSize = 25.sp, color = MaterialTheme.colorScheme.onSecondary)
+                            Text(text =stringResource(R.string.add_to_links), fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onSecondary)
                         }
                     }
                 }

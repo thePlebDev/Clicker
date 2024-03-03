@@ -483,7 +483,7 @@ object ChatSettingsContainer {
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()) {
                 if(!userIsModerator){
-                    Text("You are not a moderator in chat ", fontSize = 20.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+                    Text("You are not a moderator in chat ", fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
                 }
 
             }
@@ -514,7 +514,7 @@ object ChatSettingsContainer {
             ) {
                 Text(
                     text = switchLabel,
-                    fontSize = 25.sp,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
                     color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                 )
                 Switch(
@@ -571,7 +571,7 @@ object ChatSettingsContainer {
                 Text(
                     text = alertMessage,
                     color = Color.White,
-                    fontSize = 20.sp
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
                 Icon(
                     imageVector = Icons.Default.Close,

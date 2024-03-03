@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -73,20 +74,20 @@ fun VerticalTestingOverlayUI(
         .padding(horizontal = 10.dp)) {
         Text(
             channelName,
-            fontSize = 25.sp,
+            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             color = Color.White,
 
         )
         Text(
             streamTitle,
-            fontSize = 15.sp,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = Color.White,
-            lineHeight = 15.sp,
+            lineHeight = MaterialTheme.typography.headlineSmall.fontSize,
 
         )
         Text(
             category,
-            fontSize = 13.sp,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = Color.White.copy(alpha = 0.8f),
             modifier = Modifier.padding(vertical = 5.dp)
         )
@@ -119,7 +120,7 @@ fun VerticalTagText(
                 .padding(horizontal = 10.dp, vertical = 5.dp)
             ,
             color = Color.White,
-            fontSize = 15.sp
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize
 
         )
     }

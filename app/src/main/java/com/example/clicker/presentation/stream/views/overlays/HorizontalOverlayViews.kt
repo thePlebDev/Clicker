@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,9 +43,9 @@ fun TestingOverlayUI(
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 10.dp)) {
-        Text(channelName, fontSize = 25.sp,color = Color.White,maxLines = 1,overflow = TextOverflow.Ellipsis)
-        Text(streamTitle, fontSize = 15.sp,color = Color.White, lineHeight = 15.sp,maxLines = 2,overflow = TextOverflow.Ellipsis)
-        Text(category, fontSize = 13.sp,color = Color.White.copy(alpha = 0.8f),maxLines = 1,overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 5.dp))
+        Text(channelName, fontSize = MaterialTheme.typography.headlineLarge.fontSize,color = Color.White,maxLines = 1,overflow = TextOverflow.Ellipsis)
+        Text(streamTitle, fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = Color.White, lineHeight = MaterialTheme.typography.headlineSmall.fontSize,maxLines = 2,overflow = TextOverflow.Ellipsis)
+        Text(category, fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = Color.White.copy(alpha = 0.8f),maxLines = 1,overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 5.dp))
         LazyRow(
             modifier = Modifier.background(Color.Transparent),
 
@@ -76,7 +77,7 @@ fun TagText(
                 .padding(horizontal = 10.dp, vertical = 5.dp)
             ,
             color = Color.White,
-            fontSize = 15.sp
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize
 
             )
     }

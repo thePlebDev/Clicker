@@ -17,6 +17,7 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -394,7 +395,7 @@ object Dialogs{
             subTitleText:String
         ){
             Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-            Text(subTitleText,color = onPrimary, fontSize = 20.sp)
+            Text(subTitleText,color = onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
         }
 
         /**
@@ -416,8 +417,8 @@ object Dialogs{
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(headerText, fontSize = 22.sp,color = onPrimary)
-                Text(username, fontSize = 22.sp,color = onPrimary)
+                Text(headerText, fontSize = MaterialTheme.typography.headlineLarge.fontSize,color = onPrimary)
+                Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize,color = onPrimary)
             }
         }
 
