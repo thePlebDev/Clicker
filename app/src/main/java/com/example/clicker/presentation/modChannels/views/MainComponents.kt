@@ -511,12 +511,12 @@ object ModChannelComponents{
             Column(modifier = Modifier.padding(start = 10.dp)) {
                 Text(
                     streamerName,
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     streamTitle,
-                    fontSize = 15.sp,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     modifier = Modifier.alpha(0.7f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -524,7 +524,7 @@ object ModChannelComponents{
                 )
                 Text(
                     gameTitle,
-                    fontSize = 15.sp,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     modifier = Modifier.alpha(0.7f),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -564,7 +564,7 @@ object ModChannelComponents{
                     )
                     Text(
                         errorMessage,
-                        fontSize = 20.sp,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                         color =MaterialTheme.colorScheme.onSecondary
                     )
                     Icon(
@@ -593,7 +593,7 @@ object ModChannelComponents{
             Column(modifier = Modifier.padding(start = 10.dp)) {
                 Text(
                     channelName,
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -621,7 +621,7 @@ object ModChannelComponents{
                 Text(
                     headerTitle,
                     color =MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     modifier = Modifier.padding(horizontal = 5.dp)
                 )
             }
@@ -655,7 +655,7 @@ object ModChannelComponents{
                     horizontalArrangement = Arrangement.Center
                 ) {
 
-                    Text(message, fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                    Text(message, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
 
                 }
             }
@@ -688,7 +688,7 @@ object ModChannelComponents{
                         .clip(RectangleShape)
                         .background(Color.DarkGray)
                 ){
-                    Text("Offline",modifier = Modifier.align(Alignment.Center), fontSize = 20.sp,color = Color.White)
+                    Text("Offline",modifier = Modifier.align(Alignment.Center), fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = Color.White)
                 }
                 Spacer(modifier=Modifier.height(10.dp))
             }
@@ -723,7 +723,7 @@ object ModChannelComponents{
                     "${viewCount}",
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 15.sp,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                         fontWeight = FontWeight.ExtraBold
                     ),
                     modifier = Modifier

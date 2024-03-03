@@ -188,7 +188,7 @@ class MainScaffoldScope(){
                     text={
                         Text(
                             stringResource(R.string.live_channels),
-                            fontSize = 25.sp,
+                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
                             modifier = Modifier.padding(start = 20.dp),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -269,7 +269,7 @@ class MainScaffoldScope(){
                                 iconColor = MaterialTheme.colorScheme.onSecondary,
                                 iconImageVector = Icons.Default.AccountCircle,
                                 backgroundColor = MaterialTheme.colorScheme.secondary,
-                                fontSize = 20.sp,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                 textColor = MaterialTheme.colorScheme.onSecondary,
                                 message = responseMessage,
                                 onClick ={
@@ -468,7 +468,7 @@ class MainScaffoldScope(){
                     Text(
                         errorMessage,
                         textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                         color = Color.Red,
                         modifier = Modifier.padding(10.dp)
                     )
@@ -495,12 +495,12 @@ class MainScaffoldScope(){
             Column(modifier = Modifier.padding(start = 10.dp)) {
                 Text(
                     streamerName,
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     streamTitle,
-                    fontSize = 15.sp,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     modifier = Modifier.alpha(0.7f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -508,7 +508,7 @@ class MainScaffoldScope(){
                 )
                 Text(
                     gameTitle,
-                    fontSize = 15.sp,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     modifier = Modifier.alpha(0.7f),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -556,7 +556,7 @@ class MainScaffoldScope(){
                     "${viewCount}",
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 15.sp,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                         fontWeight = FontWeight.ExtraBold
                     ),
                     modifier = Modifier
@@ -598,7 +598,7 @@ class MainScaffoldScope(){
                         tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(35.dp)
                     )
-                    Text(errorMessage, fontSize = 20.sp,color=MaterialTheme.colorScheme.onSecondary)
+                    Text(errorMessage, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color=MaterialTheme.colorScheme.onSecondary)
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
@@ -634,7 +634,7 @@ class MainScaffoldScope(){
                         tint = Color.Black,
                         modifier = Modifier.size(35.dp)
                     )
-                    Text(stringResource(R.string.no_live_streams), fontSize = 20.sp)
+                    Text(stringResource(R.string.no_live_streams), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
@@ -683,7 +683,7 @@ class MainScaffoldScope(){
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    Text(title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
+                    Text(title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
                     Icon(
                         iconImageVector,
                         stringResource(R.string.logout_icon_description),
@@ -776,7 +776,7 @@ object ScaffoldScope{
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onSecondary)
+                Text(title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
                 Icon(
                     iconImageVector,
                     stringResource(R.string.logout_icon_description),
@@ -821,10 +821,11 @@ class LiveChannelsLazyColumnScope(){
         newUserAlert:@Composable (message:String) ->Unit,
 
         ){
+        val fontSize =MaterialTheme.typography.headlineMedium.fontSize
         val scope = rememberCoroutineScope()
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
         val indicatorScopes = remember() { IndicatorScopes() }
-        val newUserScope = remember() { NotifyUserScope(fontSize = 20.sp, iconSize = 35.dp) }
+        val newUserScope = remember() { NotifyUserScope(fontSize = fontSize, iconSize = 35.dp) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -933,7 +934,7 @@ class LiveChannelsLazyColumnScope(){
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(35.dp)
                 )
-                Text(stringResource(R.string.no_live_streams), fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                Text(stringResource(R.string.no_live_streams), fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary)
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
@@ -1049,7 +1050,7 @@ class LiveChannelsLazyColumnScope(){
                     tint = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.size(35.dp)
                 )
-                Text(errorMessage, fontSize = 20.sp,color=MaterialTheme.colorScheme.onSecondary)
+                Text(errorMessage, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color=MaterialTheme.colorScheme.onSecondary)
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = stringResource(R.string.pull_to_refresh_icon_description),

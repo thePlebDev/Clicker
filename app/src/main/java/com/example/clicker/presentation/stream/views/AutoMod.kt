@@ -638,8 +638,8 @@ object AutoMod {
             filterType:FilterType
         ){
             Column() {
-                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
-                Text(subTitle, fontSize = 18.sp,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
+                Text(title, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onPrimary)
+                Text(subTitle, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary ,modifier = Modifier.padding(horizontal =10.dp))
                 Parts.DropdownRowMenu(
                     filterLevels = filterLevels,
                     selectedIndex = selectedIndex,
@@ -695,7 +695,7 @@ object AutoMod {
                         },
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically){
-                                    Text(text = s, color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp)
+                                    Text(text = s, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                                    repeat(index+1){
 
                                        androidx.compose.material3.Icon(
@@ -729,7 +729,7 @@ object AutoMod {
             ) {
                 Text(
                     text = "Update",
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.padding(horizontal = 5.dp)
                 )
@@ -754,7 +754,7 @@ object AutoMod {
             Log.d("AutoModSlider","slider value --> $sliderValue")
             Column(modifier =Modifier.fillMaxWidth()){
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                    Text("AutoMod Settings", fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                    Text("AutoMod Settings", fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
                 }
                 Slider(
                     modifier = Modifier.padding(horizontal = 20.dp),
@@ -769,7 +769,7 @@ object AutoMod {
                     valueRange = 0f..4f,
                     steps = 3,
                 )
-                Text(text = filterText,modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                Text(text = filterText,modifier = Modifier.padding(horizontal = 20.dp),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
 
 
 
@@ -812,7 +812,7 @@ object AutoMod {
                     tint = Color.White,
                     modifier = Modifier.padding(end = 5.dp)
                 )
-                Text(title, fontSize = 20.sp,modifier = Modifier.padding(end = 5.dp),color = MaterialTheme.colorScheme.onPrimary)
+                Text(title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(end = 5.dp),color = MaterialTheme.colorScheme.onPrimary)
                 Column(modifier = Modifier
                     .wrapContentSize(Alignment.Center)
                     .padding(horizontal = 5.dp)) {
@@ -857,7 +857,7 @@ object AutoMod {
                 Text(
                     selectedText,
                     color = Color.Black,
-                    fontSize = 20.sp
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,

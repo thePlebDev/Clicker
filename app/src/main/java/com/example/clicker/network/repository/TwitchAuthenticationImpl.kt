@@ -1,6 +1,8 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.domain.TwitchAuthentication
@@ -83,6 +85,16 @@ class TwitchAuthenticationImpl @Inject constructor(
         handleNetworkNewUserExceptions(cause)
 
     }
+}
+
+@Stable
+object Testing{
+
+    @Composable
+    fun testingRecomposition(){
+
+    }
+
 }
 
 

@@ -370,10 +370,10 @@ object SystemChats {
 
         Text(
             buildAnnotatedString {
-                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = 17.sp)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
                     append(" $displayName :")
                 }
-                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = 17.sp)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
 
                     append(" $personalMessage")
                 }
@@ -406,7 +406,7 @@ object SystemChats {
                 tint= Color.Yellow,
                 modifier = Modifier.size(30.dp)
             )
-            Text(message, color = Color.White, fontSize = 20.sp)
+            Text(message, color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
         }
 
     }
@@ -643,7 +643,7 @@ object SystemChats {
                         .size(30.dp),
                     tint = Color.White
                 )
-                Text(message, color = Color.White, fontSize = 20.sp)
+                Text(message, color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
             }
         }
         /**
@@ -661,7 +661,7 @@ object SystemChats {
             val personalMessage = message ?: ""
             Text(
                 buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    withStyle(style = SpanStyle(color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
                         append(" $TwitchIRCMessage")
                         append(" $personalMessage")
                     }
@@ -687,10 +687,10 @@ object SystemChats {
             val twitchIRCMessage = systemMessage ?: ""
             Text(
                 buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    withStyle(style = SpanStyle(color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
                         append("$displayName :")
                     }
-                    withStyle(style = SpanStyle(color = Color.White, fontSize = 17.sp)) {
+                    withStyle(style = SpanStyle(color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
                         append(" $twitchIRCMessage")
                         append(" $personalMessage")
                     }
@@ -708,8 +708,8 @@ object SystemChats {
         @Composable
         fun SimpleText(message: String){
             Text(message,
-                fontSize = 17.sp,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(start = 5.dp)
             )
         }
@@ -738,7 +738,7 @@ object SystemChats {
                         .size(30.dp),
                     tint = Color.Red
                 )
-                Text(alertMessage, color = Color.Red, fontSize = 20.sp, modifier = Modifier.padding(horizontal = 10.dp))
+                Text(alertMessage, color = Color.Red, fontSize = MaterialTheme.typography.headlineMedium.fontSize, modifier = Modifier.padding(horizontal = 10.dp))
                 Icon(
                     imageVector = alertIcon,
                     contentDescription = stringResource(R.string.warning_icon_description),
@@ -784,7 +784,7 @@ object SystemChats {
         ){
             Text(
                 buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = color, fontSize = 17.sp)) {
+                    withStyle(style = SpanStyle(color = color, fontSize = MaterialTheme.typography.headlineMedium.fontSize)) {
                         append("$displayName :")
                     }
                     append(" $message")

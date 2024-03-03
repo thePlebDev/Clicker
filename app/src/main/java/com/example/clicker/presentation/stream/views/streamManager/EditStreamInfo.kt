@@ -251,7 +251,7 @@ fun EditAutoModTitle(
             )
             Text(text =title,
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 25.sp,modifier = Modifier.padding(start=20.dp))
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,modifier = Modifier.padding(start=20.dp))
         }
 
         IsModeratorButton(
@@ -323,7 +323,7 @@ fun InfoTitle(
             )
             Text(text =title,
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 25.sp,modifier = Modifier.padding(start=20.dp))
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,modifier = Modifier.padding(start=20.dp))
         }
 
         Button(
@@ -335,7 +335,7 @@ fun InfoTitle(
         ) {
             Text(text ="Save",
                 color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 25.sp)
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize)
         }
 
 
@@ -357,7 +357,7 @@ fun IsModeratorButton(
             ) {
                 Text(text ="LOADING",
                     color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 25.sp)
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize)
             }
         }
         is Response.Success ->{
@@ -370,7 +370,7 @@ fun IsModeratorButton(
             ) {
                 Text(text ="Save",
                     color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 25.sp)
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize)
             }
         }
         is Response.Failure ->{
@@ -383,7 +383,8 @@ fun IsModeratorButton(
             ) {
                 Text(text ="Retry",
                     color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 25.sp)
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                )
             }
         }
     }
@@ -408,8 +409,8 @@ fun ChangeStreamTitleTextField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ){
-            Text("Title",fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary)
-            Text(textLengthLeft.toString(),fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary.copy(.6f))
+            Text("Title",fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+            Text(textLengthLeft.toString(),fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary.copy(.6f))
         }
 
         CustomTextField(
@@ -438,7 +439,7 @@ fun ChangeStreamCategoryTextField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ){
-            Text("Category",fontSize=20.sp,color = MaterialTheme.colorScheme.onPrimary)
+            Text("Category",fontSize=MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
 
         }
 

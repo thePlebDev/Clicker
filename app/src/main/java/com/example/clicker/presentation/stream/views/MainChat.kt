@@ -273,7 +273,7 @@ object MainChat{
                         "You are in no chat mode",
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 20.sp
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
                     )
                 }
             }
@@ -309,7 +309,7 @@ object MainChat{
                             clickedCommandAutoCompleteText(command.clickedValue)
                         }
                     ){
-                        Text(command.title, fontSize = 20.sp,color = MaterialTheme.colorScheme.onPrimary)
+                        Text(command.title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onPrimary)
                         Text(command.subtitle,color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
@@ -411,7 +411,7 @@ object MainChat{
                 Text(
                     text = alertMessage,
                     color = Color.White,
-                    fontSize = 20.sp
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
                 Icon(
                     imageVector = Icons.Default.Close,
