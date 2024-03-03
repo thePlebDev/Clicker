@@ -451,10 +451,6 @@ class HomeViewModel @Inject constructor(
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthToken.tryEmit(oAuthToken)
 
-        _modChannelUIState.value = _modChannelUIState.value.copy(
-            modChannelShowBottomModal = false,
-            modChannelResponseState = Response.Loading
-        )
 
     }
 

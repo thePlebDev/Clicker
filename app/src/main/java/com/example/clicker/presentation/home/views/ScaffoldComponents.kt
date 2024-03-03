@@ -844,6 +844,9 @@ class LiveChannelsLazyColumnScope(){
                     }
                 }
                 is NetworkNewUserResponse.Success -> {
+                    scope.launch {
+                        bottomModalState.hide()
+                    }
                     val listData = followedStreamerList.data
                     if (listData != null) {
 
