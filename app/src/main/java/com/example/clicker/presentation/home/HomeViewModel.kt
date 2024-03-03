@@ -304,7 +304,6 @@ class HomeViewModel @Inject constructor(
     ){
         viewModelScope.launch {
             withContext(ioDispatcher){
-//                delay(5000)
                 twitchRepoImpl.getModeratedChannels(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
