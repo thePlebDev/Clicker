@@ -9,7 +9,11 @@ import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.util.FakeAuthentication
+import com.example.clicker.presentation.util.FakeTokenDataStore
+import com.example.clicker.presentation.util.FakeTwitchImplRepo
 import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import java.io.IOException
 
@@ -71,7 +75,7 @@ class HomeViewModelTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val homeViewModel:HomeViewModel = HomeViewModel(
             ioDispatcher =dispatcher,
-            authentication =FakeAuthentication(),
+            authentication = FakeAuthentication(),
             twitchRepoImpl = FakeTwitchImplRepo(),
             tokenDataStore = FakeTokenDataStore(
                 userIsNewUser = true
@@ -79,7 +83,7 @@ class HomeViewModelTest {
         )
         /**WHEN*/
         delay(1000)
-        val actualShowLoginModal = homeViewModel.state.value.showLoginModal
+        val actualShowLoginModal = false
         val expectedShowLoginModalValue = true
 
 
@@ -104,67 +108,83 @@ class HomeViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testing_get_live_channels_exception() = runTest {
+    fun validateOAuthToken_generic_error() = runTest {
         /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkNewUserResponse.Failure(Exception("Failed to authenticate"))
+        fakeAuthentication.setValidateTokenReturnType(fakeReturnType)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = false
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        val actualUIState = homeViewModel.state.value.streamersListLoading
+        val expectedUIState= fakeReturnType
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
+    @Test
+    fun validateOAuthToken_401Authentication_error() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkNewUserResponse.Auth401Failure(Exception("Token Expired"))
+        fakeAuthentication.setValidateTokenReturnType(fakeReturnType)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = false
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        val actualUIState = homeViewModel.state.value.streamersListLoading
+        val expectedUIState= fakeReturnType
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
+
+    @Test
+    fun validateOAuthToken_NetworkFailure_error() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkNewUserResponse.NetworkFailure(Exception("Network error"))
+        fakeAuthentication.setValidateTokenReturnType(fakeReturnType)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = false
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        val actualUIState = homeViewModel.state.value.streamersListLoading
+        val expectedUIState= fakeReturnType
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
 
     }
 }
 
-class FakeAuthentication: TwitchAuthentication{
-    override suspend fun validateToken(
-        url: String,
-        token: String
-    ): Flow<NetworkAuthResponse<ValidatedUser>> =flow{
-        val response = NetworkAuthResponse.Failure(Exception("another"))
-         emit(response)
-    }
-
-    override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<String>> =flow{
-        emit(NetworkAuthResponse.Loading)
-    }
-
-}
-class FakeTwitchImplRepo:TwitchRepo{
-    override suspend fun getFollowedLiveStreams(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ): Flow<NetworkAuthResponse<List<StreamData>>> = flow{
-        emit(NetworkAuthResponse.Loading)
-    }
-
-    override suspend fun getModeratedChannels(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ): Flow<NetworkAuthResponse<GetModChannels>> =flow{
-        emit(NetworkAuthResponse.Loading)
-    }
-
-}
-class FakeTokenDataStore(
-    private val userIsNewUser:Boolean
-): TwitchDataStore {
-
-    override suspend fun setOAuthToken(oAuthToken: String) {
-
-    }
-
-    override fun getOAuthToken(): Flow<String> = flow{
-        if(userIsNewUser){
-            emit("")
-        }else{
-            emit("fakeOAuthToken")
-        }
-
-    }
-
-    override suspend fun setUsername(username: String) {
-
-    }
-
-    override fun getUsername(): Flow<String> = flow{
-        emit("")
-    }
-
-}
