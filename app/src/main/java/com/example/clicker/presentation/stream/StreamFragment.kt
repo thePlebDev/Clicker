@@ -143,6 +143,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
         if (orientationIsLandscape) {
             val overlapView:View = view.findViewById(R.id.overlapView)
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
+            val longPressComposeView:View = view.findViewById(R.id.compose_view_long_press)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
 
 
@@ -151,12 +152,12 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
 
             // Do some stuff
-            val clickableWebView: HorizontalClickableWebView = myWebView as HorizontalClickableWebView
+            val horizontalClickableWebView: HorizontalClickableWebView = myWebView as HorizontalClickableWebView
 
-            (clickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
-            clickableWebView.expandedMethod = {
+            (horizontalClickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+            horizontalClickableWebView.expandedMethod = {
                 Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
-                clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+                horizontalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
 
                 val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
                 overlayComposeParams.width =rootConstraintLayout.width
@@ -170,13 +171,54 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
                 //View.VISIBLE, View.INVISIBLE, View.GONE
                 composeView.visibility = View.INVISIBLE
+                longPressComposeView.visibility = View.INVISIBLE
 
                 myWebView.layoutParams = layoutParams
                 overlayComposeView.layoutParams = overlayComposeParams
             }
 
-            /**method for the single tap*/
-            clickableWebView.singleTapMethod={
+            /*******************showLongClickView()********************************************************************/
+            horizontalClickableWebView.showLongClickView={
+                Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
+                horizontalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+
+                val sixtyWidth =(rootConstraintLayout.width* 0.6).toInt()
+                //GET ALL THE PARAMS WE NEED TO CHANGE
+                val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+                overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
+
+                val webViewLayoutParams= myWebView.layoutParams as ConstraintLayout.LayoutParams
+
+                //CHANGE THE WIDTH
+
+                webViewLayoutParams.width = sixtyWidth
+
+                //ADD EXTRA CONSTRAINT PARAMS
+
+                webViewLayoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+                overlayComposeParams.endToEnd =overlapView.id
+                overlayComposeParams.startToStart =myWebView.id
+//                overlayComposeParams.startToEnd =ConstraintLayout.LayoutParams.PARENT_ID
+               // overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
+
+                //SET IT TO INVISIBLE
+                composeView.visibility = View.INVISIBLE
+
+
+                //APPLY THE PARAMS
+                myWebView.layoutParams = webViewLayoutParams
+                overlayComposeView.layoutParams = overlayComposeParams
+
+                longPressComposeView.visibility = View.VISIBLE
+
+            }
+            horizontalClickableWebView.hideLongClickView ={
+                longPressComposeView.visibility = View.INVISIBLE
+            }
+
+
+            /******************************singleTapMethod()*******************************************************/
+            horizontalClickableWebView.singleTapMethod={
                 val overlayIsVisible = overlapView.visibility ==View.VISIBLE
                 val overlayHeight = overlapView.height
                 val determinedHeight = (rootConstraintLayout.height * 0.9).toInt()
@@ -223,10 +265,11 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 )
             }
             /**collapsed method*/
-            clickableWebView.collapsedMethod = {
+            horizontalClickableWebView.collapsedMethod = {
+                Log.d("collapsedMethodAgain","collapsedMethod()")
                 val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
                 val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
-                overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
+
 
 
                 val webViewLayout = ConstraintLayout.LayoutParams(
@@ -237,6 +280,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
                 composeView.visibility = View.VISIBLE
                 myWebView.layoutParams = webViewLayout
+
+              //  overlayComposeParams.startToStart =ConstraintLayout.LayoutParams.PARENT_ID
+                overlayComposeParams.endToEnd =myWebView.id
+                overlayComposeParams.startToStart =myWebView.id
+                overlayComposeParams.width =webViewWidth
+
+
                 overlayComposeView.layoutParams = overlayComposeParams
 
             }

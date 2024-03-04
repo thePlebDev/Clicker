@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 
 import android.webkit.WebView
+import kotlin.math.exp
 
 
 class ClickableWebView: WebView {
@@ -83,6 +84,13 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
 
 
 }
+
+
+/****************************START OF THE HORIZONTAL CLICKABLE WEBVIEW**********************************************/
+
+
+
+
 class HorizontalClickableWebView: WebView {
     constructor(context: Context?) : super(context!!) {}
     constructor(context: Context?, attrs: AttributeSet?) : super(
@@ -90,11 +98,15 @@ class HorizontalClickableWebView: WebView {
     ) {
     }
     var expanded = false
+    var longPressOpen = false
 
 
-    var expandedMethod ={}
+
+    var expandedMethod ={} //called to make the webView full screen
     var collapsedMethod={}
     var singleTapMethod={}
+    var showLongClickView ={}
+    var hideLongClickView ={}
 
 
 
@@ -107,10 +119,15 @@ class HorizontalClickableWebView: WebView {
             when(motionEvent.action){
                 MotionEvent.ACTION_DOWN -> {
                     if(!expanded){
-                        expanded = !expanded
+                        expanded = true
+                        longPressOpen = false
+                        Log.d("onDoubleTapEvent","expandedMethod()")
                         expandedMethod()
                     }else{
-                        expanded = !expanded
+                        expanded = false
+                        longPressOpen = false
+                        Log.d("onDoubleTapEvent","collapsedMethod()")
+                        hideLongClickView()
                         collapsedMethod()
                     }
                 }
@@ -129,7 +146,9 @@ class HorizontalClickableWebView: WebView {
 
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
-            Log.d("onLongPress","HORIZONTAL LONG PRESS")
+                collapsedMethod()
+                showLongClickView()
+            expanded = false
         }
 
     }
