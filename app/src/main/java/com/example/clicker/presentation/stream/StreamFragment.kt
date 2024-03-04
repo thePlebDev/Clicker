@@ -151,7 +151,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
 
             // Do some stuff
-            val clickableWebView: ClickableWebView = myWebView as ClickableWebView
+            val clickableWebView: HorizontalClickableWebView = myWebView as HorizontalClickableWebView
 
             (clickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
             clickableWebView.expandedMethod = {

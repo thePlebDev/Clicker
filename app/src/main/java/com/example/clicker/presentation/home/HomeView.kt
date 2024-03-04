@@ -110,6 +110,7 @@ import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
 
 import kotlinx.coroutines.launch
+import kotlin.math.log
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -146,7 +147,8 @@ fun ValidationView(
                 streamerName,
                 clientId,
                 broadcasterId,
-                userId
+                userId,
+                login =homeViewModel.validatedUser.value?.login ?:""
             )
             autoModViewModel.updateAutoModCredentials(
                 oAuthToken = homeViewModel.state.value.oAuthToken,

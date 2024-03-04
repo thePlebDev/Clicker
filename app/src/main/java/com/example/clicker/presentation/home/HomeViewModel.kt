@@ -477,6 +477,7 @@ class HomeViewModel @Inject constructor(
                         )
 
                         _validatedUser.tryEmit(response.data)
+                        Log.d("monitorForNetworkConnection","Login ->${response.data.login}")
 
                     }
                     is NetworkNewUserResponse.Failure -> {
