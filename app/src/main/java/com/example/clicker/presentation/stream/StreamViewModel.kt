@@ -79,6 +79,7 @@ data class StreamUIState(
     val clientId: String = "", //twitchRepoImpl
     val broadcasterId: String = "", //twitchRepoImpl
     val userId: String = "", //twitchRepoImpl
+    val login:String="",
     val oAuthToken: String = "", //twitchRepoImpl
 
 
@@ -652,6 +653,7 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
                 _channelName.collect { channelName ->
+
                     channelName?.let {
                             startWebSocket(channelName)
                     }
@@ -779,6 +781,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     //TODO: SOCKET METHOD
     fun restartWebSocket() {
         val channelName = _channelName.value ?: ""
+        Log.d("startWebSocket", "websocket is starting")
         startWebSocket(channelName)
     }
 
@@ -788,19 +791,17 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
      * It is used to start and connect a Websocket using the [TwitchSocket]
      * */
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
+        Log.d("startWebSocket", "startWebSocket() is being called")
+
         if(_advancedChatSettingsState.value.noChatMode){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
             //no actions are to be commited in this conditional branch
         }else{
-            tokenDataStore.getUsername().collect { username ->
-                if (username.isNotEmpty()) {
-                    currentUsername = username
-                    Log.d("startWebSocket", "username --->$username")
-                    webSocket.run(channelName, username)
-                }
-            }
+            val username = _uiState.value.login
+            webSocket.run(channelName, username)
         }
     }
+    //todo: monitoringTokens() SHOULD BE MOVED TO ITS OWN CLASS
     /**
      * monitoringTokens() is a function meant to check the current user's chat messages for any /commands(/ban,/unban...)
      *
@@ -1025,14 +1026,17 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         channelName: String,
         clientId: String,
         broadcasterId: String,
-        userId: String
+        userId: String,
+        login:String
     ) {
+        Log.d("updateChannelNameAndClientIdAndUserId","Emitting the channel name")
         _channelName.tryEmit(channelName)
 
         _uiState.value = _uiState.value.copy(
             clientId = clientId,
             broadcasterId = broadcasterId,
-            userId = userId
+            userId = userId,
+            login =login
         )
 
         getChatSettings(clientId, broadcasterId)

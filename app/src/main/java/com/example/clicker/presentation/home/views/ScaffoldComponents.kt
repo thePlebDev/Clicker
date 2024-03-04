@@ -837,6 +837,9 @@ class LiveChannelsLazyColumnScope(){
 
             when (followedStreamerList) {
                 is NetworkNewUserResponse.Loading -> {
+                    scope.launch {
+                        bottomModalState.hide()
+                    }
                     item {
                         with(indicatorScopes){
                             loadingIndicator()
@@ -844,9 +847,7 @@ class LiveChannelsLazyColumnScope(){
                     }
                 }
                 is NetworkNewUserResponse.Success -> {
-                    scope.launch {
-                        bottomModalState.hide()
-                    }
+
                     val listData = followedStreamerList.data
                     if (listData != null) {
 
