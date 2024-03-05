@@ -26,6 +26,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.ManageStreamInformation
 import com.example.clicker.ui.theme.AppTheme
@@ -453,6 +455,13 @@ fun setOrientation(
 
             }
 
+        }
+    }
+    binding.composeViewLongPress?.apply {
+        setContent {
+            AppTheme{
+                HorizontalLongPressView()
+            }
         }
     }
 

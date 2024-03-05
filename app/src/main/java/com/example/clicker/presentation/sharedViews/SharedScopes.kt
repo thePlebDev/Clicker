@@ -17,6 +17,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -98,6 +99,31 @@ class ScaffoldTopBarScope(
         }
 
     }
+    @Composable
+    fun TopBarText(
+        text:String,
+
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
+//            Icon(
+//                imageVector = Icons.Default.Home,
+//                contentDescription = "contentDescription",
+//                tint = MaterialTheme.colorScheme.onPrimary,
+//                modifier = Modifier.size(iconSize)
+//            )
+            Text(
+                text =text,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+        }
+
+    }
 
 }
 
@@ -140,7 +166,11 @@ class IconScope(
                 tint = iconColor,
                 modifier = Modifier.size(iconSize)
             )
-            Text(text,color = MaterialTheme.colorScheme.onPrimary)
+            Text(
+                text,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize
+            )
         }
     }
 
