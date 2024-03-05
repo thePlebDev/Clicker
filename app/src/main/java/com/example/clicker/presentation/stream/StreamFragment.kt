@@ -460,7 +460,9 @@ fun setOrientation(
     binding.composeViewLongPress?.apply {
         setContent {
             AppTheme{
-                HorizontalLongPressView()
+                HorizontalLongPressView(
+                    homeViewModel
+                )
             }
         }
     }
