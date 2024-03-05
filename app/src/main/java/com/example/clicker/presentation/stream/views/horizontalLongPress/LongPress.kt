@@ -12,22 +12,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
@@ -53,57 +62,18 @@ import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun HorizontalLongPressView(
     homeViewModel: HomeViewModel
 ){
     val clicked = remember { mutableStateOf(true) }
     val text = if (clicked.value) "Live channels" else "Mod channels"
-    val listStreamData = listOf<StreamData>(
-        StreamData(
-       "0",
-            "0","piratesoftware","","",
-            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
-            "",
-            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
-            listOf(""),listOf(""),false
-    ),
-        StreamData(
-            "1",
-            "1","piratesoftware","","",
-            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
-            "",
-            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
-            listOf(""),listOf(""),false
-        ),
-        StreamData(
-            "2",
-            "2","piratesoftware","","",
-            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
-            "",
-            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
-            listOf(""),listOf(""),false
-        ),
-        StreamData(
-            "3",
-            "3","piratesoftware","","",
-            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
-            "",
-            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
-            listOf(""),listOf(""),false
-        ),
-        StreamData(
-            "4",
-            "4","piratesoftware","","",
-            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
-            "",
-            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
-            listOf(""),listOf(""),false
-        ),
-    )
+
 
     LongPress
         .MainView(
@@ -139,14 +109,17 @@ fun HorizontalLongPressView(
             },
             content = { contentPadding ->
 
+
                 LongPressPullToRefresh(
                     contentPadding =contentPadding,
+                    refreshing =homeViewModel.state.value.homeRefreshing,
+                    refreshFun = {homeViewModel.pullToRefreshGetLiveStreams()},
                     content ={
                         TestingLazyColumnItem(
                             height = homeViewModel.state.value.aspectHeight,
                             width = homeViewModel.state.value.width,
                             density =homeViewModel.state.value.screenDensity,
-                            listData = listStreamData
+                            listData = homeViewModel.state.value.horizontalLongHoldStreamList
                         )
                     }
                 )
@@ -158,21 +131,16 @@ fun HorizontalLongPressView(
 @Composable
 fun LongPressPullToRefresh(
     contentPadding: PaddingValues,
+    refreshing:Boolean,
+    refreshFun:()->Unit,
     content:@Composable () -> Unit,
 ){
-    val refreshing = remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+
     PullToRefreshComponent(
         padding = contentPadding,
-        refreshing =refreshing.value,
+        refreshing =refreshing,
         refreshFunc = {
-
-            refreshing.value = true
-            scope.launch {
-                delay(1000)
-                refreshing.value = false
-            }
-
+            refreshFun()
         },
         content = {
                   content()
@@ -227,26 +195,69 @@ fun TestingLazyColumnItem(
     height: Int,
     width: Int,
     density:Float,
-    listData: List<StreamData>
+    listData: NetworkNewUserResponse<List<StreamData>>
     ){
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
     ) {
+        when(listData){
+            is NetworkNewUserResponse.Loading ->{
+                item{
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+                        CircularProgressIndicator()
+                    }
 
+                }
+            }
+            is NetworkNewUserResponse.Success ->{
+                val data = listData.data
+                items(data,key = { streamItem -> streamItem.userId }) { streamItem ->
+                    RowItem(
+                        streamerName = streamItem.userLogin,
+                        streamTitle = streamItem.title,
+                        gameTitle = streamItem.gameName,
+                        url = streamItem.thumbNailUrl,
+                        height = height,
+                        width = width,
+                        viewCount = streamItem.viewerCount,
+                        density =density
+                    )
+                }
 
-        items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
-            RowItem(
-                streamerName = streamItem.userLogin,
-                streamTitle = streamItem.title,
-                gameTitle = streamItem.gameName,
-                url = streamItem.thumbNailUrl,
-                height = height,
-                width = width,
-                viewCount = streamItem.viewerCount,
-                density =density
-            )
+            }
+            is NetworkNewUserResponse.Failure ->{
+                val message =listData.e.message ?:"Error! please pull down to refresh"
+                item {
+                    GettingStreamsError(message)
+                }
+
+            }
+            is NetworkNewUserResponse.Auth401Failure ->{
+                val message =listData.e.message ?:"Authentication failed"
+                item {
+                    GettingStreamsError(message)
+                }
+
+            }
+            is NetworkNewUserResponse.NetworkFailure ->{
+                val message =listData.e.message ?:"Error try again"
+                item {
+                    GettingStreamsError(message)
+                }
+
+            }
+            is NetworkNewUserResponse.NewUser ->{
+                val message = "Error try again"
+                item {
+                    GettingStreamsError(message)
+                }
+
+            }
         }
+
+
+
 
     }
 }
@@ -296,8 +307,8 @@ fun ImageWithViewCount(
     viewCount:Int,
     density:Float
 ){
-    val adjustedHeight = height/density
-    val adjustedWidth = width/density
+    val adjustedHeight = (height/2)/density
+    val adjustedWidth = (width/2)/density
     Log.d("ImageHeightWidth","url -> $url")
     Box(
     ) {
@@ -359,6 +370,42 @@ fun StreamTitleWithInfo(
             modifier = Modifier.alpha(0.7f),
             color = MaterialTheme.colorScheme.onPrimary
         )
+    }
+}
+
+@Composable
+fun GettingStreamsError(
+    errorMessage: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+            .clickable { },
+        elevation = 10.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary)
+                .padding(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
+                tint = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier.size(30.dp)
+            )
+            Text(errorMessage, fontSize = MaterialTheme.typography.headlineSmall.fontSize,color=MaterialTheme.colorScheme.onSecondary)
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
+                tint = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier.size(30.dp)
+            )
+        }
     }
 }
 

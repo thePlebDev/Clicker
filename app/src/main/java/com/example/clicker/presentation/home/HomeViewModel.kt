@@ -88,6 +88,7 @@ data class HomeUIState(
     val homeRefreshing:Boolean = false,
     val homeNetworkErrorMessage:String ="Disconnected from network",
     val logoutDialogIsOpen:Boolean=false,
+    val horizontalLongHoldStreamList:NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
 
 
 
@@ -560,10 +561,17 @@ class HomeViewModel @Inject constructor(
                                     _uiState.value.aspectHeight
                                 )
                             }
+                            val horizontalLongHoldStreamList =response.data.map {
+                                it.changeUrlWidthHeight(
+                                    (_uiState.value.width)/2,
+                                    (_uiState.value.aspectHeight)/2
+                                )
+                            }
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkNewUserResponse.Success(replacedWidthHeightList),
-                                homeRefreshing = false
+                                homeRefreshing = false,
+                                horizontalLongHoldStreamList =NetworkNewUserResponse.Success(horizontalLongHoldStreamList)
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
@@ -579,7 +587,8 @@ class HomeViewModel @Inject constructor(
                         is NetworkNewUserResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 homeRefreshing = false,
-                                streamersListLoading = response
+                                streamersListLoading = response,
+                                horizontalLongHoldStreamList =response
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
@@ -588,7 +597,8 @@ class HomeViewModel @Inject constructor(
                         is NetworkNewUserResponse.NetworkFailure ->{
                             _uiState.value = _uiState.value.copy(
                                 homeRefreshing = false,
-                                streamersListLoading = response
+                                streamersListLoading = response,
+                                horizontalLongHoldStreamList =response
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
@@ -599,6 +609,7 @@ class HomeViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = response,
                                 homeRefreshing = false,
+                                horizontalLongHoldStreamList =response,
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modChannelResponseState = Response.Failure(Exception("Error! Re-login with Twitch")),
