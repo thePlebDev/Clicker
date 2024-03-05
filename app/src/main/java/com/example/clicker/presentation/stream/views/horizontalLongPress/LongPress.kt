@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream.views.horizontalLongPress
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -31,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,13 +48,62 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun HorizontalLongPressView(){
+fun HorizontalLongPressView(
+    homeViewModel: HomeViewModel
+){
     val clicked = remember { mutableStateOf(true) }
     val text = if (clicked.value) "Live channels" else "Mod channels"
+    val listStreamData = listOf<StreamData>(
+        StreamData(
+       "0",
+            "0","piratesoftware","","",
+            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
+            "",
+            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
+            listOf(""),listOf(""),false
+    ),
+        StreamData(
+            "1",
+            "1","piratesoftware","","",
+            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
+            "",
+            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
+            listOf(""),listOf(""),false
+        ),
+        StreamData(
+            "2",
+            "2","piratesoftware","","",
+            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
+            "",
+            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
+            listOf(""),listOf(""),false
+        ),
+        StreamData(
+            "3",
+            "3","piratesoftware","","",
+            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
+            "",
+            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
+            listOf(""),listOf(""),false
+        ),
+        StreamData(
+            "4",
+            "4","piratesoftware","","",
+            "Software and Game Development","","GAME DEV Q/A Go Make Games @FerretSoftware !Heartbound !Website !Vote !TTS",4000,"",
+            "",
+            "https://static-cdn.jtvnw.net/previews-ttv/live_user_piratesoftware-270x151.jpg",
+            listOf(""),listOf(""),false
+        ),
+    )
 
     LongPress
         .MainView(
@@ -85,10 +137,51 @@ fun HorizontalLongPressView(){
                     }
                 )
             },
-            content = {
+            content = { contentPadding ->
 
-            }
+                LongPressPullToRefresh(
+                    contentPadding =contentPadding,
+                    content ={
+                        TestingLazyColumnItem(
+                            height = homeViewModel.state.value.aspectHeight,
+                            width = homeViewModel.state.value.width,
+                            density =homeViewModel.state.value.screenDensity,
+                            listData = listStreamData
+                        )
+                    }
+                )
+
+            },
         )
+}
+
+@Composable
+fun LongPressPullToRefresh(
+    contentPadding: PaddingValues,
+    content:@Composable () -> Unit,
+){
+    val refreshing = remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    PullToRefreshComponent(
+        padding = contentPadding,
+        refreshing =refreshing.value,
+        refreshFunc = {
+
+            refreshing.value = true
+            scope.launch {
+                delay(1000)
+                refreshing.value = false
+            }
+
+        },
+        content = {
+                  content()
+        },
+        networkStatus = {},
+        showNetworkMessage = false
+
+
+    )
 }
 
 object LongPress{
@@ -98,7 +191,7 @@ object LongPress{
     fun MainView(
         topBar:@Composable ScaffoldTopBarScope.() -> Unit,
         bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
-        content:@Composable () -> Unit,
+        content:@Composable (contentPadding: PaddingValues,) -> Unit,
 
         ) {
         val topBarScaffoldScope = remember(){ScaffoldTopBarScope(35.dp)}
@@ -107,7 +200,9 @@ object LongPress{
         Scaffold(
             containerColor = MaterialTheme.colorScheme.primary,
             topBar = {
-                Row(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)){
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)){
                     with(topBarScaffoldScope){
                         topBar()
                     }
@@ -121,46 +216,71 @@ object LongPress{
             },
 
         ) { contentPadding ->
-            //this should be its own component
-            TestingLazyColumnItem(contentPadding = contentPadding)
+            content(contentPadding)
+
         }
     }
 }
 
 @Composable
 fun TestingLazyColumnItem(
-    contentPadding: PaddingValues,
+    height: Int,
+    width: Int,
+    density:Float,
+    listData: List<StreamData>
     ){
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
-        contentPadding = contentPadding
     ) {
-        item {
-            RowItem()
-        }
-        items(10){
-            RowItem()
+
+
+        items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
+            RowItem(
+                streamerName = streamItem.userLogin,
+                streamTitle = streamItem.title,
+                gameTitle = streamItem.gameName,
+                url = streamItem.thumbNailUrl,
+                height = height,
+                width = width,
+                viewCount = streamItem.viewerCount,
+                density =density
+            )
         }
 
     }
 }
 
 @Composable
-fun RowItem(){
+fun RowItem(
+    streamerName:String,
+    streamTitle:String,
+    gameTitle:String,
+    url: String,
+    height: Int,
+    width: Int,
+    viewCount:Int,
+    density:Float
+){
+
     Row(
-        modifier =Modifier.fillMaxWidth().padding(5.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+            .clickable { },
+        verticalAlignment = Alignment.CenterVertically
     ){
         ImageWithViewCount(
-            url ="",
-            height = 50,
-            width = 50,
-            viewCount = 40000
+            url =url,
+            height = height,
+            width = width,
+            viewCount = viewCount,
+            density = density
         )
         StreamTitleWithInfo(
-            streamerName = "cohhcarnage",
-            gameTitle = "FINAL FANTASY VII REBIRTH",
-            streamTitle = "Final Fantasy VII: REBIRTH! - Thank you for $185,000+ raised during our !Charity event! - !MobileApp / !Emberville"
+            streamerName = streamerName,
+            gameTitle = gameTitle,
+            streamTitle = streamTitle
 
         )
 
@@ -174,19 +294,20 @@ fun ImageWithViewCount(
     height: Int,
     width: Int,
     viewCount:Int,
-
+    density:Float
 ){
+    val adjustedHeight = height/density
+    val adjustedWidth = width/density
     Log.d("ImageHeightWidth","url -> $url")
     Box(
-        modifier = Modifier.height(70.dp).width(100.dp).background(Color.Red)
     ) {
 
         SubcomposeAsyncImage(
             model = url,
             loading = {
                 Column(modifier = Modifier
-                    .height(100.dp)
-                    .width(100.dp)
+                    .height(adjustedHeight.dp)
+                    .width(adjustedWidth.dp)
                     .background(MaterialTheme.colorScheme.primary),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
