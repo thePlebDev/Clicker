@@ -458,10 +458,13 @@ fun setOrientation(
         }
     }
     binding.composeViewLongPress?.apply {
+        val webView:WebView = binding.root.findViewById(R.id.webView)
         setContent {
             AppTheme{
                 HorizontalLongPressView(
-                    homeViewModel
+                    homeViewModel,
+                    streamViewModel = streamViewModel,
+                    loadURL ={newUrl ->setWebView(webView,newUrl)}
                 )
             }
         }
@@ -486,6 +489,7 @@ fun setWebView(
     myWebView: WebView,
     url: String
 ) {
+    Log.d("setWebViewURL","url -->$url")
     myWebView.settings.mediaPlaybackRequiresUserGesture = false
 
     myWebView.settings.javaScriptEnabled = true

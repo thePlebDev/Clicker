@@ -777,6 +777,9 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             //showChatSettingAlert = false
         )
     }
+    fun restartWebSocketFromLongClickMenu(channelName: String){
+        startWebSocket(channelName)
+    }
 
     //TODO: SOCKET METHOD
     fun restartWebSocket() {
@@ -797,8 +800,10 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
             //no actions are to be commited in this conditional branch
         }else{
+
             val username = _uiState.value.login
             webSocket.run(channelName, username)
+            listChats.clear()
         }
     }
     //todo: monitoringTokens() SHOULD BE MOVED TO ITS OWN CLASS
