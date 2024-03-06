@@ -35,3 +35,9 @@ fun <T, R : Any> Flow<T>.mapWithRetry(
     } while (shallRetry)
     return@map lastValue
 }
+fun replaceChannelName(original: String, newChannelName: String): String {
+    val regex = Regex("channel=([^&]+)")
+    return regex.replace(original) {
+        "channel=$newChannelName"
+    }
+}

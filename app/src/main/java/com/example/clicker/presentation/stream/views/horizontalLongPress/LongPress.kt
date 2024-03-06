@@ -1,6 +1,8 @@
 package com.example.clicker.presentation.stream.views.horizontalLongPress
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,7 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
@@ -46,7 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -59,9 +66,12 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,7 +79,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun HorizontalLongPressView(
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    streamViewModel: StreamViewModel,
+    loadURL:(String)->Unit,
+
 ){
     val clicked = remember { mutableStateOf(true) }
     val text = if (clicked.value) "Live channels" else "Mod channels"
@@ -80,53 +93,33 @@ fun HorizontalLongPressView(
             topBar = {
                 TopBarText(text)
             },
-            bottomBar = {
-                this.DualButtonNavigationBottomBar(
-                    bottomRowHeight = 50.dp,
-                    firstButton ={
-                        this.IconOverText(
-                            iconColor =if(clicked.value) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
-                            text = "Home",
-                            imageVector = Icons.Default.Home,
-                            iconContentDescription = "View live followed channels",
-                            onClick = {
-                                clicked.value = true
-                            }
-                        )
-                    } ,
-                    secondButton = {
-                        this.PainterResourceIconOverText(
-                            iconColor =if(!clicked.value) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
-                            text = "Mod Channels",
-                            painter = painterResource(id = R.drawable.mod_view_24),
-                            iconContentDescription = "View live mod channels",
-                            onClick = {
-                                clicked.value = false
-                            }
-                        )
-                    }
-                )
-            },
+            bottomBar = {},
             content = { contentPadding ->
 
+                    LongPressPullToRefresh(
+                        contentPadding =contentPadding,
+                        refreshing =homeViewModel.state.value.homeRefreshing,
+                        refreshFun = {homeViewModel.pullToRefreshGetLiveStreams()},
+                        content ={
+                            TestingLazyColumnItem(
+                                height = homeViewModel.state.value.aspectHeight,
+                                width = homeViewModel.state.value.width,
+                                density =homeViewModel.state.value.screenDensity,
+                                loadURL ={newUrl -> loadURL(newUrl)},
+                                reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},
+                                listData = homeViewModel.state.value.horizontalLongHoldStreamList,
 
-                LongPressPullToRefresh(
-                    contentPadding =contentPadding,
-                    refreshing =homeViewModel.state.value.homeRefreshing,
-                    refreshFun = {homeViewModel.pullToRefreshGetLiveStreams()},
-                    content ={
-                        TestingLazyColumnItem(
-                            height = homeViewModel.state.value.aspectHeight,
-                            width = homeViewModel.state.value.width,
-                            density =homeViewModel.state.value.screenDensity,
-                            listData = homeViewModel.state.value.horizontalLongHoldStreamList
-                        )
-                    }
-                )
+                                )
+                        }
+                    )
+
+
+
 
             },
         )
 }
+
 
 @Composable
 fun LongPressPullToRefresh(
@@ -190,11 +183,14 @@ object LongPress{
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TestingLazyColumnItem(
     height: Int,
     width: Int,
     density:Float,
+    loadURL: (String) -> Unit,
+    reconnectWebSocketChat:(String)->Unit,
     listData: NetworkNewUserResponse<List<StreamData>>
     ){
     LazyColumn(
@@ -211,7 +207,9 @@ fun TestingLazyColumnItem(
                 }
             }
             is NetworkNewUserResponse.Success ->{
+
                 val data = listData.data
+
                 items(data,key = { streamItem -> streamItem.userId }) { streamItem ->
                     RowItem(
                         streamerName = streamItem.userLogin,
@@ -221,7 +219,9 @@ fun TestingLazyColumnItem(
                         height = height,
                         width = width,
                         viewCount = streamItem.viewerCount,
-                        density =density
+                        density =density,
+                        loadURL ={newUrl -> loadURL(newUrl)},
+                        reconnectWebSocketChat ={channelName ->reconnectWebSocketChat(channelName)}
                     )
                 }
 
@@ -271,14 +271,20 @@ fun RowItem(
     height: Int,
     width: Int,
     viewCount:Int,
-    density:Float
+    density:Float,
+    loadURL: (String) -> Unit,
+    reconnectWebSocketChat:(String)->Unit,
 ){
+    val newUser = "https://player.twitch.tv/?channel=$streamerName&controls=false&muted=false&parent=modderz"
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
-            .clickable { },
+            .clickable {
+                loadURL(newUser)
+                reconnectWebSocketChat(streamerName)
+            },
         verticalAlignment = Alignment.CenterVertically
     ){
         ImageWithViewCount(
@@ -408,5 +414,4 @@ fun GettingStreamsError(
         }
     }
 }
-
-
+/******************************* MOD CHANNEL RELATED UI *******************************************************/
