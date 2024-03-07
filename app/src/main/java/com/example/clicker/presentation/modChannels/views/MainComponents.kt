@@ -75,6 +75,7 @@ import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 
@@ -112,7 +113,7 @@ object ModChannelComponents{
         density:Float,
         offlineModChannelList:List<String>,
         liveModChannelList:List<StreamData>,
-        modChannelResponseState: Response<Boolean>,
+        modChannelResponseState: NetworkNewUserResponse<Boolean>,
         refreshing:Boolean,
         refreshFunc:()->Unit,
         showNetworkMessage:Boolean,
@@ -123,6 +124,7 @@ object ModChannelComponents{
         userId: String,
         networkMessageColor:Color,
         networkMessage: String,
+        showLoginModal:()->Unit,
     ){
         Builders.ScaffoldBuilder(
             topBar = {
@@ -194,7 +196,8 @@ object ModChannelComponents{
                         clientId = clientId,
                         loadingIndicator = {
                             LazyListLoadingIndicator()
-                        }
+                        },
+                        showLoginModal ={showLoginModal()}
 
                     )
                 }
@@ -283,12 +286,13 @@ object ModChannelComponents{
             density:Float,
             offlineModChannelList:List<String>,
             liveModChannelList:List<StreamData>,
-            modChannelResponseState: Response<Boolean>,
+            modChannelResponseState: NetworkNewUserResponse<Boolean>,
             updateStreamerName: (String, String,String,String) -> Unit,
             updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
             onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
+            showLoginModal:()->Unit,
             loadingIndicator:@Composable IndicatorScopes.() -> Unit,
 
             ){
@@ -297,7 +301,7 @@ object ModChannelComponents{
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = contentPadding){
                 when(modChannelResponseState){
-                    is Response.Loading ->{
+                    is NetworkNewUserResponse.Loading ->{
                         item{
                             with(indicatorScopes){
                                 loadingIndicator()
@@ -306,7 +310,7 @@ object ModChannelComponents{
                         }
 
                     }
-                    is Response.Success ->{
+                    is NetworkNewUserResponse.Success ->{
                         stickyHeader {
                             ModHeader("Live")
                         }
@@ -365,11 +369,29 @@ object ModChannelComponents{
                         }
 
                     }
-                    is Response.Failure ->{
+                    is NetworkNewUserResponse.Failure ->{
                         item{
                             val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
                             ErrorPullToRefresh(message)
                         }
+
+                    }
+                    is NetworkNewUserResponse.NetworkFailure->{
+                        item{
+                            val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
+                            ErrorPullToRefresh(message)
+                        }
+
+                    }
+                    is NetworkNewUserResponse.Auth401Failure->{
+                        item{
+
+                            ErrorPullToRefresh("Please login with Twitch")
+                        }
+                        showLoginModal()
+
+                    }
+                    is NetworkNewUserResponse.NewUser->{
 
                     }
 
