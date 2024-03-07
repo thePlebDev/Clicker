@@ -77,7 +77,6 @@ import com.example.clicker.util.Response
     @Composable
     fun HomeViewImplementation(
         bottomModalState: ModalBottomSheetState,
-        modalText: String,
         loginWithTwitch: () -> Unit,
         domainIsRegistered: Boolean,
         addToLinks: () -> Unit,
@@ -110,7 +109,6 @@ import com.example.clicker.util.Response
         HomeModalBottomSheetBuilder(
             loginBottomModal = {
                 LoginWithTwitchBottomModalButton(
-                    modalText = modalText,
                     loginWithTwitch = { loginWithTwitch() }
                 )
             },
@@ -245,7 +243,6 @@ import com.example.clicker.util.Response
          * */
         @Composable
         fun LoginWithTwitchBottomModalButton(
-            modalText:String,
             loginWithTwitch:()->Unit
         ){
             Column(

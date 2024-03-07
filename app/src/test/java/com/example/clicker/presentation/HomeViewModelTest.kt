@@ -186,5 +186,32 @@ class HomeViewModelTest {
         Assert.assertEquals(expectedUIState, actualUIState)
 
     }
+
+    @Test
+    fun beginLogout_success() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkAuthResponse.Success("")
+        fakeAuthentication.setLogoutReturnType(fakeReturnType)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = true
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        val actualUIState = homeViewModel.beginLogout("fakeClientId","fakeoAuthToken")
+        val expectedUIState= fakeReturnType
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
 }
 

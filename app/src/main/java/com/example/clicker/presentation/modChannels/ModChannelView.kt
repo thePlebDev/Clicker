@@ -47,30 +47,12 @@ fun ModChannelView(
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val showModal = homeViewModel.modChannelUIState.value.modChannelShowBottomModal
+
 
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
 
 
-    Log.d("showModalConditional","showModal --> true")
-        LaunchedEffect(showModal) { // the key define when the block is relaunched
-            // Your coroutine code here
-            Log.d("showModalConditional","showModal --> $showModal")
-            when(showModal){
-                true ->{
-                    scope.launch {
-                        bottomModalState.show()
-                    }
-                }
-                false ->{
-                    scope.launch {
-                        bottomModalState.hide()
-                    }
-                }
-            }
-
-        }
 
 
     ModalBottomSheetLayout(
@@ -112,6 +94,11 @@ fun ModChannelView(
             userId=userId,
             networkMessageColor=Color.Red,
             networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+            showLoginModal={
+                scope.launch {
+                    bottomModalState.show()
+                }
+            }
 
 
         )

@@ -124,7 +124,6 @@ fun ValidationView(
     autoModViewModel: AutoModViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val modalText = homeViewModel.authenticationUIState.value.modalText
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
 
 
@@ -137,7 +136,6 @@ fun ValidationView(
 
     HomeViewImplementation(
         bottomModalState =bottomModalState,
-        modalText =modalText,
         loginWithTwitch ={loginWithTwitch()},
         domainIsRegistered =domainIsRegistered,
         addToLinks = { addToLinks() },

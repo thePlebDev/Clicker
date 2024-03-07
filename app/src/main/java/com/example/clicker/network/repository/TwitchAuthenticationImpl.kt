@@ -41,7 +41,6 @@ class TwitchAuthenticationImpl @Inject constructor(
 
 
     override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<String>> = flow {
-        emit(NetworkAuthResponse.Loading)
         Log.d("logoutResponse", "LOADING")
 
         val response = twitchClient.logout(clientId = clientId, token = token)
@@ -87,14 +86,5 @@ class TwitchAuthenticationImpl @Inject constructor(
     }
 }
 
-@Stable
-object Testing{
-
-    @Composable
-    fun testingRecomposition(){
-
-    }
-
-}
 
 

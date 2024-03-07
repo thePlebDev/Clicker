@@ -48,8 +48,6 @@ data class AuthenticationUIState(
 
     val showErrorModal: Boolean = false,
 
-    val showLoginModal: Boolean = false,
-    val modalText: String = "Login to continue"
 
 )
 /**
@@ -68,9 +66,8 @@ data class StreamInfo(
 data class ModChannelUIState(
     val offlineModChannelList:List<String> =listOf(),
     val liveModChannelList:List<StreamData> = listOf(),
-    val modChannelResponseState:Response<Boolean> = Response.Loading,
+    val modChannelResponseState:NetworkNewUserResponse<Boolean> = NetworkNewUserResponse.Loading,
     val modRefreshing:Boolean = false,
-    val modChannelShowBottomModal:Boolean = false,
 )
 data class HomeUIState(
 
@@ -109,15 +106,6 @@ class HomeViewModel @Inject constructor(
     private var _modChannelUIState: MutableState<ModChannelUIState> = mutableStateOf(ModChannelUIState())
     val modChannelUIState: State<ModChannelUIState> = _modChannelUIState
 
-    private var _authenticationUIState: MutableState<AuthenticationUIState> = mutableStateOf(
-        AuthenticationUIState()
-    )
-    val authenticationUIState: State<AuthenticationUIState> = _authenticationUIState
-
-
-
-
-
     private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
     val validatedUser = _validatedUser
     private val _oAuthToken = MutableStateFlow<String?>(null)
@@ -153,11 +141,6 @@ class HomeViewModel @Inject constructor(
 
     fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
 //
-        _authenticationUIState.value = _authenticationUIState.value.copy(
-            showLoginModal = true,
-            modalText = "Logging out..."
-
-        )
         withContext(ioDispatcher + CoroutineName("BeginLogout")) {
             authentication.logout(
                 clientId = clientId,
@@ -170,7 +153,7 @@ class HomeViewModel @Inject constructor(
                                 streamersListLoading = NetworkNewUserResponse.Loading
                             )
                             _modChannelUIState.value =_modChannelUIState.value.copy(
-                                modChannelResponseState = Response.Loading,
+                                modChannelResponseState = NetworkNewUserResponse.Loading,
                             )
                         }
                         is NetworkAuthResponse.Success -> {
@@ -182,10 +165,9 @@ class HomeViewModel @Inject constructor(
 
                             )
                             _modChannelUIState.value =_modChannelUIState.value.copy(
-                                modChannelResponseState = Response.Failure(
+                                modChannelResponseState = NetworkNewUserResponse.Auth401Failure(
                                     Exception("Success! Login with Twitch")
                                 ),
-                                modChannelShowBottomModal = true,
                                 modRefreshing = false,
                             )
                             _validatedUser.value = null
@@ -335,7 +317,7 @@ class HomeViewModel @Inject constructor(
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 offlineModChannelList = offlineModList,
                                 liveModChannelList = onlineList,
-                                modChannelResponseState = Response.Success(true),
+                                modChannelResponseState = NetworkNewUserResponse.Success(true),
                                 modRefreshing = false
                             )
                         }
@@ -343,7 +325,7 @@ class HomeViewModel @Inject constructor(
                             Log.d("getModeratedChannels","RESPONSE -> FAILURE")
 
                             _modChannelUIState.value = _modChannelUIState.value.copy(
-                                modChannelResponseState = Response.Failure(Exception("Error! Pull to refresh")),
+                                modChannelResponseState = NetworkNewUserResponse.Failure(Exception("Error! Pull to refresh")),
                                 modRefreshing = false
                             )
                         }
@@ -363,8 +345,7 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkAuthResponse.Auth401Failure ->{
                             _modChannelUIState.value = _modChannelUIState.value.copy(
-                                modChannelResponseState = Response.Failure(Exception("Login with Twitch")),
-                                modChannelShowBottomModal = true,
+                                modChannelResponseState = NetworkNewUserResponse.Auth401Failure(Exception("Login with Twitch")),
                                 modRefreshing = false
                             )
                         }
@@ -510,10 +491,9 @@ class HomeViewModel @Inject constructor(
                             homeRefreshing = false,
                         )
                         _modChannelUIState.value = _modChannelUIState.value.copy(
-                            modChannelResponseState = Response.Failure(
+                            modChannelResponseState = NetworkNewUserResponse.Auth401Failure(
                                 Exception("Error! Re-login with Twitch")
                             ),
-                            modChannelShowBottomModal = true,
                             modRefreshing = false
                         )
                     }
@@ -612,8 +592,7 @@ class HomeViewModel @Inject constructor(
                                 horizontalLongHoldStreamList =response,
                             )
                             _modChannelUIState.value = _modChannelUIState.value.copy(
-                                modChannelResponseState = Response.Failure(Exception("Error! Re-login with Twitch")),
-                                modChannelShowBottomModal = true,
+                                modChannelResponseState = NetworkNewUserResponse.Auth401Failure(Exception("Error! Re-login with Twitch")),
                                 modRefreshing = false
                             )
 
