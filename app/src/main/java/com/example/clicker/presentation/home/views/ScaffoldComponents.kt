@@ -44,6 +44,8 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -79,10 +81,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.ScaffoldParts.AccountActionCard
 import com.example.clicker.presentation.home.views.ScaffoldParts.EmptyFollowingList
 import com.example.clicker.presentation.home.views.ScaffoldParts.GettingStreamsError
@@ -102,6 +106,7 @@ import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -152,6 +157,10 @@ class MainScaffoldScope(){
         networkMessage: String,
         showNetworkMessage:Boolean,
         bottomModalState: ModalBottomSheetState,
+        isUserLoggedIn: NetworkAuthResponse<Boolean>,
+        showFailedDialog: Boolean,
+        hideDialog: () -> Unit,
+        loginWithTwitch:() ->Unit,
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -219,6 +228,10 @@ class MainScaffoldScope(){
                     },
                 )
                         },
+            isUserLoggedIn =isUserLoggedIn,
+            showFailedDialog =showFailedDialog,
+            hideDialog ={hideDialog()},
+            loginWithTwitch={loginWithTwitch()},
             pullToRefreshList ={contentPadding ->
                 PullToRefreshComponent(
                     padding = contentPadding,
@@ -305,6 +318,10 @@ class MainScaffoldScope(){
     @Composable
     fun ScaffoldBuilder(
         scaffoldState: ScaffoldState,
+        isUserLoggedIn: NetworkAuthResponse<Boolean>,
+        showFailedDialog: Boolean,
+        hideDialog: () -> Unit,
+        loginWithTwitch: () -> Unit,
         drawerContent:@Composable () -> Unit,
         topBar:@Composable ScaffoldTopBarScope.() -> Unit,
         bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
@@ -335,9 +352,162 @@ class MainScaffoldScope(){
         ) { contentPadding ->
 
             pullToRefreshList(contentPadding)
+            //todo: Create button to prompt user to login with Twitch
+            when(val response =isUserLoggedIn){
+                is NetworkAuthResponse.Loading ->{
+                    //nothing this is the initial state
+                }
+                is NetworkAuthResponse.Success ->{
+                    val loggedInResponse = response.data
+                    if(loggedInResponse){
+                        //this means that the user is logged in, so do nothing
+                    }
+                    else{
+                        TellUserToLogBackIn(
+                            loginWithTwitch = {
+                                loginWithTwitch()
+                            }
+                        )
+
+                    }
+                }
+                is NetworkAuthResponse.Failure ->{
+                    //notify the user of the unsuccessful attempt
+                    // I think we just have the normal dialog here to tell the user that the logout failed
+                    LoginFailed(
+                        "Failed to logout. Try again",
+                        showFailedDialog =showFailedDialog,
+                        hideDialog ={hideDialog()}
+                    )
+
+                }
+                is NetworkAuthResponse.NetworkFailure ->{
+                    //notify the user of the network error
+                    // I think we just have the normal dialog here to tell the user of the network error
+                    LoginFailed(
+                        "Network error. Try again",
+                        showFailedDialog =showFailedDialog,
+                        hideDialog ={hideDialog()}
+                    )
+
+                }
+                is NetworkAuthResponse.Auth401Failure ->{
+                    //notify the user of the authentication error
+                    // I think we just have the normal dialog here to tell the user of the authentication error
+                    LoginFailed(
+                        "Authentication error. Try again",
+                        showFailedDialog =showFailedDialog,
+                        hideDialog ={hideDialog()}
+                    )
+
+                }
+            }
+
         }
     }
 }
+
+
+@Composable
+fun TellUserToLogBackIn(
+    loginWithTwitch: () -> Unit
+){
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ){
+        Spacer(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.8f)).disableClickAndRipple())
+        Card(
+            modifier = Modifier
+                .fillMaxWidth().padding(15.dp)
+                .align(Alignment.Center),
+            shape = RoundedCornerShape(16.dp),
+            backgroundColor = MaterialTheme.colorScheme.primary,
+            border = BorderStroke(2.dp,  MaterialTheme.colorScheme.secondary)
+        ) {
+            Column(
+                modifier = Modifier
+                    .background( MaterialTheme.colorScheme.primary),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.size(20.dp))
+                Text("Success!!",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                )
+                Spacer(modifier = Modifier.size(20.dp))
+                ButtonWithColor(
+                    message ="Login with Twitch",
+                    onClick = {loginWithTwitch()}
+                )
+                Spacer(modifier = Modifier.size(20.dp))
+            }
+        }
+
+    }
+
+}
+@Composable
+fun LoginFailed(
+    message:String,
+    showFailedDialog:Boolean,
+    hideDialog:()->Unit
+
+){
+
+    if(showFailedDialog){
+        Dialog(
+            onDismissRequest = {hideDialog()}
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                border = BorderStroke(2.dp,  MaterialTheme.colorScheme.secondary)
+            ) {
+                Column(
+                    modifier = Modifier.padding(15.dp)
+                        .background( MaterialTheme.colorScheme.primary),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.size(20.dp))
+                    androidx.compose.material3.Text(
+                        message,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.size(20.dp))
+                }
+            }
+        }
+    }
+
+}
+@Composable
+fun ButtonWithColor(
+    message:String,
+    onClick:() ->Unit
+){
+    Button(onClick = {
+        //your onclick code
+        onClick()
+    },
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(5.dp)
+    )
+
+    {
+        androidx.compose.material3.Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+        )
+    }
+}
+
+
 
 
 

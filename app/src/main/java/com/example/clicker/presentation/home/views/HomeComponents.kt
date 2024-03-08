@@ -42,6 +42,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
@@ -103,6 +104,9 @@ import com.example.clicker.util.Response
         hideLogoutDialog:()->Unit,
         showLogoutDialog: () -> Unit,
         currentUsername:String,
+        isUserLoggedIn: NetworkAuthResponse<Boolean>,
+        showFailedDialog:Boolean,
+        hideDialog:() -> Unit,
 
 
     ){
@@ -144,7 +148,11 @@ import com.example.clicker.util.Response
                     networkMessageColor =networkMessageColor,
                     networkMessage = networkMessage,
                     showNetworkMessage =showNetworkMessage,
-                    bottomModalState =bottomModalState
+                    bottomModalState =bottomModalState,
+                    isUserLoggedIn =isUserLoggedIn,
+                    showFailedDialog =showFailedDialog,
+                    hideDialog ={hideDialog()},
+                    loginWithTwitch ={loginWithTwitch()}
 
                 )
 

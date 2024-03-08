@@ -125,12 +125,14 @@ fun ValidationView(
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
+    val scope = rememberCoroutineScope()
 
 
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
+    val isUserLoggedIn = homeViewModel.state.value.userIsLoggedIn
 
 
 
@@ -182,10 +184,12 @@ fun ValidationView(
         hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
         currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-
-
+        isUserLoggedIn=isUserLoggedIn,
+        showFailedDialog = homeViewModel.state.value.showFailedDialog,
+        hideDialog = {homeViewModel.hideDialog()}
 
     )
+
 
 }
 

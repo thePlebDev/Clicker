@@ -34,22 +34,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-data class AuthenticationUIState(
-
-    val showLoginButton: Boolean = true,
-
-    val logoutError: Boolean = false,
-
-    val authenticationCode: String = "", //this is the oAuthToken
-    val clientId: String = "",
-    val userId: String = "",
-
-    val authenticated: Boolean = false,
-
-    val showErrorModal: Boolean = false,
-
-
-)
 /**
  * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
  * are fetched
@@ -71,7 +55,6 @@ data class ModChannelUIState(
 )
 data class HomeUIState(
 
-    val hideModal: Boolean = false,
     val width: Int = 0,
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
@@ -81,16 +64,15 @@ data class HomeUIState(
 
     val networkConnectionState:Boolean = true,
 
-
     val homeRefreshing:Boolean = false,
     val homeNetworkErrorMessage:String ="Disconnected from network",
     val logoutDialogIsOpen:Boolean=false,
     val horizontalLongHoldStreamList:NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-
-
-
+    val userIsLoggedIn:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading,
+    val showFailedDialog:Boolean = false,
 
     )
+
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -122,6 +104,11 @@ class HomeViewModel @Inject constructor(
             logoutDialogIsOpen = true
         )
     }
+    fun hideDialog(){
+        _uiState.value = _uiState.value.copy(
+            showFailedDialog = false
+        )
+    }
 
 
     /**Initial state monitoring
@@ -138,7 +125,6 @@ class HomeViewModel @Inject constructor(
         getOAuthToken()
     }
 
-
     fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
 //
         withContext(ioDispatcher + CoroutineName("BeginLogout")) {
@@ -150,7 +136,8 @@ class HomeViewModel @Inject constructor(
                     when (response) {
                         is NetworkAuthResponse.Loading -> {
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkNewUserResponse.Loading
+                                streamersListLoading = NetworkNewUserResponse.Loading,
+                                showFailedDialog = false
                             )
                             _modChannelUIState.value =_modChannelUIState.value.copy(
                                 modChannelResponseState = NetworkNewUserResponse.Loading,
@@ -158,9 +145,7 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkAuthResponse.Success -> {
                             _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkNewUserResponse.Auth401Failure(
-                                    Exception("Success! Please login with Twitch")
-                                ),
+                                userIsLoggedIn = response,
                                 homeRefreshing = false,
 
                             )
@@ -174,35 +159,20 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkAuthResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
-                                networkConnectionState = false,
-                                homeNetworkErrorMessage = "Logout failed"
-                            )
-                            delay(2000)
-
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState = true,
-                            )
+                                userIsLoggedIn = response,
+                                showFailedDialog = true
+                                )
                         }
                         is NetworkAuthResponse.NetworkFailure->{
                             _uiState.value = _uiState.value.copy(
-                                networkConnectionState = false,
-                                homeNetworkErrorMessage = "Network Error"
-                            )
-                            delay(2000)
-
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState = true,
+                                userIsLoggedIn = response,
+                                showFailedDialog = true
                             )
                         }
                         is NetworkAuthResponse.Auth401Failure ->{
                             _uiState.value = _uiState.value.copy(
-                                networkConnectionState = false,
-                                homeNetworkErrorMessage = "Logout failed"
-                            )
-                            delay(2000)
-
-                            _uiState.value = _uiState.value.copy(
-                                networkConnectionState = true,
+                                userIsLoggedIn = response,
+                                showFailedDialog = true
                             )
                         }
 
@@ -432,8 +402,6 @@ class HomeViewModel @Inject constructor(
         Log.d("setOAuthToken", "token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthToken.tryEmit(oAuthToken)
-
-
     }
 
     /**
@@ -451,11 +419,15 @@ class HomeViewModel @Inject constructor(
                 when (response) {
                     is NetworkNewUserResponse.Loading -> {
                         // the loading state is to be left empty because its initial state is loading
+                        _uiState.value = _uiState.value.copy(
+                            userIsLoggedIn = NetworkAuthResponse.Loading
+                        )
                     }
                     is NetworkNewUserResponse.Success -> {
 
                         _uiState.value = _uiState.value.copy(
                             oAuthToken = oAuthenticationToken,
+                            userIsLoggedIn = NetworkAuthResponse.Success(true)
                         )
 
                         _validatedUser.tryEmit(response.data)
