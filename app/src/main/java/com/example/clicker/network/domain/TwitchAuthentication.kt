@@ -33,7 +33,7 @@ interface TwitchAuthentication {
      * @param token a String representing a oAuth token
      * @param clientId a String representing the unique identifier of this device
      * */
-    fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<String>>
+    fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<Boolean>>
 
 
 }
