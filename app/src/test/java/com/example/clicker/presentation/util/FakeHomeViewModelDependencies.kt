@@ -15,7 +15,7 @@ class FakeAuthentication(
 
 ): TwitchAuthentication {
     private var validateTokenReturnType:NetworkNewUserResponse<ValidatedUser> =NetworkNewUserResponse.Failure(Exception("RETURN TYPE SET TO NetworkNewUserResponse.Failure"))
-    private var logoutReturnType:NetworkAuthResponse<String> = NetworkAuthResponse.Loading
+    private var logoutReturnType:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading
 
     override suspend fun validateToken(
         token: String
@@ -26,13 +26,13 @@ class FakeAuthentication(
 
 
 
-    override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<String>> = flow{
-        emit(NetworkAuthResponse.Loading)
+    override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<Boolean>> = flow{
+        emit(logoutReturnType)
     }
     fun setValidateTokenReturnType(returnType:NetworkNewUserResponse<ValidatedUser>){
         this.validateTokenReturnType = returnType
     }
-    fun setLogoutReturnType(returnType:NetworkAuthResponse<String>){
+    fun setLogoutReturnType(returnType:NetworkAuthResponse<Boolean>){
         this.logoutReturnType = returnType
     }
 
