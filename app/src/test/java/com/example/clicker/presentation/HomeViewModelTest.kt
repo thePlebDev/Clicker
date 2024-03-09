@@ -192,7 +192,7 @@ class HomeViewModelTest {
         /**GIVEN*/
         val dispatcher = StandardTestDispatcher(testScheduler)
         val fakeAuthentication =FakeAuthentication()
-        val fakeReturnType =NetworkAuthResponse.Success("")
+        val fakeReturnType =NetworkAuthResponse.Success(false)
         fakeAuthentication.setLogoutReturnType(fakeReturnType)
 
         val homeViewModel:HomeViewModel = HomeViewModel(
@@ -207,12 +207,14 @@ class HomeViewModelTest {
         delay(1000)
         homeViewModel.beginLogout("fakeClientId","fakeoAuthToken")
         delay(1000)
-        val expectedUIState= homeViewModel.modChannelUIState.value.modChannelResponseState
+        val actualUIState= homeViewModel.state.value.userIsLoggedIn
+        val expectedUIState =fakeReturnType
+
 
 
         /**THEN*/
 
-        Assert.assertEquals(expectedUIState, fakeReturnType)
+        Assert.assertEquals(expectedUIState, actualUIState)
 
     }
 }
