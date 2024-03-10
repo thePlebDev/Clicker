@@ -25,6 +25,7 @@ import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
+import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
@@ -131,7 +132,8 @@ class StreamViewModel @Inject constructor(
     private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher,
-    private val autoCompleteChat: AutoCompleteChat
+    private val autoCompleteChat: AutoCompleteChat,
+    private val textParsing:TextParsing = TextParsing()
 ) : ViewModel() {
 
     /**
@@ -161,6 +163,7 @@ class StreamViewModel @Inject constructor(
 
     private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
     val clickedStreamInfo = _clickedStreamInfo
+
     fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
         //todo: need to do some adjusting for the thumbnail url
         _clickedStreamInfo.value =clickedStreamInfo
@@ -184,12 +187,6 @@ class StreamViewModel @Inject constructor(
     private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
     val advancedChatSettingsState = _advancedChatSettingsState
 
-    /**
-     * determine if the user is user is trying to message another user
-     * */
-    private val _parsing = mutableStateOf(false)
-    val parsing = _parsing
-
 
 
     private var currentUsername: String = ""
@@ -197,12 +194,8 @@ class StreamViewModel @Inject constructor(
     /**
      * represents what the user is typing in the text field
      * */
-    val textFieldValue = mutableStateOf(
-        TextFieldValue(
-            text = "",
-            selection = TextRange(0)
-        )
-    )
+    //todo:I THINK I COULD MOVE THIS TO ANOTHER
+    val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
 
@@ -215,16 +208,6 @@ class StreamViewModel @Inject constructor(
 
      private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
     val forwardSlashCommands = _forwardSlashCommands
-
-    private var _deviceIsHorizontal = mutableStateOf(false)
-    val deviceIsHorizontal:State<Boolean> = _deviceIsHorizontal
-
-    fun setOrientation(isHorizontal:Boolean){
-        _deviceIsHorizontal.value = isHorizontal
-    }
-
-
-
 
 
 
@@ -267,39 +250,6 @@ class StreamViewModel @Inject constructor(
 
 
 
-    /**THis is the data for the new filter methods*/
-
-    init {
-        viewModelScope.launch {
-            withContext(ioDispatcher + CoroutineName("MessageToDeleteId")) {
-                webSocket.messageToDeleteId.collect { nullableMsgId ->
-                    nullableMsgId?.let { nonNullMsgId ->
-                        filterMessages(nonNullMsgId)
-                    }
-                }
-            }
-        }
-    }
-
-
-    private val _idOfLatestBan = mutableStateOf("")
-    val idOfLatestBan = _idOfLatestBan
-    /**
-     * This is meant to monitor of the latest ban/timeout messages
-     *
-     * */
-    init{
-        viewModelScope.launch {
-            webSocket.latestBannedUserId.collect{latestBannedId ->
-                latestBannedId?.also{
-                    Log.d("latestBannedId", "latestBannedId --> ${latestBannedId}")
-                    _idOfLatestBan.value = latestBannedId
-                }
-
-            }
-        }
-
-    }
 
     /**
      * showUndoButton() is function used by [SettingsSwitches][com.example.clicker.presentation.stream.views.ChatSettingsContainer.SettingsSwitches]
@@ -446,7 +396,7 @@ class StreamViewModel @Inject constructor(
 
     }
 
-
+//todo:*******************************************Parsing methods*************************************************
     var parsingIndex:Int =0
     var startParsing:Boolean = false
 
@@ -457,10 +407,8 @@ class StreamViewModel @Inject constructor(
 
     fun newParsingAgain(textFieldValue: TextFieldValue){
         try{
-            val selectedText = textFieldValue.getSelectedText() //this is only triggered if the user selects and highlights text
-            val afterSelection = textFieldValue.getTextAfterSelection(1)
             val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
-            val annotatedString = textFieldValue.annotatedString
+
             Log.d("newParsingAgainThing","$currentCharacter")
 
             if(currentCharacter.toString()=="/"){
@@ -594,14 +542,36 @@ class StreamViewModel @Inject constructor(
      * @param username  a string meant to represent the username that was clicked on by the user
      * */
     fun autoTextChange(username: String) {
-        val currentCharacterIndex = textFieldValue.value.selection.end
+//        val currentCharacterIndex = textFieldValue.value.selection.end
+//        Log.d("testingAnotherOne","autoTextChange")
+//
+//        val replacedString =textFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
+//        textFieldValue.value = textFieldValue.value.copy(
+//            text = replacedString,
+//            selection = TextRange(replacedString.length)
+//        )
+//        filteredChatList.clear()
+        testingNewAutoTextChange(
+            username,
+            newTextFieldValue = textFieldValue,
+            clearChat = {filteredChatList.clear()}
+        )
 
-        val replacedString =textFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
-        textFieldValue.value = textFieldValue.value.copy(
+    }
+   // lkljl
+    fun testingNewAutoTextChange(
+        username:String,
+        newTextFieldValue: MutableState<TextFieldValue>,
+        clearChat:()->Unit
+    ){
+        val currentCharacterIndex = newTextFieldValue.value.selection.end
+
+        val replacedString =newTextFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
+        newTextFieldValue.value = newTextFieldValue.value.copy(
             text = replacedString,
             selection = TextRange(replacedString.length)
         )
-        filteredChatList.clear()
+        clearChat()
 
     }
 
@@ -619,115 +589,13 @@ class StreamViewModel @Inject constructor(
 
     }
 
-    init {
-        // todo: NEED TO COPY THIS VALUE OVER TO THE loggedInUserData
-        viewModelScope.launch {
-            webSocket.loggedInUserUiState.collect {
-                it?.let {
-                    _uiState.value = _uiState.value.copy(
-                        loggedInUserData = it
-                    )
 
-                }
-            }
-        }
-    }
-
-    init {
-        Log.d("twitchNameonCreateViewVIewModel", "CREATED")
-    }
 
     /**
      * This is the hot state receiving the main chat messages
      * //TODO: SOCKET METHOD
      * */
-    init {
-        viewModelScope.launch {
-            // withContext(Dispatchers.IO + CoroutineName("ChatMessages")){
-            monitorSocketForChatMessages()
-             //}
-        }
-    }
-    init {
-        //TODO: SOCKET METHOD
-        viewModelScope.launch {
-            withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
-                _channelName.collect { channelName ->
 
-                    channelName?.let {
-                            startWebSocket(channelName)
-                    }
-                }
-            }
-        }
-    }
-    init {
-        //TODO: SOCKET METHOD
-        viewModelScope.launch {
-            withContext(ioDispatcher + CoroutineName("RoomState")) {
-                monitorSocketRoomState()
-            }
-        }
-    }
-
-    /**monitorSocketForChatMessages is a function that checks for types of messages that come from the
-     * websocket.
-     * */
-    private suspend fun monitorSocketForChatMessages(){
-        webSocket.state.collect { twitchUserMessage ->
-            Log.d("loggedMessage", " tmiSentTs --> ${twitchUserMessage.tmiSentTs}")
-
-            if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
-
-                clickedUsernameChats.add(twitchUserMessage.userType!!)
-            }
-            if(monitoredUsers.contains(twitchUserMessage.displayName)){
-                twitchUserMessage.isMonitored = true
-            }
-            when(twitchUserMessage.messageType){
-                MessageType.CLEARCHAT ->{
-                    notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
-                }
-                MessageType.CLEARCHATALL->{
-                    clearAllChatMessages(listChats)
-                }
-                MessageType.USER ->{
-                    Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
-                    Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
-                    autoCompleteChat.addChatter(twitchUserMessage.displayName!!)
-                    addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
-                    listChats.add(twitchUserMessage)
-                }
-                MessageType.SUB ->{
-                    if(_advancedChatSettingsState.value.showSubs){
-                        listChats.add(twitchUserMessage)
-                    }
-
-                }
-                MessageType.RESUB ->{
-                    if(_advancedChatSettingsState.value.showReSubs){
-                        listChats.add(twitchUserMessage)
-                    }
-                }
-                MessageType.GIFTSUB ->{
-                    if(_advancedChatSettingsState.value.showGiftSubs){
-                        listChats.add(twitchUserMessage)
-                    }
-                }
-                MessageType.MYSTERYGIFTSUB ->{
-                    if(_advancedChatSettingsState.value.showAnonSubs){
-                        listChats.add(twitchUserMessage)
-                    }
-                }
-                else -> {
-                    listChats.add(twitchUserMessage)
-                }
-            }
-
-
-            //todo:CLEAR THIS MESS OUT ABOVE
-        }
-    }
 fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     chatList.clear()
     val data =TwitchUserDataObjectMother
@@ -746,66 +614,9 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
             .build()
         chatList.add(data)
     }
-    suspend fun monitorSocketRoomState(){
-        webSocket.roomState.collect { nullableRoomState ->
-            nullableRoomState?.let { nonNullroomState ->
-                Log.d("theCurrentRoomState","$nonNullroomState")
-                // todo: update the _uiState chatSettings with these values
-                _uiState.value = _uiState.value.copy(
-                    chatSettings = Response.Success(
-                        ChatSettingsData(
-                            slowMode = nonNullroomState.slowMode,
-                            slowModeWaitTime = nonNullroomState.slowModeDuration,
-                            followerMode = nonNullroomState.followerMode,
-                            followerModeDuration = nonNullroomState.followerModeDuration,
-                            subscriberMode = nonNullroomState.subMode,
-                            emoteMode = nonNullroomState.emoteMode,
 
-                        )
-                    )
 
-                )
 
-            }
-        }
-
-    }
-
-    //TODO: CHAT METHOD
-    fun closeChatSettingAlert() {
-        _uiState.value = _uiState.value.copy(
-            //showChatSettingAlert = false
-        )
-    }
-    fun restartWebSocketFromLongClickMenu(channelName: String){
-        startWebSocket(channelName)
-    }
-
-    //TODO: SOCKET METHOD
-    fun restartWebSocket() {
-        val channelName = _channelName.value ?: ""
-        Log.d("startWebSocket", "websocket is starting")
-        startWebSocket(channelName)
-    }
-
-    //TODO: SOCKET METHOD
-    /**
-     * startWebSocket() is a private method meant to be called by methods inside of [StreamViewModel]
-     * It is used to start and connect a Websocket using the [TwitchSocket]
-     * */
-    private fun startWebSocket(channelName: String) = viewModelScope.launch {
-        Log.d("startWebSocket", "startWebSocket() is being called")
-
-        if(_advancedChatSettingsState.value.noChatMode){
-            //this is meant to be empty to represent doing nothing and the user being in no chat mode
-            //no actions are to be commited in this conditional branch
-        }else{
-
-            val username = _uiState.value.login
-            webSocket.run(channelName, username)
-            listChats.clear()
-        }
-    }
     //todo: monitoringTokens() SHOULD BE MOVED TO ITS OWN CLASS
     /**
      * monitoringTokens() is a function meant to check the current user's chat messages for any /commands(/ban,/unban...)
@@ -984,7 +795,219 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         }
     }
 
+
+
+    //TODO****************************todo:SOCKET RELATED BELOW*******************************************************
+
+
+    /**THis is the data for the new filter methods*/
+    private val _idOfLatestBan = mutableStateOf("")
+
+    init {
+        monitorForLatestBannedMessageId()
+    }
+    init{
+        monitorForLatestBannedUserId()
+    }
+    init {
+        monitorForLoggedInUserData()
+    }
+    init {
+        monitorSocketForChatMessages()
+    }
+    init {
+        //TODO: SOCKET METHOD
+        monitorForChannelName()
+    }
+    init {
+        //TODO: SOCKET METHOD
+
+        monitorSocketRoomState()
+
+
+    }
+    private fun monitorForLatestBannedMessageId(){
+        viewModelScope.launch {
+            withContext(ioDispatcher + CoroutineName("MessageToDeleteId")) {
+                webSocket.messageToDeleteId.collect { nullableMsgId ->
+                    nullableMsgId?.let { nonNullMsgId ->
+                        filterMessages(nonNullMsgId)
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /**
+     * This is meant to monitor of the latest ban/timeout messages
+     *
+     * */
+
+    private fun monitorForLatestBannedUserId(){
+        viewModelScope.launch {
+            webSocket.latestBannedUserId.collect{latestBannedId ->
+                latestBannedId?.also{
+                    Log.d("latestBannedId", "latestBannedId --> ${latestBannedId}")
+                    _idOfLatestBan.value = latestBannedId
+                }
+
+            }
+        }
+    }
+
+
+    //this function is used heavily to determine if the user is a moderator or not
+    private fun monitorForLoggedInUserData(){
+        viewModelScope.launch {
+            webSocket.loggedInUserUiState.collect {
+                it?.let {
+                    _uiState.value = _uiState.value.copy(
+                        loggedInUserData = it
+                    )
+
+                }
+            }
+        }
+    }
+
+    private fun monitorForChannelName(){
+        viewModelScope.launch {
+            withContext(ioDispatcher + CoroutineName("StartingWebSocket")) {
+                _channelName.collect { channelName ->
+
+                    channelName?.let {
+                        startWebSocket(channelName)
+                    }
+                }
+            }
+        }
+    }
+
+     private fun monitorSocketRoomState(){
+        viewModelScope.launch {
+            withContext(ioDispatcher + CoroutineName("RoomState")) {
+                webSocket.roomState.collect { nullableRoomState ->
+                    nullableRoomState?.let { nonNullroomState ->
+                        Log.d("theCurrentRoomState","$nonNullroomState")
+                        // todo: update the _uiState chatSettings with these values
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = Response.Success(
+                                ChatSettingsData(
+                                    slowMode = nonNullroomState.slowMode,
+                                    slowModeWaitTime = nonNullroomState.slowModeDuration,
+                                    followerMode = nonNullroomState.followerMode,
+                                    followerModeDuration = nonNullroomState.followerModeDuration,
+                                    subscriberMode = nonNullroomState.subMode,
+                                    emoteMode = nonNullroomState.emoteMode,
+
+                                    )
+                            )
+
+                        )
+
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    /**monitorSocketForChatMessages is a function that checks for types of messages that come from the
+     * websocket.
+     * */
+    private  fun monitorSocketForChatMessages(){
+        viewModelScope.launch {
+            webSocket.state.collect { twitchUserMessage ->
+                Log.d("loggedMessage", " tmiSentTs --> ${twitchUserMessage.tmiSentTs}")
+
+                if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
+
+                    clickedUsernameChats.add(twitchUserMessage.userType!!)
+                }
+                if(monitoredUsers.contains(twitchUserMessage.displayName)){
+                    twitchUserMessage.isMonitored = true
+                }
+                when(twitchUserMessage.messageType){
+                    MessageType.CLEARCHAT ->{
+                        notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
+                    }
+                    MessageType.CLEARCHATALL->{
+                        clearAllChatMessages(listChats)
+                    }
+                    MessageType.USER ->{
+                        Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
+                        Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
+                        autoCompleteChat.addChatter(twitchUserMessage.displayName!!)
+                        addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
+                        listChats.add(twitchUserMessage)
+                    }
+                    MessageType.SUB ->{
+                        if(_advancedChatSettingsState.value.showSubs){
+                            listChats.add(twitchUserMessage)
+                        }
+
+                    }
+                    MessageType.RESUB ->{
+                        if(_advancedChatSettingsState.value.showReSubs){
+                            listChats.add(twitchUserMessage)
+                        }
+                    }
+                    MessageType.GIFTSUB ->{
+                        if(_advancedChatSettingsState.value.showGiftSubs){
+                            listChats.add(twitchUserMessage)
+                        }
+                    }
+                    MessageType.MYSTERYGIFTSUB ->{
+                        if(_advancedChatSettingsState.value.showAnonSubs){
+                            listChats.add(twitchUserMessage)
+                        }
+                    }
+                    else -> {
+                        listChats.add(twitchUserMessage)
+                    }
+                }
+
+
+                //todo:CLEAR THIS MESS OUT ABOVE
+            }
+        }
+
+
+    }
+
+
+    fun restartWebSocketFromLongClickMenu(channelName: String){
+        startWebSocket(channelName)
+    }
+
     //TODO: SOCKET METHOD
+    fun restartWebSocket() {
+        val channelName = _channelName.value ?: ""
+        Log.d("startWebSocket", "websocket is starting")
+        startWebSocket(channelName)
+    }
+
+    //TODO: SOCKET METHOD
+    /**
+     * startWebSocket() is a private method meant to be called by methods inside of [StreamViewModel]
+     * It is used to start and connect a Websocket using the [TwitchSocket]
+     * */
+    private fun startWebSocket(channelName: String) = viewModelScope.launch {
+        Log.d("startWebSocket", "startWebSocket() is being called")
+
+        if(_advancedChatSettingsState.value.noChatMode){
+            //this is meant to be empty to represent doing nothing and the user being in no chat mode
+            //no actions are to be commited in this conditional branch
+        }else{
+
+            val username = _uiState.value.login
+            webSocket.run(channelName, username)
+            listChats.clear()
+        }
+    }
     fun sendMessage(chatMessage: String) {
         val scanner = Scanner(chatMessage)
         val tokenCommand = TokenCommand()
@@ -993,35 +1016,13 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         tokenCommand.checkForSlashCommands(tokenList)
         monitoringTokens(tokenCommand.tokenCommand,chatMessage)
 
-       // val messageResult = webSocket.sendMessage(chatMessage)
+        // val messageResult = webSocket.sendMessage(chatMessage)
         textFieldValue.value = TextFieldValue(
             text = "",
             selection = TextRange(0)
         )
 
-//        TwitchUserData(
-//            badgeInfo = null,
-//            badges = null,
-//            clientNonce = null,
-//            color = "#BF40BF",
-//            displayName = currentUsername,
-//            emotes = null,
-//            firstMsg = null,
-//            flags = null,
-//            id = null,
-//            mod = "mod",
-//            returningChatter = null,
-//            roomId = null,
-//            subscriber = false,
-//            tmiSentTs = null,
-//            turbo = false,
-//            userId = null,
-//            userType = chatMessage,
-//            messageType = MessageType.USER
-//        )
-      //  Log.d("messageResult", messageResult.toString())
     }
-
 
     /**
      * updateChannelNameAndClientIdAndUserId is the method that gets called whenever the user clicks on a stream title when
@@ -1036,6 +1037,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
     ) {
         Log.d("updateChannelNameAndClientIdAndUserId","Emitting the channel name")
         _channelName.tryEmit(channelName)
+        //startWebSocket(channelName)
 
         _uiState.value = _uiState.value.copy(
             clientId = clientId,
@@ -1236,10 +1238,7 @@ fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
 
     }
 
-fun oneClickBanUser(userId:String) = viewModelScope.launch{
 
-
-}
 
     private fun unBanUserSlashCommand(userId: String) = viewModelScope.launch{
         withContext(ioDispatcher + CoroutineName("UnBanUser")) {
@@ -1426,22 +1425,12 @@ fun oneClickBanUser(userId:String) = viewModelScope.launch{
             }
         }
     }
-    fun removeUnBanButton() {
-        _uiState.value = _uiState.value.copy(
-            banResponse = Response.Success(true),
-            undoBanResponse = true
-        )
-    }
 
 
     override fun onCleared() {
         super.onCleared()
         webSocket.close()
     }
-
-
-
-
 
 }
 
