@@ -67,7 +67,7 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    
+
     @Test
     fun testing_new_user_no_oAuthToken_found() = runTest {
         /**GIVEN*/
@@ -182,6 +182,98 @@ class HomeViewModelTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val fakeAuthentication =FakeAuthentication()
         val fakeReturnType =NetworkAuthResponse.Success(false)
+        fakeAuthentication.setLogoutReturnType(fakeReturnType)
+
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = true
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        homeViewModel.beginLogout("fakeClientId","fakeoAuthToken")
+        delay(1000)
+        val actualUIState= homeViewModel.state.value.userIsLoggedIn
+        val expectedUIState =fakeReturnType
+
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
+
+    @Test
+    fun beginLogout_NetworkAuthResponse_Failure() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkAuthResponse.Failure(Exception("fake exception"))
+        fakeAuthentication.setLogoutReturnType(fakeReturnType)
+
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = true
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        homeViewModel.beginLogout("fakeClientId","fakeoAuthToken")
+        delay(1000)
+        val actualUIState= homeViewModel.state.value.userIsLoggedIn
+        val expectedUIState =fakeReturnType
+
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
+
+    @Test
+    fun beginLogout_NetworkAuthResponse_NetworkFailure() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkAuthResponse.NetworkFailure(Exception("fake exception"))
+        fakeAuthentication.setLogoutReturnType(fakeReturnType)
+
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = fakeAuthentication,
+            twitchRepoImpl = FakeTwitchImplRepo(),
+            tokenDataStore = FakeTokenDataStore(
+                userIsNewUser = true
+            )
+        )
+        /**WHEN*/
+        delay(1000)
+        homeViewModel.beginLogout("fakeClientId","fakeoAuthToken")
+        delay(1000)
+        val actualUIState= homeViewModel.state.value.userIsLoggedIn
+        val expectedUIState =fakeReturnType
+
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedUIState, actualUIState)
+
+    }
+    @Test
+    fun beginLogout_NetworkAuthResponse_Auth401Failure() = runTest {
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fakeAuthentication =FakeAuthentication()
+        val fakeReturnType =NetworkAuthResponse.Auth401Failure(Exception("fake exception"))
         fakeAuthentication.setLogoutReturnType(fakeReturnType)
 
         val homeViewModel:HomeViewModel = HomeViewModel(
