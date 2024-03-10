@@ -67,8 +67,7 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-
-    @OptIn(ExperimentalCoroutinesApi::class)
+    
     @Test
     fun testing_new_user_no_oAuthToken_found() = runTest {
         /**GIVEN*/
@@ -92,21 +91,11 @@ class HomeViewModelTest {
         Assert.assertEquals(expectedShowLoginModalValue, actualShowLoginModal)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testing_get_live_channels_fail() = runTest {
-        // TODO: NEED TO ASK SOMEONE HELP FOR TESTING COROUTINES AND HOW TO ADVANCE THE TIME MANUALLY
-        // TODO: THE DELAY(2000) IS SOMETHING I JUST CAN'T FIGURE OUT
-        /**GIVEN*/
+    fun testing_get_live_channels_fail() = runTest {}
 
 
 
-
-
-        /**THEN*/
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun validateOAuthToken_generic_error() = runTest {
         /**GIVEN*/
