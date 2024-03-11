@@ -1,4 +1,4 @@
-package com.example.clicker.presentation
+package com.example.clicker.presentation.stream
 
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchStream

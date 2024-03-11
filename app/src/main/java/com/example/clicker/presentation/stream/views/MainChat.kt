@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.presentation.stream.ForwardSlashCommands
+import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 
 
 import kotlinx.coroutines.delay

@@ -89,6 +89,7 @@ class TextParsing @Inject constructor() {
         slashCommandIndex =0
     }
 
+    //
     fun parsingMethod(
         textFieldValue: TextFieldValue,
         allChatters:List<String>
