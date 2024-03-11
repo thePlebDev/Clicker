@@ -197,12 +197,7 @@ fun HorizontalChat(
                         showStickyHeader = streamViewModel.state.value.showStickyHeader,
                         closeStickyHeader = { streamViewModel.closeStickyHeader() },
                         banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                        removeUnBanButton = { streamViewModel.removeUnBanButton() },
                         restartWebSocket = { streamViewModel.restartWebSocket() },
-                        showOneClickAction = false,
-                        oneClickBanUser = { userId -> streamViewModel.oneClickBanUser(userId) },
-                        oneClickTimeoutUser = { userDetails ->
-                        },
                         showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
                         noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
                         showOuterBottomModalState = {

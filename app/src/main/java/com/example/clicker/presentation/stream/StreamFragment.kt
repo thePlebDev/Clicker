@@ -67,22 +67,22 @@ class StreamFragment : Fragment(), View.OnClickListener {
         autoModViewModel.setVerticalOverlayToVisible()
     }
 
-    private fun orientationCheck(){
-        val currentOrientation = resources.configuration.orientation
-        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // Landscape
-            Log.d("ORIENTATIONCHANGE", "HORIZONTAL")
-            streamViewModel.setOrientation(isHorizontal = true)
-        } else {
-            // Portrait
-            Log.d("ORIENTATIONCHANGE", "STRAIGHT")
-            streamViewModel.setOrientation(isHorizontal = false)
-        }
-    }
+//    private fun orientationCheck(){
+//        val currentOrientation = resources.configuration.orientation
+//        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            // Landscape
+//            Log.d("ORIENTATIONCHANGE", "HORIZONTAL")
+//            streamViewModel.setOrientation(isHorizontal = true)
+//        } else {
+//            // Portrait
+//            Log.d("ORIENTATIONCHANGE", "STRAIGHT")
+//            streamViewModel.setOrientation(isHorizontal = false)
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        orientationCheck()
+       // orientationCheck()
     }
 
     @SuppressLint("SetJavaScriptEnabled", "SuspiciousIndentation")
