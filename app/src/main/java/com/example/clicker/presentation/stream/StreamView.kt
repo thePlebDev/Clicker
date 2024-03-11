@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
@@ -350,7 +351,7 @@ fun TextChat(
     toggleBanDialog:()->Unit,
     orientationIsVertical:Boolean,
 
-) {
+    ) {
 
     MainChat.AutoScrollChatWithTextBox(
         showStickyHeader =showStickyHeader,

@@ -67,22 +67,8 @@ class StreamFragment : Fragment(), View.OnClickListener {
         autoModViewModel.setVerticalOverlayToVisible()
     }
 
-//    private fun orientationCheck(){
-//        val currentOrientation = resources.configuration.orientation
-//        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            // Landscape
-//            Log.d("ORIENTATIONCHANGE", "HORIZONTAL")
-//            streamViewModel.setOrientation(isHorizontal = true)
-//        } else {
-//            // Portrait
-//            Log.d("ORIENTATIONCHANGE", "STRAIGHT")
-//            streamViewModel.setOrientation(isHorizontal = false)
-//        }
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       // orientationCheck()
     }
 
     @SuppressLint("SetJavaScriptEnabled", "SuspiciousIndentation")
@@ -147,10 +133,6 @@ class StreamFragment : Fragment(), View.OnClickListener {
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val longPressComposeView:View = view.findViewById(R.id.compose_view_long_press)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
-
-
-
-
 
 
             // Do some stuff
