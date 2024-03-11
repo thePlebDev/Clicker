@@ -114,17 +114,6 @@ data class ClickedStreamInfo(
     val tags:List<String> = listOf(),
     val adjustedUrl:String=""
 )
-data class ForwardSlashCommands(
-    val title:String,
-    val subtitle:String,
-    val clickedValue:String,
-)
-val listOfCommands = listOf(
-    ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
-    ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
-    ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a user's messages (only visible to you)",clickedValue="monitor"),
-    ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a user's messages",clickedValue="unmonitor")
-)
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
@@ -194,7 +183,7 @@ class StreamViewModel @Inject constructor(
     /**
      * represents what the user is typing in the text field
      * */
-    //todo:I THINK I COULD MOVE THIS TO ANOTHER
+    //todo:I THINK I COULD MOVE THIS TO ANOTHER---(DONE)
     val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
@@ -204,10 +193,8 @@ class StreamViewModel @Inject constructor(
      * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
      * into the text box
      * */
-    var filteredChatList = mutableStateListOf<String>()
-
-     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
-    val forwardSlashCommands = _forwardSlashCommands
+    var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
+    val forwardSlashCommands = textParsing.forwardSlashCommands
 
 
 
@@ -397,195 +384,38 @@ class StreamViewModel @Inject constructor(
     }
 
 //todo:*******************************************Parsing methods*************************************************
-    var parsingIndex:Int =0
-    var startParsing:Boolean = false
 
-    var slashCommandState:Boolean = false
-    var slashCommandIndex:Int =0
-
-
-
+    /**
+     * newParsingAgain is function that gets called everytime a user types in the textField chat bar
+     *
+     * @param textFieldValue  a [TextFieldValue] representing what the user is typing
+     * */
     fun newParsingAgain(textFieldValue: TextFieldValue){
-        try{
-            val currentCharacter = textFieldValue.getTextBeforeSelection(1)  // this is the current text
-
-            Log.d("newParsingAgainThing","$currentCharacter")
-
-            if(currentCharacter.toString()=="/"){
-                Log.d("newParsingAgain",currentCharacter.toString())
-                slashCommandState = true
-                slashCommandIndex =textFieldValue.selection.start
-                _forwardSlashCommands.addAll(listOfCommands)
-            }
-            if(currentCharacter.toString() == " "){
-                Log.d("newParsingAgainThing","currentCharacter.toString() == blank space")
-                _forwardSlashCommands.clear()
-                slashCommandState = false
-                slashCommandIndex =0
-            }
-            if(currentCharacter.toString() == "" && slashCommandState){
-                Log.d("newParsingAgainThing","end currentCharacter and slashCommandState true")
-                _forwardSlashCommands.clear()
-                slashCommandState = false
-                slashCommandIndex =0
-            }
-            if(slashCommandState){
-                //todo here
-                parseNFilterCommandList(textFieldValue)
-            }
-
-            if(currentCharacter.toString()==""){
-                Log.d("newParsingAgainThing","end currentCharacter")
-                endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
-                slashCommandState = false
-                slashCommandIndex =0
-            }
-
-
-            if(textFieldValue.selection.start < parsingIndex && startParsing){
-                Log.d("newParsingAgainThing","textFieldValue.selection.start < parsingIndex && startParsing")
-                endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
-                slashCommandState = false
-
-            }
-
-            if (currentCharacter.toString() == " " && startParsing){
-                Log.d("newParsingAgainThing","currentCharacter.toString() == blankspace && startParsing")
-                endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
-                slashCommandState = false
-
-            }
-            /**---------set parsing to false should be above this line----------------*/
-            if(startParsing){
-                parseNFilterChatList(textFieldValue)
-            }
-
-            if(currentCharacter.toString() == "@"){
-                _forwardSlashCommands.clear()
-                showFilteredChatListNStartParsing(textFieldValue)
-            }
-
-
-        }catch (e:Exception){
-            endParsingNClearFilteredChatList()
-            negateSlashCommandStateNClearForwardSlashCommands()
-        }
-
+        textParsing.parsingMethod(textFieldValue,allChatters.toList())
 
     }
 
-
-
-    /**
-     * showFilteredChatListNStartParsing is a private function called when the current character the user is
-     * typing is equal to ***@***. It sets [parsingIndex] to the current character index,[startParsing] to true
-     * and adds all the current usernames in chat to [filteredChatList]
-     *
-     * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing
-     * */
-    private fun showFilteredChatListNStartParsing(textFieldValue: TextFieldValue){
-        Log.d("newParsingAgain","-----------BEGIN PARSING----------")
-        filteredChatList.clear()
-        filteredChatList.addAll(allChatters.toList())
-        parsingIndex =textFieldValue.selection.start
-        startParsing = true
-    }
-    /**
-     * parseNFilterChatList is a private function called when [startParsing] is set to true. Its main
-     * goal is to parse out the ***username*** from the [textFieldValue]. Then take that ***username***
-     * and filter everything out of [filteredChatList] that does not match the ***username***
-     *
-     * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing
-     * */
-    private fun parseNFilterChatList(textFieldValue: TextFieldValue){
-        val username =textFieldValue.text.subSequence(parsingIndex,textFieldValue.selection.end)
-
-        val usernameRegex = Regex("^$username",RegexOption.IGNORE_CASE)
-        filteredChatList.removeIf{
-            !it.contains(usernameRegex)
-        }
-
-    }
-/**BELOW IS THE COMMAND LIST!!!!!*/
-    private fun parseNFilterCommandList(textFieldValue: TextFieldValue){
-        val command ="/"+textFieldValue.text.subSequence(slashCommandIndex,textFieldValue.selection.end)
-        Log.d("parseNFilterCommandList","command ----> $command")
-
-        //val commandRegex = Regex("$command",RegexOption.IGNORE_CASE)
-        val commandRegex = Regex("^$command",RegexOption.IGNORE_CASE)
-        _forwardSlashCommands.removeIf{
-            !it.title.contains(commandRegex)
-        }
-
-    }
-    /**
-     * endParsingNClearFilteredChatList is a private function meant to call ***.clear()*** on [filteredChatList] and
-     * set [startParsing] to false
-     * */
-    private fun endParsingNClearFilteredChatList(){
-        filteredChatList.clear()
-        startParsing = false
-    }
-    /**
-     * negateSlashCommandStateNClearForwardSlashCommands is a private function meant to call ***.clear()*** on [forwardSlashCommands] and
-     * set [slashCommandState] to false
-     * */
-    private fun negateSlashCommandStateNClearForwardSlashCommands(){
-        slashCommandState = false
-    }
     /**
      * autoTextChange is function that is used to change the value of [textFieldValue] with [username]
      *
      * @param username  a string meant to represent the username that was clicked on by the user
      * */
     fun autoTextChange(username: String) {
-//        val currentCharacterIndex = textFieldValue.value.selection.end
-//        Log.d("testingAnotherOne","autoTextChange")
-//
-//        val replacedString =textFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
-//        textFieldValue.value = textFieldValue.value.copy(
-//            text = replacedString,
-//            selection = TextRange(replacedString.length)
-//        )
-//        filteredChatList.clear()
-        testingNewAutoTextChange(
-            username,
-            newTextFieldValue = textFieldValue,
-            clearChat = {filteredChatList.clear()}
+
+        textParsing.clickUsernameAutoTextChange(
+            username =username,
+
         )
 
     }
-   // lkljl
-    fun testingNewAutoTextChange(
-        username:String,
-        newTextFieldValue: MutableState<TextFieldValue>,
-        clearChat:()->Unit
-    ){
-        val currentCharacterIndex = newTextFieldValue.value.selection.end
 
-        val replacedString =newTextFieldValue.value.text.replaceRange(parsingIndex,currentCharacterIndex,"$username ")
-        newTextFieldValue.value = newTextFieldValue.value.copy(
-            text = replacedString,
-            selection = TextRange(replacedString.length)
-        )
-        clearChat()
-
-    }
 
     fun autoTextChangeCommand(command: String) {
-        val currentCharacterIndex = textFieldValue.value.selection.end
 
-        val replacedString =textFieldValue.value.text.replaceRange(slashCommandIndex,currentCharacterIndex,"$command ")
-        textFieldValue.value = textFieldValue.value.copy(
-            text = replacedString,
-            selection = TextRange(replacedString.length)
+        textParsing.clickSlashCommandTextAutoChange(
+            command =command,
         )
-        _forwardSlashCommands.clear()
-        filteredChatList.clear()
-        slashCommandIndex=0
+
 
     }
 
