@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream.util
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 /**
  * TokenType represents types that are used inside the lexical analysis of the chat messages
@@ -15,6 +16,7 @@ data class Token(
     val tokenType: TokenType,
     val lexeme:String
 )
+/**THIS IS TERRIBLE AND CONFUSING WITH THE USERNAME/REASON/COMMAND/MESSAGE AND IT NEEDS TO BE REFACTORED**/
  sealed class TextCommands(val username: String="",val reason: String =""){
      class Ban(username:String,reason:String):TextCommands(username,reason)
      class UnBan(username:String):TextCommands(username)
@@ -127,7 +129,7 @@ class Scanner(private val source: String) {
 
 
 }
-class TokenCommand(){
+class TokenCommand @Inject constructor(){
     //we have a public hot flow that gets TokenCommandTypes emitted to it and then base actions on that
     // Backing property to avoid state updates from other classes
     private val _tokenCommand = MutableStateFlow<TextCommands>(TextCommands.INITIALVALUE)
@@ -223,12 +225,6 @@ class TokenCommand(){
     private fun hasUnbanTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.UNBAN }
     }
-//    private fun hasMonitorTokenType(tokens: List<Token>): Boolean {
-//        return tokens.any { it.tokenType == TokenType.MONITOR }
-//    }
-//    private fun hasUnMonitorTokenType(tokens: List<Token>): Boolean {
-//        return tokens.any { it.tokenType == TokenType.UNMONITOR }
-//    }
     private fun hasUnrecognizedTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.UNRECOGNIZED }
     }
