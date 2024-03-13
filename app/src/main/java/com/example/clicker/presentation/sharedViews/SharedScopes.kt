@@ -47,20 +47,20 @@ class ScaffoldBottomBarScope(
 
 
     @Composable
-    fun DualButtonNavigationBottomBar(
-        bottomRowHeight: Dp,
+    fun DualButtonNavigationBottomBarRow(
+        fontSize: TextUnit,
+        horizontalArrangement: Arrangement.Horizontal,
         firstButton:@Composable IconScope.() -> Unit,
         secondButton:@Composable IconScope.() -> Unit,
 
     ){
-        val firstButtonScope = remember(){IconScope(iconSize)}
+        val firstButtonScope = remember(){IconScope(iconSize,fontSize)}
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .height(bottomRowHeight),
+                .background(MaterialTheme.colorScheme.primary),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = horizontalArrangement
         ){
             with(firstButtonScope){
                 firstButton()
@@ -109,12 +109,6 @@ class ScaffoldTopBarScope(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ){
-//            Icon(
-//                imageVector = Icons.Default.Home,
-//                contentDescription = "contentDescription",
-//                tint = MaterialTheme.colorScheme.onPrimary,
-//                modifier = Modifier.size(iconSize)
-//            )
             Text(
                 text =text,
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
@@ -132,6 +126,7 @@ class ScaffoldTopBarScope(
 @Stable
 class IconScope(
     private val iconSize: Dp,
+    private val fontSize: TextUnit = 20.sp,
 ){
 
     @Composable
@@ -149,12 +144,13 @@ class IconScope(
     }
 
     @Composable
-    fun IconOverText(
+    fun IconOverTextColumn(
         iconColor: Color,
-        text:String,
         imageVector: ImageVector,
         iconContentDescription:String,
-        onClick: () -> Unit
+        text:String,
+        fontColor:Color,
+        onClick: () -> Unit,
     ){
         Column(
             modifier = Modifier.clickable { onClick() },
@@ -168,18 +164,19 @@ class IconScope(
             )
             Text(
                 text,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                color = fontColor,
+                fontSize = fontSize
             )
         }
     }
 
     @Composable
-    fun PainterResourceIconOverText(
+    fun PainterResourceIconOverTextColumn(
         iconColor: Color,
-        text:String,
         painter: Painter,
         iconContentDescription:String,
+        fontColor:Color,
+        text:String,
         onClick: () -> Unit
     ){
         Column(
@@ -192,7 +189,11 @@ class IconScope(
                 tint = iconColor,
                 modifier = Modifier.size(iconSize)
             )
-            Text(text,color = MaterialTheme.colorScheme.onPrimary)
+            Text(
+                text,
+                fontSize=fontSize,
+                color = fontColor,
+            )
         }
     }
 
@@ -217,10 +218,6 @@ class IconScope(
 
 }
 
-@Composable
-fun UserMessage(){
-
-}
 
 @Stable
 class NotificationsScope{
@@ -252,9 +249,7 @@ class NotificationsScope{
             }
         }
     }
-
 }
-//stringResource(R.string.pull_to_refresh_icon_description)
 
 @Composable
 fun NewUserAlert(

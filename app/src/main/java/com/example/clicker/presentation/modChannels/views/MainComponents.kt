@@ -74,6 +74,7 @@ import com.example.clicker.presentation.sharedViews.NotificationsScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
@@ -126,7 +127,7 @@ object ModChannelComponents{
         networkMessage: String,
         showLoginModal:()->Unit,
     ){
-        Builders.ScaffoldBuilder(
+        SharedComponents.NoDrawerScaffold(
             topBar = {
                 IconTextTopBar(
                     clickableIcon ={
@@ -138,120 +139,74 @@ object ModChannelComponents{
                         )
                     },
 
-                )
-            },
-            bottomBar={
-                DualButtonNavigationBottomBar(
-                    bottomRowHeight = 100.dp,
+                    )
+            }
+            , bottomBar={
+                DualButtonNavigationBottomBarRow(
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
-                        IconOverText(
+                        IconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Home",
                             imageVector = Icons.Default.Home,
                             iconContentDescription = "Navigate back to home page",
-                            onClick = {popBackStackNavigation()}
-                                )
+                            onClick = {popBackStackNavigation()},
+                            fontColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     },
                     secondButton = {
-                        PainterResourceIconOverText(
+                        PainterResourceIconOverTextColumn(
                             iconColor =MaterialTheme.colorScheme.secondary,
                             text = "Mod Channels",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Click to stay on mod page",
-                            onClick ={}
-                                   )
+                            onClick ={},
+                            fontColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     },
                 )
-            },
-            pullToRefreshList = {contentPadding ->
-                PullToRefreshComponent(
-                    padding = contentPadding,
-                    refreshing = refreshing,
-                    refreshFunc = { refreshFunc() },
-                    showNetworkMessage = showNetworkMessage,
-                    networkStatus = { modifier ->
-                        NetworkStatus(
-                            modifier = modifier,
-                            color = networkMessageColor,
-                            networkMessage = networkMessage
-                        )
-                    }
-                ){
-                    Parts.ModChannelsResponse(
-                        contentPadding,
-                        height,
-                        width,
-                        density,
-                        offlineModChannelList = offlineModChannelList,
-                        liveModChannelList=liveModChannelList,
-                        modChannelResponseState =modChannelResponseState,
-                        updateStreamerName ={
-                                streamerName,clientId,broadcasterId,userId ->
-                            updateStreamerName(streamerName,clientId,broadcasterId,userId)
-
-                        },
-                        updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
-                        onNavigate={destination -> onNavigate(destination)},
-                        userId = userId,
-                        clientId = clientId,
-                        loadingIndicator = {
-                            LazyListLoadingIndicator()
-                        },
-                        showLoginModal ={showLoginModal()}
-
+            }
+        ) {contentPadding ->
+            PullToRefreshComponent(
+                padding = contentPadding,
+                refreshing = refreshing,
+                refreshFunc = { refreshFunc() },
+                showNetworkMessage = showNetworkMessage,
+                networkStatus = { modifier ->
+                    NetworkStatus(
+                        modifier = modifier,
+                        color = networkMessageColor,
+                        networkMessage = networkMessage
                     )
                 }
-            },
+            ){
+                Parts.ModChannelsResponse(
+                    height,
+                    width,
+                    density,
+                    offlineModChannelList = offlineModChannelList,
+                    liveModChannelList=liveModChannelList,
+                    modChannelResponseState =modChannelResponseState,
+                    updateStreamerName ={
+                            streamerName,clientId,broadcasterId,userId ->
+                        updateStreamerName(streamerName,clientId,broadcasterId,userId)
 
-        )
-    }
+                    },
+                    updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
+                    onNavigate={destination -> onNavigate(destination)},
+                    userId = userId,
+                    clientId = clientId,
+                    loadingIndicator = {
+                        LazyListLoadingIndicator()
+                    },
+                    showLoginModal ={showLoginModal()}
 
-
-    /**BUILDERS BELOW THIS*/
-    /**
-     * Builder represents the most generic parts of [ModChannelComponents] and should be thought of as layout guides used
-     * by the implementations above
-     * */
-    @Stable
-   private object Builders{
-
-        /**
-         * - ScaffoldBuilder is used inside of  [ModChannelComponents].
-         *
-         *
-         * @param topBar a composable meant to act as the UI for this Scaffolds top bar
-         * @param bottomBar a composable meant to act as the UI for this Scaffolds bottom bar
-         * This will get covered by the scaffold
-         * @param modChannelList a composable that will act as the list to display all the items shown to the user
-         * */
-        @Composable
-        fun ScaffoldBuilder(
-            topBar:@Composable ScaffoldTopBarScope.() -> Unit,
-            bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
-            pullToRefreshList:@Composable (contentPadding:PaddingValues) -> Unit,
-        ){
-            val bottomBarScope = remember(){ ScaffoldBottomBarScope(35.dp) }
-            val topScaffoldBarScope= remember(){ScaffoldTopBarScope(35.dp)}
-
-            Scaffold(
-                backgroundColor= MaterialTheme.colorScheme.primary,
-                topBar = {
-                    topScaffoldBarScope.topBar()
-                },
-                bottomBar = {
-                    with(bottomBarScope){
-                        bottomBar()
-                    }
-
-                },
-            ) { contentPadding ->
-
-                pullToRefreshList(contentPadding)
-
+                )
             }
-        }
-    } /***END OF THE BUILDERS****/
 
+        }
+    }
 
 
     /**
@@ -267,8 +222,6 @@ object ModChannelComponents{
          * - ModChannelsResponse is a composable function used to show the current state of the data to
          * to the user. Either LOADING,SUCCESS OR FAILURE. All dependent on the network call to get channels where the
          * user is a moderator
-         *
-         * @param contentPadding it is a nullable list of all the live channels returned by the twitch server
          * @param density a Float representing the screen density of the current device
          * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
          * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
@@ -280,7 +233,6 @@ object ModChannelComponents{
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun ModChannelsResponse(
-            contentPadding: PaddingValues,
             height: Int,
             width: Int,
             density:Float,
@@ -299,7 +251,7 @@ object ModChannelComponents{
             val indicatorScopes = remember() { IndicatorScopes() }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = contentPadding){
+                ){
                 when(modChannelResponseState){
                     is NetworkNewUserResponse.Loading ->{
                         item{
