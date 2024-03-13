@@ -206,24 +206,27 @@ class MainScaffoldScope(){
                 )
             },
             bottomBar = {
-                DualButtonNavigationBottomBar(
-                    bottomRowHeight = 100.dp,
+                DualButtonNavigationBottomBarRow(
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
-                        IconOverText(
+                        IconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.secondary,
                             text = "Home",
                             imageVector = Icons.Default.Home,
                             iconContentDescription = "Stay on home page",
-                            onClick = {}
+                            onClick = {},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
                     secondButton = {
-                        PainterResourceIconOverText(
+                        PainterResourceIconOverTextColumn(
                             iconColor =MaterialTheme.colorScheme.onPrimary,
                             text = "Mod Channels",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
-                            onClick ={onNavigate(R.id.action_homeFragment_to_modChannelsFragment)}
+                            onClick ={onNavigate(R.id.action_homeFragment_to_modChannelsFragment)},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
                 )

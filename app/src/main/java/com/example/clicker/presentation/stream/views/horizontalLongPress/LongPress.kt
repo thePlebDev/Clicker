@@ -70,6 +70,7 @@ import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.util.NetworkNewUserResponse
@@ -88,14 +89,13 @@ fun HorizontalLongPressView(
     val text = if (clicked.value) "Live channels" else "Mod channels"
 
 
-    LongPress
-        .MainView(
+    SharedComponents
+        .NoDrawerScaffold(
             topBar = {
                 TopBarText(text)
             },
             bottomBar = {},
             content = { contentPadding ->
-
                     LongPressPullToRefresh(
                         contentPadding =contentPadding,
                         refreshing =homeViewModel.state.value.homeRefreshing,
@@ -112,10 +112,6 @@ fun HorizontalLongPressView(
                                 )
                         }
                     )
-
-
-
-
             },
         )
 }
@@ -143,44 +139,6 @@ fun LongPressPullToRefresh(
 
 
     )
-}
-
-object LongPress{
-
-
-    @Composable
-    fun MainView(
-        topBar:@Composable ScaffoldTopBarScope.() -> Unit,
-        bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
-        content:@Composable (contentPadding: PaddingValues,) -> Unit,
-
-        ) {
-        val topBarScaffoldScope = remember(){ScaffoldTopBarScope(35.dp)}
-        val bottomBarScaffoldScope = remember(){ScaffoldBottomBarScope(25.dp)}
-
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.primary,
-            topBar = {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)){
-                    with(topBarScaffoldScope){
-                        topBar()
-                    }
-                }
-
-            },
-            bottomBar = {
-                with(bottomBarScaffoldScope){
-                    bottomBar()
-                }
-            },
-
-        ) { contentPadding ->
-            content(contentPadding)
-
-        }
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)

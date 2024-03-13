@@ -694,8 +694,6 @@ class StreamViewModel @Inject constructor(
         addMessageToListChats:(TwitchUserData)->Unit,
 
     ){
-        viewModelScope.launch {
-
             tokenMonitoring.runMonitorToken(
                 tokenCommand = tokenCommand,
                 chatMessage = chatMessage,isMod = isMod,
@@ -719,19 +717,10 @@ class StreamViewModel @Inject constructor(
 
             )
 
-        }
     }
 
-    //todo: monitoringTokens() SHOULD BE MOVED TO ITS OWN CLASS
-    /**
-     * monitoringTokens() is a function meant to check the current user's chat messages for any /commands(/ban,/unban...)
-     *
-     *
-     * @param tokenCommand is a hot flow of [TextCommands] which only contains one instance of [TextCommands]. This instance
-     * is used to determine what the code should do
-     *
-     * @param chatMessage is a String representing what the user typed
-     * */
+
+    /********END OF SOCKET METHODS***********/
 
 
 
