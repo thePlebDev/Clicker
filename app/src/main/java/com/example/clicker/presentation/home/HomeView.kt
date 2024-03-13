@@ -104,6 +104,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.home.views.HomeViewImplementation
+import com.example.clicker.presentation.sharedViews.SharedComponents
 
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -189,7 +190,6 @@ fun ValidationView(
         hideDialog = {homeViewModel.hideDialog()}
 
     )
-
 
 }
 

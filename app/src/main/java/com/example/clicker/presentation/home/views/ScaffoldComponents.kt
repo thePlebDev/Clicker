@@ -105,6 +105,7 @@ import com.example.clicker.presentation.sharedViews.NotifyUserScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -140,7 +141,6 @@ class MainScaffoldScope(){
     @Composable
     fun MainScaffoldComponent(
         showLogoutDialog:()->Unit,
-        login: () -> Unit,
         userIsLoggedIn: Boolean,
         followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         onNavigate: (Int) -> Unit,
@@ -167,21 +167,8 @@ class MainScaffoldScope(){
         val scope = rememberCoroutineScope()
 
 
-
-        ScaffoldBuilder(
-            scaffoldState =scaffoldState,
-            drawerContent = {
-                ScaffoldScope.LoginLogoutScaffoldDrawer(
-                    showLogoutDialog = {
-                        showLogoutDialog()
-                    },
-                    loginWithTwitch = {
-                        login()
-                    },
-                    scaffoldState = scaffoldState,
-                    userIsLoggedIn = userIsLoggedIn
-                )
-            },
+        SharedComponents.DrawerScaffold(
+            scaffoldState = scaffoldState,
             topBar = {
                 IconTextTopBar(
                     clickableIcon={
@@ -230,184 +217,155 @@ class MainScaffoldScope(){
                         )
                     },
                 )
-                        },
-            isUserLoggedIn =isUserLoggedIn,
-            showFailedDialog =showFailedDialog,
-            hideDialog ={hideDialog()},
-            loginWithTwitch={loginWithTwitch()},
-            pullToRefreshList ={contentPadding ->
-                PullToRefreshComponent(
-                    padding = contentPadding,
-                    refreshing = homeRefreshing,
-                    refreshFunc = {homeRefreshFunc()},
-                    showNetworkMessage=showNetworkMessage,
-                    networkStatus = {modifier ->
-                        NetworkStatus(
-                            modifier = modifier,
-                            color =  networkMessageColor,
-                            networkMessage = networkMessage
-                        )
-                    }
-                ){
-                    LiveChannelsLazyColumn(
-                        followedStreamerList =followedStreamerList,
-                        contentPadding =contentPadding,
-                        loadingIndicator = {
-                            LazyListLoadingIndicator()
-                        },
-                        emptyList={
-                            EmptyFollowingList()
-                        },
-                        liveChannelRowItem = {streamItem ->
-                            LiveChannelRowItem(
-                                updateStreamerName ={
-                                        streamerName,clientId,broadcasterId,userId ->
-                                    updateStreamerName(streamerName,clientId,broadcasterId,userId)
-
-                                },
-                                updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
-                                streamItem = streamItem,
-                                clientId =clientId,
-                                userId = userId,
-                                height = height,
-                                width = width,
-                                onNavigate = {id -> onNavigate(id)},
-                                density =screenDensity
-                            )
-                        },
-                        gettingStreamError = {message ->
-                            this.GettingStreamsError(errorMessage = message)
-                        },
-                        newUserAlert={responseMessage ->
-                            NewUserAlert(
-                                iconSize = 35.dp,
-                                iconContentDescription = "Show the login modal",
-                                iconColor = MaterialTheme.colorScheme.onSecondary,
-                                iconImageVector = Icons.Default.AccountCircle,
-                                backgroundColor = MaterialTheme.colorScheme.secondary,
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                textColor = MaterialTheme.colorScheme.onSecondary,
-                                message = responseMessage,
-                                onClick ={
-                                    scope.launch {
-                                        bottomModalState.show()
-                                    }
-                                }
-                            )
-                        },
-                        bottomModalState =bottomModalState
-                    )
-
-                }
             },
-
-
-        )
-    }
-
-
-    /**
-     * - ScaffoldBuilder is used inside of  [MainScaffoldComponent].
-     *
-     *
-
-     * that is used to enable to nested scrolling of the two layout boxes using the [NestedScrollConnection](https://developer.android.com/reference/kotlin/androidx/compose/ui/input/nestedscroll/NestedScrollConnection)
-     * @param scaffoldState a [ScaffoldState] object representing the state of the scaffold
-     * @param drawerContent a composable function that represent the drawer content of the scaffold
-     * @param topBar a composable function that represent the topBar content of the scaffold
-     * @param bottomBar a composable function that represent the bottomBar content of the scaffold
-     * This will get covered by the scaffold
-     * */
-    @Composable
-    fun ScaffoldBuilder(
-        scaffoldState: ScaffoldState,
-        isUserLoggedIn: NetworkAuthResponse<Boolean>,
-        showFailedDialog: Boolean,
-        hideDialog: () -> Unit,
-        loginWithTwitch: () -> Unit,
-        drawerContent:@Composable () -> Unit,
-        topBar:@Composable ScaffoldTopBarScope.() -> Unit,
-        bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
-        pullToRefreshList:@Composable (contentPadding: PaddingValues) -> Unit,
-
-        ){
-        val scaffoldBarsScope = remember() { ScaffoldBottomBarScope(35.dp) }
-
-        val topBarScaffoldScope = remember(){ScaffoldTopBarScope(35.dp)}
-
-        Scaffold(
-            backgroundColor= MaterialTheme.colorScheme.primary,
-            scaffoldState = scaffoldState,
             drawerContent = {
-                    drawerContent()
-            },
-            topBar = {
-                with(topBarScaffoldScope){
-                    topBar()
-                }
-            },
-            bottomBar = {
-                with(scaffoldBarsScope){
-                    bottomBar()
-                }
+                ScaffoldScope.LoginLogoutScaffoldDrawer(
+                    showLogoutDialog = {
+                        showLogoutDialog()
+                    },
+                    loginWithTwitch = {
+                        loginWithTwitch()
+                    },
+                    scaffoldState = scaffoldState,
+                    userIsLoggedIn = userIsLoggedIn
+                )
 
-            },
+            }
         ) { contentPadding ->
 
-            pullToRefreshList(contentPadding)
-            //todo: Create button to prompt user to login with Twitch
-            when(val response =isUserLoggedIn){
-                is NetworkAuthResponse.Loading ->{
-                    //nothing this is the initial state
+            PullToRefreshComponent(
+                padding = contentPadding,
+                refreshing = homeRefreshing,
+                refreshFunc = {homeRefreshFunc()},
+                showNetworkMessage=showNetworkMessage,
+                networkStatus = {modifier ->
+                    NetworkStatus(
+                        modifier = modifier,
+                        color =  networkMessageColor,
+                        networkMessage = networkMessage
+                    )
                 }
-                is NetworkAuthResponse.Success ->{
-                    val loggedInResponse = response.data
-                    if(loggedInResponse){
-                        //this means that the user is logged in, so do nothing
-                    }
-                    else{
-                        TellUserToLogBackIn(
-                            loginWithTwitch = {
-                                loginWithTwitch()
+            ){
+                LiveChannelsLazyColumn(
+                    followedStreamerList =followedStreamerList,
+                    contentPadding =contentPadding,
+                    loadingIndicator = {
+                        LazyListLoadingIndicator()
+                    },
+                    emptyList={
+                        EmptyFollowingList()
+                    },
+                    liveChannelRowItem = {streamItem ->
+                        LiveChannelRowItem(
+                            updateStreamerName ={
+                                    streamerName,clientId,broadcasterId,userId ->
+                                updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                            },
+                            updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                            streamItem = streamItem,
+                            clientId =clientId,
+                            userId = userId,
+                            height = height,
+                            width = width,
+                            onNavigate = {id -> onNavigate(id)},
+                            density =screenDensity
+                        )
+                    },
+                    gettingStreamError = {message ->
+                        this.GettingStreamsError(errorMessage = message)
+                    },
+                    newUserAlert={responseMessage ->
+                        NewUserAlert(
+                            iconSize = 35.dp,
+                            iconContentDescription = "Show the login modal",
+                            iconColor = MaterialTheme.colorScheme.onSecondary,
+                            iconImageVector = Icons.Default.AccountCircle,
+                            backgroundColor = MaterialTheme.colorScheme.secondary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            textColor = MaterialTheme.colorScheme.onSecondary,
+                            message = responseMessage,
+                            onClick ={
+                                scope.launch {
+                                    bottomModalState.show()
+                                }
                             }
                         )
+                    },
+                    bottomModalState =bottomModalState
+                )
 
-                    }
-                }
-                is NetworkAuthResponse.Failure ->{
-                    //notify the user of the unsuccessful attempt
-                    // I think we just have the normal dialog here to tell the user that the logout failed
-                    LoginFailed(
-                        "Failed to logout. Try again",
-                        showFailedDialog =showFailedDialog,
-                        hideDialog ={hideDialog()}
-                    )
-
-                }
-                is NetworkAuthResponse.NetworkFailure ->{
-                    //notify the user of the network error
-                    // I think we just have the normal dialog here to tell the user of the network error
-                    LoginFailed(
-                        "Network error. Try again",
-                        showFailedDialog =showFailedDialog,
-                        hideDialog ={hideDialog()}
-                    )
-
-                }
-                is NetworkAuthResponse.Auth401Failure ->{
-                    //notify the user of the authentication error
-                    // I think we just have the normal dialog here to tell the user of the authentication error
-                    LoginFailed(
-                        "Authentication error. Try again",
-                        showFailedDialog =showFailedDialog,
-                        hideDialog ={hideDialog()}
-                    )
-
-                }
             }
+            LogoutResponse(
+                isUserLoggedIn=isUserLoggedIn,
+                showFailedDialog=showFailedDialog,
+                hideDialog={hideDialog()},
+                loginWithTwitch={loginWithTwitch()}
+            )
 
         }
     }
+
+
+}
+
+@Composable
+fun LogoutResponse(
+    isUserLoggedIn: NetworkAuthResponse<Boolean>,
+    showFailedDialog: Boolean,
+    hideDialog: () -> Unit,
+    loginWithTwitch: () -> Unit,
+){
+    when(val response =isUserLoggedIn){
+        is NetworkAuthResponse.Loading ->{
+            //nothing this is the initial state
+        }
+        is NetworkAuthResponse.Success ->{
+            val loggedInResponse = response.data
+            if(loggedInResponse){
+                //this means that the user is logged in, so do nothing
+            }
+            else{
+                TellUserToLogBackIn(
+                    loginWithTwitch = {
+                        loginWithTwitch()
+                    }
+                )
+
+            }
+        }
+        is NetworkAuthResponse.Failure ->{
+            //notify the user of the unsuccessful attempt
+            // I think we just have the normal dialog here to tell the user that the logout failed
+            LoginFailed(
+                "Failed to logout. Try again",
+                showFailedDialog =showFailedDialog,
+                hideDialog ={hideDialog()}
+            )
+
+        }
+        is NetworkAuthResponse.NetworkFailure ->{
+            //notify the user of the network error
+            // I think we just have the normal dialog here to tell the user of the network error
+            LoginFailed(
+                "Network error. Try again",
+                showFailedDialog =showFailedDialog,
+                hideDialog ={hideDialog()}
+            )
+
+        }
+        is NetworkAuthResponse.Auth401Failure ->{
+            //notify the user of the authentication error
+            // I think we just have the normal dialog here to tell the user of the authentication error
+            LoginFailed(
+                "Authentication error. Try again",
+                showFailedDialog =showFailedDialog,
+                hideDialog ={hideDialog()}
+            )
+
+        }
+    }
+
 }
 
 
