@@ -77,7 +77,6 @@ import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun HorizontalLongPressView(
     homeViewModel: HomeViewModel,

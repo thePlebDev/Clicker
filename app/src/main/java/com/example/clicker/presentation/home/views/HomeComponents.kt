@@ -137,9 +137,6 @@ import com.example.clicker.util.Response
                     showLogoutDialog = {
                         showLogoutDialog()
                     },
-                    login = {
-                        loginWithTwitch()
-                    },
                     userIsLoggedIn =userIsAuthenticated,
 
                     screenDensity =screenDensity,
