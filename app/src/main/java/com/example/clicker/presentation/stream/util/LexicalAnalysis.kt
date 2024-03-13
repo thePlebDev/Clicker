@@ -1,11 +1,24 @@
 package com.example.clicker.presentation.stream.util
 
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 /**
- * TokenType represents types that are used inside the lexical analysis of the chat messages
+ * TokenType represents types that are used inside the lexical analysis of the chat messages. TokenType has
+ * 8 distinct types
+ *
+ * @property BAN triggered by a **`/ban`** command
+ * @property UNBAN triggered by a **`/unban`** command
+ * @property USERNAME triggered by a **`@username`** being typed
+ * @property TEXT represents normal text being typed
+ * @property UNRECOGNIZED triggered by a **`/fdjsafds`** command or any other command that is not set up
+ *
+ * @property MONITOR triggered by a **`/monitor`** command
+ *
+ * @property UNMONITOR triggered by a **`/unmonitor`** command
+ *
  * */
 enum class TokenType {
     BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED,MONITOR,UNMONITOR
@@ -31,8 +44,9 @@ data class Token(
 
  }
 
-class Scanner(private val source: String) {
+class Scanner (private val source:String) {
     private val map = hashMapOf<String, Token>()
+
     init {
         map["/ban"] = Token(TokenType.BAN,"/ban")
         map["/unban"] = Token(TokenType.UNBAN,"/unban")
@@ -132,15 +146,20 @@ class Scanner(private val source: String) {
 class TokenCommand @Inject constructor(){
     //we have a public hot flow that gets TokenCommandTypes emitted to it and then base actions on that
     // Backing property to avoid state updates from other classes
-    private val _tokenCommand = MutableStateFlow<TextCommands>(TextCommands.INITIALVALUE)
-    // The UI collects from this StateFlow to get its state updates
-    val tokenCommand: StateFlow<TextCommands> = _tokenCommand
-     fun checkForSlashCommands(tokenList: List<Token>){
+//    private val _tokenCommand = MutableStateFlow<TextCommands>(TextCommands.INITIALVALUE)
+//    // The UI collects from this StateFlow to get its state updates
+//    val tokenCommand: StateFlow<TextCommands> = _tokenCommand
+     fun checkForSlashCommands(tokenList: List<Token>):TextCommands{
         //create findusername() function to check for null
+         Log.d("checkForSlashCommands","tokenList size -->${tokenList.size}")
+        val listOfTextCommands = mutableListOf<TextCommands>()
+
         when{
             hasUnrecognizedTokenType(tokenList)->{
                 val unrecognized =tokenList.first { it.tokenType == TokenType.UNRECOGNIZED }.lexeme
-                _tokenCommand.tryEmit(TextCommands.UNRECOGNIZEDCOMMAND(unrecognized))
+              //  _tokenCommand.tryEmit(TextCommands.UNRECOGNIZEDCOMMAND(unrecognized))
+                return TextCommands.UNRECOGNIZEDCOMMAND(unrecognized)
+
             }
             hasBanTokenType(tokenList)->{
                 //make ban request
@@ -154,11 +173,13 @@ class TokenCommand @Inject constructor(){
                         .map{ it.lexeme }
                         .joinToString(separator = " ")
 
-                    _tokenCommand.tryEmit(TextCommands.Ban(username=username.replace("@", ""),reason=reason))
+                  //  _tokenCommand.tryEmit(TextCommands.Ban(username=username.replace("@", ""),reason=reason))
+                    return TextCommands.Ban(username=username.replace("@", ""),reason=reason)
                 }
                 else{
                     //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                  //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                    return TextCommands.NOUSERNAME
                 }
 
             }
@@ -170,11 +191,13 @@ class TokenCommand @Inject constructor(){
                 if(username != null){
                     //todo: send unBan command
 
-                    _tokenCommand.tryEmit(TextCommands.UnBan(username=username.replace("@", "")))
+                 //   _tokenCommand.tryEmit(TextCommands.UnBan(username=username.replace("@", "")))
+                    return TextCommands.UnBan(username=username.replace("@", ""))
                 }
                 else{
                     //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                  //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                    return TextCommands.NOUSERNAME
                 }
             }
             hasMonitorTokenType(tokenList) ->{
@@ -183,11 +206,13 @@ class TokenCommand @Inject constructor(){
                 if(username != null){
                     //todo: send unBan command
 
-                    _tokenCommand.tryEmit(TextCommands.MONITOR(username=username.replace("@", "")))
+                   // _tokenCommand.tryEmit(TextCommands.MONITOR(username=username.replace("@", "")))
+                    return TextCommands.MONITOR(username=username.replace("@", ""))
                 }
                 else{
                     //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                 //   _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+                    return TextCommands.NOUSERNAME
                 }
             }
             hasUnMonitorTokenType(tokenList) ->{
@@ -196,17 +221,19 @@ class TokenCommand @Inject constructor(){
                 if(username != null){
                     //todo: send unBan command
 
-                    _tokenCommand.tryEmit(TextCommands.UnMONITOR(username=username.replace("@", "")))
+
+                    return TextCommands.UnMONITOR(username=username.replace("@", ""))
                 }
                 else{
                     //todo: tell user that there is no username
-                    _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
+
+                    return TextCommands.NOUSERNAME
                 }
             }
 
             else->{
                 val message = tokenList.map { it.lexeme }.joinToString(separator = " ")
-                _tokenCommand.tryEmit(TextCommands.NORMALMESSAGE(message))
+                return TextCommands.NORMALMESSAGE(message)
 
             }
         }

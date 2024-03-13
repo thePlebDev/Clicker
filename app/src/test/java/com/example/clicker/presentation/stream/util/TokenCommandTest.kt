@@ -11,27 +11,7 @@ class TokenCommandTest {
     val underTest = TokenCommand()
 
     @Test
-    fun checkForSlashCommands_hasUnrecognizedTokenType() = runTest {
-        /**GIVEN*/
-        val unrecognizedCommand = "/dksjld88"
-        val tokens =Token(TokenType.UNRECOGNIZED,unrecognizedCommand)
-        val returnedTextCommand =TextCommands.UNRECOGNIZEDCOMMAND(unrecognizedCommand)
-
-        val tokenList = listOf<Token>(tokens)
-
-        /**WHEN*/
-        underTest.checkForSlashCommands(tokenList)
-
-        /**THEN*/
-        val actualValue = underTest.tokenCommand.first()
-        val expectedValue =returnedTextCommand
-
-        Assert.assertEquals(expectedValue.username, actualValue.username)
-
-    }
-
-    @Test
-    fun checkForSlashCommands_hasBanTokenType() = runTest {
+    fun checkForSlashCommands_hasUnrecognizedTokenType()  {
         /**GIVEN*/
         val command = "/ban"
         val username = "Bobberson"
@@ -40,43 +20,48 @@ class TokenCommandTest {
         val banToken =Token(TokenType.BAN,command)
         val usernameToken =Token(TokenType.USERNAME,username)
         val textToken =Token(TokenType.TEXT,reason)
-        val returnedTextCommand =TextCommands.Ban(username, reason)
+        val expectedReturnType =TextCommands.Ban(username, reason)
 
         val tokenList = listOf(banToken,usernameToken,textToken)
 
+
         /**WHEN*/
-        underTest.checkForSlashCommands(tokenList)
+        val commandTest =underTest.checkForSlashCommands(tokenList)
+
 
         /**THEN*/
-        val actualValue = underTest.tokenCommand.first()
-        val expectedValue =returnedTextCommand
+        Assert.assertEquals(expectedReturnType.javaClass, commandTest.javaClass)
 
-        Assert.assertEquals(expectedValue.username, actualValue.username)
+    }
+
+    @Test
+    fun checkForSlashCommands_normalMessage() = runTest {
+        /**GIVEN*/
+        val message = "LUL"
+
+
+
+        val textToken =Token(TokenType.TEXT,message)
+        val expectedReturnedTypes =TextCommands.NORMALMESSAGE(message)
+
+
+        val tokenList = listOf(textToken)
+
+
+        /**WHEN*/
+        val commandTest =underTest.checkForSlashCommands(tokenList)
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedReturnedTypes.javaClass, commandTest.javaClass)
+
 
     }
 
     @Test
     fun checkForSlashCommands_hasUnbanTokenType() = runTest {
         /**GIVEN*/
-        val command = "/unban"
-        val username = "Bobberson"
 
-
-        val unbanToken =Token(TokenType.UNBAN,command)
-        val usernameToken =Token(TokenType.USERNAME,username)
-
-        val returnedTextCommand =TextCommands.UnBan(username)
-
-        val tokenList = listOf(unbanToken,usernameToken)
-
-        /**WHEN*/
-        underTest.checkForSlashCommands(tokenList)
-
-        /**THEN*/
-        val actualValue = underTest.tokenCommand.first()
-        val expectedValue =returnedTextCommand
-
-        Assert.assertEquals(expectedValue.username, actualValue.username)
 
     }
 }

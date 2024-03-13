@@ -10,8 +10,8 @@ import javax.inject.Inject
 class TokenMonitoring @Inject constructor(){
 
 
-    suspend fun runMonitorToken(
-        tokenCommand: StateFlow<TextCommands>,
+     fun runMonitorToken(
+        tokenCommand: TextCommands,
         chatMessage:String,
         isMod: Boolean,
         currentUsername:String,
@@ -24,7 +24,8 @@ class TokenMonitoring @Inject constructor(){
         removeFromMonitorUser:(String) ->Unit
 
     ){
-        tokenCommand.collect{tokenCommand ->
+         Log.d("monitoringTokens", "username ->${tokenCommand.username}")
+
             when(tokenCommand){
                 is TextCommands.UNRECOGNIZEDCOMMAND ->{
                     Log.d("monitoringTokens", "UNRECOGNIZEDCOMMAND")
@@ -142,7 +143,7 @@ class TokenMonitoring @Inject constructor(){
                     addMessageToListChats(message)
                 }
                 is TextCommands.NORMALMESSAGE ->{
-                    Log.d("monitoringTokens", "NORMALMESSAGE")
+                    Log.d("monitoringTokens", "NORMALMESSAGE ---> ${tokenCommand.username}")
                     sendToWebSocket(tokenCommand.username)
                     Log.d("monitoringTokens", "username -->${tokenCommand.username}")
                     val message = TwitchUserDataObjectMother
@@ -187,7 +188,7 @@ class TokenMonitoring @Inject constructor(){
 
                 }
             }
-        }
+
 
     }
 }

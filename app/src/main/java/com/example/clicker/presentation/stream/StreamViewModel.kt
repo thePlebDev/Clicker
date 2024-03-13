@@ -125,7 +125,7 @@ class StreamViewModel @Inject constructor(
     private val autoCompleteChat: AutoCompleteChat,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
-    private val tokenCommand: TokenCommand =TokenCommand()
+    private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {
 
     /**
@@ -658,16 +658,22 @@ class StreamViewModel @Inject constructor(
             listChats.clear()
         }
     }
-    fun sendMessage(chatMessage: String) {
+    fun sendMessage(chatMessage: String){
         //the scanner should be inside of the tokenCommand. I should be able to just call
         //tokenCommand.checkForSlashCommands(chatMessage) and everything gets done automatically
+        // Why do I even tokenCommand.tokenCommand to be a state view?
         val scanner = Scanner(chatMessage)
+
         scanner.scanTokens()
         val tokenList = scanner.tokenList
-        tokenCommand.checkForSlashCommands(tokenList)
+        Log.d("TokenTextCommand","tokenList ->${tokenList}")
+       val textCommands = tokenCommand.checkForSlashCommands(tokenList)
+
+        Log.d("TokenTextCommand","text command username ->${textCommands.username}")
+
 
         monitorToken(
-            tokenCommand.tokenCommand,
+            textCommands,
             chatMessage,
             isMod = _uiState.value.loggedInUserData?.mod ?: false,
             addMessageToListChats ={message -> listChats.add(message)}
@@ -682,13 +688,14 @@ class StreamViewModel @Inject constructor(
     }
 
     private fun monitorToken(
-        tokenCommand: StateFlow<TextCommands>,
+        tokenCommand: TextCommands,
         chatMessage:String,
         isMod: Boolean,
         addMessageToListChats:(TwitchUserData)->Unit,
 
     ){
         viewModelScope.launch {
+
             tokenMonitoring.runMonitorToken(
                 tokenCommand = tokenCommand,
                 chatMessage = chatMessage,isMod = isMod,
@@ -706,7 +713,9 @@ class StreamViewModel @Inject constructor(
                 addToMonitorUser={username -> monitoredUsers.add(username)},
                 removeFromMonitorUser ={username -> monitoredUsers.remove(username)},
                 currentUsername = _uiState.value.loggedInUserData?.displayName?:"",
-                sendToWebSocket = {message ->webSocket.sendMessage(message)}
+                sendToWebSocket = {message ->
+                    webSocket.sendMessage(message)
+                }
 
             )
 
