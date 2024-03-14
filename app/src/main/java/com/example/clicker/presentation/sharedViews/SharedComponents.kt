@@ -21,6 +21,16 @@ import com.example.clicker.util.NetworkAuthResponse
  * **/
 object SharedComponents {
 
+    /**
+     * NoDrawerScaffold is a [Scaffold] composable meant to be used to build a scaffold containing a [topBar],
+     * [bottomBar] and [content] but no drawer
+     * - a UI demonstration can be found [HERE](https://github.com/thePlebDev/Clicker/wiki/Shared-Components#NoDrawerScaffold)
+     *
+     * @param topBar a [ScaffoldTopBarScope] composable that will be displayed in the Scaffold's topBar
+     * @param bottomBar a [ScaffoldTopBarScope] composable that will be displayed in the Scaffold's bottomBar
+     * @param content a normal composable that will be displayed in the Scaffold's content section
+     *
+     * */
     @Composable
     fun NoDrawerScaffold(
         topBar:@Composable ScaffoldTopBarScope.() -> Unit,
@@ -55,6 +65,18 @@ object SharedComponents {
         }
     }
 
+    /**
+     * NoDrawerScaffold is a [Scaffold] composable meant to be used to build a scaffold containing a [topBar],
+     * [bottomBar] and [content] with a drawer
+     * - a UI demonstration can be found [HERE](https://github.com/thePlebDev/Clicker/wiki/Shared-Components#DrawerScaffold)
+     *
+     * @param scaffoldState a [ScaffoldState] which is used to open and close the Scaffold's drawer
+     * @param topBar a [ScaffoldTopBarScope] composable that will be displayed in the Scaffold's topBar
+     * @param bottomBar a [ScaffoldTopBarScope] composable that will be displayed in the Scaffold's bottomBar
+     * @param drawerContent a normal composable that will be displayed in the Scaffold's drawerContent
+     * @param content a normal composable that will be displayed in the Scaffold's content section
+     *
+     * */
     @Composable
     fun DrawerScaffold(
         scaffoldState: ScaffoldState,
