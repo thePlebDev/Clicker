@@ -100,8 +100,6 @@ import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
 import com.example.clicker.presentation.sharedViews.NewUserAlert
-import com.example.clicker.presentation.sharedViews.NotificationsScope
-import com.example.clicker.presentation.sharedViews.NotifyUserScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
@@ -172,7 +170,7 @@ class MainScaffoldScope(){
             topBar = {
                 IconTextTopBar(
                     clickableIcon={
-                        ClickableIcon(
+                        BasicClickableIcon(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.Menu,
                             iconContentDescription = "Open left side drawer",
@@ -239,7 +237,7 @@ class MainScaffoldScope(){
                 refreshFunc = {homeRefreshFunc()},
                 showNetworkMessage=showNetworkMessage,
                 networkStatus = {modifier ->
-                    NetworkStatus(
+                    NetworkStatusCard(
                         modifier = modifier,
                         color =  networkMessageColor,
                         networkMessage = networkMessage
@@ -296,12 +294,12 @@ class MainScaffoldScope(){
                 )
 
             }
-            LogoutResponse(
-                isUserLoggedIn=isUserLoggedIn,
-                showFailedDialog=showFailedDialog,
-                hideDialog={hideDialog()},
-                loginWithTwitch={loginWithTwitch()}
-            )
+//            LogoutResponse(
+//                isUserLoggedIn=isUserLoggedIn,
+//                showFailedDialog=showFailedDialog,
+//                hideDialog={hideDialog()},
+//                loginWithTwitch={loginWithTwitch()}
+//            )
 
         }
     }
@@ -309,6 +307,7 @@ class MainScaffoldScope(){
 
 }
 
+//currently this is not working and I don't like how it is handling everythin
 @Composable
 fun LogoutResponse(
     isUserLoggedIn: NetworkAuthResponse<Boolean>,
@@ -956,7 +955,6 @@ class LiveChannelsLazyColumnScope(){
         val scope = rememberCoroutineScope()
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
         val indicatorScopes = remember() { IndicatorScopes() }
-        val newUserScope = remember() { NotifyUserScope(fontSize = fontSize, iconSize = 35.dp) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

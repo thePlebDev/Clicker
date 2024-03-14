@@ -131,7 +131,7 @@ object ModChannelComponents{
             topBar = {
                 IconTextTopBar(
                     clickableIcon ={
-                        ClickableIcon(
+                        BasicClickableIcon(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.ArrowBack,
                             iconContentDescription = "Navigate back to home page",
@@ -174,7 +174,7 @@ object ModChannelComponents{
                 refreshFunc = { refreshFunc() },
                 showNetworkMessage = showNetworkMessage,
                 networkStatus = { modifier ->
-                    NetworkStatus(
+                    NetworkStatusCard(
                         modifier = modifier,
                         color = networkMessageColor,
                         networkMessage = networkMessage

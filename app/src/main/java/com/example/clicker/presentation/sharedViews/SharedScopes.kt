@@ -39,13 +39,28 @@ import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 
-
+/**
+ * ScaffoldBottomBarScope represents all the available components to a [Scaffold's](https://developer.android.com/jetpack/compose/components/scaffold)
+ * bottomBar
+ *
+ * @property iconSize a mandatory  [Dp] unit parameter that is used to represent all of the Icon sizes inside of ScaffoldBottomBarScope
+ * */
 @Stable
 class ScaffoldBottomBarScope(
     private val iconSize: Dp,
 ){
 
 
+    /**
+     * DualButtonNavigationBottomBarRow is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's bottomBar
+     *
+     * @param fontSize a [TextUnit] used to determine the shared font size of [firstButton] and [secondButton]
+     * @param horizontalArrangement a [Arrangement.Horizontal] object used to determine the layout of [firstButton] and [secondButton]
+     * in this row layout
+     *
+     * @param firstButton a [IconScope] composable that will act as the fist button shown in this row layout
+     * @param secondButton a [IconScope] composable that will act as the second button shown in this row layout
+     * */
     @Composable
     fun DualButtonNavigationBottomBarRow(
         fontSize: TextUnit,
@@ -74,31 +89,49 @@ class ScaffoldBottomBarScope(
     }
 }
 
+/**
+ * ScaffoldTopBarScope represents all the available components to a [Scaffold's](https://developer.android.com/jetpack/compose/components/scaffold)
+ * topBar
+ *
+ * @property iconSize a mandatory  [Dp] unit parameter that is used to represent all of the Icon sizes inside of ScaffoldBottomBarScope
+ * */
 @Stable
 class ScaffoldTopBarScope(
     private val iconSize: Dp
 ){
+
+    /**
+     * IconTextTopBar is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
+     * - A UI demonstration should be shown here
+     *
+     * @param clickableIcon a [IconScope] composable meant to be displayed on top of [text]
+     * @param text a basic composable shown to the user
+     * */
     @Composable
     fun IconTextTopBar(
         clickableIcon:@Composable IconScope.() -> Unit,
         text: @Composable ()->Unit ={}
     ){
         val buttonScope = remember(){IconScope(iconSize = iconSize)}
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(vertical = 10.dp)
-        ) {
+
             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 buttonScope.clickableIcon()
                 text()
             }
-        }
 
     }
+    /**
+     * TopBarText is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
+     * - A UI demonstration should be shown here
+     *
+     * @param text a [String] meant to display a message to the user
+     * */
     @Composable
     fun TopBarText(
         text:String,
@@ -123,12 +156,27 @@ class ScaffoldTopBarScope(
 
 
 
+/**
+ * IconScope is a scope used to strongly type composable parameters that require icons
+ *
+ * @param iconSize a [Dp] used to determine the shared size of all the icons within this scope
+ * @param fontSize a [TextUnit] used to determine the shared size of all the Text's font size within this scope
+ * */
 @Stable
 class IconScope(
     private val iconSize: Dp,
-    private val fontSize: TextUnit = 20.sp,
+    private val fontSize: TextUnit = 20.sp, //this is equal to the medium font size of MaterialTheme.typography.headlineMedium
 ){
 
+
+    /**
+     * BasicIcon is a [Icon] composable. Used to represent the most standard and basic icon
+     * - The size of the icon is determined by [iconSize]
+     *
+     * @param color a [Color] used to determine the color of the icon
+     * @param imageVector a [ImageVector] which represents the image of the icon shown to the user
+     * @param contentDescription a [String] used to determine the content description of the icon
+     * */
     @Composable
     fun BasicIcon(
         color:Color,
@@ -143,6 +191,43 @@ class IconScope(
         )
     }
 
+    /**
+     * BasicIcon is a [Icon] composable. Used to represent the most standard and basic icon that can be clicked
+     * - The size of the icon is determined by [iconSize]
+     *
+     * @param iconColor a [Color] used to determine the color of the icon
+     * @param imageVector a [ImageVector] which represents the image of the icon shown to the user
+     * @param iconContentDescription a [String] used to determine the content description of the icon
+     * @param onClick a function which will be called when the icon is clicked
+     * */
+    @Composable
+    fun BasicClickableIcon(
+        iconColor: Color,
+        imageVector: ImageVector,
+        iconContentDescription:String,
+        onClick: () -> Unit
+    ){
+        Icon(
+            imageVector = imageVector,
+            contentDescription = iconContentDescription,
+            tint = iconColor,
+            modifier = Modifier
+                .size(iconSize)
+                .clickable { onClick() }
+        )
+    }
+
+    /**
+     * BasicIcon is a [Column] composable. Used to represent a [Icon] and a [Text] displayed in a column format
+     * - A UI demonstration can be found [HERE]()
+     *
+     * @param iconColor a [Color] used to determine the color of the icon
+     * @param imageVector a [ImageVector] which represents the image of the icon shown to the user
+     * @param iconContentDescription a [String] used to determine the content description of the icon
+     * @param text a [String] used to represent the message that will be displayed in the text below the icon
+     * @param fontColor a [Color] used to represent the color of the text
+     * @param onClick a function which will be called when the column surrounding the Icon and Text is clicked
+     * */
     @Composable
     fun IconOverTextColumn(
         iconColor: Color,
@@ -170,6 +255,18 @@ class IconScope(
         }
     }
 
+
+    /**
+     * PainterResourceIconOverTextColumn is a [Column] composable. Used to represent a [Icon] and a [Text] displayed in a column format
+     * - A UI demonstration can be found [HERE]()
+     *
+     * @param iconColor a [Color] used to determine the color of the icon
+     * @param painter a [Painter] which represents the image of the icon shown to the user
+     * @param iconContentDescription a [String] used to determine the content description of the icon
+     * @param text a [String] used to represent the message that will be displayed in the text below the icon
+     * @param fontColor a [Color] used to represent the color of the text
+     * @param onClick a function which will be called when the column surrounding the Icon and Text is clicked
+     * */
     @Composable
     fun PainterResourceIconOverTextColumn(
         iconColor: Color,
@@ -197,33 +294,33 @@ class IconScope(
         }
     }
 
-    @Composable
-    fun ClickableIcon(
-        iconColor: Color,
-        imageVector: ImageVector,
-        iconContentDescription:String,
-        onClick: () -> Unit
-    ){
-        Icon(
-            imageVector = imageVector,
-            contentDescription = iconContentDescription,
-            tint = iconColor,
-            modifier = Modifier
-                .size(iconSize)
-                .clickable { onClick() }
-        )
-    }
 
 
 
 }
 
 
+/**
+ * NotificationsScope is a scope used to strongly type composable parameters that requires notification
+ *
+ * */
 @Stable
-class NotificationsScope{
+class NotificationsScope(
+    private val iconSize: Dp,
+    private val fontSize: TextUnit
 
+){
+
+    /**
+     * NetworkStatus is a [Card] composable. Used to alert the user of a status change
+     * - A UI demonstration can be found [HERE]()
+     *
+     * @param color a [Color] used to determine the background color of the card
+     * @param modifier a [Modifier] used to position the composable
+     * @param networkMessage a [String] used to determine the message shown to the user
+     * */
     @Composable
-    fun NetworkStatus(
+    fun NetworkStatusCard(
         modifier:Modifier,
         color:Color,
         networkMessage:String
@@ -243,61 +340,36 @@ class NotificationsScope{
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                     "home icon",
                     tint= MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(iconSize)
                 )
-                Text(networkMessage,color = MaterialTheme.colorScheme.onPrimary)
+                Text(
+                    networkMessage,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize =fontSize
+                )
             }
         }
     }
-}
 
-@Composable
-fun NewUserAlert(
-    iconSize: Dp,
-    iconContentDescription: String,
-    iconColor: Color,
-    iconImageVector: ImageVector,
-    backgroundColor: Color,
-    fontSize: TextUnit,
-    textColor:Color,
-    message: String,
-    onClick: () -> Unit,
-){
-    val scope = remember(){NotifyUserScope(iconSize,fontSize)}
-    with(scope){
-        MatchingIconTextCard(
-            textMessage =message,
-            textColor= textColor,
-            backgroundColor = backgroundColor,
-            onClick = {onClick()}
-        ) {
-            BasicIcon(
-                color =iconColor,
-                imageVector = iconImageVector,
-                contentDescription = iconContentDescription
-            )
-        }
-    }
-}
-@Stable
-class NotifyUserScope(
-    //so if I don't want to pass anything directly to MatchingIconTextCard, I should define it here
-//so put all the message, iconContentDescription, fontSize,iconSize and onClick here and then
-// pass it down to the MatchingIconTextCard()
-    private val iconSize:Dp,
-    private val fontSize: TextUnit,
-
-
-){
+    /**
+     * MatchingIconTextCard is a [Card] composable. Used to alert the user of a message
+     * - A UI demonstration can be found [HERE]()
+     *
+     * @param textMessage a [String] used to determine the message sent to the user
+     * @param textColor a [Color] used to determine the color of the text shown to the user
+     * @param backgroundColor a [Color] used to determine the entire background color of the card
+     * @param onClick a function called when the user clicks the card
+     * @param icon a [IconScope] composable that be the icons shown to the user
+     * */
     @Composable
     fun MatchingIconTextCard(
-       textMessage:String,
-       textColor:Color,
-       backgroundColor:Color,
-       onClick: () -> Unit ={},
-       icon:@Composable IconScope.()->Unit,
+        textMessage:String,
+        textColor:Color,
+        backgroundColor:Color,
+        onClick: () -> Unit ={},
+        icon:@Composable IconScope.()->Unit,
 
-    ){
+        ){
         val iconScope = remember(){IconScope(iconSize)}
         Card(
             modifier = Modifier
@@ -324,8 +396,17 @@ class NotifyUserScope(
     }
 }
 
+
+/**
+ * IndicatorScopes is a scope used to strongly type composable parameters that requires Loading indicators
+ *
+ * */
 @Stable
 class IndicatorScopes(){
+    /**
+     * LazyListLoadingIndicator is a [Row] composable meant to show a [CircularProgressIndicator] to the user
+     *
+     * */
     @Composable
     fun LazyListLoadingIndicator(){
         Row(
@@ -342,6 +423,11 @@ class IndicatorScopes(){
 
 }
 
+
+/**
+ * TODO: NONE OF THE COMPOSABLES BELOW ARE IN THE PROPER DOCUMENTATION FORMAT.NEED TO BE REWORKED AFTER TESTING
+ * */
+
 @Composable
 fun PullToRefreshComponent(
     padding: PaddingValues,
@@ -352,8 +438,9 @@ fun PullToRefreshComponent(
     content:@Composable LiveChannelsLazyColumnScope.() -> Unit,
 ){
 
+    val mediumFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
-    val networkStatusScope = remember() { NotificationsScope() }
+    val networkStatusScope = remember() { NotificationsScope(fontSize = mediumFontSize,iconSize=30.dp) }
 
 
     PullToRefresh(
@@ -376,5 +463,34 @@ fun PullToRefreshComponent(
 
         }
 
+    }
+}
+
+@Composable
+fun NewUserAlert(
+    iconSize: Dp,
+    iconContentDescription: String,
+    iconColor: Color,
+    iconImageVector: ImageVector,
+    backgroundColor: Color,
+    fontSize: TextUnit,
+    textColor:Color,
+    message: String,
+    onClick: () -> Unit,
+){
+    val scope = remember(){NotificationsScope(iconSize,fontSize)}
+    with(scope){
+        MatchingIconTextCard(
+            textMessage =message,
+            textColor= textColor,
+            backgroundColor = backgroundColor,
+            onClick = {onClick()}
+        ) {
+            BasicIcon(
+                color =iconColor,
+                imageVector = iconImageVector,
+                contentDescription = iconContentDescription
+            )
+        }
     }
 }
