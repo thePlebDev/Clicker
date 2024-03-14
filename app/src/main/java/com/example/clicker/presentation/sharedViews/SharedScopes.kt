@@ -53,6 +53,7 @@ class ScaffoldBottomBarScope(
 
     /**
      * DualButtonNavigationBottomBarRow is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's bottomBar
+     * - a UI demonstration can be found [HERE](https://github.com/thePlebDev/Clicker/wiki/Shared-Scopes#DualButtonNavigationBottomBarRow)
      *
      * @param fontSize a [TextUnit] used to determine the shared font size of [firstButton] and [secondButton]
      * @param horizontalArrangement a [Arrangement.Horizontal] object used to determine the layout of [firstButton] and [secondButton]
@@ -102,7 +103,6 @@ class ScaffoldTopBarScope(
 
     /**
      * IconTextTopBar is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
-     * - A UI demonstration should be shown here
      *
      * @param clickableIcon a [IconScope] composable meant to be displayed on top of [text]
      * @param text a basic composable shown to the user
@@ -128,7 +128,6 @@ class ScaffoldTopBarScope(
     }
     /**
      * TopBarText is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
-     * - A UI demonstration should be shown here
      *
      * @param text a [String] meant to display a message to the user
      * */
@@ -176,46 +175,23 @@ class IconScope(
      * @param color a [Color] used to determine the color of the icon
      * @param imageVector a [ImageVector] which represents the image of the icon shown to the user
      * @param contentDescription a [String] used to determine the content description of the icon
+     * @param onClick a optional function that will be called when the user clicks on the icon
      * */
     @Composable
     fun BasicIcon(
         color:Color,
         imageVector: ImageVector,
         contentDescription:String,
+        onClick: () -> Unit ={}
     ){
         Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
             tint = color,
-            modifier = Modifier.size(iconSize)
+            modifier = Modifier.size(iconSize).clickable { onClick() }
         )
     }
 
-    /**
-     * BasicIcon is a [Icon] composable. Used to represent the most standard and basic icon that can be clicked
-     * - The size of the icon is determined by [iconSize]
-     *
-     * @param iconColor a [Color] used to determine the color of the icon
-     * @param imageVector a [ImageVector] which represents the image of the icon shown to the user
-     * @param iconContentDescription a [String] used to determine the content description of the icon
-     * @param onClick a function which will be called when the icon is clicked
-     * */
-    @Composable
-    fun BasicClickableIcon(
-        iconColor: Color,
-        imageVector: ImageVector,
-        iconContentDescription:String,
-        onClick: () -> Unit
-    ){
-        Icon(
-            imageVector = imageVector,
-            contentDescription = iconContentDescription,
-            tint = iconColor,
-            modifier = Modifier
-                .size(iconSize)
-                .clickable { onClick() }
-        )
-    }
 
     /**
      * BasicIcon is a [Column] composable. Used to represent a [Icon] and a [Text] displayed in a column format

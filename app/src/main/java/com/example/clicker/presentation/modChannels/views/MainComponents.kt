@@ -131,10 +131,10 @@ object ModChannelComponents{
             topBar = {
                 IconTextTopBar(
                     clickableIcon ={
-                        BasicClickableIcon(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                        BasicIcon(
+                            color = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.ArrowBack,
-                            iconContentDescription = "Navigate back to home page",
+                            contentDescription = "Navigate back to home page",
                             onClick = {popBackStackNavigation()}
                         )
                     },

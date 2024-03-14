@@ -170,10 +170,10 @@ class MainScaffoldScope(){
             topBar = {
                 IconTextTopBar(
                     clickableIcon={
-                        BasicClickableIcon(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                        BasicIcon(
+                            color = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.Menu,
-                            iconContentDescription = "Open left side drawer",
+                            contentDescription = "Open left side drawer",
                             onClick = {
                                 scope.launch { scaffoldState.drawerState.open() }
                             }
