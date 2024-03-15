@@ -202,3 +202,4 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
         onClick = { }
     )
 }
+
