@@ -54,6 +54,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import kotlinx.coroutines.launch
 
@@ -105,7 +106,7 @@ object TextChat{
                 )
             },
             showModStatus = {
-                TextChatParts.ShowModStatus(
+                ShowModStatus(
                     modStatus =modStatus,
                     showOuterBottomModalState={showOuterBottomModalState()},
                     orientationIsVertical =orientationIsVertical
@@ -340,37 +341,55 @@ object TextChat{
 
         }
 
-        /**
-         * A composable meant to show a moderator Icon based on the status of [modStatus]
-         *
-         * @param modStatus a boolean meant to determine if the user is a moderator or not.
-         * @param showOuterBottomModalState a function used to show the a bottom layout sheet
-         * */
-        @Composable
-        fun ShowModStatus(
-            modStatus: Boolean?,
-            showOuterBottomModalState: () ->Unit,
-            orientationIsVertical:Boolean
-        ){
-            val scope = rememberCoroutineScope()
-            if (modStatus != null && modStatus == true) {
-                AsyncImage(
-                    modifier = Modifier.clickable {
-                        if (orientationIsVertical){
-                            showOuterBottomModalState()
-                        }
 
-                    },
-                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
-                )
-            }
-
-        }
     }// end of TextChatParts
 
 }// end of Text Chat
 
+/**
+ * A composable meant to show a moderator Icon based on the status of [modStatus]
+ *
+ * @param modStatus a boolean meant to determine if the user is a moderator or not.
+ * @param showOuterBottomModalState a function used to show the a bottom layout sheet
+ * */
+@Composable
+fun ShowModStatus(
+    modStatus: Boolean?,
+    showOuterBottomModalState: () ->Unit,
+    orientationIsVertical:Boolean
+){
+    val scope = rememberCoroutineScope()
+
+    if(BuildConfig.BUILD_TYPE== "debug"){
+        AsyncImage(
+            modifier = Modifier.clickable {
+                if (orientationIsVertical){
+                    showOuterBottomModalState()
+                }
+
+            },
+            model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+            contentDescription = stringResource(R.string.moderator_badge_icon_description)
+        )
+
+    }else{
+        if (modStatus != null && modStatus == true) {
+            AsyncImage(
+                modifier = Modifier.clickable {
+                    if (orientationIsVertical){
+                        showOuterBottomModalState()
+                    }
+
+                },
+                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                contentDescription = stringResource(R.string.moderator_badge_icon_description)
+            )
+        }
+    }
+
+
+
+}
 
 
 /*****TESTING THE BUMBLE DESIGN SYSTEM*******/

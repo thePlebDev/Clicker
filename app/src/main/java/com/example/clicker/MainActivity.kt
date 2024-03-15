@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
         super.onResume()
@@ -88,6 +89,10 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         // Registers BroadcastReceiver to track network connection changes.
+
+
+
+
 
 
 
