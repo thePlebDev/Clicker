@@ -204,7 +204,7 @@ class AutoModViewModel @Inject constructor(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
                     broadcasterId = broadcasterId,
-                    channelInformation = ChannelInformation(title = streamTitle)
+                    channelInformation = ChannelInformation()
                 ).collect{response ->
                     when(response){
                         is Response.Loading ->{
@@ -238,6 +238,7 @@ class AutoModViewModel @Inject constructor(
                     broadcasterId =broadcasterId,
                     moderatorId =moderatorId
                 ).collect{response ->
+                  //  Log.d("Auto")
 
 
                     when (response){

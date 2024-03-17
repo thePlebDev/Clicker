@@ -102,15 +102,18 @@ class ScaffoldTopBarScope(
 ){
 
     /**
-     * IconTextTopBar is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
+     * IconTextTopBarRow is a [Row] composable that is ***ONLY*** meant to be used inside of a Scaffold's TopBar.
      *
      * @param clickableIcon a [IconScope] composable meant to be displayed on top of [text]
      * @param text a basic composable shown to the user
      * */
     @Composable
-    fun IconTextTopBar(
-        clickableIcon:@Composable IconScope.() -> Unit,
-        text: @Composable ()->Unit ={}
+    fun IconTextTopBarRow(
+        icon:@Composable IconScope.() -> Unit,
+        text: String,
+        fontSize: TextUnit =MaterialTheme.typography.headlineMedium.fontSize,
+        textColor:Color = MaterialTheme.colorScheme.onPrimary,
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.Start
     ){
         val buttonScope = remember(){IconScope(iconSize = iconSize)}
 
@@ -118,11 +121,18 @@ class ScaffoldTopBarScope(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = horizontalArrangement
             ) {
-                buttonScope.clickableIcon()
-                text()
+                buttonScope.icon()
+                Text(
+                    modifier = Modifier.padding(start = 20.dp),
+                    text =text,
+                    fontSize = fontSize,
+                    color = textColor
+                )
+
             }
 
     }
@@ -132,7 +142,7 @@ class ScaffoldTopBarScope(
      * @param text a [String] meant to display a message to the user
      * */
     @Composable
-    fun TopBarText(
+    fun TopBarTextRow(
         text:String,
 
     ){
@@ -151,7 +161,8 @@ class ScaffoldTopBarScope(
 
     }
 
-}
+
+} // end of ScaffoldTopBarScope
 
 
 

@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -287,9 +288,11 @@ fun StreamView(
 
             }
 
+
         }
     }
 }
+
 
 @Composable
 fun SideModal(
@@ -392,6 +395,7 @@ fun TextChat(
     )
 
 }
+
 
 
 

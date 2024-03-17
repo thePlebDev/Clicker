@@ -168,8 +168,8 @@ class MainScaffoldScope(){
         SharedComponents.DrawerScaffold(
             scaffoldState = scaffoldState,
             topBar = {
-                IconTextTopBar(
-                    clickableIcon={
+                IconTextTopBarRow(
+                    icon={
                         BasicIcon(
                             color = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.Menu,
@@ -179,15 +179,8 @@ class MainScaffoldScope(){
                             }
                         )
                     },
-                    text={
-                        Text(
-                            stringResource(R.string.live_channels),
-                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                            modifier = Modifier.padding(start = 20.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-
-                    }
+                    text=stringResource(R.string.live_channels),
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
                 )
             },
             bottomBar = {

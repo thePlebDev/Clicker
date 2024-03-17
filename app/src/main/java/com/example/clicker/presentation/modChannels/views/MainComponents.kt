@@ -129,8 +129,8 @@ object ModChannelComponents{
     ){
         SharedComponents.NoDrawerScaffold(
             topBar = {
-                IconTextTopBar(
-                    clickableIcon ={
+                IconTextTopBarRow(
+                    icon ={
                         BasicIcon(
                             color = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.ArrowBack,
@@ -138,6 +138,7 @@ object ModChannelComponents{
                             onClick = {popBackStackNavigation()}
                         )
                     },
+                    text =""
 
                     )
             }
