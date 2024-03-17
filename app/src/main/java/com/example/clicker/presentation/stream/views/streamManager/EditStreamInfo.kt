@@ -2,17 +2,22 @@ package com.example.clicker.presentation.stream.views.streamManager
 
 import android.animation.ObjectAnimator
 import android.content.res.Resources
+import android.util.Log
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +39,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,8 +48,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
@@ -54,6 +63,7 @@ import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -323,14 +333,124 @@ fun ModView(
         },
         bottomBar = {}
     ) {contentPadding ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .background(MaterialTheme.colorScheme.primary)) {
-            Text("THIS IS MODVIEW", fontSize = 30.sp,color = MaterialTheme.colorScheme.onPrimary)
-        }
+        DraggableBackground(contentPadding)
+
     }
 
+
+}
+
+@Composable
+fun DraggableBackground(
+    contentPadding: PaddingValues
+){
+
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+    var totalItemHeight by remember { mutableStateOf(0) }
+    var boxSize =100
+    var sectionOneColor = remember { mutableStateOf(Color.Black) }
+    var sectionTwoColor = remember { mutableStateOf(Color.Black) }
+    var sectionThreeColor = remember { mutableStateOf(Color.Black) }
+
+    //derived state of for each item I could do a derived state of for colors
+    // that will be the next thing I do
+    when{
+        offsetY < (totalItemHeight)->{
+            Log.d("onGloballyPositioned","section 1")
+            sectionOneColor.value = Color.White
+            sectionTwoColor.value = Color.Black
+            sectionThreeColor.value = Color.Black
+        }
+        offsetY > totalItemHeight && offsetY< totalItemHeight*2->{
+            Log.d("onGloballyPositioned","section 2")
+            sectionTwoColor.value = Color.White
+            sectionOneColor.value = Color.Black
+            sectionThreeColor.value = Color.Black
+        }
+        offsetY > totalItemHeight*2 ->{
+            Log.d("onGloballyPositioned","section 3")
+            sectionThreeColor.value = Color.White
+            sectionOneColor.value = Color.Black
+            sectionTwoColor.value = Color.Black
+        }
+    }
+//    val section by remember(offsetY, totalItemHeight) {
+//        derivedStateOf {
+//            when {
+//                offsetY < totalItemHeight -> "section 1"
+//                offsetY > totalItemHeight && offsetY < totalItemHeight * 2 -> "section 2"
+//                offsetY > totalItemHeight*2 ->"section 3"
+//                else -> ""
+//            }
+//        }
+//    }
+
+
+
+    Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)) {
+
+            Row(
+                modifier = Modifier.weight(1f)
+                    .background(sectionOneColor.value)
+                    .fillMaxWidth()
+                    .onGloballyPositioned{
+                        totalItemHeight= (it.size.height -130)
+                    }
+                ,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text("AREA 1")
+            }
+            Row(
+                modifier = Modifier.weight(1f)
+                    .background(sectionTwoColor.value)
+                    .fillMaxWidth()
+                    .onGloballyPositioned{
+
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text("AREA 2")
+            }
+            Row(
+                modifier = Modifier.weight(1f)
+                    .background(sectionThreeColor.value)
+                    .fillMaxWidth()
+                    .onGloballyPositioned{
+
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text("AREA 3")
+            }
+
+        }
+
+        Box(
+            Modifier
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .background(Color.Magenta)
+                .size(boxSize.dp)
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
+                .onGloballyPositioned{
+                   // totalItemHeight= it.size.height
+                    Log.d("Box","height -> ${it.size.height}")
+                }
+        )
+    }
 
 }
 
