@@ -219,7 +219,10 @@ class TwitchStreamImpl @Inject constructor(
         broadcasterId: String,
         channelInformation: ChannelInformation
     ): Flow<Response<Boolean>> =flow{
-       // Log.d("updateChannelInformation","authorizationToken -> Bearer $authorizationToken")
+        Log.d("updateChannelInformation","authorizationToken -> Bearer $authorizationToken")
+        Log.d("updateChannelInformation","clientId -> $clientId")
+        Log.d("updateChannelInformation","broadcasterId -> $broadcasterId")
+        Log.d("updateChannelInformation","channelInformation -> $channelInformation")
 
         emit(Response.Loading)
         val response = twitchClient.updateChannelInformation(

@@ -29,6 +29,9 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 
 
+/**
+ * StreamManagerUI shows the user 3 buttons to press and display the wanted information
+ * */
 @Composable
 fun StreamManagerUI(
     showEditStreamInfo:()->Unit,
@@ -57,11 +60,14 @@ fun StreamManagerUI(
 
             )
         EditStreamInfoCard(
-            title="Mod View (coming soon)",
+            title="Mod View ",
             contentDescription = "Edit AutoMod Info",
             iconPainter = painterResource(R.drawable.mod_view_24),
-            iconTextColor =Color.White.copy(0.4f),
-            showStreamManager={}
+            iconTextColor =Color.White,
+            showStreamManager={
+                //this conditional has been moved to now mean show modview
+                showEditStreamInfo()
+            }
         )
     }
 
@@ -101,7 +107,7 @@ fun EditStreamInfoCard(
                 tint= iconTextColor,
                 modifier = Modifier.size(35.dp)
             )
-            Text(text =title, color = iconTextColor, fontSize = 25.sp)
+            Text(text =title, color = iconTextColor, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
 
         }
     }

@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -163,6 +164,7 @@ object MainChat{
                     toggleBanDialog={toggleBanDialog()}
 
                 )
+
             },
             enterChat ={boxModifier ->
                 TextChat.EnterChat(
@@ -215,6 +217,7 @@ object MainChat{
     }
 
 
+
     /**
      * Builders represents the most generic parts of [MainChat] and should be thought of as UI layout guides used
      * by the implementations above
@@ -244,11 +247,13 @@ object MainChat{
             draggableButton:@Composable () -> Unit,
             forwardSlashCommands:@Composable (modifier:Modifier) -> Unit,
         ){
+
             determineScrollState()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+
 
                 autoScrollingChat()
                 enterChat(

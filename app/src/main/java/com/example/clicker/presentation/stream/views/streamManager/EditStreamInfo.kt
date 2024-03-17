@@ -22,6 +22,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.util.Response
@@ -103,14 +105,17 @@ fun ManageStreamInformation(
 
         )
     }else{
-        EditStreamInfo(
-            closeStreamInfo ={closeStreamInfo()},
-            streamTitle = streamTitle,
-            updateStreamTitle = { newText -> updateStreamTitle(newText) },
-            streamCategory = streamCategory,
-            updateChannelInfo={updateChannelInfo()}
-
+        ModView(
+            closeStreamInfo={closeStreamInfo()},
         )
+//        EditStreamInfo(
+//            closeStreamInfo ={closeStreamInfo()},
+//            streamTitle = streamTitle,
+//            updateStreamTitle = { newText -> updateStreamTitle(newText) },
+//            streamCategory = streamCategory,
+//            updateChannelInfo={updateChannelInfo()}
+//
+//        )
     }
 
 
@@ -293,6 +298,40 @@ fun EditStreamInfo(
 //        )
 
     }
+}
+
+@Composable
+fun ModView(
+    closeStreamInfo:()->Unit,
+){
+    SharedComponents.NoDrawerScaffold(
+        topBar = {
+            IconTextTopBarRow(
+                icon = {
+                    BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "close this section of UI",
+                        onClick = {
+                            closeStreamInfo()
+                        }
+                    )
+                },
+                text="Mod View",
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                horizontalArrangement = Arrangement.SpaceBetween
+            )
+        },
+        bottomBar = {}
+    ) {contentPadding ->
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .background(MaterialTheme.colorScheme.primary)) {
+            Text("THIS IS MODVIEW", fontSize = 30.sp,color = MaterialTheme.colorScheme.onPrimary)
+        }
+    }
+
+
 }
 
 @Composable

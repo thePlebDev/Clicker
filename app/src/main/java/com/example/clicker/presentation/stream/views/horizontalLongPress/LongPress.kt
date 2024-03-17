@@ -91,7 +91,7 @@ fun HorizontalLongPressView(
     SharedComponents
         .NoDrawerScaffold(
             topBar = {
-                TopBarText(text)
+                TopBarTextRow(text)
             },
             bottomBar = {},
             content = { contentPadding ->

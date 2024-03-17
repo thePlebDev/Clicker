@@ -735,7 +735,7 @@ class StreamViewModel @Inject constructor(
         userId: String,
         login:String
     ) {
-        Log.d("updateChannelNameAndClientIdAndUserId","Emitting the channel name")
+        Log.d("updateChannelNameAndClientIdAndUserId","broadcasterId --->${broadcasterId}")
         _channelName.tryEmit(channelName)
         //startWebSocket(channelName)
 

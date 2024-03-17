@@ -185,7 +185,16 @@ interface TwitchClient {
 
 }
 data class ChannelInformation(
-    val title:String
+    val title:String ="ti do be like that sometimes",
+    @SerializedName("is_enabled")
+    val isLabelEnabled: Boolean = false,
+    val id:String = "ProfanityVulgarity",
+    @SerializedName("broadcaster_language")
+    val preferredLanguage: String = "ko",
+    @SerializedName("game_id")
+    val gameId: String = "0",
+
+
 )
 data class GetModChannels(
     val data:List<GetModChannelsData>
