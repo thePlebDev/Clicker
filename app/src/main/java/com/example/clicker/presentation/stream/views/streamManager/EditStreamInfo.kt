@@ -62,6 +62,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.sharedViews.SharedComponents
@@ -356,8 +357,16 @@ fun DraggableBackground(
 ){
 
 
-    var offsetY by remember { mutableStateOf(0f) }
+    var boxOneYOffset by remember { mutableStateOf(0f) }
+    var boxOneZIndex by remember {mutableStateOf(1f)}
+
+    var boxTwoYOffset by remember { mutableStateOf(692f) }
+    var boxTwoZIndex by remember {mutableStateOf(1f)}
+
     var totalItemHeight by remember { mutableStateOf(0) }
+
+
+    //todo: I think we need totally separate colors for box boxes and then have a conditional to determine which colors shoul be used
 
     var sectionOneColor = remember { mutableStateOf(Color.Black) }
     var sectionTwoColor = remember { mutableStateOf(Color.Black) }
@@ -366,31 +375,71 @@ fun DraggableBackground(
     //derived state of for each item I could do a derived state of for colors
     // that will be the next thing I do
     when{
-        offsetY < (totalItemHeight)->{
+        boxOneYOffset < (totalItemHeight) ->{
             Log.d("onGloballyPositioned","section 1")
             sectionOneColor.value = Color.White
             sectionTwoColor.value = Color.Black
             sectionThreeColor.value = Color.Black
         }
-        offsetY > totalItemHeight && offsetY< totalItemHeight*2->{
+        boxOneYOffset > totalItemHeight && boxOneYOffset< totalItemHeight*2->{
             Log.d("onGloballyPositioned","section 2")
             sectionTwoColor.value = Color.White
             sectionOneColor.value = Color.Black
             sectionThreeColor.value = Color.Black
         }
-        offsetY > totalItemHeight*2 ->{
+        boxOneYOffset > totalItemHeight*2 ->{
             Log.d("onGloballyPositioned","section 3")
             sectionThreeColor.value = Color.White
             sectionOneColor.value = Color.Black
             sectionTwoColor.value = Color.Black
         }
     }
-    val section by remember(offsetY) {
+    when{
+        boxTwoYOffset < (totalItemHeight) ->{
+            Log.d("onGloballyPositioned","section 1")
+            sectionOneColor.value = Color.White
+            sectionTwoColor.value = Color.Black
+            sectionThreeColor.value = Color.Black
+        }
+        boxTwoYOffset > totalItemHeight && boxTwoYOffset< totalItemHeight*2->{
+            Log.d("onGloballyPositioned","section 2")
+            sectionTwoColor.value = Color.White
+            sectionOneColor.value = Color.Black
+            sectionThreeColor.value = Color.Black
+        }
+        boxTwoYOffset > totalItemHeight*2 ->{
+            Log.d("onGloballyPositioned","section 3")
+            sectionThreeColor.value = Color.White
+            sectionOneColor.value = Color.Black
+            sectionTwoColor.value = Color.Black
+        }
+    }
+    val boxOneSection by remember(boxOneYOffset) {
+        Log.d("boxOneYOffset","boxOneYOffset -->{boxOneYOffset}")
         derivedStateOf {
             when {
-                offsetY < totalItemHeight -> Section.ONE
-                offsetY > totalItemHeight && offsetY < totalItemHeight * 2 -> Section.TWO
-                offsetY > totalItemHeight*2 ->Section.THREE
+                boxOneYOffset < totalItemHeight -> Section.ONE
+                boxOneYOffset > totalItemHeight && boxOneYOffset < totalItemHeight * 2 -> Section.TWO
+                boxOneYOffset > totalItemHeight*2 ->Section.THREE
+                else -> Section.OTHER
+            }
+        }
+    }
+    val boxTwoSection by remember(boxTwoYOffset) {
+        derivedStateOf {
+            when {
+                boxTwoYOffset < totalItemHeight -> {
+                    Log.d("boxTwoSection","section one")
+                    Section.ONE
+                }
+                boxTwoYOffset > totalItemHeight && boxTwoYOffset < totalItemHeight * 2 -> {
+                    Log.d("boxTwoSection","section two")
+                    Section.TWO
+                }
+                boxTwoYOffset > totalItemHeight*2 -> {
+                    Log.d("boxTwoSection","section three")
+                    Section.THREE
+                }
                 else -> Section.OTHER
             }
         }
@@ -401,6 +450,7 @@ fun DraggableBackground(
     val state = rememberDraggableActions()
     val scope = rememberCoroutineScope()
     var boxSize by remember { mutableStateOf(100) }
+
 
 
     Box(modifier = Modifier
@@ -446,9 +496,7 @@ fun DraggableBackground(
                     .background(sectionThreeColor.value)
                     .fillMaxWidth()
                     .onGloballyPositioned {
-
-                        boxSize = (it.size.height /2.61).toInt()
-
+                        boxSize = (it.size.height / 2.61).toInt()
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -460,32 +508,53 @@ fun DraggableBackground(
 
         Box(
             Modifier
-                .offset { IntOffset(0, offsetY.roundToInt()) }
+                .offset { IntOffset(0, boxOneYOffset.roundToInt()) }
                 .background(Color.Magenta)
                 .height(boxSize.dp)
                 .fillMaxWidth()
-
+                .zIndex(boxOneZIndex)
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragEnd = {
-                            when(section){
-                                Section.ONE ->{
-                                    offsetY = 0f
+                            when (boxOneSection) {
+                                Section.ONE -> {
+                                    boxOneYOffset = 0f
                                 }
-                                Section.TWO ->{
-                                    offsetY = totalItemHeight +130f
+
+                                Section.TWO -> {
+                                    boxOneYOffset = totalItemHeight + 130f
                                 }
-                                Section.THREE ->{
-                                    offsetY = (totalItemHeight +130f)*2
+
+                                Section.THREE -> {
+                                    boxOneYOffset = (totalItemHeight + 130f) * 2
                                 }
-                                Section.OTHER ->{}
+
+                                Section.OTHER -> {}
                             }
-                           // offsetY = 0f
+                            // offsetY = 0f
+                        },
+                        onDragStart = {
+                            boxOneZIndex = 1f
+                            boxTwoZIndex = 0f
                         }
                     ) { change, dragAmount ->
                         change.consume()
+                        checkSections(
+                            boxOneSection =boxOneSection,
+                            boxTwoSection =boxTwoSection,
+                            changeToSectionOne = {
+                                boxTwoYOffset = 0f
+                            },
+                            changeToSectionTwo={
+                                boxTwoYOffset = totalItemHeight + 130f
+                            },
+                            changeToSectionThree={
+                                boxTwoYOffset = (totalItemHeight + 130f) * 2
+                            },
+                            isDraggedDown = dragAmount.y <0
+                        )
 
-                        offsetY += dragAmount.y
+                        boxOneYOffset += dragAmount.y
                     }
                 }
                 .onGloballyPositioned {
@@ -494,10 +563,101 @@ fun DraggableBackground(
                 }
 
         )
+        /***------------------BELOW IS THE SECOND BOX-----------------------------------------------*/
+
+        Box(Modifier
+            .offset { IntOffset(0, boxTwoYOffset.roundToInt()) }
+            .background(Color.Red)
+            .height(boxSize.dp)
+            .fillMaxWidth()
+            .zIndex(boxTwoZIndex)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        when (boxTwoSection) {
+                            Section.ONE -> {
+                                boxTwoYOffset = 0f
+                            }
+
+                            Section.TWO -> {
+                                boxTwoYOffset = totalItemHeight + 130f
+                            }
+
+                            Section.THREE -> {
+                                boxTwoYOffset = (totalItemHeight + 130f) * 2
+                            }
+
+                            Section.OTHER -> {}
+                        }
+                        // offsetY = 0f
+                    },
+                    onDragStart = {
+                        boxOneZIndex = 0f
+                        boxTwoZIndex = 1f
+                    }
+                ) { change, dragAmount ->
+                    change.consume()
+                    //change
+
+                    checkSections(
+                        boxOneSection =boxOneSection,
+                        boxTwoSection =boxTwoSection,
+                        changeToSectionOne = {
+                            boxOneYOffset = 0f
+                        },
+                        changeToSectionTwo={
+                            boxOneYOffset = totalItemHeight + 130f
+                        },
+                        changeToSectionThree={
+                            boxOneYOffset = (totalItemHeight + 130f) * 2
+                        },
+                        isDraggedDown = dragAmount.y <0
+                    )
+
+
+                    boxTwoYOffset += dragAmount.y
+                }
+            }
+        ){
+
+        }
     }
 
 }
+fun checkSections(
+    boxOneSection:Section,
+    boxTwoSection:Section,
+    changeToSectionOne:()->Unit,
+    changeToSectionTwo: () -> Unit,
+    changeToSectionThree: () -> Unit,
+    isDraggedDown:Boolean
+){
+    if(boxOneSection == boxTwoSection && boxOneSection == Section.ONE){
+        changeToSectionTwo()
+    }
+    if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && isDraggedDown){
+        changeToSectionThree()
+    }
+    if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && !isDraggedDown){
+        changeToSectionOne()
+    }
+    if(boxOneSection == boxTwoSection && boxOneSection == Section.THREE){
+        changeToSectionTwo()
+    }
 
+}
+fun logSectionsName(
+    title:String,
+    name:String
+){
+    Log.d("SectionNaming","$title ----> $name")
+}
+
+
+
+
+
+//todo: rememberDraggableActions() is what I am going to later use to model the complex state
 @Composable
 fun rememberDraggableActions():ModViewDragState{
     return remember {ModViewDragState()}
@@ -506,7 +666,7 @@ fun rememberDraggableActions():ModViewDragState{
 @Stable
 class ModViewDragState(){
     val offset: State<Float> get() = offsetY
-   
+
     private var offsetY = mutableStateOf(0f)
 
 
