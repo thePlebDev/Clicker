@@ -4,9 +4,14 @@ import android.animation.ObjectAnimator
 import android.content.res.Resources
 import android.util.Log
 import android.view.View
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +44,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -339,16 +346,19 @@ fun ModView(
 
 
 }
+enum class Section {
+    ONE, TWO, THREE, OTHER
+}
 
 @Composable
 fun DraggableBackground(
     contentPadding: PaddingValues
 ){
 
-    var offsetX by remember { mutableStateOf(0f) }
+
     var offsetY by remember { mutableStateOf(0f) }
     var totalItemHeight by remember { mutableStateOf(0) }
-    var boxSize =100
+
     var sectionOneColor = remember { mutableStateOf(Color.Black) }
     var sectionTwoColor = remember { mutableStateOf(Color.Black) }
     var sectionThreeColor = remember { mutableStateOf(Color.Black) }
@@ -375,30 +385,41 @@ fun DraggableBackground(
             sectionTwoColor.value = Color.Black
         }
     }
-//    val section by remember(offsetY, totalItemHeight) {
-//        derivedStateOf {
-//            when {
-//                offsetY < totalItemHeight -> "section 1"
-//                offsetY > totalItemHeight && offsetY < totalItemHeight * 2 -> "section 2"
-//                offsetY > totalItemHeight*2 ->"section 3"
-//                else -> ""
-//            }
-//        }
-//    }
+    val section by remember(offsetY) {
+        derivedStateOf {
+            when {
+                offsetY < totalItemHeight -> Section.ONE
+                offsetY > totalItemHeight && offsetY < totalItemHeight * 2 -> Section.TWO
+                offsetY > totalItemHeight*2 ->Section.THREE
+                else -> Section.OTHER
+            }
+        }
+    }
 
 
 
-    Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+    val state = rememberDraggableActions()
+    val scope = rememberCoroutineScope()
+    var boxSize by remember { mutableStateOf(100) }
+
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(contentPadding)
+
+    ) {
         Column(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)) {
 
             Row(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .background(sectionOneColor.value)
                     .fillMaxWidth()
-                    .onGloballyPositioned{
-                        totalItemHeight= (it.size.height -130)
+                    .onGloballyPositioned {
+                        totalItemHeight = (it.size.height - 130)
+                        Log.d("DragEnding", "area 1 row size -> ${it.size.height}")
                     }
                 ,
                 verticalAlignment = Alignment.CenterVertically,
@@ -407,11 +428,12 @@ fun DraggableBackground(
                 Text("AREA 1")
             }
             Row(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .background(sectionTwoColor.value)
                     .fillMaxWidth()
-                    .onGloballyPositioned{
-
+                    .onGloballyPositioned {
+                        Log.d("DragEnding", "area 2 row size -> ${it.size.height}")
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -419,10 +441,13 @@ fun DraggableBackground(
                 Text("AREA 2")
             }
             Row(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .background(sectionThreeColor.value)
                     .fillMaxWidth()
-                    .onGloballyPositioned{
+                    .onGloballyPositioned {
+
+                        boxSize = (it.size.height /2.61).toInt()
 
                     },
                 verticalAlignment = Alignment.CenterVertically,
@@ -435,22 +460,56 @@ fun DraggableBackground(
 
         Box(
             Modifier
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .offset { IntOffset(0, offsetY.roundToInt()) }
                 .background(Color.Magenta)
-                .size(boxSize.dp)
+                .height(boxSize.dp)
+                .fillMaxWidth()
+
                 .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
+                    detectDragGestures(
+                        onDragEnd = {
+                            when(section){
+                                Section.ONE ->{
+                                    offsetY = 0f
+                                }
+                                Section.TWO ->{
+                                    offsetY = totalItemHeight +130f
+                                }
+                                Section.THREE ->{
+                                    offsetY = (totalItemHeight +130f)*2
+                                }
+                                Section.OTHER ->{}
+                            }
+                           // offsetY = 0f
+                        }
+                    ) { change, dragAmount ->
                         change.consume()
-                        offsetX += dragAmount.x
+
                         offsetY += dragAmount.y
                     }
                 }
-                .onGloballyPositioned{
-                   // totalItemHeight= it.size.height
-                    Log.d("Box","height -> ${it.size.height}")
+                .onGloballyPositioned {
+                    // totalItemHeight= it.size.height
+                    Log.d("Box", "height -> ${it.size.height}")
                 }
+
         )
     }
+
+}
+
+@Composable
+fun rememberDraggableActions():ModViewDragState{
+    return remember {ModViewDragState()}
+}
+
+@Stable
+class ModViewDragState(){
+    val offset: State<Float> get() = offsetY
+   
+    private var offsetY = mutableStateOf(0f)
+
+
 
 }
 
