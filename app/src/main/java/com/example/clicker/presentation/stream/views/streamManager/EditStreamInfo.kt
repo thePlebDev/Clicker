@@ -361,7 +361,10 @@ fun DraggableBackground(
     var boxOneZIndex by remember {mutableStateOf(1f)}
 
     var boxTwoYOffset by remember { mutableStateOf(692f) }
-    var boxTwoZIndex by remember {mutableStateOf(1f)}
+    var boxTwoZIndex by remember {mutableStateOf(0f)}
+
+    var boxThreeYOffset by remember { mutableStateOf((692f*2)) }
+    var boxThreeZIndex by remember {mutableStateOf(1f)}
 
     var totalItemHeight by remember { mutableStateOf(0) }
 
@@ -374,46 +377,8 @@ fun DraggableBackground(
 
     //derived state of for each item I could do a derived state of for colors
     // that will be the next thing I do
-    when{
-        boxOneYOffset < (totalItemHeight) ->{
-            Log.d("onGloballyPositioned","section 1")
-            sectionOneColor.value = Color.White
-            sectionTwoColor.value = Color.Black
-            sectionThreeColor.value = Color.Black
-        }
-        boxOneYOffset > totalItemHeight && boxOneYOffset< totalItemHeight*2->{
-            Log.d("onGloballyPositioned","section 2")
-            sectionTwoColor.value = Color.White
-            sectionOneColor.value = Color.Black
-            sectionThreeColor.value = Color.Black
-        }
-        boxOneYOffset > totalItemHeight*2 ->{
-            Log.d("onGloballyPositioned","section 3")
-            sectionThreeColor.value = Color.White
-            sectionOneColor.value = Color.Black
-            sectionTwoColor.value = Color.Black
-        }
-    }
-    when{
-        boxTwoYOffset < (totalItemHeight) ->{
-            Log.d("onGloballyPositioned","section 1")
-            sectionOneColor.value = Color.White
-            sectionTwoColor.value = Color.Black
-            sectionThreeColor.value = Color.Black
-        }
-        boxTwoYOffset > totalItemHeight && boxTwoYOffset< totalItemHeight*2->{
-            Log.d("onGloballyPositioned","section 2")
-            sectionTwoColor.value = Color.White
-            sectionOneColor.value = Color.Black
-            sectionThreeColor.value = Color.Black
-        }
-        boxTwoYOffset > totalItemHeight*2 ->{
-            Log.d("onGloballyPositioned","section 3")
-            sectionThreeColor.value = Color.White
-            sectionOneColor.value = Color.Black
-            sectionTwoColor.value = Color.Black
-        }
-    }
+
+
     val boxOneSection by remember(boxOneYOffset) {
         Log.d("boxOneYOffset","boxOneYOffset -->{boxOneYOffset}")
         derivedStateOf {
@@ -440,6 +405,17 @@ fun DraggableBackground(
                     Log.d("boxTwoSection","section three")
                     Section.THREE
                 }
+                else -> Section.OTHER
+            }
+        }
+    }
+    val boxThreeSection by remember(boxThreeYOffset) {
+        Log.d("boxOneYOffset","boxOneYOffset -->{boxOneYOffset}")
+        derivedStateOf {
+            when {
+                boxThreeYOffset < totalItemHeight -> Section.ONE
+                boxThreeYOffset > totalItemHeight && boxThreeYOffset < totalItemHeight * 2 -> Section.TWO
+                boxThreeYOffset > totalItemHeight*2 ->Section.THREE
                 else -> Section.OTHER
             }
         }
@@ -535,23 +511,37 @@ fun DraggableBackground(
                         },
                         onDragStart = {
                             boxOneZIndex = 1f
+                            boxThreeZIndex = 0f
                             boxTwoZIndex = 0f
                         }
                     ) { change, dragAmount ->
                         change.consume()
-                        checkSections(
+                        changeSectionTwoNThree(
                             boxOneSection =boxOneSection,
                             boxTwoSection =boxTwoSection,
-                            changeToSectionOne = {
+                            boxThreeSection = boxThreeSection,
+                            changeBoxTwoToSectionOne ={
                                 boxTwoYOffset = 0f
                             },
-                            changeToSectionTwo={
+                            changeBoxTwoToSectionTwo ={
                                 boxTwoYOffset = totalItemHeight + 130f
                             },
-                            changeToSectionThree={
+                            changeBoxTwoToSectionThree ={
                                 boxTwoYOffset = (totalItemHeight + 130f) * 2
+
+                            },
+                            changeBoxThreeToSectionOne = {
+                                boxThreeYOffset = 0f
+                            },
+                            changeBoxThreeToSectionTwo = {
+                                boxThreeYOffset = totalItemHeight + 130f
+                            },
+                            changeBoxThreeToSectionThree = {
+                                boxThreeYOffset = (totalItemHeight + 130f) * 2
                             },
                             isDraggedDown = dragAmount.y <0
+
+
                         )
 
                         boxOneYOffset += dragAmount.y
@@ -593,25 +583,37 @@ fun DraggableBackground(
                     },
                     onDragStart = {
                         boxOneZIndex = 0f
+                        boxThreeZIndex = 0f
                         boxTwoZIndex = 1f
                     }
                 ) { change, dragAmount ->
                     change.consume()
                     //change
 
-                    checkSections(
+                    //This should have a parameter for chnging the offest of box one and three
+                    changeSectionOneNThree(
                         boxOneSection =boxOneSection,
                         boxTwoSection =boxTwoSection,
-                        changeToSectionOne = {
+                        boxThreeSection = boxThreeSection,
+                        isDraggedDown = dragAmount.y <0,
+                        changeBoxOneToSectionOne = {
                             boxOneYOffset = 0f
                         },
-                        changeToSectionTwo={
+                        changeBoxOneToSectionTwo = {
                             boxOneYOffset = totalItemHeight + 130f
                         },
-                        changeToSectionThree={
+                        changeBoxOneToSectionThree = {
                             boxOneYOffset = (totalItemHeight + 130f) * 2
                         },
-                        isDraggedDown = dragAmount.y <0
+                        changeBoxThreeToSectionOne = {
+                            boxThreeYOffset = 0f
+                        },
+                        changeBoxThreeToSectionTwo = {
+                            boxThreeYOffset = totalItemHeight + 130f
+                        },
+                        changeBoxThreeToSectionThree = {
+                            boxThreeYOffset = (totalItemHeight + 130f) * 2
+                        },
                     )
 
 
@@ -621,28 +623,201 @@ fun DraggableBackground(
         ){
 
         }
+        /***------------------BELOW IS THE THIRD BOX-----------------------------------------------*/
+
+        Box(Modifier
+            .offset { IntOffset(0, boxThreeYOffset.roundToInt()) }
+            .background(Color.Green)
+            .height(boxSize.dp)
+            .fillMaxWidth()
+            .zIndex(boxThreeZIndex)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        when (boxThreeSection) {
+                            Section.ONE -> {
+                                boxThreeYOffset = 0f
+                            }
+
+                            Section.TWO -> {
+                                boxThreeYOffset = totalItemHeight + 130f
+                            }
+
+                            Section.THREE -> {
+                                boxThreeYOffset = (totalItemHeight + 130f) * 2
+                            }
+
+                            Section.OTHER -> {}
+                        }
+                        // offsetY = 0f
+                    },
+                    onDragStart = {
+                        boxThreeZIndex = 1f
+                        boxOneZIndex = 0f
+                        boxTwoZIndex = 0f
+                    }
+                ) { change, dragAmount ->
+                    change.consume()
+                    changeSectionOneNTwo(
+                        boxOneSection =boxOneSection,
+                        boxTwoSection =boxTwoSection,
+                        boxThreeSection = boxThreeSection,
+                        changeBoxOneToSectionOne={
+                            boxOneYOffset = 0f
+                        },
+                        changeBoxOneToSectionTwo={
+                            boxOneYOffset = totalItemHeight + 130f
+                        },
+                        changeBoxOneToSectionThree={
+                            boxOneYOffset = (totalItemHeight + 130f) * 2
+                        },
+                        changeBoxTwoToSectionOne ={
+                            boxTwoYOffset = 0f
+                        },
+                        changeBoxTwoToSectionTwo ={
+                            boxTwoYOffset = totalItemHeight + 130f
+                        },
+                        changeBoxTwoToSectionThree ={
+                            boxTwoYOffset = (totalItemHeight + 130f) * 2
+
+                        },
+                        isDraggedDown = dragAmount.y <0
+                    )
+                    boxThreeYOffset += dragAmount.y
+                }
+            }
+        ){
+
+
+        }
+
+
     }
 
 }
-fun checkSections(
+fun changeSectionOneNTwo(
+    changeBoxOneToSectionOne:()->Unit,
+    changeBoxOneToSectionTwo: () -> Unit,
+    changeBoxOneToSectionThree: () -> Unit,
+
+    changeBoxTwoToSectionOne:()->Unit,
+    changeBoxTwoToSectionTwo: () -> Unit,
+    changeBoxTwoToSectionThree: () -> Unit,
+
     boxOneSection:Section,
     boxTwoSection:Section,
-    changeToSectionOne:()->Unit,
-    changeToSectionTwo: () -> Unit,
-    changeToSectionThree: () -> Unit,
+    boxThreeSection:Section,
+    isDraggedDown:Boolean
+
+){
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.ONE){
+        changeBoxOneToSectionTwo()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && isDraggedDown){
+        changeBoxOneToSectionThree()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && !isDraggedDown){
+        changeBoxOneToSectionOne()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.THREE){
+        changeBoxOneToSectionTwo()
+    }
+    /***********SECTION 2 CHANGES********/
+
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.ONE){
+        changeBoxTwoToSectionTwo()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && isDraggedDown){
+        changeBoxTwoToSectionThree()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && !isDraggedDown){
+        changeBoxTwoToSectionOne()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.THREE){
+        changeBoxTwoToSectionTwo()
+    }
+
+}
+fun changeSectionTwoNThree(
+    changeBoxThreeToSectionOne:()->Unit,
+    changeBoxThreeToSectionTwo: () -> Unit,
+    changeBoxThreeToSectionThree: () -> Unit,
+
+    changeBoxTwoToSectionOne:()->Unit,
+    changeBoxTwoToSectionTwo: () -> Unit,
+    changeBoxTwoToSectionThree: () -> Unit,
+
+    boxOneSection:Section,
+    boxTwoSection:Section,
+    boxThreeSection:Section,
     isDraggedDown:Boolean
 ){
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.ONE){
+        changeBoxThreeToSectionTwo()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && isDraggedDown){
+        changeBoxThreeToSectionThree()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && !isDraggedDown){
+        changeBoxThreeToSectionOne()
+    }
+    if(boxOneSection == boxThreeSection && boxOneSection == Section.THREE){
+        changeBoxThreeToSectionTwo()
+    }
+    /***********SECTION 2 CHANGES********/
     if(boxOneSection == boxTwoSection && boxOneSection == Section.ONE){
-        changeToSectionTwo()
+        changeBoxTwoToSectionTwo()
     }
     if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && isDraggedDown){
-        changeToSectionThree()
+        changeBoxTwoToSectionThree()
     }
     if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && !isDraggedDown){
-        changeToSectionOne()
+        changeBoxTwoToSectionOne()
     }
     if(boxOneSection == boxTwoSection && boxOneSection == Section.THREE){
-        changeToSectionTwo()
+        changeBoxTwoToSectionTwo()
+    }
+
+}
+fun changeSectionOneNThree(
+    changeBoxThreeToSectionOne:()->Unit,
+    changeBoxThreeToSectionTwo: () -> Unit,
+    changeBoxThreeToSectionThree: () -> Unit,
+
+    changeBoxOneToSectionOne:()->Unit,
+    changeBoxOneToSectionTwo: () -> Unit,
+    changeBoxOneToSectionThree: () -> Unit,
+
+    boxOneSection:Section,
+    boxTwoSection:Section,
+    boxThreeSection:Section,
+    isDraggedDown:Boolean
+){
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.ONE){
+        changeBoxThreeToSectionTwo()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && isDraggedDown){
+        changeBoxThreeToSectionThree()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && !isDraggedDown){
+        changeBoxThreeToSectionOne()
+    }
+    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.THREE){
+        changeBoxThreeToSectionTwo()
+    }
+    /***********SECTION 2 CHANGES********/
+
+    if(boxTwoSection == boxOneSection && boxTwoSection == Section.ONE){
+        changeBoxOneToSectionTwo()
+    }
+    if(boxTwoSection == boxOneSection && boxTwoSection == Section.TWO && isDraggedDown){
+        changeBoxOneToSectionThree()
+    }
+    if(boxTwoSection == boxOneSection && boxTwoSection == Section.TWO && !isDraggedDown){
+        changeBoxOneToSectionOne()
+    }
+    if(boxTwoSection == boxOneSection && boxTwoSection == Section.THREE){
+        changeBoxOneToSectionTwo()
     }
 
 }
