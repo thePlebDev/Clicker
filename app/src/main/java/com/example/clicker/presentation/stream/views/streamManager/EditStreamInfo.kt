@@ -41,6 +41,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
@@ -66,9 +67,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -79,6 +83,7 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.Section
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNTwo
@@ -565,16 +570,16 @@ fun DraggableBackground(
 
                         )
 
-                        if(boxOneDragging){
+                        if (boxOneDragging) {
                             boxOneYOffset += dragAmount.y
-                        }else{
+                        } else {
                             scope.launch {
-                                listState.scrollBy((dragAmount.y*-1))
+                                listState.scrollBy((dragAmount.y * -1))
                             }
                         }
 
 
-                       // boxOneYOffset += dragAmount.y
+                        // boxOneYOffset += dragAmount.y
                     }
                 }
                 .onGloballyPositioned {
@@ -586,7 +591,8 @@ fun DraggableBackground(
             ModActions(
                 boxOneDragging,
                 setDragging = {value -> boxOneDragging = value},
-                listState =listState
+                listState =listState,
+                length=20
             )
         }
         /***------------------BELOW IS THE SECOND BOX-----------------------------------------------*/
@@ -739,60 +745,243 @@ fun DraggableBackground(
 fun ModActions(
      dragging:Boolean,
      setDragging:(Boolean)->Unit,
-     listState: LazyListState
+     listState: LazyListState,
+     length:Int,
 
 ){
     val opacity = if(dragging) 0.5f else 0f
+    val scope = rememberCoroutineScope()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column() {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.DarkGray)
+                    .padding(horizontal = 20.dp),
 
-    LazyColumn(
-            state =listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue)){
-            stickyHeader {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.DarkGray)
-                        .padding(vertical = 5.dp, horizontal = 20.dp)
                 ) {
-                    Text(
-                        "MOD ACTIONS",
-                        color = Color.White,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                    )
+                Text(
+                    "MOD ACTIONS: 44",
+                    color = Color.White,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                )
+
+            }
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(horizontal = 20.dp)
+
+            ) {
+
+
+                item{
+                    FollowersOnlyChatMessage()
+
                 }
-            }
-            item{
-                Text("START MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-            }
-            items(20){
-                Text("MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-            }
-            item{
-                Text("END MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                item{
+                    TimedUserOutMessage()
+                }
+
+                items(length) {
+                    DeletedMessage()
+                }
+
             }
         }
-    Spacer(
-        modifier =Modifier.fillMaxSize()
-            .background(Color.Black.copy(alpha = opacity))
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        //I think I detect the long press here and then have the drag up top
-                        setDragging(true)
+
+        // end of the box scope
+
+        Spacer(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = opacity))
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            //I think I detect the long press here and then have the drag up top
+                            setDragging(true)
+                        }
+                    ) {
+
                     }
-                ){
 
                 }
+        )
 
-            }
+        if(!dragging && !listState.isScrolledToEnd()){
+            DualIconsButton(
+                buttonAction = {
+                    scope.launch {
+                        listState.animateScrollToItem(length)
+                    }
+                },
+                iconImageVector=Icons.Default.ArrowDropDown,
+                iconDescription = stringResource(R.string.arrow_drop_down_description),
+                buttonText =stringResource(R.string.scroll_to_bottom),
+                modifier = Modifier.align(Alignment.BottomCenter)
 
-    )
+            )
+        }
+
+
+    }
 
 
 }
 
+@Composable
+fun DualIconsButton(
+    buttonAction: () -> Unit,
+    iconImageVector: ImageVector,
+    iconDescription:String,
+    buttonText:String,
+    modifier:Modifier
+){
+    Button(
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(4.dp),
+        onClick = { buttonAction() }
+    ) {
+        Icon(
+            imageVector = iconImageVector,
+            contentDescription = iconDescription,
+            tint =  MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier
+        )
+        Text(buttonText,color =  MaterialTheme.colorScheme.onSecondary,)
+        Icon(
+            imageVector = iconImageVector,
+            contentDescription = iconDescription,
+            tint =  MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier
+        )
+    }
+}
+
+@Composable
+fun DeletedMessage(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(){
+            Icon(painter = painterResource(id =R.drawable.delete_outline_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
+            Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
+
+        }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Text(text ="Message deleted:", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+            Text(text ="That was a dumb thing to do... and you look like you smell", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(Color.White.copy(0.6f)))
+
+    }
+}
+
+@Composable
+fun TimedUserOutMessage(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(){
+            Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
+            Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
+
+        }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Text(text ="Timed out:", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+            Text(text ="meanermeeny was timed out for 600 seconds", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(Color.White.copy(0.6f)))
+
+    }
+}
+@Composable
+fun ClearChatMessage(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(){
+            Icon(painter = painterResource(id =R.drawable.clear_chat_alt_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
+            Text(text ="Clear Chat", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
+
+        }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Text(text ="Chat was cleared for non-Moderators viewing this room. Messages are preserved for Moderator review", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(Color.White.copy(0.6f)))
+
+    }
+}
+
+@Composable
+fun FollowersOnlyChatMessage(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(){
+            Icon(painter = painterResource(id =R.drawable.person_outline_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
+            Text(text ="Followers-Only Chat", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
+
+        }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Text(text ="Enabled with 0 minutes min following age", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(Color.White.copy(0.6f)))
+
+    }
+}
+
+@Composable
+fun BannedUserMessage(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(){
+            Icon(painter = painterResource(id =R.drawable.ban_24), modifier = Modifier.size(30.dp), contentDescription = "user banned")
+            Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
+
+        }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Text(text ="Banned", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(Color.White.copy(0.6f)))
+
+    }
+}
 
 //todo: rememberDraggableActions() is what I am going to later use to model the complex state
 @Composable
