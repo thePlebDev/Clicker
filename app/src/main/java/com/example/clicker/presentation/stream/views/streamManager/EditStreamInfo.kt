@@ -4,14 +4,19 @@ import android.animation.ObjectAnimator
 import android.content.res.Resources
 import android.util.Log
 import android.view.View
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +30,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
@@ -43,6 +53,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -68,8 +79,13 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.presentation.stream.views.streamManager.util.Section
+import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
+import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNTwo
+import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionTwoNThree
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -347,9 +363,7 @@ fun ModView(
 
 
 }
-enum class Section {
-    ONE, TWO, THREE, OTHER
-}
+
 
 @Composable
 fun DraggableBackground(
@@ -426,6 +440,9 @@ fun DraggableBackground(
     val state = rememberDraggableActions()
     val scope = rememberCoroutineScope()
     var boxSize by remember { mutableStateOf(100) }
+    var boxOneDragging by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+
 
 
 
@@ -460,6 +477,7 @@ fun DraggableBackground(
                     .fillMaxWidth()
                     .onGloballyPositioned {
                         Log.d("DragEnding", "area 2 row size -> ${it.size.height}")
+
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -473,6 +491,7 @@ fun DraggableBackground(
                     .fillMaxWidth()
                     .onGloballyPositioned {
                         boxSize = (it.size.height / 2.61).toInt()
+                        Log.d("detectTapGesturesonLongPress", "onGloballyPositioned() --> called")
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -490,6 +509,7 @@ fun DraggableBackground(
                 .fillMaxWidth()
                 .zIndex(boxOneZIndex)
                 .pointerInput(Unit) {
+
                     detectDragGestures(
                         onDragEnd = {
                             when (boxOneSection) {
@@ -507,6 +527,7 @@ fun DraggableBackground(
 
                                 Section.OTHER -> {}
                             }
+                            boxOneDragging = false
                             // offsetY = 0f
                         },
                         onDragStart = {
@@ -517,16 +538,16 @@ fun DraggableBackground(
                     ) { change, dragAmount ->
                         change.consume()
                         changeSectionTwoNThree(
-                            boxOneSection =boxOneSection,
-                            boxTwoSection =boxTwoSection,
+                            boxOneSection = boxOneSection,
+                            boxTwoSection = boxTwoSection,
                             boxThreeSection = boxThreeSection,
-                            changeBoxTwoToSectionOne ={
+                            changeBoxTwoToSectionOne = {
                                 boxTwoYOffset = 0f
                             },
-                            changeBoxTwoToSectionTwo ={
+                            changeBoxTwoToSectionTwo = {
                                 boxTwoYOffset = totalItemHeight + 130f
                             },
-                            changeBoxTwoToSectionThree ={
+                            changeBoxTwoToSectionThree = {
                                 boxTwoYOffset = (totalItemHeight + 130f) * 2
 
                             },
@@ -539,12 +560,21 @@ fun DraggableBackground(
                             changeBoxThreeToSectionThree = {
                                 boxThreeYOffset = (totalItemHeight + 130f) * 2
                             },
-                            isDraggedDown = dragAmount.y <0
+                            isDraggedDown = dragAmount.y < 0
 
 
                         )
 
-                        boxOneYOffset += dragAmount.y
+                        if(boxOneDragging){
+                            boxOneYOffset += dragAmount.y
+                        }else{
+                            scope.launch {
+                                listState.scrollBy((dragAmount.y*-1))
+                            }
+                        }
+
+
+                       // boxOneYOffset += dragAmount.y
                     }
                 }
                 .onGloballyPositioned {
@@ -552,7 +582,13 @@ fun DraggableBackground(
                     Log.d("Box", "height -> ${it.size.height}")
                 }
 
-        )
+        ){
+            ModActions(
+                boxOneDragging,
+                setDragging = {value -> boxOneDragging = value},
+                listState =listState
+            )
+        }
         /***------------------BELOW IS THE SECOND BOX-----------------------------------------------*/
 
         Box(Modifier
@@ -592,10 +628,10 @@ fun DraggableBackground(
 
                     //This should have a parameter for chnging the offest of box one and three
                     changeSectionOneNThree(
-                        boxOneSection =boxOneSection,
-                        boxTwoSection =boxTwoSection,
+                        boxOneSection = boxOneSection,
+                        boxTwoSection = boxTwoSection,
                         boxThreeSection = boxThreeSection,
-                        isDraggedDown = dragAmount.y <0,
+                        isDraggedDown = dragAmount.y < 0,
                         changeBoxOneToSectionOne = {
                             boxOneYOffset = 0f
                         },
@@ -659,29 +695,29 @@ fun DraggableBackground(
                 ) { change, dragAmount ->
                     change.consume()
                     changeSectionOneNTwo(
-                        boxOneSection =boxOneSection,
-                        boxTwoSection =boxTwoSection,
+                        boxOneSection = boxOneSection,
+                        boxTwoSection = boxTwoSection,
                         boxThreeSection = boxThreeSection,
-                        changeBoxOneToSectionOne={
+                        changeBoxOneToSectionOne = {
                             boxOneYOffset = 0f
                         },
-                        changeBoxOneToSectionTwo={
+                        changeBoxOneToSectionTwo = {
                             boxOneYOffset = totalItemHeight + 130f
                         },
-                        changeBoxOneToSectionThree={
+                        changeBoxOneToSectionThree = {
                             boxOneYOffset = (totalItemHeight + 130f) * 2
                         },
-                        changeBoxTwoToSectionOne ={
+                        changeBoxTwoToSectionOne = {
                             boxTwoYOffset = 0f
                         },
-                        changeBoxTwoToSectionTwo ={
+                        changeBoxTwoToSectionTwo = {
                             boxTwoYOffset = totalItemHeight + 130f
                         },
-                        changeBoxTwoToSectionThree ={
+                        changeBoxTwoToSectionThree = {
                             boxTwoYOffset = (totalItemHeight + 130f) * 2
 
                         },
-                        isDraggedDown = dragAmount.y <0
+                        isDraggedDown = dragAmount.y < 0
                     )
                     boxThreeYOffset += dragAmount.y
                 }
@@ -695,141 +731,67 @@ fun DraggableBackground(
     }
 
 }
-fun changeSectionOneNTwo(
-    changeBoxOneToSectionOne:()->Unit,
-    changeBoxOneToSectionTwo: () -> Unit,
-    changeBoxOneToSectionThree: () -> Unit,
 
-    changeBoxTwoToSectionOne:()->Unit,
-    changeBoxTwoToSectionTwo: () -> Unit,
-    changeBoxTwoToSectionThree: () -> Unit,
 
-    boxOneSection:Section,
-    boxTwoSection:Section,
-    boxThreeSection:Section,
-    isDraggedDown:Boolean
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ModActions(
+     dragging:Boolean,
+     setDragging:(Boolean)->Unit,
+     listState: LazyListState
 
 ){
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.ONE){
-        changeBoxOneToSectionTwo()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && isDraggedDown){
-        changeBoxOneToSectionThree()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && !isDraggedDown){
-        changeBoxOneToSectionOne()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.THREE){
-        changeBoxOneToSectionTwo()
-    }
-    /***********SECTION 2 CHANGES********/
+    val opacity = if(dragging) 0.5f else 0f
 
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.ONE){
-        changeBoxTwoToSectionTwo()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && isDraggedDown){
-        changeBoxTwoToSectionThree()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && !isDraggedDown){
-        changeBoxTwoToSectionOne()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.THREE){
-        changeBoxTwoToSectionTwo()
-    }
+    LazyColumn(
+            state =listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Blue)){
+            stickyHeader {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.DarkGray)
+                        .padding(vertical = 5.dp, horizontal = 20.dp)
+                ) {
+                    Text(
+                        "MOD ACTIONS",
+                        color = Color.White,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    )
+                }
+            }
+            item{
+                Text("START MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+            }
+            items(20){
+                Text("MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+            }
+            item{
+                Text("END MOD ACTIONS",color =Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+            }
+        }
+    Spacer(
+        modifier =Modifier.fillMaxSize()
+            .background(Color.Black.copy(alpha = opacity))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        //I think I detect the long press here and then have the drag up top
+                        setDragging(true)
+                    }
+                ){
+
+                }
+
+            }
+
+    )
+
 
 }
-fun changeSectionTwoNThree(
-    changeBoxThreeToSectionOne:()->Unit,
-    changeBoxThreeToSectionTwo: () -> Unit,
-    changeBoxThreeToSectionThree: () -> Unit,
-
-    changeBoxTwoToSectionOne:()->Unit,
-    changeBoxTwoToSectionTwo: () -> Unit,
-    changeBoxTwoToSectionThree: () -> Unit,
-
-    boxOneSection:Section,
-    boxTwoSection:Section,
-    boxThreeSection:Section,
-    isDraggedDown:Boolean
-){
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.ONE){
-        changeBoxThreeToSectionTwo()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && isDraggedDown){
-        changeBoxThreeToSectionThree()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.TWO && !isDraggedDown){
-        changeBoxThreeToSectionOne()
-    }
-    if(boxOneSection == boxThreeSection && boxOneSection == Section.THREE){
-        changeBoxThreeToSectionTwo()
-    }
-    /***********SECTION 2 CHANGES********/
-    if(boxOneSection == boxTwoSection && boxOneSection == Section.ONE){
-        changeBoxTwoToSectionTwo()
-    }
-    if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && isDraggedDown){
-        changeBoxTwoToSectionThree()
-    }
-    if(boxOneSection == boxTwoSection && boxOneSection == Section.TWO && !isDraggedDown){
-        changeBoxTwoToSectionOne()
-    }
-    if(boxOneSection == boxTwoSection && boxOneSection == Section.THREE){
-        changeBoxTwoToSectionTwo()
-    }
-
-}
-fun changeSectionOneNThree(
-    changeBoxThreeToSectionOne:()->Unit,
-    changeBoxThreeToSectionTwo: () -> Unit,
-    changeBoxThreeToSectionThree: () -> Unit,
-
-    changeBoxOneToSectionOne:()->Unit,
-    changeBoxOneToSectionTwo: () -> Unit,
-    changeBoxOneToSectionThree: () -> Unit,
-
-    boxOneSection:Section,
-    boxTwoSection:Section,
-    boxThreeSection:Section,
-    isDraggedDown:Boolean
-){
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.ONE){
-        changeBoxThreeToSectionTwo()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && isDraggedDown){
-        changeBoxThreeToSectionThree()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.TWO && !isDraggedDown){
-        changeBoxThreeToSectionOne()
-    }
-    if(boxTwoSection == boxThreeSection && boxTwoSection == Section.THREE){
-        changeBoxThreeToSectionTwo()
-    }
-    /***********SECTION 2 CHANGES********/
-
-    if(boxTwoSection == boxOneSection && boxTwoSection == Section.ONE){
-        changeBoxOneToSectionTwo()
-    }
-    if(boxTwoSection == boxOneSection && boxTwoSection == Section.TWO && isDraggedDown){
-        changeBoxOneToSectionThree()
-    }
-    if(boxTwoSection == boxOneSection && boxTwoSection == Section.TWO && !isDraggedDown){
-        changeBoxOneToSectionOne()
-    }
-    if(boxTwoSection == boxOneSection && boxTwoSection == Section.THREE){
-        changeBoxOneToSectionTwo()
-    }
-
-}
-fun logSectionsName(
-    title:String,
-    name:String
-){
-    Log.d("SectionNaming","$title ----> $name")
-}
-
-
-
 
 
 //todo: rememberDraggableActions() is what I am going to later use to model the complex state
