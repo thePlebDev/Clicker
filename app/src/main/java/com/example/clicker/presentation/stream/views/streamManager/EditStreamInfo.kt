@@ -7,7 +7,9 @@ import android.view.View
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -86,14 +88,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
@@ -675,7 +681,7 @@ fun DraggableBackground(
                             boxThreeYOffset = (totalItemHeight + 130f) * 2
                         },
                     )
-                    Log.d("Consumingthedrag","dragAmount.x ${dragAmount.x}")
+                    Log.d("Consumingthedrag", "dragAmount.x ${dragAmount.x}")
                     if (boxTwoDragging) {
                         boxTwoYOffset += dragAmount.y
                     }
@@ -801,12 +807,20 @@ fun ChatBox(
                     .background(MaterialTheme.colorScheme.primary)
                     .padding(vertical = 5.dp)
             ){
+                
                 items(30) {
-            DraggableText(
-                setDragging={newValue ->setDragging(newValue)}
-            )
+                    DragDetectionBox(
+                        itemBeingDragged = {dragOffset ->
+                            MessageCard(
+                                dragOffset,
+                                setDragging={newValue ->setDragging(newValue)},
+                                message ="LUL get rekt"
+                            )
+                        }
+                    )
 
                 }
+
             }
 
         }
@@ -817,40 +831,47 @@ fun ChatBox(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DraggableText(
-    setDragging:(Boolean)->Unit
+fun DragDetectionBox(
+    itemBeingDragged:@Composable (dragOffset:Float) -> Unit,
 ){
-    var offsetX by remember { mutableStateOf(0f) }
+    val state = rememberDraggableActions()
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Blue)
             .draggable(
                 orientation = Orientation.Horizontal,
+                onDragStopped = {
+                    state.resetOffset()
+                },
+
+
                 enabled = true,
-                state = rememberDraggableState { delta ->
-                    offsetX += delta
-                }
+                state = state.draggableState
             )
     ){
-
-        CardDemo(
-            offsetX,
-            setDragging={newValue ->setDragging(newValue)}
-        )
-
-
+        itemBeingDragged(state.offset.value)
 
     }
 
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CardDemo(
+fun MessageCard(
     offset:Float,
-    setDragging:(Boolean)->Unit
+    setDragging:(Boolean)->Unit,
+    message:String,
 ) {
+    val text = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+            append("theplebdev:")
+        }
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+            append(" $message")
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -859,24 +880,63 @@ fun CardDemo(
                 onDoubleClick = {
                     setDragging(true)
                 },
-               // onLongClick = {setDragging(true)},
+                // onLongClick = {setDragging(true)},
                 onClick = {
-                    Log.d("AnotherTapping","CLICK")
+                    Log.d("AnotherTapping", "CLICK")
                 }
             )
         ,
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        shape = RectangleShape
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
     ) {
         Column(
-            modifier =Modifier.padding(horizontal = 20.dp)
+            modifier =Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
         ) {
-            Text("Lol get rekt dude")
+            Text(text)
 
         }
     }
 }
 
+
+@Composable
+fun rememberDraggableActions():ModViewDragState{
+    return remember {ModViewDragState()}
+}
+
+@Stable
+class ModViewDragState(){
+    val offset: State<Float> get() = offsetX
+    private var offsetX = mutableStateOf(0f)
+
+
+    val draggableState = DraggableState { delta ->
+        if (offsetX.value >= 300f){
+            offsetX.value += delta/5
+        }
+        else if (offsetX.value <= -300f){
+            offsetX.value += delta/5
+        }
+        else{
+            offsetX.value += delta
+        }
+
+    }
+
+    suspend fun resetOffset(){
+        draggableState.drag(MutatePriority.PreventUserInput) {
+            Animatable(offsetX.value).animateTo(
+                targetValue = 0f,
+                tween(durationMillis = 300)
+            ) {
+                dragBy(value - offsetX.value)
+            }
+        }
+    }
+
+}
 
 @Composable
 fun AutoModQueueBox(){
@@ -902,14 +962,15 @@ fun ModActions(
     val listState = rememberLazyListState()
     val opacity = if(dragging) 0.5f else 0f
     val scope = rememberCoroutineScope()
-    Box(modifier = Modifier.fillMaxSize()
+    Box(modifier = Modifier
+        .fillMaxSize()
         .combinedClickable(
             onDoubleClick = {
                 setDragging(true)
             },
             // onLongClick = {setDragging(true)},
             onClick = {
-                Log.d("AnotherTapping","CLICK")
+                Log.d("AnotherTapping", "CLICK")
             }
         )
     ) {
@@ -1112,20 +1173,7 @@ fun BannedUserMessage(){
 }
 
 //todo: rememberDraggableActions() is what I am going to later use to model the complex state
-@Composable
-fun rememberDraggableActions():ModViewDragState{
-    return remember {ModViewDragState()}
-}
 
-@Stable
-class ModViewDragState(){
-    val offset: State<Float> get() = offsetY
-
-    private var offsetY = mutableStateOf(0f)
-
-
-
-}
 
 @Composable
 fun InfoTitle(
