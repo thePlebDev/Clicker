@@ -10,26 +10,32 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -38,14 +44,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -67,9 +79,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -442,11 +456,14 @@ fun DraggableBackground(
 
 
 
-    val state = rememberDraggableActions()
+
     val scope = rememberCoroutineScope()
     var boxSize by remember { mutableStateOf(100) }
+
     var boxOneDragging by remember { mutableStateOf(false) }
-    val listState = rememberLazyListState()
+
+    var boxTwoDragging by remember { mutableStateOf(false) }
+
 
 
 
@@ -572,11 +589,12 @@ fun DraggableBackground(
 
                         if (boxOneDragging) {
                             boxOneYOffset += dragAmount.y
-                        } else {
-                            scope.launch {
-                                listState.scrollBy((dragAmount.y * -1))
-                            }
                         }
+//                        else {
+//                            scope.launch {
+//                                boxOneListState.scrollBy((dragAmount.y * -1))
+//                            }
+//                        }
 
 
                         // boxOneYOffset += dragAmount.y
@@ -591,7 +609,6 @@ fun DraggableBackground(
             ModActions(
                 boxOneDragging,
                 setDragging = {value -> boxOneDragging = value},
-                listState =listState,
                 length=20
             )
         }
@@ -621,6 +638,7 @@ fun DraggableBackground(
 
                             Section.OTHER -> {}
                         }
+                        boxTwoDragging = false
                         // offsetY = 0f
                     },
                     onDragStart = {
@@ -657,12 +675,25 @@ fun DraggableBackground(
                             boxThreeYOffset = (totalItemHeight + 130f) * 2
                         },
                     )
+                    Log.d("Consumingthedrag","dragAmount.x ${dragAmount.x}")
+                    if (boxTwoDragging) {
+                        boxTwoYOffset += dragAmount.y
+                    }
+//                    else {
+//                        scope.launch {
+//                            boxTwoListState.scrollBy((dragAmount.y * -1))
+//                        }
+//                    }
 
 
-                    boxTwoYOffset += dragAmount.y
+                    // boxTwoYOffset += dragAmount.y
                 }
             }
         ){
+            ChatBox(
+                boxTwoDragging,
+                setDragging = {value -> boxTwoDragging = value},
+            )
 
         }
         /***------------------BELOW IS THE THIRD BOX-----------------------------------------------*/
@@ -729,8 +760,7 @@ fun DraggableBackground(
                 }
             }
         ){
-
-
+            AutoModQueueBox()
         }
 
 
@@ -738,41 +768,160 @@ fun DraggableBackground(
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChatBox(
+    dragging:Boolean,
+    setDragging:(Boolean)->Unit,
 
+){
+    val opacity = if(dragging) 0.5f else 0f
+    val listState = rememberLazyListState()
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)
+
+    ){
+//        ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
+//        ModView.DetectDraggingOrNotAtBottomButton(
+//            dragging = dragging,
+//            modifier = Modifier.align(Alignment.BottomCenter),
+//            listState = listState,
+//            scrollToBottomOfList = {}
+//        )
+        Column(
+            modifier =Modifier.fillMaxSize()
+        ) {
+            ModView.SectionHeaderRow(title ="CHAT")
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(vertical = 5.dp)
+            ){
+                items(30) {
+            DraggableText(
+                setDragging={newValue ->setDragging(newValue)}
+            )
+
+                }
+            }
+
+        }
+        if(dragging){
+            ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
+        }
+
+    }
+}
+
+@Composable
+fun DraggableText(
+    setDragging:(Boolean)->Unit
+){
+    var offsetX by remember { mutableStateOf(0f) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Blue)
+            .draggable(
+                orientation = Orientation.Horizontal,
+                enabled = true,
+                state = rememberDraggableState { delta ->
+                    offsetX += delta
+                }
+            )
+    ){
+
+        CardDemo(
+            offsetX,
+            setDragging={newValue ->setDragging(newValue)}
+        )
+
+
+
+    }
+
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CardDemo(
+    offset:Float,
+    setDragging:(Boolean)->Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+            .combinedClickable(
+                onDoubleClick = {
+                    setDragging(true)
+                },
+               // onLongClick = {setDragging(true)},
+                onClick = {
+                    Log.d("AnotherTapping","CLICK")
+                }
+            )
+        ,
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        shape = RectangleShape
+    ) {
+        Column(
+            modifier =Modifier.padding(horizontal = 20.dp)
+        ) {
+            Text("Lol get rekt dude")
+
+        }
+    }
+}
+
+
+@Composable
+fun AutoModQueueBox(){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Column(modifier =Modifier.fillMaxSize()) {
+            ModView.SectionHeaderRow(title ="AutoMod Queue")
+        }
+
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ModActions(
      dragging:Boolean,
      setDragging:(Boolean)->Unit,
-     listState: LazyListState,
      length:Int,
 
 ){
+
+    val listState = rememberLazyListState()
     val opacity = if(dragging) 0.5f else 0f
     val scope = rememberCoroutineScope()
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column() {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.DarkGray)
-                    .padding(horizontal = 20.dp),
-
-                ) {
-                Text(
-                    "MOD ACTIONS: 44",
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                )
-
+    Box(modifier = Modifier.fillMaxSize()
+        .combinedClickable(
+            onDoubleClick = {
+                setDragging(true)
+            },
+            // onLongClick = {setDragging(true)},
+            onClick = {
+                Log.d("AnotherTapping","CLICK")
             }
+        )
+    ) {
+        Column(modifier =Modifier.fillMaxSize()) {
+            ModView.SectionHeaderRow(title ="MOD ACTIONS: 44")
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.primary)
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp, vertical = 5.dp)
 
             ) {
 
@@ -791,45 +940,24 @@ fun ModActions(
 
             }
         }
-
-        // end of the box scope
-
-        Spacer(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = opacity))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = {
-                            //I think I detect the long press here and then have the drag up top
-                            setDragging(true)
-                        }
-                    ) {
-
-                    }
-
-                }
-        )
-
-        if(!dragging && !listState.isScrolledToEnd()){
-            DualIconsButton(
-                buttonAction = {
-                    scope.launch {
-                        listState.animateScrollToItem(length)
-                    }
-                },
-                iconImageVector=Icons.Default.ArrowDropDown,
-                iconDescription = stringResource(R.string.arrow_drop_down_description),
-                buttonText =stringResource(R.string.scroll_to_bottom),
-                modifier = Modifier.align(Alignment.BottomCenter)
-
-            )
+        if(dragging){
+            ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
         }
 
 
+        ModView.DetectDraggingOrNotAtBottomButton(
+            dragging = dragging,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            listState = listState,
+            scrollToBottomOfList = {
+                scope.launch {
+                    listState.animateScrollToItem(length)
+                }
+            }
+        )
+
+
     }
-
-
 }
 
 @Composable
