@@ -40,9 +40,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
@@ -88,6 +91,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -97,7 +102,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.sharedViews.SharedComponents
@@ -109,6 +116,7 @@ import com.example.clicker.presentation.stream.views.streamManager.util.changeSe
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNTwo
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionTwoNThree
 import com.example.clicker.util.Response
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -696,9 +704,25 @@ fun DraggableBackground(
                 }
             }
         ){
+            val fakeDataOne = TwitchUserDataObjectMother.addDisplayName("thePlebDev")
+                .addUserType("LUL get rekt kid").addColor("#BF40BF")
+                .addMod("1").addSubscriber(false).addMonitored(false)
+                .build()
+
+            val fakeDataTwo = TwitchUserDataObjectMother.addDisplayName("Meatball")
+                .addUserType("ok but what the heck was that").addColor("#FF0000")
+                .addMod("0").addSubscriber(true).addMonitored(false)
+                .build()
+
+            val fakeDataThree = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+                .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+                .addMod("1").addSubscriber(true).addMonitored(true)
+                .build()
+
             ChatBox(
                 boxTwoDragging,
                 setDragging = {value -> boxTwoDragging = value},
+                chatMessageList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree)
             )
 
         }
@@ -779,8 +803,9 @@ fun DraggableBackground(
 fun ChatBox(
     dragging:Boolean,
     setDragging:(Boolean)->Unit,
+    chatMessageList: List<TwitchUserData>,
 
-){
+    ){
     val opacity = if(dragging) 0.5f else 0f
     val listState = rememberLazyListState()
 
@@ -807,19 +832,19 @@ fun ChatBox(
                     .background(MaterialTheme.colorScheme.primary)
                     .padding(vertical = 5.dp)
             ){
-                
-                items(30) {
+                items(chatMessageList){chatTwitchUserData ->
                     DragDetectionBox(
                         itemBeingDragged = {dragOffset ->
                             MessageCard(
                                 dragOffset,
                                 setDragging={newValue ->setDragging(newValue)},
-                                message ="LUL get rekt"
+                                chatMessageData =chatTwitchUserData
                             )
                         }
                     )
-
                 }
+
+
 
             }
 
@@ -862,16 +887,10 @@ fun DragDetectionBox(
 fun MessageCard(
     offset:Float,
     setDragging:(Boolean)->Unit,
-    message:String,
+    chatMessageData:TwitchUserData
 ) {
-    val text = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-            append("theplebdev:")
-        }
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-            append(" $message")
-        }
-    }
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -882,7 +901,6 @@ fun MessageCard(
                 },
                 // onLongClick = {setDragging(true)},
                 onClick = {
-                    Log.d("AnotherTapping", "CLICK")
                 }
             )
         ,
@@ -891,13 +909,122 @@ fun MessageCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
     ) {
-        Column(
-            modifier =Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
-        ) {
-            Text(text)
+            TextWithChatBadges(
+                displayName = "${chatMessageData.displayName}",
+                message = " ${chatMessageData.userType}",
+                isMod = chatMessageData.mod == "1",
+                isSub = chatMessageData.subscriber == true,
+                isMonitored =chatMessageData.isMonitored,
+                userNameColor =chatMessageData.color?: "#7F00FF"
+            )
+    }
+}
 
+@Composable
+fun TextWithChatBadges(
+    isMod:Boolean,
+    isSub:Boolean,
+    isMonitored:Boolean,
+    displayName:String,
+    message:String,
+    userNameColor:String,
+){
+    var color = Color(android.graphics.Color.parseColor(userNameColor))
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val modId = "modIcon"
+    val subId = "subIcon"
+    val monitorId ="monitorIcon"
+
+    val text = buildAnnotatedString {
+        if(isMonitored){
+            appendInlineContent(monitorId, "[monitorIcon]")
+        }
+        if (isMod) {
+            appendInlineContent(modId, "[icon]")
+        }
+        if (isSub) {
+            appendInlineContent(subId, "[subicon]")
+        }
+        withStyle(style = SpanStyle(color = color, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+            append("${displayName} :")
+        }
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+            append(" ${message}")
         }
     }
+    val inlineContent = mapOf(
+        Pair(
+
+            modId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            subId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = stringResource(R.string.sub_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            monitorId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.visibility_24),
+                    "contentDescription",
+                    tint = Color.Yellow,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+        )
+
+    )
+    Column(
+        modifier =Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
+    ) {
+        Text(
+            text,
+            inlineContent = inlineContent
+        )
+
+    }
+
 }
 
 

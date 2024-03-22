@@ -28,7 +28,8 @@ class TwitchUserDataObjectMother private constructor() {
             userType = null,
             messageType = MessageType.CLEARCHAT,
             bannedDuration = null,
-            systemMessage = null
+            systemMessage = null,
+            isMonitored =false
         )
 
         fun build(): TwitchUserData {
@@ -82,6 +83,11 @@ class TwitchUserDataObjectMother private constructor() {
         fun addMod(mod: String) = apply {
             twitchUserData = twitchUserData.copy(
                 mod = mod
+            )
+        }
+        fun addMonitored(isMonitored: Boolean) = apply {
+            twitchUserData = twitchUserData.copy(
+                isMonitored = isMonitored
             )
         }
         fun addReturningChatter(returningChatter: String) = apply {
