@@ -824,7 +824,7 @@ fun ChatBox(
         Column(
             modifier =Modifier.fillMaxSize()
         ) {
-            ModView.SectionHeaderRow(title ="CHAT")
+            ModView.SectionHeaderIconRow(title ="CHAT")
             LazyColumn(
                 state = listState,
                 modifier = Modifier
