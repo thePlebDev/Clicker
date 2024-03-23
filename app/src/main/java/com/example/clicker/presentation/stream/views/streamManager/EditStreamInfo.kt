@@ -604,19 +604,7 @@ fun DraggableBackground(
                         if (boxOneDragging) {
                             boxOneYOffset += dragAmount.y
                         }
-//                        else {
-//                            scope.launch {
-//                                boxOneListState.scrollBy((dragAmount.y * -1))
-//                            }
-//                        }
-
-
-                        // boxOneYOffset += dragAmount.y
                     }
-                }
-                .onGloballyPositioned {
-                    // totalItemHeight= it.size.height
-                    Log.d("Box", "height -> ${it.size.height}")
                 }
 
         ){
@@ -693,14 +681,7 @@ fun DraggableBackground(
                     if (boxTwoDragging) {
                         boxTwoYOffset += dragAmount.y
                     }
-//                    else {
-//                        scope.launch {
-//                            boxTwoListState.scrollBy((dragAmount.y * -1))
-//                        }
-//                    }
 
-
-                    // boxTwoYOffset += dragAmount.y
                 }
             }
         ){
@@ -824,7 +805,7 @@ fun ChatBox(
         Column(
             modifier =Modifier.fillMaxSize()
         ) {
-            ModView.SectionHeaderIconRow(title ="CHAT")
+            ModView.DropDownMenuHeaderBox(headerTitle ="CHAT")
             LazyColumn(
                 state = listState,
                 modifier = Modifier
