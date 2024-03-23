@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream.views.streamManager
 
 import android.animation.ObjectAnimator
 import android.content.res.Resources
+import android.icu.text.ListFormatter.Width
 import android.util.Log
 import android.view.View
 import androidx.compose.animation.animateContentSize
@@ -56,7 +57,9 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
@@ -83,6 +86,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -842,25 +846,112 @@ fun ChatBox(
 fun DragDetectionBox(
     itemBeingDragged:@Composable (dragOffset:Float) -> Unit,
 ){
+    var iconPainterResource = painterResource(id =R.drawable.ban_24)
+    var dragging by remember{ mutableStateOf(true) }
+
+
     val state = rememberDraggableActions()
+
+    var iconColor = MaterialTheme.colorScheme.primary
+
+    if(dragging){
+        if (state.offset.value >= (state.halfWidth)) {
+            iconPainterResource =painterResource(id =R.drawable.delete_outline_24)
+            iconColor = MaterialTheme.colorScheme.onPrimary
+
+        }
+        else if (state.offset.value <= -(state.halfWidth)){
+            iconPainterResource =painterResource(id =R.drawable.delete_outline_24)
+            iconColor = MaterialTheme.colorScheme.onPrimary
+        }
+        else if (state.offset.value <= -(state.quarterWidth)){
+            iconPainterResource =painterResource(id =R.drawable.time_out_24)
+            iconColor = MaterialTheme.colorScheme.onPrimary
+        }
+        else if (state.offset.value >= (state.quarterWidth)){
+            iconPainterResource =painterResource(id =R.drawable.ban_24)
+            iconColor = MaterialTheme.colorScheme.onPrimary
+        }
+    }
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .draggable(
                 orientation = Orientation.Horizontal,
                 onDragStopped = {
+                    checkDragThresholdCrossed(
+                        halfWidth =state.halfWidth,
+                        quarterWidth=state.quarterWidth,
+                        state.offset.value,
+                        deleteMessageSwipe ={
+                            Log.d("DraggableStateWidth", "DELETE MESSAGE")
+                        },
+                        timeoutUserSwipe ={
+                            Log.d("DraggableStateWidth", "TIMEOUT USER")
+                        },
+                        banUserSwipe={
+                            Log.d("DraggableStateWidth", "BAN USER")
+                        }
+                    )
+                    dragging = false
                     state.resetOffset()
+                },
+                onDragStarted = {
+                    dragging = true
                 },
 
 
                 enabled = true,
                 state = state.draggableState
             )
+            .onGloballyPositioned { layoutCoordinates ->
+                state.setWidth(layoutCoordinates.size.width)
+            }
     ){
+        Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor, modifier = Modifier
+            .align(
+                Alignment.CenterEnd
+            )
+            .padding(end = 10.dp)
+        )
+
+        Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor,
+            modifier = Modifier
+                .align(
+                    Alignment.CenterStart
+                )
+                .padding(start = 10.dp)
+        )
         itemBeingDragged(state.offset.value)
 
     }
 
+}
+fun checkDragThresholdCrossed(
+    halfWidth:Int,
+    quarterWidth:Int,
+    offset:Float,
+    deleteMessageSwipe:()->Unit,
+    timeoutUserSwipe:() ->Unit,
+    banUserSwipe:() ->Unit,
+){
+
+    when {
+        offset >= halfWidth -> {
+            deleteMessageSwipe()
+        }
+        offset <= -halfWidth -> {
+            deleteMessageSwipe()
+        }
+        offset >= quarterWidth -> {
+            banUserSwipe()
+        }
+        offset <= -quarterWidth -> {
+            timeoutUserSwipe()
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -1019,13 +1110,33 @@ class ModViewDragState(){
     val offset: State<Float> get() = offsetX
     private var offsetX = mutableStateOf(0f)
 
+    val width: State<Int> get() = swipeWidth
+    private var swipeWidth = mutableStateOf(100)
+
+     val halfWidth get() = (swipeWidth.value/2.5).toInt()
+     val quarterWidth get() = swipeWidth.value/4
+
+    fun setWidth(width: Int){
+        swipeWidth.value = width
+    }
+
+
 
     val draggableState = DraggableState { delta ->
-        if (offsetX.value >= 300f){
-            offsetX.value += delta/5
+       if(offsetX.value >= halfWidth){
+           offsetX.value += delta/5
+       }
+        else if(offsetX.value <= -halfWidth){
+           offsetX.value += delta/5
         }
-        else if (offsetX.value <= -300f){
-            offsetX.value += delta/5
+
+        else if(offsetX.value <= -quarterWidth){
+            offsetX.value += delta
+            Log.d("draggindTheFourthWidth","TIMEOUT")
+        }
+        else if(offsetX.value >= quarterWidth){
+            offsetX.value += delta
+            Log.d("draggindTheFourthWidth","BAN")
         }
         else{
             offsetX.value += delta
@@ -1034,6 +1145,7 @@ class ModViewDragState(){
     }
 
     suspend fun resetOffset(){
+        Log.d("resetOffset","offsetX --> ${offsetX.value}")
         draggableState.drag(MutatePriority.PreventUserInput) {
             Animatable(offsetX.value).animateTo(
                 targetValue = 0f,
@@ -1043,6 +1155,8 @@ class ModViewDragState(){
             }
         }
     }
+
+
 
 }
 
