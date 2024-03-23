@@ -51,18 +51,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
+import com.example.clicker.presentation.sharedViews.IconScope
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 
 object ModView {
 
     @Composable
-    fun SectionHeaderRow(title:String,){
+    fun SectionHeaderRow(
+        title:String,
+        horizontalArrangement:Arrangement.Horizontal = Arrangement.Start,
+        secondaryHeader: @Composable () -> Unit ={}
+    ){
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.DarkGray)
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = horizontalArrangement
 
             ) {
             Text(
@@ -70,68 +76,67 @@ object ModView {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize
             )
+            secondaryHeader()
 
         }
     }
     @Composable
-    fun SectionHeaderIconRow(title:String){
+    fun DropDownMenuHeaderBox(headerTitle:String){
         var expanded by remember { mutableStateOf(false) }
         //todo: animate the icon change
         Box(){
-            DropdownDemo(
+            DropdownMenuColumn(
                 expanded,
                 setExpanded ={newValue -> expanded = newValue}
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.DarkGray)
-                    .padding(horizontal = 20.dp)
-                ,
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-
-            ) {
-                Text(
-                    title,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                )
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary.copy(.3f))
-                        .padding(horizontal = 5.dp)
-                        .clickable {
-                            expanded = true
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        imageVector =Icons.Default.Settings,
-                        contentDescription ="Settings"
-                    )
-                    Text("Modes",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        modifier = Modifier.padding(horizontal = 5.dp)
-                    )
-                    Icon(
-                        imageVector =if(expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp ,
-                        contentDescription ="Settings"
+            SectionHeaderRow(
+                title = headerTitle,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                secondaryHeader = {
+                    ModesHeader(
+                        expanded = expanded,
+                        changeExpanded = {newValue ->expanded = newValue}
                     )
                 }
+            )
 
-            }
         }
-
-
-
 
 
     }
 
     @Composable
-    fun DropdownDemo(
+    fun ModesHeader(
+        expanded: Boolean,
+        changeExpanded:(Boolean)->Unit,
+    ){
+        Row(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.primary.copy(.3f))
+                .padding(horizontal = 5.dp)
+                .clickable {
+                    changeExpanded(true)
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Icon(
+                imageVector =Icons.Default.Settings,
+                contentDescription ="Settings"
+            )
+            Text("Modes",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                modifier = Modifier.padding(horizontal = 5.dp)
+            )
+            Icon(
+                imageVector =if(expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp ,
+                contentDescription ="Settings"
+            )
+        }
+    }
+
+    @Composable
+    fun DropdownMenuColumn(
         expanded:Boolean,
         setExpanded:(Boolean)->Unit
     ) {
