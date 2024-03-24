@@ -114,6 +114,7 @@ import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.presentation.stream.views.dialogs.Dialogs
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.Section
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
@@ -848,6 +849,8 @@ fun DragDetectionBox(
 ){
     var iconPainterResource = painterResource(id =R.drawable.ban_24)
     var dragging by remember{ mutableStateOf(true) }
+    var showTimeOutDialog by remember{ mutableStateOf(false) }
+    var showBanDialog by remember{ mutableStateOf(false) }
 
 
     val state = rememberDraggableActions()
@@ -882,17 +885,17 @@ fun DragDetectionBox(
                 orientation = Orientation.Horizontal,
                 onDragStopped = {
                     checkDragThresholdCrossed(
-                        halfWidth =state.halfWidth,
-                        quarterWidth=state.quarterWidth,
+                        halfWidth = state.halfWidth,
+                        quarterWidth = state.quarterWidth,
                         state.offset.value,
-                        deleteMessageSwipe ={
+                        deleteMessageSwipe = {
                             Log.d("DraggableStateWidth", "DELETE MESSAGE")
                         },
-                        timeoutUserSwipe ={
-                            Log.d("DraggableStateWidth", "TIMEOUT USER")
+                        timeoutUserSwipe = {
+                            showTimeOutDialog = true
                         },
-                        banUserSwipe={
-                            Log.d("DraggableStateWidth", "BAN USER")
+                        banUserSwipe = {
+                            showBanDialog = true
                         }
                     )
                     dragging = false
@@ -925,6 +928,17 @@ fun DragDetectionBox(
                 .padding(start = 10.dp)
         )
         itemBeingDragged(state.offset.value)
+        if(showTimeOutDialog){
+            ModViewTimeoutDialog(
+                closeDialog = {showTimeOutDialog =false}
+            )
+        }
+        if(showBanDialog){
+            ModViewBanDialog(
+                closeDialog = {showBanDialog =false}
+            )
+        }
+
 
     }
 
@@ -952,6 +966,50 @@ fun checkDragThresholdCrossed(
             timeoutUserSwipe()
         }
     }
+}
+
+@Composable
+fun ModViewTimeoutDialog(
+    closeDialog:() ->Unit,
+){
+    Dialogs.TimeoutDialog(
+        onDismissRequest = {
+            closeDialog()
+        },
+        username = "clickedUsername",
+        timeoutDuration = 3,
+        timeoutReason = "timeoutReason",
+        changeTimeoutDuration = { duration ->
+           // changeTimeoutDuration(duration)
+        },
+        changeTimeoutReason = { reason ->
+            //changeTimeoutReason(reason)
+        },
+        closeDialog = {
+            closeDialog()
+
+        },
+        timeOutUser = {
+          //  timeOutUser()
+        }
+    )
+}
+
+@Composable
+fun ModViewBanDialog(
+    closeDialog:() ->Unit,
+){
+    Dialogs.BanDialog(
+        onDismissRequest={closeDialog()},
+    username="thePlebDev",
+    banReason="",
+    changeBanReason={},
+    banUser={},
+    clickedUserId="",
+    closeDialog={closeDialog()},
+
+    )
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
