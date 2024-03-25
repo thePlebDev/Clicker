@@ -53,6 +53,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
@@ -71,11 +73,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -121,6 +127,8 @@ import com.example.clicker.presentation.sharedViews.IconScope
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.SharedBottomModal
 import com.example.clicker.presentation.stream.views.dialogs.Dialogs
 import com.example.clicker.presentation.stream.views.dialogs.TimeListData
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
@@ -380,40 +388,104 @@ fun EditStreamInfo(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ModView(
     closeStreamInfo:()->Unit,
 ){
-    SharedComponents.NoDrawerScaffold(
-        topBar = {
-            IconTextTopBarRow(
-                icon = {
-                    BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "close this section of UI",
-                        onClick = {
-                            closeStreamInfo()
-                        }
+
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
+    var showBottomSheet by remember { mutableStateOf(true) }
+    val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
+
+
+    if(showBottomSheet){
+        ModalBottomSheet(
+            sheetState = state,
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            dragHandle= {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .size(30.dp)
+                    )
+
+            }
+        ){
+            SharedBottomModal.ClickedUserBottomModal(
+                closeBottomModal = {showBottomSheet = false},
+                bottomModalHeaders = {
+                    this.ContentHeaderRow(
+                        clickedUsername = "thePlebDev",
+                        textFieldValue = textFieldValue,
+                        closeBottomModal={showBottomSheet = false}
                     )
                 },
-                text="Mod View",
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                horizontalArrangement = Arrangement.SpaceBetween
-            )
-        },
-        bottomBar = {}
-    ) {contentPadding ->
-        DraggableBackground(contentPadding)
+                bottomModalButtons = {
+                    this.ContentBottom(
+                        banned =false,
+                        loggedInUserMod =true ,
+                        closeBottomModal = { /*TODO*/ },
+                        unbanUser = { /*TODO*/ },
+                        openTimeoutDialog = { /*TODO*/ },
+                        openBanDialog = { /*TODO*/ },
+                        shouldMonitorUser = false
+                    ) {
 
+                    }
+                },
+                bottomModalRecentMessages={
+                    this.ClickedUserMessages(
+                        clickedUsernameChats = listOf("IT DO BE LIKE THAT SOMETIMES","ok, However I stil think youre wrong","LUL")
+                    )
+                }
+            )
+
+        }
     }
+
+        SharedComponents.NoDrawerScaffold(
+            topBar = {
+                IconTextTopBarRow(
+                    icon = {
+                        BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "close this section of UI",
+                            onClick = {
+                                closeStreamInfo()
+                            }
+                        )
+                    },
+                    text="Mod View",
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                )
+            },
+            bottomBar = {}
+        ) {contentPadding ->
+            DraggableBackground(
+                contentPadding,
+                triggerBottomModal={newValue ->showBottomSheet = newValue}
+            )
+
+        }
+
+
 
 
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DraggableBackground(
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
+    triggerBottomModal:(Boolean)->Unit,
 ){
 
 
@@ -716,7 +788,8 @@ fun DraggableBackground(
             ChatBox(
                 boxTwoDragging,
                 setDragging = {value -> boxTwoDragging = value},
-                chatMessageList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree)
+                chatMessageList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree),
+                triggerBottomModal={newValue -> triggerBottomModal(newValue)}
             )
 
         }
@@ -792,12 +865,13 @@ fun DraggableBackground(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ChatBox(
     dragging:Boolean,
     setDragging:(Boolean)->Unit,
     chatMessageList: List<TwitchUserData>,
+    triggerBottomModal:(Boolean)->Unit,
 
     ){
     val opacity = if(dragging) 0.5f else 0f
@@ -832,7 +906,8 @@ fun ChatBox(
                             MessageCard(
                                 dragOffset,
                                 setDragging={newValue ->setDragging(newValue)},
-                                chatMessageData =chatTwitchUserData
+                                chatMessageData =chatTwitchUserData,
+                                triggerBottomModal={newValue->triggerBottomModal(newValue)}
                             )
                         }
                     )
@@ -1220,13 +1295,15 @@ fun ModViewBanDialog(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MessageCard(
     offset:Float,
     setDragging:(Boolean)->Unit,
-    chatMessageData:TwitchUserData
+    chatMessageData:TwitchUserData,
+    triggerBottomModal:(Boolean)->Unit,
 ) {
+    val scope = rememberCoroutineScope()
 
 
     Card(
@@ -1239,6 +1316,9 @@ fun MessageCard(
                 },
                 // onLongClick = {setDragging(true)},
                 onClick = {
+                    scope.launch {
+                        triggerBottomModal(true)
+                    }
                 }
             )
         ,
