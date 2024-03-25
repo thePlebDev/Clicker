@@ -395,7 +395,7 @@ fun ModView(
 ){
 
     val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
-    var showBottomSheet by remember { mutableStateOf(true) }
+    var showBottomSheet by remember { mutableStateOf(false) }
     val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
 
 
@@ -784,11 +784,27 @@ fun DraggableBackground(
                 .addUserType("There do be another one. So don't worry").addColor("#0000FF")
                 .addMod("1").addSubscriber(true).addMonitored(true)
                 .build()
+            val fakeDataFour = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+                .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+                .addMod("1").addSubscriber(true).addMonitored(true)
+                .build()
+            val fakeDataFive = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+                .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+                .addMod("1").addSubscriber(true).addMonitored(false)
+                .build()
+            val fakeDataSix = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+                .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+                .addMod("1").addSubscriber(true).addMonitored(false)
+                .build()
+
 
             ChatBox(
                 boxTwoDragging,
                 setDragging = {value -> boxTwoDragging = value},
-                chatMessageList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree),
+                chatMessageList = listOf(fakeDataOne,fakeDataTwo,
+                    fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix,fakeDataSix,
+                    fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix,fakeDataSix
+                ),
                 triggerBottomModal={newValue -> triggerBottomModal(newValue)}
             )
 
@@ -921,6 +937,18 @@ fun ChatBox(
         if(dragging){
             ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
         }
+        var text by remember { mutableStateOf("Hello") }
+
+
+        if(!dragging){
+            TextField(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Label") }
+            )
+        }
+
 
     }
 }
