@@ -50,8 +50,12 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
@@ -102,19 +106,23 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
+import com.example.clicker.presentation.sharedViews.IconScope
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.dialogs.Dialogs
+import com.example.clicker.presentation.stream.views.dialogs.TimeListData
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.Section
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
@@ -968,31 +976,231 @@ fun checkDragThresholdCrossed(
     }
 }
 
+
 @Composable
 fun ModViewTimeoutDialog(
-    closeDialog:() ->Unit,
+    closeDialog: () -> Unit
 ){
-    Dialogs.TimeoutDialog(
-        onDismissRequest = {
-            closeDialog()
-        },
-        username = "clickedUsername",
-        timeoutDuration = 3,
-        timeoutReason = "timeoutReason",
-        changeTimeoutDuration = { duration ->
-           // changeTimeoutDuration(duration)
-        },
-        changeTimeoutReason = { reason ->
-            //changeTimeoutReason(reason)
-        },
-        closeDialog = {
-            closeDialog()
-
-        },
-        timeOutUser = {
-          //  timeOutUser()
-        }
+    val timeList = listOf<TimeListData>(
+        TimeListData(60, stringResource(R.string.one_minute)),
+        TimeListData(600, stringResource(R.string.ten_minutes)),
+        TimeListData(1800, stringResource(R.string.thirty_minutes)),
+        TimeListData(604800, stringResource(R.string.one_week))
     )
+    RadioButtonDialog(
+        dialogHeaderContent={
+           DialogHeader(username ="thePlebDev", headerText = "Timeout:")
+        },
+        dialogSubHeaderContent = {
+            SubHeader(dividerColor = MaterialTheme.colorScheme.secondary, subTitleText ="Duration:" )
+        },
+        dialogRadioButtonsContent={
+            DialogRadioButtonsRow(
+                unselectedColor = MaterialTheme.colorScheme.onPrimary,
+                selectedColor = MaterialTheme.colorScheme.secondary,
+                textColor = MaterialTheme.colorScheme.onPrimary,
+                dialogDuration = 3,
+                changeDialogDuration = {},
+                timeList = timeList
+            )
+        },
+        dialogConfirmCancelContent = {
+            DialogConfirmCancel(
+                closeDialog = { closeDialog() },
+                confirmAction = {  },
+                cancelText = "Cancel",
+                confirmText = "Timeout"
+            )
+        },
+        dialogTextFieldContent = {
+            OutlinedTextContent(
+                textColor =MaterialTheme.colorScheme.onPrimary,
+                timeoutReason = "",
+                textLabel = stringResource(R.string.reason),
+                changeTimeoutReason = {}
+            )
+        },
+        onDismissRequest = {closeDialog()},
+        primary = MaterialTheme.colorScheme.primary,
+        secondary = MaterialTheme.colorScheme.secondary
+    )
+}
+@Composable
+fun RadioButtonDialog(
+    dialogHeaderContent:@Composable DialogHeaderScope.() -> Unit,
+    dialogSubHeaderContent:@Composable DialogHeaderScope.() -> Unit,
+    dialogRadioButtonsContent:@Composable DialogContentScope.() -> Unit,
+    dialogTextFieldContent:@Composable DialogContentScope.() -> Unit,
+    dialogConfirmCancelContent:@Composable DialogButtons.() -> Unit,
+    onDismissRequest: () -> Unit,
+    primary: Color,
+    secondary: Color
+){
+    val textColor = MaterialTheme.colorScheme.onPrimary
+    val buttonContainerColor = MaterialTheme.colorScheme.secondary
+    val headerScope = remember{ DialogHeaderScope(textColor = textColor) }
+    val dialogContentScope = remember{ DialogContentScope() }
+    val dialogButtonScope  = remember{ DialogButtons(buttonContainerColor = buttonContainerColor,textColor =textColor) }
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        androidx.compose.material.Card(
+            modifier = Modifier
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            backgroundColor = primary,
+            border = BorderStroke(2.dp, secondary)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .background(primary)
+            ) {
+                with(headerScope){
+                    dialogHeaderContent()
+                    dialogSubHeaderContent()
+                }
+                with(dialogContentScope){
+                    dialogRadioButtonsContent()
+                    dialogTextFieldContent()
+                }
+                with(dialogButtonScope){
+                    dialogConfirmCancelContent()
+                }
+
+            }
+        }
+    }
+
+}
+
+@Stable
+class DialogButtons(
+    private val buttonContainerColor:Color, //should be secondary
+    private val textColor: Color //should be onSecondary
+){
+    @Composable
+    fun DialogConfirmCancel(
+        closeDialog: () -> Unit,
+        confirmAction: () -> Unit,
+        cancelText:String,
+        confirmText:String
+
+    ){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Button(
+                onClick = { closeDialog() },
+                modifier = Modifier.padding(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor =buttonContainerColor )
+            ) {
+                Text(cancelText, color = textColor)
+            }
+            // todo: Implement the details of the timeout implementation
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor =buttonContainerColor ),
+                onClick = {
+                    closeDialog()
+                    confirmAction()
+                }, modifier = Modifier.padding(10.dp)
+            ) {
+                Text(confirmText, color = textColor)
+            }
+        }
+    }
+}
+
+@Stable
+class DialogContentScope(){
+    @Composable
+    fun DialogRadioButtonsRow(
+        unselectedColor: Color,
+        selectedColor: Color,
+        textColor: Color,
+        dialogDuration: Int,
+        changeDialogDuration: (Int) -> Unit,
+        timeList:List<TimeListData>,
+
+        ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if(timeList.size ==1) Arrangement.Start  else Arrangement.SpaceEvenly
+        ) {
+            for(timeData in timeList){
+                Column {
+
+                    RadioButton(
+                        colors =  RadioButtonDefaults.colors( selectedColor=selectedColor, unselectedColor = unselectedColor),
+                        selected = dialogDuration == timeData.time,
+                        onClick = { changeDialogDuration(timeData.time) }
+                    )
+                    Text(timeData.textDescription, color = textColor)
+                }
+            }
+
+
+        }
+    }
+
+    @Composable
+    fun OutlinedTextContent(
+        textColor: Color,
+        timeoutReason:String,
+        textLabel:String,
+        changeTimeoutReason:(String)->Unit,
+    ){
+        OutlinedTextField(
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = textColor,
+                focusedLabelColor = textColor,
+                focusedIndicatorColor = textColor,
+                unfocusedIndicatorColor = textColor,
+                unfocusedLabelColor = textColor
+            ),
+            value = timeoutReason,
+            onValueChange = { changeTimeoutReason(it) },
+            label = {
+                Text(textLabel)
+            }
+        )
+    }
+
+}
+@Stable
+class DialogHeaderScope(
+    private val textColor:Color
+){
+    @Composable
+    fun DialogHeader(
+        username:String,
+        headerText:String,
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Text(
+                headerText,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                color = textColor
+            )
+            Text(
+                username,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                color = textColor
+            )
+        }
+    }
+    @Composable
+    fun SubHeader(
+        dividerColor: Color,
+        subTitleText:String
+    ){
+        Divider(color = dividerColor, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+        Text(
+            subTitleText,
+            color = textColor,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+        )
+    }
 }
 
 @Composable
