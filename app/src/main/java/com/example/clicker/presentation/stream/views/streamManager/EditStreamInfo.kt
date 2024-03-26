@@ -892,6 +892,7 @@ fun ChatBox(
     ){
     val opacity = if(dragging) 0.5f else 0f
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -937,17 +938,16 @@ fun ChatBox(
         if(dragging){
             ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
         }
-        var text by remember { mutableStateOf("Hello") }
-
-
-        if(!dragging){
-            TextField(
-                modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Label") }
-            )
-        }
+        ModView.DetectDraggingOrNotAtBottomButton(
+            dragging = dragging,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            listState = listState,
+            scrollToBottomOfList = {
+                scope.launch {
+                    listState.animateScrollToItem(chatMessageList.lastIndex)
+                }
+            }
+        )
 
 
     }

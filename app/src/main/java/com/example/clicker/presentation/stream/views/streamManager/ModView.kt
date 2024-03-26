@@ -12,19 +12,31 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +62,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.sharedViews.IconScope
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
@@ -140,10 +153,19 @@ object ModView {
         expanded:Boolean,
         setExpanded:(Boolean)->Unit
     ) {
+        var permittedWordsExpanded by remember {
+            mutableStateOf(false)
+        }
+        var bannedWordsExpanded by remember {
+            mutableStateOf(false)
+        }
 
         DropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { setExpanded(false) },
+                onDismissRequest = {
+                    setExpanded(false)
+                    permittedWordsExpanded = false
+                                   },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
@@ -166,11 +188,193 @@ object ModView {
                 setExpanded ={newValue -> setExpanded(newValue)}
             )
             Spacer(modifier =Modifier.height(10.dp))
-
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ){
+                Divider(modifier = Modifier
+                    .height(1.dp)
+                    .fillMaxWidth(.94f),
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
+                )
+            }
+            Spacer(modifier =Modifier.height(10.dp))
+            BlockedTermsDropdownMenuItem(
+                bannedWordsExpanded =bannedWordsExpanded,
+                changeBannedWordsExpanded={newValue -> bannedWordsExpanded = newValue},
+                numberOfTermsBanned = 33
+            )
+            PermittedWordsDropdownMenuItem(
+                numberOfTerms = 3,
+                permittedWordsExpanded=permittedWordsExpanded,
+                changePermittedWordsExpanded={newValue -> permittedWordsExpanded = newValue}
+            )
 
 
             }
     }
+
+    @Composable
+    fun BlockedTermsDropdownMenuItem(
+        bannedWordsExpanded:Boolean,
+        changeBannedWordsExpanded:(Boolean)->Unit,
+        numberOfTermsBanned:Int,
+    ){
+        //so we need another Item that opens up
+        DropdownMenuItem(
+            onClick = {},
+            text = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+
+                ){
+                    Text("Banned Terms")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text("$numberOfTermsBanned")
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "")
+                    }
+                }
+            }
+        ) //end of DropdownMenuItem
+
+
+
+    }
+
+
+    @Composable
+    fun PermittedWordsDropdownMenuItem(
+
+        numberOfTerms:Int,
+        permittedWordsExpanded:Boolean,
+        changePermittedWordsExpanded:(Boolean)->Unit
+    ){
+
+        DropdownMenuItem(
+            onClick = {changePermittedWordsExpanded(true)},
+            text = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+
+                ){
+                    Text("Permitted Terms")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text("$numberOfTerms")
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "")
+                    }
+                }
+            }
+
+
+        )//end of DropdownMenuItem
+        AddSearchPermittedTermsDropdownMenu(
+            expanded =permittedWordsExpanded,
+            changeExpanded={newValue -> changePermittedWordsExpanded(newValue)}
+        )
+
+    }
+
+    @Composable
+    fun AddSearchPermittedTermsDropdownMenu(
+        expanded:Boolean,
+        changeExpanded: (Boolean) -> Unit
+    ){
+        var text by remember { mutableStateOf("Hello") }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { changeExpanded(false) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.DarkGray
+                )
+        ){
+            DropdownMenuItem(
+                onClick = {changeExpanded(false) },
+                text = {
+                    Column(){
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+
+                        ){
+                            Text("Permitted Terms", fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+                            Icon(Icons.Default.Close, contentDescription = "",modifier = Modifier.size(30.dp))
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Divider(modifier = Modifier
+                            .height(1.dp)
+                            .fillMaxWidth(.94f),
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text("SEARCH FOR A TERM TO ADD",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            OutlinedTextField(
+                                value = text,
+                                onValueChange = { text = it },
+                                label = { Text("Label") }
+                            )
+                            Button(
+                                onClick ={},
+                                shape = RoundedCornerShape(4),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            ) {
+                                Text(" Add ",fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onSecondary)
+                            }
+                        }
+
+                        Text("ACTIVE TERMS (1)",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                        //todo: MAKE A LAZYCOLUMN OF MAX SIZE
+                        PermittedTermsLazyColumn()
+                    }
+                }
+            )
+        }
+    }
+
+    @Composable
+    fun PermittedTermsLazyColumn(){
+            LazyColumn(
+                modifier =Modifier.size(width =600.dp, height =200.dp)
+            ){
+                items(20){
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text("Fuck")
+                        Row(verticalAlignment = Alignment.CenterVertically){
+                            Icon(painter = painterResource(id =R.drawable.edit_24),
+                                contentDescription = "edit permitted term",modifier=Modifier.clickable {  })
+                            Spacer(modifier =Modifier.width(10.dp))
+                            Icon(painter = painterResource(id =R.drawable.delete_outline_24),
+                                contentDescription = "delete permitted term",modifier=Modifier.clickable {  })
+                        }
+
+                    }
+                    Spacer(modifier =Modifier.height(10.dp))
+                }
+
+        }
+
+
+    }
+
 
     @Composable
     fun FollowersOnlyCheck(
@@ -294,7 +498,7 @@ object ModView {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
                     Row(verticalAlignment = Alignment.CenterVertically){
-                        Icon(imageVector =Icons.Default.Favorite, contentDescription ="Emote icon" )
+                        Icon(painter = painterResource(id =R.drawable.baseline_hourglass_empty_24), contentDescription = "slow mode identifier")
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Slow Mode", color = MaterialTheme.colorScheme.onPrimary)
                     }
