@@ -899,13 +899,7 @@ fun ChatBox(
         .background(MaterialTheme.colorScheme.primary)
 
     ){
-//        ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
-//        ModView.DetectDraggingOrNotAtBottomButton(
-//            dragging = dragging,
-//            modifier = Modifier.align(Alignment.BottomCenter),
-//            listState = listState,
-//            scrollToBottomOfList = {}
-//        )
+
         Column(
             modifier =Modifier.fillMaxSize()
         ) {
@@ -1534,14 +1528,64 @@ class ModViewDragState(){
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AutoModQueueBox(){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
-        Column(modifier =Modifier.fillMaxSize()) {
-            ModView.SectionHeaderRow(title ="AutoMod Queue")
+        LazyColumn(
+            modifier =Modifier.fillMaxSize()
+        ){
+            stickyHeader {
+                ModView.SectionHeaderRow(title ="AutoMod Queue")
+            }
+            item{
+                AutoModItemRow(
+                    "thePlebDev",
+                    "fuck, it do be like that sometimes and why do you have to do it like that. Like fuck you dude. WTF indeed"
+                )
+            }
+            items(10){
+                AutoModItemRow(
+                    "thePlebDev",
+                    "fuck, it do be like that sometimes"
+                )
+            }
+            items(3){
+                AutoModItemRow(
+                    "thePlebDev",
+                    "eat my ass turd"
+                )
+            }
         }
+
+    }
+}
+@Composable
+fun AutoModItemRow(
+    username:String,
+    message: String
+){
+    val annotatedMessageText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = Color.White)) {
+            append("$username: ")
+        }
+        withStyle(style = SpanStyle(color = Color.White, background = Color.Red.copy(alpha = 0.6f))) {
+            append(" $message ")
+        }
+    }
+    Column(modifier = Modifier.fillMaxWidth()){
+        Row(){
+            Spacer(modifier =Modifier.height(5.dp))
+            Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
+            Text("Swearing")
+            Spacer(modifier =Modifier.height(20.dp))
+        }
+        Text(annotatedMessageText)
+        Spacer(modifier =Modifier.height(5.dp))
+        Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+        Spacer(modifier =Modifier.height(5.dp))
 
     }
 }
