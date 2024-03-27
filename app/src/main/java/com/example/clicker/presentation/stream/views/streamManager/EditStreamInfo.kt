@@ -99,6 +99,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -132,10 +133,12 @@ import com.example.clicker.presentation.stream.views.SharedBottomModal
 import com.example.clicker.presentation.stream.views.dialogs.Dialogs
 import com.example.clicker.presentation.stream.views.dialogs.TimeListData
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
+import com.example.clicker.presentation.stream.views.streamManager.util.DragDetectionBox
 import com.example.clicker.presentation.stream.views.streamManager.util.Section
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNTwo
 import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionTwoNThree
+import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.delay
@@ -563,6 +566,8 @@ fun DraggableBackground(
 
     var boxTwoDragging by remember { mutableStateOf(false) }
 
+    var boxThreeDragging by remember { mutableStateOf(false) }
+
 
 
 
@@ -836,6 +841,7 @@ fun DraggableBackground(
                             Section.OTHER -> {}
                         }
                         // offsetY = 0f
+                        boxThreeDragging = false
                     },
                     onDragStart = {
                         boxThreeZIndex = 1f
@@ -869,11 +875,17 @@ fun DraggableBackground(
                         },
                         isDraggedDown = dragAmount.y < 0
                     )
-                    boxThreeYOffset += dragAmount.y
+                    if (boxThreeDragging) {
+                        boxThreeYOffset += dragAmount.y
+                    }
+
                 }
             }
         ){
-            AutoModQueueBox()
+            AutoModQueueBox(
+                setDragging = {newValue -> boxThreeDragging =newValue  },
+                dragging = boxThreeDragging
+            )
         }
 
 
@@ -893,6 +905,8 @@ fun ChatBox(
     val opacity = if(dragging) 0.5f else 0f
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var showTimeOutDialog by remember{ mutableStateOf(false) }
+    var showBanDialog by remember{ mutableStateOf(false) }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -920,7 +934,12 @@ fun ChatBox(
                                 chatMessageData =chatTwitchUserData,
                                 triggerBottomModal={newValue->triggerBottomModal(newValue)}
                             )
-                        }
+                        },
+                        quarterSwipeLeftAction={showTimeOutDialog = true},
+                        quarterSwipeRightAction = {showBanDialog =true},
+                        halfSwipeAction={},
+                        twoSwipeOnly = false
+
                     )
                 }
 
@@ -942,136 +961,20 @@ fun ChatBox(
                 }
             }
         )
-
-
     }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun DragDetectionBox(
-    itemBeingDragged:@Composable (dragOffset:Float) -> Unit,
-){
-    var iconPainterResource = painterResource(id =R.drawable.ban_24)
-    var dragging by remember{ mutableStateOf(true) }
-    var showTimeOutDialog by remember{ mutableStateOf(false) }
-    var showBanDialog by remember{ mutableStateOf(false) }
-
-
-    val state = rememberDraggableActions()
-
-    var iconColor = MaterialTheme.colorScheme.primary
-
-    if(dragging){
-        if (state.offset.value >= (state.halfWidth)) {
-            iconPainterResource =painterResource(id =R.drawable.delete_outline_24)
-            iconColor = MaterialTheme.colorScheme.onPrimary
-
-        }
-        else if (state.offset.value <= -(state.halfWidth)){
-            iconPainterResource =painterResource(id =R.drawable.delete_outline_24)
-            iconColor = MaterialTheme.colorScheme.onPrimary
-        }
-        else if (state.offset.value <= -(state.quarterWidth)){
-            iconPainterResource =painterResource(id =R.drawable.time_out_24)
-            iconColor = MaterialTheme.colorScheme.onPrimary
-        }
-        else if (state.offset.value >= (state.quarterWidth)){
-            iconPainterResource =painterResource(id =R.drawable.ban_24)
-            iconColor = MaterialTheme.colorScheme.onPrimary
-        }
-    }
-
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .draggable(
-                orientation = Orientation.Horizontal,
-                onDragStopped = {
-                    checkDragThresholdCrossed(
-                        halfWidth = state.halfWidth,
-                        quarterWidth = state.quarterWidth,
-                        state.offset.value,
-                        deleteMessageSwipe = {
-                            Log.d("DraggableStateWidth", "DELETE MESSAGE")
-                        },
-                        timeoutUserSwipe = {
-                            showTimeOutDialog = true
-                        },
-                        banUserSwipe = {
-                            showBanDialog = true
-                        }
-                    )
-                    dragging = false
-                    state.resetOffset()
-                },
-                onDragStarted = {
-                    dragging = true
-                },
-
-
-                enabled = true,
-                state = state.draggableState
-            )
-            .onGloballyPositioned { layoutCoordinates ->
-                state.setWidth(layoutCoordinates.size.width)
-            }
-    ){
-        Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor, modifier = Modifier
-            .align(
-                Alignment.CenterEnd
-            )
-            .padding(end = 10.dp)
+    if(showTimeOutDialog){
+        ModViewTimeoutDialog(
+            closeDialog = {showTimeOutDialog =false}
         )
-
-        Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor,
-            modifier = Modifier
-                .align(
-                    Alignment.CenterStart
-                )
-                .padding(start = 10.dp)
+    }
+    if(showBanDialog){
+        ModViewBanDialog(
+            closeDialog = {showBanDialog =false}
         )
-        itemBeingDragged(state.offset.value)
-        if(showTimeOutDialog){
-            ModViewTimeoutDialog(
-                closeDialog = {showTimeOutDialog =false}
-            )
-        }
-        if(showBanDialog){
-            ModViewBanDialog(
-                closeDialog = {showBanDialog =false}
-            )
-        }
-
-
-    }
-
-}
-fun checkDragThresholdCrossed(
-    halfWidth:Int,
-    quarterWidth:Int,
-    offset:Float,
-    deleteMessageSwipe:()->Unit,
-    timeoutUserSwipe:() ->Unit,
-    banUserSwipe:() ->Unit,
-){
-
-    when {
-        offset >= halfWidth -> {
-            deleteMessageSwipe()
-        }
-        offset <= -halfWidth -> {
-            deleteMessageSwipe()
-        }
-        offset >= quarterWidth -> {
-            banUserSwipe()
-        }
-        offset <= -quarterWidth -> {
-            timeoutUserSwipe()
-        }
     }
 }
+
+
 
 
 @Composable
@@ -1467,105 +1370,68 @@ fun TextWithChatBadges(
 
 }
 
-
-@Composable
-fun rememberDraggableActions():ModViewDragState{
-    return remember {ModViewDragState()}
-}
-
-@Stable
-class ModViewDragState(){
-    val offset: State<Float> get() = offsetX
-    private var offsetX = mutableStateOf(0f)
-
-    val width: State<Int> get() = swipeWidth
-    private var swipeWidth = mutableStateOf(100)
-
-     val halfWidth get() = (swipeWidth.value/2.5).toInt()
-     val quarterWidth get() = swipeWidth.value/4
-
-    fun setWidth(width: Int){
-        swipeWidth.value = width
-    }
-
-
-
-    val draggableState = DraggableState { delta ->
-       if(offsetX.value >= halfWidth){
-           offsetX.value += delta/5
-       }
-        else if(offsetX.value <= -halfWidth){
-           offsetX.value += delta/5
-        }
-
-        else if(offsetX.value <= -quarterWidth){
-            offsetX.value += delta
-            Log.d("draggindTheFourthWidth","TIMEOUT")
-        }
-        else if(offsetX.value >= quarterWidth){
-            offsetX.value += delta
-            Log.d("draggindTheFourthWidth","BAN")
-        }
-        else{
-            offsetX.value += delta
-        }
-
-    }
-
-    suspend fun resetOffset(){
-        Log.d("resetOffset","offsetX --> ${offsetX.value}")
-        draggableState.drag(MutatePriority.PreventUserInput) {
-            Animatable(offsetX.value).animateTo(
-                targetValue = 0f,
-                tween(durationMillis = 300)
-            ) {
-                dragBy(value - offsetX.value)
-            }
-        }
-    }
-
-
-
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AutoModQueueBox(){
+fun AutoModQueueBox(
+    setDragging: (Boolean) -> Unit,
+    dragging:Boolean,
+
+){
+    val opacity = if(dragging) 0.5f else 0f
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.primary)){
+        .background(MaterialTheme.colorScheme.primary)
+        .combinedClickable(
+            onDoubleClick = {
+                setDragging(true)
+            },
+            onClick = {
+
+            }
+        )
+    ){
         LazyColumn(
             modifier =Modifier.fillMaxSize()
         ){
             stickyHeader {
                 ModView.SectionHeaderRow(title ="AutoMod Queue")
             }
-            item{
-                AutoModItemRow(
-                    "thePlebDev",
-                    "fuck, it do be like that sometimes and why do you have to do it like that. Like fuck you dude. WTF indeed"
-                )
-            }
+
+
             items(10){
-                AutoModItemRow(
-                    "thePlebDev",
-                    "fuck, it do be like that sometimes"
+                DragDetectionBox(
+                    itemBeingDragged ={offset ->
+                        AutoModItemRow(
+                            "thePlebDev",
+                            "fuck, it do be like that sometimes",
+                            offset = offset
+                        )
+                    },
+                    quarterSwipeRightAction = {
+                        Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
+                    },
+                    quarterSwipeLeftAction = {
+                      Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
+                                             },
+                    twoSwipeOnly = true,
+                    quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
+                    quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24)
                 )
+
             }
-            items(3){
-                AutoModItemRow(
-                    "thePlebDev",
-                    "eat my ass turd"
-                )
-            }
+
         }
 
+    }
+    if(dragging){
+        ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
     }
 }
 @Composable
 fun AutoModItemRow(
     username:String,
-    message: String
+    message: String,
+    offset: Float,
 ){
     val annotatedMessageText = buildAnnotatedString {
         withStyle(style = SpanStyle(color = Color.White)) {
@@ -1575,7 +1441,12 @@ fun AutoModItemRow(
             append(" $message ")
         }
     }
-    Column(modifier = Modifier.fillMaxWidth()){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+            .background(MaterialTheme.colorScheme.primary)
+    ){
         Row(){
             Spacer(modifier =Modifier.height(5.dp))
             Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
