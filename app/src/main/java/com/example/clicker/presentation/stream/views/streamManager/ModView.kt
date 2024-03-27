@@ -580,7 +580,9 @@ object ModView {
     @Composable
     fun DetectDoubleClickSpacer(
         opacity:Float,
-        setDragging:(Boolean) ->Unit
+        setDragging:(Boolean) ->Unit,
+        hapticFeedback:()->Unit,
+
     ){
         Spacer(
             modifier = Modifier
@@ -590,7 +592,8 @@ object ModView {
                     detectTapGestures(
                         onDoubleTap = {
                             //I think I detect the long press here and then have the drag up top
-                            setDragging(true)
+                            hapticFeedback()
+                            setDragging(false)
                         }
                     ) {
 

@@ -101,9 +101,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -567,6 +569,7 @@ fun DraggableBackground(
     var boxTwoDragging by remember { mutableStateOf(false) }
 
     var boxThreeDragging by remember { mutableStateOf(false) }
+    val hapticFeedback = LocalHapticFeedback.current
 
 
 
@@ -617,7 +620,7 @@ fun DraggableBackground(
                     .fillMaxWidth()
                     .onGloballyPositioned {
                         boxSize = (it.size.height / 2.61).toInt()
-                        Log.d("detectTapGesturesonLongPress", "onGloballyPositioned() --> called")
+
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -686,7 +689,10 @@ fun DraggableBackground(
                             changeBoxThreeToSectionThree = {
                                 boxThreeYOffset = (totalItemHeight + 130f) * 2
                             },
-                            isDraggedDown = dragAmount.y < 0
+                            isDraggedDown = dragAmount.y < 0,
+                            performHapticFeedbackType={
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
 
 
                         )
@@ -766,6 +772,9 @@ fun DraggableBackground(
                         changeBoxThreeToSectionThree = {
                             boxThreeYOffset = (totalItemHeight + 130f) * 2
                         },
+                        performHapticFeedbackType={
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
                     )
                     Log.d("Consumingthedrag", "dragAmount.x ${dragAmount.x}")
                     if (boxTwoDragging) {
@@ -873,7 +882,10 @@ fun DraggableBackground(
                             boxTwoYOffset = (totalItemHeight + 130f) * 2
 
                         },
-                        isDraggedDown = dragAmount.y < 0
+                        isDraggedDown = dragAmount.y < 0,
+                        performHapticFeedbackType={
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
                     )
                     if (boxThreeDragging) {
                         boxThreeYOffset += dragAmount.y
@@ -907,6 +919,7 @@ fun ChatBox(
     val scope = rememberCoroutineScope()
     var showTimeOutDialog by remember{ mutableStateOf(false) }
     var showBanDialog by remember{ mutableStateOf(false) }
+    val hapticFeedback = LocalHapticFeedback.current
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -949,7 +962,11 @@ fun ChatBox(
 
         }
         if(dragging){
-            ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
+            ModView.DetectDoubleClickSpacer(
+                opacity,
+                setDragging={newValue ->setDragging(newValue)},
+                hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
+            )
         }
         ModView.DetectDraggingOrNotAtBottomButton(
             dragging = dragging,
@@ -1230,6 +1247,7 @@ fun MessageCard(
 ) {
     val scope = rememberCoroutineScope()
 
+    val hapticFeedback = LocalHapticFeedback.current
 
     Card(
         modifier = Modifier
@@ -1237,6 +1255,7 @@ fun MessageCard(
             .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
             .combinedClickable(
                 onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     setDragging(true)
                 },
                 // onLongClick = {setDragging(true)},
@@ -1377,12 +1396,15 @@ fun AutoModQueueBox(
     dragging:Boolean,
 
 ){
+    val hapticFeedback = LocalHapticFeedback.current
+
     val opacity = if(dragging) 0.5f else 0f
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)
         .combinedClickable(
             onDoubleClick = {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 setDragging(true)
             },
             onClick = {
@@ -1424,7 +1446,11 @@ fun AutoModQueueBox(
 
     }
     if(dragging){
-        ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
+        ModView.DetectDoubleClickSpacer(
+            opacity,
+            setDragging={newValue ->setDragging(newValue)},
+            hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
+        )
     }
 }
 @Composable
@@ -1469,6 +1495,7 @@ fun ModActions(
      length:Int,
 
 ){
+    val hapticFeedback = LocalHapticFeedback.current
 
     val listState = rememberLazyListState()
     val opacity = if(dragging) 0.5f else 0f
@@ -1477,6 +1504,7 @@ fun ModActions(
         .fillMaxSize()
         .combinedClickable(
             onDoubleClick = {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 setDragging(true)
             },
             // onLongClick = {setDragging(true)},
@@ -1513,7 +1541,11 @@ fun ModActions(
             }
         }
         if(dragging){
-            ModView.DetectDoubleClickSpacer(opacity,setDragging={newValue ->setDragging(newValue)})
+            ModView.DetectDoubleClickSpacer(
+                opacity,
+                setDragging={newValue ->setDragging(newValue)},
+                hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
+            )
         }
 
 
