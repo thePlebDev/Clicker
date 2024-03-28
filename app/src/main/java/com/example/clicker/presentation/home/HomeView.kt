@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -13,7 +14,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -58,10 +63,13 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +108,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
@@ -138,59 +147,60 @@ fun ValidationView(
 
 
 
-    HomeViewImplementation(
-        bottomModalState =bottomModalState,
-        loginWithTwitch ={loginWithTwitch()},
-        domainIsRegistered =domainIsRegistered,
-        addToLinks = { addToLinks() },
-        onNavigate = {id -> onNavigate(id) },
-        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-            streamViewModel.updateChannelNameAndClientIdAndUserId(
-                streamerName,
-                clientId,
-                broadcasterId,
-                userId,
-                login =homeViewModel.validatedUser.value?.login ?:""
-            )
-            autoModViewModel.updateAutoModCredentials(
-                oAuthToken = homeViewModel.state.value.oAuthToken,
-                clientId = streamViewModel.state.value.clientId,
-                moderatorId = streamViewModel.state.value.userId,
-                broadcasterId = streamViewModel.state.value.broadcasterId,
-            )
-
-        },
-        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-        clientId = clientId ?: "",
-        userId = userId ?: "",
-        height = homeViewModel.state.value.aspectHeight,
-        width = homeViewModel.state.value.width,
-        logout = {
-            homeViewModel.beginLogout(
-                clientId = clientId?:"",
-                oAuthToken = oAuthToken
-            )
-            //homeViewModel.logout()
-            homeViewModel.hideLogoutDialog()
-
-        },
-        userIsAuthenticated =userIsAuthenticated,
-        screenDensity = homeViewModel.state.value.screenDensity,
-        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-        networkMessageColor=Color.Red,
-        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-        isUserLoggedIn=isUserLoggedIn,
-        showFailedDialog = homeViewModel.state.value.showFailedDialog,
-        hideDialog = {homeViewModel.hideDialog()}
-
-    )
+//    HomeViewImplementation(
+//        bottomModalState =bottomModalState,
+//        loginWithTwitch ={loginWithTwitch()},
+//        domainIsRegistered =domainIsRegistered,
+//        addToLinks = { addToLinks() },
+//        onNavigate = {id -> onNavigate(id) },
+//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+//            streamViewModel.updateChannelNameAndClientIdAndUserId(
+//                streamerName,
+//                clientId,
+//                broadcasterId,
+//                userId,
+//                login =homeViewModel.validatedUser.value?.login ?:""
+//            )
+//            autoModViewModel.updateAutoModCredentials(
+//                oAuthToken = homeViewModel.state.value.oAuthToken,
+//                clientId = streamViewModel.state.value.clientId,
+//                moderatorId = streamViewModel.state.value.userId,
+//                broadcasterId = streamViewModel.state.value.broadcasterId,
+//            )
+//
+//        },
+//        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
+//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+//        clientId = clientId ?: "",
+//        userId = userId ?: "",
+//        height = homeViewModel.state.value.aspectHeight,
+//        width = homeViewModel.state.value.width,
+//        logout = {
+//            homeViewModel.beginLogout(
+//                clientId = clientId?:"",
+//                oAuthToken = oAuthToken
+//            )
+//            //homeViewModel.logout()
+//            homeViewModel.hideLogoutDialog()
+//
+//        },
+//        userIsAuthenticated =userIsAuthenticated,
+//        screenDensity = homeViewModel.state.value.screenDensity,
+//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+//        networkMessageColor=Color.Red,
+//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+//        isUserLoggedIn=isUserLoggedIn,
+//        showFailedDialog = homeViewModel.state.value.showFailedDialog,
+//        hideDialog = {homeViewModel.hideDialog()}
+//
+//    )
+    ReworkingModView()
 
 
 }
@@ -205,3 +215,119 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
+@Composable
+fun rememberDraggableActions():ModViewDragState{
+    return remember {ModViewDragState()}
+}
+
+@Stable
+class ModViewDragState(){
+    
+    // all the complex state goes in here
+    var boxOneOffsetY = mutableStateOf(0f)
+    var boxOneDragState =DraggableState { delta ->
+        boxOneOffsetY.value += delta
+    }
+    fun setBoxOneOffset(newValue:Float){
+        boxOneOffsetY.value = newValue
+    }
+}
+
+@Composable
+fun ReworkingModView(){
+    val state = rememberDraggableActions()
+    Box(modifier = Modifier.fillMaxSize()){
+        DraggableText(
+            boxOneOffsetY =state.boxOneOffsetY.value,
+            setBoxOneOffset = {newValue -> state.setBoxOneOffset(newValue)},
+            boxOneDragState =state.boxOneDragState
+        )
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DraggableText(
+    boxOneOffsetY:Float,
+    setBoxOneOffset:(Float) ->Unit,
+    boxOneDragState: DraggableState
+) {
+
+
+
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val thirdOfHeight = Resources.getSystem().displayMetrics.heightPixels/3
+    val secondBoxPosition = thirdOfHeight
+    val thirdBoxPosition = (secondBoxPosition *2)
+
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ){
+            androidx.compose.material3.Card(
+                onClick = { /*TODO*/ },
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Red
+                ),
+                modifier = Modifier
+                    .offset { IntOffset(0, boxOneOffsetY.roundToInt()) }
+                    .draggable(
+                        orientation = Orientation.Vertical,
+                        state = boxOneDragState,
+                        onDragStopped = {
+                            when{
+                                boxOneOffsetY <539 ->{
+                                    setBoxOneOffset(0f)
+                                }
+                                boxOneOffsetY >539 && boxOneOffsetY <(539*2) ->{
+                                    setBoxOneOffset(739f)
+                                }
+                                boxOneOffsetY >=(539*2)->{
+                                    setBoxOneOffset(739F *2)
+                                }
+                            }
+
+                        }
+                    )
+                    .zIndex(1f)
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .onGloballyPositioned {
+                      //  Log.d("onGloballyPositionedstoof","${it.size.height.dp}")
+                        //739 could do a derived state for this
+                    }
+            ) {
+
+            }
+            /*************START OF THE SECOND BOX***********************/
+            androidx.compose.material3.Card(
+                onClick = { /*TODO*/ },
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Cyan
+                ),
+                modifier = Modifier
+                    .zIndex(0f)
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+
+            }
+            /*************START OF THE THIRD BOX***********************/
+            androidx.compose.material3.Card(
+                onClick = { /*TODO*/ },
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Magenta
+                ),
+                modifier = Modifier
+                    .zIndex(0f)
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+
+            }
+        }
+
+
+}
