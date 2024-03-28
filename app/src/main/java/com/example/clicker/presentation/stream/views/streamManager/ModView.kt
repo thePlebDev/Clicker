@@ -57,16 +57,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+
 import com.example.clicker.R
-import com.example.clicker.presentation.sharedViews.IconScope
+
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 
+/**
+ * ModView contains all the composable functions that are used to create the `chat modes header`
+ * */
 object ModView {
 
     @Composable
@@ -620,6 +624,37 @@ object ModView {
                 buttonText = stringResource(R.string.scroll_to_bottom),
                 modifier = modifier
 
+            )
+        }
+    }
+
+
+    @Composable
+    fun DualIconsButton(
+        buttonAction: () -> Unit,
+        iconImageVector: ImageVector,
+        iconDescription:String,
+        buttonText:String,
+        modifier:Modifier
+    ){
+        Button(
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            shape = RoundedCornerShape(4.dp),
+            onClick = { buttonAction() }
+        ) {
+            Icon(
+                imageVector = iconImageVector,
+                contentDescription = iconDescription,
+                tint =  MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
+            )
+            Text(buttonText,color =  MaterialTheme.colorScheme.onSecondary,)
+            Icon(
+                imageVector = iconImageVector,
+                contentDescription = iconDescription,
+                tint =  MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
             )
         }
     }
