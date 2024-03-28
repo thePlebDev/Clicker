@@ -169,7 +169,6 @@ object ModViewDragSection {
     fun DragSectionHeightColumn(
         updateTotalItemHeight:(Int)->Unit,
         updateBoxSize:(Int)->Unit,
-        updateStartingOffsets:(Int)->Unit
     ){
         val endOffset = 130
         val itemHeightRatio = 2.61
@@ -187,7 +186,7 @@ object ModViewDragSection {
                         Log.d("onGloballyPositionedHeight", "height --> ${it.size.height} ")
                         updateTotalItemHeight((it.size.height - endOffset))
                         updateBoxSize((it.size.height / itemHeightRatio).toInt())
-                        updateStartingOffsets(it.size.height)
+
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -276,7 +275,7 @@ object ModViewDragSection {
             }
         }
         val boxThreeSection by remember(boxThreeYOffset) {
-            Log.d("boxOneYOffset","boxOneYOffset -->{boxOneYOffset}")
+
             derivedStateOf {
                 when {
                     boxThreeYOffset < totalItemHeight -> Section.ONE
@@ -299,6 +298,7 @@ object ModViewDragSection {
 
         var boxThreeDragging by remember { mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
+        Log.d("boxOneDraggingTesting","boxOneYOffset -->$boxOneYOffset")
 
 
 
@@ -317,10 +317,6 @@ object ModViewDragSection {
                 updateBoxSize = {
                     boxHeight = it
                 },
-                updateStartingOffsets={startingOffset ->
-                    boxTwoYOffset = startingOffset.toFloat()
-                    boxThreeYOffset =(startingOffset.toFloat()*2)
-                }
             )
 
 
@@ -506,6 +502,7 @@ object ModViewDragSection {
                     .build()
 
 
+                Log.d("ChatBoxOffset","BoxTwoOffset---> $boxTwoYOffset")
                 ChatBox(
                     boxTwoDragging,
                     setDragging = {value -> boxTwoDragging = value},
@@ -852,7 +849,7 @@ object ModViewDragSection {
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.primary)
-                        .padding(horizontal = 20.dp, vertical = 5.dp)
+                        .padding( vertical = 5.dp)
 
                 ) {
                     stickyHeader {
@@ -897,54 +894,6 @@ object ModViewDragSection {
 
 //todo: rememberDraggableActions() is what I am going to later use to model the complex state
 
-
-    @Composable
-    fun InfoTitle(
-        closeStreamInfo:()->Unit,
-        updateChannelInfo:()->Unit,
-        title:String,
-        contentDescription:String,
-    ){
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.DarkGray)
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Row(verticalAlignment = Alignment.CenterVertically){
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = contentDescription,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            closeStreamInfo()
-                        },
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(text =title,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,modifier = Modifier.padding(start=20.dp))
-            }
-
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    updateChannelInfo()
-                },
-                shape = RoundedCornerShape(5.dp)
-            ) {
-                Text(text ="Save",
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize)
-            }
-
-
-        }
-
-    }
 
     @Composable
     fun IsModeratorButton(
