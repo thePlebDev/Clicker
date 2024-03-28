@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.presentation.stream.views.dialogs.Dialogs
-import com.example.clicker.presentation.stream.views.streamManager.DialogHeaderScope
+
 
 import kotlinx.coroutines.launch
 
