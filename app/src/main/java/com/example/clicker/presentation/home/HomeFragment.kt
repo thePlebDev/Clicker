@@ -178,6 +178,8 @@ class HomeFragment : Fragment() {
         //networkMonitorViewModel.startService()
         val screenDensity =Resources.getSystem().displayMetrics.density
         //networkMonitorViewModel.startService(serviceIntent)
+        val height = Resources.getSystem().displayMetrics.heightPixels
+
 
 
         val uri: Uri? = activity?.intent?.data
