@@ -119,6 +119,9 @@ import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
 import com.example.clicker.presentation.stream.views.streamManager.ModView
+import com.example.clicker.presentation.stream.views.streamManager.util.Section
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 import kotlinx.coroutines.launch
 import kotlin.math.log
@@ -222,25 +225,226 @@ fun rememberDraggableActions():ModViewDragState{
 
 @Stable
 class ModViewDragState(){
-    
+     val boxOne = "BOXONE"
+     val boxTwo = "BOXTWO"
+     val boxThree= "BOXTHREE"
+
+
+
+    var boxOneZIndex =mutableStateOf(0f)
+    var boxTwoZIndex =mutableStateOf(0f)
+    var boxThreeZIndex =mutableStateOf(0f)
+
+    var boxOneDragging =mutableStateOf(false)
+    var boxTwoDragging =mutableStateOf(false)
+    var boxThreeDragging =mutableStateOf(false)
+
     // all the complex state goes in here
     var boxOneOffsetY = mutableStateOf(0f)
+    var boxTwoOffsetY = mutableStateOf(739f)
+    var boxThreeOffsetY = mutableStateOf(739f*2)
+    var stateList = listOf(boxOne,boxTwo,boxThree)//todo: this doesn't work when there is multiple draggings
+
+
     var boxOneDragState =DraggableState { delta ->
+        boxOneZIndex.value = 1f
+        boxTwoZIndex.value=0f
+        boxThreeZIndex.value=0f
+        boxOneDragging.value = true
+        boxTwoDragging.value = false
+        boxThreeDragging.value = false
+        val itemInPositionOne = stateList[0]
+        val itemInPositionTwo = stateList[1]
+        val itemInPositionThree = stateList[2]
+
+       // Log.d("AnotherTherasdf","delta  -> ${delta >0}")
+
+        when{
+
+
+            boxOneOffsetY.value <539 ->{
+
+                if(itemInPositionOne != boxOne){
+                    stateList =listOf(boxOne,itemInPositionOne,itemInPositionThree)
+
+                }
+
+            }
+            boxOneOffsetY.value >539 && boxOneOffsetY.value <(539*2) ->{
+
+
+                if(itemInPositionOne == boxOne){
+
+                    stateList = listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree)
+                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
+                }
+                else if(itemInPositionThree == boxOne){
+
+                    stateList = listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo)
+                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
+                }
+                else if(itemInPositionTwo == boxOne){
+                    stateList = listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree)
+                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
+                }
+
+            }
+
+            boxOneOffsetY.value >=(539*2)->{
+
+                if(itemInPositionThree != boxOne){
+                    stateList = listOf(itemInPositionOne,itemInPositionThree,boxOne)
+
+                }
+            }
+        }
         boxOneOffsetY.value += delta
+    }// end drag state one
+
+
+    var boxTwoDragState =DraggableState { delta ->
+        boxOneZIndex.value = 0f
+        boxTwoZIndex.value = 1f
+        boxThreeZIndex.value=0f
+        boxOneDragging.value = false
+        boxTwoDragging.value = true
+        boxThreeDragging.value = false
+        val itemInPositionOne = stateList[0]
+        val itemInPositionTwo = stateList[1]
+        val itemInPositionThree = stateList[2]
+        when{
+
+
+            boxTwoOffsetY.value <539 ->{
+
+                if(itemInPositionOne != boxTwo){
+                    stateList =listOf(boxTwo,itemInPositionOne,itemInPositionThree)
+
+                }
+
+            }
+            boxTwoOffsetY.value >539 && boxTwoOffsetY.value <(539*2) ->{
+
+
+                if(itemInPositionOne == boxTwo){
+
+                    stateList = listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree)
+                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
+                }
+                else if(itemInPositionThree == boxTwo){
+
+                    stateList = listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo)
+                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
+                }
+                else if(itemInPositionTwo == boxTwo){
+                    stateList = listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree)
+                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
+                }
+
+            }
+
+            boxTwoOffsetY.value >=(539*2)->{
+
+                if(itemInPositionThree != boxTwo){
+                    stateList = listOf(itemInPositionOne,itemInPositionThree,boxTwo)
+
+                }
+            }
+        }
+
+
+
+
+
+        boxTwoOffsetY.value += delta
     }
     fun setBoxOneOffset(newValue:Float){
         boxOneOffsetY.value = newValue
     }
+    fun setBoxTwoOffset(newValue:Float){
+        boxTwoOffsetY.value = newValue
+    }
+    fun setBoxThreeOffset(newValue:Float){
+        boxThreeOffsetY.value = newValue
+    }
+
+
 }
 
 @Composable
 fun ReworkingModView(){
     val state = rememberDraggableActions()
+     remember(state.stateList) {
+         val currentStateList = state.stateList
+         val indexOfBoxOne = currentStateList.indexOf(state.boxOne)
+         val indexOfBoxTwo = currentStateList.indexOf(state.boxTwo)
+         val indexOfBoxThree = currentStateList.indexOf(state.boxThree)
+
+         if(state.boxOneDragging.value){
+             if(indexOfBoxTwo == 0){
+                 state.setBoxTwoOffset(0f)
+             }
+             if(indexOfBoxTwo == 1){
+                 state.setBoxTwoOffset(739f)
+             }
+             if(indexOfBoxTwo == 2){
+                 state.setBoxTwoOffset(739f *2)
+             }
+             if(indexOfBoxThree == 0){
+                 state.setBoxThreeOffset(0f)
+             }
+             if(indexOfBoxThree == 1){
+                 state.setBoxThreeOffset(739f)
+             }
+             if(indexOfBoxThree == 2){
+                 state.setBoxThreeOffset(739f *2)
+             }
+         }
+         else if(state.boxTwoDragging.value){
+             if(indexOfBoxOne == 0){
+                 state.setBoxOneOffset(0f)
+             }
+             if(indexOfBoxOne == 1){
+                 state.setBoxOneOffset(739f)
+             }
+             if(indexOfBoxOne == 2){
+                 state.setBoxOneOffset(739f *2)
+             }
+
+
+             if(indexOfBoxThree == 0){
+                 state.setBoxThreeOffset(0f)
+             }
+             if(indexOfBoxThree == 1){
+                 state.setBoxThreeOffset(739f)
+             }
+             if(indexOfBoxThree == 2){
+                 state.setBoxThreeOffset(739f *2)
+             }
+         }
+
+
+
+
+        Log.d("rememberDraggableActionsStateList","${state.stateList}")
+
+
+
+    }
+
+
     Box(modifier = Modifier.fillMaxSize()){
         DraggableText(
             boxOneOffsetY =state.boxOneOffsetY.value,
             setBoxOneOffset = {newValue -> state.setBoxOneOffset(newValue)},
-            boxOneDragState =state.boxOneDragState
+            boxOneDragState =state.boxOneDragState,
+            boxTwoOffsetY = state.boxTwoOffsetY.value,
+            boxThreeOffsetY = state.boxThreeOffsetY.value,
+            boxTwoDragState = state.boxTwoDragState,
+            boxOneZIndex = state.boxOneZIndex.value,
+            boxTwoZIndex = state.boxTwoZIndex.value,
+            boxThreeZIndex = state.boxThreeZIndex.value,
+            setBoxTwoOffset = {newValue -> state.setBoxTwoOffset(newValue)}
         )
     }
 
@@ -250,8 +454,19 @@ fun ReworkingModView(){
 @Composable
 private fun DraggableText(
     boxOneOffsetY:Float,
+    boxTwoOffsetY:Float,
+    boxThreeOffsetY:Float,
     setBoxOneOffset:(Float) ->Unit,
-    boxOneDragState: DraggableState
+    boxOneDragState: DraggableState,
+
+
+    boxTwoDragState: DraggableState,
+    setBoxTwoOffset:(Float) ->Unit,
+
+    boxOneZIndex:Float,
+    boxTwoZIndex:Float,
+    boxThreeZIndex:Float
+
 ) {
 
 
@@ -259,48 +474,25 @@ private fun DraggableText(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val thirdOfHeight = Resources.getSystem().displayMetrics.heightPixels/3
+    val thirdOfHeight = (Resources.getSystem().displayMetrics.heightPixels/4).dp
     val secondBoxPosition = thirdOfHeight
     val thirdBoxPosition = (secondBoxPosition *2)
+    val height = 263.dp
 
-        Column(
+
+        Box(
             modifier = Modifier.fillMaxSize()
         ){
-            androidx.compose.material3.Card(
-                onClick = { /*TODO*/ },
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Red
-                ),
-                modifier = Modifier
-                    .offset { IntOffset(0, boxOneOffsetY.roundToInt()) }
-                    .draggable(
-                        orientation = Orientation.Vertical,
-                        state = boxOneDragState,
-                        onDragStopped = {
-                            when{
-                                boxOneOffsetY <539 ->{
-                                    setBoxOneOffset(0f)
-                                }
-                                boxOneOffsetY >539 && boxOneOffsetY <(539*2) ->{
-                                    setBoxOneOffset(739f)
-                                }
-                                boxOneOffsetY >=(539*2)->{
-                                    setBoxOneOffset(739F *2)
-                                }
-                            }
+            /**THIS IS THE FIRST BOX*/
+            DraggingItems(
+                boxOneOffsetY =boxOneOffsetY,
+                boxOneDragState=boxOneDragState,
+                boxOneZIndex =boxOneZIndex,
+                setBoxOneOffset ={newValue->setBoxOneOffset(newValue)},
+                height = height,
+                boxColor =Color.Red
 
-                        }
-                    )
-                    .zIndex(1f)
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .onGloballyPositioned {
-                      //  Log.d("onGloballyPositionedstoof","${it.size.height.dp}")
-                        //739 could do a derived state for this
-                    }
-            ) {
-
-            }
+            )
             /*************START OF THE SECOND BOX***********************/
             androidx.compose.material3.Card(
                 onClick = { /*TODO*/ },
@@ -308,8 +500,28 @@ private fun DraggableText(
                     containerColor = Color.Cyan
                 ),
                 modifier = Modifier
-                    .zIndex(0f)
-                    .weight(1f)
+                    .offset { IntOffset(0, boxTwoOffsetY.roundToInt()) }
+                    .draggable(
+                        orientation = Orientation.Vertical,
+                        state = boxTwoDragState,
+                        onDragStopped = {
+                            when {
+                                boxTwoOffsetY < 539 -> {
+                                    setBoxTwoOffset(0f)
+                                }
+                                boxTwoOffsetY > 539 && boxTwoOffsetY < (539 * 2) -> {
+                                    setBoxTwoOffset(739f)
+                                }
+                                boxTwoOffsetY >= (539 * 2) -> {
+
+                                    setBoxTwoOffset(739F * 2)
+                                }
+                            }
+
+                        }
+                    )
+                    .zIndex(boxTwoZIndex)
+                    .height(height)
                     .fillMaxWidth()
             ) {
 
@@ -321,13 +533,60 @@ private fun DraggableText(
                     containerColor = Color.Magenta
                 ),
                 modifier = Modifier
+                    .offset { IntOffset(0, boxThreeOffsetY.roundToInt()) }
                     .zIndex(0f)
-                    .weight(1f)
+                    .height(height)
                     .fillMaxWidth()
             ) {
 
             }
         }
 
-
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DraggingItems(
+    boxOneOffsetY: Float,
+    boxOneDragState:DraggableState,
+    setBoxOneOffset:(Float)->Unit,
+    boxOneZIndex:Float,
+    height:Dp,
+    boxColor:Color
+){
+    androidx.compose.material3.Card(
+        onClick = { /*TODO*/ },
+        colors = CardDefaults.cardColors(
+            containerColor = boxColor
+        ),
+        modifier = Modifier
+            .offset { IntOffset(0, boxOneOffsetY.roundToInt()) }
+            .draggable(
+                orientation = Orientation.Vertical,
+                state = boxOneDragState,
+                onDragStopped = {
+                    when {
+                        boxOneOffsetY < 539 -> {
+                            setBoxOneOffset(0f)
+                        }
+
+                        boxOneOffsetY > 539 && boxOneOffsetY < (539 * 2) -> {
+                            setBoxOneOffset(739f)
+                        }
+
+                        boxOneOffsetY >= (539 * 2) -> {
+                            setBoxOneOffset(739F * 2)
+                        }
+                    }
+
+                }
+            )
+            .zIndex(boxOneZIndex)
+            .height(height)
+            .fillMaxWidth()
+    ) {
+
+    }
+}
+
+
