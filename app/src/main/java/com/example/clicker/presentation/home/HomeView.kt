@@ -87,11 +87,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -147,6 +149,8 @@ fun ValidationView(
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
     val isUserLoggedIn = homeViewModel.state.value.userIsLoggedIn
+    val haptic = LocalHapticFeedback.current
+    modViewViewModel.hapticFeedBack ={haptic.performHapticFeedback(HapticFeedbackType.LongPress)}
 
 
 

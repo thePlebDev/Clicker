@@ -53,6 +53,8 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
 
     private val stateList = MutableStateFlow(listOf(boxOne,boxTwo,boxThree))
 
+    var hapticFeedBack ={}
+
 
 
     fun setBoxOneOffset(boxOneOffset:Float){
@@ -272,64 +274,82 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
 
                 if(_isDragging.value.boxOneDragging){
                     if(indexOfBoxTwo == 0){
+                        hapticFeedBack()
                         setBoxTwoOffset(0f)
                     }
                     if(indexOfBoxTwo == 1){
+                        hapticFeedBack()
                        setBoxTwoOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxTwo == 2){
+                        hapticFeedBack()
                         setBoxTwoOffset(animateToOnDragStop *2)
                     }
                     if(indexOfBoxThree == 0){
+                        hapticFeedBack()
                         setBoxThreeOffset(0f)
                     }
                     if(indexOfBoxThree == 1){
+                        hapticFeedBack()
                         setBoxThreeOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxThree == 2){
+                        hapticFeedBack()
                         setBoxThreeOffset(animateToOnDragStop *2)
                     }
                 }
                 else if(_isDragging.value.boxTwoDragging){
                     if(indexOfBoxOne == 0){
+                        hapticFeedBack()
                         setBoxOneOffset(0f)
                     }
                     if(indexOfBoxOne == 1){
+                        hapticFeedBack()
                         setBoxOneOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxOne == 2){
+                        hapticFeedBack()
                         setBoxOneOffset(animateToOnDragStop *2)
                     }
 
 
                     if(indexOfBoxThree == 0){
+                        hapticFeedBack()
                         setBoxThreeOffset(0f)
                     }
                     if(indexOfBoxThree == 1){
+                        hapticFeedBack()
                         setBoxThreeOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxThree == 2){
+                        hapticFeedBack()
                         setBoxThreeOffset(animateToOnDragStop *2)
                     }
                 }
                 else if(_isDragging.value.boxThreeDragging){
                     if(indexOfBoxOne == 0){
+                        hapticFeedBack()
                         setBoxOneOffset(0f)
                     }
                     if(indexOfBoxOne == 1){
+                        hapticFeedBack()
                         setBoxOneOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxOne == 2){
+                        hapticFeedBack()
                         setBoxOneOffset(animateToOnDragStop *2)
                     }
 
                     if(indexOfBoxTwo == 0){
+                        hapticFeedBack()
                         setBoxTwoOffset(0f)
                     }
                     if(indexOfBoxTwo == 1){
+                        hapticFeedBack()
                         setBoxTwoOffset(animateToOnDragStop)
                     }
                     if(indexOfBoxTwo == 2){
+                        hapticFeedBack()
                         setBoxTwoOffset(animateToOnDragStop *2)
                     }
                 }
