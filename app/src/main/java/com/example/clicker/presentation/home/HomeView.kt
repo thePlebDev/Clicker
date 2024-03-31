@@ -113,13 +113,12 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.home.views.HomeViewImplementation
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
-import com.example.clicker.presentation.stream.views.streamManager.ModView
-import com.example.clicker.presentation.stream.views.streamManager.util.Section
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -135,7 +134,8 @@ fun ValidationView(
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
-    autoModViewModel: AutoModViewModel
+    autoModViewModel: AutoModViewModel,
+    modViewViewModel:ModViewViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
@@ -203,7 +203,25 @@ fun ValidationView(
 //        hideDialog = {homeViewModel.hideDialog()}
 //
 //    )
-    ReworkingModView()
+    ReworkingModView(
+        boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
+        setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
+        boxOneDragState = modViewViewModel.boxOneDragState,
+        boxOneZIndex = modViewViewModel.boxIndexes.value.boxOneZIndex,
+        animateToOnDragStop = modViewViewModel.animateToOnDragStop,
+        indivBoxSize = modViewViewModel.indivBoxSize,
+        sectionBreakPoint = modViewViewModel.sectionBreakPoint,
+
+        boxTwoOffsetY = modViewViewModel.dragStateOffsets.value.boxTwoOffsetY,
+        boxTwoZIndex = modViewViewModel.boxIndexes.value.boxTwoZIndex,
+        setBoxTwoOffset = {newValue ->modViewViewModel.setBoxTwoOffset(newValue)},
+        boxTwoDragState = modViewViewModel.boxTwoDragState,
+
+        boxThreeZIndex = modViewViewModel.boxIndexes.value.boxThreeZIndex,
+        boxThreeOffsetY = modViewViewModel.dragStateOffsets.value.boxThreeOffsetY,
+        setBoxThreeOffset = {newValue ->modViewViewModel.setBoxThreeOffset(newValue)},
+        boxThreeDragState = modViewViewModel.boxThreeDragState,
+    )
 
 
 }
@@ -219,298 +237,53 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 }
 
 @Composable
-fun rememberDraggableActions():ModViewDragState{
-    return remember {ModViewDragState()}
-}
+fun ReworkingModView(
+    boxOneOffsetY: Float,
+    setBoxOneOffset:(Float)->Unit,
+    boxOneDragState: DraggableState,
+    boxOneZIndex: Float,
+    animateToOnDragStop: Float,
+    indivBoxSize: Dp,
+    sectionBreakPoint: Int,
 
-@Stable
-class ModViewDragState(){
-     val boxOne = "BOXONE"
-     val boxTwo = "BOXTWO"
-     val boxThree= "BOXTHREE"
+    boxTwoOffsetY: Float,
+    boxTwoDragState: DraggableState,
+    boxTwoZIndex: Float,
+    setBoxTwoOffset:(Float)->Unit,
 
-
-
-    var boxOneZIndex =mutableStateOf(0f)
-    var boxTwoZIndex =mutableStateOf(0f)
-    var boxThreeZIndex =mutableStateOf(0f)
-
-    var boxOneDragging =mutableStateOf(false)
-    var boxTwoDragging =mutableStateOf(false)
-    var boxThreeDragging =mutableStateOf(false)
-
-    // all the complex state goes in here
-    var boxOneOffsetY = mutableStateOf(0f)
-    var boxTwoOffsetY = mutableStateOf(739f)
-    var boxThreeOffsetY = mutableStateOf(739f*2)
-
-    var stateList = listOf(boxOne,boxTwo,boxThree)//todo: this doesn't work when there is multiple draggings
+    boxThreeOffsetY: Float,
+    boxThreeZIndex: Float,
+    boxThreeDragState: DraggableState,
+    setBoxThreeOffset:(Float)->Unit,
 
 
-    var boxOneDragState =DraggableState { delta ->
-        boxOneZIndex.value = 1f
-        boxTwoZIndex.value=0f
-        boxThreeZIndex.value=0f
-        boxOneDragging.value = true
-        boxTwoDragging.value = false
-        boxThreeDragging.value = false
-        val itemInPositionOne = stateList[0]
-        val itemInPositionTwo = stateList[1]
-        val itemInPositionThree = stateList[2]
 
-       // Log.d("AnotherTherasdf","delta  -> ${delta >0}")
-
-        when{
-
-
-            boxOneOffsetY.value <539 ->{
-
-                if(itemInPositionOne != boxOne){
-                    stateList =listOf(boxOne,itemInPositionOne,itemInPositionThree)
-
-                }
-
-            }
-            boxOneOffsetY.value >539 && boxOneOffsetY.value <(539*2) ->{
-
-
-                if(itemInPositionOne == boxOne){
-
-                    stateList = listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxOne){
-
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo)
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxOne){
-                    stateList = listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxOneOffsetY.value >=(539*2)->{
-
-                if(itemInPositionThree != boxOne){
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,boxOne)
-
-                }
-            }
-        }
-        boxOneOffsetY.value += delta
-    }// end drag state one
-
-
-    var boxTwoDragState =DraggableState { delta ->
-        boxOneZIndex.value = 0f
-        boxTwoZIndex.value = 1f
-        boxThreeZIndex.value=0f
-        boxOneDragging.value = false
-        boxTwoDragging.value = true
-        boxThreeDragging.value = false
-        val itemInPositionOne = stateList[0]
-        val itemInPositionTwo = stateList[1]
-        val itemInPositionThree = stateList[2]
-        when{
-
-
-            boxTwoOffsetY.value <539 ->{
-
-                if(itemInPositionOne != boxTwo){
-                    stateList =listOf(boxTwo,itemInPositionOne,itemInPositionThree)
-
-                }
-
-            }
-            boxTwoOffsetY.value >539 && boxTwoOffsetY.value <(539*2) ->{
-
-
-                if(itemInPositionOne == boxTwo){
-
-                    stateList = listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxTwo){
-
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo)
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxTwo){
-                    stateList = listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxTwoOffsetY.value >=(539*2)->{
-
-                if(itemInPositionThree != boxTwo){
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,boxTwo)
-
-                }
-            }
-        }
-        boxTwoOffsetY.value += delta
-    }
-    /****************************BOX THREE DRAG STATE**************************************************/
-    var boxThreeDragState =DraggableState { delta ->
-        boxOneZIndex.value = 0f
-        boxTwoZIndex.value = 0f
-        boxThreeZIndex.value=1f
-        boxOneDragging.value = false
-        boxTwoDragging.value = false
-        boxThreeDragging.value = true
-        val itemInPositionOne = stateList[0]
-        val itemInPositionTwo = stateList[1]
-        val itemInPositionThree = stateList[2]
-        when{
-
-
-            boxThreeOffsetY.value <539 ->{
-
-                if(itemInPositionOne != boxThree){
-                    stateList =listOf(boxThree,itemInPositionOne,itemInPositionThree)
-
-                }
-
-            }
-            boxThreeOffsetY.value >539 && boxThreeOffsetY.value <(539*2) ->{
-
-
-                if(itemInPositionOne == boxThree){
-
-                    stateList = listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxThree){
-
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo)
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxThree){
-                    stateList = listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree)
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxThreeOffsetY.value >=(539*2)->{
-
-                if(itemInPositionThree != boxThree){
-                    stateList = listOf(itemInPositionOne,itemInPositionThree,boxThree)
-
-                }
-            }
-        }
-        boxThreeOffsetY.value += delta
-    }
-    fun setBoxOneOffset(newValue:Float){
-        boxOneOffsetY.value = newValue
-    }
-    fun setBoxTwoOffset(newValue:Float){
-        boxTwoOffsetY.value = newValue
-    }
-    fun setBoxThreeOffset(newValue:Float){
-        boxThreeOffsetY.value = newValue
-    }
-
-
-}
-
-@Composable
-fun ReworkingModView(){
-    val state = rememberDraggableActions()
-     remember(state.stateList) {
-         val currentStateList = state.stateList
-         val indexOfBoxOne = currentStateList.indexOf(state.boxOne)
-         val indexOfBoxTwo = currentStateList.indexOf(state.boxTwo)
-         val indexOfBoxThree = currentStateList.indexOf(state.boxThree)
-
-         if(state.boxOneDragging.value){
-             if(indexOfBoxTwo == 0){
-                 state.setBoxTwoOffset(0f)
-             }
-             if(indexOfBoxTwo == 1){
-                 state.setBoxTwoOffset(739f)
-             }
-             if(indexOfBoxTwo == 2){
-                 state.setBoxTwoOffset(739f *2)
-             }
-             if(indexOfBoxThree == 0){
-                 state.setBoxThreeOffset(0f)
-             }
-             if(indexOfBoxThree == 1){
-                 state.setBoxThreeOffset(739f)
-             }
-             if(indexOfBoxThree == 2){
-                 state.setBoxThreeOffset(739f *2)
-             }
-         }
-         else if(state.boxTwoDragging.value){
-             if(indexOfBoxOne == 0){
-                 state.setBoxOneOffset(0f)
-             }
-             if(indexOfBoxOne == 1){
-                 state.setBoxOneOffset(739f)
-             }
-             if(indexOfBoxOne == 2){
-                 state.setBoxOneOffset(739f *2)
-             }
-
-
-             if(indexOfBoxThree == 0){
-                 state.setBoxThreeOffset(0f)
-             }
-             if(indexOfBoxThree == 1){
-                 state.setBoxThreeOffset(739f)
-             }
-             if(indexOfBoxThree == 2){
-                 state.setBoxThreeOffset(739f *2)
-             }
-         }
-         else if(state.boxThreeDragging.value){
-             if(indexOfBoxOne == 0){
-                 state.setBoxOneOffset(0f)
-             }
-             if(indexOfBoxOne == 1){
-                 state.setBoxOneOffset(739f)
-             }
-             if(indexOfBoxOne == 2){
-                 state.setBoxOneOffset(739f *2)
-             }
-
-             if(indexOfBoxTwo == 0){
-                 state.setBoxTwoOffset(0f)
-             }
-             if(indexOfBoxTwo == 1){
-                 state.setBoxTwoOffset(739f)
-             }
-             if(indexOfBoxTwo == 2){
-                 state.setBoxTwoOffset(739f *2)
-             }
-         }
-
-        Log.d("rememberDraggableActionsStateList","${state.stateList}")
-         
-    }
+){
 
 
     Box(modifier = Modifier.fillMaxSize()){
         DraggableText(
-            boxOneOffsetY =state.boxOneOffsetY.value,
-            setBoxOneOffset = {newValue -> state.setBoxOneOffset(newValue)},
-            boxOneDragState =state.boxOneDragState,
-            boxTwoOffsetY = state.boxTwoOffsetY.value,
-            boxThreeOffsetY = state.boxThreeOffsetY.value,
-            boxTwoDragState = state.boxTwoDragState,
-            boxOneZIndex = state.boxOneZIndex.value,
-            boxTwoZIndex = state.boxTwoZIndex.value,
-            boxThreeZIndex = state.boxThreeZIndex.value,
-            setBoxTwoOffset = {newValue -> state.setBoxTwoOffset(newValue)},
-            setBoxThreeOffset = {newValue -> state.setBoxThreeOffset(newValue)},
-            boxThreeDragState = state.boxThreeDragState
+            boxOneOffsetY =boxOneOffsetY,
+            setBoxOneOffset = {newValue -> setBoxOneOffset(newValue)},
+            boxOneDragState =boxOneDragState,
+            boxOneZIndex = boxOneZIndex,
+            animateToOnDragStop =animateToOnDragStop,
+            indivBoxSize =indivBoxSize,
+            sectionBreakPoint=sectionBreakPoint,
+
+
+            boxTwoOffsetY = boxTwoOffsetY,
+            boxTwoDragState = boxTwoDragState,
+            boxTwoZIndex = boxTwoZIndex,
+            setBoxTwoOffset = {newValue -> setBoxTwoOffset(newValue)},
+
+
+
+            boxThreeOffsetY = boxThreeOffsetY,
+            boxThreeZIndex = boxThreeZIndex,
+            setBoxThreeOffset = {newValue -> setBoxThreeOffset(newValue)},
+            boxThreeDragState = boxThreeDragState,
+
         )
     }
 
@@ -532,15 +305,12 @@ private fun DraggableText(
 
     boxOneZIndex:Float,
     boxTwoZIndex:Float,
-    boxThreeZIndex:Float
+    boxThreeZIndex:Float,
+    indivBoxSize:Dp,
+    animateToOnDragStop: Float,
+    sectionBreakPoint:Int,
 
 ) {
-
-    val thirdOfHeight = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp
-    val height = 263.dp // .displayMetrics.heightPixels/8.4 is 264.16666.dp
-    Log.d("DraggableTextHeight","height--> $height")
-    Log.d("DraggableTextHeight","thirdOfHeight--> $thirdOfHeight")
-
 
         Box(
             modifier = Modifier.fillMaxSize()
@@ -551,8 +321,10 @@ private fun DraggableText(
                 boxDragState=boxOneDragState,
                 boxZIndex =boxOneZIndex,
                 setBoxOffset ={newValue->setBoxOneOffset(newValue)},
-                height = thirdOfHeight,
-                boxColor =Color.Red
+                height = indivBoxSize,
+                boxColor =Color.Red,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop
 
             )
 
@@ -563,8 +335,10 @@ private fun DraggableText(
                 boxDragState=boxTwoDragState,
                 boxZIndex =boxTwoZIndex,
                 setBoxOffset ={newValue->setBoxTwoOffset(newValue)},
-                height = thirdOfHeight,
-                boxColor =Color.Cyan
+                height = indivBoxSize,
+                boxColor =Color.Cyan,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop
             )
 
             /*************START OF THE THIRD BOX***********************/
@@ -573,8 +347,12 @@ private fun DraggableText(
                 boxDragState=boxThreeDragState,
                 boxZIndex =boxThreeZIndex,
                 setBoxOffset ={newValue->setBoxThreeOffset(newValue)},
-                height = thirdOfHeight,
-                boxColor =Color.Magenta
+                height = indivBoxSize,
+                boxColor =Color.Magenta,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop
+
+
             )
         }
 
@@ -588,8 +366,12 @@ fun DraggingItems(
     setBoxOffset:(Float)->Unit,
     boxZIndex:Float,
     height:Dp,
-    boxColor:Color
+    boxColor:Color,
+    sectionBreakPoint: Int,
+    animateToOnDragStop:Float
+
 ){
+
     androidx.compose.material3.Card(
         onClick = { /*TODO*/ },
         colors = CardDefaults.cardColors(
@@ -602,16 +384,16 @@ fun DraggingItems(
                 state = boxDragState,
                 onDragStopped = {
                     when {
-                        boxOffsetY < 539 -> {
+                        boxOffsetY < sectionBreakPoint -> {
                             setBoxOffset(0f)
                         }
 
-                        boxOffsetY > 539 && boxOffsetY < (539 * 2) -> {
-                            setBoxOffset(739f)
+                        boxOffsetY > sectionBreakPoint && boxOffsetY < (sectionBreakPoint * 2) -> {
+                            setBoxOffset(animateToOnDragStop)
                         }
 
-                        boxOffsetY >= (539 * 2) -> {
-                            setBoxOffset(739F * 2)
+                        boxOffsetY >= (sectionBreakPoint * 2) -> {
+                            setBoxOffset(animateToOnDragStop * 2)
                         }
                     }
 
