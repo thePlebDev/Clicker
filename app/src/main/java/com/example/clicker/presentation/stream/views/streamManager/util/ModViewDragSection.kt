@@ -142,10 +142,7 @@ import com.example.clicker.presentation.stream.views.streamManager.ModView
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.presentation.stream.views.streamManager.ModViewDialogs
 import com.example.clicker.presentation.stream.views.streamManager.util.DragDetectionBox
-import com.example.clicker.presentation.stream.views.streamManager.util.Section
-import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNThree
-import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionOneNTwo
-import com.example.clicker.presentation.stream.views.streamManager.util.changeSectionTwoNThree
+
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -244,48 +241,6 @@ object ModViewDragSection {
         // that will be the next thing I do
 
 
-        val boxOneSection by remember(boxOneYOffset) {
-            Log.d("boxOneYOffset","boxOneYOffset -->{boxOneYOffset}")
-            derivedStateOf {
-                when {
-                    boxOneYOffset < totalItemHeight -> Section.ONE
-                    boxOneYOffset > totalItemHeight && boxOneYOffset < totalItemHeight * 2 -> Section.TWO
-                    boxOneYOffset > totalItemHeight*2 ->Section.THREE
-                    else -> Section.OTHER
-                }
-            }
-        }
-        val boxTwoSection by remember(boxTwoYOffset) {
-            derivedStateOf {
-                when {
-                    boxTwoYOffset < totalItemHeight -> {
-                        Log.d("boxTwoSection","section one")
-                        Section.ONE
-                    }
-                    boxTwoYOffset > totalItemHeight && boxTwoYOffset < totalItemHeight * 2 -> {
-                        Log.d("boxTwoSection","section two")
-                        Section.TWO
-                    }
-                    boxTwoYOffset > totalItemHeight*2 -> {
-                        Log.d("boxTwoSection","section three")
-                        Section.THREE
-                    }
-                    else -> Section.OTHER
-                }
-            }
-        }
-        val boxThreeSection by remember(boxThreeYOffset) {
-
-            derivedStateOf {
-                when {
-                    boxThreeYOffset < totalItemHeight -> Section.ONE
-                    boxThreeYOffset > totalItemHeight && boxThreeYOffset < totalItemHeight * 2 -> Section.TWO
-                    boxThreeYOffset > totalItemHeight*2 ->Section.THREE
-                    else -> Section.OTHER
-                }
-            }
-        }
-
 
 
 
@@ -331,22 +286,7 @@ object ModViewDragSection {
 
                         detectDragGestures(
                             onDragEnd = {
-                                when (boxOneSection) {
-                                    Section.ONE -> {
-                                        boxOneYOffset = 0f
-                                    }
 
-                                    Section.TWO -> {
-                                        boxOneYOffset = totalItemHeight + 130f
-                                    }
-
-                                    Section.THREE -> {
-                                        boxOneYOffset = (totalItemHeight + 130f) * 2
-                                    }
-
-                                    Section.OTHER -> {}
-                                }
-                                boxOneDragging = false
                                 // offsetY = 0f
                             },
                             onDragStart = {
@@ -356,36 +296,7 @@ object ModViewDragSection {
                             }
                         ) { change, dragAmount ->
                             change.consume()
-                            changeSectionTwoNThree(
-                                boxOneSection = boxOneSection,
-                                boxTwoSection = boxTwoSection,
-                                boxThreeSection = boxThreeSection,
-                                changeBoxTwoToSectionOne = {
-                                    boxTwoYOffset = 0f
-                                },
-                                changeBoxTwoToSectionTwo = {
-                                    boxTwoYOffset = totalItemHeight + 130f
-                                },
-                                changeBoxTwoToSectionThree = {
-                                    boxTwoYOffset = (totalItemHeight + 130f) * 2
 
-                                },
-                                changeBoxThreeToSectionOne = {
-                                    boxThreeYOffset = 0f
-                                },
-                                changeBoxThreeToSectionTwo = {
-                                    boxThreeYOffset = totalItemHeight + 130f
-                                },
-                                changeBoxThreeToSectionThree = {
-                                    boxThreeYOffset = (totalItemHeight + 130f) * 2
-                                },
-                                isDraggedDown = dragAmount.y < 0,
-                                performHapticFeedbackType = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-
-
-                            )
 
                             if (boxOneDragging) {
                                 boxOneYOffset += dragAmount.y
@@ -410,25 +321,7 @@ object ModViewDragSection {
                 .zIndex(boxTwoZIndex)
                 .pointerInput(Unit) {
                     detectDragGestures(
-                        onDragEnd = {
-                            when (boxTwoSection) {
-                                Section.ONE -> {
-                                    boxTwoYOffset = 0f
-                                }
 
-                                Section.TWO -> {
-                                    boxTwoYOffset = totalItemHeight + 130f
-                                }
-
-                                Section.THREE -> {
-                                    boxTwoYOffset = (totalItemHeight + 130f) * 2
-                                }
-
-                                Section.OTHER -> {}
-                            }
-                            boxTwoDragging = false
-                            // offsetY = 0f
-                        },
                         onDragStart = {
                             boxOneZIndex = 0f
                             boxThreeZIndex = 0f
@@ -439,33 +332,7 @@ object ModViewDragSection {
                         //change
 
                         //This should have a parameter for chnging the offest of box one and three
-                        changeSectionOneNThree(
-                            boxOneSection = boxOneSection,
-                            boxTwoSection = boxTwoSection,
-                            boxThreeSection = boxThreeSection,
-                            isDraggedDown = dragAmount.y < 0,
-                            changeBoxOneToSectionOne = {
-                                boxOneYOffset = 0f
-                            },
-                            changeBoxOneToSectionTwo = {
-                                boxOneYOffset = totalItemHeight + 130f
-                            },
-                            changeBoxOneToSectionThree = {
-                                boxOneYOffset = (totalItemHeight + 130f) * 2
-                            },
-                            changeBoxThreeToSectionOne = {
-                                boxThreeYOffset = 0f
-                            },
-                            changeBoxThreeToSectionTwo = {
-                                boxThreeYOffset = totalItemHeight + 130f
-                            },
-                            changeBoxThreeToSectionThree = {
-                                boxThreeYOffset = (totalItemHeight + 130f) * 2
-                            },
-                            performHapticFeedbackType = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                        )
+
                         Log.d("Consumingthedrag", "dragAmount.x ${dragAmount.x}")
                         if (boxTwoDragging) {
                             boxTwoYOffset += dragAmount.y
@@ -525,21 +392,7 @@ object ModViewDragSection {
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragEnd = {
-                            when (boxThreeSection) {
-                                Section.ONE -> {
-                                    boxThreeYOffset = 0f
-                                }
 
-                                Section.TWO -> {
-                                    boxThreeYOffset = totalItemHeight + 130f
-                                }
-
-                                Section.THREE -> {
-                                    boxThreeYOffset = (totalItemHeight + 130f) * 2
-                                }
-
-                                Section.OTHER -> {}
-                            }
                             // offsetY = 0f
                             boxThreeDragging = false
                         },
@@ -550,34 +403,7 @@ object ModViewDragSection {
                         }
                     ) { change, dragAmount ->
                         change.consume()
-                        changeSectionOneNTwo(
-                            boxOneSection = boxOneSection,
-                            boxTwoSection = boxTwoSection,
-                            boxThreeSection = boxThreeSection,
-                            changeBoxOneToSectionOne = {
-                                boxOneYOffset = 0f
-                            },
-                            changeBoxOneToSectionTwo = {
-                                boxOneYOffset = totalItemHeight + 130f
-                            },
-                            changeBoxOneToSectionThree = {
-                                boxOneYOffset = (totalItemHeight + 130f) * 2
-                            },
-                            changeBoxTwoToSectionOne = {
-                                boxTwoYOffset = 0f
-                            },
-                            changeBoxTwoToSectionTwo = {
-                                boxTwoYOffset = totalItemHeight + 130f
-                            },
-                            changeBoxTwoToSectionThree = {
-                                boxTwoYOffset = (totalItemHeight + 130f) * 2
 
-                            },
-                            isDraggedDown = dragAmount.y < 0,
-                            performHapticFeedbackType = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                        )
                         if (boxThreeDragging) {
                             boxThreeYOffset += dragAmount.y
                         }

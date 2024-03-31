@@ -25,6 +25,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.services.NetworkMonitorService
@@ -49,6 +50,7 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +124,7 @@ class HomeFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         addToLinks = { context.startActivity(domainIntent) },
                         autoModViewModel =autoModViewModel,
+                        modViewViewModel =modViewViewModel
 
 
                     )
