@@ -3,7 +3,10 @@ package com.example.clicker.presentation.stream.views.streamManager
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -58,15 +62,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 
 import com.example.clicker.R
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
+import kotlin.math.roundToInt
 
 /**
  * ModView contains all the composable functions that are used to create the `chat modes header`
@@ -77,7 +87,9 @@ object ModView {
     fun SectionHeaderRow(
         title:String,
         horizontalArrangement:Arrangement.Horizontal = Arrangement.Start,
-        secondaryHeader: @Composable () -> Unit ={}
+        expanded:Boolean,
+        setExpanded: (Boolean) -> Unit
+
     ){
         Row(
             modifier = Modifier
@@ -93,7 +105,10 @@ object ModView {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize
             )
-            secondaryHeader()
+            ModesHeaderRow(
+                expanded = expanded,
+                changeExpanded = {newValue ->setExpanded(newValue)}
+            )
 
         }
     }
@@ -109,21 +124,15 @@ object ModView {
             SectionHeaderRow(
                 title = headerTitle,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                secondaryHeader = {
-                    ModesHeader(
-                        expanded = expanded,
-                        changeExpanded = {newValue ->expanded = newValue}
-                    )
-                }
+                expanded = expanded,
+                setExpanded ={newValue -> expanded = newValue}
             )
 
         }
-
-
     }
 
     @Composable
-    fun ModesHeader(
+    fun ModesHeaderRow(
         expanded: Boolean,
         changeExpanded:(Boolean)->Unit,
     ){
@@ -138,7 +147,8 @@ object ModView {
         ){
             Icon(
                 imageVector =Icons.Default.Settings,
-                contentDescription ="Settings"
+                contentDescription ="Settings",
+                tint = Color.White
             )
             Text("Modes",
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -147,7 +157,8 @@ object ModView {
             )
             Icon(
                 imageVector =if(expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp ,
-                contentDescription ="Settings"
+                contentDescription ="Settings",
+                tint = Color.White
             )
         }
     }

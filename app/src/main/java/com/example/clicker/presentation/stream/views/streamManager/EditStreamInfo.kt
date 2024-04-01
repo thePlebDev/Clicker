@@ -354,10 +354,7 @@ fun ModView(
             },
             bottomBar = {}
         ) {contentPadding ->
-            ModViewDragSection.DraggableBackground(
-                contentPadding,
-                triggerBottomModal={newValue ->showBottomSheet = newValue}
-            )
+
 
         }
 
