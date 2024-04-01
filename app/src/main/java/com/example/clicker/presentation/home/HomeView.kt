@@ -14,9 +14,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -61,12 +63,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDrawerState
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -121,6 +124,8 @@ import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.dialogs.CreateNewPollDialog
+import com.example.clicker.presentation.stream.views.streamManager.ModView
+import com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -139,7 +144,7 @@ fun ValidationView(
     autoModViewModel: AutoModViewModel,
     modViewViewModel:ModViewViewModel
 ) {
-    val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+   // val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
     val scope = rememberCoroutineScope()
 
@@ -225,6 +230,14 @@ fun ValidationView(
         boxThreeOffsetY = modViewViewModel.dragStateOffsets.value.boxThreeOffsetY,
         setBoxThreeOffset = {newValue ->modViewViewModel.setBoxThreeOffset(newValue)},
         boxThreeDragState = modViewViewModel.boxThreeDragState,
+
+        boxOneDragging = modViewViewModel.isDragging.value.boxOneDragging,
+        setBoxOneDragging = {newValue -> modViewViewModel.setBoxOneDragging(newValue)},
+
+        boxThreeDragging =modViewViewModel.isDragging.value.boxThreeDragging,
+        boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
+        setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
+        setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)}
     )
 
 
@@ -240,12 +253,15 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReworkingModView(
     boxOneOffsetY: Float,
     setBoxOneOffset:(Float)->Unit,
     boxOneDragState: DraggableState,
     boxOneZIndex: Float,
+    boxOneDragging:Boolean,
+    setBoxOneDragging:(Boolean)->Unit,
     animateToOnDragStop: Float,
     indivBoxSize: Dp,
     sectionBreakPoint: Int,
@@ -254,15 +270,20 @@ fun ReworkingModView(
     boxTwoDragState: DraggableState,
     boxTwoZIndex: Float,
     setBoxTwoOffset:(Float)->Unit,
+    boxTwoDragging:Boolean,
+    setBoxTwoDragging:(Boolean)->Unit,
 
     boxThreeOffsetY: Float,
     boxThreeZIndex: Float,
     boxThreeDragState: DraggableState,
     setBoxThreeOffset:(Float)->Unit,
+    boxThreeDragging:Boolean,
+    setBoxThreeDragging:(Boolean)->Unit,
 
 
 
 ){
+
 
 
     Box(modifier = Modifier.fillMaxSize()){
@@ -271,6 +292,8 @@ fun ReworkingModView(
             setBoxOneOffset = {newValue -> setBoxOneOffset(newValue)},
             boxOneDragState =boxOneDragState,
             boxOneZIndex = boxOneZIndex,
+            boxOneDragging = boxOneDragging,
+            setBoxOneDragging={newValue->setBoxOneDragging(newValue)},
             animateToOnDragStop =animateToOnDragStop,
             indivBoxSize =indivBoxSize,
             sectionBreakPoint=sectionBreakPoint,
@@ -287,9 +310,15 @@ fun ReworkingModView(
             boxThreeZIndex = boxThreeZIndex,
             setBoxThreeOffset = {newValue -> setBoxThreeOffset(newValue)},
             boxThreeDragState = boxThreeDragState,
+            boxThreeDragging =boxThreeDragging,
+            boxTwoDragging =boxTwoDragging,
+            setBoxThreeDragging ={newValue -> setBoxThreeDragging(newValue)},
+            setBoxTwoDragging ={newValue -> setBoxTwoDragging(newValue)}
 
         )
+
     }
+
 
 }
 
@@ -314,13 +343,22 @@ private fun DraggableText(
     animateToOnDragStop: Float,
     sectionBreakPoint:Int,
 
+    boxOneDragging:Boolean,
+    setBoxOneDragging:(Boolean)->Unit,
+
+    boxTwoDragging:Boolean,
+    setBoxTwoDragging:(Boolean)->Unit,
+
+    boxThreeDragging:Boolean,
+    setBoxThreeDragging:(Boolean)->Unit,
+
 ) {
 
         Box(
             modifier = Modifier.fillMaxSize()
         ){
             /**THIS IS THE FIRST BOX*/
-            DraggingItems(
+            ModViewDragSection.DraggingBox(
                 boxOffsetY =boxOneOffsetY,
                 boxDragState=boxOneDragState,
                 boxZIndex =boxOneZIndex,
@@ -328,13 +366,23 @@ private fun DraggableText(
                 height = indivBoxSize,
                 boxColor =Color.Red,
                 sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxOneDragging,
+                setDragging={newValue->setBoxOneDragging(newValue)},
+                content={
+                    ModViewDragSection.ChatBox(
+                        dragging = boxOneDragging,
+                        chatMessageList = ModViewDragSection.fakeMessageDataList,
+                        setDragging = {newValue ->setBoxOneDragging(newValue)},
+                        triggerBottomModal = {}
+                    )
+                }
 
             )
 
 
             /*************START OF THE SECOND BOX***********************/
-            DraggingItems(
+            ModViewDragSection.DraggingBox(
                 boxOffsetY =boxTwoOffsetY,
                 boxDragState=boxTwoDragState,
                 boxZIndex =boxTwoZIndex,
@@ -342,11 +390,19 @@ private fun DraggableText(
                 height = indivBoxSize,
                 boxColor =Color.Cyan,
                 sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxTwoDragging,
+                setDragging={newValue -> setBoxTwoDragging(newValue)},
+                content={
+                    ModViewDragSection.AutoModQueueBox(
+                        dragging =boxTwoDragging,
+                        setDragging={newValue -> setBoxTwoDragging(newValue)},
+                    )
+                }
             )
 
             /*************START OF THE THIRD BOX***********************/
-            DraggingItems(
+            ModViewDragSection.DraggingBox(
                 boxOffsetY =boxThreeOffsetY,
                 boxDragState=boxThreeDragState,
                 boxZIndex =boxThreeZIndex,
@@ -354,7 +410,16 @@ private fun DraggableText(
                 height = indivBoxSize,
                 boxColor =Color.Magenta,
                 sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxThreeDragging,
+                setDragging={newValue -> setBoxThreeDragging(newValue)},
+                content={
+                    ModViewDragSection.ModActions(
+                        dragging =boxThreeDragging,
+                        setDragging={newValue -> setBoxThreeDragging(newValue)},
+                        length =20
+                    )
+                }
 
 
             )
@@ -362,53 +427,7 @@ private fun DraggableText(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DraggingItems(
-    boxOffsetY: Float,
-    boxDragState:DraggableState,
-    setBoxOffset:(Float)->Unit,
-    boxZIndex:Float,
-    height:Dp,
-    boxColor:Color,
-    sectionBreakPoint: Int,
-    animateToOnDragStop:Float
 
-){
 
-    androidx.compose.material3.Card(
-        onClick = { /*TODO*/ },
-        colors = CardDefaults.cardColors(
-            containerColor = boxColor
-        ),
-        modifier = Modifier
-            .offset { IntOffset(0, boxOffsetY.roundToInt()) }
-            .draggable(
-                orientation = Orientation.Vertical,
-                state = boxDragState,
-                onDragStopped = {
-                    when {
-                        boxOffsetY < sectionBreakPoint -> {
-                            setBoxOffset(0f)
-                        }
-
-                        boxOffsetY > sectionBreakPoint && boxOffsetY < (sectionBreakPoint * 2) -> {
-                            setBoxOffset(animateToOnDragStop)
-                        }
-
-                        boxOffsetY >= (sectionBreakPoint * 2) -> {
-                            setBoxOffset(animateToOnDragStop * 2)
-                        }
-                    }
-
-                }
-            )
-            .zIndex(boxZIndex)
-            .height(height)
-            .fillMaxWidth()
-    ) {
-
-    }
-}
 
 

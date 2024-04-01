@@ -72,195 +72,220 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
             boxThreeOffsetY = boxThreeOffset
         )
     }
-    /**********************THE DRAG STATES ARE GOING TO GO HERE**********************************/
-    var boxOneDragState = DraggableState { delta ->
-
-
-        _boxIndexes.value = _boxIndexes.value.copy(
-            boxOneZIndex = 1f,
-            boxTwoZIndex = 0f,
-            boxThreeZIndex = 0f
+    fun setBoxOneDragging(isDragging:Boolean){
+        _isDragging.value = _isDragging.value.copy(
+            boxOneDragging = isDragging
         )
-        _isDragging.value =_isDragging.value.copy(
-            boxOneDragging = true,
-            boxTwoDragging = false,
-            boxThreeDragging = false
+    }
+    fun setBoxTwoDragging(isDragging:Boolean){
+        _isDragging.value = _isDragging.value.copy(
+            boxTwoDragging = isDragging
         )
-
-        val itemInPositionOne = stateList.value[0]
-        val itemInPositionTwo = stateList.value[1]
-        val itemInPositionThree = stateList.value[2]
-        val boxOneOffsetY =_dragStateOffsets.value.boxOneOffsetY
-
-        // Log.d("AnotherTherasdf","delta  -> ${delta >0}")
-
-        when{
-
-
-            boxOneOffsetY <sectionBreakPoint ->{
-
-                if(itemInPositionOne != boxOne){
-                    stateList.tryEmit(listOf(boxOne,itemInPositionOne,itemInPositionThree))
-
-                }
-
-            }
-            boxOneOffsetY >sectionBreakPoint && boxOneOffsetY <(sectionBreakPoint*2) ->{
-
-
-                if(itemInPositionOne == boxOne){
-
-                    stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxOne){
-
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxOne){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxOneOffsetY >=(sectionBreakPoint*2)->{
-
-                if(itemInPositionThree != boxOne){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxOne))
-
-                }
-            }
-        }
-
-        _dragStateOffsets.value =_dragStateOffsets.value.copy(
-            boxOneOffsetY = boxOneOffsetY + delta
-        )
-    }// end drag state one
-
-    var boxTwoDragState =DraggableState { delta ->
-        _boxIndexes.value = _boxIndexes.value.copy(
-            boxOneZIndex = 0f,
-            boxTwoZIndex = 1f,
-            boxThreeZIndex = 0f
-        )
-        _isDragging.value =_isDragging.value.copy(
-            boxOneDragging = false,
-            boxTwoDragging = true,
-            boxThreeDragging = false
-        )
-
-
-
-        val itemInPositionOne = stateList.value[0]
-        val itemInPositionTwo = stateList.value[1]
-        val itemInPositionThree = stateList.value[2]
-        val boxTwoOffsetY =_dragStateOffsets.value.boxTwoOffsetY
-        when{
-
-
-            boxTwoOffsetY <sectionBreakPoint ->{
-
-                if(itemInPositionOne != boxTwo){
-                    stateList.tryEmit(listOf(boxTwo,itemInPositionOne,itemInPositionThree))
-
-                }
-
-            }
-            boxTwoOffsetY >sectionBreakPoint && boxTwoOffsetY <(sectionBreakPoint*2) ->{
-
-
-                if(itemInPositionOne == boxTwo){
-
-                    stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxTwo){
-
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxTwo){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxTwoOffsetY >=(sectionBreakPoint*2)->{
-
-                if(itemInPositionThree != boxTwo){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxTwo))
-
-                }
-            }
-        }
-        _dragStateOffsets.value =_dragStateOffsets.value.copy(
-            boxTwoOffsetY = boxTwoOffsetY + delta
+    }
+    fun setBoxThreeDragging(isDragging:Boolean){
+        _isDragging.value = _isDragging.value.copy(
+            boxThreeDragging = isDragging
         )
     }
 
-    var boxThreeDragState =DraggableState { delta ->
-        _boxIndexes.value = _boxIndexes.value.copy(
-            boxOneZIndex = 0f,
-            boxTwoZIndex = 0f,
-            boxThreeZIndex = 1f
-        )
-        _isDragging.value =_isDragging.value.copy(
-            boxOneDragging = false,
-            boxTwoDragging = false,
-            boxThreeDragging = true
-        )
+
+    /**********************THE DRAG STATES ARE GOING TO GO HERE**********************************/
+    var boxOneDragState = DraggableState { delta ->
+        Log.d("boxOneDragState","isDragging.value.boxOneDragging -->${_isDragging.value.boxOneDragging}")
+        if(_isDragging.value.boxOneDragging){
+            _boxIndexes.value = _boxIndexes.value.copy(
+                boxOneZIndex = 1f,
+                boxTwoZIndex = 0f,
+                boxThreeZIndex = 0f
+            )
+            _isDragging.value =_isDragging.value.copy(
+                boxTwoDragging = false,
+                boxThreeDragging = false
+            )
+
+            val itemInPositionOne = stateList.value[0]
+            val itemInPositionTwo = stateList.value[1]
+            val itemInPositionThree = stateList.value[2]
+            val boxOneOffsetY =_dragStateOffsets.value.boxOneOffsetY
+
+            // Log.d("AnotherTherasdf","delta  -> ${delta >0}")
+
+            when{
 
 
+                boxOneOffsetY <sectionBreakPoint ->{
 
-        val itemInPositionOne = stateList.value[0]
-        val itemInPositionTwo = stateList.value[1]
-        val itemInPositionThree = stateList.value[2]
-        val boxThreeOffsetY =_dragStateOffsets.value.boxThreeOffsetY
-        when{
+                    if(itemInPositionOne != boxOne){
+                        stateList.tryEmit(listOf(boxOne,itemInPositionOne,itemInPositionThree))
+
+                    }
+
+                }
+                boxOneOffsetY >sectionBreakPoint && boxOneOffsetY <(sectionBreakPoint*2) ->{
 
 
-            boxThreeOffsetY <sectionBreakPoint ->{
+                    if(itemInPositionOne == boxOne){
 
-                if(itemInPositionOne != boxThree){
-                    stateList.tryEmit(listOf(boxThree,itemInPositionOne,itemInPositionThree))
+                        stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
+                        Log.d("itemInPositionOneChecking","boxOne---> $stateList")
+                    }
+                    else if(itemInPositionThree == boxOne){
+
+                        stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
+                        Log.d("itemInPositionOneChecking","boxThree---> $stateList")
+                    }
+                    else if(itemInPositionTwo == boxOne){
+                        stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
+                        Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
+                    }
 
                 }
 
+                boxOneOffsetY >=(sectionBreakPoint*2)->{
+
+                    if(itemInPositionThree != boxOne){
+                        stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxOne))
+
+                    }
+                }
             }
-            boxThreeOffsetY >sectionBreakPoint && boxThreeOffsetY <(sectionBreakPoint*2) ->{
 
-
-                if(itemInPositionOne == boxThree){
-
-                    stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxOne---> $stateList")
-                }
-                else if(itemInPositionThree == boxThree){
-
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
-                    Log.d("itemInPositionOneChecking","boxThree---> $stateList")
-                }
-                else if(itemInPositionTwo == boxThree){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
-                    Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
-                }
-
-            }
-
-            boxThreeOffsetY >=(sectionBreakPoint*2)->{
-
-                if(itemInPositionThree != boxThree){
-                    stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxThree))
-
-                }
-            }
+            _dragStateOffsets.value =_dragStateOffsets.value.copy(
+                boxOneOffsetY = boxOneOffsetY + delta
+            )
         }
-        _dragStateOffsets.value =_dragStateOffsets.value.copy(
-            boxThreeOffsetY = boxThreeOffsetY + delta
-        )
+
+
+
+    }/*********************END OF BOX ONE DRAGGING******************************************/
+
+    var boxTwoDragState =DraggableState { delta ->
+            if(_isDragging.value.boxTwoDragging){
+                _boxIndexes.value = _boxIndexes.value.copy(
+                    boxOneZIndex = 0f,
+                    boxTwoZIndex = 1f,
+                    boxThreeZIndex = 0f
+                )
+                _isDragging.value =_isDragging.value.copy(
+                    boxOneDragging = false,
+                    boxThreeDragging = false
+                )
+
+
+
+                val itemInPositionOne = stateList.value[0]
+                val itemInPositionTwo = stateList.value[1]
+                val itemInPositionThree = stateList.value[2]
+                val boxTwoOffsetY =_dragStateOffsets.value.boxTwoOffsetY
+                when{
+
+
+                    boxTwoOffsetY <sectionBreakPoint ->{
+
+                        if(itemInPositionOne != boxTwo){
+                            stateList.tryEmit(listOf(boxTwo,itemInPositionOne,itemInPositionThree))
+
+                        }
+
+                    }
+                    boxTwoOffsetY >sectionBreakPoint && boxTwoOffsetY <(sectionBreakPoint*2) ->{
+
+
+                        if(itemInPositionOne == boxTwo){
+
+                            stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
+                            Log.d("itemInPositionOneChecking","boxOne---> $stateList")
+                        }
+                        else if(itemInPositionThree == boxTwo){
+
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
+                            Log.d("itemInPositionOneChecking","boxThree---> $stateList")
+                        }
+                        else if(itemInPositionTwo == boxTwo){
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
+                            Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
+                        }
+
+                    }
+
+                    boxTwoOffsetY >=(sectionBreakPoint*2)->{
+
+                        if(itemInPositionThree != boxTwo){
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxTwo))
+
+                        }
+                    }
+                }
+                _dragStateOffsets.value =_dragStateOffsets.value.copy(
+                    boxTwoOffsetY = boxTwoOffsetY + delta
+                )
+            }
+
+    }/************************THIS IS THE END OF THE BOX TWO DRAG STATE********************************************/
+
+    var boxThreeDragState =DraggableState { delta ->
+            if(_isDragging.value.boxThreeDragging){
+                _boxIndexes.value = _boxIndexes.value.copy(
+                    boxOneZIndex = 0f,
+                    boxTwoZIndex = 0f,
+                    boxThreeZIndex = 1f
+                )
+                _isDragging.value =_isDragging.value.copy(
+                    boxOneDragging = false,
+                    boxTwoDragging = false,
+
+                    )
+
+
+
+                val itemInPositionOne = stateList.value[0]
+                val itemInPositionTwo = stateList.value[1]
+                val itemInPositionThree = stateList.value[2]
+                val boxThreeOffsetY =_dragStateOffsets.value.boxThreeOffsetY
+                when{
+
+
+                    boxThreeOffsetY <sectionBreakPoint ->{
+
+                        if(itemInPositionOne != boxThree){
+                            stateList.tryEmit(listOf(boxThree,itemInPositionOne,itemInPositionThree))
+
+                        }
+
+                    }
+                    boxThreeOffsetY >sectionBreakPoint && boxThreeOffsetY <(sectionBreakPoint*2) ->{
+
+
+                        if(itemInPositionOne == boxThree){
+
+                            stateList.tryEmit(listOf(itemInPositionTwo,itemInPositionOne,itemInPositionThree))
+                            Log.d("itemInPositionOneChecking","boxOne---> $stateList")
+                        }
+                        else if(itemInPositionThree == boxThree){
+
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,itemInPositionTwo))
+                            Log.d("itemInPositionOneChecking","boxThree---> $stateList")
+                        }
+                        else if(itemInPositionTwo == boxThree){
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionTwo,itemInPositionThree))
+                            Log.d("itemInPositionOneChecking","boxTwo---> $stateList")
+                        }
+
+                    }
+
+                    boxThreeOffsetY >=(sectionBreakPoint*2)->{
+
+                        if(itemInPositionThree != boxThree){
+                            stateList.tryEmit(listOf(itemInPositionOne,itemInPositionThree,boxThree))
+
+                        }
+                    }
+                }
+                _dragStateOffsets.value =_dragStateOffsets.value.copy(
+                    boxThreeOffsetY = boxThreeOffsetY + delta
+                )
+            }
+
     }
 
 /*******************THIS IS THE BEGINNING OF THE stateList EVENT BUS************************************************/

@@ -141,7 +141,6 @@ import com.example.clicker.presentation.stream.views.streamManager.ModActionMess
 import com.example.clicker.presentation.stream.views.streamManager.ModView
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.presentation.stream.views.streamManager.ModViewDialogs
-import com.example.clicker.presentation.stream.views.streamManager.util.DragDetectionBox
 
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import com.example.clicker.util.Response
@@ -152,275 +151,97 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 object ModViewDragSection {
+    val fakeDataOne = TwitchUserDataObjectMother.addDisplayName("thePlebDev")
+        .addUserType("LUL get rekt kid").addColor("#BF40BF")
+        .addMod("1").addSubscriber(false).addMonitored(false)
+        .build()
 
-    /**
-     * DragSectionHeightColumn is a [Column] that will produce 3 [Row] composables that will be used to evenly divide up the screen's
-     * height into 3 sections.
-     *
-     * @param updateTotalItemHeight a function that is used to create a value used to determine the height of the Rows minus an
-     * offset of 130.
-     * @param updateBoxSize a function used to determine the height of the divided boxes
-     * @param updateStartingOffsets a function used to determine the starting offset of the 3 boxes used while dragging
-     * */
-    @Composable
-    fun DragSectionHeightColumn(
-        updateTotalItemHeight:(Int)->Unit,
-        updateBoxSize:(Int)->Unit,
-    ){
-        val endOffset = 130
-        val itemHeightRatio = 2.61
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)) {
+    val fakeDataTwo = TwitchUserDataObjectMother.addDisplayName("Meatball")
+        .addUserType("ok but what the heck was that").addColor("#FF0000")
+        .addMod("0").addSubscriber(true).addMonitored(false)
+        .build()
 
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .fillMaxWidth()
-                    .onGloballyPositioned {
+    val fakeDataThree = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+        .addMod("1").addSubscriber(true).addMonitored(true)
+        .build()
+    val fakeDataFour = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+        .addMod("1").addSubscriber(true).addMonitored(true)
+        .build()
+    val fakeDataFive = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+        .addMod("1").addSubscriber(true).addMonitored(false)
+        .build()
+    val fakeDataSix = TwitchUserDataObjectMother.addDisplayName("Osaka456")
+        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
+        .addMod("1").addSubscriber(true).addMonitored(false)
+        .build()
 
-                        Log.d("onGloballyPositionedHeight", "height --> ${it.size.height} ")
-                        updateTotalItemHeight((it.size.height - endOffset))
-                        updateBoxSize((it.size.height / itemHeightRatio).toInt())
+    val fakeMessageDataList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix)
 
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-            }
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-            }
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .fillMaxWidth()
-                    ,
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-            }
-
-        }
-    }
 
     /**********BELOW IS THE MODVIEW ACTION***************/
 
-    /**
-     * The beating heart of the ModView component. This composable is responsible for all the items
-     * that are being dragged and updating their state accordingly
-     * */
     @Composable
-    fun DraggableBackground(
-        contentPadding: PaddingValues,
-        triggerBottomModal:(Boolean)->Unit,
-    ){
+    fun DraggingBox(
+        boxOffsetY: Float,
+        boxDragState: DraggableState,
+        setBoxOffset:(Float)->Unit,
+        boxZIndex:Float,
+        height: Dp,
+        boxColor:Color,
+        sectionBreakPoint: Int,
+        animateToOnDragStop:Float,
+        dragging:Boolean,
+        setDragging:(Boolean)->Unit,
+        content:@Composable () -> Unit,
 
+        ){
 
-        var boxOneYOffset by remember { mutableStateOf(0f) }
-        var boxOneZIndex by remember {mutableStateOf(1f)}
-
-        var boxTwoYOffset by remember { mutableStateOf(691f) }
-        var boxTwoZIndex by remember {mutableStateOf(0f)}
-
-        var boxThreeYOffset by remember { mutableStateOf((691f*2)) }
-        var boxThreeZIndex by remember {mutableStateOf(1f)}
-
-        var totalItemHeight by remember { mutableStateOf(0) }
-
-
-        //derived state of for each item I could do a derived state of for colors
-        // that will be the next thing I do
-
-
-
-
-
-        val scope = rememberCoroutineScope()
-        var boxHeight by remember { mutableStateOf(100) }
-
-        var boxOneDragging by remember { mutableStateOf(false) }
-
-        var boxTwoDragging by remember { mutableStateOf(false) }
-
-        var boxThreeDragging by remember { mutableStateOf(false) }
+        val opacity = if(dragging) 0.5f else 0f
         val hapticFeedback = LocalHapticFeedback.current
-        Log.d("boxOneDraggingTesting","boxOneYOffset -->$boxOneYOffset")
 
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(0, boxOffsetY.roundToInt()) }
+                .background(boxColor)
+                .draggable(
+                    orientation = Orientation.Vertical,
+                    state = boxDragState,
+                    onDragStopped = {
+                        setDragging(false)
+                        when {
+                            boxOffsetY < sectionBreakPoint -> {
+                                setBoxOffset(0f)
+                            }
+                            boxOffsetY > sectionBreakPoint && boxOffsetY < (sectionBreakPoint * 2) -> {
+                                setBoxOffset(animateToOnDragStop)
+                            }
+                            boxOffsetY >= (sectionBreakPoint * 2) -> {
+                                setBoxOffset(animateToOnDragStop * 2)
+                            }
+                        }
 
-
-
-
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-
+                    }
+                )
+                .zIndex(boxZIndex)
+                .height(height)
+                .fillMaxWidth()
         ) {
-            //TODO:THIS IS WHERE THE COLUMN OF ROWS GOES
-            DragSectionHeightColumn(
-                updateTotalItemHeight = {
-                    totalItemHeight = it
-                },
-                updateBoxSize = {
-                    boxHeight = it
-                },
-            )
-
-
-            Box(
-                Modifier
-                    .offset { IntOffset(0, boxOneYOffset.roundToInt()) }
-                    .background(Color.Magenta)
-                    .height(boxHeight.dp)
-                    .fillMaxWidth()
-                    .zIndex(boxOneZIndex)
-                    .pointerInput(Unit) {
-
-                        detectDragGestures(
-                            onDragEnd = {
-
-                                // offsetY = 0f
-                            },
-                            onDragStart = {
-                                boxOneZIndex = 1f
-                                boxThreeZIndex = 0f
-                                boxTwoZIndex = 0f
-                            }
-                        ) { change, dragAmount ->
-                            change.consume()
-
-
-                            if (boxOneDragging) {
-                                boxOneYOffset += dragAmount.y
-                            }
-                        }
-                    }
-
-            ){
-                ModActions(
-                    boxOneDragging,
-                    setDragging = {value -> boxOneDragging = value},
-                    length=20
-                )
-            }
-            /***------------------BELOW IS THE SECOND BOX-----------------------------------------------*/
-
-            Box(Modifier
-                .offset { IntOffset(0, boxTwoYOffset.roundToInt()) }
-                .background(Color.Red)
-                .height(boxHeight.dp)
-                .fillMaxWidth()
-                .zIndex(boxTwoZIndex)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-
-                        onDragStart = {
-                            boxOneZIndex = 0f
-                            boxThreeZIndex = 0f
-                            boxTwoZIndex = 1f
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        //change
-
-                        //This should have a parameter for chnging the offest of box one and three
-
-                        Log.d("Consumingthedrag", "dragAmount.x ${dragAmount.x}")
-                        if (boxTwoDragging) {
-                            boxTwoYOffset += dragAmount.y
-                        }
-
-                    }
-                }
-            ){
-                val fakeDataOne = TwitchUserDataObjectMother.addDisplayName("thePlebDev")
-                    .addUserType("LUL get rekt kid").addColor("#BF40BF")
-                    .addMod("1").addSubscriber(false).addMonitored(false)
-                    .build()
-
-                val fakeDataTwo = TwitchUserDataObjectMother.addDisplayName("Meatball")
-                    .addUserType("ok but what the heck was that").addColor("#FF0000")
-                    .addMod("0").addSubscriber(true).addMonitored(false)
-                    .build()
-
-                val fakeDataThree = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-                    .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-                    .addMod("1").addSubscriber(true).addMonitored(true)
-                    .build()
-                val fakeDataFour = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-                    .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-                    .addMod("1").addSubscriber(true).addMonitored(true)
-                    .build()
-                val fakeDataFive = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-                    .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-                    .addMod("1").addSubscriber(true).addMonitored(false)
-                    .build()
-                val fakeDataSix = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-                    .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-                    .addMod("1").addSubscriber(true).addMonitored(false)
-                    .build()
-
-
-                Log.d("ChatBoxOffset","BoxTwoOffset---> $boxTwoYOffset")
-                ChatBox(
-                    boxTwoDragging,
-                    setDragging = {value -> boxTwoDragging = value},
-                    chatMessageList = listOf(fakeDataOne,fakeDataTwo,
-                        fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix,fakeDataSix,
-                        fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix,fakeDataSix
-                    ),
-                    triggerBottomModal={newValue -> triggerBottomModal(newValue)}
-                )
-
-            }
-            /***------------------BELOW IS THE THIRD BOX-----------------------------------------------*/
-
-            Box(Modifier
-                .offset { IntOffset(0, boxThreeYOffset.roundToInt()) }
-                .background(Color.Green)
-                .height(boxHeight.dp)
-                .fillMaxWidth()
-                .zIndex(boxThreeZIndex)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-
-                            // offsetY = 0f
-                            boxThreeDragging = false
-                        },
-                        onDragStart = {
-                            boxThreeZIndex = 1f
-                            boxOneZIndex = 0f
-                            boxTwoZIndex = 0f
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-
-                        if (boxThreeDragging) {
-                            boxThreeYOffset += dragAmount.y
-                        }
-
-                    }
-                }
-            ){
-                AutoModQueueBox(
-                    setDragging = {newValue -> boxThreeDragging =newValue  },
-                    dragging = boxThreeDragging
+            content()
+            if(dragging){
+                ModView.DetectDoubleClickSpacer(
+                    opacity,
+                    setDragging={newValue ->setDragging(newValue)},
+                    hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
                 )
             }
 
 
         }
-
     }
+
 
     /**
      * ChatBox is the composable function that is used inside of [DraggableBackground] to represent the chat messages shown to the user
@@ -452,9 +273,6 @@ object ModViewDragSection {
 
         ){
 
-            Column(
-                modifier =Modifier.fillMaxSize()
-            ) {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -466,7 +284,7 @@ object ModViewDragSection {
                         ModView.DropDownMenuHeaderBox(headerTitle ="CHAT")
                     }
                     items(chatMessageList){chatTwitchUserData ->
-                        DragDetectionBox(
+                        HorizontalDragDetectionBox(
                             itemBeingDragged = {dragOffset ->
                                 ModViewChat.ChatMessageCard(
                                     dragOffset,
@@ -482,12 +300,9 @@ object ModViewDragSection {
 
                         )
                     }
-
-
-
                 }
 
-            }
+
             if(dragging){
                 ModView.DetectDoubleClickSpacer(
                     opacity,
@@ -555,12 +370,17 @@ object ModViewDragSection {
                 modifier =Modifier.fillMaxSize()
             ){
                 stickyHeader {
-                    ModView.SectionHeaderRow(title ="AutoMod Queue")
+                    Text(
+                        "AutoMod Queue",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+                    )
                 }
 
 
                 items(10){
-                    DragDetectionBox(
+                    HorizontalDragDetectionBox(
                         itemBeingDragged ={offset ->
                             AutoModItemRow(
                                 "thePlebDev",
@@ -679,7 +499,12 @@ object ModViewDragSection {
 
                 ) {
                     stickyHeader {
-                        ModView.SectionHeaderRow(title ="MOD ACTIONS: 44")
+                        Text(
+                            "MOD ACTIONS: 44",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+                        )
                     }
 
                     item{
@@ -847,5 +672,139 @@ object ModViewDragSection {
             )
 
         }
+    }
+
+    /**
+     * HorizontalDragDetectionBox is a [Box] that will detect the user's drag movement and will move [itemBeingDragged] accordingly. Also, depending
+     * of if the thresholds are dragged across functions such as [quarterSwipeRightAction], [quarterSwipeLeftAction] and [halfSwipeAction]
+     * once the drag stopped. Icons such as [halfSwipeIconResource], [quarterSwipeLeftIconResource] and [quarterSwipeRightIconResource] will
+     * also be shown when the user crosses those thresholds
+     *
+     * @param itemBeingDragged a composable function that will be dragged when the drags it accross the screen.
+     * @param twoSwipeOnly a boolean that is used to determine of there are functions for quarter swipes and half swipes or just quarter swipes.
+     * A true value indicates that [quarterSwipeRightAction] and [quarterSwipeLeftAction] will get triggered. A false value means that
+     * [quarterSwipeRightAction], [quarterSwipeLeftAction] and [halfSwipeAction] will get triggered
+     * @param quarterSwipeRightAction is a function that will be called if a user swipes and passes the threshold of 0.25 of [itemBeingDragged] width
+     * @param quarterSwipeLeftAction is a function that will be called if a user swipes and passes the threshold of -1*(0.25) of [itemBeingDragged] width
+     * @param halfSwipeAction a optional function that will be called if [twoSwipeOnly] is set to false and the user's drag passes
+     * the threshold of +/- 0.5 of [itemBeingDragged] width
+     * @param halfSwipeIconResource is a [Painter] that will be shown to the user if the half swipe threshold is crossed and [twoSwipeOnly] is false
+     * @param quarterSwipeLeftIconResource is a [Painter] that will be shown to the user if the -1 *(quarter) swipe threshold is crossed
+     * @param quarterSwipeRightIconResource is a [Painter] that will be shown to the user if the quarter swipe threshold is crossed
+     * @param hideIconColor: a [Color] that the icons will be set to hide them from the user
+     * @param showIconColor: a [Color] that the icons will be set to reveal them to the user
+     * */
+    @Composable
+    fun HorizontalDragDetectionBox(
+        itemBeingDragged:@Composable (dragOffset:Float) -> Unit,
+        twoSwipeOnly:Boolean,
+        quarterSwipeRightAction:()->Unit,
+        quarterSwipeLeftAction:()->Unit,
+        halfSwipeAction:()->Unit={},
+        halfSwipeIconResource: Painter = painterResource(id = R.drawable.delete_outline_24),
+        quarterSwipeLeftIconResource: Painter = painterResource(id = R.drawable.time_out_24),
+        quarterSwipeRightIconResource: Painter = painterResource(id = R.drawable.ban_24),
+        hideIconColor: Color = MaterialTheme.colorScheme.primary,
+        showIconColor: Color = MaterialTheme.colorScheme.onPrimary,
+    ){
+        var iconPainterResource: Painter = painterResource(id = R.drawable.ban_24)
+        var dragging by remember{ mutableStateOf(true) }
+
+
+
+        val state = rememberDraggableActions()
+        var iconColor = hideIconColor
+
+        if(dragging && !twoSwipeOnly){
+            if (state.offset.value >= (state.halfWidth)) {
+                iconPainterResource =halfSwipeIconResource
+                iconColor = showIconColor
+            }
+            else if (state.offset.value <= -(state.halfWidth)){
+                iconPainterResource =halfSwipeIconResource
+                iconColor = showIconColor
+            }
+            else if (state.offset.value <= -(state.quarterWidth)){
+                iconPainterResource =quarterSwipeLeftIconResource
+                iconColor = showIconColor
+            }
+            else if (state.offset.value >= (state.quarterWidth)){
+                iconPainterResource = quarterSwipeRightIconResource
+                iconColor = showIconColor
+            }
+        }
+        else if(dragging && twoSwipeOnly){
+            if (state.offset.value <= -(state.quarterWidth)){
+                iconPainterResource =quarterSwipeLeftIconResource
+                iconColor = showIconColor
+            }
+            else if (state.offset.value >= (state.quarterWidth)){
+                iconPainterResource = quarterSwipeRightIconResource
+                iconColor = showIconColor
+            }
+        }
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    onDragStopped = {
+                        if (twoSwipeOnly) {
+                            state.checkQuarterSwipeThresholds(
+                                leftSwipeAction = {
+                                    quarterSwipeLeftAction()
+                                },
+                                rightSwipeAction = {
+                                    quarterSwipeRightAction()
+                                }
+                            )
+                        } else {
+                            state.checkDragThresholdCrossed(
+                                deleteMessageSwipe = {
+                                    halfSwipeAction()
+                                },
+                                timeoutUserSwipe = {
+                                    quarterSwipeLeftAction()
+                                },
+                                banUserSwipe = {
+                                    quarterSwipeRightAction()
+                                }
+                            )
+                        }
+
+                        dragging = false
+                        state.resetOffset()
+                    },
+                    onDragStarted = {
+                        dragging = true
+                    },
+
+
+                    enabled = true,
+                    state = state.draggableState
+                )
+                .onGloballyPositioned { layoutCoordinates ->
+                    state.setWidth(layoutCoordinates.size.width)
+                }
+        ){
+
+            Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor, modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 10.dp)
+            )
+            Icon(painter = iconPainterResource, contentDescription = "",tint = iconColor,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 10.dp)
+            )
+
+
+            itemBeingDragged(state.offset.value)
+
+        }
+
+
     }
 }
