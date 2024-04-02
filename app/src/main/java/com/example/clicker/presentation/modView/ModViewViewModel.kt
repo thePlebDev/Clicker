@@ -16,8 +16,8 @@ import javax.inject.Inject
 
 data class BoxDragStateOffsets(
     val boxOneOffsetY:Float = 0f,
-    val boxTwoOffsetY:Float = 739f,
-    val boxThreeOffsetY:Float = 739f *2,
+    val boxTwoOffsetY:Float = 700f,
+    val boxThreeOffsetY:Float = 700f *2,
 )
 data class IsBoxDragging(
     val boxOneDragging:Boolean = false,
@@ -38,8 +38,9 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
     val boxTwo = "BOXTWO"
     val boxThree= "BOXTHREE"
     val indivBoxSize = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp //264
-    val sectionBreakPoint = (Resources.getSystem().displayMetrics.heightPixels/3)-200 //539
-    val animateToOnDragStop = (Resources.getSystem().displayMetrics.heightPixels/3).toFloat() //739f
+    val sectionBreakPoint = ((Resources.getSystem().displayMetrics.heightPixels/3.20)-200).toInt() //539
+    val animateToOnDragStop = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat() //704f
+
 
     private var _dragStateOffsets: MutableState<BoxDragStateOffsets> = mutableStateOf(BoxDragStateOffsets())
     val dragStateOffsets: State<BoxDragStateOffsets> = _dragStateOffsets
@@ -55,6 +56,15 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
 
     var hapticFeedBack ={}
 
+    init{
+        _dragStateOffsets.value =_dragStateOffsets.value.copy(
+            boxOneOffsetY =0f,
+            boxTwoOffsetY = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat(),
+            boxThreeOffsetY = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat() *2
+
+        )
+
+    }
 
 
     fun setBoxOneOffset(boxOneOffset:Float){
@@ -299,6 +309,7 @@ class ModViewViewModel @Inject constructor(): ViewModel() {
 
                 if(_isDragging.value.boxOneDragging){
                     if(indexOfBoxTwo == 0){
+                        Log.d("boxOneDraggingThingers","THERE SHOULD BE A HAPTIC FEEDBACK")
                         hapticFeedBack()
                         setBoxTwoOffset(0f)
                     }

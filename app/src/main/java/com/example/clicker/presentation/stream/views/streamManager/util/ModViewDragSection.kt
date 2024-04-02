@@ -149,7 +149,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-
+/**
+ * ModViewDragSection contains all the composables functions that are related to the dragging portion of the ModView Feature.
+ * Here are the contained `Composables`:
+ *
+ *
+ * @property DraggingBox
+ * @property ChatBox
+ * @property AutoModQueueBox
+ * @property AutoModItemRow
+ * @property ModActions
+ * @property IsModeratorButton
+ * @property HorizontalDragDetectionBox
+ * @property IsModeratorButton
+ * */
 object ModViewDragSection {
     val fakeDataOne = TwitchUserDataObjectMother.addDisplayName("thePlebDev")
         .addUserType("LUL get rekt kid").addColor("#BF40BF")
@@ -216,6 +229,8 @@ object ModViewDragSection {
 
         val opacity = if(dragging) 0.5f else 0f
         val hapticFeedback = LocalHapticFeedback.current
+        val offset = (54.857143 +boxOffsetY).roundToInt()
+        Log.d("ChatBoxHeight","height -->$height")
 
         Box(
             modifier = Modifier
@@ -503,8 +518,6 @@ object ModViewDragSection {
                 }
             )
         ) {
-            Column(modifier =Modifier.fillMaxSize()) {
-
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -531,7 +544,7 @@ object ModViewDragSection {
                     }
 
                 }
-            }
+
             if(dragging){
                 ModView.DetectDoubleClickSpacer(
                     opacity,

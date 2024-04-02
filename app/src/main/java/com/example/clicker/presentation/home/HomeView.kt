@@ -26,6 +26,7 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
@@ -160,85 +161,58 @@ fun ValidationView(
 
 
 
-//    HomeViewImplementation(
-//        bottomModalState =bottomModalState,
-//        loginWithTwitch ={loginWithTwitch()},
-//        domainIsRegistered =domainIsRegistered,
-//        addToLinks = { addToLinks() },
-//        onNavigate = {id -> onNavigate(id) },
-//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-//            streamViewModel.updateChannelNameAndClientIdAndUserId(
-//                streamerName,
-//                clientId,
-//                broadcasterId,
-//                userId,
-//                login =homeViewModel.validatedUser.value?.login ?:""
-//            )
-//            autoModViewModel.updateAutoModCredentials(
-//                oAuthToken = homeViewModel.state.value.oAuthToken,
-//                clientId = streamViewModel.state.value.clientId,
-//                moderatorId = streamViewModel.state.value.userId,
-//                broadcasterId = streamViewModel.state.value.broadcasterId,
-//            )
-//
-//        },
-//        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-//        clientId = clientId ?: "",
-//        userId = userId ?: "",
-//        height = homeViewModel.state.value.aspectHeight,
-//        width = homeViewModel.state.value.width,
-//        logout = {
-//            homeViewModel.beginLogout(
-//                clientId = clientId?:"",
-//                oAuthToken = oAuthToken
-//            )
-//            //homeViewModel.logout()
-//            homeViewModel.hideLogoutDialog()
-//
-//        },
-//        userIsAuthenticated =userIsAuthenticated,
-//        screenDensity = homeViewModel.state.value.screenDensity,
-//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-//        networkMessageColor=Color.Red,
-//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-//        isUserLoggedIn=isUserLoggedIn,
-//        showFailedDialog = homeViewModel.state.value.showFailedDialog,
-//        hideDialog = {homeViewModel.hideDialog()}
-//
-//    )
-    DraggableModViewBox(
-        boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
-        setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
-        boxOneDragState = modViewViewModel.boxOneDragState,
-        boxOneZIndex = modViewViewModel.boxIndexes.value.boxOneZIndex,
-        animateToOnDragStop = modViewViewModel.animateToOnDragStop,
-        indivBoxSize = modViewViewModel.indivBoxSize,
-        sectionBreakPoint = modViewViewModel.sectionBreakPoint,
+    HomeViewImplementation(
+        bottomModalState =bottomModalState,
+        loginWithTwitch ={loginWithTwitch()},
+        domainIsRegistered =domainIsRegistered,
+        addToLinks = { addToLinks() },
+        onNavigate = {id -> onNavigate(id) },
+        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+            streamViewModel.updateChannelNameAndClientIdAndUserId(
+                streamerName,
+                clientId,
+                broadcasterId,
+                userId,
+                login =homeViewModel.validatedUser.value?.login ?:""
+            )
+            autoModViewModel.updateAutoModCredentials(
+                oAuthToken = homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+                moderatorId = streamViewModel.state.value.userId,
+                broadcasterId = streamViewModel.state.value.broadcasterId,
+            )
 
-        boxTwoOffsetY = modViewViewModel.dragStateOffsets.value.boxTwoOffsetY,
-        boxTwoZIndex = modViewViewModel.boxIndexes.value.boxTwoZIndex,
-        setBoxTwoOffset = {newValue ->modViewViewModel.setBoxTwoOffset(newValue)},
-        boxTwoDragState = modViewViewModel.boxTwoDragState,
+        },
+        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
+        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+        clientId = clientId ?: "",
+        userId = userId ?: "",
+        height = homeViewModel.state.value.aspectHeight,
+        width = homeViewModel.state.value.width,
+        logout = {
+            homeViewModel.beginLogout(
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
+            )
+            //homeViewModel.logout()
+            homeViewModel.hideLogoutDialog()
 
-        boxThreeZIndex = modViewViewModel.boxIndexes.value.boxThreeZIndex,
-        boxThreeOffsetY = modViewViewModel.dragStateOffsets.value.boxThreeOffsetY,
-        setBoxThreeOffset = {newValue ->modViewViewModel.setBoxThreeOffset(newValue)},
-        boxThreeDragState = modViewViewModel.boxThreeDragState,
+        },
+        userIsAuthenticated =userIsAuthenticated,
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+        networkMessageColor=Color.Red,
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+        isUserLoggedIn=isUserLoggedIn,
+        showFailedDialog = homeViewModel.state.value.showFailedDialog,
+        hideDialog = {homeViewModel.hideDialog()}
 
-        boxOneDragging = modViewViewModel.isDragging.value.boxOneDragging,
-        setBoxOneDragging = {newValue -> modViewViewModel.setBoxOneDragging(newValue)},
-
-        boxThreeDragging =modViewViewModel.isDragging.value.boxThreeDragging,
-        boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
-        setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
-        setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)}
     )
 
 
@@ -257,7 +231,7 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 
 
 @Composable
-private fun DraggableModViewBox(
+ fun DraggableModViewBox(
     boxOneOffsetY:Float,
     boxTwoOffsetY:Float,
     boxThreeOffsetY:Float,
@@ -285,11 +259,12 @@ private fun DraggableModViewBox(
 
     boxThreeDragging:Boolean,
     setBoxThreeDragging:(Boolean)->Unit,
+    contentPaddingValues: PaddingValues
 
 ) {
 
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(contentPaddingValues)
         ){
             /**THIS IS THE FIRST BOX*/
             ModViewDragSection.DraggingBox(
