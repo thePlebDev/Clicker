@@ -80,6 +80,7 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
+import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
@@ -120,7 +121,11 @@ object ModView {
     fun ModViewScaffold(
         closeStreamInfo:()->Unit,
         modViewViewModel: ModViewViewModel,
-        chatMessages:List<TwitchUserData>
+        chatMessages:List<TwitchUserData>,
+        clickedUserData: ClickedUIState,
+        clickedUserChats:List<String>,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+
     ){
         //todo: this is where the draggable boxes go
 
@@ -151,27 +156,27 @@ object ModView {
                     closeBottomModal = {showBottomSheet = false},
                     bottomModalHeaders = {
                         this.ContentHeaderRow(
-                            clickedUsername = "thePlebDev",
+                            clickedUsername = clickedUserData.clickedUsername,
                             textFieldValue = textFieldValue,
                             closeBottomModal={showBottomSheet = false}
                         )
                     },
                     bottomModalButtons = {
                         this.ContentBottom(
-                            banned =false,
+                            banned =clickedUserData.clickedUsernameBanned,
                             loggedInUserMod =true ,
                             closeBottomModal = { /*TODO*/ },
                             unbanUser = { /*TODO*/ },
                             openTimeoutDialog = { /*TODO*/ },
                             openBanDialog = { /*TODO*/ },
-                            shouldMonitorUser = false
+                            shouldMonitorUser = clickedUserData.shouldMonitorUser
                         ) {
 
                         }
                     },
                     bottomModalRecentMessages={
                         this.ClickedUserMessages(
-                            clickedUsernameChats = listOf("IT DO BE LIKE THAT SOMETIMES","ok, However I stil think youre wrong","LUL")
+                            clickedUsernameChats = clickedUserChats
                         )
                     }
                 )
@@ -229,7 +234,16 @@ object ModView {
                 boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
                 setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
                 setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)},
-                chatMessages =chatMessages
+                chatMessages =chatMessages,
+                triggerBottomModal = {showBottomSheet = true},
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                },
 
             )
 

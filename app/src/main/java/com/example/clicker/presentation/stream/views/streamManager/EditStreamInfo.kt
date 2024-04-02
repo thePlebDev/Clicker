@@ -63,6 +63,7 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
+import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.BottomModal
@@ -99,7 +100,11 @@ fun ManageStreamInformation(
     updateAutoModSettingsStatusToNull:()->Unit,
     updateChannelInfo:()->Unit,
     modViewViewModel: ModViewViewModel,
-    chatMessages: List<TwitchUserData>
+    chatMessages: List<TwitchUserData>,
+    clickedUserData: ClickedUIState,
+    clickedUserChatMessages:List<String>,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+
 ){
     if(showAutoModSettings){
 
@@ -128,7 +133,17 @@ fun ManageStreamInformation(
         ModView.ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
             modViewViewModel =modViewViewModel,
-            chatMessages =chatMessages
+            chatMessages =chatMessages,
+            clickedUserData=clickedUserData,
+            clickedUserChats = clickedUserChatMessages,
+            updateClickedUser = {  username, userId,isBanned,isMod ->
+                updateClickedUser(
+                    username,
+                    userId,
+                    isBanned,
+                    isMod
+                )
+            },
         )
     }
 

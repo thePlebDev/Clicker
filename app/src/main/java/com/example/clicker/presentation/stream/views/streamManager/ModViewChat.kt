@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views.streamManager
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -50,7 +51,7 @@ object  ModViewChat {
      *
      * @param offset is a float that is used to animate the dragging of this card
      * @param setDragging a function used to determine if the user is dragging the card or not
-     * @param chatMessageData a [TwitchUserData] object that carries all the related information related to an individual chat message
+     * @param indivUserChatMessage a [TwitchUserData] object that carries all the related information related to an individual chat message
      * @param triggerBottomModal a function used to show or hide the bottom modal
      * */
     @OptIn(ExperimentalFoundationApi::class)
@@ -58,8 +59,9 @@ object  ModViewChat {
     fun ChatMessageCard(
         offset:Float,
         setDragging:(Boolean)->Unit,
-        chatMessageData: TwitchUserData,
+        indivUserChatMessage: TwitchUserData,
         triggerBottomModal:(Boolean)->Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ) {
         val scope = rememberCoroutineScope()
 
@@ -74,8 +76,18 @@ object  ModViewChat {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         setDragging(true)
                     },
-                    // onLongClick = {setDragging(true)},
+
                     onClick = {
+                        updateClickedUser(
+                            indivUserChatMessage.displayName ?:"",
+                            indivUserChatMessage.userId ?:"",
+                            indivUserChatMessage.banned,
+                            indivUserChatMessage.mod =="1"
+                        )
+                        Log.d("ChatMessageCardChatMessage","displayName -> ${indivUserChatMessage.displayName}")
+                        Log.d("ChatMessageCardChatMessage","userType -> ${indivUserChatMessage.userType}")
+                        Log.d("ChatMessageCardChatMessage","banned -> ${indivUserChatMessage.banned}")
+                        Log.d("ChatMessageCardChatMessage","mod -> ${indivUserChatMessage.mod}")
                         scope.launch {
                             triggerBottomModal(true)
                         }
@@ -88,12 +100,12 @@ object  ModViewChat {
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
         ) {
             TextWithChatBadges(
-                displayName = "${chatMessageData.displayName}",
-                message = " ${chatMessageData.userType}",
-                isMod = chatMessageData.mod == "1",
-                isSub = chatMessageData.subscriber == true,
-                isMonitored =chatMessageData.isMonitored,
-                userNameColor =chatMessageData.color?: "#7F00FF"
+                displayName = "${indivUserChatMessage.displayName}",
+                message = " ${indivUserChatMessage.userType}",
+                isMod = indivUserChatMessage.mod == "1",
+                isSub = indivUserChatMessage.subscriber == true,
+                isMonitored =indivUserChatMessage.isMonitored,
+                userNameColor =indivUserChatMessage.color?: "#7F00FF"
             )
         }
     }

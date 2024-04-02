@@ -226,7 +226,9 @@ object ModViewDragSection {
         boxThreeDragging:Boolean,
         setBoxThreeDragging:(Boolean)->Unit,
         contentPaddingValues: PaddingValues,
-        chatMessages:List<TwitchUserData>
+        chatMessages:List<TwitchUserData>,
+        triggerBottomModal: () -> Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
     ) {
 
@@ -250,7 +252,15 @@ object ModViewDragSection {
                         dragging = boxOneDragging,
                         chatMessageList = chatMessages,
                         setDragging = {newValue ->setBoxOneDragging(newValue)},
-                        triggerBottomModal = {}
+                        triggerBottomModal = { triggerBottomModal()},
+                        updateClickedUser = {  username, userId,isBanned,isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                isBanned,
+                                isMod
+                            )
+                        }
                     )
                 }
 
@@ -397,7 +407,8 @@ object ModViewDragSection {
         dragging:Boolean,
         setDragging:(Boolean)->Unit,
         chatMessageList: List<TwitchUserData>,
-        triggerBottomModal:(Boolean)->Unit,
+        triggerBottomModal:()->Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         ){
         val opacity = if(dragging) 0.5f else 0f
         val listState = rememberLazyListState()
@@ -463,8 +474,16 @@ object ModViewDragSection {
                                 ModViewChat.ChatMessageCard(
                                     dragOffset,
                                     setDragging={newValue ->setDragging(newValue)},
-                                    chatMessageData =chatTwitchUserData,
-                                    triggerBottomModal={newValue->triggerBottomModal(newValue)}
+                                    indivUserChatMessage =chatTwitchUserData,
+                                    triggerBottomModal={triggerBottomModal()},
+                                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                                        updateClickedUser(
+                                            username,
+                                            userId,
+                                            isBanned,
+                                            isMod
+                                        )
+                                    }
                                 )
                             },
                             quarterSwipeLeftAction={showTimeOutDialog = true},
