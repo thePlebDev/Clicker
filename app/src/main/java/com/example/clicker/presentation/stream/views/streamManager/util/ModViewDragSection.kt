@@ -193,6 +193,116 @@ object ModViewDragSection {
 
     val fakeMessageDataList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix)
 
+    /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
+     * composables
+     * */
+    @Composable
+    fun DraggableModViewBox(
+        boxOneOffsetY:Float,
+        boxTwoOffsetY:Float,
+        boxThreeOffsetY:Float,
+
+        boxOneDragState: DraggableState,
+        boxTwoDragState: DraggableState,
+        boxThreeDragState: DraggableState,
+
+        setBoxTwoOffset:(Float) ->Unit,
+        setBoxOneOffset:(Float) ->Unit,
+        setBoxThreeOffset:(Float) ->Unit,
+
+        boxOneZIndex:Float,
+        boxTwoZIndex:Float,
+        boxThreeZIndex:Float,
+        indivBoxSize:Dp,
+        animateToOnDragStop: Float,
+        sectionBreakPoint:Int,
+
+        boxOneDragging:Boolean,
+        setBoxOneDragging:(Boolean)->Unit,
+
+        boxTwoDragging:Boolean,
+        setBoxTwoDragging:(Boolean)->Unit,
+
+        boxThreeDragging:Boolean,
+        setBoxThreeDragging:(Boolean)->Unit,
+        contentPaddingValues: PaddingValues,
+        chatMessages:List<TwitchUserData>
+
+    ) {
+
+        Box(
+            modifier = Modifier.fillMaxSize().padding(contentPaddingValues)
+        ){
+            /**THIS IS THE FIRST BOX*/
+            ModViewDragSection.DraggingBox(
+                boxOffsetY =boxOneOffsetY,
+                boxDragState=boxOneDragState,
+                boxZIndex =boxOneZIndex,
+                setBoxOffset ={newValue->setBoxOneOffset(newValue)},
+                height = indivBoxSize,
+                boxColor =Color.Red,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxOneDragging,
+                setDragging={newValue->setBoxOneDragging(newValue)},
+                content={
+                    ModViewDragSection.ChatBox(
+                        dragging = boxOneDragging,
+                        chatMessageList = chatMessages,
+                        setDragging = {newValue ->setBoxOneDragging(newValue)},
+                        triggerBottomModal = {}
+                    )
+                }
+
+            )
+
+
+            /*************START OF THE SECOND BOX***********************/
+            ModViewDragSection.DraggingBox(
+                boxOffsetY =boxTwoOffsetY,
+                boxDragState=boxTwoDragState,
+                boxZIndex =boxTwoZIndex,
+                setBoxOffset ={newValue->setBoxTwoOffset(newValue)},
+                height = indivBoxSize,
+                boxColor =Color.Cyan,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxTwoDragging,
+                setDragging={newValue -> setBoxTwoDragging(newValue)},
+                content={
+                    ModViewDragSection.AutoModQueueBox(
+                        dragging =boxTwoDragging,
+                        setDragging={newValue -> setBoxTwoDragging(newValue)},
+                    )
+                }
+            )
+
+            /*************START OF THE THIRD BOX***********************/
+            ModViewDragSection.DraggingBox(
+                boxOffsetY =boxThreeOffsetY,
+                boxDragState=boxThreeDragState,
+                boxZIndex =boxThreeZIndex,
+                setBoxOffset ={newValue->setBoxThreeOffset(newValue)},
+                height = indivBoxSize,
+                boxColor =Color.Magenta,
+                sectionBreakPoint =sectionBreakPoint,
+                animateToOnDragStop=animateToOnDragStop,
+                dragging = boxThreeDragging,
+                setDragging={newValue -> setBoxThreeDragging(newValue)},
+                content={
+                    ModViewDragSection.ModActions(
+                        dragging =boxThreeDragging,
+                        setDragging={newValue -> setBoxThreeDragging(newValue)},
+                        length =20
+                    )
+                }
+
+
+            )
+        }
+
+    }
+
 
 
     /**
@@ -288,7 +398,6 @@ object ModViewDragSection {
         setDragging:(Boolean)->Unit,
         chatMessageList: List<TwitchUserData>,
         triggerBottomModal:(Boolean)->Unit,
-
         ){
         val opacity = if(dragging) 0.5f else 0f
         val listState = rememberLazyListState()
@@ -296,6 +405,36 @@ object ModViewDragSection {
         var showTimeOutDialog by remember{ mutableStateOf(false) }
         var showBanDialog by remember{ mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
+
+        var autoscroll by remember { mutableStateOf(true) }
+        val interactionSource = listState.interactionSource
+
+        LaunchedEffect(interactionSource) {
+            interactionSource.interactions.collect { interaction ->
+                when (interaction) {
+                    is DragInteraction.Start -> {
+                        autoscroll = false
+                    }
+                    is PressInteraction.Press -> {
+                        autoscroll = false
+                    }
+                }
+            }
+        }
+
+        val endOfListReached by remember {
+            derivedStateOf {
+                listState.isScrolledToEnd()
+            }
+        }
+        // observer when reached end of list
+        LaunchedEffect(endOfListReached) {
+            // do your stuff
+            if (endOfListReached) {
+                autoscroll = true
+            }
+        }
+
 
         Box(modifier = Modifier
             .fillMaxSize()
@@ -312,6 +451,11 @@ object ModViewDragSection {
                 ){
                     stickyHeader {
                         ModView.DropDownMenuHeaderBox(headerTitle ="CHAT")
+                    }
+                    scope.launch {
+                        if(autoscroll){
+                            listState.scrollToItem(chatMessageList.size)
+                        }
                     }
                     items(chatMessageList){chatTwitchUserData ->
                         HorizontalDragDetectionBox(

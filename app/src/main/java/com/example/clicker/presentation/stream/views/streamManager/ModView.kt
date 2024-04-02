@@ -77,16 +77,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
 import com.example.clicker.R
-import com.example.clicker.presentation.home.DraggableModViewBox
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
+import com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection
 import kotlin.math.roundToInt
 
 /**
  * ModView contains all the composable functions that are used to create the `chat modes header`
+ *
+ * @property ModViewScaffold
+ * @property SectionHeaderRow
+ * @property ModesHeaderRow
+ * @property DropDownMenuHeaderBox
+ * @property DropdownMenuColumn
+ * @property BlockedTermsDropdownMenuItem
+ * @property PermittedWordsDropdownMenuItem
+ * @property AddSearchPermittedTermsDropdownMenu
+ * @property PermittedTermsLazyColumn
+ * @property FollowersOnlyCheck
+ * @property EmbeddedDropDownMenu
+ * @property TextMenuItem
+ * @property SlowModeCheck
+ * @property SubscriberOnlySwitch
+ * @property EmoteOnlySwitch
+ * @property DetectDoubleClickSpacer
+ * @property DetectDraggingOrNotAtBottomButton
  * */
 object ModView {
     /**
@@ -100,7 +119,8 @@ object ModView {
     @Composable
     fun ModViewScaffold(
         closeStreamInfo:()->Unit,
-        modViewViewModel: ModViewViewModel
+        modViewViewModel: ModViewViewModel,
+        chatMessages:List<TwitchUserData>
     ){
         //todo: this is where the draggable boxes go
 
@@ -182,7 +202,7 @@ object ModView {
         ) {contentPadding ->
             Log.d("contentPaddingModView","contentPadding --> ${contentPadding.calculateTopPadding().value}")
 
-            DraggableModViewBox(
+            ModViewDragSection.DraggableModViewBox(
                 contentPaddingValues = contentPadding,
                 boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
                 setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
@@ -208,7 +228,9 @@ object ModView {
                 boxThreeDragging =modViewViewModel.isDragging.value.boxThreeDragging,
                 boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
                 setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
-                setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)}
+                setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)},
+                chatMessages =chatMessages
+
             )
 
 

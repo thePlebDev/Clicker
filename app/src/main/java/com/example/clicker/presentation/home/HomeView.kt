@@ -218,7 +218,6 @@ fun ValidationView(
 
 }
 
-
 fun Modifier.disableClickAndRipple(): Modifier = composed {
     clickable(
         enabled = false,
@@ -228,113 +227,6 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
-
-
-@Composable
- fun DraggableModViewBox(
-    boxOneOffsetY:Float,
-    boxTwoOffsetY:Float,
-    boxThreeOffsetY:Float,
-
-    boxOneDragState: DraggableState,
-    boxTwoDragState: DraggableState,
-    boxThreeDragState: DraggableState,
-
-    setBoxTwoOffset:(Float) ->Unit,
-    setBoxOneOffset:(Float) ->Unit,
-    setBoxThreeOffset:(Float) ->Unit,
-
-    boxOneZIndex:Float,
-    boxTwoZIndex:Float,
-    boxThreeZIndex:Float,
-    indivBoxSize:Dp,
-    animateToOnDragStop: Float,
-    sectionBreakPoint:Int,
-
-    boxOneDragging:Boolean,
-    setBoxOneDragging:(Boolean)->Unit,
-
-    boxTwoDragging:Boolean,
-    setBoxTwoDragging:(Boolean)->Unit,
-
-    boxThreeDragging:Boolean,
-    setBoxThreeDragging:(Boolean)->Unit,
-    contentPaddingValues: PaddingValues
-
-) {
-
-        Box(
-            modifier = Modifier.fillMaxSize().padding(contentPaddingValues)
-        ){
-            /**THIS IS THE FIRST BOX*/
-            ModViewDragSection.DraggingBox(
-                boxOffsetY =boxOneOffsetY,
-                boxDragState=boxOneDragState,
-                boxZIndex =boxOneZIndex,
-                setBoxOffset ={newValue->setBoxOneOffset(newValue)},
-                height = indivBoxSize,
-                boxColor =Color.Red,
-                sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop,
-                dragging = boxOneDragging,
-                setDragging={newValue->setBoxOneDragging(newValue)},
-                content={
-                    ModViewDragSection.ChatBox(
-                        dragging = boxOneDragging,
-                        chatMessageList = ModViewDragSection.fakeMessageDataList,
-                        setDragging = {newValue ->setBoxOneDragging(newValue)},
-                        triggerBottomModal = {}
-                    )
-                }
-
-            )
-
-
-            /*************START OF THE SECOND BOX***********************/
-            ModViewDragSection.DraggingBox(
-                boxOffsetY =boxTwoOffsetY,
-                boxDragState=boxTwoDragState,
-                boxZIndex =boxTwoZIndex,
-                setBoxOffset ={newValue->setBoxTwoOffset(newValue)},
-                height = indivBoxSize,
-                boxColor =Color.Cyan,
-                sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop,
-                dragging = boxTwoDragging,
-                setDragging={newValue -> setBoxTwoDragging(newValue)},
-                content={
-                    ModViewDragSection.AutoModQueueBox(
-                        dragging =boxTwoDragging,
-                        setDragging={newValue -> setBoxTwoDragging(newValue)},
-                    )
-                }
-            )
-
-            /*************START OF THE THIRD BOX***********************/
-            ModViewDragSection.DraggingBox(
-                boxOffsetY =boxThreeOffsetY,
-                boxDragState=boxThreeDragState,
-                boxZIndex =boxThreeZIndex,
-                setBoxOffset ={newValue->setBoxThreeOffset(newValue)},
-                height = indivBoxSize,
-                boxColor =Color.Magenta,
-                sectionBreakPoint =sectionBreakPoint,
-                animateToOnDragStop=animateToOnDragStop,
-                dragging = boxThreeDragging,
-                setDragging={newValue -> setBoxThreeDragging(newValue)},
-                content={
-                    ModViewDragSection.ModActions(
-                        dragging =boxThreeDragging,
-                        setDragging={newValue -> setBoxThreeDragging(newValue)},
-                        length =20
-                    )
-                }
-
-
-            )
-        }
-
-}
 
 
 
