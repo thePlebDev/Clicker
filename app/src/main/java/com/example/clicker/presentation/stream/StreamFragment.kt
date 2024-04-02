@@ -436,7 +436,17 @@ fun setOrientation(
                         )
                     },
                     modViewViewModel =modViewViewModel,
-                    chatMessages = streamViewModel.listChats
+                    chatMessages = streamViewModel.listChats,
+                    clickedUserData = streamViewModel.clickedUIState.value,
+                    clickedUserChatMessages =streamViewModel.clickedUsernameChats,
+                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                        streamViewModel.updateClickedChat(
+                            username,
+                            userId,
+                            isBanned,
+                            isMod
+                        )
+                    },
                 )
 
 
