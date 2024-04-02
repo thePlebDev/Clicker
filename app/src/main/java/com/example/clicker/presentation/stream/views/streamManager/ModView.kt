@@ -48,11 +48,13 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,12 +70,15 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
 import com.example.clicker.R
+import com.example.clicker.presentation.sharedViews.SharedComponents
+import com.example.clicker.presentation.stream.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import kotlin.math.roundToInt
@@ -82,7 +87,109 @@ import kotlin.math.roundToInt
  * ModView contains all the composable functions that are used to create the `chat modes header`
  * */
 object ModView {
+    /**
+     * ModViewScaffold is a `Scaffold` based component that is responsible for showing the user all the information related to
+     * the created modView. The ModView shows the user 3 sections. 1) chat, 2) mod actions, 3) automod queue
+     *
+     *
+     * @param closeStreamInfo represents the action needed to be taken when the close button is pressed
+     * */
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun ModViewScaffold(
+        closeStreamInfo:()->Unit,
+    ){
 
+        val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
+
+
+        if(showBottomSheet){
+            ModalBottomSheet(
+                sheetState = state,
+                onDismissRequest = {
+                    showBottomSheet = false
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                dragHandle= {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .size(30.dp)
+                    )
+
+                }
+            ){
+                SharedBottomModal.ClickedUserBottomModal(
+                    closeBottomModal = {showBottomSheet = false},
+                    bottomModalHeaders = {
+                        this.ContentHeaderRow(
+                            clickedUsername = "thePlebDev",
+                            textFieldValue = textFieldValue,
+                            closeBottomModal={showBottomSheet = false}
+                        )
+                    },
+                    bottomModalButtons = {
+                        this.ContentBottom(
+                            banned =false,
+                            loggedInUserMod =true ,
+                            closeBottomModal = { /*TODO*/ },
+                            unbanUser = { /*TODO*/ },
+                            openTimeoutDialog = { /*TODO*/ },
+                            openBanDialog = { /*TODO*/ },
+                            shouldMonitorUser = false
+                        ) {
+
+                        }
+                    },
+                    bottomModalRecentMessages={
+                        this.ClickedUserMessages(
+                            clickedUsernameChats = listOf("IT DO BE LIKE THAT SOMETIMES","ok, However I stil think youre wrong","LUL")
+                        )
+                    }
+                )
+
+            }
+        }
+
+        SharedComponents.NoDrawerScaffold(
+            topBar = {
+                IconTextTopBarRow(
+                    icon = {
+                        BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "close this section of UI",
+                            onClick = {
+                                closeStreamInfo()
+                            }
+                        )
+                    },
+                    text="Mod View",
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                )
+            },
+            bottomBar = {
+                //there is no bottom bar intentionally
+            }
+        ) {contentPadding ->
+
+
+        }
+
+    }
+
+    /**
+     * SectionHeaderRow is a [Row] composable meant to show a [Text] containing [title] and a [ModesHeaderRow] side by side
+     *
+     * @param title meant to represents the title of this header
+     * @param horizontalArrangement the arrangement meant to determine how the items in this row will appear
+     * @param expanded a conditional to determine if the embedded [ModesHeaderRow] should show its view or not
+     * @param setExpanded a function used to change the value of [expanded]
+     * **/
     @Composable
     fun SectionHeaderRow(
         title:String,
@@ -112,25 +219,13 @@ object ModView {
 
         }
     }
-    @Composable
-    fun DropDownMenuHeaderBox(headerTitle:String){
-        var expanded by remember { mutableStateOf(false) }
-        //todo: animate the icon change
-        Box(){
-            DropdownMenuColumn(
-                expanded,
-                setExpanded ={newValue -> expanded = newValue}
-            )
-            SectionHeaderRow(
-                title = headerTitle,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                expanded = expanded,
-                setExpanded ={newValue -> expanded = newValue}
-            )
 
-        }
-    }
-
+    /**
+     * ModesHeaderRow a composable meant to be used with the [SectionHeaderRow] to inform the use what to press
+     *
+     * @param expanded a conditional used to determine if a [DropdownMenuColumn] should open up or not
+     * @param changeExpanded a function used to set the value of [expanded]
+     * */
     @Composable
     fun ModesHeaderRow(
         expanded: Boolean,
@@ -162,6 +257,32 @@ object ModView {
             )
         }
     }
+
+    /**
+     * DropDownMenuHeaderBox is a header meant to combine the [SectionHeaderRow] and a [DropdownMenuColumn]. It has an internal state
+     * of `expanded` to determine if the [DropdownMenuColumn] should show or not.
+     * */
+    @Composable
+    fun DropDownMenuHeaderBox(headerTitle:String){
+        var expanded by remember { mutableStateOf(false) }
+        //todo: animate the icon change
+        Box(){
+            DropdownMenuColumn(
+                expanded,
+                setExpanded ={newValue -> expanded = newValue}
+            )
+            SectionHeaderRow(
+                title = headerTitle,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                expanded = expanded,
+                setExpanded ={newValue -> expanded = newValue}
+            )
+
+        }
+    }
+
+
+    /*******************BELOW IS ALL THE COMPOSABLES USED TO BUILD THE MODES SECTION OF CHATBOX************************************/
 
     @Composable
     fun DropdownMenuColumn(
@@ -592,6 +713,14 @@ object ModView {
         )
     }
 
+    /**
+     * DetectDoubleClickSpacer is a composable used to overlay items inside of the [DraggingBox][com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection]
+     * and allowing the drag functionality to bubble up and be consumed by the draggingBox
+     *
+     * @param opacity a value used to determine the darkness level of the Spacer's background. The values should be between 0 and .5
+     * @param setDragging a function used to set the value of a dragging condition passed to [DraggingBox][com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection]
+     * @param hapticFeedback a function that will initiate the the Android's haptic feedback system
+     * */
     @Composable
     fun DetectDoubleClickSpacer(
         opacity:Float,
