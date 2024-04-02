@@ -60,6 +60,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 import com.example.clicker.R
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
@@ -96,6 +97,7 @@ fun ManageStreamInformation(
     updateAutoModSettingsStatus:Response<Boolean>?,
     updateAutoModSettingsStatusToNull:()->Unit,
     updateChannelInfo:()->Unit,
+    modViewViewModel: ModViewViewModel
 ){
     if(showAutoModSettings){
 
@@ -123,6 +125,7 @@ fun ManageStreamInformation(
     }else{
         ModView.ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
+            modViewViewModel =modViewViewModel
         )
     }
 

@@ -77,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
 import com.example.clicker.R
+import com.example.clicker.presentation.home.DraggableModViewBox
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.views.SharedBottomModal
 
@@ -98,7 +100,9 @@ object ModView {
     @Composable
     fun ModViewScaffold(
         closeStreamInfo:()->Unit,
+        modViewViewModel: ModViewViewModel
     ){
+        //todo: this is where the draggable boxes go
 
         val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
         var showBottomSheet by remember { mutableStateOf(false) }
@@ -176,6 +180,36 @@ object ModView {
                 //there is no bottom bar intentionally
             }
         ) {contentPadding ->
+            Log.d("contentPaddingModView","contentPadding --> ${contentPadding.calculateTopPadding().value}")
+
+            DraggableModViewBox(
+                contentPaddingValues = contentPadding,
+                boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
+                setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
+                boxOneDragState = modViewViewModel.boxOneDragState,
+                boxOneZIndex = modViewViewModel.boxIndexes.value.boxOneZIndex,
+                animateToOnDragStop = modViewViewModel.animateToOnDragStop,
+                indivBoxSize = modViewViewModel.indivBoxSize,
+                sectionBreakPoint = modViewViewModel.sectionBreakPoint,
+
+                boxTwoOffsetY = modViewViewModel.dragStateOffsets.value.boxTwoOffsetY,
+                boxTwoZIndex = modViewViewModel.boxIndexes.value.boxTwoZIndex,
+                setBoxTwoOffset = {newValue ->modViewViewModel.setBoxTwoOffset(newValue)},
+                boxTwoDragState = modViewViewModel.boxTwoDragState,
+
+                boxThreeZIndex = modViewViewModel.boxIndexes.value.boxThreeZIndex,
+                boxThreeOffsetY = modViewViewModel.dragStateOffsets.value.boxThreeOffsetY,
+                setBoxThreeOffset = {newValue ->modViewViewModel.setBoxThreeOffset(newValue)},
+                boxThreeDragState = modViewViewModel.boxThreeDragState,
+
+                boxOneDragging = modViewViewModel.isDragging.value.boxOneDragging,
+                setBoxOneDragging = {newValue -> modViewViewModel.setBoxOneDragging(newValue)},
+
+                boxThreeDragging =modViewViewModel.isDragging.value.boxThreeDragging,
+                boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
+                setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
+                setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)}
+            )
 
 
         }

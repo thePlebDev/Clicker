@@ -42,6 +42,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.ManageStreamInformation
@@ -60,6 +61,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
+    private val modViewViewModel:ModViewViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -121,6 +123,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             streamViewModel = streamViewModel,
             autoModViewModel = autoModViewModel,
             homeViewModel = homeViewModel,
+            modViewViewModel =modViewViewModel,
             orientationIsLandscape =orientationIsLandscape
         )
 
@@ -336,6 +339,7 @@ fun setOrientation(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel,
+    modViewViewModel:ModViewViewModel,
     orientationIsLandscape:Boolean
 ): FrameLayout {
 
@@ -430,7 +434,8 @@ fun setOrientation(
                             clientId = streamViewModel.state.value.clientId,
                             broadcasterId = streamViewModel.state.value.userId
                         )
-                    }
+                    },
+                    modViewViewModel =modViewViewModel
                 )
 
 
