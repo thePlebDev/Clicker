@@ -98,7 +98,8 @@ fun ManageStreamInformation(
     updateChannelInfo:()->Unit,
 ){
     if(showAutoModSettings){
-        EditAutoModSettings(
+
+        EditAutoModSettingsScaffold(
             closeStreamInfo={closeStreamInfo()},
             changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
             swearingIndex = swearingIndex,
@@ -120,15 +121,21 @@ fun ManageStreamInformation(
 
         )
     }else{
-        ModView(
+        ModView.ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
         )
     }
 
 
 }
+/**
+ * EditAutoModSettingsScaffold is a [Scaffold] based component that is responsible for showing the user all the information related to
+ * editing the channels automod settings.
+ *
+ *
+ * */
 @Composable
-fun EditAutoModSettings(
+fun EditAutoModSettingsScaffold(
     closeStreamInfo:()->Unit,
     changeSelectedIndex:(Int, FilterType)->Unit,
     swearingIndex:Int,
@@ -274,91 +281,8 @@ fun EditAutoModTitle(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
-@Composable
-fun ModView(
-    closeStreamInfo:()->Unit,
-){
-
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
 
 
-    if(showBottomSheet){
-        ModalBottomSheet(
-            sheetState = state,
-            onDismissRequest = {
-                showBottomSheet = false
-            },
-            containerColor = MaterialTheme.colorScheme.primary,
-            dragHandle= {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .size(30.dp)
-                    )
-
-            }
-        ){
-            SharedBottomModal.ClickedUserBottomModal(
-                closeBottomModal = {showBottomSheet = false},
-                bottomModalHeaders = {
-                    this.ContentHeaderRow(
-                        clickedUsername = "thePlebDev",
-                        textFieldValue = textFieldValue,
-                        closeBottomModal={showBottomSheet = false}
-                    )
-                },
-                bottomModalButtons = {
-                    this.ContentBottom(
-                        banned =false,
-                        loggedInUserMod =true ,
-                        closeBottomModal = { /*TODO*/ },
-                        unbanUser = { /*TODO*/ },
-                        openTimeoutDialog = { /*TODO*/ },
-                        openBanDialog = { /*TODO*/ },
-                        shouldMonitorUser = false
-                    ) {
-
-                    }
-                },
-                bottomModalRecentMessages={
-                    this.ClickedUserMessages(
-                        clickedUsernameChats = listOf("IT DO BE LIKE THAT SOMETIMES","ok, However I stil think youre wrong","LUL")
-                    )
-                }
-            )
-
-        }
-    }
-
-        SharedComponents.NoDrawerScaffold(
-            topBar = {
-                IconTextTopBarRow(
-                    icon = {
-                        BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "close this section of UI",
-                            onClick = {
-                                closeStreamInfo()
-                            }
-                        )
-                    },
-                    text="Mod View",
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                )
-            },
-            bottomBar = {}
-        ) {contentPadding ->
-
-
-        }
-
-}
 
 
 

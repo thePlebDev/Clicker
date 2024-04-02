@@ -63,13 +63,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberDrawerState
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberModalBottomSheetState
+//import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -144,7 +145,7 @@ fun ValidationView(
     autoModViewModel: AutoModViewModel,
     modViewViewModel:ModViewViewModel
 ) {
-   // val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
     val scope = rememberCoroutineScope()
 
@@ -212,7 +213,7 @@ fun ValidationView(
 //        hideDialog = {homeViewModel.hideDialog()}
 //
 //    )
-    ReworkingModView(
+    DraggableModViewBox(
         boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
         setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
         boxOneDragState = modViewViewModel.boxOneDragState,
@@ -253,77 +254,10 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReworkingModView(
-    boxOneOffsetY: Float,
-    setBoxOneOffset:(Float)->Unit,
-    boxOneDragState: DraggableState,
-    boxOneZIndex: Float,
-    boxOneDragging:Boolean,
-    setBoxOneDragging:(Boolean)->Unit,
-    animateToOnDragStop: Float,
-    indivBoxSize: Dp,
-    sectionBreakPoint: Int,
 
-    boxTwoOffsetY: Float,
-    boxTwoDragState: DraggableState,
-    boxTwoZIndex: Float,
-    setBoxTwoOffset:(Float)->Unit,
-    boxTwoDragging:Boolean,
-    setBoxTwoDragging:(Boolean)->Unit,
-
-    boxThreeOffsetY: Float,
-    boxThreeZIndex: Float,
-    boxThreeDragState: DraggableState,
-    setBoxThreeOffset:(Float)->Unit,
-    boxThreeDragging:Boolean,
-    setBoxThreeDragging:(Boolean)->Unit,
-
-
-
-){
-
-
-
-    Box(modifier = Modifier.fillMaxSize()){
-        DraggableText(
-            boxOneOffsetY =boxOneOffsetY,
-            setBoxOneOffset = {newValue -> setBoxOneOffset(newValue)},
-            boxOneDragState =boxOneDragState,
-            boxOneZIndex = boxOneZIndex,
-            boxOneDragging = boxOneDragging,
-            setBoxOneDragging={newValue->setBoxOneDragging(newValue)},
-            animateToOnDragStop =animateToOnDragStop,
-            indivBoxSize =indivBoxSize,
-            sectionBreakPoint=sectionBreakPoint,
-
-
-            boxTwoOffsetY = boxTwoOffsetY,
-            boxTwoDragState = boxTwoDragState,
-            boxTwoZIndex = boxTwoZIndex,
-            setBoxTwoOffset = {newValue -> setBoxTwoOffset(newValue)},
-
-
-
-            boxThreeOffsetY = boxThreeOffsetY,
-            boxThreeZIndex = boxThreeZIndex,
-            setBoxThreeOffset = {newValue -> setBoxThreeOffset(newValue)},
-            boxThreeDragState = boxThreeDragState,
-            boxThreeDragging =boxThreeDragging,
-            boxTwoDragging =boxTwoDragging,
-            setBoxThreeDragging ={newValue -> setBoxThreeDragging(newValue)},
-            setBoxTwoDragging ={newValue -> setBoxTwoDragging(newValue)}
-
-        )
-
-    }
-
-
-}
 
 @Composable
-private fun DraggableText(
+private fun DraggableModViewBox(
     boxOneOffsetY:Float,
     boxTwoOffsetY:Float,
     boxThreeOffsetY:Float,

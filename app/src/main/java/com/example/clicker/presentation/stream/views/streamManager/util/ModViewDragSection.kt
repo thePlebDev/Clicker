@@ -181,8 +181,23 @@ object ModViewDragSection {
     val fakeMessageDataList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix)
 
 
-    /**********BELOW IS THE MODVIEW ACTION***************/
 
+    /**
+     * DraggingBox a composable that is responsible for all the dragging movements inside of the modView feature section
+     *
+     * @param boxOffsetY a float used to determine if the position of the internal [Box]
+     * @param boxDragState a [DraggableState] object that is used for the internal draggable() modifier
+     * @param setBoxOffset a function used to set the value of [boxOffsetY]
+     * @param boxZIndex a float used to determine the value of the internal box's z-index. The values should be either 0 or 1
+     * @param height the height of the internal box
+     * @param boxColor the color of the internal box
+     * @param sectionBreakPoint a value used to determine the what actions should be taken when the draggin stops
+     * @param animateToOnDragStop a value that will be used when
+     * @param dragging a value used to determine if the item should be dragging or not
+     * @param setDragging a function used to set the value of [dragging]
+     * @param content a composable function that will fill up the internal Box
+     *
+     * */
     @Composable
     fun DraggingBox(
         boxOffsetY: Float,
