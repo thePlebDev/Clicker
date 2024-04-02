@@ -435,7 +435,8 @@ fun setOrientation(
                             broadcasterId = streamViewModel.state.value.userId
                         )
                     },
-                    modViewViewModel =modViewViewModel
+                    modViewViewModel =modViewViewModel,
+                    chatMessages = streamViewModel.listChats
                 )
 
 
