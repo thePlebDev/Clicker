@@ -450,7 +450,11 @@ fun setOrientation(
                     timeoutDuration = streamViewModel.state.value.timeoutDuration,
                     changeTimeoutDuration={newValue -> streamViewModel.changeTimeoutDuration(newValue)},
                     timeoutReason = streamViewModel.state.value.timeoutReason,
-                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)}
+                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)},
+                    banDuration = 0,
+                    changeBanDuration={},
+                    banReason= streamViewModel.state.value.banReason,
+                    changeBanReason = {newValue ->streamViewModel.changeBanReason(newValue)},
                 )
 
 

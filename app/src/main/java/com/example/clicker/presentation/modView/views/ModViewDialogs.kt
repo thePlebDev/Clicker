@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.OutlinedTextField
@@ -19,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,6 +36,59 @@ import com.example.clicker.presentation.stream.views.dialogs.TimeListData
 
 object ModViewDialogs {
     //TODO: REFACTOR ALL DIALOG RELATED THINGS ONCE ITEMS START GETTING VIEWMODEL DATA
+
+    @Composable
+    fun ModViewBanDialog(
+        closeDialog: () -> Unit,
+        swipedMessageUsername:String,
+        banDuration:Int,
+        changeBanDuration:(Int)->Unit,
+        banReason: String,
+        changeBanReason: (String) -> Unit
+    ){
+        val timeList = listOf<TimeListData>(
+            TimeListData(0, stringResource(R.string.permanently))
+        )
+        RadioButtonDialog(
+            dialogHeaderContent={
+                DialogHeader(username =swipedMessageUsername, headerText = "Timeout:")
+            },
+            dialogSubHeaderContent = {
+                SubHeader(dividerColor = MaterialTheme.colorScheme.secondary, subTitleText ="Duration:" )
+            },
+            dialogRadioButtonsContent={
+                DialogRadioButtonsRow(
+                    unselectedColor = MaterialTheme.colorScheme.onPrimary,
+                    selectedColor = MaterialTheme.colorScheme.secondary,
+                    textColor = MaterialTheme.colorScheme.onPrimary,
+                    dialogDuration = banDuration,
+                    changeDialogDuration = {newValue->changeBanDuration(newValue) },
+                    timeList = timeList
+                )
+            },
+            dialogConfirmCancelContent = {
+                DialogConfirmCancel(
+                    closeDialog = { closeDialog() },
+                    confirmAction = {  },
+                    cancelText = "Cancel",
+                    confirmText = "Timeout"
+                )
+            },
+            dialogTextFieldContent = {
+                OutlinedTextContent(
+                    textColor = MaterialTheme.colorScheme.onPrimary,
+                    timeoutReason = banReason,
+                    textLabel = stringResource(R.string.reason),
+                    changeTimeoutReason = {newValue ->changeBanReason(newValue)}
+                )
+            },
+            onDismissRequest = {closeDialog()},
+            primary = MaterialTheme.colorScheme.primary,
+            secondary = MaterialTheme.colorScheme.secondary
+        )
+
+    }
+
     @Composable
     fun ModViewTimeoutDialog(
         closeDialog: () -> Unit,
@@ -241,20 +297,26 @@ object ModViewDialogs {
             textLabel:String,
             changeTimeoutReason:(String)->Unit,
         ){
-            OutlinedTextField(
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = textColor,
-                    focusedLabelColor = textColor,
-                    focusedIndicatorColor = textColor,
-                    unfocusedIndicatorColor = textColor,
-                    unfocusedLabelColor = textColor
-                ),
-                value = timeoutReason,
-                onValueChange = { changeTimeoutReason(it) },
-                label = {
-                    Text(textLabel)
-                }
+            val customTextSelectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.secondary,
+                backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
             )
+            CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+                OutlinedTextField(
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        focusedLabelColor = textColor,
+                        focusedIndicatorColor = textColor,
+                        unfocusedIndicatorColor = textColor,
+                        unfocusedLabelColor = textColor
+                    ),
+                    value = timeoutReason,
+                    onValueChange = { changeTimeoutReason(it) },
+                    label = {
+                        Text(textLabel)
+                    }
+                )
+            }
         }
 
     }
@@ -320,23 +382,8 @@ object ModViewDialogs {
         }
     }
 
-    @Composable
-    fun ModViewBanDialog(
-        closeDialog:() ->Unit,
-    ){
-        Dialogs.BanDialog(
-            onDismissRequest={closeDialog()},
-            username="thePlebDev",
-            banReason="",
-            changeBanReason={},
-            banUser={},
-            clickedUserId="",
-            closeDialog={closeDialog()},
-
-            )
-
-    }
-    /*********************************************END OF  DIALOGS*****************************************************************/
 
 
-}
+
+
+} /*********************************************END OF  DIALOGS*****************************************************************/

@@ -107,7 +107,11 @@ fun ManageStreamInformation(
     timeoutDuration:Int,
     changeTimeoutDuration:(Int)->Unit,
     timeoutReason: String,
-    changeTimeoutReason: (String) -> Unit
+    changeTimeoutReason: (String) -> Unit,
+    banDuration:Int,
+    changeBanDuration:(Int)->Unit,
+    banReason:String,
+    changeBanReason: (String) -> Unit
 
 ){
     if(showAutoModSettings){
@@ -151,7 +155,11 @@ fun ManageStreamInformation(
             timeoutDuration=timeoutDuration,
             changeTimeoutDuration={newValue ->changeTimeoutDuration(newValue)},
             timeoutReason = timeoutReason,
-            changeTimeoutReason = {newValue->changeTimeoutReason(newValue)}
+            changeTimeoutReason = {newValue->changeTimeoutReason(newValue)},
+            banDuration = banDuration,
+            changeBanDuration={newValue ->changeBanDuration(newValue)},
+            banReason= banReason,
+            changeBanReason = {newValue ->changeBanReason(newValue)},
 
         )
     }
