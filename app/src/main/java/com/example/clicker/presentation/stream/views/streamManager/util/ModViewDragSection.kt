@@ -1,33 +1,17 @@
 package com.example.clicker.presentation.stream.views.streamManager.util
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import android.animation.ObjectAnimator
-import android.content.res.Resources
-import android.icu.text.ListFormatter.Width
 import android.util.Log
-import android.view.View
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.Column
@@ -41,112 +25,53 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.contentColorFor
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.rememberSwipeableState
-import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.presentation.home.disableClickAndRipple
-import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
-import com.example.clicker.presentation.sharedViews.IconScope
-import com.example.clicker.presentation.sharedViews.SharedComponents
-import com.example.clicker.presentation.stream.FilterType
-import com.example.clicker.presentation.stream.views.AutoMod
-import com.example.clicker.presentation.stream.views.BottomModal
-import com.example.clicker.presentation.stream.views.SharedBottomModal
-import com.example.clicker.presentation.stream.views.dialogs.Dialogs
-import com.example.clicker.presentation.stream.views.dialogs.TimeListData
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
 import com.example.clicker.presentation.stream.views.streamManager.ModView
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
-import com.example.clicker.presentation.stream.views.streamManager.ModViewDialogs
+import com.example.clicker.presentation.modView.views.ModViewDialogs
+import com.example.clicker.presentation.stream.ClickedUIState
 
-import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 /**
@@ -229,8 +154,13 @@ object ModViewDragSection {
         chatMessages:List<TwitchUserData>,
         triggerBottomModal: () -> Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        clickedUserData: ClickedUIState,
+        timeoutDuration:Int,
+        changeTimeoutDuration: (Int) -> Unit,
+        timeoutReason: String,
+        changeTimeoutReason: (String) -> Unit
 
-    ) {
+        ) {
 
         Box(
             modifier = Modifier.fillMaxSize().padding(contentPaddingValues)
@@ -260,7 +190,12 @@ object ModViewDragSection {
                                 isBanned,
                                 isMod
                             )
-                        }
+                        },
+                        clickedUserData = clickedUserData,
+                        timeoutDuration=timeoutDuration,
+                        changeTimeoutDuration={newValue->changeTimeoutDuration(newValue)},
+                        timeoutReason = timeoutReason,
+                        changeTimeoutReason ={newValue ->changeTimeoutReason(newValue)}
                     )
                 }
 
@@ -409,6 +344,11 @@ object ModViewDragSection {
         chatMessageList: List<TwitchUserData>,
         triggerBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        clickedUserData: ClickedUIState,
+        timeoutDuration:Int,
+        changeTimeoutDuration:(Int)->Unit,
+        timeoutReason:String,
+        changeTimeoutReason: (String) -> Unit
         ){
         val opacity = if(dragging) 0.5f else 0f
         val listState = rememberLazyListState()
@@ -483,10 +423,13 @@ object ModViewDragSection {
                                             isBanned,
                                             isMod
                                         )
-                                    }
+                                    },
                                 )
                             },
-                            quarterSwipeLeftAction={showTimeOutDialog = true},
+                            quarterSwipeLeftAction={
+                                updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
+                                showTimeOutDialog = true
+                                                   },
                             quarterSwipeRightAction = {showBanDialog =true},
                             halfSwipeAction={},
                             twoSwipeOnly = false
@@ -516,9 +459,15 @@ object ModViewDragSection {
         }
         if(showTimeOutDialog){
             ModViewDialogs.ModViewTimeoutDialog(
-                closeDialog = {showTimeOutDialog =false}
+                closeDialog = {showTimeOutDialog = false},
+                swipedMessageUsername = clickedUserData.clickedUsername,
+                timeoutDuration =timeoutDuration,
+                changeTimeoutDuration={newValue -> changeTimeoutDuration(newValue)},
+                timeoutReason = timeoutReason,
+                changeTimeoutReason ={newValue->changeTimeoutReason(newValue)}
             )
         }
+
         if(showBanDialog){
             ModViewDialogs.ModViewBanDialog(
                 closeDialog = {showBanDialog =false}

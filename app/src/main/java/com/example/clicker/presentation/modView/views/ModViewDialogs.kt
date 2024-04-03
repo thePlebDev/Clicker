@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.stream.views.streamManager
+package com.example.clicker.presentation.modView.views
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -35,7 +35,12 @@ object ModViewDialogs {
     //TODO: REFACTOR ALL DIALOG RELATED THINGS ONCE ITEMS START GETTING VIEWMODEL DATA
     @Composable
     fun ModViewTimeoutDialog(
-        closeDialog: () -> Unit
+        closeDialog: () -> Unit,
+        swipedMessageUsername:String,
+        timeoutDuration:Int,
+        changeTimeoutDuration:(Int)->Unit,
+        timeoutReason: String,
+        changeTimeoutReason: (String) -> Unit
     ){
         val timeList = listOf<TimeListData>(
             TimeListData(60, stringResource(R.string.one_minute)),
@@ -45,7 +50,7 @@ object ModViewDialogs {
         )
         RadioButtonDialog(
             dialogHeaderContent={
-                DialogHeader(username ="thePlebDev", headerText = "Timeout:")
+                DialogHeader(username =swipedMessageUsername, headerText = "Timeout:")
             },
             dialogSubHeaderContent = {
                 SubHeader(dividerColor = MaterialTheme.colorScheme.secondary, subTitleText ="Duration:" )
@@ -55,8 +60,8 @@ object ModViewDialogs {
                     unselectedColor = MaterialTheme.colorScheme.onPrimary,
                     selectedColor = MaterialTheme.colorScheme.secondary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
-                    dialogDuration = 3,
-                    changeDialogDuration = {},
+                    dialogDuration = timeoutDuration,
+                    changeDialogDuration = {newValue->changeTimeoutDuration(newValue) },
                     timeList = timeList
                 )
             },
@@ -71,9 +76,9 @@ object ModViewDialogs {
             dialogTextFieldContent = {
                 OutlinedTextContent(
                     textColor = MaterialTheme.colorScheme.onPrimary,
-                    timeoutReason = "",
+                    timeoutReason = timeoutReason,
                     textLabel = stringResource(R.string.reason),
-                    changeTimeoutReason = {}
+                    changeTimeoutReason = {newValue ->changeTimeoutReason(newValue)}
                 )
             },
             onDismissRequest = {closeDialog()},
@@ -81,13 +86,14 @@ object ModViewDialogs {
             secondary = MaterialTheme.colorScheme.secondary
         )
     }
+
     @Composable
     fun RadioButtonDialog(
         dialogHeaderContent:@Composable DialogHeaderScope.() -> Unit,
         dialogSubHeaderContent:@Composable DialogHeaderScope.() -> Unit,
         dialogRadioButtonsContent:@Composable DialogContentScope.() -> Unit,
         dialogTextFieldContent:@Composable DialogContentScope.() -> Unit,
-        dialogConfirmCancelContent:@Composable DialogButtons.() -> Unit,
+        dialogConfirmCancelContent:@Composable DialogButtonsScope.() -> Unit,
         onDismissRequest: () -> Unit,
         primary: Color,
         secondary: Color
@@ -96,7 +102,7 @@ object ModViewDialogs {
         val buttonContainerColor = MaterialTheme.colorScheme.secondary
         val headerScope = remember{ DialogHeaderScope(textColor = textColor) }
         val dialogContentScope = remember{ DialogContentScope() }
-        val dialogButtonScope  = remember{ DialogButtons(buttonContainerColor = buttonContainerColor,textColor =textColor) }
+        val dialogButtonScope  = remember{ DialogButtonsScope(buttonContainerColor = buttonContainerColor,textColor =textColor) }
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Card(
                 modifier = Modifier
@@ -128,8 +134,16 @@ object ModViewDialogs {
 
     }
 
+    /**
+     * DialogButtonsScope contains all of the composables that should when buttons on created inside of a [Dialog]
+     *
+     * @property DialogConfirmCancel
+     *
+     * @param buttonContainerColor a shared Color that will determine the color of the Button's container color
+     * @param textColor a shared Color that is used for the Text shown on the buttons
+     * */
     @Stable
-    class DialogButtons(
+    class DialogButtonsScope(
         private val buttonContainerColor: Color, //should be secondary
         private val textColor: Color //should be onSecondary
     ){
@@ -163,8 +177,25 @@ object ModViewDialogs {
         }
     }
 
+    /**
+     * DialogContentScope contains all of the composables that should when creating what is meant to be displayed inside of a [Dialog]
+     *
+     * @property DialogRadioButtonsRow
+     * @property OutlinedTextContent
+     * */
     @Stable
     class DialogContentScope(){
+
+        /**
+         * DialogRadioButtonsRow a [Row] composable that will show a [RadioButton] for every [timeList] object
+         *
+         * @param unselectedColor a Color that is used for the unselected color of the RadioButtons inside of this composable
+         * @param selectedColor a Color that is used for the selected color of the RadioButtons inside of this composable
+         * @param textColor a Color that is used for the [Text] that will be shown under every [RadioButton]
+         * @param dialogDuration a Int that is used for determining if the radio button is selected or not
+         * @param changeDialogDuration a function used to change the external value of [dialogDuration]
+         * @param timeList a list of [TimeListData] objects. Used to determine how many [RadioButton] composables are shown
+         * */
         @Composable
         fun DialogRadioButtonsRow(
             unselectedColor: Color,
@@ -195,6 +226,14 @@ object ModViewDialogs {
             }
         }
 
+        /**
+         * OutlinedTextContent a [OutlinedTextField] composable that will show the user a text field where they can type a message out
+         *
+         * @param textColor a Color that is used for the text of the internal [OutlinedTextField]
+         * @param timeoutReason a String that is stored externally and used to represent what the user is typing
+         * @param textLabel a String that will represent the label of the [OutlinedTextField]
+         * @param changeTimeoutReason  a function used to change the [timeoutReason]
+         * */
         @Composable
         fun OutlinedTextContent(
             textColor: Color,
@@ -219,10 +258,24 @@ object ModViewDialogs {
         }
 
     }
+    // should document and put UI examples on the wiki
+    /**
+     * DialogHeaderScope contains all of the composables that should be used when a header is needed when building a Dialog
+     *
+     * @property DialogHeader
+     * @property SubHeader
+     * */
     @Stable
     class DialogHeaderScope(
         private val textColor: Color
     ){
+        /**
+         * DialogHeader is meant to show the user two words,[username] and [headerText], in a [Row] with a horizontalArrangement of
+         * [Arrangement.SpaceAround]. The words shown in this composable are in the highest possible font size, `MaterialTheme.typography.headlineLarge.fontSize`
+         *
+         * @param username a String meant to represent the who this dialog is targeted at
+         * @param headerText a String meant to represent what this dialog is about
+         * */
         @Composable
         fun DialogHeader(
             username:String,
@@ -245,6 +298,14 @@ object ModViewDialogs {
                 )
             }
         }
+
+        /**
+         * SubHeader is meant to show the user a [Divider] of color [dividerColor] followed by a [Text] containing the [subTitleText].
+         * The font size of [subTitleText] is `MaterialTheme.typography.headlineMedium.fontSize`
+         *
+         * @param dividerColor a Color that is used to determine the color of the internal [Divider]
+         * @param subTitleText a String meant to represent information that is of less priority that text inside of [DialogHeader]
+         * */
         @Composable
         fun SubHeader(
             dividerColor: Color,

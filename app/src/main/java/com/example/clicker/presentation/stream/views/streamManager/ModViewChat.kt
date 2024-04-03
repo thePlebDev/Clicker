@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.modView.views.ModViewDialogs
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -84,10 +85,6 @@ object  ModViewChat {
                             indivUserChatMessage.banned,
                             indivUserChatMessage.mod =="1"
                         )
-                        Log.d("ChatMessageCardChatMessage","displayName -> ${indivUserChatMessage.displayName}")
-                        Log.d("ChatMessageCardChatMessage","userType -> ${indivUserChatMessage.userType}")
-                        Log.d("ChatMessageCardChatMessage","banned -> ${indivUserChatMessage.banned}")
-                        Log.d("ChatMessageCardChatMessage","mod -> ${indivUserChatMessage.mod}")
                         scope.launch {
                             triggerBottomModal(true)
                         }
@@ -108,6 +105,8 @@ object  ModViewChat {
                 userNameColor =indivUserChatMessage.color?: "#7F00FF"
             )
         }
+
+
     }
 
     /**

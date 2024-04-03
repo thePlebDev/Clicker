@@ -447,6 +447,10 @@ fun setOrientation(
                             isMod
                         )
                     },
+                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                    changeTimeoutDuration={newValue -> streamViewModel.changeTimeoutDuration(newValue)},
+                    timeoutReason = streamViewModel.state.value.timeoutReason,
+                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)}
                 )
 
 
