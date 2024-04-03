@@ -125,6 +125,10 @@ object ModView {
         clickedUserData: ClickedUIState,
         clickedUserChats:List<String>,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        timeoutDuration:Int,
+        changeTimeoutDuration:(Int)->Unit,
+        timeoutReason: String,
+        changeTimeoutReason: (String) -> Unit
 
     ){
         //todo: this is where the draggable boxes go
@@ -244,6 +248,11 @@ object ModView {
                         isMod
                     )
                 },
+                clickedUserData = clickedUserData,
+                timeoutDuration=timeoutDuration,
+                changeTimeoutDuration={newValue ->changeTimeoutDuration(newValue)},
+                timeoutReason = timeoutReason,
+                changeTimeoutReason = {newValue->changeTimeoutReason(newValue)}
 
             )
 

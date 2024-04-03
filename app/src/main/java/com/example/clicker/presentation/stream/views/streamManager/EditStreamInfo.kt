@@ -104,6 +104,10 @@ fun ManageStreamInformation(
     clickedUserData: ClickedUIState,
     clickedUserChatMessages:List<String>,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    timeoutDuration:Int,
+    changeTimeoutDuration:(Int)->Unit,
+    timeoutReason: String,
+    changeTimeoutReason: (String) -> Unit
 
 ){
     if(showAutoModSettings){
@@ -144,6 +148,11 @@ fun ManageStreamInformation(
                     isMod
                 )
             },
+            timeoutDuration=timeoutDuration,
+            changeTimeoutDuration={newValue ->changeTimeoutDuration(newValue)},
+            timeoutReason = timeoutReason,
+            changeTimeoutReason = {newValue->changeTimeoutReason(newValue)}
+
         )
     }
 
