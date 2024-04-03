@@ -128,7 +128,12 @@ object ModView {
         timeoutDuration:Int,
         changeTimeoutDuration:(Int)->Unit,
         timeoutReason: String,
-        changeTimeoutReason: (String) -> Unit
+        changeTimeoutReason: (String) -> Unit,
+
+        banDuration:Int,
+        changeBanDuration:(Int)->Unit,
+        banReason:String,
+        changeBanReason: (String) -> Unit
 
     ){
         //todo: this is where the draggable boxes go
@@ -252,7 +257,11 @@ object ModView {
                 timeoutDuration=timeoutDuration,
                 changeTimeoutDuration={newValue ->changeTimeoutDuration(newValue)},
                 timeoutReason = timeoutReason,
-                changeTimeoutReason = {newValue->changeTimeoutReason(newValue)}
+                changeTimeoutReason = {newValue->changeTimeoutReason(newValue)},
+                banDuration = banDuration,
+                changeBanDuration={newValue ->changeBanDuration(newValue)},
+                banReason= banReason,
+                changeBanReason = {newValue ->changeBanReason(newValue)},
 
             )
 

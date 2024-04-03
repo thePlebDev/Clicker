@@ -158,7 +158,12 @@ object ModViewDragSection {
         timeoutDuration:Int,
         changeTimeoutDuration: (Int) -> Unit,
         timeoutReason: String,
-        changeTimeoutReason: (String) -> Unit
+        changeTimeoutReason: (String) -> Unit,
+
+        banDuration:Int,
+        changeBanDuration:(Int)->Unit,
+        banReason:String,
+        changeBanReason: (String) -> Unit
 
         ) {
 
@@ -195,7 +200,12 @@ object ModViewDragSection {
                         timeoutDuration=timeoutDuration,
                         changeTimeoutDuration={newValue->changeTimeoutDuration(newValue)},
                         timeoutReason = timeoutReason,
-                        changeTimeoutReason ={newValue ->changeTimeoutReason(newValue)}
+                        changeTimeoutReason ={newValue ->changeTimeoutReason(newValue)},
+
+                        banDuration = banDuration,
+                        changeBanDuration={newValue ->changeBanDuration(newValue)},
+                        banReason= banReason,
+                        changeBanReason = {newValue ->changeBanReason(newValue)},
                     )
                 }
 
@@ -348,7 +358,13 @@ object ModViewDragSection {
         timeoutDuration:Int,
         changeTimeoutDuration:(Int)->Unit,
         timeoutReason:String,
-        changeTimeoutReason: (String) -> Unit
+        changeTimeoutReason: (String) -> Unit,
+
+        banDuration:Int,
+        changeBanDuration:(Int)->Unit,
+        banReason:String,
+        changeBanReason: (String) -> Unit
+
         ){
         val opacity = if(dragging) 0.5f else 0f
         val listState = rememberLazyListState()
@@ -430,7 +446,10 @@ object ModViewDragSection {
                                 updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
                                 showTimeOutDialog = true
                                                    },
-                            quarterSwipeRightAction = {showBanDialog =true},
+                            quarterSwipeRightAction = {
+                                updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
+                                showBanDialog =true
+                                                      },
                             halfSwipeAction={},
                             twoSwipeOnly = false
 
@@ -470,7 +489,14 @@ object ModViewDragSection {
 
         if(showBanDialog){
             ModViewDialogs.ModViewBanDialog(
-                closeDialog = {showBanDialog =false}
+                closeDialog = {showBanDialog =false},
+                swipedMessageUsername =clickedUserData.clickedUsername,
+                banDuration = banDuration,
+                changeBanDuration={newValue ->changeBanDuration(newValue)},
+                banReason= banReason,
+                changeBanReason = {newValue ->changeBanReason(newValue)},
+
+
             )
         }
     }
