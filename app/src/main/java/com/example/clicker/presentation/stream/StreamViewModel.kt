@@ -511,12 +511,11 @@ class StreamViewModel @Inject constructor(
     //this function is used heavily to determine if the user is a moderator or not
     private fun monitorForLoggedInUserData(){
         viewModelScope.launch {
-            webSocket.loggedInUserUiState.collect {
-                it?.let {
+            webSocket.loggedInUserUiState.collect {nullableLoggedInData ->
+                nullableLoggedInData?.let {LoggedInData ->
                     _uiState.value = _uiState.value.copy(
-                        loggedInUserData = it
+                        loggedInUserData = LoggedInData
                     )
-
                 }
             }
         }

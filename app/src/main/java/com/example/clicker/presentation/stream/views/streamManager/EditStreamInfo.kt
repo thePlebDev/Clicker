@@ -67,7 +67,6 @@ import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.BottomModal
-import com.example.clicker.presentation.stream.views.SharedBottomModal
 import com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
@@ -111,7 +110,10 @@ fun ManageStreamInformation(
     banDuration:Int,
     changeBanDuration:(Int)->Unit,
     banReason:String,
-    changeBanReason: (String) -> Unit
+    changeBanReason: (String) -> Unit,
+
+    loggedInUserIsMod:Boolean,
+    clickedUserIsMod:Boolean
 
 ){
     if(showAutoModSettings){
@@ -160,6 +162,8 @@ fun ManageStreamInformation(
             changeBanDuration={newValue ->changeBanDuration(newValue)},
             banReason= banReason,
             changeBanReason = {newValue ->changeBanReason(newValue)},
+            loggedInUserIsMod =loggedInUserIsMod,
+            clickedUserIsMod=clickedUserIsMod,
 
         )
     }

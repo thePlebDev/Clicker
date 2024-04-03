@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.modView.views
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,7 @@ object ModViewDialogs {
         )
         RadioButtonDialog(
             dialogHeaderContent={
-                DialogHeader(username =swipedMessageUsername, headerText = "Timeout:")
+                DialogHeader(username =swipedMessageUsername, headerText = "Ban:")
             },
             dialogSubHeaderContent = {
                 SubHeader(dividerColor = MaterialTheme.colorScheme.secondary, subTitleText ="Duration:" )
@@ -69,9 +70,11 @@ object ModViewDialogs {
             dialogConfirmCancelContent = {
                 DialogConfirmCancel(
                     closeDialog = { closeDialog() },
-                    confirmAction = {  },
+                    confirmAction = {
+                        Log.d("DialogConfirmCancel","BAN")
+                    },
                     cancelText = "Cancel",
-                    confirmText = "Timeout"
+                    confirmText = "Ban"
                 )
             },
             dialogTextFieldContent = {
@@ -124,7 +127,9 @@ object ModViewDialogs {
             dialogConfirmCancelContent = {
                 DialogConfirmCancel(
                     closeDialog = { closeDialog() },
-                    confirmAction = {  },
+                    confirmAction = {
+                        Log.d("DialogConfirmCancel","TIMEOUT")
+                    },
                     cancelText = "Cancel",
                     confirmText = "Timeout"
                 )
