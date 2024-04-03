@@ -428,7 +428,7 @@ object ModViewDragSection {
                         HorizontalDragDetectionBox(
                             itemBeingDragged = {dragOffset ->
                                 ModViewChat.ChatMessageCard(
-                                    dragOffset,
+                                    offset = if(chatTwitchUserData.mod !="1") dragOffset else 0f,
                                     setDragging={newValue ->setDragging(newValue)},
                                     indivUserChatMessage =chatTwitchUserData,
                                     triggerBottomModal={triggerBottomModal()},

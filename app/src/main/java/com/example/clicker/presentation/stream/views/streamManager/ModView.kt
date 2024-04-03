@@ -81,7 +81,7 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
-import com.example.clicker.presentation.stream.views.SharedBottomModal
+import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection
@@ -133,7 +133,9 @@ object ModView {
         banDuration:Int,
         changeBanDuration:(Int)->Unit,
         banReason:String,
-        changeBanReason: (String) -> Unit
+        changeBanReason: (String) -> Unit,
+        loggedInUserIsMod:Boolean,
+        clickedUserIsMod:Boolean
 
     ){
         //todo: this is where the draggable boxes go
@@ -162,7 +164,6 @@ object ModView {
                 }
             ){
                 SharedBottomModal.ClickedUserBottomModal(
-                    closeBottomModal = {showBottomSheet = false},
                     bottomModalHeaders = {
                         this.ContentHeaderRow(
                             clickedUsername = clickedUserData.clickedUsername,
@@ -173,7 +174,8 @@ object ModView {
                     bottomModalButtons = {
                         this.ContentBottom(
                             banned =clickedUserData.clickedUsernameBanned,
-                            loggedInUserMod =true ,
+                            loggedInUserIsMod =loggedInUserIsMod,
+                            clickedUserIsMod=clickedUserIsMod,
                             closeBottomModal = { /*TODO*/ },
                             unbanUser = { /*TODO*/ },
                             openTimeoutDialog = { /*TODO*/ },
