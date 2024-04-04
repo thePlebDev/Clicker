@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.stream.views.streamManager.util
+package com.example.clicker.presentation.modView.views
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -6,12 +6,15 @@ import androidx.compose.runtime.remember
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.Column
@@ -67,8 +70,8 @@ import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
 import com.example.clicker.presentation.stream.views.streamManager.ModView
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
-import com.example.clicker.presentation.modView.views.ModViewDialogs
 import com.example.clicker.presentation.stream.ClickedUIState
+import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -116,7 +119,14 @@ object ModViewDragSection {
         .addMod("1").addSubscriber(true).addMonitored(false)
         .build()
 
-    val fakeMessageDataList = listOf(fakeDataOne,fakeDataTwo,fakeDataThree,fakeDataFour,fakeDataFive,fakeDataSix)
+    val fakeMessageDataList = listOf(
+        fakeDataOne,
+        fakeDataTwo,
+        fakeDataThree,
+        fakeDataFour,
+        fakeDataFive,
+        fakeDataSix
+    )
 
     /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
      * composables
@@ -163,15 +173,25 @@ object ModViewDragSection {
         banDuration:Int,
         changeBanDuration:(Int)->Unit,
         banReason:String,
-        changeBanReason: (String) -> Unit
+        changeBanReason: (String) -> Unit,
+
+        timeoutUser: () -> Unit,
+        showTimeoutErrorMessage:Boolean,
+        setTimeoutShowErrorMessage:(Boolean)->Unit,
+
+        showBanErrorMessage:Boolean,
+        setBanShowErrorMessage:(Boolean)->Unit,
+        banUser:()->Unit,
 
         ) {
 
         Box(
-            modifier = Modifier.fillMaxSize().padding(contentPaddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPaddingValues)
         ){
             /**THIS IS THE FIRST BOX*/
-            ModViewDragSection.DraggingBox(
+            DraggingBox(
                 boxOffsetY =boxOneOffsetY,
                 boxDragState=boxOneDragState,
                 boxZIndex =boxOneZIndex,
@@ -183,7 +203,7 @@ object ModViewDragSection {
                 dragging = boxOneDragging,
                 setDragging={newValue->setBoxOneDragging(newValue)},
                 content={
-                    ModViewDragSection.ChatBox(
+                    ChatBox(
                         dragging = boxOneDragging,
                         chatMessageList = chatMessages,
                         setDragging = {newValue ->setBoxOneDragging(newValue)},
@@ -206,6 +226,13 @@ object ModViewDragSection {
                         changeBanDuration={newValue ->changeBanDuration(newValue)},
                         banReason= banReason,
                         changeBanReason = {newValue ->changeBanReason(newValue)},
+                        timeoutUser = {timeoutUser()},
+                        showTimeoutErrorMessage= showTimeoutErrorMessage,
+                        setTimeoutShowErrorMessage ={newValue ->setTimeoutShowErrorMessage(newValue)},
+
+                        showBanErrorMessage= showBanErrorMessage,
+                        setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
+                        banUser = {banUser()}
                     )
                 }
 
@@ -213,7 +240,7 @@ object ModViewDragSection {
 
 
             /*************START OF THE SECOND BOX***********************/
-            ModViewDragSection.DraggingBox(
+            DraggingBox(
                 boxOffsetY =boxTwoOffsetY,
                 boxDragState=boxTwoDragState,
                 boxZIndex =boxTwoZIndex,
@@ -225,7 +252,7 @@ object ModViewDragSection {
                 dragging = boxTwoDragging,
                 setDragging={newValue -> setBoxTwoDragging(newValue)},
                 content={
-                    ModViewDragSection.AutoModQueueBox(
+                    AutoModQueueBox(
                         dragging =boxTwoDragging,
                         setDragging={newValue -> setBoxTwoDragging(newValue)},
                     )
@@ -233,7 +260,7 @@ object ModViewDragSection {
             )
 
             /*************START OF THE THIRD BOX***********************/
-            ModViewDragSection.DraggingBox(
+            DraggingBox(
                 boxOffsetY =boxThreeOffsetY,
                 boxDragState=boxThreeDragState,
                 boxZIndex =boxThreeZIndex,
@@ -245,18 +272,17 @@ object ModViewDragSection {
                 dragging = boxThreeDragging,
                 setDragging={newValue -> setBoxThreeDragging(newValue)},
                 content={
-                    ModViewDragSection.ModActions(
+                    ModActions(
                         dragging =boxThreeDragging,
                         setDragging={newValue -> setBoxThreeDragging(newValue)},
                         length =20
                     )
                 }
-
-
             )
-        }
+        }// This is the end of the box
 
     }
+
 
 
 
@@ -310,9 +336,11 @@ object ModViewDragSection {
                             boxOffsetY < sectionBreakPoint -> {
                                 setBoxOffset(0f)
                             }
+
                             boxOffsetY > sectionBreakPoint && boxOffsetY < (sectionBreakPoint * 2) -> {
                                 setBoxOffset(animateToOnDragStop)
                             }
+
                             boxOffsetY >= (sectionBreakPoint * 2) -> {
                                 setBoxOffset(animateToOnDragStop * 2)
                             }
@@ -363,9 +391,17 @@ object ModViewDragSection {
         banDuration:Int,
         changeBanDuration:(Int)->Unit,
         banReason:String,
-        changeBanReason: (String) -> Unit
+        changeBanReason: (String) -> Unit,
+        timeoutUser:()->Unit,
+
+        showTimeoutErrorMessage:Boolean,
+        setTimeoutShowErrorMessage:(Boolean)->Unit,
+        showBanErrorMessage:Boolean,
+        setBanShowErrorMessage:(Boolean)->Unit,
+        banUser:()->Unit,
 
         ){
+        Log.d("ChatBoxTesting","RECOMP!!!!!!")
         val opacity = if(dragging) 0.5f else 0f
         val listState = rememberLazyListState()
         val scope = rememberCoroutineScope()
@@ -373,8 +409,11 @@ object ModViewDragSection {
         var showBanDialog by remember{ mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
 
+
         var autoscroll by remember { mutableStateOf(true) }
         val interactionSource = listState.interactionSource
+        val haptic = LocalHapticFeedback.current
+
 
         LaunchedEffect(interactionSource) {
             interactionSource.interactions.collect { interaction ->
@@ -406,6 +445,7 @@ object ModViewDragSection {
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
+
 
         ){
 
@@ -456,6 +496,20 @@ object ModViewDragSection {
                         )
                     }
                 }
+            if(showTimeoutErrorMessage){
+                TimeoutErrorMessage(
+                    modifier = Modifier.align(Alignment.Center),
+                    setTimeoutShowErrorMessage ={newValue ->setTimeoutShowErrorMessage(newValue)}
+                )
+
+            }
+            if(showBanErrorMessage){
+                BanErrorMessage(
+                    modifier = Modifier.align(Alignment.Center),
+                    setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)}
+                )
+            }
+
 
 
             if(dragging){
@@ -475,7 +529,9 @@ object ModViewDragSection {
                     }
                 }
             )
-        }
+
+
+        } //End of box
         if(showTimeOutDialog){
             ModViewDialogs.ModViewTimeoutDialog(
                 closeDialog = {showTimeOutDialog = false},
@@ -483,7 +539,8 @@ object ModViewDragSection {
                 timeoutDuration =timeoutDuration,
                 changeTimeoutDuration={newValue -> changeTimeoutDuration(newValue)},
                 timeoutReason = timeoutReason,
-                changeTimeoutReason ={newValue->changeTimeoutReason(newValue)}
+                changeTimeoutReason ={newValue->changeTimeoutReason(newValue)},
+                timeoutUser = {timeoutUser()}
             )
         }
 
@@ -495,9 +552,77 @@ object ModViewDragSection {
                 changeBanDuration={newValue ->changeBanDuration(newValue)},
                 banReason= banReason,
                 changeBanReason = {newValue ->changeBanReason(newValue)},
-
-
+                banUser={banUser()}
             )
+        }
+
+    }
+
+    @Composable
+    fun TimeoutErrorMessage(
+        modifier: Modifier,
+        setTimeoutShowErrorMessage:(Boolean)->Unit,
+    ){
+
+        var offsetX by remember { mutableStateOf(0f) }
+        var opacity by remember { mutableStateOf(0.9f) }
+
+        val dragState = rememberDraggableState{delta ->
+            if(opacity>0.1f){
+                opacity -= 0.05f
+            }
+            offsetX += (delta/2)
+        }
+
+            Row(modifier = modifier
+                .fillMaxWidth()
+                , horizontalArrangement = Arrangement.Center){
+                Text("You are not a moderator",modifier = Modifier
+                    .offset { IntOffset(offsetX.roundToInt(), 0) }
+                    .draggable(
+                        state = dragState,
+                        orientation = Orientation.Horizontal,
+                        onDragStopped = {
+                            setTimeoutShowErrorMessage(false)
+
+                        }
+                    )
+                    .background(Color.Red.copy(alpha = opacity))
+                    .padding(10.dp),
+                    color = Color.White.copy(alpha = opacity))
+            }
+    }
+    @Composable
+    fun BanErrorMessage(
+        modifier: Modifier,
+        setBanShowErrorMessage:(Boolean)->Unit,
+    ){
+
+        var offsetX by remember { mutableStateOf(0f) }
+        var opacity by remember { mutableStateOf(0.9f) }
+
+        val dragState = rememberDraggableState{delta ->
+            if(opacity>0.1f){
+                opacity -= 0.05f
+            }
+            offsetX += (delta/2)
+        }
+
+        Row(modifier = modifier
+            .fillMaxWidth()
+            , horizontalArrangement = Arrangement.Center){
+            Text("You are not a moderator",modifier = Modifier
+                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .draggable(
+                    state = dragState,
+                    orientation = Orientation.Horizontal,
+                    onDragStopped = {
+                        setBanShowErrorMessage(false)
+                    }
+                )
+                .background(Color.Red.copy(alpha = opacity))
+                .padding(10.dp),
+                color = Color.White.copy(alpha = opacity))
         }
     }
 
@@ -542,7 +667,9 @@ object ModViewDragSection {
                         "AutoMod Queue",
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary)
                     )
                 }
 
@@ -661,7 +788,7 @@ object ModViewDragSection {
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.primary)
-                        .padding( vertical = 5.dp)
+                        .padding(vertical = 5.dp)
 
                 ) {
                     stickyHeader {
@@ -669,7 +796,9 @@ object ModViewDragSection {
                             "MOD ACTIONS: 44",
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                     }
 

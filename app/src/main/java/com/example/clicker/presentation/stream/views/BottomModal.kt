@@ -118,8 +118,7 @@ object BottomModal{
         closeBanDialog: () -> Unit,
         banReason: String,
         changeBanReason: (String) -> Unit,
-        banUser: (BanUser) -> Unit,
-        clickedUserId: String,
+        banUser: () -> Unit,
         updateShouldMonitorUser: () -> Unit,
         shouldMonitorUser:Boolean
     ){
@@ -163,8 +162,7 @@ object BottomModal{
                         username = clickedUsername,
                         banReason = banReason,
                         changeBanReason = { reason -> changeBanReason(reason) },
-                        banUser = { banUser -> banUser(banUser) },
-                        clickedUserId = clickedUserId,
+                        banUser = {   banUser() },
                         closeDialog = {
                             closeBanDialog()
                         },

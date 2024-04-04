@@ -87,6 +87,8 @@ data class StreamUIState(
 
     val oneClickActionsChecked:Boolean = true,
     val noChatMode:Boolean = false,
+    val timeoutUserError:Boolean = false,
+    val banUserError:Boolean = false,
 
 
     val banDuration: Int = 0, //twitchRepoImpl
@@ -930,11 +932,26 @@ class StreamViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     showStickyHeader = true,
                     undoBanResponse = false,
+                    timeoutUserError = true,
                     banResponseMessage = "Not a moderator"
+                )
+                delay(2000)
+                _uiState.value = _uiState.value.copy(
+                    timeoutUserError = false,
                 )
             }
             }
 
+    }
+    fun setTimeoutUserError(timeoutUserError:Boolean){
+        _uiState.value = _uiState.value.copy(
+            timeoutUserError = timeoutUserError,
+        )
+    }
+    fun setBanUserError(banUserError: Boolean){
+        _uiState.value = _uiState.value.copy(
+            banUserError = banUserError,
+        )
     }
 
 
@@ -1031,11 +1048,11 @@ class StreamViewModel @Inject constructor(
     }
 
     //TODO: TWICH METHOD
-    fun banUser(banUser: BanUser) = viewModelScope.launch {
+    fun banUser() = viewModelScope.launch {
         val banUserNew = BanUser(
             data = BanUserData( //TODO:SHOULD BE PASSED IN
                 user_id =_clickedUIState.value.clickedUserId,
-                reason = banUser.data.reason,
+                reason = _uiState.value.banReason,
                 duration = _uiState.value.banDuration
 
             )
@@ -1078,7 +1095,13 @@ class StreamViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     showStickyHeader = true,
                     undoBanResponse = false,
+                    banUserError=true,
                     banResponseMessage = "Not a moderator"
+                )
+                delay(2000)
+                _uiState.value = _uiState.value.copy(
+                    banUserError=false,
+
                 )
             }
 
