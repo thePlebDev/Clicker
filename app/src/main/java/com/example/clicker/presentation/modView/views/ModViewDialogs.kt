@@ -45,7 +45,8 @@ object ModViewDialogs {
         banDuration:Int,
         changeBanDuration:(Int)->Unit,
         banReason: String,
-        changeBanReason: (String) -> Unit
+        changeBanReason: (String) -> Unit,
+        banUser:()->Unit,
     ){
         val timeList = listOf<TimeListData>(
             TimeListData(0, stringResource(R.string.permanently))
@@ -71,7 +72,7 @@ object ModViewDialogs {
                 DialogConfirmCancel(
                     closeDialog = { closeDialog() },
                     confirmAction = {
-                        Log.d("DialogConfirmCancel","BAN")
+                        banUser()
                     },
                     cancelText = "Cancel",
                     confirmText = "Ban"
@@ -99,7 +100,8 @@ object ModViewDialogs {
         timeoutDuration:Int,
         changeTimeoutDuration:(Int)->Unit,
         timeoutReason: String,
-        changeTimeoutReason: (String) -> Unit
+        changeTimeoutReason: (String) -> Unit,
+        timeoutUser:()->Unit,
     ){
         val timeList = listOf<TimeListData>(
             TimeListData(60, stringResource(R.string.one_minute)),
@@ -128,7 +130,7 @@ object ModViewDialogs {
                 DialogConfirmCancel(
                     closeDialog = { closeDialog() },
                     confirmAction = {
-                        Log.d("DialogConfirmCancel","TIMEOUT")
+                        timeoutUser()
                     },
                     cancelText = "Cancel",
                     confirmText = "Timeout"

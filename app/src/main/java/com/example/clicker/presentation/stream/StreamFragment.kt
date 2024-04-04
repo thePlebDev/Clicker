@@ -456,7 +456,13 @@ fun setOrientation(
                     banReason= streamViewModel.state.value.banReason,
                     changeBanReason = {newValue ->streamViewModel.changeBanReason(newValue)},
                     clickedUserIsMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-                    loggedInUserIsMod = streamViewModel.state.value.loggedInUserData?.mod ?: false
+                    loggedInUserIsMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                    timeoutUser = {streamViewModel.timeoutUser()},
+                    showTimeoutErrorMessage= streamViewModel.state.value.timeoutUserError,
+                    setTimeoutShowErrorMessage ={newValue ->streamViewModel.setTimeoutUserError(newValue)},
+                    showBanErrorMessage= streamViewModel.state.value.banUserError,
+                    setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
+                    banUser = {streamViewModel.banUser()}
 
                 )
 

@@ -153,8 +153,7 @@ object Dialogs{
         username: String,
         banReason: String,
         changeBanReason: (String) -> Unit,
-        banUser: (BanUser) -> Unit,
-        clickedUserId: String,
+        banUser: () -> Unit,
         closeDialog: () -> Unit,
     ) {
         val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
@@ -211,14 +210,7 @@ object Dialogs{
                     cancelText = stringResource(R.string.cancel),
                     confirmText = stringResource(R.string.ban),
                     confirmAction = {
-                        banUser(
-                            BanUser(
-                                data = BanUserData(
-                                    user_id = clickedUserId,
-                                    reason = banReason
-                                )
-                            )
-                        )
+                        banUser()
                     }
                 )
             },
