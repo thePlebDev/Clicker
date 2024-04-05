@@ -24,6 +24,7 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TextParsing
@@ -129,8 +130,16 @@ class StreamViewModel @Inject constructor(
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
+    private val twitchEventSubWebSocket: TwitchEventSubWebSocket =TwitchEventSubWebSocket()
 ) : ViewModel() {
 
+    init{
+        viewModelScope.launch {
+            twitchEventSubWebSocket.newWebSocket()
+            delay(5000)
+            twitchEventSubWebSocket.closeWebSocket()
+        }
+    }
     /**
      * The name of the channel that this chat is connecting to
      * */

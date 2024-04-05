@@ -80,8 +80,10 @@ object  ModViewChat {
                     },
 
                     onClick = {
-                        Log.d("ChatMessageCard","mod --> ${indivUserChatMessage.mod}")
-                        Log.d("ChatMessageCard","mod --> ${indivUserChatMessage.mod =="1"}")
+//                        Log.d("ChatMessageCard","mod --> ${indivUserChatMessage.mod}")
+//                        Log.d("ChatMessageCard","mod --> ${indivUserChatMessage.mod =="1"}")
+//                        Log.d("ChatMessageCard","messageType --> ${indivUserChatMessage.messageType}")
+//                        Log.d("ChatMessageCard","userType --> ${indivUserChatMessage.userType}")
                         updateClickedUser(
                             indivUserChatMessage.displayName ?:"",
                             indivUserChatMessage.userId ?:"",
