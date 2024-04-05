@@ -214,4 +214,14 @@ class ParsingEngineTest {
         Assert.assertEquals(null, banDurationNotFound)
 
     }
+
+    @Test
+    fun message_id_parsing(){
+        val messageIdExpected ="msg-id=emote_only_on"
+        val testString ="@msg-id=emote_only_on :tmi.twitch.tv NOTICE #theplebdev :This room is now in emote-only mode."
+        val pattern = "msg-id=emote_only_on".toRegex()
+        val foundId = pattern.find(testString)?.value
+
+        Assert.assertEquals(messageIdExpected, foundId)
+    }
 }

@@ -46,6 +46,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -66,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
 import com.example.clicker.presentation.stream.views.streamManager.ModView
@@ -182,8 +184,10 @@ object ModViewDragSection {
         showBanErrorMessage:Boolean,
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
+        modActionList: List<TwitchUserData>
 
         ) {
+
 
         Box(
             modifier = Modifier
@@ -232,7 +236,7 @@ object ModViewDragSection {
 
                         showBanErrorMessage= showBanErrorMessage,
                         setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
-                        banUser = {banUser()}
+                        banUser = {banUser()},
                     )
                 }
 
@@ -275,7 +279,7 @@ object ModViewDragSection {
                     ModActions(
                         dragging =boxThreeDragging,
                         setDragging={newValue -> setBoxThreeDragging(newValue)},
-                        length =20
+                        modActionList =modActionList
                     )
                 }
             )
@@ -412,7 +416,6 @@ object ModViewDragSection {
 
         var autoscroll by remember { mutableStateOf(true) }
         val interactionSource = listState.interactionSource
-        val haptic = LocalHapticFeedback.current
 
 
         LaunchedEffect(interactionSource) {
@@ -464,36 +467,52 @@ object ModViewDragSection {
                             listState.scrollToItem(chatMessageList.size)
                         }
                     }
+
                     items(chatMessageList){chatTwitchUserData ->
-                        HorizontalDragDetectionBox(
-                            itemBeingDragged = {dragOffset ->
-                                ModViewChat.ChatMessageCard(
-                                    offset = if(chatTwitchUserData.mod !="1") dragOffset else 0f,
-                                    setDragging={newValue ->setDragging(newValue)},
-                                    indivUserChatMessage =chatTwitchUserData,
-                                    triggerBottomModal={triggerBottomModal()},
-                                    updateClickedUser = {  username, userId,isBanned,isMod ->
-                                        updateClickedUser(
-                                            username,
-                                            userId,
-                                            isBanned,
-                                            isMod
+                        when(chatTwitchUserData.messageType){
+                            MessageType.NOTICE ->{
+                                Log.d("MODACTIONS","NOTICE")
+
+
+                            }
+                            MessageType.CLEARCHAT ->{
+                                Log.d("MODACTIONS","CLEARCHAT")
+
+                            }
+                            else->{
+                                HorizontalDragDetectionBox(
+                                    itemBeingDragged = {dragOffset ->
+                                        ModViewChat.ChatMessageCard(
+                                            offset = if(chatTwitchUserData.mod !="1") dragOffset else 0f,
+                                            setDragging={newValue ->setDragging(newValue)},
+                                            indivUserChatMessage =chatTwitchUserData,
+                                            triggerBottomModal={triggerBottomModal()},
+                                            updateClickedUser = {  username, userId,isBanned,isMod ->
+                                                updateClickedUser(
+                                                    username,
+                                                    userId,
+                                                    isBanned,
+                                                    isMod
+                                                )
+                                            },
                                         )
                                     },
-                                )
-                            },
-                            quarterSwipeLeftAction={
-                                updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
-                                showTimeOutDialog = true
-                                                   },
-                            quarterSwipeRightAction = {
-                                updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
-                                showBanDialog =true
-                                                      },
-                            halfSwipeAction={},
-                            twoSwipeOnly = false
+                                    quarterSwipeLeftAction={
+                                        updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
+                                        showTimeOutDialog = true
+                                    },
+                                    quarterSwipeRightAction = {
+                                        updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
+                                        showBanDialog =true
+                                    },
+                                    halfSwipeAction={},
+                                    twoSwipeOnly = false
 
-                        )
+                                )
+                            }
+                        }
+
+
                     }
                 }
             if(showTimeoutErrorMessage){
@@ -763,13 +782,44 @@ object ModViewDragSection {
     fun ModActions(
         dragging:Boolean,
         setDragging:(Boolean)->Unit,
-        length:Int,
+        modActionList:List<TwitchUserData>
         ){
         val hapticFeedback = LocalHapticFeedback.current
 
         val listState = rememberLazyListState()
         val opacity = if(dragging) 0.5f else 0f
+
         val scope = rememberCoroutineScope()
+        var autoscroll by remember { mutableStateOf(true) }
+        val interactionSource = listState.interactionSource
+
+
+        LaunchedEffect(interactionSource) {
+            interactionSource.interactions.collect { interaction ->
+                when (interaction) {
+                    is DragInteraction.Start -> {
+                        autoscroll = false
+                    }
+                    is PressInteraction.Press -> {
+                        autoscroll = false
+                    }
+                }
+            }
+        }
+
+        val endOfListReached by remember {
+            derivedStateOf {
+                listState.isScrolledToEnd()
+            }
+        }
+        // observer when reached end of list
+        LaunchedEffect(endOfListReached) {
+            // do your stuff
+            if (endOfListReached) {
+                autoscroll = true
+            }
+        }
+
         Box(modifier = Modifier
             .fillMaxSize()
             .combinedClickable(
@@ -793,7 +843,7 @@ object ModViewDragSection {
                 ) {
                     stickyHeader {
                         Text(
-                            "MOD ACTIONS: 44",
+                            "MOD ACTIONS: ${modActionList.size}",
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             modifier = Modifier
@@ -801,13 +851,44 @@ object ModViewDragSection {
                                 .background(MaterialTheme.colorScheme.primary)
                         )
                     }
-
-                    item{
-                        ModActionMessage.TimedUserOutMessage()
+                    scope.launch {
+                        if(autoscroll){
+                            listState.scrollToItem(modActionList.size)
+                        }
                     }
 
-                    items(length) {
-                        ModActionMessage.DeletedMessage()
+
+
+                    items(modActionList) {messageItem ->
+                        Log.d("modActionListTesting","bannedDuration -->${messageItem.bannedDuration}<--")
+                        when(messageItem.messageType){
+                            MessageType.CLEARCHAT ->{
+                                if(messageItem.bannedDuration != null){
+                                    ModActionMessage.TimeoutMessage(
+                                        message= messageItem.userType ?:"No message"
+                                    )
+                                }else{
+                                    ModActionMessage.DeletedMessage(
+                                        message= messageItem.userType ?:"No message"
+                                    )
+                                }
+                            }
+                            MessageType.CLEARCHATALL ->{
+                                ModActionMessage.ClearChatMessage(
+                                    message= messageItem.userType ?:"No message"
+                                )
+                            }
+                            MessageType.NOTICE ->{
+                                ModActionMessage.NoticeMessage(
+                                    message= messageItem.userType ?:"No message"
+                                )
+                            }
+                            else ->{
+
+                            }
+
+                        }
+
                     }
 
                 }
@@ -827,7 +908,7 @@ object ModViewDragSection {
                 listState = listState,
                 scrollToBottomOfList = {
                     scope.launch {
-                        listState.animateScrollToItem(length)
+                        listState.animateScrollToItem(modActionList.lastIndex)
                     }
                 }
             )

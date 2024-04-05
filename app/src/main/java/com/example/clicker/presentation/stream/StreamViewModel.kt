@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -143,6 +144,11 @@ class StreamViewModel @Inject constructor(
      * A list representing all the chats users have sent
      * */
     val listChats = mutableStateListOf<TwitchUserData>()
+
+    /**
+     * A list representing all the actions taken by moderators
+     * */
+    val modActionList= mutableStateListOf<TwitchUserData>()
 
 
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
@@ -440,9 +446,10 @@ class StreamViewModel @Inject constructor(
 
         chatList.add(data)
     }
+    //this is the culprit
     fun notifyChatOfBanTimeoutEvent(chatList: SnapshotStateList<TwitchUserData>, message: String?){
         val data = TwitchUserDataObjectMother
-            .addMessageType(MessageType.JOIN)
+            .addMessageType(MessageType.CLEARCHAT)
             .addUserType(message)
             .addColor("#000000")
             .build()
@@ -573,6 +580,9 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch {
             webSocket.state.collect { twitchUserMessage ->
                 Log.d("loggedMessage", " tmiSentTs --> ${twitchUserMessage.tmiSentTs}")
+                Log.d("twitchUserMessage", " messageType --> ${twitchUserMessage.messageType}")
+                Log.d("twitchUserMessage", " twitchUserMessage --> ${twitchUserMessage}")
+                Log.d("twitchUserMessage", "-----------------------------------------------------")
 
                 if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
@@ -583,9 +593,17 @@ class StreamViewModel @Inject constructor(
                 }
                 when(twitchUserMessage.messageType){
                     MessageType.CLEARCHAT ->{
-                        notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
+                        modActionList.add(twitchUserMessage)
+                        listChats.add(twitchUserMessage)
+                       // notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
+                    }
+                    MessageType.NOTICE ->{
+                        modActionList.add(twitchUserMessage)
+                        listChats.add(twitchUserMessage)
+                        // notifyChatOfBanTimeoutEvent(listChats,twitchUserMessage.userType)
                     }
                     MessageType.CLEARCHATALL->{
+                        modActionList.add(twitchUserMessage)
                         clearAllChatMessages(listChats)
                     }
                     MessageType.USER ->{
@@ -616,6 +634,7 @@ class StreamViewModel @Inject constructor(
                             listChats.add(twitchUserMessage)
                         }
                     }
+
                     else -> {
                         listChats.add(twitchUserMessage)
                     }
