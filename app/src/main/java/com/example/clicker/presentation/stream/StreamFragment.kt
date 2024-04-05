@@ -462,7 +462,8 @@ fun setOrientation(
                     setTimeoutShowErrorMessage ={newValue ->streamViewModel.setTimeoutUserError(newValue)},
                     showBanErrorMessage= streamViewModel.state.value.banUserError,
                     setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
-                    banUser = {streamViewModel.banUser()}
+                    banUser = {streamViewModel.banUser()},
+                    modActionList = streamViewModel.modActionList
 
                 )
 

@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -233,19 +234,22 @@ object  ModViewChat {
 
 object ModActionMessage{
     @Composable
-    fun DeletedMessage(){
+    fun DeletedMessage(
+        message:String,
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(10.dp))
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.delete_outline_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
-                Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
 
-            }
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 0.dp)) {
-                Text(text ="Message deleted:", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                Text(text ="That was a dumb thing to do... and you look like you smell", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.mod_view_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
 
             }
@@ -258,42 +262,22 @@ object ModActionMessage{
     }
 
     @Composable
-    fun TimedUserOutMessage(){
+    fun TimeoutMessage(
+        message:String,
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(10.dp))
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
-                Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
 
-            }
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 0.dp)) {
-                Text(text ="Timed out:", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                Text(text ="meanermeeny was timed out for 600 seconds", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
-
-            }
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth()
-                .background(Color.White.copy(0.6f)))
-
-        }
-    }
-    @Composable
-    fun ClearChatMessage(){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.clear_chat_alt_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
-                Text(text ="Clear Chat", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
-
-            }
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)) {
-                Text(text ="Chat was cleared for non-Moderators viewing this room. Messages are preserved for Moderator review", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
 
             }
@@ -306,18 +290,22 @@ object ModActionMessage{
     }
 
     @Composable
-    fun FollowersOnlyChatMessage(){
+    fun ClearChatMessage(
+        message:String,
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(10.dp))
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.person_outline_24), modifier = Modifier.size(30.dp), contentDescription = "message deleted")
-                Text(text ="Followers-Only Chat", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
 
-            }
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 0.dp)) {
-                Text(text ="Enabled with 0 minutes min following age", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.clear_chat_alt_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
 
             }
@@ -330,18 +318,22 @@ object ModActionMessage{
     }
 
     @Composable
-    fun BannedUserMessage(){
+    fun NoticeMessage(
+        message:String,
+    ){
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(10.dp))
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.ban_24), modifier = Modifier.size(30.dp), contentDescription = "user banned")
-                Text(text ="meanermeeny", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold)
 
-            }
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 0.dp)) {
-                Text(text ="Banned", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.person_outline_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
 
             }
@@ -352,4 +344,6 @@ object ModActionMessage{
 
         }
     }
+
+
 }

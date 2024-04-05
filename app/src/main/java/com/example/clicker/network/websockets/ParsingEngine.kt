@@ -74,6 +74,7 @@ class ParsingEngine @Inject constructor() {
         return TwitchUserDataObjectMother
             .addColor("#000000")
             .addDisplayName(usernameFound)
+            .addBannedDuration(banDurationFound?.toInt())
             .addId(bannedUserIdFound)
             .addUserType(message)
             .addMessageType(MessageType.CLEARCHAT)
@@ -169,6 +170,7 @@ class ParsingEngine @Inject constructor() {
         if(text.contains("NOTICE *")){
             val regexPattern ="(NOTICE \\* :)(.+)".toRegex()
             val matchedPattern= regexPattern.find(text)?.groupValues?.get(2) ?: "Room information updated"
+            //gettting the message id
             return TwitchUserDataObjectMother
                 .addColor("#000000")
                 .addDisplayName("Room update")

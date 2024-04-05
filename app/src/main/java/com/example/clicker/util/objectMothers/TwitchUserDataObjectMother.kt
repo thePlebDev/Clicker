@@ -130,7 +130,7 @@ class TwitchUserDataObjectMother private constructor() {
                 messageType = messageType
             )
         }
-        fun addBannedDuration(bannedDuration: Int) = apply {
+        fun addBannedDuration(bannedDuration: Int?) = apply {
             twitchUserData = twitchUserData.copy(
                 bannedDuration = bannedDuration
             )
