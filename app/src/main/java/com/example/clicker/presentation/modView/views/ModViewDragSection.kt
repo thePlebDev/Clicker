@@ -477,7 +477,9 @@ object ModViewDragSection {
                             }
                             MessageType.CLEARCHAT ->{
                                 Log.d("MODACTIONS","CLEARCHAT")
-
+                            }
+                            MessageType.ANNOUNCEMENT->{
+                                
                             }
                             else->{
                                 HorizontalDragDetectionBox(
