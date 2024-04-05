@@ -479,7 +479,19 @@ object ModViewDragSection {
                                 Log.d("MODACTIONS","CLEARCHAT")
                             }
                             MessageType.ANNOUNCEMENT->{
-                                
+
+                            }
+                            MessageType.RESUB->{
+
+                            }
+                            MessageType.SUB->{
+
+                            }
+                            MessageType.MYSTERYGIFTSUB->{
+
+                            }
+                            MessageType.GIFTSUB->{
+
                             }
                             else->{
                                 HorizontalDragDetectionBox(
