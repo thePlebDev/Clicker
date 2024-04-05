@@ -23,7 +23,8 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
 
     override fun onMessage(webSocket: WebSocket, text: String) {
         super.onMessage(webSocket, text)
-        Log.d("TwitchEventSubWebSocket","onMessage() message ->$text")
+        val parsedSessionId = parseEventSubWelcomeMessage(text)
+        Log.d("TwitchEventSubWebSocket","onMessage() parsedSessionId ->$parsedSessionId")
 
     }
 
@@ -58,4 +59,14 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
     fun closeWebSocket(){
         webSocket?.close(1009,"Bye")
     }
+
+
+}
+
+fun parseEventSubWelcomeMessage(stringToParse:String):String?{
+    val pattern = "\"id\":([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    val parsedMessageId = messageId?.replace("\"","")
+    return parsedMessageId
+
 }
