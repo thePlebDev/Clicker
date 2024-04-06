@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
@@ -102,7 +103,7 @@ object ModView {
     @Composable
     fun ModViewScaffold(
         closeStreamInfo:()->Unit,
-        modViewViewModel: ModViewViewModel,
+        modViewDragStateViewModel: ModViewDragStateViewModel,
         chatMessages:List<TwitchUserData>,
         clickedUserData: ClickedUIState,
         clickedUserChats:List<String>,
@@ -210,31 +211,31 @@ object ModView {
 
             ModViewDragSection.DraggableModViewBox(
                 contentPaddingValues = contentPadding,
-                boxOneOffsetY =modViewViewModel.dragStateOffsets.value.boxOneOffsetY,
-                setBoxOneOffset={newValue-> modViewViewModel.setBoxOneOffset(newValue)},
-                boxOneDragState = modViewViewModel.boxOneDragState,
-                boxOneZIndex = modViewViewModel.boxIndexes.value.boxOneZIndex,
-                animateToOnDragStop = modViewViewModel.animateToOnDragStop,
-                indivBoxSize = modViewViewModel.indivBoxSize,
-                sectionBreakPoint = modViewViewModel.sectionBreakPoint,
+                boxOneOffsetY =modViewDragStateViewModel.dragStateOffsets.value.boxOneOffsetY,
+                setBoxOneOffset={newValue-> modViewDragStateViewModel.setBoxOneOffset(newValue)},
+                boxOneDragState = modViewDragStateViewModel.boxOneDragState,
+                boxOneZIndex = modViewDragStateViewModel.boxIndexes.value.boxOneZIndex,
+                animateToOnDragStop = modViewDragStateViewModel.animateToOnDragStop,
+                indivBoxSize = modViewDragStateViewModel.indivBoxSize,
+                sectionBreakPoint = modViewDragStateViewModel.sectionBreakPoint,
 
-                boxTwoOffsetY = modViewViewModel.dragStateOffsets.value.boxTwoOffsetY,
-                boxTwoZIndex = modViewViewModel.boxIndexes.value.boxTwoZIndex,
-                setBoxTwoOffset = {newValue ->modViewViewModel.setBoxTwoOffset(newValue)},
-                boxTwoDragState = modViewViewModel.boxTwoDragState,
+                boxTwoOffsetY = modViewDragStateViewModel.dragStateOffsets.value.boxTwoOffsetY,
+                boxTwoZIndex = modViewDragStateViewModel.boxIndexes.value.boxTwoZIndex,
+                setBoxTwoOffset = {newValue ->modViewDragStateViewModel.setBoxTwoOffset(newValue)},
+                boxTwoDragState = modViewDragStateViewModel.boxTwoDragState,
 
-                boxThreeZIndex = modViewViewModel.boxIndexes.value.boxThreeZIndex,
-                boxThreeOffsetY = modViewViewModel.dragStateOffsets.value.boxThreeOffsetY,
-                setBoxThreeOffset = {newValue ->modViewViewModel.setBoxThreeOffset(newValue)},
-                boxThreeDragState = modViewViewModel.boxThreeDragState,
+                boxThreeZIndex = modViewDragStateViewModel.boxIndexes.value.boxThreeZIndex,
+                boxThreeOffsetY = modViewDragStateViewModel.dragStateOffsets.value.boxThreeOffsetY,
+                setBoxThreeOffset = {newValue ->modViewDragStateViewModel.setBoxThreeOffset(newValue)},
+                boxThreeDragState = modViewDragStateViewModel.boxThreeDragState,
 
-                boxOneDragging = modViewViewModel.isDragging.value.boxOneDragging,
-                setBoxOneDragging = {newValue -> modViewViewModel.setBoxOneDragging(newValue)},
+                boxOneDragging = modViewDragStateViewModel.isDragging.value.boxOneDragging,
+                setBoxOneDragging = {newValue -> modViewDragStateViewModel.setBoxOneDragging(newValue)},
 
-                boxThreeDragging =modViewViewModel.isDragging.value.boxThreeDragging,
-                boxTwoDragging =modViewViewModel.isDragging.value.boxTwoDragging,
-                setBoxThreeDragging ={newValue -> modViewViewModel.setBoxThreeDragging(newValue)},
-                setBoxTwoDragging ={newValue -> modViewViewModel.setBoxTwoDragging(newValue)},
+                boxThreeDragging =modViewDragStateViewModel.isDragging.value.boxThreeDragging,
+                boxTwoDragging =modViewDragStateViewModel.isDragging.value.boxTwoDragging,
+                setBoxThreeDragging ={newValue -> modViewDragStateViewModel.setBoxThreeDragging(newValue)},
+                setBoxTwoDragging ={newValue -> modViewDragStateViewModel.setBoxTwoDragging(newValue)},
                 chatMessages =chatMessages,
                 triggerBottomModal = {showBottomSheet = true},
                 updateClickedUser = {  username, userId,isBanned,isMod ->

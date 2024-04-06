@@ -42,6 +42,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
@@ -61,7 +62,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
-    private val modViewViewModel:ModViewViewModel by activityViewModels()
+    private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -123,7 +124,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             streamViewModel = streamViewModel,
             autoModViewModel = autoModViewModel,
             homeViewModel = homeViewModel,
-            modViewViewModel =modViewViewModel,
+            modViewDragStateViewModel =modViewDragStateViewModel,
             orientationIsLandscape =orientationIsLandscape
         )
 
@@ -339,7 +340,7 @@ fun setOrientation(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel,
-    modViewViewModel:ModViewViewModel,
+    modViewDragStateViewModel: ModViewDragStateViewModel,
     orientationIsLandscape:Boolean
 ): FrameLayout {
 
@@ -435,7 +436,7 @@ fun setOrientation(
                             broadcasterId = streamViewModel.state.value.userId
                         )
                     },
-                    modViewViewModel =modViewViewModel,
+                    modViewDragStateViewModel =modViewDragStateViewModel,
                     chatMessages = streamViewModel.listChats,
                     clickedUserData = streamViewModel.clickedUIState.value,
                     clickedUserChatMessages =streamViewModel.clickedUsernameChats,
