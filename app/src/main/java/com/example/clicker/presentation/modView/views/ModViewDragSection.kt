@@ -12,6 +12,7 @@ import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -678,6 +679,7 @@ object ModViewDragSection {
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
+        var pending:Boolean? by remember{ mutableStateOf(null) }
 
         val opacity = if(dragging) 0.5f else 0f
         Box(modifier = Modifier
@@ -708,19 +710,23 @@ object ModViewDragSection {
                 }
 
 
-                items(10){
+
+                items(1){
                     HorizontalDragDetectionBox(
                         itemBeingDragged ={offset ->
                             AutoModItemRow(
-                                "thePlebDev",
-                                "fuck, it do be like that sometimes",
-                                offset = offset
+                                "PeanutPleb37",
+                                "Ok but WTF was that!?!?!?!?!",
+                                offset = offset,
+                                pending =pending
                             )
                         },
                         quarterSwipeRightAction = {
+                            pending = false
                             Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
                         },
                         quarterSwipeLeftAction = {
+                            pending = true
                             Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
                         },
                         twoSwipeOnly = true,
@@ -756,6 +762,7 @@ object ModViewDragSection {
         username:String,
         message: String,
         offset: Float,
+        pending:Boolean?
     ){
         val annotatedMessageText = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.White)) {
@@ -771,11 +778,15 @@ object ModViewDragSection {
                 .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
                 .background(MaterialTheme.colorScheme.primary)
         ){
-            Row(){
-                Spacer(modifier =Modifier.height(5.dp))
-                Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
-                Text("Swearing")
-                Spacer(modifier =Modifier.height(20.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+
+            ){
+                AutoModItemRowTesting()
+                AutoModItemPendingText(pending)
+
             }
             Text(annotatedMessageText)
             Spacer(modifier =Modifier.height(5.dp))
@@ -783,6 +794,38 @@ object ModViewDragSection {
             Spacer(modifier =Modifier.height(5.dp))
 
         }
+    }
+    @Composable
+    fun AutoModItemPendingText(pending:Boolean?){
+        when(pending){
+            null ->{
+                Text("Pending approval", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+            }
+            true ->{
+                Row(){
+                    Icon(painter = painterResource(id =R.drawable.baseline_check_24), contentDescription = "",tint = Color.Green)
+                    Text("Approved")
+                }
+            }
+            false ->{
+                Row(){
+                    Text("Denied")
+                    Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "",tint = Color.Red)
+                }
+            }
+        }
+
+
+    }
+    @Composable
+    fun AutoModItemRowTesting(){
+        Row(){
+            Spacer(modifier =Modifier.height(5.dp))
+            Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
+            Text("Swearing")
+            Spacer(modifier =Modifier.height(20.dp))
+        }
+
     }
 
 

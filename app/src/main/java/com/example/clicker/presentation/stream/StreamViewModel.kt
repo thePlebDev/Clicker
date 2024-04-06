@@ -82,7 +82,7 @@ data class StreamUIState(
 
     val clientId: String = "", //twitchRepoImpl
     val broadcasterId: String = "", //twitchRepoImpl
-    val userId: String = "", //twitchRepoImpl
+    val userId: String = "", //twitchRepoImpl. This is also the moderatorId
     val login:String="",
     val oAuthToken: String = "", //twitchRepoImpl
 
@@ -130,16 +130,9 @@ class StreamViewModel @Inject constructor(
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
-    private val twitchEventSubWebSocket: TwitchEventSubWebSocket =TwitchEventSubWebSocket()
 ) : ViewModel() {
 
-    init{
-        viewModelScope.launch {
-            twitchEventSubWebSocket.newWebSocket()
-            delay(5000)
-            twitchEventSubWebSocket.closeWebSocket()
-        }
-    }
+
     /**
      * The name of the channel that this chat is connecting to
      * */

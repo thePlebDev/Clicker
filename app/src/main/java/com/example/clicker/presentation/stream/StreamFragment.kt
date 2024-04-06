@@ -12,28 +12,15 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.GestureDetector
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
@@ -63,6 +50,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
     private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
+    private val modViewViewModel:ModViewViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -125,6 +113,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             autoModViewModel = autoModViewModel,
             homeViewModel = homeViewModel,
             modViewDragStateViewModel =modViewDragStateViewModel,
+            modViewViewModel=modViewViewModel,
             orientationIsLandscape =orientationIsLandscape
         )
 
@@ -341,6 +330,7 @@ fun setOrientation(
     autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel,
     modViewDragStateViewModel: ModViewDragStateViewModel,
+    modViewViewModel: ModViewViewModel,
     orientationIsLandscape:Boolean
 ): FrameLayout {
 

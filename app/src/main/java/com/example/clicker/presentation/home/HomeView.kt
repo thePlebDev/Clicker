@@ -30,6 +30,7 @@ fun ValidationView(
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
     autoModViewModel: AutoModViewModel,
+    updateModViewSettings:(String,String,String,String,)->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
@@ -63,6 +64,12 @@ fun ValidationView(
                 clientId = streamViewModel.state.value.clientId,
                 moderatorId = streamViewModel.state.value.userId,
                 broadcasterId = streamViewModel.state.value.broadcasterId,
+            )
+            updateModViewSettings(
+                homeViewModel.state.value.oAuthToken,
+                streamViewModel.state.value.clientId,
+                streamViewModel.state.value.broadcasterId,
+                streamViewModel.state.value.userId,
             )
 
         },
