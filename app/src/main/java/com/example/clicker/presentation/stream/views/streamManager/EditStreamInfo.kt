@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.FilterType
@@ -64,7 +65,7 @@ fun ManageStreamInformation(
     updateAutoModSettingsStatus:Response<Boolean>?,
     updateAutoModSettingsStatusToNull:()->Unit,
     updateChannelInfo:()->Unit,
-    modViewViewModel: ModViewViewModel,
+    modViewDragStateViewModel: ModViewDragStateViewModel,
     chatMessages: List<TwitchUserData>,
     clickedUserData: ClickedUIState,
     clickedUserChatMessages:List<String>,
@@ -115,7 +116,7 @@ fun ManageStreamInformation(
     }else{
         ModView.ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
-            modViewViewModel =modViewViewModel,
+            modViewDragStateViewModel =modViewDragStateViewModel,
             chatMessages =chatMessages,
             clickedUserData=clickedUserData,
             clickedUserChats = clickedUserChatMessages,

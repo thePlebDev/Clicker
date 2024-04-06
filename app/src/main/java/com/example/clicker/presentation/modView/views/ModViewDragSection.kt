@@ -520,7 +520,8 @@ object ModViewDragSection {
                                         showBanDialog =true
                                     },
                                     halfSwipeAction={},
-                                    twoSwipeOnly = false
+                                    twoSwipeOnly = false,
+                                    swipeEnabled = chatTwitchUserData.mod !="1"
 
                                 )
                             }
@@ -724,7 +725,8 @@ object ModViewDragSection {
                         },
                         twoSwipeOnly = true,
                         quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
-                        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24)
+                        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
+                        swipeEnabled = true,
                     )
 
                 }
@@ -1096,6 +1098,7 @@ object ModViewDragSection {
         quarterSwipeRightIconResource: Painter = painterResource(id = R.drawable.ban_24),
         hideIconColor: Color = MaterialTheme.colorScheme.primary,
         showIconColor: Color = MaterialTheme.colorScheme.onPrimary,
+        swipeEnabled:Boolean
     ){
         var iconPainterResource: Painter = painterResource(id = R.drawable.ban_24)
         var dragging by remember{ mutableStateOf(true) }
@@ -1141,7 +1144,7 @@ object ModViewDragSection {
                 .draggable(
                     orientation = Orientation.Horizontal,
                     onDragStopped = {
-                        if (twoSwipeOnly) {
+                        if (twoSwipeOnly && swipeEnabled) {
                             state.checkQuarterSwipeThresholds(
                                 leftSwipeAction = {
                                     quarterSwipeLeftAction()
@@ -1150,7 +1153,7 @@ object ModViewDragSection {
                                     quarterSwipeRightAction()
                                 }
                             )
-                        } else {
+                        } else if(swipeEnabled) {
                             state.checkDragThresholdCrossed(
                                 deleteMessageSwipe = {
                                     halfSwipeAction()

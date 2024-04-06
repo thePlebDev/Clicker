@@ -30,7 +30,6 @@ fun ValidationView(
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
     autoModViewModel: AutoModViewModel,
-    modViewViewModel:ModViewViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
@@ -42,8 +41,6 @@ fun ValidationView(
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
     val isUserLoggedIn = homeViewModel.state.value.userIsLoggedIn
-    val haptic = LocalHapticFeedback.current
-    modViewViewModel.hapticFeedBack ={haptic.performHapticFeedback(HapticFeedbackType.LongPress)}
 
 
 
