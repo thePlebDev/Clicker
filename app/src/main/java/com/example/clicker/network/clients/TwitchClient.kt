@@ -182,6 +182,16 @@ interface TwitchClient {
     ):Response<Void>
 
 
+    @Headers("Content-Type: application/json")
+    @POST("eventsub/subscriptions")
+    suspend fun createEventSubSubscription(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Body evenSubSubscription: EvenSubSubscription
+    ):Response<EvenSubSubscriptionResponse>
+
+
 
 }
 data class ChannelInformation(
@@ -226,4 +236,40 @@ data class BanUserData(
     val duration: Int? = null
 )
 
+
+data class EvenSubSubscription(
+    val type: String,
+    val version: String,
+    val condition: Condition,
+    val transport: Transport
+)
+
+data class Condition(
+    val broadcaster_user_id: String,
+    val moderator_user_id:String,
+)
+
+data class Transport(
+    val method: String ="websocket",
+    val session_id: String
+)
+// This i
+
+data class EvenSubSubscriptionResponse(
+    val data: List<UserUpdateItem>,
+    val total: Int,
+    val total_cost: Int,
+    val max_total_cost: Int
+)
+
+data class UserUpdateItem(
+    val id: String,
+    val status: String,
+    val type: String,
+    val version: String,
+    val condition: Condition,
+    val created_at: String,
+    val transport: Transport,
+    val cost: Int
+)
 

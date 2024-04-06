@@ -50,6 +50,7 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,6 +124,14 @@ class HomeFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         addToLinks = { context.startActivity(domainIntent) },
                         autoModViewModel =autoModViewModel,
+                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                            modViewViewModel.updateAutoModTokens(
+                                oAuthToken =oAuthToken,
+                                clientId =clientId,
+                                broadcasterId=broadcasterId,
+                                moderatorId =moderatorId
+                            )
+                        }
 
 
                     )
