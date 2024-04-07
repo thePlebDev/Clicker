@@ -1,6 +1,7 @@
 package com.example.clicker.network.websockets
 
 import android.util.Log
+import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
@@ -11,13 +12,13 @@ import okhttp3.WebSocketListener
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
+class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebSocket, WebSocketListener() {
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket: WebSocket? = null
 
     private val _parsedSessionId: MutableStateFlow<String?> = MutableStateFlow(null)
     // The UI collects from this StateFlow to get its state updates
-    val parsedSessionId: StateFlow<String?> = _parsedSessionId
+    override val parsedSessionId: StateFlow<String?> = _parsedSessionId
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
@@ -52,7 +53,7 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
         Log.d("TwitchEventSubWebSocket","onFailure()")
     }
 
-     fun newWebSocket() {
+     override fun newWebSocket() {
          if(webSocket!=null){
              close()
              createNewSocket()
@@ -62,7 +63,7 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
 
     }
 
-    fun closeWebSocket(){
+    override fun closeWebSocket(){
         webSocket?.close(1009,"Bye")
     }
     private fun createNewSocket(){

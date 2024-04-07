@@ -9,6 +9,8 @@ import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
+import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
+import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.repository.TwitchRepoImpl
@@ -23,7 +25,9 @@ import com.example.clicker.network.interceptors.responseCodeInterceptors.Authent
 import com.example.clicker.network.interceptors.responseCodeInterceptors.ResponseChecker
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
+import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.TwitchStreamImpl
+import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.AuthenticationEventBus
 import dagger.Module
@@ -146,5 +150,16 @@ object SingletonModule {
     @Provides
     fun provideAuthenticationEvent(): AuthenticationEvent {
         return AuthenticationEventBus()
+    }
+
+    @Provides
+    fun providesTwitchEventSubscriptionWebSocket(): TwitchEventSubscriptionWebSocket {
+        return TwitchEventSubWebSocket()
+    }
+    @Provides
+    fun providesTwitchEventSubscriptions(
+        twitchClient: TwitchClient
+    ): TwitchEventSubscriptions{
+        return TwitchEventSub(twitchClient)
     }
 }

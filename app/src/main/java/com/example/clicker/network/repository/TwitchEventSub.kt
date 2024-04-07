@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.EvenSubSubscription
 import com.example.clicker.network.clients.Transport
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
+import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.flow.Flow
@@ -14,9 +15,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 class TwitchEventSub @Inject constructor(
     private val twitchClient: TwitchClient,
-) {
+): TwitchEventSubscriptions {
 
-    fun createEventSubSubscription(
+    override fun createEventSubSubscription(
         oAuthToken:String,
         clientId:String,
         broadcasterId:String,
