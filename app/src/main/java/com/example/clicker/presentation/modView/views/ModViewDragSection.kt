@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
@@ -185,7 +186,8 @@ object ModViewDragSection {
         showBanErrorMessage:Boolean,
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
-        modActionList: List<TwitchUserData>
+        modActionList: List<TwitchUserData>,
+        autoModMessageList:List<AutoModQueueMessage>
 
         ) {
 
@@ -260,6 +262,7 @@ object ModViewDragSection {
                     AutoModQueueBox(
                         dragging =boxTwoDragging,
                         setDragging={newValue -> setBoxTwoDragging(newValue)},
+                        autoModMessageList =autoModMessageList
                     )
                 }
             )
@@ -676,6 +679,7 @@ object ModViewDragSection {
     fun AutoModQueueBox(
         setDragging: (Boolean) -> Unit,
         dragging:Boolean,
+        autoModMessageList:List<AutoModQueueMessage>
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
@@ -710,15 +714,15 @@ object ModViewDragSection {
                 }
 
 
-
-                items(1){
+                items(autoModMessageList){autoModMessage->
                     HorizontalDragDetectionBox(
                         itemBeingDragged ={offset ->
                             AutoModItemRow(
-                                "PeanutPleb37",
-                                "Ok but WTF was that!?!?!?!?!",
+                                autoModMessage.username,
+                                autoModMessage.fullText,
                                 offset = offset,
-                                pending =pending
+                                pending =pending,
+                                messageCategory = autoModMessage.category
                             )
                         },
                         quarterSwipeRightAction = {
@@ -736,6 +740,7 @@ object ModViewDragSection {
                     )
 
                 }
+
 
             }
 
@@ -762,6 +767,7 @@ object ModViewDragSection {
         username:String,
         message: String,
         offset: Float,
+        messageCategory: String,
         pending:Boolean?
     ){
         val annotatedMessageText = buildAnnotatedString {
@@ -784,7 +790,7 @@ object ModViewDragSection {
                 verticalAlignment = Alignment.CenterVertically,
 
             ){
-                AutoModItemRowTesting()
+                AutoModItemRowTesting(messageCategory)
                 AutoModItemPendingText(pending)
 
             }
@@ -818,11 +824,13 @@ object ModViewDragSection {
 
     }
     @Composable
-    fun AutoModItemRowTesting(){
+    fun AutoModItemRowTesting(
+        category:String,
+    ){
         Row(){
             Spacer(modifier =Modifier.height(5.dp))
             Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
-            Text("Swearing")
+            Text(category)
             Spacer(modifier =Modifier.height(20.dp))
         }
 

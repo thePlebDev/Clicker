@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.ClickedUIState
@@ -87,7 +88,8 @@ fun ManageStreamInformation(
     showBanErrorMessage:Boolean,
     setBanShowErrorMessage:(Boolean)->Unit,
     banUser:()->Unit,
-    modActionList: List<TwitchUserData>
+    modActionList: List<TwitchUserData>,
+    autoModMessageList:List<AutoModQueueMessage>
 
 ){
     if(showAutoModSettings){
@@ -144,7 +146,8 @@ fun ManageStreamInformation(
             showBanErrorMessage= showBanErrorMessage,
             setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
             banUser={banUser()},
-            modActionList = modActionList
+            modActionList = modActionList,
+            autoModMessageList =autoModMessageList
 
         )
     }
