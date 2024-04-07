@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
+import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,8 +28,8 @@ data class RequestIds(
 
 @HiltViewModel
 class ModViewViewModel @Inject constructor(
-    private val twitchEventSubWebSocket: TwitchEventSubWebSocket,
-    private val twitchEventSub: TwitchEventSub
+    private val twitchEventSubWebSocket: TwitchEventSubscriptionWebSocket,
+    private val twitchEventSub: TwitchEventSubscriptions
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(
         RequestIds()
