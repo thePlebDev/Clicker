@@ -37,8 +37,8 @@ class ModViewViewModel @Inject constructor(
     init{
         viewModelScope.launch {
             twitchEventSubWebSocket.newWebSocket()
-            delay(12000)
-            twitchEventSubWebSocket.closeWebSocket()
+//            delay(12000)
+//            twitchEventSubWebSocket.closeWebSocket()
         }
     }
     init{
@@ -77,6 +77,12 @@ class ModViewViewModel @Inject constructor(
 
         )
 
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        twitchEventSubWebSocket.closeWebSocket()
+        Log.d("ModViewViewModel","onCleared()")
     }
 
 
