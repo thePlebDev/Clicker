@@ -53,6 +53,19 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
     }
 
      fun newWebSocket() {
+         if(webSocket!=null){
+             close()
+             createNewSocket()
+         }else{
+             createNewSocket()
+         }
+
+    }
+
+    fun closeWebSocket(){
+        webSocket?.close(1009,"Bye")
+    }
+    private fun createNewSocket(){
         val request: Request = Request.Builder()
             .url("wss://eventsub.wss.twitch.tv/ws")
             .build()
@@ -63,8 +76,11 @@ class TwitchEventSubWebSocket @Inject constructor(): WebSocketListener() {
 
         webSocket = client.newWebSocket(request, this)
     }
-    fun closeWebSocket(){
-        webSocket?.close(1009,"Bye")
+    private fun close() {
+        // Trigger shutdown of the dispatcher's executor so this process can exit cleanly.
+        client.dispatcher.executorService.shutdown()
+        webSocket?.close(1009, "Manually closed ")
+        webSocket = null
     }
 
 
