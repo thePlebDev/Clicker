@@ -32,7 +32,12 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         super.onMessage(webSocket, text)
         val parsedSessionId = parseEventSubWelcomeMessage(text)
         _parsedSessionId.tryEmit(parsedSessionId)
-        Log.d("TwitchEventSubWebSocket","onMessage() parsedSessionId ->$parsedSessionId")
+//        Log.d("TwitchEventSubWebSocket","onMessage() parsedSessionId ->$parsedSessionId")
+        if(notificationTypeIsNotification(text)){
+            val parsedMessage =parseAutoModQueueMessage(text)
+            Log.d("TwitchEventSubWebSocket"," parsedMessage ->$parsedMessage")
+        }
+        Log.d("TwitchEventSubWebSocket","onMessage() text ->$text")
 
     }
 
@@ -87,10 +92,68 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
 }
 
+/**
+ * parseEventSubWelcomeMessage is a function meant to parse out the session id from the
+ * [welcome message](https://dev.twitch.tv/docs/eventsub/handling-websocket-events/#welcome-message)
+ *
+ * @param stringToParse represents what was sent from the twitch servers
+ * @return String? object
+ * */
 fun parseEventSubWelcomeMessage(stringToParse:String):String?{
     val pattern = "\"id\":([^,]+)".toRegex()
     val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
     val parsedMessageId = messageId?.replace("\"","")
     return parsedMessageId
+}
+
+/**
+ * notificationTypeIsNotification is a function meant to determine if the data sent from the Twitch servers
+ * has a type of notification
+ *
+ * @param stringToParse represents what was sent from the twitch servers
+ * @return Boolean object
+ * */
+fun notificationTypeIsNotification(stringToParse:String):Boolean{
+    val wantedNotification ="notification"
+    val messageTypeRegex = "\"message_type\":([^,]+)".toRegex()
+    val messageType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    return messageType == wantedNotification
 
 }
+
+/**
+ * parseAutoModQueueMessage is a function meant to parse out the username, category and fullText from the
+ * message that is sent from the Twitch servers.
+ *
+ * @param stringToParse represents what was sent from the twitch servers
+ * @return [AutoModQueueMessage] object
+ * */
+fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
+    val usernameRegex = "\"user_name\":([^,]+)".toRegex()
+    val textRegex = "\"text\":([^,]+)".toRegex()
+    val categoryRegex = "\"category\":([^,]+)".toRegex()
+
+    val username = usernameRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    val fullText = textRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    val category = categoryRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    return AutoModQueueMessage(
+        username = username ?:"",
+        fullText = fullText ?:"",
+        category = category ?:""
+    )
+}
+
+
+/**
+ * AutoModQueueMessage is a data class that will represent the parsed data send from
+ * [Notification message Websocket](https://dev.twitch.tv/docs/eventsub/handling-websocket-events/#notification-message)
+ *
+ * @param username represents the user that sent the [fullText] message
+ * @param fullText represents the message that the user sent
+ * @param category represents the category that the user's [fullText] message falls under, ie swearing
+ * */
+data class AutoModQueueMessage(
+    val username:String ="",
+    val fullText:String ="",
+    val category: String = ""
+)
