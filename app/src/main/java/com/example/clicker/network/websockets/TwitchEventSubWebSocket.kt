@@ -20,6 +20,10 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
     // The UI collects from this StateFlow to get its state updates
     override val parsedSessionId: StateFlow<String?> = _parsedSessionId
 
+    private val _autoModMessageQueue: MutableStateFlow<AutoModQueueMessage?> = MutableStateFlow(null)
+    // The UI collects from this StateFlow to get its state updates
+    override val autoModMessageQueue: StateFlow<AutoModQueueMessage?> = _autoModMessageQueue
+
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
 
@@ -32,10 +36,10 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         super.onMessage(webSocket, text)
         val parsedSessionId = parseEventSubWelcomeMessage(text)
         _parsedSessionId.tryEmit(parsedSessionId)
-//        Log.d("TwitchEventSubWebSocket","onMessage() parsedSessionId ->$parsedSessionId")
+
         if(notificationTypeIsNotification(text)){
-            val parsedMessage =parseAutoModQueueMessage(text)
-            Log.d("TwitchEventSubWebSocket"," parsedMessage ->$parsedMessage")
+            Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->${parseAutoModQueueMessage(text)}")
+            _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
         }
         Log.d("TwitchEventSubWebSocket","onMessage() text ->$text")
 
