@@ -191,9 +191,36 @@ interface TwitchClient {
         @Body evenSubSubscription: EvenSubSubscription
     ):Response<EvenSubSubscriptionResponse>
 
+    @Headers("Content-Type: application/json")
+    @POST("automod/message")
+    suspend fun manageAutoModMessage(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Body manageAutoModMessageData: ManageAutoModMessage
+    ):Response<Void>
+
+
+
 
 
 }
+/**
+ * ManageAutoModMessage is a data class containing all the necessary data to send in a request body to the
+ * [Manage Held AutoMod Messages](https://dev.twitch.tv/docs/api/reference/#manage-held-automod-messages) endpoint.
+ *
+ *
+ * @param userId represents the id of the user whos message is being evaluated
+ * @param msgId represents the id of the message that is being evaluated
+ * @param action ALLOW or DENY are the only two allowed string values. This is the value that will be used to determine if the
+ * message is meant to be approved or denied.
+ */
+data class ManageAutoModMessage(
+    @SerializedName("user_id")
+    val userId:String,
+    @SerializedName("msg_id")
+    val msgId:String,
+    val action:String,
+)
 data class ChannelInformation(
     val title:String ="ti do be like that sometimes",
     @SerializedName("is_enabled")

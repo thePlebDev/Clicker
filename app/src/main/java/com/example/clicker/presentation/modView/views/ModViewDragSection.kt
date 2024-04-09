@@ -679,7 +679,8 @@ object ModViewDragSection {
     fun AutoModQueueBox(
         setDragging: (Boolean) -> Unit,
         dragging:Boolean,
-        autoModMessageList:List<AutoModQueueMessage>
+        autoModMessageList:List<AutoModQueueMessage>,
+        //manageAutoModMessage:(String,String,String)-> Unit
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
@@ -727,6 +728,9 @@ object ModViewDragSection {
                         },
                         quarterSwipeRightAction = {
                             pending = false
+//                            manageAutoModMessage(
+//
+//                            )
                             Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
                         },
                         quarterSwipeLeftAction = {

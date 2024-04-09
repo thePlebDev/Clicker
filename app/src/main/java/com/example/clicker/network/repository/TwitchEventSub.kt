@@ -3,6 +3,7 @@ package com.example.clicker.network.repository
 import android.util.Log
 import com.example.clicker.network.clients.Condition
 import com.example.clicker.network.clients.EvenSubSubscription
+import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.clients.Transport
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
@@ -54,8 +55,40 @@ class TwitchEventSub @Inject constructor(
         emit("catchError")
 
     }
-    fun manageAutoModMesage(){
-        
+    override fun manageAutoModMessage(
+        oAuthToken: String,
+        clientId: String,
+        manageAutoModMessageData: ManageAutoModMessage
+    ):Flow<String> = flow {
+        emit("LOADING")
+        val response = twitchClient.manageAutoModMessage(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            manageAutoModMessageData = manageAutoModMessageData
+        )
+
+        if (response.isSuccessful) {
+            Log.d("manageAutoModMessage","SUCCESS")
+            Log.d("manageAutoModMessage","code--> ${response.code()}")
+            Log.d("manageAutoModMessage","message--> ${response.message()}")
+            Log.d("manageAutoModMessage","body--> ${response.body()}")
+
+            emit("NetworkNewUserResponse.Success(body.data)")
+        } else {
+
+            emit("FAILED")
+            Log.d("manageAutoModMessage","FAILED")
+            Log.d("manageAutoModMessage","code--> ${response.code()}")
+            Log.d("manageAutoModMessage","message--> ${response.message()}")
+            Log.d("manageAutoModMessage","body--> ${response.body()}")
+        }
+
+    }.catch { cause ->
+        Log.d("manageAutoModMessage","ERROR CAUGHT")
+        Log.d("manageAutoModMessage","cause.message --> ${cause.message}")
+        Log.d("manageAutoModMessage","cause --> ${cause}")
+        emit("catchError")
+
     }
 
 
