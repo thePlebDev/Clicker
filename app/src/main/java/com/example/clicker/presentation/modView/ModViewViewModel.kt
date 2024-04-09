@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -95,6 +96,22 @@ class ModViewViewModel @Inject constructor(
 
         )
 
+    }
+    fun manageAutoModMessage(
+        msgId:String,
+        userId:String,
+        action:String
+    ){
+        val requestBody =ManageAutoModMessage(
+            userId =userId,
+            msgId=msgId,
+            action=action
+        )
+        twitchEventSub.manageAutoModMessage(
+            oAuthToken = _requestIds.value.oAuthToken,
+            clientId = _requestIds.value.clientId,
+            manageAutoModMessageData = requestBody
+        )
     }
 
     override fun onCleared() {

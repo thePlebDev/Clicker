@@ -136,14 +136,22 @@ fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
     val usernameRegex = "\"user_name\":([^,]+)".toRegex()
     val textRegex = "\"text\":([^,]+)".toRegex()
     val categoryRegex = "\"category\":([^,]+)".toRegex()
+    val userIdRegex = "\"user_id\":([^,]+)".toRegex()
+    val messageIdRegex = "\"message_id\":([^=]+)".toRegex()
+
 
     val username = usernameRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     val fullText = textRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     val category = categoryRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    val userId = userIdRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    val messageId = messageIdRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+
     return AutoModQueueMessage(
         username = username ?:"",
         fullText = fullText ?:"",
-        category = category ?:""
+        category = category ?:"",
+        userId = userId ?:"",
+        messageId = messageId ?:""
     )
 }
 
@@ -155,9 +163,14 @@ fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
  * @param username represents the user that sent the [fullText] message
  * @param fullText represents the message that the user sent
  * @param category represents the category that the user's [fullText] message falls under, ie swearing
+ * @param messageId represents the unique ID of the user's flagged message
+ * @param userId represents the unique ID of the user sending the message
  * */
 data class AutoModQueueMessage(
     val username:String ="",
     val fullText:String ="",
-    val category: String = ""
+    val category: String = "",
+    val messageId:String,
+    val userId:String,
+
 )
