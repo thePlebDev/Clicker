@@ -89,7 +89,8 @@ fun ManageStreamInformation(
     setBanShowErrorMessage:(Boolean)->Unit,
     banUser:()->Unit,
     modActionList: List<TwitchUserData>,
-    autoModMessageList:List<AutoModQueueMessage>
+    autoModMessageList:List<AutoModQueueMessage>,
+    manageAutoModMessage:(String,String,String)-> Unit
 
 ){
     if(showAutoModSettings){
@@ -147,7 +148,8 @@ fun ManageStreamInformation(
             setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
             banUser={banUser()},
             modActionList = modActionList,
-            autoModMessageList =autoModMessageList
+            autoModMessageList =autoModMessageList,
+            manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)}
 
         )
     }

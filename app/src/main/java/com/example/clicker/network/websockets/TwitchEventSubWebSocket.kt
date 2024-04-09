@@ -38,7 +38,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         _parsedSessionId.tryEmit(parsedSessionId)
 
         if(notificationTypeIsNotification(text)){
-            Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->${parseAutoModQueueMessage(text)}")
+            //Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->${parseAutoModQueueMessage(text)}")
+            Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->$text")
             _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
         }
         Log.d("TwitchEventSubWebSocket","onMessage() text ->$text")
@@ -137,14 +138,20 @@ fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
     val textRegex = "\"text\":([^,]+)".toRegex()
     val categoryRegex = "\"category\":([^,]+)".toRegex()
     val userIdRegex = "\"user_id\":([^,]+)".toRegex()
+
+    //extra parsing because there is multiple `message_id`
     val messageIdRegex = "\"message_id\":([^=]+)".toRegex()
+    val allFoundMessageIdList = messageIdRegex.findAll(stringToParse).toList()
+    val messageIdNoQuotes=allFoundMessageIdList[1].groupValues[1].replace("\"","")
+    val newMessageRegex = "[^,]+".toRegex()
+    val desiredMessageId = newMessageRegex.find(messageIdNoQuotes)?.value
 
 
     val username = usernameRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     val fullText = textRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     val category = categoryRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     val userId = userIdRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
-    val messageId = messageIdRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    val messageId = desiredMessageId
 
     return AutoModQueueMessage(
         username = username ?:"",
@@ -154,6 +161,7 @@ fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
         messageId = messageId ?:""
     )
 }
+
 
 
 /**

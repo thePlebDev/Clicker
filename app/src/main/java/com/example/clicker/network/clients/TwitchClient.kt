@@ -192,7 +192,7 @@ interface TwitchClient {
     ):Response<EvenSubSubscriptionResponse>
 
     @Headers("Content-Type: application/json")
-    @POST("automod/message")
+    @POST("moderation/automod/message")
     suspend fun manageAutoModMessage(
         @Header("Authorization") authorizationToken: String,
         @Header("Client-Id") clientId: String,

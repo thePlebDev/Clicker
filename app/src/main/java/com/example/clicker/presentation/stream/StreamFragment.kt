@@ -455,7 +455,8 @@ fun setOrientation(
                     setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
                     banUser = {streamViewModel.banUser()},
                     modActionList = streamViewModel.modActionList,
-                    autoModMessageList = modViewViewModel.autoModMessageList
+                    autoModMessageList = modViewViewModel.autoModMessageList,
+                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)}
 
                 )
 
