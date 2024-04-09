@@ -41,16 +41,10 @@ class TwitchEventSub @Inject constructor(
         )
 
         if (response.isSuccessful) {
-            Log.d("createEventSubSubscriptionRepo","SUCCESS")
-            Log.d("createEventSubSubscriptionRepo","response --> ${response.code()}")
-            Log.d("createEventSubSubscriptionRepo","body --> ${response.body()}")
-            Log.d("createEventSubSubscriptionRepo","message --> ${response.message()}")
+
             emit("NetworkNewUserResponse.Success(body.data)")
         } else {
-            Log.d("createEventSubSubscriptionRepo","FAILED")
-            Log.d("createEventSubSubscriptionRepo","response --> ${response.code()}")
-            Log.d("createEventSubSubscriptionRepo","body --> ${response.body()}")
-            Log.d("createEventSubSubscriptionRepo","message --> ${response.message()}")
+
             emit("FAILED")
         }
 
@@ -59,6 +53,9 @@ class TwitchEventSub @Inject constructor(
         Log.d("createEventSubSubscriptionRepo","cause --> ${cause}")
         emit("catchError")
 
+    }
+    fun manageAutoModMesage(){
+        
     }
 
 
