@@ -61,6 +61,8 @@ class TwitchEventSub @Inject constructor(
         manageAutoModMessageData: ManageAutoModMessage
     ):Flow<String> = flow {
         emit("LOADING")
+        Log.d("manageAutoModMessage","oAuthToken ->$oAuthToken")
+        Log.d("manageAutoModMessage","LOADING")
         val response = twitchClient.manageAutoModMessage(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,

@@ -128,7 +128,8 @@ object ModView {
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
         modActionList: List<TwitchUserData>,
-        autoModMessageList:List<AutoModQueueMessage>
+        autoModMessageList:List<AutoModQueueMessage>,
+        manageAutoModMessage:(String,String,String)-> Unit
 
     ){
         //todo: this is where the draggable boxes go
@@ -264,7 +265,8 @@ object ModView {
                 setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
                 banUser={banUser()},
                 modActionList =modActionList,
-                autoModMessageList =autoModMessageList
+                autoModMessageList =autoModMessageList,
+                manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)}
 
             )
 

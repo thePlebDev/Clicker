@@ -102,16 +102,23 @@ class ModViewViewModel @Inject constructor(
         userId:String,
         action:String
     ){
-        val requestBody =ManageAutoModMessage(
-            userId =userId,
-            msgId=msgId,
-            action=action
-        )
-        twitchEventSub.manageAutoModMessage(
-            oAuthToken = _requestIds.value.oAuthToken,
-            clientId = _requestIds.value.clientId,
-            manageAutoModMessageData = requestBody
-        )
+        viewModelScope.launch {
+            val requestBody =ManageAutoModMessage(
+                userId =_requestIds.value.moderatorId,
+                msgId=msgId,
+                action=action
+            )
+//
+            twitchEventSub.manageAutoModMessage(
+                oAuthToken = _requestIds.value.oAuthToken,
+                clientId = _requestIds.value.clientId,
+                manageAutoModMessageData = requestBody
+            ).collect{
+                Log.d("manageAutoModMessage","collected message--> it}")
+
+            }
+        }
+
     }
 
     override fun onCleared() {

@@ -187,7 +187,8 @@ object ModViewDragSection {
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
         modActionList: List<TwitchUserData>,
-        autoModMessageList:List<AutoModQueueMessage>
+        autoModMessageList:List<AutoModQueueMessage>,
+        manageAutoModMessage:(String,String,String)-> Unit
 
         ) {
 
@@ -262,7 +263,8 @@ object ModViewDragSection {
                     AutoModQueueBox(
                         dragging =boxTwoDragging,
                         setDragging={newValue -> setBoxTwoDragging(newValue)},
-                        autoModMessageList =autoModMessageList
+                        autoModMessageList =autoModMessageList,
+                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)}
                     )
                 }
             )
@@ -680,7 +682,7 @@ object ModViewDragSection {
         setDragging: (Boolean) -> Unit,
         dragging:Boolean,
         autoModMessageList:List<AutoModQueueMessage>,
-        //manageAutoModMessage:(String,String,String)-> Unit
+        manageAutoModMessage:(String,String,String)-> Unit
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
@@ -716,32 +718,13 @@ object ModViewDragSection {
 
 
                 items(autoModMessageList){autoModMessage->
-                    HorizontalDragDetectionBox(
-                        itemBeingDragged ={offset ->
-                            AutoModItemRow(
-                                autoModMessage.username,
-                                autoModMessage.fullText,
-                                offset = offset,
-                                pending =pending,
-                                messageCategory = autoModMessage.category
-                            )
-                        },
-                        quarterSwipeRightAction = {
-                            pending = false
-//                            manageAutoModMessage(
-//
-//                            )
-                            Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
-                        },
-                        quarterSwipeLeftAction = {
-                            pending = true
-                            Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
-                        },
-                        twoSwipeOnly = true,
-                        quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
-                        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
-                        swipeEnabled = true,
+                    AutoModBoxHorizontalDragBox(
+                        autoModMessage=autoModMessage,
+                        manageAutoModMessage={
+                                messageId,userId,action->manageAutoModMessage(messageId,userId,action)
+                        }
                     )
+
 
                 }
 
@@ -756,6 +739,47 @@ object ModViewDragSection {
                 hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
             )
         }
+    }
+
+    @Composable
+    fun AutoModBoxHorizontalDragBox(
+        autoModMessage: AutoModQueueMessage,
+        manageAutoModMessage:(String,String,String)-> Unit
+    ){
+        var pending:Boolean? by remember{ mutableStateOf(null) }
+        HorizontalDragDetectionBox(
+            itemBeingDragged ={offset ->
+                AutoModItemRow(
+                    autoModMessage.username,
+                    autoModMessage.fullText,
+                    offset = offset,
+                    pending =pending,
+                    messageCategory = autoModMessage.category
+                )
+            },
+            quarterSwipeRightAction = {
+                pending = false
+                manageAutoModMessage(
+                    autoModMessage.messageId,
+                    autoModMessage.userId,
+                    "DENY"
+                )
+                Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
+            },
+            quarterSwipeLeftAction = {
+                pending = true
+                Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
+                manageAutoModMessage(
+                    autoModMessage.messageId,
+                    autoModMessage.userId,
+                    "ALLOW"
+                )
+            },
+            twoSwipeOnly = true,
+            quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
+            quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
+            swipeEnabled = true,
+        )
     }
 
     /**
