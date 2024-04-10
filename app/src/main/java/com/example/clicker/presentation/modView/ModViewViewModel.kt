@@ -48,12 +48,13 @@ class ModViewViewModel @Inject constructor(
     val uiState: State<ModViewViewModelUIState> = _uiState
 
 
-    init{
-        viewModelScope.launch {
-            twitchEventSubWebSocket.newWebSocket()
-
-        }
-    }
+//    init{
+//        //todo: THIS SHOULD BE CALLED WHEN THE USER CLICKS A STREAM PAGE, NOT IN THIS INIT FUCNTION
+//        viewModelScope.launch {
+//            twitchEventSubWebSocket.newWebSocket()
+//
+//        }
+//    }
     init{
         monitorForSessionId()
     }
@@ -61,6 +62,9 @@ class ModViewViewModel @Inject constructor(
     init{
         monitorForAutoModMessages()
 
+    }
+    fun createNewTwitchEventWebSocket(){
+        twitchEventSubWebSocket.newWebSocket()
     }
 
 

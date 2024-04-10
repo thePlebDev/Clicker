@@ -131,7 +131,8 @@ class HomeFragment : Fragment() {
                                 broadcasterId=broadcasterId,
                                 moderatorId =moderatorId
                             )
-                        }
+                        },
+                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()}
 
 
                     )
