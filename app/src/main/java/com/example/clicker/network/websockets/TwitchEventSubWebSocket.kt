@@ -34,8 +34,14 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
     override fun onMessage(webSocket: WebSocket, text: String) {
         super.onMessage(webSocket, text)
-        val parsedSessionId = parseEventSubWelcomeMessage(text)
-        _parsedSessionId.tryEmit(parsedSessionId)
+        // this needs to run only when the notifiction type is session_welcome
+        //TODO: THIS SHOULD CHECK IF IT IS A WELCOMING MESSAGE. similar to notificationTypeIsNotification()
+         //TODO: THIS SHOULD NOT BE DOING THIS EVERY TIME
+        //if()
+        if(notificationTypeIsWelcome(text)){
+            val parsedSessionId = parseEventSubWelcomeMessage(text)
+            _parsedSessionId.tryEmit(parsedSessionId)
+        }
 
         if(notificationTypeIsNotification(text)){
             //Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->${parseAutoModQueueMessage(text)}")
@@ -123,8 +129,14 @@ fun notificationTypeIsNotification(stringToParse:String):Boolean{
     val messageTypeRegex = "\"message_type\":([^,]+)".toRegex()
     val messageType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     return messageType == wantedNotification
-
 }
+fun notificationTypeIsWelcome(stringToParse:String):Boolean{
+    val wantedNotification ="session_welcome"
+    val messageTypeRegex = "\"message_type\":([^,]+)".toRegex()
+    val messageType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    return messageType == wantedNotification
+}
+
 
 /**
  * parseAutoModQueueMessage is a function meant to parse out the username, category and fullText from the

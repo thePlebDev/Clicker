@@ -31,6 +31,7 @@ fun ValidationView(
     addToLinks: () -> Unit,
     autoModViewModel: AutoModViewModel,
     updateModViewSettings:(String,String,String,String,)->Unit,
+    createNewTwitchEventWebSocket:()->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
@@ -71,6 +72,7 @@ fun ValidationView(
                 streamViewModel.state.value.broadcasterId,
                 streamViewModel.state.value.userId,
             )
+            createNewTwitchEventWebSocket()
 
         },
         updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
