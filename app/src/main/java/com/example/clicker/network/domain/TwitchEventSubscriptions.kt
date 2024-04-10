@@ -1,6 +1,7 @@
 package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.ManageAutoModMessage
+import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface TwitchEventSubscriptions {
@@ -11,7 +12,7 @@ interface TwitchEventSubscriptions {
         broadcasterId:String,
         moderatorId:String,
         sessionId:String,
-    ): Flow<String>
+    ): Flow<Response<Boolean>>
 
     fun manageAutoModMessage(
         oAuthToken:String,

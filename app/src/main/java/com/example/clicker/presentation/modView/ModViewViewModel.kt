@@ -17,6 +17,7 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,10 @@ data class RequestIds(
     val clientId:String="",
     val broadcasterId:String="",
     val moderatorId:String ="",
+    val sessionId:String =""
+)
+data class ModViewViewModelUIState(
+    val showSubscriptionEventError:Response<Boolean> = Response.Loading
 )
 
 
@@ -39,6 +44,9 @@ class ModViewViewModel @Inject constructor(
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
     val  autoModMessageList = mutableStateListOf<AutoModQueueMessage>()
+    private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
+    val uiState: State<ModViewViewModelUIState> = _uiState
+
 
     init{
         viewModelScope.launch {
@@ -49,28 +57,57 @@ class ModViewViewModel @Inject constructor(
     init{
         monitorForSessionId()
     }
+
     init{
         monitorForAutoModMessages()
 
     }
 
 
+    /**
+     * This is the function that calls createEventSubSubscription()
+     * */
     private fun monitorForSessionId(){
         viewModelScope.launch {
             twitchEventSubWebSocket.parsedSessionId.collect{nullableSessionId ->
                 nullableSessionId?.also {  sessionId ->
-                    //then with this session Id we need to make a call to subscribe to our event
-                    Log.d("monitorForSessionId","monitorForSessionId -->$sessionId")
-                    twitchEventSub.createEventSubSubscription(
-                        oAuthToken =_requestIds.value.oAuthToken,
-                        clientId =_requestIds.value.clientId,
-                        broadcasterId =_requestIds.value.broadcasterId,
-                        moderatorId =_requestIds.value.moderatorId,
+                    _requestIds.value = _requestIds.value.copy(
                         sessionId = sessionId
-                    ).collect{value ->
-                        Log.d("monitorForSessionId","emittedValue -->$value")
-                    }
+                    )
+                    createEventSubSubscription()
+                    //then with this session Id we need to make a call to subscribe to our event
 
+
+                }
+            }
+        }
+    }
+
+    fun createEventSubSubscription(){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                showSubscriptionEventError = Response.Loading
+            )
+            delay(200)
+            twitchEventSub.createEventSubSubscription(
+                oAuthToken =_requestIds.value.oAuthToken,
+                clientId =_requestIds.value.clientId,
+                broadcasterId =_requestIds.value.broadcasterId,
+                moderatorId =_requestIds.value.moderatorId,
+                sessionId = _requestIds.value.sessionId
+            ).collect{response ->
+                when(response){
+                    is Response.Loading->{}
+                    is Response.Success->{
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Success(true)
+                        )
+                    }
+                    is Response.Failure->{
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Failure(response.e)
+                        )
+                    }
                 }
             }
         }
