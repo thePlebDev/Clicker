@@ -456,7 +456,9 @@ fun setOrientation(
                     banUser = {streamViewModel.banUser()},
                     modActionList = streamViewModel.modActionList,
                     autoModMessageList = modViewViewModel.autoModMessageList,
-                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)}
+                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)},
+                    connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
+                    reconnect ={modViewViewModel.createEventSubSubscription()}
 
                 )
 

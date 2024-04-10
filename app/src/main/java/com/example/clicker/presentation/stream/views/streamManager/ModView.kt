@@ -70,6 +70,7 @@ import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.modView.views.ModViewDragSection
+import com.example.clicker.util.Response
 
 /**
  * ModView contains all the composable functions that are used to create the `chat modes header`
@@ -129,7 +130,9 @@ object ModView {
         banUser:()->Unit,
         modActionList: List<TwitchUserData>,
         autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit
+        manageAutoModMessage:(String,String,String)-> Unit,
+        connectionError: Response<Boolean>,
+        reconnect:()->Unit
 
     ){
         //todo: this is where the draggable boxes go
@@ -266,7 +269,9 @@ object ModView {
                 banUser={banUser()},
                 modActionList =modActionList,
                 autoModMessageList =autoModMessageList,
-                manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)}
+                manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
+                connectionError =connectionError,
+                reconnect ={reconnect()}
 
             )
 

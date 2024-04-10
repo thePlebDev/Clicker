@@ -10,6 +10,7 @@ import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.util.NetworkNewUserResponse
+import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlinx.coroutines.flow.catch
@@ -24,7 +25,8 @@ class TwitchEventSub @Inject constructor(
         broadcasterId:String,
         moderatorId:String,
         sessionId:String,
-    ):Flow<String> = flow {
+    ):Flow<Response<Boolean>> = flow {
+        emit(Response.Loading)
 
         val body = EvenSubSubscription(
             type = "automod.message.hold",
@@ -42,18 +44,13 @@ class TwitchEventSub @Inject constructor(
         )
 
         if (response.isSuccessful) {
-
-            emit("NetworkNewUserResponse.Success(body.data)")
+            emit(Response.Success(true))
         } else {
-
-            emit("FAILED")
+            emit(Response.Failure(Exception("failed request")))
         }
 
     }.catch { cause ->
-        Log.d("createEventSubSubscriptionRepo","cause.message --> ${cause.message}")
-        Log.d("createEventSubSubscriptionRepo","cause --> ${cause}")
-        emit("catchError")
-
+        emit(Response.Failure(Exception("Error caught")))
     }
     override fun manageAutoModMessage(
         oAuthToken: String,

@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.Button
@@ -65,6 +66,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -188,7 +190,9 @@ object ModViewDragSection {
         banUser:()->Unit,
         modActionList: List<TwitchUserData>,
         autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit
+        manageAutoModMessage:(String,String,String)-> Unit,
+        connectionError: Response<Boolean>,
+        reconnect:()->Unit
 
         ) {
 
@@ -264,7 +268,9 @@ object ModViewDragSection {
                         dragging =boxTwoDragging,
                         setDragging={newValue -> setBoxTwoDragging(newValue)},
                         autoModMessageList =autoModMessageList,
-                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)}
+                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)},
+                        connectionError =connectionError,
+                        reconnect = {reconnect()}
                     )
                 }
             )
@@ -291,7 +297,10 @@ object ModViewDragSection {
             )
         }// This is the end of the box
 
+
     }
+
+
 
 
 
@@ -682,11 +691,12 @@ object ModViewDragSection {
         setDragging: (Boolean) -> Unit,
         dragging:Boolean,
         autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit
+        manageAutoModMessage:(String,String,String)-> Unit,
+        connectionError:Response<Boolean>,
+        reconnect:()->Unit
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
-        var pending:Boolean? by remember{ mutableStateOf(null) }
 
         val opacity = if(dragging) 0.5f else 0f
         Box(modifier = Modifier
@@ -739,8 +749,70 @@ object ModViewDragSection {
                 hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
             )
         }
+        ConnectionErrorResponse(
+            connectionError,
+            reconnect ={reconnect()}
+        )
+
+
+    }
+    @Composable
+    fun ConnectionErrorResponse(
+        connectionError: Response<Boolean>,
+        reconnect:()->Unit
+    ){
+        when(connectionError){
+            is Response.Loading ->{
+                SubscriptionConnectionLoading()
+            }
+            is Response.Success ->{}
+            is Response.Failure ->{
+                ConnectionError(
+                    message = "AutoMod connection error",
+                    reconnect ={reconnect()}
+                )
+            }
+        }
+    }
+    @Composable
+    fun SubscriptionConnectionLoading(){
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f))){
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
     }
 
+
+    @Composable
+    fun ConnectionError(
+        message:String,
+        reconnect:()->Unit
+    ){
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f))){
+            Column(
+                modifier= Modifier.align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(message,color = Color.Red, fontSize = 25.sp)
+                Button(
+                    onClick ={
+                        reconnect()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(5.dp)
+                ) {
+                    Text("Re-connect", color = MaterialTheme.colorScheme.onSecondary)
+                }
+            }
+
+
+        }
+    }
     @Composable
     fun AutoModBoxHorizontalDragBox(
         autoModMessage: AutoModQueueMessage,
@@ -1232,7 +1304,7 @@ object ModViewDragSection {
                                     quarterSwipeRightAction()
                                 }
                             )
-                        } else if(swipeEnabled) {
+                        } else if (swipeEnabled) {
                             state.checkDragThresholdCrossed(
                                 deleteMessageSwipe = {
                                     halfSwipeAction()
