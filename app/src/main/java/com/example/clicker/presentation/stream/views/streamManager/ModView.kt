@@ -438,11 +438,7 @@ object ModView {
                 changeBannedWordsExpanded={newValue -> bannedWordsExpanded = newValue},
                 numberOfTermsBanned = 33
             )
-            PermittedWordsDropdownMenuItem(
-                numberOfTerms = 3,
-                permittedWordsExpanded=permittedWordsExpanded,
-                changePermittedWordsExpanded={newValue -> permittedWordsExpanded = newValue}
-            )
+
 
 
             }
@@ -476,43 +472,6 @@ object ModView {
         ) //end of DropdownMenuItem
 
 
-
-    }
-
-
-    @Composable
-    fun PermittedWordsDropdownMenuItem(
-
-        numberOfTerms:Int,
-        permittedWordsExpanded:Boolean,
-        changePermittedWordsExpanded:(Boolean)->Unit
-    ){
-
-        DropdownMenuItem(
-            onClick = {changePermittedWordsExpanded(true)},
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-
-                ){
-                    Text("Permitted Terms")
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text("$numberOfTerms")
-                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "")
-                    }
-                }
-            }
-
-
-        )//end of DropdownMenuItem
-        AddSearchPermittedTermsDropdownMenu(
-            expanded =permittedWordsExpanded,
-            changeExpanded={newValue -> changePermittedWordsExpanded(newValue)}
-        )
 
     }
 
