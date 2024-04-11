@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.modView
 
 import android.content.res.Resources
+import android.os.MessageQueue
 import android.util.Log
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.MutableState
@@ -32,7 +33,8 @@ data class RequestIds(
     val sessionId:String =""
 )
 data class ModViewViewModelUIState(
-    val showSubscriptionEventError:Response<Boolean> = Response.Loading
+    val showSubscriptionEventError:Response<Boolean> = Response.Loading,
+    val showAutoModMessageQueueErrorMessage:Boolean = false,
 )
 
 
@@ -43,6 +45,8 @@ class ModViewViewModel @Inject constructor(
     private val twitchEventSub: TwitchEventSubscriptions
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
+
+    //this is all the messages for the AutoModQueue
     val  autoModMessageList = mutableStateListOf<AutoModQueueMessage>()
     private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
     val uiState: State<ModViewViewModelUIState> = _uiState
@@ -88,6 +92,7 @@ class ModViewViewModel @Inject constructor(
     }
 
     fun createEventSubSubscription(){
+        // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 showSubscriptionEventError = Response.Loading
@@ -149,13 +154,34 @@ class ModViewViewModel @Inject constructor(
                 msgId=msgId,
                 action=action
             )
+
+            val item =autoModMessageList.find { it.messageId == msgId}
+            item?.swiped = true
 //
             twitchEventSub.manageAutoModMessage(
                 oAuthToken = _requestIds.value.oAuthToken,
                 clientId = _requestIds.value.clientId,
                 manageAutoModMessageData = requestBody
-            ).collect{
-                Log.d("manageAutoModMessage","collected message--> it}")
+            ).collect{response ->
+                when(response){
+                    is Response.Loading ->{}
+                    is Response.Success ->{
+
+                        if(action == "ALLOW"){
+                            item?.approved = true
+                            item?.swiped = true
+                        }
+                        if(action == "DENY"){
+                            item?.approved = false
+                            item?.swiped = true
+                        }
+
+                    }
+                    is Response.Failure ->{
+
+                        item?.swiped = false
+                    }
+                }
 
             }
         }

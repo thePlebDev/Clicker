@@ -18,5 +18,5 @@ interface TwitchEventSubscriptions {
         oAuthToken:String,
         clientId:String,
         manageAutoModMessageData: ManageAutoModMessage
-    ) : Flow<String>
+    ) : Flow<Response<Boolean>>
 }

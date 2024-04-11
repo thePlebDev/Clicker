@@ -56,10 +56,8 @@ class TwitchEventSub @Inject constructor(
         oAuthToken: String,
         clientId: String,
         manageAutoModMessageData: ManageAutoModMessage
-    ):Flow<String> = flow {
-        emit("LOADING")
-        Log.d("manageAutoModMessage","oAuthToken ->$oAuthToken")
-        Log.d("manageAutoModMessage","LOADING")
+    ):Flow<Response<Boolean>> = flow {
+        emit(Response.Loading)
         val response = twitchClient.manageAutoModMessage(
             authorizationToken = "Bearer $oAuthToken",
             clientId = clientId,
@@ -67,26 +65,17 @@ class TwitchEventSub @Inject constructor(
         )
 
         if (response.isSuccessful) {
-            Log.d("manageAutoModMessage","SUCCESS")
-            Log.d("manageAutoModMessage","code--> ${response.code()}")
-            Log.d("manageAutoModMessage","message--> ${response.message()}")
-            Log.d("manageAutoModMessage","body--> ${response.body()}")
-
-            emit("NetworkNewUserResponse.Success(body.data)")
+            emit(Response.Success(true))
         } else {
 
-            emit("FAILED")
-            Log.d("manageAutoModMessage","FAILED")
-            Log.d("manageAutoModMessage","code--> ${response.code()}")
-            Log.d("manageAutoModMessage","message--> ${response.message()}")
-            Log.d("manageAutoModMessage","body--> ${response.body()}")
+            emit(Response.Failure(Exception("Failed action")))
         }
 
     }.catch { cause ->
         Log.d("manageAutoModMessage","ERROR CAUGHT")
         Log.d("manageAutoModMessage","cause.message --> ${cause.message}")
         Log.d("manageAutoModMessage","cause --> ${cause}")
-        emit("catchError")
+        emit(Response.Failure(Exception("Error")))
 
     }
 

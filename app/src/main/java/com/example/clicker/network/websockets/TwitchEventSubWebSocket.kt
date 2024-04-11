@@ -192,5 +192,7 @@ data class AutoModQueueMessage(
     val category: String = "",
     val messageId:String,
     val userId:String,
+    var approved:Boolean? = null,
+    var swiped:Boolean = false,
 
 )
