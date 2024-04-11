@@ -818,19 +818,18 @@ object ModViewDragSection {
         autoModMessage: AutoModQueueMessage,
         manageAutoModMessage:(String,String,String)-> Unit
     ){
-        var pending:Boolean? by remember{ mutableStateOf(null) }
+
         HorizontalDragDetectionBox(
             itemBeingDragged ={offset ->
                 AutoModItemRow(
                     autoModMessage.username,
                     autoModMessage.fullText,
                     offset = offset,
-                    pending =pending,
+                    approved =autoModMessage.approved,
                     messageCategory = autoModMessage.category
                 )
             },
             quarterSwipeRightAction = {
-                pending = false
                 manageAutoModMessage(
                     autoModMessage.messageId,
                     autoModMessage.userId,
@@ -839,7 +838,6 @@ object ModViewDragSection {
                 Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
             },
             quarterSwipeLeftAction = {
-                pending = true
                 Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
                 manageAutoModMessage(
                     autoModMessage.messageId,
@@ -850,9 +848,10 @@ object ModViewDragSection {
             twoSwipeOnly = true,
             quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
             quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
-            swipeEnabled = true,
+            swipeEnabled = !autoModMessage.swiped,
         )
     }
+
 
     /**
      * AutoModItemRow is the composable function that is used inside of [AutoModQueueBox] to represent the individual AutoModQue messages
@@ -868,8 +867,9 @@ object ModViewDragSection {
         message: String,
         offset: Float,
         messageCategory: String,
-        pending:Boolean?
+        approved:Boolean?,
     ){
+
         val annotatedMessageText = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.White)) {
                 append("$username: ")
@@ -891,7 +891,7 @@ object ModViewDragSection {
 
             ){
                 AutoModItemRowTesting(messageCategory)
-                AutoModItemPendingText(pending)
+                AutoModItemPendingText(approved)
 
             }
             Text(annotatedMessageText)
@@ -902,8 +902,10 @@ object ModViewDragSection {
         }
     }
     @Composable
-    fun AutoModItemPendingText(pending:Boolean?){
-        when(pending){
+    fun AutoModItemPendingText(
+        approved:Boolean?,
+    ){
+        when(approved){
             null ->{
                 Text("Pending approval", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
             }
