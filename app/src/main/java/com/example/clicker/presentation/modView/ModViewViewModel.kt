@@ -20,9 +20,11 @@ import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class RequestIds(
@@ -71,35 +73,42 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun monitorForSessionId(){
         viewModelScope.launch {
-            twitchEventSubWebSocket.parsedSessionId.collect{nullableSessionId ->
-                nullableSessionId?.also {  sessionId ->
-                    _requestIds.value = _requestIds.value.copy(
-                        sessionId = sessionId
-                    )
-                    createEventSubSubscription()
-                    //then with this session Id we need to make a call to subscribe to our event
+            withContext(Dispatchers.IO){
+                twitchEventSubWebSocket.parsedSessionId.collect{nullableSessionId ->
+                    nullableSessionId?.also {  sessionId ->
+                        _requestIds.value = _requestIds.value.copy(
+                            sessionId = sessionId
+                        )
+                        createEventSubSubscription()
+                        //then with this session Id we need to make a call to subscribe to our event
 
 
+                    }
                 }
             }
+
         }
     }
 
     private fun monitorForAutoModMessageUpdates(){
         viewModelScope.launch {
-            twitchEventSubWebSocket.messageIdForAutoModQueue.collect{nullableAutoModMessage->
-                nullableAutoModMessage?.also {autoModMessage->
-                    Log.d("monitorForAutoModMessageUpdates","autoModMessage -->$autoModMessage")
-                    val item =autoModMessageList.find { it.messageId == autoModMessage.messageId}
-                    item?.also {
-                        val indexOfItem = autoModMessageList.indexOf(item)
-                        autoModMessageList[indexOfItem] =item.copy(
-                            approved = autoModMessage.approved,
-                            swiped = true
+            withContext(Dispatchers.IO) {
+                twitchEventSubWebSocket.messageIdForAutoModQueue.collect { nullableAutoModMessage ->
+                    nullableAutoModMessage?.also { autoModMessage ->
+                        Log.d(
+                            "monitorForAutoModMessageUpdates",
+                            "autoModMessage -->$autoModMessage"
                         )
+                        val item =
+                            autoModMessageList.find { it.messageId == autoModMessage.messageId }
+                        item?.also {
+                            val indexOfItem = autoModMessageList.indexOf(item)
+                            autoModMessageList[indexOfItem] = item.copy(
+                                approved = autoModMessage.approved,
+                                swiped = true
+                            )
+                        }
                     }
-
-
                 }
             }
         }
@@ -108,30 +117,34 @@ class ModViewViewModel @Inject constructor(
     fun createEventSubSubscription(){
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                showSubscriptionEventError = Response.Loading
-            )
-            delay(200)
-            twitchEventSub.createEventSubSubscription(
-                oAuthToken =_requestIds.value.oAuthToken,
-                clientId =_requestIds.value.clientId,
-                broadcasterId =_requestIds.value.broadcasterId,
-                moderatorId =_requestIds.value.moderatorId,
-                sessionId = _requestIds.value.sessionId,
-               type = "automod.message.hold"
-            ).collect{response ->
-                when(response){
-                    is Response.Loading->{}
-                    is Response.Success->{
-                        _uiState.value = _uiState.value.copy(
-                            showSubscriptionEventError = Response.Success(true)
-                        )
-                        createAnotherSubscriptionEvent()
-                    }
-                    is Response.Failure->{
-                        _uiState.value = _uiState.value.copy(
-                            showSubscriptionEventError = Response.Failure(response.e)
-                        )
+            withContext(Dispatchers.IO) {
+
+                _uiState.value = _uiState.value.copy(
+                    showSubscriptionEventError = Response.Loading
+                )
+                delay(200)
+                twitchEventSub.createEventSubSubscription(
+                    oAuthToken = _requestIds.value.oAuthToken,
+                    clientId = _requestIds.value.clientId,
+                    broadcasterId = _requestIds.value.broadcasterId,
+                    moderatorId = _requestIds.value.moderatorId,
+                    sessionId = _requestIds.value.sessionId,
+                    type = "automod.message.hold"
+                ).collect { response ->
+                    when (response) {
+                        is Response.Loading -> {}
+                        is Response.Success -> {
+                            _uiState.value = _uiState.value.copy(
+                                showSubscriptionEventError = Response.Success(true)
+                            )
+                            createAnotherSubscriptionEvent()
+                        }
+
+                        is Response.Failure -> {
+                            _uiState.value = _uiState.value.copy(
+                                showSubscriptionEventError = Response.Failure(response.e)
+                            )
+                        }
                     }
                 }
             }
@@ -139,6 +152,7 @@ class ModViewViewModel @Inject constructor(
     }
     fun createAnotherSubscriptionEvent(){
         viewModelScope.launch {
+            withContext(Dispatchers.IO){
             twitchEventSub.createEventSubSubscription(
                 oAuthToken =_requestIds.value.oAuthToken,
                 clientId =_requestIds.value.clientId,
@@ -146,34 +160,38 @@ class ModViewViewModel @Inject constructor(
                 moderatorId =_requestIds.value.moderatorId,
                 sessionId = _requestIds.value.sessionId,
                 type = "automod.message.update"
-            ).collect{response ->
-                when(response){
-                    is Response.Loading->{
-                        Log.d("createAnotherSubscriptionEvent","response -->LOADING")
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {
+                        Log.d("createAnotherSubscriptionEvent", "response -->LOADING")
                     }
-                    is Response.Success->{
-                        Log.d("createAnotherSubscriptionEvent","response -->SUCCESS")
+
+                    is Response.Success -> {
+                        Log.d("createAnotherSubscriptionEvent", "response -->SUCCESS")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
                     }
-                    is Response.Failure->{
-                        Log.d("createAnotherSubscriptionEvent","response -->FAILED")
+
+                    is Response.Failure -> {
+                        Log.d("createAnotherSubscriptionEvent", "response -->FAILED")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
                     }
                 }
             }
+            }
         }
     }
     fun monitorForAutoModMessages(){
         viewModelScope.launch {
-            twitchEventSubWebSocket.autoModMessageQueue.collect{nullableAutoModMessage->
-                nullableAutoModMessage?.also {autoModMessage ->
-                    autoModMessageList.add(autoModMessage)
+            withContext(Dispatchers.IO) {
+                twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
+                    nullableAutoModMessage?.also { autoModMessage ->
+                        autoModMessageList.add(autoModMessage)
+                    }
                 }
-
             }
         }
     }
@@ -195,6 +213,7 @@ class ModViewViewModel @Inject constructor(
         action:String
     ){
         viewModelScope.launch {
+            withContext(Dispatchers.IO){
             val requestBody =ManageAutoModMessage(
                 userId =_requestIds.value.moderatorId,
                 msgId=msgId,
@@ -209,33 +228,35 @@ class ModViewViewModel @Inject constructor(
                 oAuthToken = _requestIds.value.oAuthToken,
                 clientId = _requestIds.value.clientId,
                 manageAutoModMessageData = requestBody
-            ).collect{response ->
-                when(response){
-                    is Response.Loading ->{}
-                    is Response.Success ->{
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {}
+                    is Response.Success -> {
 
-                        if(action == "ALLOW"){
-                            autoModMessageList[indexOfItem] =item.copy(
+                        if (action == "ALLOW") {
+                            autoModMessageList[indexOfItem] = item.copy(
                                 approved = true,
                                 swiped = true
                             )
 
 
                         }
-                        if(action == "DENY"){
-                            autoModMessageList[indexOfItem] =item.copy(
+                        if (action == "DENY") {
+                            autoModMessageList[indexOfItem] = item.copy(
                                 approved = false,
                                 swiped = true
                             )
                         }
 
                     }
-                    is Response.Failure ->{
-                        autoModMessageList[indexOfItem] =item.copy(
+
+                    is Response.Failure -> {
+                        autoModMessageList[indexOfItem] = item.copy(
                             swiped = false
                         )
                     }
                 }
+            }
 
             }
         }
