@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.unit.dp
+import com.example.clicker.network.clients.BlockedTerm
 
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
@@ -92,7 +93,8 @@ fun ManageStreamInformation(
     autoModMessageList:List<AutoModQueueMessage>,
     manageAutoModMessage:(String,String,String)-> Unit,
     connectionError: Response<Boolean>,
-    reconnect:()->Unit
+    reconnect:()->Unit,
+    blockedTerms:List<BlockedTerm>
 
 ){
     if(showAutoModSettings){
@@ -153,7 +155,8 @@ fun ManageStreamInformation(
             autoModMessageList =autoModMessageList,
             manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
             connectionError =connectionError,
-            reconnect ={reconnect()}
+            reconnect ={reconnect()},
+            blockedTerms=blockedTerms
 
         )
     }

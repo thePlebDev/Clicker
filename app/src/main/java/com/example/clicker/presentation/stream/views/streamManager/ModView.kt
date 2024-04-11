@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 import com.example.clicker.R
+import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -132,7 +134,8 @@ object ModView {
         autoModMessageList:List<AutoModQueueMessage>,
         manageAutoModMessage:(String,String,String)-> Unit,
         connectionError: Response<Boolean>,
-        reconnect:()->Unit
+        reconnect:()->Unit,
+        blockedTerms:List<BlockedTerm>
 
     ){
         //todo: this is where the draggable boxes go
@@ -271,7 +274,8 @@ object ModView {
                 autoModMessageList =autoModMessageList,
                 manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
                 connectionError =connectionError,
-                reconnect ={reconnect()}
+                reconnect ={reconnect()},
+                blockedTerms=blockedTerms
 
             )
 
@@ -361,13 +365,17 @@ object ModView {
      * of `expanded` to determine if the [DropdownMenuColumn] should show or not.
      * */
     @Composable
-    fun DropDownMenuHeaderBox(headerTitle:String){
+    fun DropDownMenuHeaderBox(
+        headerTitle:String,
+        blockedTerms:List<BlockedTerm>
+    ){
         var expanded by remember { mutableStateOf(false) }
         //todo: animate the icon change
         Box(){
             DropdownMenuColumn(
                 expanded,
-                setExpanded ={newValue -> expanded = newValue}
+                setExpanded ={newValue -> expanded = newValue},
+                blockedTerms=blockedTerms
             )
             SectionHeaderRow(
                 title = headerTitle,
@@ -385,7 +393,8 @@ object ModView {
     @Composable
     fun DropdownMenuColumn(
         expanded:Boolean,
-        setExpanded:(Boolean)->Unit
+        setExpanded:(Boolean)->Unit,
+        blockedTerms:List<BlockedTerm>
     ) {
         var permittedWordsExpanded by remember {
             mutableStateOf(false)
@@ -393,6 +402,7 @@ object ModView {
         var bannedWordsExpanded by remember {
             mutableStateOf(false)
         }
+
 
         DropdownMenu(
                 expanded = expanded,
@@ -436,7 +446,8 @@ object ModView {
             BlockedTermsDropdownMenuItem(
                 bannedWordsExpanded =bannedWordsExpanded,
                 changeBannedWordsExpanded={newValue -> bannedWordsExpanded = newValue},
-                numberOfTermsBanned = 33
+                numberOfTermsBanned = blockedTerms.size,
+                blockedTerms =blockedTerms
             )
 
 
@@ -449,10 +460,13 @@ object ModView {
         bannedWordsExpanded:Boolean,
         changeBannedWordsExpanded:(Boolean)->Unit,
         numberOfTermsBanned:Int,
+        blockedTerms:List<BlockedTerm>
     ){
         //so we need another Item that opens up
         DropdownMenuItem(
-            onClick = {},
+            onClick = {
+                changeBannedWordsExpanded(true)
+            },
             text = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -471,6 +485,11 @@ object ModView {
             }
         ) //end of DropdownMenuItem
 
+        AddSearchPermittedTermsDropdownMenu(
+            expanded= bannedWordsExpanded,
+            changeExpanded={newValue ->changeBannedWordsExpanded(newValue)},
+            blockedTerms =blockedTerms
+        )
 
 
     }
@@ -478,9 +497,11 @@ object ModView {
     @Composable
     fun AddSearchPermittedTermsDropdownMenu(
         expanded:Boolean,
-        changeExpanded: (Boolean) -> Unit
+        changeExpanded: (Boolean) -> Unit,
+        blockedTerms:List<BlockedTerm>
     ){
         var text by remember { mutableStateOf("Hello") }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { changeExpanded(false) },
@@ -530,9 +551,12 @@ object ModView {
                             }
                         }
 
-                        Text("ACTIVE TERMS (1)",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                        Text("ACTIVE TERMS",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                         //todo: MAKE A LAZYCOLUMN OF MAX SIZE
-                        PermittedTermsLazyColumn()
+
+                        PermittedTermsLazyColumn(
+                            listOfBlockedTerms = blockedTerms
+                        )
                     }
                 }
             )
@@ -540,17 +564,20 @@ object ModView {
     }
 
     @Composable
-    fun PermittedTermsLazyColumn(){
+    fun PermittedTermsLazyColumn(
+        listOfBlockedTerms:List<BlockedTerm>
+    ){
             LazyColumn(
                 modifier =Modifier.size(width =600.dp, height =200.dp)
             ){
-                items(20){
+
+                items(listOfBlockedTerms){blockedTerm ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
-                        Text("Fuck")
+                        Text(blockedTerm.text)
                         Row(verticalAlignment = Alignment.CenterVertically){
                             Icon(painter = painterResource(id =R.drawable.edit_24),
                                 contentDescription = "edit permitted term",modifier=Modifier.clickable {  })

@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
@@ -23,9 +24,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
 
 data class RequestIds(
     val oAuthToken:String ="",
@@ -52,6 +55,8 @@ class ModViewViewModel @Inject constructor(
     val  autoModMessageList = mutableStateListOf<AutoModQueueMessage>()
     private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
     val uiState: State<ModViewViewModelUIState> = _uiState
+
+     val blockedTermsList = mutableStateListOf<BlockedTerm>()
 
     init{
         monitorForSessionId()
@@ -205,7 +210,43 @@ class ModViewViewModel @Inject constructor(
             moderatorId =moderatorId
 
         )
+        getBlockedTerms(
+            oAuthToken=oAuthToken,
+            clientId =clientId,
+            broadcasterId=broadcasterId,
+            moderatorId=moderatorId
+        )
 
+    }
+    private fun getBlockedTerms(oAuthToken:String, clientId:String, broadcasterId:String, moderatorId:String){
+        Log.d("getBlockedTerms","oAuthToken -->$oAuthToken")
+        Log.d("getBlockedTerms","clientId -->$clientId")
+        Log.d("getBlockedTerms","broadcasterId -->$broadcasterId")
+        Log.d("getBlockedTerms","moderatorId -->$moderatorId")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                twitchEventSub.getBlockedTerms(
+                    oAuthToken=oAuthToken,
+                    clientId =clientId,
+                    broadcasterId=broadcasterId,
+                    moderatorId=moderatorId
+                ).collect{response ->
+                    when(response){
+                        is Response.Loading ->{
+                            Log.d("getBlockedTerms","response.code --> Loading")
+                        }
+                        is Response.Success ->{
+                            Log.d("getBlockedTerms","response.code --> Success")
+                            blockedTermsList.addAll(response.data)
+                        }
+                        is Response.Failure ->{
+                            Log.d("getBlockedTerms","response.code --> Failure")
+                        }
+                    }
+
+                }
+            }
+        }
     }
     fun manageAutoModMessage(
         msgId:String,
@@ -269,7 +310,5 @@ class ModViewViewModel @Inject constructor(
         Log.d("ModViewViewModel","onCleared()")
     }
 
-
-
-
 }
+

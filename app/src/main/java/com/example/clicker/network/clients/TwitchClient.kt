@@ -199,11 +199,32 @@ interface TwitchClient {
         @Body manageAutoModMessageData: ManageAutoModMessage
     ):Response<Void>
 
+    @GET("moderation/blocked_terms")
+    suspend fun getBlockedTerms(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorId: String,
+    ):Response<BlockedTermsData>
+
 
 
 
 
 }
+data class BlockedTermsData(
+    val data:List<BlockedTerm>
+)
+/**
+ * BlockedTerm represents a single block term from a [get-blocked-terms](https://dev.twitch.tv/docs/api/reference/#get-blocked-terms)
+ * end point
+ * */
+data class BlockedTerm(
+    val text:String,
+    val id:String,
+    val broadcaster_id: String,
+    val moderator_id: String,
+)
 /**
  * ManageAutoModMessage is a data class containing all the necessary data to send in a request body to the
  * [Manage Held AutoMod Messages](https://dev.twitch.tv/docs/api/reference/#manage-held-automod-messages) endpoint.

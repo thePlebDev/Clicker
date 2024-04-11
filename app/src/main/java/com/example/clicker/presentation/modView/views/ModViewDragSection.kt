@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.clicker.R
+import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
@@ -192,7 +193,8 @@ object ModViewDragSection {
         autoModMessageList:List<AutoModQueueMessage>,
         manageAutoModMessage:(String,String,String)-> Unit,
         connectionError: Response<Boolean>,
-        reconnect:()->Unit
+        reconnect:()->Unit,
+        blockedTerms:List<BlockedTerm>
 
         ) {
 
@@ -245,6 +247,7 @@ object ModViewDragSection {
                         showBanErrorMessage= showBanErrorMessage,
                         setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
                         banUser = {banUser()},
+                        blockedTerms =blockedTerms
                     )
                 }
 
@@ -418,6 +421,7 @@ object ModViewDragSection {
         showBanErrorMessage:Boolean,
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
+        blockedTerms:List<BlockedTerm>
 
         ){
         Log.d("ChatBoxTesting","RECOMP!!!!!!")
@@ -475,7 +479,7 @@ object ModViewDragSection {
                         .padding(vertical = 5.dp)
                 ){
                     stickyHeader {
-                        ModView.DropDownMenuHeaderBox(headerTitle ="CHAT")
+                        ModView.DropDownMenuHeaderBox(headerTitle ="CHAT",blockedTerms =blockedTerms)
                     }
                     scope.launch {
                         if(autoscroll){
