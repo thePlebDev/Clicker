@@ -818,6 +818,7 @@ object ModViewDragSection {
         autoModMessage: AutoModQueueMessage,
         manageAutoModMessage:(String,String,String)-> Unit
     ){
+        Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$autoModMessage")
 
         HorizontalDragDetectionBox(
             itemBeingDragged ={offset ->
@@ -1259,6 +1260,7 @@ object ModViewDragSection {
 
 
         val state = rememberDraggableActions()
+        val offset = if(swipeEnabled) state.offset.value else 0f
         var iconColor = hideIconColor
 
         if(dragging && !twoSwipeOnly){
@@ -1347,7 +1349,7 @@ object ModViewDragSection {
             )
 
 
-            itemBeingDragged(state.offset.value)
+            itemBeingDragged(offset)
 
         }
 

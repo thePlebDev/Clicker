@@ -25,11 +25,12 @@ class TwitchEventSub @Inject constructor(
         broadcasterId:String,
         moderatorId:String,
         sessionId:String,
+        type:String,
     ):Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
 
         val body = EvenSubSubscription(
-            type = "automod.message.hold",
+            type = type,
             version="1",
             condition = Condition(broadcaster_user_id =broadcasterId,moderator_user_id = moderatorId ),
             transport = Transport(session_id = sessionId)
