@@ -12,6 +12,7 @@ interface TwitchEventSubscriptions {
         broadcasterId:String,
         moderatorId:String,
         sessionId:String,
+        type:String,
     ): Flow<Response<Boolean>>
 
     fun manageAutoModMessage(

@@ -24,6 +24,10 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
     // The UI collects from this StateFlow to get its state updates
     override val autoModMessageQueue: StateFlow<AutoModQueueMessage?> = _autoModMessageQueue
 
+    private val _messageIdForAutoModQueue: MutableStateFlow<AutoModMessageUpdate?> = MutableStateFlow(null)
+    // The UI collects from this StateFlow to get its state updates
+    override val messageIdForAutoModQueue: StateFlow<AutoModMessageUpdate?> = _messageIdForAutoModQueue
+
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
 
@@ -45,10 +49,39 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
         if(notificationTypeIsNotification(text)){
             //Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->${parseAutoModQueueMessage(text)}")
-            Log.d("TwitchEventSubWebSocket","notificationTypeIsNotification  ->$text")
-            _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
+            val subscriptionType = parseSubscriptionType(text)
+
+            //todo: These could probably be stored in maps
+            if(subscriptionType =="automod.message.hold"){
+                _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
+            }
+            else if(subscriptionType =="automod.message.update"){
+                val messageId =parseMessageId(text)?:""
+                val messageUpdate = checkUpdateStatus(text,messageId)
+                _messageIdForAutoModQueue.tryEmit(messageUpdate)
+            }
+
         }
         Log.d("TwitchEventSubWebSocket","onMessage() text ->$text")
+        Log.d("createAnotherSubscriptionEvent","onMessage text -->$text")
+
+    }
+    fun checkUpdateStatus(
+        text:String,
+        messageId: String
+    ):AutoModMessageUpdate{
+        val type =parseStatusType(text)
+        if(type =="denied"){
+            return AutoModMessageUpdate(
+                approved = false,
+                messageId = messageId
+            )
+        }else{
+            return AutoModMessageUpdate(
+                approved = true,
+                messageId = messageId
+            )
+        }
 
     }
 
@@ -137,6 +170,40 @@ fun notificationTypeIsWelcome(stringToParse:String):Boolean{
     return messageType == wantedNotification
 }
 
+fun parseSubscriptionType(stringToParse:String):String{
+    val messageTypeRegex = "\"subscription_type\":([^,]+)".toRegex()
+    val subscriptionType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    return subscriptionType?:""
+}
+fun parseMessageId(stringToParse:String):String?{
+    val messageIdRegex = "\"message_id\":([^=]+)".toRegex()
+    val allFoundMessageIdList = messageIdRegex.findAll(stringToParse).toList()
+    return if(allFoundMessageIdList.size >=2){
+        val messageIdNoQuotes=allFoundMessageIdList[1].groupValues[1].replace("\"","")
+        val newMessageRegex = "[^,]+".toRegex()
+        val desiredMessageId = newMessageRegex.find(messageIdNoQuotes)?.value
+        desiredMessageId
+    }else{
+        null
+    }
+
+
+}
+
+fun parseStatusType(stringToParse:String):String?{
+    val messageIdRegex = "\"status\":([^,]+)".toRegex()
+    val allFoundMessageIdList = messageIdRegex.findAll(stringToParse).toList()
+    println("size -->${allFoundMessageIdList.size}")
+    return if(allFoundMessageIdList.size >=2){
+        val messageIdNoQuotes=allFoundMessageIdList[1].groupValues[1].replace("\"","")
+        val newMessageRegex = "[^,]+".toRegex()
+        val desiredMessageId = newMessageRegex.find(messageIdNoQuotes)?.value
+        desiredMessageId
+    }else{
+        null
+    }
+}
+
 
 /**
  * parseAutoModQueueMessage is a function meant to parse out the username, category and fullText from the
@@ -194,5 +261,9 @@ data class AutoModQueueMessage(
     val userId:String,
     var approved:Boolean? = null,
     var swiped:Boolean = false,
+)
 
+data class AutoModMessageUpdate(
+    val approved: Boolean,
+    val messageId: String
 )

@@ -4,6 +4,9 @@ import com.example.clicker.network.websockets.notificationTypeIsNotification
 import com.example.clicker.network.websockets.notificationTypeIsWelcome
 import com.example.clicker.network.websockets.parseAutoModQueueMessage
 import com.example.clicker.network.websockets.parseEventSubWelcomeMessage
+import com.example.clicker.network.websockets.parseMessageId
+import com.example.clicker.network.websockets.parseStatusType
+import com.example.clicker.network.websockets.parseSubscriptionType
 import org.junit.Assert
 import org.junit.Test
 
@@ -66,6 +69,59 @@ class TwitchEventSubWebSocketTest {
         /**THEN*/
         Assert.assertEquals(true, actualMessage)
     }
+    @Test
+    fun parsing_autoMod_message_update(){
+        /**GIVEN*/
+        val stringToParse ="{\"metadata\":{\"message_id\":\"trwb-ee6WBXSZDdemn75iaGC8r01keqycRu2U3EWoDA=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-04-11T15:40:11.138443076Z\",\"subscription_type\":\"automod.message.update\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"4bc7826f-1f11-481a-8c58-d758fcda5fb8\",\"status\":\"enabled\",\"type\":\"automod.message.update\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQGQKjr3lXTpGzHUlC6WPNQBIGY2VsbC1i\"},\"created_at\":\"2024-04-11T15:39:34.564728572Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"message_id\":\"6dfe9f99-7525-4dfd-acd2-32500427761f\",\"message\":{\"text\":\"fucking this dude wtf\",\"fragments\":[{\"type\":\"text\",\"text\":\"fucking\",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\" this dude \",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\"wtf\",\"cheermote\":null,\"emote\":null}]},\"category\":\"swearing\",\"level\":4,\"status\":\"denied\",\"held_at\":\"2024-04-11T15:39:55.553668661Z\"}}}"
+
+        val expectedSubscriptionType ="automod.message.update"
+        val expectedMessageId ="6dfe9f99-7525-4dfd-acd2-32500427761f"
+
+        /**WHEN*/
+        val subscriptionType = parseSubscriptionType(stringToParse)
+        val messageId =parseMessageId(stringToParse)
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedSubscriptionType, subscriptionType)
+        Assert.assertEquals(expectedMessageId, messageId)
+    }
+
+    @Test
+    fun parsing_autoMod_message_update_status(){
+        /**GIVEN*/
+        val stringToParse ="{\"metadata\":{\"message_id\":\"trwb-ee6WBXSZDdemn75iaGC8r01keqycRu2U3EWoDA=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-04-11T15:40:11.138443076Z\",\"subscription_type\":\"automod.message.update\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"4bc7826f-1f11-481a-8c58-d758fcda5fb8\",\"status\":\"enabled\",\"type\":\"automod.message.update\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQGQKjr3lXTpGzHUlC6WPNQBIGY2VsbC1i\"},\"created_at\":\"2024-04-11T15:39:34.564728572Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"message_id\":\"6dfe9f99-7525-4dfd-acd2-32500427761f\",\"message\":{\"text\":\"fucking this dude wtf\",\"fragments\":[{\"type\":\"text\",\"text\":\"fucking\",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\" this dude \",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\"wtf\",\"cheermote\":null,\"emote\":null}]},\"category\":\"swearing\",\"level\":4,\"status\":\"denied\",\"held_at\":\"2024-04-11T15:39:55.553668661Z\"}}}"
+        val expectedStatus ="denied"
+
+        /**WHEN*/
+        val status=  parseStatusType(stringToParse)
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedStatus, status)
+
+
+    }
+
+    @Test
+    fun parsing_autoMod_message_hold(){
+        /**GIVEN*/
+        val stringToParse ="{\"metadata\":{\"message_id\":\"Ydtu-bdsaX3N4mpOFq_4t_NopStBaZvOVEdJFLF32gk=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-04-07T17:31:05.637055709Z\",\"subscription_type\":\"automod.message.hold\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"188aac9d-eeae-4f34-b2bf-e26ec6f2de3a\",\"status\":\"enabled\",\"type\":\"automod.message.hold\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQokeExKb9Sbi1Wd6DgL0pWRIGY2VsbC1i\"},\"created_at\":\"2024-04-07T17:28:09.657846521Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"message_id\":\"307352ba-ed6c-4a1c-8f15-110e56a6595a\",\"message\":{\"text\":\"fucking dude wtf testing\",\"fragments\":[{\"type\":\"text\",\"text\":\"fucking\",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\" dude \",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\"wtf\",\"cheermote\":null,\"emote\":null},{\"type\":\"text\",\"text\":\" testing\",\"cheermote\":null,\"emote\":null}]},\"category\":\"swearing\",\"level\":4,\"held_at\":\"2024-04-07T17:31:04.841129605Z\"}}}"
+        val expectedSubscriptionType ="automod.message.hold"
+
+        /**WHEN*/
+        val subscriptionType = parseSubscriptionType(stringToParse)
+
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedSubscriptionType, subscriptionType)
+
+    }
+
+
+
+
 
 }
 

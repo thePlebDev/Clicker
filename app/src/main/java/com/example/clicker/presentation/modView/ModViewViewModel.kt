@@ -51,21 +51,15 @@ class ModViewViewModel @Inject constructor(
     private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
     val uiState: State<ModViewViewModelUIState> = _uiState
 
-
-//    init{
-//        //todo: THIS SHOULD BE CALLED WHEN THE USER CLICKS A STREAM PAGE, NOT IN THIS INIT FUCNTION
-//        viewModelScope.launch {
-//            twitchEventSubWebSocket.newWebSocket()
-//
-//        }
-//    }
     init{
         monitorForSessionId()
     }
 
     init{
         monitorForAutoModMessages()
-
+    }
+    init{
+        monitorForAutoModMessageUpdates()
     }
     fun createNewTwitchEventWebSocket(){
         twitchEventSubWebSocket.newWebSocket()
@@ -91,6 +85,26 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
+    private fun monitorForAutoModMessageUpdates(){
+        viewModelScope.launch {
+            twitchEventSubWebSocket.messageIdForAutoModQueue.collect{nullableAutoModMessage->
+                nullableAutoModMessage?.also {autoModMessage->
+                    Log.d("monitorForAutoModMessageUpdates","autoModMessage -->$autoModMessage")
+                    val item =autoModMessageList.find { it.messageId == autoModMessage.messageId}
+                    item?.also {
+                        val indexOfItem = autoModMessageList.indexOf(item)
+                        autoModMessageList[indexOfItem] =item.copy(
+                            approved = autoModMessage.approved,
+                            swiped = true
+                        )
+                    }
+
+
+                }
+            }
+        }
+    }
+
     fun createEventSubSubscription(){
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
@@ -103,7 +117,8 @@ class ModViewViewModel @Inject constructor(
                 clientId =_requestIds.value.clientId,
                 broadcasterId =_requestIds.value.broadcasterId,
                 moderatorId =_requestIds.value.moderatorId,
-                sessionId = _requestIds.value.sessionId
+                sessionId = _requestIds.value.sessionId,
+               type = "automod.message.hold"
             ).collect{response ->
                 when(response){
                     is Response.Loading->{}
@@ -111,8 +126,39 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
+                        createAnotherSubscriptionEvent()
                     }
                     is Response.Failure->{
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Failure(response.e)
+                        )
+                    }
+                }
+            }
+        }
+    }
+    fun createAnotherSubscriptionEvent(){
+        viewModelScope.launch {
+            twitchEventSub.createEventSubSubscription(
+                oAuthToken =_requestIds.value.oAuthToken,
+                clientId =_requestIds.value.clientId,
+                broadcasterId =_requestIds.value.broadcasterId,
+                moderatorId =_requestIds.value.moderatorId,
+                sessionId = _requestIds.value.sessionId,
+                type = "automod.message.update"
+            ).collect{response ->
+                when(response){
+                    is Response.Loading->{
+                        Log.d("createAnotherSubscriptionEvent","response -->LOADING")
+                    }
+                    is Response.Success->{
+                        Log.d("createAnotherSubscriptionEvent","response -->SUCCESS")
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Success(true)
+                        )
+                    }
+                    is Response.Failure->{
+                        Log.d("createAnotherSubscriptionEvent","response -->FAILED")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
@@ -155,8 +201,9 @@ class ModViewViewModel @Inject constructor(
                 action=action
             )
 
-            val item =autoModMessageList.find { it.messageId == msgId}
-            item?.swiped = true
+            val item =autoModMessageList.find { it.messageId == msgId}!!
+            val indexOfItem = autoModMessageList.indexOf(item)
+
 //
             twitchEventSub.manageAutoModMessage(
                 oAuthToken = _requestIds.value.oAuthToken,
@@ -168,18 +215,25 @@ class ModViewViewModel @Inject constructor(
                     is Response.Success ->{
 
                         if(action == "ALLOW"){
-                            item?.approved = true
-                            item?.swiped = true
+                            autoModMessageList[indexOfItem] =item.copy(
+                                approved = true,
+                                swiped = true
+                            )
+
+
                         }
                         if(action == "DENY"){
-                            item?.approved = false
-                            item?.swiped = true
+                            autoModMessageList[indexOfItem] =item.copy(
+                                approved = false,
+                                swiped = true
+                            )
                         }
 
                     }
                     is Response.Failure ->{
-
-                        item?.swiped = false
+                        autoModMessageList[indexOfItem] =item.copy(
+                            swiped = false
+                        )
                     }
                 }
 
