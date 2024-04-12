@@ -194,7 +194,8 @@ object ModViewDragSection {
         manageAutoModMessage:(String,String,String)-> Unit,
         connectionError: Response<Boolean>,
         reconnect:()->Unit,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
 
         ) {
 
@@ -247,7 +248,8 @@ object ModViewDragSection {
                         showBanErrorMessage= showBanErrorMessage,
                         setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
                         banUser = {banUser()},
-                        blockedTerms =blockedTerms
+                        blockedTerms =blockedTerms,
+                        deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
                     )
                 }
 
@@ -421,7 +423,8 @@ object ModViewDragSection {
         showBanErrorMessage:Boolean,
         setBanShowErrorMessage:(Boolean)->Unit,
         banUser:()->Unit,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
 
         ){
         Log.d("ChatBoxTesting","RECOMP!!!!!!")
@@ -479,7 +482,11 @@ object ModViewDragSection {
                         .padding(vertical = 5.dp)
                 ){
                     stickyHeader {
-                        ModView.DropDownMenuHeaderBox(headerTitle ="CHAT",blockedTerms =blockedTerms)
+                        ModView.DropDownMenuHeaderBox(
+                            headerTitle ="CHAT",
+                            blockedTerms =blockedTerms,
+                            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+                        )
                     }
                     scope.launch {
                         if(autoscroll){

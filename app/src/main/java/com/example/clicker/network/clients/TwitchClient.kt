@@ -207,6 +207,15 @@ interface TwitchClient {
         @Query("moderator_id") moderatorId: String,
     ):Response<BlockedTermsData>
 
+    @DELETE("moderation/blocked_terms")
+    suspend fun deleteBlockedTerm(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorId: String,
+        @Query("id") id: String,
+    ):Response<Void>
+
 
 
 

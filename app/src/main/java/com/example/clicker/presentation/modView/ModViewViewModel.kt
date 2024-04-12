@@ -304,6 +304,38 @@ class ModViewViewModel @Inject constructor(
 
     }
 
+    fun deleteBlockedTerm(id:String){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                twitchEventSub.deleteBlockedTerm(
+                    oAuthToken = _requestIds.value.oAuthToken,
+                    clientId = _requestIds.value.clientId,
+                    broadcasterId = _requestIds.value.broadcasterId,
+                    moderatorId = _requestIds.value.moderatorId,
+                    id = id
+                ).collect{response ->
+//                    val item =blockedTermsList.find { it.id == id}!!
+//                    val indexOfItem = blockedTermsList.toList().indexOf(item)
+                    when(response){
+                        is Response.Loading ->{
+                            Log.d("deleteBlockedTerm","LOADING")
+
+                        }
+                        is Response.Success ->{
+                            Log.d("deleteBlockedTerm","SUCCESS")
+                            blockedTermsList.removeIf { it.id == id }
+
+
+                        }
+                        is Response.Failure ->{
+                            Log.d("deleteBlockedTerm","FAILURE")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         twitchEventSubWebSocket.closeWebSocket()

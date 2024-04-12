@@ -94,7 +94,8 @@ fun ManageStreamInformation(
     manageAutoModMessage:(String,String,String)-> Unit,
     connectionError: Response<Boolean>,
     reconnect:()->Unit,
-    blockedTerms:List<BlockedTerm>
+    blockedTerms:List<BlockedTerm>,
+    deleteBlockedTerm:(String) ->Unit,
 
 ){
     if(showAutoModSettings){
@@ -156,7 +157,8 @@ fun ManageStreamInformation(
             manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
             connectionError =connectionError,
             reconnect ={reconnect()},
-            blockedTerms=blockedTerms
+            blockedTerms=blockedTerms,
+            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
 
         )
     }

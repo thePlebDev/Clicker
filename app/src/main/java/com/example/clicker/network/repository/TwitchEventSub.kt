@@ -115,5 +115,41 @@ class TwitchEventSub @Inject constructor(
 
     }
 
+    override fun deleteBlockedTerm(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        id: String
+    ): Flow<Response<Boolean>> = flow{
+        emit(Response.Loading)
+        val response = twitchClient.deleteBlockedTerm(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId=broadcasterId,
+            moderatorId =moderatorId,
+            id =id
+        )
+
+        if (response.isSuccessful) {
+            Log.d("deleteBlockedTerm","SUCCESS")
+            Log.d("deleteBlockedTerm","response.code --> ${response.code()}")
+            Log.d("deleteBlockedTerm","response.message --> ${response.message()}")
+            emit(Response.Success(true))
+        } else {
+            Log.d("deleteBlockedTerm","FAILED")
+            Log.d("deleteBlockedTerm","response.code --> ${response.code()}")
+            Log.d("deleteBlockedTerm","response.message --> ${response.message()}")
+            emit(Response.Failure(Exception("Failed action")))
+        }
+
+    }.catch { cause ->
+        Log.d("getBlockedTerms","ERROR CAUGHT")
+        Log.d("getBlockedTerms","cause.message --> ${cause.message}")
+        Log.d("manageAutoModMessage","cause --> ${cause}")
+        emit(Response.Failure(Exception("Error")))
+
+    }
+
 
 }

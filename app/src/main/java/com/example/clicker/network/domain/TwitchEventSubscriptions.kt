@@ -66,4 +66,24 @@ interface TwitchEventSubscriptions {
         broadcasterId:String,
         moderatorId:String,
     ):Flow<Response<List<BlockedTerm>>>
+
+    /**
+     * deleteBlockedTerm() is called to remove an individual term from the broadcaster's blocked terms. More info can be found,
+     * [HERE](https://dev.twitch.tv/docs/api/reference/#remove-blocked-term)
+     *
+     * @param oAuthToken a token representing all the authentication scopes the logged in user has access to
+     * @param clientId represents the identity of the user authentication
+     * @param broadcasterId represents the broadcaster who's stream is currently being watched
+     * @param moderatorId represents the user that is watching the stream
+     * @param id represents the ID of the blocked term to remove from the broadcaster’s list of blocked terms.
+     *
+     * @return a list of [BlockedTerm] objects
+     * */
+    fun deleteBlockedTerm(
+        oAuthToken:String,
+        clientId:String,
+        broadcasterId:String,
+        moderatorId:String,
+        id:String,
+    ):Flow<Response<Boolean>>
 }
