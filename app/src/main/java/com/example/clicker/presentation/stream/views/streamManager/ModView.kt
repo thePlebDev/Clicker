@@ -531,25 +531,6 @@ object ModView {
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("SEARCH FOR A TERM TO ADD",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            OutlinedTextField(
-                                value = text,
-                                onValueChange = { text = it },
-                                label = { Text("Label") }
-                            )
-                            Button(
-                                onClick ={},
-                                shape = RoundedCornerShape(4),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                            ) {
-                                Text(" Add ",fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onSecondary)
-                            }
-                        }
 
                         Text("ACTIVE TERMS",fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                         //todo: MAKE A LAZYCOLUMN OF MAX SIZE
@@ -579,8 +560,7 @@ object ModView {
                     ){
                         Text(blockedTerm.text)
                         Row(verticalAlignment = Alignment.CenterVertically){
-                            Icon(painter = painterResource(id =R.drawable.edit_24),
-                                contentDescription = "edit permitted term",modifier=Modifier.clickable {  })
+
                             Spacer(modifier =Modifier.width(10.dp))
                             Icon(painter = painterResource(id =R.drawable.delete_outline_24),
                                 contentDescription = "delete permitted term",modifier=Modifier.clickable {  })
