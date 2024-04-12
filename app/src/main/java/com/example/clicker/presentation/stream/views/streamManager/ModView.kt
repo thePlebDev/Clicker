@@ -135,7 +135,8 @@ object ModView {
         manageAutoModMessage:(String,String,String)-> Unit,
         connectionError: Response<Boolean>,
         reconnect:()->Unit,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
 
     ){
         //todo: this is where the draggable boxes go
@@ -275,7 +276,8 @@ object ModView {
                 manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
                 connectionError =connectionError,
                 reconnect ={reconnect()},
-                blockedTerms=blockedTerms
+                blockedTerms=blockedTerms,
+                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
 
             )
 
@@ -367,7 +369,8 @@ object ModView {
     @Composable
     fun DropDownMenuHeaderBox(
         headerTitle:String,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
     ){
         var expanded by remember { mutableStateOf(false) }
         //todo: animate the icon change
@@ -375,7 +378,8 @@ object ModView {
             DropdownMenuColumn(
                 expanded,
                 setExpanded ={newValue -> expanded = newValue},
-                blockedTerms=blockedTerms
+                blockedTerms=blockedTerms,
+                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
             )
             SectionHeaderRow(
                 title = headerTitle,
@@ -394,7 +398,8 @@ object ModView {
     fun DropdownMenuColumn(
         expanded:Boolean,
         setExpanded:(Boolean)->Unit,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
     ) {
         var permittedWordsExpanded by remember {
             mutableStateOf(false)
@@ -447,7 +452,8 @@ object ModView {
                 bannedWordsExpanded =bannedWordsExpanded,
                 changeBannedWordsExpanded={newValue -> bannedWordsExpanded = newValue},
                 numberOfTermsBanned = blockedTerms.size,
-                blockedTerms =blockedTerms
+                blockedTerms =blockedTerms,
+                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
             )
 
 
@@ -460,7 +466,8 @@ object ModView {
         bannedWordsExpanded:Boolean,
         changeBannedWordsExpanded:(Boolean)->Unit,
         numberOfTermsBanned:Int,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
     ){
         //so we need another Item that opens up
         DropdownMenuItem(
@@ -488,7 +495,8 @@ object ModView {
         AddSearchPermittedTermsDropdownMenu(
             expanded= bannedWordsExpanded,
             changeExpanded={newValue ->changeBannedWordsExpanded(newValue)},
-            blockedTerms =blockedTerms
+            blockedTerms =blockedTerms,
+            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
         )
 
 
@@ -498,7 +506,8 @@ object ModView {
     fun AddSearchPermittedTermsDropdownMenu(
         expanded:Boolean,
         changeExpanded: (Boolean) -> Unit,
-        blockedTerms:List<BlockedTerm>
+        blockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
     ){
         var text by remember { mutableStateOf("Hello") }
 
@@ -536,7 +545,8 @@ object ModView {
                         //todo: MAKE A LAZYCOLUMN OF MAX SIZE
 
                         PermittedTermsLazyColumn(
-                            listOfBlockedTerms = blockedTerms
+                            listOfBlockedTerms = blockedTerms,
+                            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
                         )
                     }
                 }
@@ -546,7 +556,8 @@ object ModView {
 
     @Composable
     fun PermittedTermsLazyColumn(
-        listOfBlockedTerms:List<BlockedTerm>
+        listOfBlockedTerms:List<BlockedTerm>,
+        deleteBlockedTerm:(String) ->Unit,
     ){
             LazyColumn(
                 modifier =Modifier.size(width =600.dp, height =200.dp)
@@ -563,7 +574,9 @@ object ModView {
 
                             Spacer(modifier =Modifier.width(10.dp))
                             Icon(painter = painterResource(id =R.drawable.delete_outline_24),
-                                contentDescription = "delete permitted term",modifier=Modifier.clickable {  })
+                                contentDescription = "delete permitted term",modifier=Modifier.clickable {
+                                    deleteBlockedTerm(blockedTerm.id)
+                                })
                         }
 
                     }

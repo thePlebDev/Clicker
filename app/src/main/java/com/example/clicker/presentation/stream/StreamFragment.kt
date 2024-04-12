@@ -459,7 +459,8 @@ fun setOrientation(
                     manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)},
                     connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
                     reconnect ={modViewViewModel.createEventSubSubscription()},
-                    blockedTerms =modViewViewModel.blockedTermsList
+                    blockedTerms =modViewViewModel.blockedTermsList,
+                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)}
 
                 )
 
