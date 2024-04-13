@@ -174,6 +174,7 @@ object ModViewDragSection {
         slowModeList: List<ListTitleValue>,
         selectedSlowModeItem: ListTitleValue,
         changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+        deleteMessage:(String)->Unit,
 
         ) {
 
@@ -241,6 +242,7 @@ object ModViewDragSection {
                         slowModeList=slowModeList,
                         selectedSlowModeItem=selectedSlowModeItem,
                         changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+                        deleteMessage={messageId ->deleteMessage(messageId)}
                     )
                 }
 
@@ -408,6 +410,7 @@ object ModViewDragSection {
         banReason:String,
         changeBanReason: (String) -> Unit,
         timeoutUser:()->Unit,
+        deleteMessage:(String)->Unit,
 
         showTimeoutErrorMessage:Boolean,
         setTimeoutShowErrorMessage:(Boolean)->Unit,
@@ -561,7 +564,10 @@ object ModViewDragSection {
                                         updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
                                         showBanDialog =true
                                     },
-                                    halfSwipeAction={},
+                                    halfSwipeAction={
+                                        deleteMessage(chatTwitchUserData.id?:"")
+
+                                    },
                                     twoSwipeOnly = false,
                                     swipeEnabled = chatTwitchUserData.mod !="1"
 

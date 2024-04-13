@@ -715,42 +715,6 @@ class ModViewViewModel @Inject constructor(
 
     }
 
-    private suspend fun updateChatSettings(
-        authorizationToken: String,
-        clientId: String,
-        broadcasterId: String,
-        moderatorId: String,
-        body: ChatSettingsData
-    ){
-
-                twitchEventSub.updateModViewChatSettings(
-                    authorizationToken=authorizationToken,
-                    clientId=clientId,
-                    broadcasterId=broadcasterId,
-                    moderatorId=moderatorId,
-                    body=body
-                ).collect{response ->
-                    when(response){
-                        is Response.Loading ->{
-                            Log.d("updateModViewChatSettings", "collecting Loading")
-
-                        }
-                        is Response.Success ->{
-
-                            Log.d("updateModViewChatSettings", "collecting Success")
-                            Log.d("updateModViewChatSettings", "response ${response.data}")
-
-                        }
-                        is Response.Failure ->{
-                            Log.d("updateModViewChatSettings", "collecting FAILED")
-
-
-                        }
-                    }
-
-        }
-
-    }
 
     override fun onCleared() {
         super.onCleared()

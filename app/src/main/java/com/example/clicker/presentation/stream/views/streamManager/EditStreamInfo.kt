@@ -109,6 +109,7 @@ fun ManageStreamInformation(
     slowModeList: List<ListTitleValue>,
     selectedSlowModeItem: ListTitleValue,
     changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+    deleteMessage:(String)->Unit,
 
     ){
     if(showAutoModSettings){
@@ -186,6 +187,7 @@ fun ManageStreamInformation(
             slowModeList=slowModeList,
             selectedSlowModeItem=selectedSlowModeItem,
             changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+            deleteMessage ={messageId ->deleteMessage(messageId)}
 
 
         )
