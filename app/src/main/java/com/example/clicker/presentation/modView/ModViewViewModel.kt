@@ -15,6 +15,8 @@ import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
+import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.websockets.AutoModQueueMessage
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Flow.Subscriber
 import javax.inject.Inject
 
 
@@ -40,6 +43,38 @@ data class RequestIds(
 data class ModViewViewModelUIState(
     val showSubscriptionEventError:Response<Boolean> = Response.Loading,
     val showAutoModMessageQueueErrorMessage:Boolean = false,
+    val chatSettings: ChatSettingsData = ChatSettingsData(false,null,false,null,false,false),
+    val enabledChatSettings:Boolean = true,
+    val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
+    val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
+)
+data class ListTitleValue(
+    val title:String,
+    val value:Int?
+)
+
+val followerModeList =listOf(
+ListTitleValue("Off",null),ListTitleValue("0 minutes(any followers)",0),
+ListTitleValue("10 minutes(most used)",10),
+ListTitleValue("30 minutes",30),ListTitleValue( "1 hour",60),
+ListTitleValue("1 day",1440),
+    ListTitleValue("1 week",10080 ),
+    ListTitleValue("1 month",43200 ),
+    ListTitleValue("3 months",129600 )
+
+)
+//1 week 10080
+//1 month 43200
+//3 months 129600
+
+val slowModeList =listOf(
+    ListTitleValue("Off",null),
+    ListTitleValue("3s",3),
+    ListTitleValue("5s",5),
+    ListTitleValue("10s",10),
+    ListTitleValue( "20s",20),
+    ListTitleValue("30s",30),
+    ListTitleValue("60s",60 )
 )
 
 
@@ -202,6 +237,9 @@ class ModViewViewModel @Inject constructor(
     }
 
 
+
+
+
     fun updateAutoModTokens(oAuthToken:String,clientId:String,broadcasterId:String,moderatorId:String,){
         _requestIds.value = _requestIds.value.copy(
             oAuthToken = oAuthToken,
@@ -215,6 +253,12 @@ class ModViewViewModel @Inject constructor(
             clientId =clientId,
             broadcasterId=broadcasterId,
             moderatorId=moderatorId
+        )
+
+        getChatSettings(
+            oAuthToken=oAuthToken,
+            clientId =clientId,
+            broadcasterId=broadcasterId,
         )
 
     }
@@ -334,6 +378,102 @@ class ModViewViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun getChatSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String
+    ){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                twitchEventSub.getChatSettings(
+                    oAuthToken = oAuthToken,
+                    clientId = clientId,
+                    broadcasterId = broadcasterId,
+                ).collect{response ->
+                    when(response){
+                        is Response.Loading ->{
+                            Log.d("getChatSettings", "LOADING")
+                        }
+                        is Response.Success ->{
+                            val data = response.data.data[0]
+
+                            checkSlowModeWaitTime(data.slowModeWaitTime)
+                            checkFollowerModeDuration(data.followerModeDuration)
+
+                            _uiState.value = _uiState.value.copy(
+                                chatSettings = _uiState.value.chatSettings.copy(
+                                    slowMode = data.slowMode,
+                                    slowModeWaitTime = data.slowModeWaitTime,
+                                    followerMode =data.followerMode,
+                                    followerModeDuration =data.followerModeDuration,
+                                    subscriberMode=data.subscriberMode,
+                                    emoteMode = data.emoteMode,
+
+                                )
+                            )
+                            Log.d("getChatSettings", "COLLECT SUCCESS")
+                            Log.d("DataForChatSettings", "COLLECT data ->${response.data}")
+                        }
+                        is Response.Failure ->{
+                            Log.d("getChatSettings", "COLLECT FAILED")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkSlowModeWaitTime(
+        slowModeWaitTime:Int?,
+    ){
+        try{
+            val foundSlowItem = slowModeList.first { it.value == slowModeWaitTime }
+            _uiState.value = _uiState.value.copy(
+                selectedSlowMode = foundSlowItem
+            )
+        }catch (e:NoSuchElementException){
+            _uiState.value = _uiState.value.copy(
+                selectedSlowMode = ListTitleValue("Custom",slowModeWaitTime)
+            )
+
+        }
+    }
+    private fun checkFollowerModeDuration(followerModeDuration:Int?){
+        try{
+            val foundFollowerModeDuration = followerModeList.first { it.value == followerModeDuration }
+            _uiState.value = _uiState.value.copy(
+                selectedFollowerMode = foundFollowerModeDuration
+            )
+        }catch (e:NoSuchElementException){
+            _uiState.value = _uiState.value.copy(
+                selectedFollowerMode = ListTitleValue("Custom",followerModeDuration)
+            )
+
+        }
+    }
+
+
+    fun updateEmoteOnly(emoteValue:Boolean){
+        _uiState.value = _uiState.value.copy(
+            chatSettings = _uiState.value.chatSettings.copy(emoteMode = emoteValue)
+        )
+    }
+    fun updateSubscriberOnly(subscriberValue:Boolean){
+        _uiState.value = _uiState.value.copy(
+            chatSettings = _uiState.value.chatSettings.copy(subscriberMode = subscriberValue)
+        )
+    }
+    fun changeSelectedFollowersModeItem(selectedFollowerMode: ListTitleValue){
+        _uiState.value = _uiState.value.copy(
+            selectedFollowerMode = selectedFollowerMode
+        )
+    }
+    fun changeSelectedSlowModeItem(selectedSlowMode: ListTitleValue){
+        _uiState.value = _uiState.value.copy(
+            selectedSlowMode =selectedSlowMode
+        )
     }
 
     override fun onCleared() {

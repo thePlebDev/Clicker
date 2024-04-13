@@ -73,6 +73,7 @@ import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
 import com.example.clicker.presentation.stream.views.streamManager.ModView
@@ -99,41 +100,6 @@ import kotlin.math.roundToInt
  * @property IsModeratorButton
  * */
 object ModViewDragSection {
-    val fakeDataOne = TwitchUserDataObjectMother.addDisplayName("thePlebDev")
-        .addUserType("LUL get rekt kid").addColor("#BF40BF")
-        .addMod("1").addSubscriber(false).addMonitored(false)
-        .build()
-
-    val fakeDataTwo = TwitchUserDataObjectMother.addDisplayName("Meatball")
-        .addUserType("ok but what the heck was that").addColor("#FF0000")
-        .addMod("0").addSubscriber(true).addMonitored(false)
-        .build()
-
-    val fakeDataThree = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-        .addMod("1").addSubscriber(true).addMonitored(true)
-        .build()
-    val fakeDataFour = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-        .addMod("1").addSubscriber(true).addMonitored(true)
-        .build()
-    val fakeDataFive = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-        .addMod("1").addSubscriber(true).addMonitored(false)
-        .build()
-    val fakeDataSix = TwitchUserDataObjectMother.addDisplayName("Osaka456")
-        .addUserType("There do be another one. So don't worry").addColor("#0000FF")
-        .addMod("1").addSubscriber(true).addMonitored(false)
-        .build()
-
-    val fakeMessageDataList = listOf(
-        fakeDataOne,
-        fakeDataTwo,
-        fakeDataThree,
-        fakeDataFour,
-        fakeDataFive,
-        fakeDataSix
-    )
 
     /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
      * composables
@@ -196,6 +162,18 @@ object ModViewDragSection {
         reconnect:()->Unit,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+        chatSettingsEnabled:Boolean,
+        switchEnabled:Boolean,
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem: ListTitleValue,
+        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+        slowModeList: List<ListTitleValue>,
+        selectedSlowModeItem: ListTitleValue,
+        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
 
         ) {
 
@@ -249,7 +227,20 @@ object ModViewDragSection {
                         setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
                         banUser = {banUser()},
                         blockedTerms =blockedTerms,
-                        deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+                        deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
+                        emoteOnly =emoteOnly,
+                        setEmoteOnly={newValue -> setEmoteOnly(newValue)},
+                        subscriberOnly =subscriberOnly,
+                        setSubscriberOnly={newValue -> setSubscriberOnly(newValue)},
+
+                        chatSettingsEnabled=chatSettingsEnabled,
+                        switchEnabled =switchEnabled,
+                        followersOnlyList=followersOnlyList,
+                        selectedFollowersModeItem=selectedFollowersModeItem,
+                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+                        slowModeList=slowModeList,
+                        selectedSlowModeItem=selectedSlowModeItem,
+                        changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
                     )
                 }
 
@@ -425,6 +416,19 @@ object ModViewDragSection {
         banUser:()->Unit,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+        chatSettingsEnabled:Boolean,
+        switchEnabled: Boolean,
+
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem: ListTitleValue,
+        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+        slowModeList: List<ListTitleValue>,
+        selectedSlowModeItem: ListTitleValue,
+        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
 
         ){
         Log.d("ChatBoxTesting","RECOMP!!!!!!")
@@ -485,7 +489,19 @@ object ModViewDragSection {
                         ModView.DropDownMenuHeaderBox(
                             headerTitle ="CHAT",
                             blockedTerms =blockedTerms,
-                            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+                            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
+                            emoteOnly =emoteOnly,
+                            setEmoteOnly={newValue -> setEmoteOnly(newValue)},
+                            subscriberOnly =subscriberOnly,
+                            setSubscriberOnly ={newValue ->setSubscriberOnly(newValue)},
+                            chatSettingsEnabled=chatSettingsEnabled,
+                            switchEnabled=switchEnabled,
+                            followersOnlyList=followersOnlyList,
+                            selectedFollowersModeItem=selectedFollowersModeItem,
+                            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+                            slowModeList=slowModeList,
+                            selectedSlowModeItem=selectedSlowModeItem,
+                            changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
                         )
                     }
                     scope.launch {

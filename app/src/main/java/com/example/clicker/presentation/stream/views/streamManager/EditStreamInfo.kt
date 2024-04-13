@@ -32,6 +32,7 @@ import com.example.clicker.network.clients.BlockedTerm
 
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
+import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.ClickedUIState
@@ -96,8 +97,20 @@ fun ManageStreamInformation(
     reconnect:()->Unit,
     blockedTerms:List<BlockedTerm>,
     deleteBlockedTerm:(String) ->Unit,
+    emoteOnly:Boolean,
+    setEmoteOnly:(Boolean) ->Unit,
+    subscriberOnly:Boolean,
+    setSubscriberOnly:(Boolean) ->Unit,
 
-){
+    chatSettingsEnabled:Boolean,
+    followersOnlyList: List<ListTitleValue>,
+    selectedFollowersModeItem: ListTitleValue,
+    changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+    slowModeList: List<ListTitleValue>,
+    selectedSlowModeItem: ListTitleValue,
+    changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+
+    ){
     if(showAutoModSettings){
 
         EditAutoModSettingsScaffold(
@@ -158,7 +171,22 @@ fun ManageStreamInformation(
             connectionError =connectionError,
             reconnect ={reconnect()},
             blockedTerms=blockedTerms,
-            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
+            emoteOnly =emoteOnly,
+            setEmoteOnly={newValue -> setEmoteOnly(newValue)},
+            subscriberOnly =subscriberOnly,
+            setSubscriberOnly={newValue -> setSubscriberOnly(newValue)},
+
+            chatSettingsEnabled=chatSettingsEnabled,
+            switchEnabled = chatSettingsEnabled,
+
+            followersOnlyList=followersOnlyList,
+            selectedFollowersModeItem=selectedFollowersModeItem,
+            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+            slowModeList=slowModeList,
+            selectedSlowModeItem=selectedSlowModeItem,
+            changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+
 
         )
     }

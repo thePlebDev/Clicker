@@ -64,6 +64,7 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
+import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.SharedComponents
@@ -137,6 +138,21 @@ object ModView {
         reconnect:()->Unit,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+
+        chatSettingsEnabled:Boolean,
+        switchEnabled:Boolean,
+
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem: ListTitleValue,
+        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+        slowModeList: List<ListTitleValue>,
+        selectedSlowModeItem: ListTitleValue,
+        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
 
     ){
         //todo: this is where the draggable boxes go
@@ -277,7 +293,21 @@ object ModView {
                 connectionError =connectionError,
                 reconnect ={reconnect()},
                 blockedTerms=blockedTerms,
-                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
+                emoteOnly =emoteOnly,
+                setEmoteOnly={newValue -> setEmoteOnly(newValue)},
+                subscriberOnly =subscriberOnly,
+                setSubscriberOnly={newValue -> setSubscriberOnly(newValue)},
+
+                chatSettingsEnabled=chatSettingsEnabled,
+                switchEnabled=switchEnabled,
+                followersOnlyList=followersOnlyList,
+                selectedFollowersModeItem=selectedFollowersModeItem,
+                changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+                slowModeList=slowModeList,
+                selectedSlowModeItem=selectedSlowModeItem,
+                changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+
 
             )
 
@@ -371,6 +401,19 @@ object ModView {
         headerTitle:String,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+        chatSettingsEnabled:Boolean,
+        switchEnabled: Boolean,
+
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem: ListTitleValue,
+        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+        slowModeList: List<ListTitleValue>,
+        selectedSlowModeItem: ListTitleValue,
+        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
     ){
         var expanded by remember { mutableStateOf(false) }
         //todo: animate the icon change
@@ -379,7 +422,21 @@ object ModView {
                 expanded,
                 setExpanded ={newValue -> expanded = newValue},
                 blockedTerms=blockedTerms,
-                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
+                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
+                emoteOnly =emoteOnly,
+                setEmoteOnly={newValue -> setEmoteOnly(newValue)},
+                subscriberOnly =subscriberOnly,
+                setSubscriberOnly={newValue ->setSubscriberOnly(newValue)},
+                chatSettingsEnabled=chatSettingsEnabled,
+                switchEnabled=switchEnabled,
+
+                followersOnlyList=followersOnlyList,
+                selectedFollowersModeItem=selectedFollowersModeItem,
+                changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+                slowModeList=slowModeList,
+                selectedSlowModeItem=selectedSlowModeItem,
+                changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+
             )
             SectionHeaderRow(
                 title = headerTitle,
@@ -400,6 +457,20 @@ object ModView {
         setExpanded:(Boolean)->Unit,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+
+        chatSettingsEnabled:Boolean,
+        switchEnabled: Boolean,
+
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem: ListTitleValue,
+        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+        slowModeList: List<ListTitleValue>,
+        selectedSlowModeItem: ListTitleValue,
+        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
     ) {
         var permittedWordsExpanded by remember {
             mutableStateOf(false)
@@ -425,16 +496,30 @@ object ModView {
 
 
             EmoteOnlySwitch(
-                setExpanded ={newValue -> setExpanded(newValue)}
+                setExpanded ={newValue -> setExpanded(newValue)},
+                emoteOnly =emoteOnly,
+                setEmoteOnly={newValue ->setEmoteOnly(newValue)},
+                switchEnabled=switchEnabled
             )
             SubscriberOnlySwitch(
-                setExpanded ={newValue -> setExpanded(newValue)}
+                setExpanded ={newValue -> setExpanded(newValue)},
+                subscriberOnly = subscriberOnly,
+                setSubscriberOnly = {newValue -> setSubscriberOnly(newValue) },
+                switchEnabled=switchEnabled
             )
             FollowersOnlyCheck(
-                setExpanded ={newValue -> setExpanded(newValue)}
+                chatSettingsEnabled=chatSettingsEnabled,
+                setExpanded ={newValue -> setExpanded(newValue)},
+                followersOnlyList=followersOnlyList,
+                selectedFollowersModeItem=selectedFollowersModeItem,
+                changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)}
             )
             SlowModeCheck(
-                setExpanded ={newValue -> setExpanded(newValue)}
+                setExpanded ={newValue -> setExpanded(newValue)},
+                chatSettingsEnabled=chatSettingsEnabled,
+                slowModeList=slowModeList,
+                selectedSlowModeItem=selectedSlowModeItem,
+                changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
             )
             Spacer(modifier =Modifier.height(10.dp))
             Row(
@@ -509,7 +594,6 @@ object ModView {
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
     ){
-        var text by remember { mutableStateOf("Hello") }
 
         DropdownMenu(
             expanded = expanded,
@@ -591,7 +675,11 @@ object ModView {
 
     @Composable
     fun FollowersOnlyCheck(
-        setExpanded: (Boolean) -> Unit
+        setExpanded: (Boolean) -> Unit,
+        chatSettingsEnabled:Boolean,
+        followersOnlyList: List<ListTitleValue>,
+        selectedFollowersModeItem:ListTitleValue,
+        changeSelectedFollowersModeItem:(ListTitleValue)->Unit,
     ){
         DropdownMenuItem(
             onClick = {
@@ -610,10 +698,10 @@ object ModView {
                     }
                    // Text("Off", color = MaterialTheme.colorScheme.onPrimary)
                     EmbeddedDropDownMenu(
-                        titleList =listOf(
-                            "Off","0 minutes(any followers)","10 minutes(most used)",
-                            "30 minutes", "1 hour","1 day","1 month","3 months"
-                        )
+                        titleList =followersOnlyList,
+                        selectedItem = selectedFollowersModeItem,
+                        changeSelectedItem = {selectedItem ->changeSelectedFollowersModeItem(selectedItem)},
+                        chatSettingsEnabled =chatSettingsEnabled
                     )
                 }
             }
@@ -622,14 +710,17 @@ object ModView {
 
     @Composable
     fun EmbeddedDropDownMenu(
-        titleList: List<String>
+        titleList: List<ListTitleValue>, //this is the list shown to the user
+        selectedItem:ListTitleValue,
+        changeSelectedItem:(ListTitleValue)->Unit,
+        chatSettingsEnabled:Boolean
     ) {
 
-        var text by remember { mutableStateOf("Off") }
+        //var text by remember { mutableStateOf("Off") }
         var expanded by remember {
             mutableStateOf(false)
         }
-        var selectedIndex by remember { mutableStateOf(0) }
+        //todo: change this value to actual title stored in the viewModel
 
         Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
 
@@ -637,12 +728,14 @@ object ModView {
                 modifier = Modifier
                     .width(200.dp)
                     .clickable {
-                        Log.d("OutlinedTextFieldClickking", "CLICK")
-                        expanded = true
+                        if(chatSettingsEnabled){
+                            expanded = true
+                        }
                     },
                 enabled = false,
-                value = titleList[selectedIndex],
-                onValueChange = { text = it },
+                //todo: this is what is shown to the user as the selected choice
+                value = selectedItem.title,
+                onValueChange = { },
                 label = {  },
                 colors = TextFieldDefaults.colors(
                     disabledTextColor = Color.White,
@@ -667,8 +760,11 @@ object ModView {
                 for (item in titleList){
                     TextMenuItem(
                         setExpanded={newValue -> expanded=newValue},
-                        title = item,
-                        selectText={selectedIndex =titleList.indexOf(item) }
+                        title = item.title,
+                        selectText={
+                            //todo: changeSelectedTitle(it.title)
+                            changeSelectedItem(item)
+                        }
                     )
                 }
 
@@ -697,7 +793,11 @@ object ModView {
 
     @Composable
     fun SlowModeCheck(
-        setExpanded: (Boolean) -> Unit
+        setExpanded: (Boolean) -> Unit,
+        chatSettingsEnabled:Boolean,
+        selectedSlowModeItem:ListTitleValue,
+        changeSelectedSlowModeItem:(ListTitleValue)->Unit,
+        slowModeList: List<ListTitleValue>,
     ){
 
         DropdownMenuItem(
@@ -715,12 +815,12 @@ object ModView {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Slow Mode", color = MaterialTheme.colorScheme.onPrimary)
                     }
-                    // Text("Off", color = MaterialTheme.colorScheme.onPrimary)
+
                     EmbeddedDropDownMenu(
-                        titleList =listOf(
-                            "Off","3s","5s",
-                            "10s", "20s","30s","60s","120s"
-                        )
+                        titleList =slowModeList,
+                        selectedItem = selectedSlowModeItem,
+                        changeSelectedItem = {selectedValue ->changeSelectedSlowModeItem(selectedValue) },
+                        chatSettingsEnabled=chatSettingsEnabled
                     )
                 }
             }
@@ -730,6 +830,10 @@ object ModView {
     @Composable
     fun SubscriberOnlySwitch(
         setExpanded:(Boolean)->Unit,
+        subscriberOnly:Boolean,
+        setSubscriberOnly:(Boolean) ->Unit,
+        switchEnabled:Boolean
+
     ){
         DropdownMenuItem(
             onClick = {
@@ -746,7 +850,13 @@ object ModView {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Subscriber-only chat", color = MaterialTheme.colorScheme.onPrimary)
                     }
-                    SwitchMinimalExample()
+                    Switch(
+                        enabled=switchEnabled,
+                        checked = subscriberOnly,
+                        onCheckedChange = {
+                            setSubscriberOnly(it)
+                        }
+                    )
                 }
             }
         )
@@ -755,6 +865,9 @@ object ModView {
     @Composable
     fun EmoteOnlySwitch(
         setExpanded:(Boolean)->Unit,
+        emoteOnly:Boolean,
+        setEmoteOnly:(Boolean) ->Unit,
+        switchEnabled:Boolean
     ){
         DropdownMenuItem(
             onClick = {
@@ -771,21 +884,14 @@ object ModView {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Emotes-only chat", color = MaterialTheme.colorScheme.onPrimary)
                     }
-                    SwitchMinimalExample()
+                    Switch(
+                        enabled =switchEnabled,
+                        checked = emoteOnly,
+                        onCheckedChange = {
+                            setEmoteOnly(it)
+                        }
+                    )
                 }
-            }
-        )
-    }
-
-
-    @Composable
-    fun SwitchMinimalExample() {
-        var checked by remember { mutableStateOf(true) }
-
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                checked = it
             }
         )
     }

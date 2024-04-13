@@ -2,6 +2,7 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
+import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 /**
@@ -86,4 +87,13 @@ interface TwitchEventSubscriptions {
         moderatorId:String,
         id:String,
     ):Flow<Response<Boolean>>
+
+    /**
+     * - getChatSettings represents a GET method. A function meant to get the chat settings of the currently viewed stream
+     *
+     * @param oAuthToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * */
+    suspend fun getChatSettings(oAuthToken: String, clientId: String, broadcasterId: String): Flow<Response<ChatSettings>>
 }
