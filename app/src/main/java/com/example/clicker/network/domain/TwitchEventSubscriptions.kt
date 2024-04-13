@@ -2,9 +2,15 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
+import com.example.clicker.network.clients.ModViewChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import retrofit2.http.Body
+import retrofit2.http.Header
+import retrofit2.http.Query
+
 /**
  * TwitchEventSubscriptions is the interface that is used to get information related to the TwitchWebSocket.
  * It currently has 3 abstract methods:
@@ -88,6 +94,7 @@ interface TwitchEventSubscriptions {
         id:String,
     ):Flow<Response<Boolean>>
 
+
     /**
      * - getChatSettings represents a GET method. A function meant to get the chat settings of the currently viewed stream
      *
@@ -96,4 +103,13 @@ interface TwitchEventSubscriptions {
      * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
      * */
     suspend fun getChatSettings(oAuthToken: String, clientId: String, broadcasterId: String): Flow<Response<ChatSettings>>
+
+
+    fun updateModViewChatSettings(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        body: ChatSettingsData
+    ): Flow<Response<ModViewChatSettings>>
 }

@@ -8,6 +8,7 @@ import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
@@ -217,10 +218,37 @@ interface TwitchClient {
     ):Response<Void>
 
 
+    @Headers("Content-Type: application/json")
+    @PATCH("chat/settings")
+    suspend fun updateModViewChatSettings(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorId: String,
+        @Body body: ChatSettingsData
+
+    ): Response<ModViewChatSettings>
+
 
 
 
 }
+
+data class ModViewChatSettings(
+    val data: List<UpdatedModViewChatSetting>
+)
+
+data class UpdatedModViewChatSetting(
+    val broadcaster_id: String,
+    val moderator_id: String,
+    val slow_mode: Boolean,
+    val slow_mode_wait_time: Int?,
+    val follower_mode: Boolean,
+    val follower_mode_duration: Int?, // Change this to the actual type if known
+    val subscriber_mode: Boolean,
+    val emote_mode: Boolean,
+    val unique_chat_mode: Boolean,
+)
 data class BlockedTermsData(
     val data:List<BlockedTerm>
 )

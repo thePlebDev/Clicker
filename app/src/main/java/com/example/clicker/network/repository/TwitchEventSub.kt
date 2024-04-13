@@ -5,11 +5,13 @@ import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.Condition
 import com.example.clicker.network.clients.EvenSubSubscription
 import com.example.clicker.network.clients.ManageAutoModMessage
+import com.example.clicker.network.clients.ModViewChatSettings
 import com.example.clicker.network.clients.Transport
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.models.twitchStream.ChatSettings
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
@@ -178,6 +180,40 @@ class TwitchEventSub @Inject constructor(
     }.catch { cause ->
         Log.d("getChatSettings", "error caught")
 
+        emit(Response.Failure(Exception("Error")))
+    }
+
+    override fun updateModViewChatSettings(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        body: ChatSettingsData
+    ): Flow<Response<ModViewChatSettings>> = flow {
+        emit(Response.Loading)
+        val response = twitchClient.updateModViewChatSettings(
+            authorizationToken = "Bearer $authorizationToken",
+            clientId = clientId,
+            broadcasterId=broadcasterId,
+            moderatorId =moderatorId,
+            body=body
+        )
+
+        if (response.isSuccessful) {
+            Log.d("updateModViewChatSettings", "SUCCESS")
+            Log.d("updateModViewChatSettings", "code ->${response.code()}")
+            Log.d("updateModViewChatSettings", "message ->${response.message()}")
+            emit(Response.Success(response.body()!!))
+        } else {
+            Log.d("updateModViewChatSettings", "FAILED")
+            Log.d("updateModViewChatSettings", "code -->${response.code()}")
+            Log.d("updateModViewChatSettings", "body ---> ${response.body()}")
+            Log.d("updateModViewChatSettings", "message ---> ${response.message()}")
+            emit(Response.Failure(Exception("Error! Please try again")))
+        }
+    }.catch { cause ->
+        Log.d("updateModViewChatSettings", "error caught")
+        Log.d("updateModViewChatSettings", "cause -->${cause.message}")
         emit(Response.Failure(Exception("Error")))
     }
 
