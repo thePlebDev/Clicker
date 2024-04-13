@@ -9,6 +9,7 @@ import com.example.clicker.network.clients.Transport
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.TwitchEventSubscriptions
+import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
@@ -149,6 +150,35 @@ class TwitchEventSub @Inject constructor(
         Log.d("manageAutoModMessage","cause --> ${cause}")
         emit(Response.Failure(Exception("Error")))
 
+    }
+
+    override suspend fun getChatSettings(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String
+    ) = flow {
+        emit(Response.Loading)
+
+        val response = twitchClient.getChatSettings(
+            authorization = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId
+        )
+        if (response.isSuccessful) {
+            Log.d("getChatSettings", "SUCCESS")
+            Log.d("getChatSettings", "code ->${response.code()}")
+            Log.d("getChatSettings", "message ->${response.message()}")
+            emit(Response.Success(response.body()!!))
+        } else {
+            Log.d("getChatSettings", "FAILED")
+            Log.d("getChatSettings", "code -->${response.code()}")
+            Log.d("getChatSettings", "messaeg ---> ${response.message()}")
+            emit(Response.Failure(Exception("Error! Please try again")))
+        }
+    }.catch { cause ->
+        Log.d("getChatSettings", "error caught")
+
+        emit(Response.Failure(Exception("Error")))
     }
 
 

@@ -31,6 +31,8 @@ import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.modView.followerModeList
+import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.ManageStreamInformation
@@ -460,7 +462,19 @@ fun setOrientation(
                     connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
                     reconnect ={modViewViewModel.createEventSubSubscription()},
                     blockedTerms =modViewViewModel.blockedTermsList,
-                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)}
+                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)},
+                    emoteOnly = modViewViewModel.uiState.value.chatSettings.emoteMode,
+                    setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+                    subscriberOnly =modViewViewModel.uiState.value.chatSettings.subscriberMode,
+                    setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+
+                    chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
+                    followersOnlyList=followerModeList,
+                    selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+                    changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+                    slowModeList=slowModeList,
+                    selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+                    changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
 
                 )
 
