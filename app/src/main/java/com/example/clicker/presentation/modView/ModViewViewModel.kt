@@ -190,7 +190,7 @@ class ModViewViewModel @Inject constructor(
             }
         }
     }
-    fun createAnotherSubscriptionEvent(){
+    private fun createAnotherSubscriptionEvent(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){
             twitchEventSub.createEventSubSubscription(
@@ -211,6 +211,7 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
+                        createChatSettingsSubscriptionEvent()
                     }
 
                     is Response.Failure -> {
@@ -221,6 +222,46 @@ class ModViewViewModel @Inject constructor(
                     }
                 }
             }
+            }
+        }
+    }
+
+    private fun createChatSettingsSubscriptionEvent(){
+        Log.d("createChatSettingsSubscriptionEvent","oAuthToken -->${_requestIds.value.oAuthToken}")
+        Log.d("createChatSettingsSubscriptionEvent","clientId -->${_requestIds.value.clientId}")
+        Log.d("createChatSettingsSubscriptionEvent","broadcasterId -->${_requestIds.value.broadcasterId}")
+        Log.d("createChatSettingsSubscriptionEvent","moderatorId -->${_requestIds.value.moderatorId}")
+        Log.d("createChatSettingsSubscriptionEvent","sessionId -->${_requestIds.value.sessionId}")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                twitchEventSub.createEventSubSubscriptionUserId(
+                    oAuthToken =_requestIds.value.oAuthToken,
+                    clientId =_requestIds.value.clientId,
+                    broadcasterId =_requestIds.value.broadcasterId,
+                    moderatorId =_requestIds.value.moderatorId,
+                    sessionId = _requestIds.value.sessionId,
+                    type = "channel.chat_settings.update"
+                ).collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            Log.d("createChatSettingsSubscriptionEvent", "response -->LOADING")
+                        }
+
+                        is Response.Success -> {
+                            Log.d("createChatSettingsSubscriptionEvent", "response -->SUCCESS")
+                            _uiState.value = _uiState.value.copy(
+                                showSubscriptionEventError = Response.Success(true)
+                            )
+                        }
+
+                        is Response.Failure -> {
+                            Log.d("createChatSettingsSubscriptionEvent", "response -->FAILED")
+                            _uiState.value = _uiState.value.copy(
+                                showSubscriptionEventError = Response.Failure(response.e)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

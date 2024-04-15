@@ -82,7 +82,6 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
                 messageId = messageId
             )
         }
-
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

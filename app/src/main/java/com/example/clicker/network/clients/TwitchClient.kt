@@ -10,6 +10,7 @@ import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
+import com.example.clicker.network.repository.TwitchEventSub
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
@@ -190,6 +191,14 @@ interface TwitchClient {
         @Header("Client-Id") clientId: String,
         @Query("broadcaster_id") broadcasterId: String,
         @Body evenSubSubscription: EvenSubSubscription
+    ):Response<EvenSubSubscriptionResponse>
+    @Headers("Content-Type: application/json")
+    @POST("eventsub/subscriptions")
+    suspend fun createEventSubSubscriptionUserId(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Body evenSubSubscription: TwitchEventSub.EvenSubSubscriptionUserId
     ):Response<EvenSubSubscriptionResponse>
 
     @Headers("Content-Type: application/json")

@@ -41,6 +41,15 @@ interface TwitchEventSubscriptions {
         type:String,
     ): Flow<Response<Boolean>>
 
+    fun createEventSubSubscriptionUserId(
+        oAuthToken:String,
+        clientId:String,
+        broadcasterId:String,
+        moderatorId:String,
+        sessionId:String,
+        type:String,
+    ): Flow<Response<Boolean>>
+
     /**
      * manageAutoModMessage() is called when the logged in user trys to deny or allow a automod queue message
      *

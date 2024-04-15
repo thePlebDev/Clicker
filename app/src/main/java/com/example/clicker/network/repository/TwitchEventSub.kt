@@ -48,6 +48,7 @@ class TwitchEventSub @Inject constructor(
 
         )
 
+
         if (response.isSuccessful) {
             emit(Response.Success(true))
         } else {
@@ -57,6 +58,56 @@ class TwitchEventSub @Inject constructor(
     }.catch { cause ->
         emit(Response.Failure(Exception("Error caught")))
     }
+
+    data class ConditionUserId(
+        val broadcaster_user_id: String,
+        val user_id: String
+    )
+    data class EvenSubSubscriptionUserId(
+        val type: String,
+        val version: String,
+        val condition: ConditionUserId,
+        val transport: Transport
+    )
+    override fun createEventSubSubscriptionUserId(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorId: String,
+        sessionId: String,
+        type: String
+    ): Flow<Response<Boolean>>  = flow{
+        emit(Response.Loading)
+
+        val body = EvenSubSubscription(
+            type = type,
+            version="1",
+            condition = Condition(broadcaster_user_id =broadcasterId,moderator_user_id = moderatorId ),
+            transport = Transport(session_id = sessionId)
+        )
+        val body2 = EvenSubSubscriptionUserId(
+            type = type,
+            version="1",
+            condition = ConditionUserId(broadcaster_user_id =broadcasterId,user_id = moderatorId ),
+            transport = Transport(session_id = sessionId)
+        )
+
+        val response = twitchClient.createEventSubSubscriptionUserId(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            evenSubSubscription =body2
+
+        )
+
+
+        if (response.isSuccessful) {
+            emit(Response.Success(true))
+        } else {
+            emit(Response.Failure(Exception("failed request")))
+        }
+    }
+
     override fun manageAutoModMessage(
         oAuthToken: String,
         clientId: String,
