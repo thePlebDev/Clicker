@@ -153,6 +153,7 @@ object ModView {
         slowModeList: List<ListTitleValue>,
         selectedSlowModeItem: ListTitleValue,
         changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+        deleteMessage:(String)->Unit,
 
     ){
         //todo: this is where the draggable boxes go
@@ -307,6 +308,8 @@ object ModView {
                 slowModeList=slowModeList,
                 selectedSlowModeItem=selectedSlowModeItem,
                 changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
+                deleteMessage ={messageId -> deleteMessage(messageId)}
+
 
 
             )

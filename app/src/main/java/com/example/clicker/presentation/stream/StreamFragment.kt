@@ -475,6 +475,7 @@ fun setOrientation(
                     slowModeList=slowModeList,
                     selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
                     changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+                    deleteMessage ={messageId ->streamViewModel.deleteChatMessage(messageId)}
 
                 )
 
