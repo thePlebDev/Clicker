@@ -1,8 +1,10 @@
 package com.example.clicker.network.repository.websockets
 
+import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.websockets.notificationTypeIsNotification
 import com.example.clicker.network.websockets.notificationTypeIsWelcome
 import com.example.clicker.network.websockets.parseAutoModQueueMessage
+import com.example.clicker.network.websockets.parseChatSettingsData
 import com.example.clicker.network.websockets.parseEventSubWelcomeMessage
 import com.example.clicker.network.websockets.parseMessageId
 import com.example.clicker.network.websockets.parseStatusType
@@ -118,6 +120,42 @@ class TwitchEventSubWebSocketTest {
         Assert.assertEquals(expectedSubscriptionType, subscriptionType)
 
     }
+
+    @Test
+    fun parsing_chat_settings_update(){
+        /**GIVEN*/
+
+        val expectedEmoteMode = true
+        val expectedSubscriberMode = true
+
+        val expectedFollowerMode = true
+        val expectedFollowerModeDuration = 33
+        val expectedSlowMode = true
+        val expectedSlowModeDuration = 44
+
+        val whatToParse ="\"emote_mode\":false,\"follower_mode\":false,\"follower_mode_duration_minutes\":null,\"slow_mode\":false,\"slow_mode_wait_time_seconds\":null,\"subscriber_mode\":false,\""
+        val stringToParse ="{\"metadata\":{\"message_id\":\"rZ-HByBPf2Mc7NfYSgR5mlsf0jHsNdZ9VKKb313Lbjw=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-04-14T23:53:59.928981523Z\",\"subscription_type\":\"channel.chat_settings.update\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"46440d9c-e754-47be-840a-943c1250a222\",\"status\":\"enabled\",\"type\":\"channel.chat_settings.update\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQvN_TbZDMRr6yuimMnf6ZHRIGY2VsbC1i\"},\"created_at\":\"2024-04-14T23:52:23.445062985Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"emote_mode\":$expectedEmoteMode,\"follower_mode\":$expectedFollowerMode,\"follower_mode_duration_minutes\":$expectedFollowerModeDuration,\"slow_mode\":$expectedSlowMode,\"slow_mode_wait_time_seconds\":$expectedSlowModeDuration,\"subscriber_mode\":$expectedSubscriberMode,\"unique_chat_mode\":false}}}"
+        val expectedSubscriptionType ="channel.chat_settings.update"
+
+        val parsedChatSettingsData =parseChatSettingsData(stringToParse)
+
+        /**WHEN*/
+        val actualSubscriptionType =parseSubscriptionType(stringToParse)
+
+        /**THEN*/
+        Assert.assertEquals(expectedEmoteMode, parsedChatSettingsData.emoteMode)
+        Assert.assertEquals(expectedSubscriberMode, parsedChatSettingsData.subscriberMode)
+        Assert.assertEquals(expectedFollowerMode, parsedChatSettingsData.followerMode)
+        Assert.assertEquals(expectedFollowerModeDuration, parsedChatSettingsData.followerModeDuration)
+        Assert.assertEquals(expectedSlowMode, parsedChatSettingsData.slowMode)
+        Assert.assertEquals(expectedSlowModeDuration, parsedChatSettingsData.slowModeWaitTime)
+        Assert.assertEquals(actualSubscriptionType, expectedSubscriptionType)
+
+    }
+
+
+
+
 
 
 

@@ -106,7 +106,35 @@ class ModViewViewModel @Inject constructor(
     fun createNewTwitchEventWebSocket(){
         twitchEventSubWebSocket.newWebSocket()
     }
+    init{
+        monitorForChatSettingsUpdate()
+    }
 
+    private fun monitorForChatSettingsUpdate(){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                twitchEventSubWebSocket.updatedChatSettingsData.collect{nullableChatData->
+                    nullableChatData?.also {chatSettingsData ->
+                        checkSlowModeWaitTime(chatSettingsData.slowModeWaitTime)
+                        checkFollowerModeDuration(chatSettingsData.followerModeDuration)
+
+                        _uiState.value = _uiState.value.copy(
+                            chatSettings = _uiState.value.chatSettings.copy(
+                                slowMode = chatSettingsData.slowMode,
+                                slowModeWaitTime = chatSettingsData.slowModeWaitTime,
+                                followerMode =chatSettingsData.followerMode,
+                                followerModeDuration =chatSettingsData.followerModeDuration,
+                                subscriberMode=chatSettingsData.subscriberMode,
+                                emoteMode = chatSettingsData.emoteMode,
+
+                                )
+                        )
+
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * This is the function that calls createEventSubSubscription()
