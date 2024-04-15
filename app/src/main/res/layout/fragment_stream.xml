@@ -89,6 +89,7 @@
 
                 <androidx.compose.ui.platform.ComposeView
                     android:id="@+id/nested_draggable_compose_view"
+                    android:screenOrientation="portrait"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     app:layout_constraintBottom_toBottomOf="parent"
