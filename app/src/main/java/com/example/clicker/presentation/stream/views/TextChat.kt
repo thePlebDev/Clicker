@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -35,14 +36,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -51,6 +56,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -92,9 +98,12 @@ object TextChat{
         newFilterMethod:(TextFieldValue) ->Unit,
         orientationIsVertical:Boolean
     ){
+        // todo: put the state here
+        var modIconSize by remember { mutableStateOf(25.dp) }
 
         TextChatBuilders.EnterChat(
             modifier = modifier,
+            updateModIconSize={height -> modIconSize = height },
             filteredRow = {
                 TextChatParts.FilteredMentionLazyRow(
                     filteredChatList = filteredChatList,
@@ -109,14 +118,15 @@ object TextChat{
                 ShowModStatus(
                     modStatus =modStatus,
                     showOuterBottomModalState={showOuterBottomModalState()},
-                    orientationIsVertical =orientationIsVertical
+                    orientationIsVertical =orientationIsVertical,
+                    modIconSize
                 )
             },
             stylizedTextField ={boxModifier ->
                 TextChatParts.StylizedTextField(
                     modifier = boxModifier,
                     textFieldValue = textFieldValue,
-                    newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)}
+                    newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
 
                 )
             },
@@ -159,15 +169,21 @@ object TextChat{
         @Composable
         fun EnterChat(
             modifier: Modifier,
+            updateModIconSize:(Dp) ->Unit,
             filteredRow:@Composable () -> Unit,
             showModStatus:@Composable () -> Unit,
             stylizedTextField:@Composable (modifier:Modifier) -> Unit,
             showIconBasedOnTextLength:@Composable () -> Unit,
         ) {
+            val conversionNumber = 4.3
 
-
-
-            Column(modifier = modifier.background(MaterialTheme.colorScheme.primary)) {
+            Column(
+                modifier = modifier.background(MaterialTheme.colorScheme.primary)
+                    .onGloballyPositioned {  size ->
+                        val size =size.size.height/conversionNumber
+                        updateModIconSize(size.dp)
+                    }
+            ) {
                 filteredRow()
                 Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
                     verticalAlignment = Alignment.CenterVertically){
@@ -312,7 +328,7 @@ object TextChat{
 
                 TextField(
 
-                    modifier = modifier,
+                    modifier = modifier.padding(top =5.dp),
                     singleLine = false,
                     value = textFieldValue.value,
                     shape = RoundedCornerShape(8.dp),
@@ -356,34 +372,58 @@ object TextChat{
 fun ShowModStatus(
     modStatus: Boolean?,
     showOuterBottomModalState: () ->Unit,
-    orientationIsVertical:Boolean
+    orientationIsVertical:Boolean,
+    modIconSize: Dp,
 ){
     val scope = rememberCoroutineScope()
 
     if(BuildConfig.BUILD_TYPE== "debug"){
-        AsyncImage(
-            modifier = Modifier.clickable {
-                if (orientationIsVertical){
-                    showOuterBottomModalState()
-                }
+        Box(){
 
-            },
-            model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
-            contentDescription = stringResource(R.string.moderator_badge_icon_description)
-        )
-
-    }else{
-        if (modStatus != null && modStatus == true) {
             AsyncImage(
-                modifier = Modifier.clickable {
-                    if (orientationIsVertical){
-                        showOuterBottomModalState()
+                modifier = Modifier
+                    .size(modIconSize)
+                    .clickable {
+                        if (orientationIsVertical){
+                            showOuterBottomModalState()
+                        }
                     }
-
-                },
+                    .padding(top =10.dp,end = 2.dp)
+                ,
                 model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
                 contentDescription = stringResource(R.string.moderator_badge_icon_description)
             )
+
+                Text("1",
+                    modifier = Modifier.align(Alignment.TopStart)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.Red)
+                        .padding(3.dp),
+                    color = Color.White, fontSize =MaterialTheme.typography.headlineSmall.fontSize,
+                    fontWeight = FontWeight.Bold
+                )
+
+
+
+        }
+
+
+    }else{
+        if (modStatus != null && modStatus == true) {
+            Box(){
+
+                AsyncImage(
+                    modifier = Modifier
+                        .clickable {
+                        if (orientationIsVertical){
+                            showOuterBottomModalState()
+                        }
+
+                    },
+                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
+                )
+            }
         }
     }
 

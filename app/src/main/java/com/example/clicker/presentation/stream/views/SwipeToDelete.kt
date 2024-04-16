@@ -139,7 +139,7 @@ object SwipeToDelete{
             swipeEnabled = twitchUser.mod != "1"
 
         )
-        
+
     }
 
 
