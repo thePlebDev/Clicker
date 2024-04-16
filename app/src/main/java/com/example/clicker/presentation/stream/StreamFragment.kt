@@ -345,6 +345,7 @@ fun setOrientation(
                     streamViewModel,
                     autoModViewModel,
                     homeViewModel,
+                    notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     showStreamManager={
                         if(!orientationIsLandscape){
 

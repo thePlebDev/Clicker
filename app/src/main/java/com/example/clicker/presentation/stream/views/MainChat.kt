@@ -130,7 +130,8 @@ object MainChat{
         clickedCommandAutoCompleteText:(String)->Unit,
         toggleTimeoutDialog:()->Unit,
         toggleBanDialog:()->Unit,
-        orientationIsVertical:Boolean
+        orientationIsVertical:Boolean,
+        notificationAmount:Int
 
     ){
         val lazyColumnListState = rememberLazyListState()
@@ -184,7 +185,8 @@ object MainChat{
                     },
                     showOuterBottomModalState ={showOuterBottomModalState()},
                     newFilterMethod={newTextValue -> newFilterMethod(newTextValue)},
-                    orientationIsVertical =orientationIsVertical
+                    orientationIsVertical =orientationIsVertical,
+                    notificationAmount=notificationAmount
                 )
 
             }, // end of enter chat
