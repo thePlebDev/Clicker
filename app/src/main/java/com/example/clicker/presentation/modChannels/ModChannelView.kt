@@ -44,6 +44,8 @@ fun ModChannelView(
     popBackStackNavigation: () -> Unit,
     onNavigate: (Int) -> Unit,
     loginWithTwitch: () -> Unit,
+    updateModViewSettings:(String,String,String,String,)->Unit,
+    createNewTwitchEventWebSocket:()->Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -87,9 +89,18 @@ fun ModChannelView(
                     moderatorId = streamViewModel.state.value.userId,
                     broadcasterId = streamViewModel.state.value.broadcasterId,
                 )
+                updateModViewSettings(
+                    homeViewModel.state.value.oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                    streamViewModel.state.value.userId,
+                )
+                createNewTwitchEventWebSocket()
                                  },
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-            onNavigate ={destination ->onNavigate(destination)},
+            onNavigate ={
+                    destination ->onNavigate(destination)
+                        },
             clientId=clientId,
             userId=userId,
             networkMessageColor=Color.Red,

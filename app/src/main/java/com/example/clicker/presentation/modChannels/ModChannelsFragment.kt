@@ -20,6 +20,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 
@@ -36,6 +37,7 @@ class ModChannelsFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +80,16 @@ class ModChannelsFragment : Fragment() {
                             )
                         },
                         onNavigate = { dest -> findNavController().navigate(dest) },
-                        autoModViewModel = autoModViewModel
+                        autoModViewModel = autoModViewModel,
+                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                            modViewViewModel.updateAutoModTokens(
+                                oAuthToken =oAuthToken,
+                                clientId =clientId,
+                                broadcasterId=broadcasterId,
+                                moderatorId =moderatorId
+                            )
+                        },
+                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()}
                     )
                 }
             }
