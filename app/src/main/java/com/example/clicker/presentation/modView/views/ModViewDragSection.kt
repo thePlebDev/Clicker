@@ -1289,9 +1289,6 @@ object ModViewDragSection {
     ){
         var iconPainterResource: Painter = painterResource(id = R.drawable.ban_24)
         var dragging by remember{ mutableStateOf(true) }
-
-
-
         val state = rememberDraggableActions()
         val offset = if(swipeEnabled) state.offset.value else 0f
         var iconColor = hideIconColor

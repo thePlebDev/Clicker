@@ -14,6 +14,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.modView.views.ModViewDragSection
+import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -86,29 +89,19 @@ object SwipeToDelete{
 
     ) {
         // no logic here, this should be a clean API wrapper
+        var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
+        if(color == Color.Black){
+            color = MaterialTheme.colorScheme.primary
+        }
 
-
-        SwipeToDeleteBuilder.DetectSwipeBox(
-            twitchUser = twitchUser,
-            deleteMessage ={messageId ->deleteMessage(messageId)},
-            twitchUserId = twitchUser.id,
-            toggleTimeoutDialog={toggleTimeoutDialog()},
-            toggleBanDialog={ toggleBanDialog() },
-            updateClickedUser = {  username, userId,isBanned,isMod ->
-                updateClickedUser(
-                    username,
-                    userId,
-                    isBanned,
-                    isMod
-                )
-            },
-            cardThatMoves={ color, offset,fontSize ->
+        ModViewDragSection.HorizontalDragDetectionBox(
+            itemBeingDragged = { dragOffset ->
                 SwipeToDeleteParts.ClickableCard(
                     twitchUser =twitchUser,
                     color = color,
                     bottomModalState = bottomModalState,
-                    offset = offset,
-                    fontSize = fontSize,
+                    offset = if (twitchUser.mod != "1") dragOffset else 0f,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     updateClickedUser = {  username, userId,isBanned,isMod ->
                         updateClickedUser(
                             username,
@@ -118,153 +111,39 @@ object SwipeToDelete{
                         )
                     },
                 )
-            }
-        )
+            },
+            quarterSwipeLeftAction = {
+                updateClickedUser(
+                    twitchUser.displayName?:"",
+                    twitchUser.userId?:"",
+                    twitchUser.banned,
+                    twitchUser.mod == "1"
+                )
+                toggleTimeoutDialog()
+            },
+            quarterSwipeRightAction = {
 
+                updateClickedUser(
+                    twitchUser.displayName?:"",
+                    twitchUser.userId?:"",
+                    twitchUser.banned,
+                    twitchUser.mod == "1"
+                )
+                toggleBanDialog()
+            },
+            halfSwipeAction = {
+                deleteMessage(twitchUser.id ?: "")
+
+            },
+            twoSwipeOnly = false,
+            swipeEnabled = twitchUser.mod != "1"
+
+        )
+        
     }
 
 
-    /**
-     * SwipeToDeleteBuilder is the most generic section of all the [SwipeToDelete] composables. It is meant to
-     * act as a layout guide for how all [SwipeToDeleteChatMessages] implementations should look
-     * */
-    //builders
-    private object SwipeToDeleteBuilder{
 
-        /**
-         * The basic layout and functionality for the swipe to delete functionality. A UI demonstration can be seen
-         * [HERE](https://theplebdev.github.io/Modderz-style-guide/#DetectSwipeBox)
-         *
-         * @param twitchUser a [TwitchUserData][com.example.clicker.network.websockets.models] object that represents the entire chat user state
-         * @param deleteMessage a function that will be used to initiate the ban user functionality
-         * @param twitchUserId a string representing the id of the user whos chat message is being swiped
-         * @param cardThatMoves a composable that represents the composable that is actually moving from the swipe to delete
-         * functionality. This composable also gets sent the color,offset and the fontSize
-         * */
-        @Composable
-        fun DetectSwipeBox(
-            twitchUser: TwitchUserData,
-            deleteMessage: (String) -> Unit,
-            toggleTimeoutDialog:()->Unit,
-            toggleBanDialog:()->Unit,
-            twitchUserId:String?,
-            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-            cardThatMoves:@Composable (color:Color,offset: Float,fontSize: TextUnit,) -> Unit,
-
-            ){
-            val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
-            val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
-            val scope = rememberCoroutineScope()
-            var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
-            if(color == Color.Black){
-                color = androidx.compose.material3.MaterialTheme.colorScheme.primary
-            }
-
-            val state = rememberSwipeableActionsState()
-
-            var offset = state.offset.value
-
-            val swipeThreshold = 130.dp
-            val timeoutThreshold = (-65).dp
-            val banThreshold = 65.dp
-
-
-
-            val swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
-            val timeoutSwipeThresholdPx = LocalDensity.current.run { timeoutThreshold.toPx() }
-            val banSwipeThresholdPx = LocalDensity.current.run { banThreshold.toPx() }
-            Log.d("DETECTOFFSET","offset --->${offset}")
-
-            val thresholdCrossed = abs(offset) > swipeThresholdPx
-            val timeoutThresholdCrossed = offset < timeoutSwipeThresholdPx
-            val banThresholdCrossed = offset > banSwipeThresholdPx
-
-            var backgroundColor by remember { mutableStateOf(Color.Black) }
-            var fontSize = MaterialTheme.typography.headlineSmall.fontSize
-
-            if (thresholdCrossed) {
-                backgroundColor = Color.Red
-
-            }
-            else if(timeoutThresholdCrossed){
-                backgroundColor = Color.Green
-            }
-            else if(banThresholdCrossed){
-                backgroundColor = Color.Magenta
-            }
-            else {
-                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary
-            }
-
-
-            // makes it so mods can not be swiped on
-            val modDragState = DraggableState { delta ->
-            }
-
-            var dragState = state.draggableState
-            if (twitchUser.mod == "1") {
-                dragState = modDragState
-            }
-            if (twitchUser.deleted) {
-                dragState = modDragState
-                backgroundColor = Color.Red
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize
-            }
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp, horizontal = 10.dp)
-                    .background(backgroundColor)
-                    .draggable(
-                        orientation = Orientation.Horizontal,
-                        enabled = true,
-                        state = dragState,
-                        onDragStopped = {
-                            scope.launch {
-
-                                if (thresholdCrossed) {
-                                    state.resetOffset()
-                                    deleteMessage(twitchUserId ?: "")
-                                    Log.d("DetectSwipeBoxDragStop", "DELETE")
-                                } else if (timeoutThresholdCrossed) {
-                                    state.resetOffset()
-                                    Log.d("DetectSwipeBoxDragStop", "TIMEOUT")
-                                    updateClickedUser(
-                                        twitchUser.displayName.toString(),
-                                        twitchUser.userId.toString(),
-                                        twitchUser.banned,
-                                        twitchUser.mod != "1"
-                                    )
-                                    toggleTimeoutDialog()
-                                } else if (banThresholdCrossed) {
-                                    state.resetOffset()
-                                    updateClickedUser(
-                                        twitchUser.displayName.toString(),
-                                        twitchUser.userId.toString(),
-                                        twitchUser.banned,
-                                        twitchUser.mod != "1"
-                                    )
-                                    toggleBanDialog()
-                                    Log.d("DetectSwipeBoxDragStop", "BAN")
-                                } else {
-                                    Log.d("DetectSwipeBoxDragStop", "RESET")
-                                    state.resetOffset()
-                                }
-                            }
-                        },
-                        onDragStarted = {
-
-                        }
-
-                    )
-
-            ) {
-                cardThatMoves(
-                    color, offset, fontSize
-                )
-            }
-        }// end of DetectSwipeBox
-    }//end of builder
     // parts
 
     /**
@@ -298,35 +177,42 @@ object SwipeToDelete{
 
             ){
             val coroutineScope = rememberCoroutineScope()
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-                    .clickable {
-                        updateClickedUser(
-                            twitchUser.displayName.toString(),
-                            twitchUser.userId.toString(),
-                            twitchUser.banned,
-                            twitchUser.mod != "1"
-                        )
-                        coroutineScope.launch {
-                            bottomModalState.show()
-                        }
-                    },
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+            Column() {
+                Spacer(modifier =Modifier.height(5.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+                        .clickable {
+                            updateClickedUser(
+                                twitchUser.displayName.toString(),
+                                twitchUser.userId.toString(),
+                                twitchUser.banned,
+                                twitchUser.mod != "1"
+                            )
+                            coroutineScope.launch {
+                                bottomModalState.show()
+                            }
+                        },
+                    backgroundColor = MaterialTheme.colorScheme.primary,
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
 
-            ) {
-                Column() {
-                    CheckIfUserDeleted(twitchUser = twitchUser)
-                    CheckIfUserIsBanned(twitchUser = twitchUser)
-                    TextWithChatBadges(
-                        twitchUser = twitchUser,
-                        color = color,
-                        fontSize = fontSize,
-                    )
+                ) {
+                    Column() {
+                        CheckIfUserDeleted(twitchUser = twitchUser)
+                        CheckIfUserIsBanned(twitchUser = twitchUser)
+                        TextWithChatBadges(
+                            twitchUser = twitchUser,
+                            color = color,
+                            fontSize = fontSize,
+                        )
+                    }
                 }
+
+                Spacer(modifier =Modifier.height(5.dp))
+
             }
+
         }
 
 
