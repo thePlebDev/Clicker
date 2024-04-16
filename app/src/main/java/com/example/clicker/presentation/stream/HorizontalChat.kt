@@ -220,7 +220,8 @@ fun HorizontalChat(
                                 drawerState.open()
                             }
                         },
-                        orientationIsVertical = false
+                        orientationIsVertical = false,
+                        notificationAmount = 0
                     )
                 }
             )

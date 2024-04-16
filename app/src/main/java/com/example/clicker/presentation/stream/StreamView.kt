@@ -46,7 +46,9 @@ fun StreamView(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
     homeViewModel: HomeViewModel,
-    showStreamManager:()->Unit
+    showStreamManager:()->Unit,
+    notificationAmount: Int
+
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
     val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
@@ -203,6 +205,7 @@ fun StreamView(
                         },
                         contentCoveredBySideModal = {
                             TextChat(
+                                notificationAmount =notificationAmount,
                                 twitchUserChat = twitchUserChat,
                                 sendMessageToWebSocket = { string ->
                                     streamViewModel.sendMessage(string)
@@ -348,6 +351,7 @@ fun TextChat(
     toggleTimeoutDialog:()->Unit,
     toggleBanDialog:()->Unit,
     orientationIsVertical:Boolean,
+    notificationAmount:Int
 
     ) {
 
@@ -386,7 +390,8 @@ fun TextChat(
         },
         toggleTimeoutDialog={toggleTimeoutDialog()},
         toggleBanDialog={toggleBanDialog()},
-        orientationIsVertical =orientationIsVertical
+        orientationIsVertical =orientationIsVertical,
+        notificationAmount =notificationAmount
     )
 
 }

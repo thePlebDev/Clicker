@@ -96,7 +96,8 @@ object TextChat{
         showModal: () -> Unit,
         showOuterBottomModalState:() ->Unit,
         newFilterMethod:(TextFieldValue) ->Unit,
-        orientationIsVertical:Boolean
+        orientationIsVertical:Boolean,
+        notificationAmount:Int
     ){
         // todo: put the state here
         var modIconSize by remember { mutableStateOf(25.dp) }
@@ -119,7 +120,8 @@ object TextChat{
                     modStatus =modStatus,
                     showOuterBottomModalState={showOuterBottomModalState()},
                     orientationIsVertical =orientationIsVertical,
-                    modIconSize
+                    modIconSize,
+                    notificationAmount=notificationAmount
                 )
             },
             stylizedTextField ={boxModifier ->
@@ -374,6 +376,7 @@ fun ShowModStatus(
     showOuterBottomModalState: () ->Unit,
     orientationIsVertical:Boolean,
     modIconSize: Dp,
+    notificationAmount:Int
 ){
     val scope = rememberCoroutineScope()
 
@@ -393,18 +396,16 @@ fun ShowModStatus(
                 model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
                 contentDescription = stringResource(R.string.moderator_badge_icon_description)
             )
-
-                Text("1",
+            if(notificationAmount>0){
+                Text("$notificationAmount",
                     modifier = Modifier.align(Alignment.TopStart)
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(4.dp))
                         .background(Color.Red)
-                        .padding(3.dp),
+                        .padding(horizontal = 3.dp),
                     color = Color.White, fontSize =MaterialTheme.typography.headlineSmall.fontSize,
                     fontWeight = FontWeight.Bold
                 )
-
-
-
+            }
         }
 
 

@@ -47,6 +47,7 @@ data class ModViewViewModelUIState(
     val enabledChatSettings:Boolean = true,
     val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
     val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
+    val autoModQuePedingMessages:Int =0
 )
 data class ListTitleValue(
     val title:String,
@@ -158,6 +159,11 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
+    /**
+     * monitorForAutoModMessageUpdates monitors the updates to current automod messages.
+     * It will also minus 1 to the `_uiState.value.autoModQuePedingMessages` state
+     *
+     * */
     private fun monitorForAutoModMessageUpdates(){
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -174,6 +180,10 @@ class ModViewViewModel @Inject constructor(
                             autoModMessageList[indexOfItem] = item.copy(
                                 approved = autoModMessage.approved,
                                 swiped = true
+                            )
+                            val updatedMessage=_uiState.value.autoModQuePedingMessages -1
+                            _uiState.value =_uiState.value.copy(
+                                autoModQuePedingMessages =updatedMessage
                             )
                         }
                     }
@@ -293,12 +303,22 @@ class ModViewViewModel @Inject constructor(
             }
         }
     }
-    fun monitorForAutoModMessages(){
+
+    /**
+     * monitorForAutoModMessages monitors the websocket for new messages that are being held by the AutoMod.
+     * Once a message from AutoMod arrives, it needs to be added to the [autoModMessageList].
+     * It will also add 1 to the `_uiState.value.autoModQuePedingMessages` state
+     * */
+    private fun monitorForAutoModMessages(){
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         autoModMessageList.add(autoModMessage)
+                        val updatedMessage=_uiState.value.autoModQuePedingMessages +1
+                        _uiState.value =_uiState.value.copy(
+                            autoModQuePedingMessages =updatedMessage
+                        )
                     }
                 }
             }
