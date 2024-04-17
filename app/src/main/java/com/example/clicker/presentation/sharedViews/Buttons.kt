@@ -15,14 +15,30 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
-class Buttons {
-}
-//MaterialTheme.typography.headlineMedium.fontSize,
+/**
+ * ButtonScope contains all the Button components that are used throughout the application
+ *
+ * @property DualIconsButton
+ * @property Button
+ *
+ * @param textSize a [TextUnit] that is used to determine the the size of the text displayed on the button
+ *
+ * */
 @Stable
 class ButtonScope(
     private val textSize: TextUnit
 ) {
 
+    /**
+     * DualIconsButton is a [Button] that displays a [Text] surrounded by two [Icon] composables
+     * - UI demonstration of DualIconsButton is [HERE](https://github.com/thePlebDev/Clicker/wiki/Buttons#DualIconsButton)
+     *
+     * @param buttonAction a function that will be called when the internal [Button] is clicked
+     * @param iconImageVector a [ImageVector] that represents the two icons shown to the user
+     * @param iconDescription a String representing the content description of the [iconImageVector]
+     * @param text a String representing the information that is displayed to the user
+     * @param modifier a [Modifier] that will be applied to the internal [Button]
+     * */
     @Composable
     fun DualIconsButton(
         buttonAction: () -> Unit,
@@ -57,6 +73,16 @@ class ButtonScope(
         }
     }
 
+    /**
+     * Button is a basic [Button] that displays a [Text] that will display a short message to the user
+     * - UI demonstration of Button is [HERE](https://github.com/thePlebDev/Clicker/wiki/Buttons#button)
+     *
+     * @param text a String representing the information that is displayed to the user
+     * @param onClick a function that will be called when the internal [Button] is clicked
+     * @param modifier a [Modifier] that will be applied to the internal [Button]
+     * @param textColor a [Color] that will be used to change the color of the [text]
+     * @param buttonColors a [ButtonColors] object that will be used to change all the colors of the internal [Button]
+     * */
     @Composable
     fun Button(
         text: String,
