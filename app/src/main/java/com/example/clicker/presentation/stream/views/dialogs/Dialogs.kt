@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -19,6 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +32,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
+import com.example.clicker.presentation.sharedViews.ButtonScope
 
 
 data class TimeListData(
@@ -67,10 +71,10 @@ object Dialogs{
         closeDialog: () -> Unit,
         timeOutUser: () -> Unit
     ) {
-        val secondary = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-        val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
-        val onPrimary = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-        val onSecondary = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+        val secondary = MaterialTheme.colorScheme.secondary
+        val primary = MaterialTheme.colorScheme.primary
+        val onPrimary =MaterialTheme.colorScheme.onPrimary
+        val onSecondary = MaterialTheme.colorScheme.onSecondary
         val timeList = listOf<TimeListData>(
             TimeListData(60, stringResource(R.string.one_minute)),
             TimeListData(600, stringResource(R.string.ten_minutes)),
@@ -111,13 +115,12 @@ object Dialogs{
                     ),
                     value = timeoutReason,
                     onValueChange = { changeTimeoutReason(it) },
-                    label = { Text(stringResource(R.string.reason)) }
+                    label = { Text(stringResource(R.string.reason)) },
+                    modifier = Modifier.fillMaxWidth()
                 )
             },
             dialogConfirmCancelContent = {
                 DialogParts.DialogConfirmCancel(
-                    secondary = secondary,
-                    onSecondary = onSecondary,
                     onDismissRequest = { onDismissRequest() },
                     closeDialog = { closeDialog() },
                     confirmAction = { timeOutUser() },
@@ -194,17 +197,16 @@ object Dialogs{
                         focusedLabelColor = onPrimary,
                         focusedIndicatorColor = onPrimary,
                         unfocusedIndicatorColor = onPrimary,
-                        unfocusedLabelColor = onPrimary
+                        unfocusedLabelColor = onPrimary,
                     ),
                     value = banReason,
                     onValueChange = { changeBanReason(it) },
-                    label = { Text(stringResource(R.string.reason), color = onPrimary) }
+                    label = { Text(stringResource(R.string.reason), color = onPrimary) },
+                    modifier = Modifier.fillMaxWidth()
                 )
             },
             dialogConfirmCancelContent = {
                 DialogParts.DialogConfirmCancel(
-                    secondary = secondary,
-                    onSecondary = onSecondary,
                     onDismissRequest = { onDismissRequest() },
                     closeDialog = { closeDialog() },
                     cancelText = stringResource(R.string.cancel),
@@ -302,8 +304,6 @@ object Dialogs{
          * */
         @Composable
         fun DialogConfirmCancel(
-            secondary: Color,
-            onSecondary: Color,
             onDismissRequest: () -> Unit,
             closeDialog: () -> Unit,
             confirmAction: () -> Unit,
@@ -311,23 +311,28 @@ object Dialogs{
             confirmText:String
 
         ){
+            val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+
+            val buttonScope = remember(){ ButtonScope(fontSize) }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Button(
-                    onClick = { onDismissRequest() },
-                    modifier = Modifier.padding(10.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = secondary)
-                ) {
-                    Text(cancelText,color = onSecondary)
+                with(buttonScope){
+                    this.Button(
+                        text =cancelText,
+                        onClick = { onDismissRequest()},
+
+                    )
+                    Spacer(modifier =Modifier.width(15.dp))
+                    this.Button(
+                        text =confirmText,
+                        onClick = {
+                            closeDialog()
+                            confirmAction()
+                        },
+
+                    )
                 }
-                // todo: Implement the details of the timeout implementation
-                Button(
-                    colors = ButtonDefaults.buttonColors(backgroundColor = secondary),
-                    onClick = {
-                        closeDialog()
-                        confirmAction()
-                    }, modifier = Modifier.padding(10.dp)) {
-                    Text(confirmText,color = onSecondary)
-                }
+
+
             }
         }
 

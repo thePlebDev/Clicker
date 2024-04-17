@@ -73,6 +73,7 @@ import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.modView.views.ModViewDragSection
+import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.util.Response
 
 /**
@@ -731,7 +732,7 @@ object ModView {
                 modifier = Modifier
                     .width(200.dp)
                     .clickable {
-                        if(chatSettingsEnabled){
+                        if (chatSettingsEnabled) {
                             expanded = true
                         }
                     },
@@ -930,7 +931,6 @@ object ModView {
                     }
                 }
         )
-
     }
 
     @Composable
@@ -940,52 +940,20 @@ object ModView {
         scrollToBottomOfList:()->Unit,
         modifier: Modifier
     ){
+        val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+        val buttonScope = remember(){ ButtonScope(fontSize) }
+
         if(!dragging && !listState.isScrolledToEnd()){
-            DualIconsButton(
-                buttonAction = {
-                    scrollToBottomOfList()
-                },
-                iconImageVector= Icons.Default.ArrowDropDown,
-                iconDescription = stringResource(R.string.arrow_drop_down_description),
-                buttonText = stringResource(R.string.scroll_to_bottom),
-                modifier = modifier
-
-            )
+            with(buttonScope){
+                this.DualIconsButton(
+                    buttonAction ={scrollToBottomOfList()},
+                    iconImageVector = Icons.Default.ArrowDropDown,
+                    iconDescription = stringResource(R.string.arrow_drop_down_description),
+                    text = stringResource(R.string.scroll_to_bottom),
+                    modifier = modifier
+                )
+            }
         }
     }
-
-
-    @Composable
-    fun DualIconsButton(
-        buttonAction: () -> Unit,
-        iconImageVector: ImageVector,
-        iconDescription:String,
-        buttonText:String,
-        modifier:Modifier
-    ){
-        Button(
-            modifier = modifier,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { buttonAction() }
-        ) {
-            Icon(
-                imageVector = iconImageVector,
-                contentDescription = iconDescription,
-                tint =  MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-            )
-            Text(buttonText,color =  MaterialTheme.colorScheme.onSecondary,)
-            Icon(
-                imageVector = iconImageVector,
-                contentDescription = iconDescription,
-                tint =  MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-            )
-        }
-    }
-    // I need to create chat for subscribers, non-subscribers and moderators
-
-
 
 }

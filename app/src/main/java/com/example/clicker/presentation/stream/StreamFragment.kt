@@ -401,34 +401,6 @@ fun setOrientation(
                         // Start the animation
                         animator.start()
                     },
-                    streamTitle=streamViewModel.clickedStreamInfo.value.streamTitle,
-                    streamCategory=streamViewModel.clickedStreamInfo.value.category,
-                    updateStreamTitle = {newStreamTitle -> streamViewModel.updateStreamTitle(newStreamTitle)},
-                    showAutoModSettings =streamViewModel.showAutoModSettings.value,
-                    changeSelectedIndex={item,filterType -> autoModViewModel.updateSelectedIndex(item,filterType)},
-                    swearingIndex = autoModViewModel.autoModUIState.value.swearing,
-                    sexBasedTermsIndex = autoModViewModel.autoModUIState.value.sexBasedTerms,
-                    aggressionIndex = autoModViewModel.autoModUIState.value.aggression,
-                    bullyingIndex = autoModViewModel.autoModUIState.value.bullying,
-                    disabilityIndex = autoModViewModel.autoModUIState.value.disability,
-                    sexualityIndex = autoModViewModel.autoModUIState.value.sexuality,
-                    misogynyIndex = autoModViewModel.autoModUIState.value.misogyny,
-                    raceIndex = autoModViewModel.autoModUIState.value.race,
-                    sliderPosition = autoModViewModel.autoModUIState.value.sliderValue,
-                    changSliderPosition = {floatValue -> autoModViewModel.updateSliderValue(floatValue)},
-                    filterText = autoModViewModel.autoModUIState.value.filterText,
-                    isModerator = autoModViewModel.isModerator.value,
-                    updateAutoModSettings = {autoModViewModel.updateAutoMod()},
-                    updateAutoModSettingsStatus =autoModViewModel.autoModUIState.value.updateAutoModSettingsStatus,
-                    updateAutoModSettingsStatusToNull = {autoModViewModel.updateAutoModSettingsStatusToNull()},
-                    updateChannelInfo={
-                        autoModViewModel.updateChannelInformation(
-                            streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
-                            oAuthToken = homeViewModel.state.value.oAuthToken,
-                            clientId = streamViewModel.state.value.clientId,
-                            broadcasterId = streamViewModel.state.value.userId
-                        )
-                    },
                     modViewDragStateViewModel =modViewDragStateViewModel,
                     chatMessages = streamViewModel.listChats,
                     clickedUserData = streamViewModel.clickedUIState.value,
