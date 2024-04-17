@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -18,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +33,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.launch
@@ -121,6 +125,8 @@ fun ModChannelView(
 fun BottomModalSheetContent(
     loginWithTwitch: () -> Unit,
 ){
+    val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+    val buttonScope = remember(){ ButtonScope(fontSize) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -129,7 +135,7 @@ fun BottomModalSheetContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        androidx.compose.material.Text(
+        Text(
             "Login with Twitch",
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 30.sp,
@@ -138,8 +144,11 @@ fun BottomModalSheetContent(
                 .fillMaxWidth(),
             textAlign = TextAlign.Center
         )
-        androidx.compose.material.Button(onClick = { loginWithTwitch() }) {
-            androidx.compose.material.Text(text = stringResource(R.string.login_with_twitch))
+        with(buttonScope){
+            this.Button(
+                text =stringResource(R.string.login_with_twitch),
+                onClick = { loginWithTwitch()},
+            )
         }
     }
 }

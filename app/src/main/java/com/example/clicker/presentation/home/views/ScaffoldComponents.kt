@@ -98,6 +98,7 @@ import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
+import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
@@ -365,7 +366,8 @@ fun LogoutResponse(
 fun TellUserToLogBackIn(
     loginWithTwitch: () -> Unit
 ){
-
+    val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+    val buttonScope = remember(){ ButtonScope(fontSize) }
     Box(
         modifier = Modifier.fillMaxSize()
     ){
@@ -389,10 +391,12 @@ fun TellUserToLogBackIn(
                     fontSize = MaterialTheme.typography.headlineLarge.fontSize
                 )
                 Spacer(modifier = Modifier.size(20.dp))
-                ButtonWithColor(
-                    message ="Login with Twitch",
-                    onClick = {loginWithTwitch()}
-                )
+                with(buttonScope){
+                    this.Button(
+                        text ="Login with Twitch",
+                        onClick = { loginWithTwitch()},
+                    )
+                }
                 Spacer(modifier = Modifier.size(20.dp))
             }
         }
@@ -437,27 +441,6 @@ fun LoginFailed(
         }
     }
 
-}
-@Composable
-fun ButtonWithColor(
-    message:String,
-    onClick:() ->Unit
-){
-    Button(onClick = {
-        //your onclick code
-        onClick()
-    },
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-        shape = RoundedCornerShape(5.dp)
-    )
-
-    {
-        androidx.compose.material3.Text(
-            text = message,
-            color = MaterialTheme.colorScheme.onSecondary,
-            fontSize = MaterialTheme.typography.headlineMedium.fontSize
-        )
-    }
 }
 
 

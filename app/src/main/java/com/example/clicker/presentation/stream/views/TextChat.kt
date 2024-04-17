@@ -433,89 +433,8 @@ fun ShowModStatus(
 }
 
 
-/*****TESTING THE BUMBLE DESIGN SYSTEM*******/
-
-@Stable
-object NavigationBarDefaults{
-    @Composable
-    fun Title(title:String,modifier:Modifier){
-        Text(text =title,style = MaterialTheme.typography.headlineSmall,modifier = modifier)
-    }
-
-    @Composable
-    fun IconButton(
-        icon: Painter,
-        onClick:()->Unit,
-        modifier: Modifier = Modifier,
-    ){
-
-        Icon(
-            painter = icon,
-            contentDescription = null,
-            modifier = modifier
-                .size(IconSize)
-                .clickable { onClick() }
-        )
-    }
-
-    private val IconSize = 40.dp
-
-}
 
 
-/*******SCOPING*******/
-//to eliminate the use of NavigationBarDefaults with scoping
-enum class ButtonSize { Compact, Regular }
-
-@Stable class ButtonScope(private val buttonSize: ButtonSize) {
-    @Composable fun Text(
-        text: String,
-
-    ) {
-        val again = buttonSize
-        // Use buttonSize provided via constructor
-        Text(text = text)
-    }
-
-    @Composable fun ButtonThingy(){
-        Text(text = "text")
-    }
-}
-fun ButtonScope.another(){
-    @Composable fun ButtonThingy(){
-        Text(text = "text")
-    }
-}
-
-//
-@Composable fun Button(
-
-    content: @Composable ButtonScope.() -> Unit,
-    modifier: Modifier = Modifier,
-    buttonSize: ButtonSize
-) {
-
-    val padding =8.dp
-    val scope = remember() { ButtonScope(buttonSize) }
-
-    Box(modifier.padding(padding)) {
-
-               with(scope) {
-                   content()
-               }
-
-    }
-}
-
-@Composable
-fun TestingButton(){
-    Button(
-        content = {
-            another()
-        },
-        buttonSize = ButtonSize.Compact
-    )
-}
 
 
 

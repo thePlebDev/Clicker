@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.Button
@@ -29,6 +30,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.clicker.presentation.home.disableClickAndRipple
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Stable
+import com.example.clicker.presentation.sharedViews.ButtonScope
 
 
 @Stable
@@ -41,8 +43,8 @@ class HomeDialogs(){
         logout:() ->Unit,
         currentUsername:String
     ){
-//        val openAlertDialog = remember { mutableStateOf(true) }
-
+        val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+        val buttonScope = remember(){ ButtonScope(fontSize) }
 
         if(logoutDialogIsOpen){
             Dialog(onDismissRequest = { closeDialog() }) {
@@ -67,45 +69,23 @@ class HomeDialogs(){
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
                         ){
-                            ButtonWithColor("Cancel", onClick = {closeDialog()})
-                            ButtonWithColor("Logout", onClick = {logout()})
+                            with(buttonScope){
+                                this.Button(
+                                    text ="Cancel",
+                                    onClick = { closeDialog()},
+                                    )
+                                Spacer(modifier =Modifier.width(15.dp))
+                                this.Button(
+                                    text ="Logout",
+                                    onClick = { logout()},
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-       // FullViewSpinner()
 
-    }
-
-    @Composable
-    fun ButtonWithColor(
-        message:String,
-        onClick:() ->Unit
-    ){
-        Button(onClick = {
-            //your onclick code
-            onClick()
-        },
-            colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.primary))
-
-        {
-            Text(text = message,color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-        }
-    }
-
-    @Composable
-    fun FullViewSpinner(){
-        Box(modifier = Modifier.fillMaxSize()){
-            Spacer(
-                modifier = Modifier.matchParentSize()
-                    .disableClickAndRipple()
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = .7f)
-                    )
-            )
-            CircularProgressIndicator(modifier= Modifier.align(Alignment.Center).size(40.dp))
-        }
     }
 
 

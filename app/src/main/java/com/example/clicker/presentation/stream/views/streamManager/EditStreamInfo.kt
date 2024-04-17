@@ -46,28 +46,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ManageStreamInformation(
     closeStreamInfo:()->Unit,
-    streamTitle:String,
-    streamCategory:String,
-    updateStreamTitle:(String)->Unit,
-    showAutoModSettings:Boolean,
-    changeSelectedIndex:(Int, FilterType)->Unit,
-
-    swearingIndex:Int,
-    sexBasedTermsIndex:Int,
-    aggressionIndex:Int,
-    bullyingIndex:Int,
-    disabilityIndex:Int,
-    sexualityIndex:Int,
-    misogynyIndex:Int,
-    raceIndex:Int,
-    sliderPosition: Float,
-    changSliderPosition:(Float)->Unit,
-    filterText:String,
-    isModerator: Response<Boolean>,
-    updateAutoModSettings:()->Unit,
-    updateAutoModSettingsStatus:Response<Boolean>?,
-    updateAutoModSettingsStatusToNull:()->Unit,
-    updateChannelInfo:()->Unit,
     modViewDragStateViewModel: ModViewDragStateViewModel,
     chatMessages: List<TwitchUserData>,
     clickedUserData: ClickedUIState,
@@ -112,30 +90,7 @@ fun ManageStreamInformation(
     deleteMessage:(String)->Unit,
 
     ){
-    if(showAutoModSettings){
 
-        EditAutoModSettingsScaffold(
-            closeStreamInfo={closeStreamInfo()},
-            changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
-            swearingIndex = swearingIndex,
-            sexBasedTermsIndex = sexBasedTermsIndex,
-            aggressionIndex = aggressionIndex,
-            bullyingIndex = bullyingIndex,
-            disabilityIndex = disabilityIndex,
-            sexualityIndex = sexualityIndex,
-            misogynyIndex = misogynyIndex,
-            raceIndex = raceIndex,
-            sliderPosition =sliderPosition,
-            changSliderPosition = {float -> changSliderPosition(float)},
-            filterText=filterText,
-            isModerator =isModerator,
-            updateAutoModSettings={updateAutoModSettings()},
-            updateAutoModSettingsStatus=updateAutoModSettingsStatus,
-            updateAutoModSettingsStatusToNull ={updateAutoModSettingsStatusToNull()}
-
-
-        )
-    }else{
         ModView.ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
             modViewDragStateViewModel =modViewDragStateViewModel,
@@ -194,159 +149,7 @@ fun ManageStreamInformation(
     }
 
 
-}
-/**
- * EditAutoModSettingsScaffold is a [Scaffold] based component that is responsible for showing the user all the information related to
- * editing the channels automod settings.
- *
- *
- * */
-@Composable
-fun EditAutoModSettingsScaffold(
-    closeStreamInfo:()->Unit,
-    changeSelectedIndex:(Int, FilterType)->Unit,
-    swearingIndex:Int,
-    sexBasedTermsIndex:Int,
-    aggressionIndex:Int,
-    bullyingIndex:Int,
-    disabilityIndex:Int,
-    sexualityIndex:Int,
-    misogynyIndex:Int,
-    raceIndex:Int,
 
-    sliderPosition: Float,
-    changSliderPosition:(Float)->Unit,
-    filterText:String,
-    isModerator: Response<Boolean>,
-    updateAutoModSettings:()->Unit,
-    updateAutoModSettingsStatus:Response<Boolean>?,
-    updateAutoModSettingsStatusToNull:()->Unit
-){
-    val scope = rememberCoroutineScope()
-    Scaffold(
-        topBar = {
-            EditAutoModTitle(
-                closeStreamInfo={closeStreamInfo()},
-                title ="AutoMod Info",
-                contentDescription = "close auto mod info",
-                isModerator =isModerator,
-                updateAutoModSettings ={updateAutoModSettings()}
-            )
-        }
-
-    ) {contentPadding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)){
-            Column(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(MaterialTheme.colorScheme.primary)
-
-            ) {
-
-                AutoMod.Settings(
-                    sliderPosition =sliderPosition,
-                    changSliderPosition = {float -> changSliderPosition(float)},
-                    discriminationFilterList = listOf("No filtering", "Less filtering", "Some filtering", "More filtering", "Maximum filtering"),
-                    changeSelectedIndex = {item,filterType ->changeSelectedIndex(item,filterType)},
-                    updateAutoModSettings = {  },
-                    swearingIndex = swearingIndex,
-                    sexBasedTermsIndex = sexBasedTermsIndex,
-                    aggressionIndex = aggressionIndex,
-                    bullyingIndex = bullyingIndex,
-                    disabilityIndex = disabilityIndex,
-                    sexualityIndex = sexualityIndex,
-                    misogynyIndex = misogynyIndex,
-                    raceIndex = raceIndex,
-                    isModerator = true,
-                    filterText = filterText
-                )
-            } // end of column
-            when(updateAutoModSettingsStatus){
-                is Response.Loading ->{
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                is Response.Success ->{
-                    Text("Success",
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 5.dp)
-                            .background(Color.Green.copy(0.7f))
-                            .align(Alignment.Center)
-                            .clickable {
-                                scope.launch {
-                                    updateAutoModSettingsStatusToNull()
-                                }
-                            },
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-
-                }
-                is Response.Failure ->{
-                    Text("Failed",
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 5.dp)
-                            .background(Color.Red.copy(0.7f))
-                            .align(Alignment.Center)
-                            .clickable {
-                                scope.launch {
-                                    updateAutoModSettingsStatusToNull()
-                                }
-                            },
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-                else ->{
-
-                }
-            }
-
-        }//end of box
-
-    }
-
-}
-@Composable
-fun EditAutoModTitle(
-    closeStreamInfo:()->Unit,
-    title:String,
-    contentDescription:String,
-    isModerator: Response<Boolean>,
-    updateAutoModSettings:()->Unit
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.DarkGray)
-            .padding(10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Row(verticalAlignment = Alignment.CenterVertically){
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = contentDescription,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable {
-                        closeStreamInfo()
-                    },
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Text(text =title,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize,modifier = Modifier.padding(start=20.dp))
-        }
-
-        ModViewDragSection.IsModeratorButton(
-            isModerator = isModerator,
-            updateAutoModSettings={updateAutoModSettings()}
-        )
-
-    }
-}
 
 
 
