@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.stream.views.MainChat.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.SwipeToDelete.SwipeToDeleteChatMessages
 
@@ -287,18 +289,12 @@ object SystemChats {
         alterMessage: String,
         restartWebSocket: () -> Unit
     ){
-        TwitchIRCSystemNotificationsBuilder.SystemChatAlert(
-            messageHeader ={
-                ChatMessagesParts.AlertHeader(alertMessage = alterMessage, alertIcon =Icons.Default.Warning )
-            },
-            messageText = { ChatMessagesParts.SimpleText(message)},
-            messageButton = {
-                ChatMessagesParts.ButtonWithText(
-                    buttonAction = {restartWebSocket()},
-                    buttonText = stringResource(R.string.click_to_connect)
-                )
-            }
-        )
+        val fontSize = MaterialTheme.typography.headlineSmall.fontSize
+        val errorScope = remember(){ ErrorScope(fontSize) }
+        with(errorScope){
+            ChatErrorMessage()
+        }
+
     }
 
     /**

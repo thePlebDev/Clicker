@@ -149,7 +149,7 @@ object MainChat{
                     closeStickyHeader ={closeStickyHeader()}
                 )
             },
-            autoScrollingChat={
+            autoScrollingChat={modifier ->
                 Parts.AutoScrollingChat(
                     twitchUserChat = twitchUserChat,
                     lazyColumnListState = lazyColumnListState,
@@ -162,7 +162,8 @@ object MainChat{
                     updateClickedUser ={username,userId,banned,isMod ->updateClickedUser(username,userId,banned,isMod)},
                     deleteMessage ={messageId -> deleteMessage(messageId)},
                     toggleTimeoutDialog={toggleTimeoutDialog()},
-                    toggleBanDialog={toggleBanDialog()}
+                    toggleBanDialog={toggleBanDialog()},
+                    modifier=modifier
 
                 )
 
@@ -243,7 +244,7 @@ object MainChat{
         fun ScrollableChat(
             noChatMode: Boolean,
             determineScrollState:@Composable () -> Unit,
-            autoScrollingChat:@Composable () -> Unit,
+            autoScrollingChat:@Composable (modifier:Modifier) -> Unit,
             enterChat:@Composable (modifier:Modifier) -> Unit,
             scrollToBottom:@Composable (modifier:Modifier) -> Unit,
             draggableButton:@Composable () -> Unit,
@@ -256,13 +257,16 @@ object MainChat{
                     .fillMaxSize()
             ) {
 
+                Column(Modifier.fillMaxSize()) {
 
-                autoScrollingChat()
-                enterChat(
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
-                )
+                    autoScrollingChat(Modifier.weight(1f))
+                    enterChat(
+                        Modifier
+                            .fillMaxWidth(),
+                    )
+                }
+
+
                 scrollToBottom(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -567,14 +571,13 @@ object MainChat{
             deleteMessage: (String) -> Unit,
             toggleTimeoutDialog:()->Unit,
             toggleBanDialog:()->Unit,
+            modifier: Modifier = Modifier
         ){
             val coroutineScope = rememberCoroutineScope()
             LazyColumn(
                 state = lazyColumnListState,
-                modifier = Modifier
-                    .padding(bottom = 70.dp)
+                modifier = modifier
                     .background(MaterialTheme.colorScheme.primary)
-                    .fillMaxSize()
 
             ) {
                 stickyHeader {
