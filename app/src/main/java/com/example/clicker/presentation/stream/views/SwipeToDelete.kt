@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.presentation.modView.views.ModViewDragSection
+import com.example.clicker.presentation.modView.views.HorizontalDragDetectionBox
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.launch
@@ -65,7 +65,7 @@ import kotlin.math.roundToInt
 /**
  * SwipeToDelete contains all of the composables that are used to create and react to the swipe to delete functionality
  * */
-object SwipeToDelete{
+
 
 
     /**
@@ -94,9 +94,9 @@ object SwipeToDelete{
             color = MaterialTheme.colorScheme.primary
         }
 
-        ModViewDragSection.HorizontalDragDetectionBox(
+        HorizontalDragDetectionBox(
             itemBeingDragged = { dragOffset ->
-                SwipeToDeleteParts.ClickableCard(
+                ClickableCard(
                     twitchUser =twitchUser,
                     color = color,
                     bottomModalState = bottomModalState,
@@ -149,7 +149,6 @@ object SwipeToDelete{
     /**
      * SwipeToDeleteParts represents all the possible individual composables that can be used inside of a [SwipeToDelete]
      * */
-    private object SwipeToDeleteParts{
 
 
         /**
@@ -402,8 +401,8 @@ object SwipeToDelete{
                 fontSize = textSize
             )
         }
-    }// end of parts
-}
+
+
 
 
 

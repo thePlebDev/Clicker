@@ -38,7 +38,7 @@ import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.FilterType
 import com.example.clicker.presentation.stream.views.AutoMod
-import com.example.clicker.presentation.modView.views.ModViewDragSection
+
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
@@ -91,7 +91,7 @@ fun ManageStreamInformation(
 
     ){
 
-        ModView.ModViewScaffold(
+       ModViewScaffold(
             closeStreamInfo={closeStreamInfo()},
             modViewDragStateViewModel =modViewDragStateViewModel,
             chatMessages =chatMessages,

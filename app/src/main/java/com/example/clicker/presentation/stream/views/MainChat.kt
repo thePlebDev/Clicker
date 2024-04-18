@@ -74,7 +74,7 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
  *
  *
  * */
-object MainChat{
+
 //Rule: brief description followed by builders used, then parameter description
     /**
      *
@@ -139,9 +139,9 @@ object MainChat{
         var autoscroll by remember { mutableStateOf(true) }
 
         //this is a builder
-        Builders.ScrollableChat(
+        ScrollableChat(
             determineScrollState={
-                Parts.DetermineScrollState(
+                DetermineScrollState(
                     lazyColumnListState =lazyColumnListState,
                     setAutoScrollFalse={autoscroll = false},
                     setAutoScrollTrue = {autoscroll = true},
@@ -150,7 +150,7 @@ object MainChat{
                 )
             },
             autoScrollingChat={modifier ->
-                Parts.AutoScrollingChat(
+                AutoScrollingChat(
                     twitchUserChat = twitchUserChat,
                     lazyColumnListState = lazyColumnListState,
                     showStickyHeader = showStickyHeader,
@@ -169,7 +169,7 @@ object MainChat{
 
             },
             enterChat ={boxModifier ->
-                TextChat.EnterChat(
+                EnterChat(
                     modifier = boxModifier,
                     filteredChatList = filteredChatList,
                     textFieldValue = textFieldValue,
@@ -192,14 +192,14 @@ object MainChat{
 
             }, // end of enter chat
             scrollToBottom ={boxModifier ->
-                Parts.ScrollToBottom(
+                ScrollToBottom(
                     scrollingPaused = !autoscroll,
                     enableAutoScroll = { autoscroll = true },
                     modifier = boxModifier
                 )
             },
             draggableButton = {
-                Parts.DraggableUndoButton(
+                DraggableUndoButton(
                         undoBan={undoBan()},
                         showUndoButton =showUndoButton
 
@@ -208,7 +208,7 @@ object MainChat{
             },
             noChatMode = noChatMode,
             forwardSlashCommands = {alignCenterwithPaddingModifier ->
-                Parts.ForwardSlash(
+                ForwardSlash(
                     modifier =alignCenterwithPaddingModifier,
                     forwardSlashCommandList = forwardSlashCommandsList,
                     clickedCommandAutoCompleteText ={
@@ -225,7 +225,6 @@ object MainChat{
      * Builders represents the most generic parts of [MainChat] and should be thought of as UI layout guides used
      * by the implementations above
      * */
-    private object Builders{
 
         /**
          * - ScrollableChat is used inside of  [AutoScrollChatWithTextBox].
@@ -289,7 +288,7 @@ object MainChat{
                 }
             }
         }
-    }//end of the builder
+
 
 
 
@@ -298,7 +297,6 @@ object MainChat{
      * Parts represents the most individual parts of [MainChat] and should be thought of as the individual
      * pieces that are used inside of a [Builders] to create a [MainChat] implementation
      * */
-    private object Parts{
 
         @Composable
         fun ForwardSlash(
@@ -342,7 +340,7 @@ object MainChat{
             closeStickyHeader: () -> Unit,
 
             ){
-            Parts.AlertRowHeader(
+            AlertRowHeader(
                 alertMessage =headerMessage,
                 closeAlert ={closeStickyHeader()}
             )
@@ -373,7 +371,7 @@ object MainChat{
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (scrollingPaused) {
-                    Parts.DualIconsButton(
+                   DualIconsButton(
                         buttonAction = {enableAutoScroll()},
                         iconImageVector=Icons.Default.ArrowDropDown,
                         iconDescription = stringResource(R.string.arrow_drop_down_description),
@@ -582,7 +580,7 @@ object MainChat{
             ) {
                 stickyHeader {
                     if (showStickyHeader) {
-                        Parts.StickyHeader(
+                        StickyHeader(
                             headerMessage =banResponseMessage,
                             closeStickyHeader ={closeStickyHeader()}
                         )
@@ -602,7 +600,7 @@ object MainChat{
 
                     // TODO: THIS IS WHAT IS PROBABLY CAUSING MY DOUBLE MESSAGE BUG
                     if (twitchUserChat.isNotEmpty()) {
-                        SystemChats.IndividualChatMessages(
+                        IndividualChatMessages(
                             twitchUser = twitchUser,
                             restartWebSocket = {restartWebSocket() },
                             bottomModalState = bottomModalState,
@@ -678,10 +676,8 @@ object MainChat{
         }
 
 
-    }
 
 
-}
 
 
 

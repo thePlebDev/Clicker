@@ -67,12 +67,12 @@ import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.modView.views.DraggableModViewBox
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
-import com.example.clicker.presentation.modView.views.ModViewDragSection
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.util.Response
 
@@ -97,7 +97,6 @@ import com.example.clicker.util.Response
  * @property DetectDoubleClickSpacer
  * @property DetectDraggingOrNotAtBottomButton
  * */
-object ModView {
     /**
      * ModViewScaffold is a `Scaffold` based component that is responsible for showing the user all the information related to
      * the created modView. The ModView shows the user 3 sections. 1) chat, 2) mod actions, 3) automod queue
@@ -237,7 +236,7 @@ object ModView {
         ) {contentPadding ->
             Log.d("contentPaddingModView","contentPadding --> ${contentPadding.calculateTopPadding().value}")
 
-            ModViewDragSection.DraggableModViewBox(
+            DraggableModViewBox(
                 contentPaddingValues = contentPadding,
                 boxOneOffsetY =modViewDragStateViewModel.dragStateOffsets.value.boxOneOffsetY,
                 setBoxOneOffset={newValue-> modViewDragStateViewModel.setBoxOneOffset(newValue)},
@@ -956,4 +955,3 @@ object ModView {
         }
     }
 
-}
