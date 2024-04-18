@@ -68,7 +68,6 @@ import kotlinx.coroutines.launch
  * TextChat contains all the composables responsible for creating the text chat experience for the users
  *
  * */
-object TextChat{
 
 
     /**
@@ -102,11 +101,11 @@ object TextChat{
         // todo: put the state here
         var modIconSize by remember { mutableStateOf(25.dp) }
 
-        TextChatBuilders.EnterChat(
+        EnterChat(
             modifier = modifier,
             updateModIconSize={height -> modIconSize = height },
             filteredRow = {
-                TextChatParts.FilteredMentionLazyRow(
+                FilteredMentionLazyRow(
                     filteredChatList = filteredChatList,
                     clickedAutoCompleteText = { username ->
                         clickedAutoCompleteText(
@@ -125,7 +124,7 @@ object TextChat{
                 )
             },
             stylizedTextField ={boxModifier ->
-                TextChatParts.StylizedTextField(
+               StylizedTextField(
                     modifier = boxModifier,
                     textFieldValue = textFieldValue,
                     newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
@@ -133,7 +132,7 @@ object TextChat{
                 )
             },
             showIconBasedOnTextLength ={
-                TextChatParts.ShowIconBasedOnTextLength(
+                ShowIconBasedOnTextLength(
                     textFieldValue =textFieldValue,
                     chat = {item -> sendMessageToWebSocket(item)},
                     showModal ={showModal()}
@@ -144,13 +143,6 @@ object TextChat{
 
 
 
-
-
-    /**
-     * TextChatBuilders is the most generic section of all the [TextChat] composables. It is meant to
-     * act as a layout guide for how all [TextChat] implementations should look
-     * */
-    private object TextChatBuilders{
 
         /**
          * The basic layout of the text box users use to enter and share chat to the server. An example of what a typical composable
@@ -195,11 +187,7 @@ object TextChat{
                 }
             }
         }
-    }
 
-
-
-    private object TextChatParts{
 
 
 
@@ -253,7 +241,7 @@ object TextChat{
             LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                 items(filteredChatList) {
 
-                        TextChatParts.ClickedAutoText(
+                        ClickedAutoText(
                             clickedAutoCompleteText ={
                                     username ->clickedAutoCompleteText(username)},
                             username =it
@@ -360,9 +348,9 @@ object TextChat{
         }
 
 
-    }// end of TextChatParts
 
-}// end of Text Chat
+
+
 
 /**
  * A composable meant to show a moderator Icon based on the status of [modStatus]

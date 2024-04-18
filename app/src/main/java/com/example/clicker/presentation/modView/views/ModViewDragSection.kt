@@ -76,9 +76,11 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
-import com.example.clicker.presentation.stream.views.streamManager.ModView
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.presentation.stream.ClickedUIState
+import com.example.clicker.presentation.stream.views.streamManager.DetectDoubleClickSpacer
+import com.example.clicker.presentation.stream.views.streamManager.DetectDraggingOrNotAtBottomButton
+import com.example.clicker.presentation.stream.views.streamManager.DropDownMenuHeaderBox
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 
 import com.example.clicker.util.Response
@@ -99,7 +101,7 @@ import kotlin.math.roundToInt
  * @property HorizontalDragDetectionBox
  * @property IsModeratorButton
  * */
-object ModViewDragSection {
+
 
     /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
      * composables
@@ -371,7 +373,7 @@ object ModViewDragSection {
         ) {
             content()
             if(dragging){
-                ModView.DetectDoubleClickSpacer(
+                DetectDoubleClickSpacer(
                     opacity,
                     setDragging={newValue ->setDragging(newValue)},
                     hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
@@ -489,7 +491,7 @@ object ModViewDragSection {
                         .padding(vertical = 5.dp)
                 ){
                     stickyHeader {
-                        ModView.DropDownMenuHeaderBox(
+                        DropDownMenuHeaderBox(
                             headerTitle ="CHAT",
                             blockedTerms =blockedTerms,
                             deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
@@ -595,13 +597,13 @@ object ModViewDragSection {
 
 
             if(dragging){
-                ModView.DetectDoubleClickSpacer(
+                DetectDoubleClickSpacer(
                     opacity,
                     setDragging={newValue ->setDragging(newValue)},
                     hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
                 )
             }
-            ModView.DetectDraggingOrNotAtBottomButton(
+            DetectDraggingOrNotAtBottomButton(
                 dragging = dragging,
                 modifier = Modifier.align(Alignment.BottomCenter),
                 listState = listState,
@@ -776,7 +778,7 @@ object ModViewDragSection {
 
         }
         if(dragging){
-            ModView.DetectDoubleClickSpacer(
+            DetectDoubleClickSpacer(
                 opacity,
                 setDragging={newValue ->setDragging(newValue)},
                 hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
@@ -1097,7 +1099,7 @@ object ModViewDragSection {
                 }
 
             if(dragging){
-                ModView.DetectDoubleClickSpacer(
+                DetectDoubleClickSpacer(
                     opacity,
                     setDragging={newValue ->setDragging(newValue)},
                     hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
@@ -1105,7 +1107,7 @@ object ModViewDragSection {
             }
 
 
-            ModView.DetectDraggingOrNotAtBottomButton(
+            DetectDraggingOrNotAtBottomButton(
                 dragging = dragging,
                 modifier = Modifier.align(Alignment.BottomCenter),
                 listState = listState,
@@ -1253,4 +1255,3 @@ object ModViewDragSection {
 
 
     }
-}

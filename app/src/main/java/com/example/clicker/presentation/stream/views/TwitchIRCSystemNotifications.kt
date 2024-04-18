@@ -39,10 +39,9 @@ import com.example.clicker.R
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.sharedViews.ErrorScope
-import com.example.clicker.presentation.stream.views.MainChat.AutoScrollChatWithTextBox
-import com.example.clicker.presentation.stream.views.SwipeToDelete.SwipeToDeleteChatMessages
 
-import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystemNotificationsBuilder.SystemChat
+
+
 
 //parts builders implementations (PBI architecture for short)
 
@@ -74,7 +73,6 @@ import com.example.clicker.presentation.stream.views.SystemChats.TwitchIRCSystem
  *  1) [IndividualChatMessages]
  *
  * */
-object SystemChats {
 
 
     //slotting layout means that it is a builder
@@ -99,7 +97,7 @@ object SystemChats {
 
 
     ){
-        Builders.MainChatting(
+        MainChatting(
             twitchUser =twitchUser,
             individualSwipableChatMessage = {
                 SwipeToDeleteChatMessages(
@@ -120,52 +118,52 @@ object SystemChats {
                 )
             },
             noticeMessage = {
-                SystemChats.NoticeMessage(
+                NoticeMessage(
                     color = MaterialTheme.colorScheme.onPrimary,
                     displayName = twitchUser.displayName,
                     message = twitchUser.userType
                 )
             },
             announcementMessage = {
-                SystemChats.AnnouncementMessage(
+                AnnouncementMessage(
                     displayName = twitchUser.displayName,
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             },
             resubMessage = {
-                SystemChats.ResubMessage(
+               ResubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             },
             subMessage = {
-                SystemChats.SubMessage(
+                SubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             },
             giftSubMessage = {
-                SystemChats.GiftSubMessage(
+                GiftSubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             },
             mysterySubMessage = {
-                SystemChats.MysteryGiftSubMessage(
+               MysteryGiftSubMessage(
                     message = twitchUser.userType,
                     systemMessage = twitchUser.systemMessage
                 )
             },
             errorMessage = {
-                SystemChats.ErrorMessage(
+                ErrorMessage(
                     message = twitchUser.userType!!,
                     alterMessage = twitchUser.displayName!!,
                     restartWebSocket = { restartWebSocket() }
                 )
             },
             joinMessage = {
-                SystemChats.JoinMessage(
+                JoinMessage(
                     message = twitchUser.userType!!
                 )
             },
@@ -188,14 +186,14 @@ object SystemChats {
     ) {
         TwitchIRCSystemNotificationsBuilder.SystemChat(
                     messageHeader = {
-                        ChatMessagesParts.MessageHeader(
+                       MessageHeader(
                             contentDescription = stringResource(R.string.re_sub),
                             iconImageVector =Icons.Default.Star,
                             message =stringResource(R.string.re_sub)
                         )
                     },
                     messageText = {
-                        ChatMessagesParts.MessageText(
+                        MessageText(
                             message =message,
                             systemMessage =systemMessage
                         )
@@ -216,14 +214,14 @@ object SystemChats {
     ){
         TwitchIRCSystemNotificationsBuilder.SystemChat(
             messageHeader = {
-                ChatMessagesParts.MessageHeader(
+                MessageHeader(
                     contentDescription = stringResource(R.string.sub),
                     iconImageVector =Icons.Default.Star,
                     message =stringResource(R.string.sub)
                 )
             },
             messageText = {
-                ChatMessagesParts.MessageText(
+               MessageText(
                     message =message,
                     systemMessage =systemMessage
                 )
@@ -246,14 +244,14 @@ object SystemChats {
     ){
         TwitchIRCSystemNotificationsBuilder.SystemChat(
             messageHeader = {
-                ChatMessagesParts.MessageHeader(
+               MessageHeader(
                     contentDescription = stringResource(R.string.re_sub),
                     iconImageVector =Icons.Default.Star,
                     message =stringResource(R.string.announcement)
                 )
             },
             messageText = {
-                ChatMessagesParts.NamedMessageText(
+               NamedMessageText(
                     displayName =displayName,
                     message =message,
                     systemMessage =systemMessage
@@ -270,7 +268,7 @@ object SystemChats {
      * */
     @Composable
     private fun JoinMessage(message: String) {
-        ChatMessagesParts.SimpleText(message = message)
+        SimpleText(message = message)
     }
 
 
@@ -311,14 +309,14 @@ object SystemChats {
 
         TwitchIRCSystemNotificationsBuilder.SystemChat(
             messageHeader ={
-                ChatMessagesParts.MessageHeader(
+                MessageHeader(
                     contentDescription = stringResource(R.string.random_gift_sub),
                     iconImageVector =Icons.Default.ShoppingCart,
                     message =stringResource(R.string.random_gift_sub)
                 )
             },
             messageText ={
-                ChatMessagesParts.MessageText(
+               MessageText(
                     message =message,
                     systemMessage =systemMessage
                 )
@@ -421,14 +419,14 @@ object SystemChats {
     ) {
         TwitchIRCSystemNotificationsBuilder.SystemChat(
             messageHeader ={
-                ChatMessagesParts.MessageHeader(
+               MessageHeader(
                     contentDescription = stringResource(R.string.gift_sub),
                     iconImageVector =Icons.Default.Favorite,
                     message =stringResource(R.string.gift_sub)
                 )
             },
             messageText ={
-                ChatMessagesParts.MessageText(
+                MessageText(
                     message =message,
                     systemMessage =systemMessage
                 )
@@ -451,7 +449,7 @@ object SystemChats {
         displayName: String?,
         message: String?
     ) {
-        ChatMessagesParts.UserSpecificText(
+        UserSpecificText(
             color = color,
             displayName = displayName,
             message = message
@@ -459,11 +457,7 @@ object SystemChats {
 
     }
 
-    /**
-     * Builders represents the most generic parts of [SystemChats] and should be thought of as UI layout guides used
-     * by the implementations above
-     * */
-    private object Builders{
+
 
         /**
          * - ScrollableChat is used inside of  [IndividualChatMessages].
@@ -526,7 +520,7 @@ object SystemChats {
 
         }
 
-    }
+
 
 
     /**
@@ -607,10 +601,7 @@ object SystemChats {
     } // END OF TwitchIRCSystemNotificationsBuilder
 
 
-    /**
-     * ChatMessagesParts represents all the possible individual Composables that can be used inside of a [TwitchIRCSystemNotificationsBuilder]
-     * */
-    private object ChatMessagesParts{
+
 
 
         /**
@@ -792,6 +783,5 @@ object SystemChats {
             )
         }
 
-    }
-}
+
 

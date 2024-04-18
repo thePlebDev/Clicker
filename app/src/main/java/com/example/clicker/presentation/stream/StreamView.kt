@@ -32,9 +32,9 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoMod
+import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
-import com.example.clicker.presentation.stream.views.MainChat
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
 import com.example.clicker.util.Response
@@ -355,7 +355,7 @@ fun TextChat(
 
     ) {
 
-    MainChat.AutoScrollChatWithTextBox(
+    AutoScrollChatWithTextBox(
         showStickyHeader =showStickyHeader,
         closeStickyHeader ={closeStickyHeader()},
         twitchUserChat = twitchUserChat,
