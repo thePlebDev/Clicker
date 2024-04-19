@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
-import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.sharedViews.ButtonScope
+import com.example.clicker.presentation.sharedViews.ChatScope
+
 
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -79,67 +79,124 @@ fun ValidationView(
     val isUserLoggedIn = homeViewModel.state.value.userIsLoggedIn
 
 
+//
+//    HomeViewImplementation(
+//        bottomModalState =bottomModalState,
+//        loginWithTwitch ={loginWithTwitch()},
+//        domainIsRegistered =domainIsRegistered,
+//        addToLinks = { addToLinks() },
+//        onNavigate = {id -> onNavigate(id) },
+//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+//            streamViewModel.updateChannelNameAndClientIdAndUserId(
+//                streamerName,
+//                clientId,
+//                broadcasterId,
+//                userId,
+//                login =homeViewModel.validatedUser.value?.login ?:""
+//            )
+//            autoModViewModel.updateAutoModCredentials(
+//                oAuthToken = homeViewModel.state.value.oAuthToken,
+//                clientId = streamViewModel.state.value.clientId,
+//                moderatorId = streamViewModel.state.value.userId,
+//                broadcasterId = streamViewModel.state.value.broadcasterId,
+//            )
+//            updateModViewSettings(
+//                homeViewModel.state.value.oAuthToken,
+//                streamViewModel.state.value.clientId,
+//                streamViewModel.state.value.broadcasterId,
+//                streamViewModel.state.value.userId,
+//            )
+//            createNewTwitchEventWebSocket()
+//
+//        },
+//        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
+//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+//        clientId = clientId ?: "",
+//        userId = userId ?: "",
+//        height = homeViewModel.state.value.aspectHeight,
+//        width = homeViewModel.state.value.width,
+//        logout = {
+//            homeViewModel.beginLogout(
+//                clientId = clientId?:"",
+//                oAuthToken = oAuthToken
+//            )
+//            //homeViewModel.logout()
+//            homeViewModel.hideLogoutDialog()
+//
+//        },
+//        userIsAuthenticated =userIsAuthenticated,
+//        screenDensity = homeViewModel.state.value.screenDensity,
+//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+//        networkMessageColor=Color.Red,
+//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+//        isUserLoggedIn=isUserLoggedIn,
+//        showFailedDialog = homeViewModel.state.value.showFailedDialog,
+//        hideDialog = {homeViewModel.hideDialog()}
+//
+//    )
+    val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
+    val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
+    val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
+    with(chatScope){
+        LazyColumn(){
 
-    HomeViewImplementation(
-        bottomModalState =bottomModalState,
-        loginWithTwitch ={loginWithTwitch()},
-        domainIsRegistered =domainIsRegistered,
-        addToLinks = { addToLinks() },
-        onNavigate = {id -> onNavigate(id) },
-        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-            streamViewModel.updateChannelNameAndClientIdAndUserId(
-                streamerName,
-                clientId,
-                broadcasterId,
-                userId,
-                login =homeViewModel.validatedUser.value?.login ?:""
-            )
-            autoModViewModel.updateAutoModCredentials(
-                oAuthToken = homeViewModel.state.value.oAuthToken,
-                clientId = streamViewModel.state.value.clientId,
-                moderatorId = streamViewModel.state.value.userId,
-                broadcasterId = streamViewModel.state.value.broadcasterId,
-            )
-            updateModViewSettings(
-                homeViewModel.state.value.oAuthToken,
-                streamViewModel.state.value.clientId,
-                streamViewModel.state.value.broadcasterId,
-                streamViewModel.state.value.userId,
-            )
-            createNewTwitchEventWebSocket()
+            item{
+                Spacer(modifier = Modifier.height(15.dp))
+                NoticeMessages(
+                    systemMessage="",
+                    message ="A raid is taking place!! Prepare yourself"
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                AnnouncementMessages(
+                    message ="This chat room is now in Emote-only mode"
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                ReSubMessage(
+                    systemMessage="PeaNut45 has subscibed with Prime. They've subscribed for 34 months!!!",
+                    message ="Yay"
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                SubMessages(
+                    systemMessage="PeaNut45 just subscribed for 5 months",
+                    message ="Dang, it do be like that"
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                GiftSubMessages(
+                    systemMessage="PeaNut45 just gifted a sub to boopers74",
+                    message =""
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                AnonGiftMessages(
+                    systemMessage="An anonymous user is gifting 3 subs to the community!",
+                    message =""
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item{
+                JoinMessage(
+                    message ="Connected to chat"
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+            }
 
-        },
-        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-        clientId = clientId ?: "",
-        userId = userId ?: "",
-        height = homeViewModel.state.value.aspectHeight,
-        width = homeViewModel.state.value.width,
-        logout = {
-            homeViewModel.beginLogout(
-                clientId = clientId?:"",
-                oAuthToken = oAuthToken
-            )
-            //homeViewModel.logout()
-            homeViewModel.hideLogoutDialog()
-
-        },
-        userIsAuthenticated =userIsAuthenticated,
-        screenDensity = homeViewModel.state.value.screenDensity,
-        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-        networkMessageColor=Color.Red,
-        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-        isUserLoggedIn=isUserLoggedIn,
-        showFailedDialog = homeViewModel.state.value.showFailedDialog,
-        hideDialog = {homeViewModel.hideDialog()}
-
-    )
+        }
+    }
 
 
 
