@@ -25,6 +25,7 @@ import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TextParsing
@@ -102,7 +103,8 @@ data class StreamUIState(
     val undoBanResponse: Boolean = false, //twitchRepoImpl
     val showStickyHeader: Boolean = false, //twitchRepoImpl
 
-    val chatSettingsFailedMessage: String = ""
+    val chatSettingsFailedMessage: String = "",
+    val networkStatus:Boolean? = null,
 )
 data class ClickedUIState(
     val clickedUsername:String ="", //websocket
@@ -127,6 +129,7 @@ class StreamViewModel @Inject constructor(
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher,
     private val autoCompleteChat: AutoCompleteChat,
+    private val networkMonitoring: NetworkMonitoring,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
@@ -251,6 +254,59 @@ class StreamViewModel @Inject constructor(
 
     init{
 //        getAutoModStatus()
+    }
+    val another ="Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one"
+
+    val errorValue = TwitchUserDataObjectMother
+        .addColor("#FF0000")
+        .addDisplayName("Connection Error")
+        .addMessageType(MessageType.ERROR)
+        .addUserType(
+            "Disconnected from chat."
+        )
+        .build()
+    val noInternetErrorValue = TwitchUserDataObjectMother
+        .addColor("#FF0000")
+        .addDisplayName("Connection Error")
+        .addMessageType(MessageType.ERROR)
+        .addUserType(
+            "Disconnected from chat. Please check network and try again"
+        )
+        .build()
+    init{
+        viewModelScope.launch {
+            webSocket.hasWebSocketFailed.collect{nullableValue ->
+                nullableValue?.also { value ->
+                    if(value && _uiState.value.networkStatus == true){
+                        //todo: CHECK IF THERE IS AN INTERNET CONNECTION
+                        listChats.add(noInternetErrorValue)
+                    }else{
+                        listChats.add(errorValue)
+                    }
+                }
+
+            }
+        }
+    }
+
+    //todo:THIS IS THE MONITORING of the network status
+    init{
+        viewModelScope.launch {
+            networkMonitoring.networkStatus.collect{nullableValue ->
+                nullableValue?.also{nonNullableValue ->
+                    _uiState.value = _uiState.value.copy(
+                        networkStatus = nonNullableValue
+                    )
+                    if(nullableValue){
+                        val username =_uiState.value.login
+                        val channelName = _channelName.value?:""
+                        webSocket.run(channelName, username)
+                    }
+
+                }
+
+            }
+        }
     }
 
 

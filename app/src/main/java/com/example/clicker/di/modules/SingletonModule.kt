@@ -30,6 +30,7 @@ import com.example.clicker.network.repository.TwitchStreamImpl
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.AuthenticationEventBus
+import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,6 +52,12 @@ object SingletonModule {
         @ApplicationContext appContext: Context
     ): NetworkMonitor{
         return LiveNetworkMonitor(appContext)
+    }
+    @Provides
+    fun provideNetworkMonitoring(
+        @ApplicationContext appContext: Context
+    ): NetworkMonitoring {
+        return NetworkMonitoring(appContext)
     }
 
     @Singleton //scope binding

@@ -14,6 +14,7 @@ import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.authentication.AuthenticationUIState
+import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -80,6 +81,7 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
+    private val networkMonitoring:NetworkMonitoring
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -181,10 +183,6 @@ class HomeViewModel @Inject constructor(
                 }
         }
     }
-
-
-
-
 
 
 
