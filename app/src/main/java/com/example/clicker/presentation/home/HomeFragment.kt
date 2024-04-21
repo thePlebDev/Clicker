@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -132,7 +133,10 @@ class HomeFragment : Fragment() {
                                 moderatorId =moderatorId
                             )
                         },
-                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()}
+                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                        hapticFeedBackError = {
+                            view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                        }
 
 
                     )

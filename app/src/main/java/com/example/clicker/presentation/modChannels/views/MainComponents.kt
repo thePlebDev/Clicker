@@ -69,6 +69,7 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
+import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
 import com.example.clicker.presentation.sharedViews.NotificationsScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
@@ -126,6 +127,8 @@ object ModChannelComponents{
         networkMessageColor:Color,
         networkMessage: String,
         showLoginModal:()->Unit,
+        showNetworkRefreshError:Boolean,
+        hapticFeedBackError:() ->Unit,
     ){
         SharedComponents.NoDrawerScaffold(
             topBar = {
@@ -201,7 +204,9 @@ object ModChannelComponents{
                     loadingIndicator = {
                         LazyListLoadingIndicator()
                     },
-                    showLoginModal ={showLoginModal()}
+                    showLoginModal ={showLoginModal()},
+                    showNetworkRefreshError =showNetworkRefreshError,
+                    hapticFeedBackError={hapticFeedBackError()}
 
                 )
             }
@@ -247,109 +252,126 @@ object ModChannelComponents{
             userId:String,
             showLoginModal:()->Unit,
             loadingIndicator:@Composable IndicatorScopes.() -> Unit,
+            showNetworkRefreshError:Boolean,
+            hapticFeedBackError:() ->Unit,
 
             ){
+            val fontSize =MaterialTheme.typography.headlineMedium.fontSize
+            val errorScope = remember(){ ErrorScope(fontSize) }
             val indicatorScopes = remember() { IndicatorScopes() }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+            Box(modifier = Modifier.fillMaxSize()){
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
                 ){
-                when(modChannelResponseState){
-                    is NetworkNewUserResponse.Loading ->{
-                        item{
-                            with(indicatorScopes){
-                                loadingIndicator()
+                    when(modChannelResponseState){
+                        is NetworkNewUserResponse.Loading ->{
+                            item{
+                                with(indicatorScopes){
+                                    loadingIndicator()
+                                }
+
                             }
 
                         }
+                        is NetworkNewUserResponse.Success ->{
+                            stickyHeader {
+                                ModHeader("Live")
+                            }
+                            if(liveModChannelList.isEmpty()){
+                                item{
+                                    EmptyList(
+                                        message ="No live moderated channels found"
+                                    )
+                                }
+                            }
+                            items(liveModChannelList){streamInfo ->
 
-                    }
-                    is NetworkNewUserResponse.Success ->{
-                        stickyHeader {
-                            ModHeader("Live")
-                        }
-                        if(liveModChannelList.isEmpty()){
-                            item{
-                                EmptyList(
-                                    message ="No live moderated channels found"
+
+                                LiveModChannelItem(
+                                    height =height,
+                                    width=width,
+                                    density= density,
+                                    streamerName = streamInfo.userLogin,
+                                    broadcasterId = streamInfo.userId,
+                                    streamTitle=streamInfo.title,
+                                    gameTitle =streamInfo.gameName,
+                                    viewCount = streamInfo.viewerCount,
+                                    url = streamInfo.thumbNailUrl,
+                                    updateStreamerName ={
+                                            streamerName,clientId,broadcasterId,userId ->
+                                        updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                                    },
+                                    onNavigate ={destination -> onNavigate(destination)},
+                                    clientId =clientId,
+                                    userId=userId,
+                                    streamItem = streamInfo,
+                                    updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
                                 )
                             }
-                        }
-                        items(liveModChannelList){streamInfo ->
+
+                            stickyHeader {
+                                ModHeader("Offline")
+                            }
+                            if(offlineModChannelList.isEmpty()){
+                                item{
+                                    EmptyList(
+                                        message ="No offline moderated channels found"
+                                    )
+                                }
+                            }
 
 
-                            LiveModChannelItem(
-                                height =height,
-                                width=width,
-                                density= density,
-                                streamerName = streamInfo.userLogin,
-                                broadcasterId = streamInfo.userId,
-                                streamTitle=streamInfo.title,
-                                gameTitle =streamInfo.gameName,
-                                viewCount = streamInfo.viewerCount,
-                                url = streamInfo.thumbNailUrl,
-                                updateStreamerName ={
-                                        streamerName,clientId,broadcasterId,userId ->
-                                    updateStreamerName(streamerName,clientId,broadcasterId,userId)
-
-                                },
-                                onNavigate ={destination -> onNavigate(destination)},
-                                clientId =clientId,
-                                userId=userId,
-                                streamItem = streamInfo,
-                                updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
-                            )
-                        }
-
-                        stickyHeader {
-                            ModHeader("Offline")
-                        }
-                        if(offlineModChannelList.isEmpty()){
-                            item{
-                                EmptyList(
-                                    message ="No offline moderated channels found"
+                            items(offlineModChannelList){channelName ->
+                                OfflineModChannelItem(
+                                    height,
+                                    width,
+                                    density,
+                                    channelName = channelName
                                 )
                             }
+
                         }
+                        is NetworkNewUserResponse.Failure ->{
+                            item{
+                                val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
+                                ErrorPullToRefresh(message)
+                            }
 
+                        }
+                        is NetworkNewUserResponse.NetworkFailure->{
+                            item{
+                                val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
+                                ErrorPullToRefresh(message)
+                            }
 
-                        items(offlineModChannelList){channelName ->
-                            OfflineModChannelItem(
-                                height,
-                                width,
-                                density,
-                                channelName = channelName
-                            )
+                        }
+                        is NetworkNewUserResponse.Auth401Failure->{
+                            item{
+
+                                ErrorPullToRefresh("Please login with Twitch")
+                            }
+                            showLoginModal()
+
+                        }
+                        is NetworkNewUserResponse.NewUser->{
+
                         }
 
                     }
-                    is NetworkNewUserResponse.Failure ->{
-                        item{
-                            val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
-                            ErrorPullToRefresh(message)
+                }
+                if(showNetworkRefreshError){
+                    Box(modifier = Modifier.align(Alignment.BottomCenter)){
+                        hapticFeedBackError()
+                        with(errorScope){
+                            this.NetworkErrorMessage()
                         }
-
-                    }
-                    is NetworkNewUserResponse.NetworkFailure->{
-                        item{
-                            val message = modChannelResponseState.e.message ?:"Error! Pull to refresh"
-                            ErrorPullToRefresh(message)
-                        }
-
-                    }
-                    is NetworkNewUserResponse.Auth401Failure->{
-                        item{
-
-                            ErrorPullToRefresh("Please login with Twitch")
-                        }
-                        showLoginModal()
-
-                    }
-                    is NetworkNewUserResponse.NewUser->{
-
                     }
 
                 }
-            }
+
+            }// end of the box
+
 
         }
 

@@ -3,6 +3,7 @@ package com.example.clicker.presentation.modChannels
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -89,7 +90,8 @@ class ModChannelsFragment : Fragment() {
                                 moderatorId =moderatorId
                             )
                         },
-                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()}
+                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                        hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)}
                     )
                 }
             }

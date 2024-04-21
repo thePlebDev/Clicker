@@ -50,6 +50,7 @@ fun ModChannelView(
     loginWithTwitch: () -> Unit,
     updateModViewSettings:(String,String,String,String,)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
+    hapticFeedBackError:() ->Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -57,6 +58,7 @@ fun ModChannelView(
 
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
+    val showNetworkRefreshError:Boolean = homeViewModel.state.value.showNetworkRefreshError
 
 
 
@@ -113,7 +115,9 @@ fun ModChannelView(
                 scope.launch {
                     bottomModalState.show()
                 }
-            }
+            },
+            showNetworkRefreshError =showNetworkRefreshError,
+            hapticFeedBackError={hapticFeedBackError()}
 
 
         )

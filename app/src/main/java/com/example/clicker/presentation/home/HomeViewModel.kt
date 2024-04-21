@@ -71,6 +71,7 @@ data class HomeUIState(
     val horizontalLongHoldStreamList:NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
     val userIsLoggedIn:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading,
     val showFailedDialog:Boolean = false,
+    val showNetworkRefreshError:Boolean = false,
 
     )
 
@@ -126,6 +127,7 @@ class HomeViewModel @Inject constructor(
     init{
         getOAuthToken()
     }
+
 
     fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
 //
@@ -217,6 +219,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun pullToRefreshHome(){
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 homeRefreshing = true,
@@ -492,6 +495,7 @@ class HomeViewModel @Inject constructor(
         userId: String,
         oAuthToken: String
     ) {
+        Log.d("pullToRefreshHome","PULLED")
         try {
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
 
@@ -547,12 +551,17 @@ class HomeViewModel @Inject constructor(
                         is NetworkNewUserResponse.NetworkFailure ->{
                             _uiState.value = _uiState.value.copy(
                                 homeRefreshing = false,
-                                streamersListLoading = response,
-                                horizontalLongHoldStreamList =response
+                                showNetworkRefreshError = true
                             )
+
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
                             )
+                            delay(1000)
+                            _uiState.value = _uiState.value.copy(
+                                showNetworkRefreshError = false
+                            )
+
 
                         }
                         is NetworkNewUserResponse.Auth401Failure->{
