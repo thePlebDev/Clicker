@@ -104,9 +104,8 @@ import com.example.clicker.util.Response
         hideLogoutDialog:()->Unit,
         showLogoutDialog: () -> Unit,
         currentUsername:String,
-        isUserLoggedIn: NetworkAuthResponse<Boolean>,
-        showFailedDialog:Boolean,
-        hideDialog:() -> Unit,
+        showNetworkRefreshError:Boolean,
+        hapticFeedBackError:() ->Unit,
 
 
     ){
@@ -146,10 +145,9 @@ import com.example.clicker.util.Response
                     networkMessage = networkMessage,
                     showNetworkMessage =showNetworkMessage,
                     bottomModalState =bottomModalState,
-                    isUserLoggedIn =isUserLoggedIn,
-                    showFailedDialog =showFailedDialog,
-                    hideDialog ={hideDialog()},
-                    loginWithTwitch ={loginWithTwitch()}
+                    loginWithTwitch ={loginWithTwitch()},
+                    showNetworkRefreshError =showNetworkRefreshError,
+                    hapticFeedBackError={hapticFeedBackError()}
 
                 )
 

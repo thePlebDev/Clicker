@@ -66,7 +66,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -99,6 +101,7 @@ import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 import com.example.clicker.presentation.sharedViews.ButtonScope
+import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
@@ -156,10 +159,9 @@ class MainScaffoldScope(){
         networkMessage: String,
         showNetworkMessage:Boolean,
         bottomModalState: ModalBottomSheetState,
-        isUserLoggedIn: NetworkAuthResponse<Boolean>,
-        showFailedDialog: Boolean,
-        hideDialog: () -> Unit,
         loginWithTwitch:() ->Unit,
+        showNetworkRefreshError:Boolean,
+        hapticFeedBackError:() ->Unit,
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -284,7 +286,9 @@ class MainScaffoldScope(){
                             }
                         )
                     },
-                    bottomModalState =bottomModalState
+                    bottomModalState =bottomModalState,
+                    showNetworkRefreshError =showNetworkRefreshError,
+                    hapticFeedBackError={hapticFeedBackError()}
                 )
 
             }
@@ -371,10 +375,14 @@ fun TellUserToLogBackIn(
     Box(
         modifier = Modifier.fillMaxSize()
     ){
-        Spacer(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.8f)).disableClickAndRipple())
+        Spacer(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.8f))
+            .disableClickAndRipple())
         Card(
             modifier = Modifier
-                .fillMaxWidth().padding(15.dp)
+                .fillMaxWidth()
+                .padding(15.dp)
                 .align(Alignment.Center),
             shape = RoundedCornerShape(16.dp),
             backgroundColor = MaterialTheme.colorScheme.primary,
@@ -424,8 +432,9 @@ fun LoginFailed(
                 border = BorderStroke(2.dp,  MaterialTheme.colorScheme.secondary)
             ) {
                 Column(
-                    modifier = Modifier.padding(15.dp)
-                        .background( MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .background(MaterialTheme.colorScheme.primary),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.size(20.dp))
@@ -925,93 +934,111 @@ class LiveChannelsLazyColumnScope(){
         liveChannelRowItem:@Composable LiveChannelsLazyColumnScope.(streamItem: StreamData) -> Unit,
         gettingStreamError:@Composable LiveChannelsLazyColumnScope.(message:String) -> Unit,
         newUserAlert:@Composable (message:String) ->Unit,
+        showNetworkRefreshError:Boolean,
+        hapticFeedBackError:() ->Unit,
 
         ){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
         val scope = rememberCoroutineScope()
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
         val indicatorScopes = remember() { IndicatorScopes() }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .setTagAndId("streamersListLoading"),
-            contentPadding = contentPadding
-        ) {
+        val errorScope = remember(){ ErrorScope(fontSize) }
 
 
 
-            when (followedStreamerList) {
-                is NetworkNewUserResponse.Loading -> {
-                    scope.launch {
-                        bottomModalState.hide()
-                    }
-                    item {
-                        with(indicatorScopes){
-                            loadingIndicator()
+        Box(modifier = Modifier.fillMaxSize()){
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .setTagAndId("streamersListLoading"),
+                contentPadding = contentPadding
+            ) {
+
+
+
+                when (followedStreamerList) {
+                    is NetworkNewUserResponse.Loading -> {
+                        scope.launch {
+                            bottomModalState.hide()
+                        }
+                        item {
+                            with(indicatorScopes){
+                                loadingIndicator()
+                            }
                         }
                     }
-                }
-                is NetworkNewUserResponse.Success -> {
+                    is NetworkNewUserResponse.Success -> {
 
-                    val listData = followedStreamerList.data
-                    if (listData != null) {
+                        val listData = followedStreamerList.data
+                        if (listData != null) {
 
-                        if (listData.isEmpty()) {
-                            item {
-                                with(lazyColumnScope){
-                                    emptyList()
+                            if (listData.isEmpty()) {
+                                item {
+                                    with(lazyColumnScope){
+                                        emptyList()
+                                    }
                                 }
                             }
-                        }
 
-                        items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
+                            items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
 
 
-                            with(lazyColumnScope){
-                                liveChannelRowItem(streamItem)
+                                with(lazyColumnScope){
+                                    liveChannelRowItem(streamItem)
+                                }
+
                             }
-
+                            // end of the lazy column
                         }
-                        // end of the lazy column
                     }
-                }
-                is NetworkNewUserResponse.Failure -> {
+                    is NetworkNewUserResponse.Failure -> {
 
-                    item {
+                        item {
 
+                            val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
+                            with(lazyColumnScope){
+                                gettingStreamError(message)
+                            }
+                        }
+                    }
+                    is NetworkNewUserResponse.NetworkFailure -> {
                         val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
-                        with(lazyColumnScope){
-                            gettingStreamError(message)
-                        }
-                    }
-                }
-                is NetworkNewUserResponse.NetworkFailure -> {
-                    val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
 
-                    item{
-                        with(lazyColumnScope){
-                            gettingStreamError(message)
+                        item{
+                            with(lazyColumnScope){
+                                gettingStreamError(message)
+                            }
                         }
-                    }
 
-                }
-                is NetworkNewUserResponse.NewUser ->{
-                    item{
+                    }
+                    is NetworkNewUserResponse.NewUser ->{
+                        item{
 
                             newUserAlert(message = followedStreamerList.message)
+                        }
+                    }
+                    is NetworkNewUserResponse.Auth401Failure ->{
+                        item{
+                            newUserAlert(message = followedStreamerList.e.message ?:"Error! Re-login with Twitch")
+                        }
+                        scope.launch {
+                            bottomModalState.show()
+                        }
                     }
                 }
-                is NetworkNewUserResponse.Auth401Failure ->{
-                    item{
-                        newUserAlert(message = followedStreamerList.e.message ?:"Error! Re-login with Twitch")
-                    }
-                    scope.launch {
-                        bottomModalState.show()
-                    }
-                }
-            }
 
+            } // end of the lazylist
+            if(showNetworkRefreshError){
+                Box(modifier = Modifier.align(Alignment.BottomCenter)){
+                    hapticFeedBackError()
+                    with(errorScope){
+                        this.NetworkErrorMessage()
+                    }
+                }
+
+            }
         }
+
     }
 
 

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,6 +48,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
@@ -66,6 +73,7 @@ fun ValidationView(
     autoModViewModel: AutoModViewModel,
     updateModViewSettings:(String,String,String,String,)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
+    hapticFeedBackError:() ->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
@@ -135,14 +143,13 @@ fun ValidationView(
         hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
         currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-        isUserLoggedIn=isUserLoggedIn,
-        showFailedDialog = homeViewModel.state.value.showFailedDialog,
-        hideDialog = {homeViewModel.hideDialog()}
+        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
+        hapticFeedBackError={hapticFeedBackError()}
 
     )
 
-
 }
+
 
 fun Modifier.disableClickAndRipple(): Modifier = composed {
     clickable(
