@@ -110,7 +110,7 @@ import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
             },
             errorMessage = {
                 with(errorScope){
-                    ChatErrorMessage()
+                    ChatErrorMessage(twitchUser.userType ?:"")
                 }
             },
             joinMessage = {

@@ -48,6 +48,11 @@ interface TwitchSocket {
     val roomState: StateFlow<RoomState?>
 
     /**
+     *  a [StateFlow] Boolean object that is used to represent if the websocket has failed or not
+     * */
+    val hasWebSocketFailed: StateFlow<Boolean?>
+
+    /**
      *  a function used to start the websocket. It should first check if one is already running. If it is, shut it down
      *  and then create a new one
      * */

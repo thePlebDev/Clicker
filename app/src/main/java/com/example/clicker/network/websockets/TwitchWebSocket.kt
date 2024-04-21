@@ -132,6 +132,9 @@ class TwitchWebSocket @Inject constructor(
     private val _latestBannedUserId = MutableStateFlow<String?>(null)
      override val latestBannedUserId = _latestBannedUserId.asStateFlow()
 
+    private val _hasWebSocketFailed = MutableStateFlow<Boolean?>(null)
+    override val hasWebSocketFailed = _hasWebSocketFailed.asStateFlow()
+
 
     private val _loggedInUserUiState = MutableStateFlow<LoggedInUserData?>(null)
     override val loggedInUserUiState = _loggedInUserUiState
@@ -170,6 +173,7 @@ class TwitchWebSocket @Inject constructor(
         webSocket = null
     }
     private fun newWebSocket() {
+        _hasWebSocketFailed.tryEmit(false)
         val request: Request = Request.Builder()
             .url(webSocketURL)
             .build()
@@ -286,15 +290,9 @@ class TwitchWebSocket @Inject constructor(
         Log.d("websocketStooffail", "onFailure: ${t.message}")
         Log.d("websocketStooffail", "onFailure: ${t.cause}")
 
-        val errorValue = TwitchUserDataObjectMother
-            .addColor("#FF0000")
-            .addDisplayName("Connection Error")
-            .addMessageType(MessageType.ERROR)
-            .addUserType(
-                "Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one"
-            )
-            .build()
-        _state.tryEmit(errorValue)
+
+        _hasWebSocketFailed.tryEmit(true)
+       // _state.tryEmit(errorValue)
     }
 
     override fun sendMessage(chatMessage: String): Boolean {

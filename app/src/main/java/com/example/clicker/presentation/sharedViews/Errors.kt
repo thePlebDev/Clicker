@@ -36,7 +36,9 @@ class ErrorScope(
 ) {
 
     @Composable
-    fun ChatErrorMessage(){
+    fun ChatErrorMessage(
+        message:String
+    ){
 
         val sideFade = Brush.horizontalGradient(
             listOf(
@@ -82,7 +84,7 @@ class ErrorScope(
                         )
                     }
 
-                    Text("Disconnected from Chat. Please reconnect with chat", color = MaterialTheme.colorScheme.onPrimary,fontSize=fontSize)
+                    Text(message, color = MaterialTheme.colorScheme.onPrimary,fontSize=fontSize)
                 }
             }
 
