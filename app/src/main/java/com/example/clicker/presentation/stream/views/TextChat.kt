@@ -103,7 +103,6 @@ import kotlinx.coroutines.launch
 
         EnterChat(
             modifier = modifier,
-            updateModIconSize={height -> modIconSize = height },
             filteredRow = {
                 FilteredMentionLazyRow(
                     filteredChatList = filteredChatList,
@@ -119,7 +118,6 @@ import kotlinx.coroutines.launch
                     modStatus =modStatus,
                     showOuterBottomModalState={showOuterBottomModalState()},
                     orientationIsVertical =orientationIsVertical,
-                    modIconSize,
                     notificationAmount=notificationAmount
                 )
             },
@@ -163,20 +161,15 @@ import kotlinx.coroutines.launch
         @Composable
         fun EnterChat(
             modifier: Modifier,
-            updateModIconSize:(Dp) ->Unit,
             filteredRow:@Composable () -> Unit,
             showModStatus:@Composable () -> Unit,
             stylizedTextField:@Composable (modifier:Modifier) -> Unit,
             showIconBasedOnTextLength:@Composable () -> Unit,
         ) {
-            val conversionNumber = 4.3
 
             Column(
                 modifier = modifier.background(MaterialTheme.colorScheme.primary)
-                    .onGloballyPositioned {  size ->
-                        val size =size.size.height/conversionNumber
-                        updateModIconSize(size.dp)
-                    }
+
             ) {
                 filteredRow()
                 Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
@@ -363,7 +356,6 @@ fun ShowModStatus(
     modStatus: Boolean?,
     showOuterBottomModalState: () ->Unit,
     orientationIsVertical:Boolean,
-    modIconSize: Dp,
     notificationAmount:Int
 ){
     val scope = rememberCoroutineScope()
@@ -373,7 +365,6 @@ fun ShowModStatus(
 
             AsyncImage(
                 modifier = Modifier
-                    .size(modIconSize)
                     .clickable {
                         if (orientationIsVertical){
                             showOuterBottomModalState()
@@ -412,6 +403,16 @@ fun ShowModStatus(
                     model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
                     contentDescription = stringResource(R.string.moderator_badge_icon_description)
                 )
+                if(notificationAmount>0){
+                    Text("$notificationAmount",
+                        modifier = Modifier.align(Alignment.TopStart)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.Red)
+                            .padding(horizontal = 3.dp),
+                        color = Color.White, fontSize =MaterialTheme.typography.headlineSmall.fontSize,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
