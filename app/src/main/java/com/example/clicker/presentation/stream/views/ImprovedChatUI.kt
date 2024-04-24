@@ -32,6 +32,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.presentation.sharedViews.ChatScope
+import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import kotlinx.coroutines.launch
 
@@ -149,16 +152,97 @@ private class ImprovedChatUI(){
             items(
                 twitchUserChat,
                 key = { item -> item.id ?:"" }
-            ) {
-                TestingIndivChatMessage(it.userType?:"")
+            ) {indivChatMessage ->
+                ChatMessages(indivChatMessage)
+
             }
         }
     }
 
     @Composable
-    fun TestingIndivChatMessage(message:String){
-        Log.d("TestingIndivChatMessage",message)
-        Text(message, color = MaterialTheme.colorScheme.secondary)
+    fun ChatMessages(twitchChatMessage: TwitchUserData){
+        val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
+        val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
+        val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
+        val errorScope = remember(){ ErrorScope(messageFontSize) }
+        with(chatScope) {
+
+            when (twitchChatMessage.messageType) {
+                MessageType.NOTICE -> { //added
+                    NoticeMessages(
+                        systemMessage = "",
+                        message = twitchChatMessage.userType
+                    )
+                }
+
+                MessageType.USER -> { //added
+                    // individualSwipableChatMessage()
+                    TestingIndivChatMessage(twitchChatMessage)
+//                    ClickableCard(
+//                        twitchUser =twitchChatMessage,
+//                      //  color = MaterialTheme.colorScheme.secondary,
+//                       // fontSize = messageFontSize
+//                    )
+                }
+
+                MessageType.ANNOUNCEMENT -> { //added
+                    AnnouncementMessages(
+                        message = "${twitchChatMessage.displayName}: ${twitchChatMessage.systemMessage}"
+                    )
+                }
+
+                MessageType.RESUB -> { //added
+                    ReSubMessage(
+                        systemMessage = twitchChatMessage.systemMessage,
+                        message = twitchChatMessage.userType,
+                    )
+                }
+
+                MessageType.SUB -> { //added
+                    SubMessages(
+                        systemMessage = twitchChatMessage.systemMessage,
+                        message = twitchChatMessage.userType,
+                    )
+                }
+                // MYSTERYGIFTSUB,GIFTSUB
+                MessageType.GIFTSUB -> { //added
+                    GiftSubMessages(
+                        message = twitchChatMessage.userType,
+                        systemMessage = twitchChatMessage.systemMessage
+                    )
+                }
+
+                MessageType.MYSTERYGIFTSUB -> { //
+                    AnonGiftMessages(
+                        message = twitchChatMessage.userType,
+                        systemMessage = twitchChatMessage.systemMessage
+                    )
+                }
+
+                MessageType.ERROR -> {
+                    with(errorScope){
+                        ChatErrorMessage(twitchChatMessage.userType ?:"")
+                    }
+                }
+
+                MessageType.JOIN -> {
+                    JoinMessage(
+                        message = twitchChatMessage.userType ?:""
+                    )
+                }
+
+                else -> {
+
+                }
+
+            }
+        }
+    }
+
+    @Composable
+    fun TestingIndivChatMessage(twitchChatMessage: TwitchUserData){
+        Log.d("TestingIndivChatMessage",twitchChatMessage.userType?:"")
+        Text(twitchChatMessage.userType?:"", color = MaterialTheme.colorScheme.secondary)
     }
     @Composable
     fun ScrollToBottom(
