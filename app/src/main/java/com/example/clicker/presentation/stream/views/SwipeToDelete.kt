@@ -95,63 +95,66 @@ import kotlin.math.roundToInt
         toggleBanDialog:()->Unit,
 
     ) {
-        // no logic here, this should be a clean API wrapper
-        var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
-        if(color == Color.Black){
-            color = MaterialTheme.colorScheme.primary
-        }
-        var iconXOffset by remember { mutableFloatStateOf(0f) }
-
-        HorizontalDragDetectionBox(
-            itemBeingDragged = { dragOffset ->
-                ClickableCard(
-                    twitchUser =twitchUser,
-                    color = color,
-                    bottomModalState = bottomModalState,
-                    offset = if (twitchUser.mod != "1") dragOffset else 0f,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    updateClickedUser = {  username, userId,isBanned,isMod ->
-                        updateClickedUser(
-                            username,
-                            userId,
-                            isBanned,
-                            isMod
-                        )
-                    },
-                    iconXOffset =iconXOffset,
-                    updateIconXOffset = {
-                            value ->iconXOffset = value
-                        Log.d("doubleClickIcons","iconXOffset -->${iconXOffset}")
-                    }
-                )
-            },
-            quarterSwipeLeftAction = {
-                updateClickedUser(
-                    twitchUser.displayName?:"",
-                    twitchUser.userId?:"",
-                    twitchUser.banned,
-                    twitchUser.mod == "1"
-                )
-                toggleTimeoutDialog()
-            },
-            quarterSwipeRightAction = {
-
-                updateClickedUser(
-                    twitchUser.displayName?:"",
-                    twitchUser.userId?:"",
-                    twitchUser.banned,
-                    twitchUser.mod == "1"
-                )
-                toggleBanDialog()
-            },
-            halfSwipeAction = {
-                deleteMessage(twitchUser.id ?: "")
-
-            },
-            twoSwipeOnly = false,
-            swipeEnabled = twitchUser.mod != "1"
-
-        )
+//        // no logic here, this should be a clean API wrapper
+//        var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
+//        if(color == Color.Black){
+//            color = MaterialTheme.colorScheme.primary
+//        }
+//        var iconXOffset by remember { mutableFloatStateOf(0f) }
+//        ClickableCard(
+//            twitchUser =twitchUser,
+//        )
+//
+//        HorizontalDragDetectionBox(
+//            itemBeingDragged = { dragOffset ->
+//                ClickableCard(
+//                    twitchUser =twitchUser,
+//                  //  color = color,
+////                    bottomModalState = bottomModalState,
+////                    offset = if (twitchUser.mod != "1") dragOffset else 0f,
+//                   // fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+////                    updateClickedUser = {  username, userId,isBanned,isMod ->
+////                        updateClickedUser(
+////                            username,
+////                            userId,
+////                            isBanned,
+////                            isMod
+////                        )
+////                    },
+////                    iconXOffset =iconXOffset,
+////                    updateIconXOffset = {
+////                            value ->iconXOffset = value
+////                        Log.d("doubleClickIcons","iconXOffset -->${iconXOffset}")
+////                    }
+//                )
+//            },
+//            quarterSwipeLeftAction = {
+////                updateClickedUser(
+////                    twitchUser.displayName?:"",
+////                    twitchUser.userId?:"",
+////                    twitchUser.banned,
+////                    twitchUser.mod == "1"
+////                )
+////                toggleTimeoutDialog()
+//            },
+//            quarterSwipeRightAction = {
+//
+////                updateClickedUser(
+////                    twitchUser.displayName?:"",
+////                    twitchUser.userId?:"",
+////                    twitchUser.banned,
+////                    twitchUser.mod == "1"
+////                )
+////                toggleBanDialog()
+//            },
+//            halfSwipeAction = {
+//               // deleteMessage(twitchUser.id ?: "")
+//
+//            },
+//            twoSwipeOnly = false,
+//            swipeEnabled = false
+//
+//        )
 
     }
 
@@ -180,92 +183,94 @@ import kotlin.math.roundToInt
         @Composable
         fun ClickableCard(
             twitchUser: TwitchUserData,
-            color: Color,
-            offset: Float,
-            bottomModalState: ModalBottomSheetState,
-            fontSize: TextUnit,
-            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-            iconXOffset: Float,
-            updateIconXOffset:(Float) ->Unit
+           // color: Color,
+//            offset: Float,
+//            bottomModalState: ModalBottomSheetState,
+           // fontSize: TextUnit,
+//            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+//            iconXOffset: Float,
+//            updateIconXOffset:(Float) ->Unit
 
 
 
             ){
-            Log.d("ClickableCard","displayName -->,${twitchUser.userType}")
-            val coroutineScope = rememberCoroutineScope()
-            var showIcon by remember { mutableStateOf(true) }
-            var iconOpacity by remember { mutableFloatStateOf(0f) }
+            Log.d("TestingIndivChatMessage",twitchUser.userType ?:"")
+//            val coroutineScope = rememberCoroutineScope()
+//            var showIcon by remember { mutableStateOf(true) }
+//            var iconOpacity by remember { mutableFloatStateOf(0f) }
+            Text(twitchUser.userType?:"", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.secondary)
           //  var iconXOffset by remember { mutableFloatStateOf(0f) }
 //            var iconYOffset by remember { mutableFloatStateOf(0f) }
-            Column() {
-                Spacer(modifier =Modifier.height(5.dp))
-                Box(){
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onDoubleTap = { tapOffset ->
-                                        Log.d("DOUBLECLICKERS","double")
-                                        updateIconXOffset(tapOffset.x)
-                                        //iconYOffset = tapOffset.y
-
-                                        Log.d("DOUBLECLICKERS","X ${tapOffset.x}")
-                                        Log.d("DOUBLECLICKERS","Y ${tapOffset.y}")
-                                        iconOpacity =1f
-
-                                    },
-                                    onTap = {tapOffset ->
-                                        Log.d("DOUBLECLICKERS","SINGLE")
-                                        updateClickedUser(
-                                            twitchUser.displayName.toString(),
-                                            twitchUser.userId.toString(),
-                                            twitchUser.banned,
-                                            twitchUser.mod != "1"
-                                        )
-                                        coroutineScope.launch {
-                                            bottomModalState.show()
-                                        }
-                                    }
-                                )
-                            },
-                        backgroundColor = MaterialTheme.colorScheme.primary,
-                      //  border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
-
-                    ) {
-                        Column() {
-                            CheckIfUserDeleted(twitchUser = twitchUser)
-                            CheckIfUserIsBanned(twitchUser = twitchUser)
-                            TextWithChatBadges(
-                                twitchUser = twitchUser,
-                                color = color,
-                                fontSize = fontSize,
-                            )
-                        }
-                    }
-
-//                        Icon(
-//                            imageVector = Icons.Default.Favorite,
-//                            contentDescription ="like" ,
-//                            tint = MaterialTheme.colorScheme.secondary.copy(alpha = iconOpacity),
-//                            modifier = Modifier.size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = iconYOffset.roundToInt()) }
-//                        )
-                    Log.d("AsyncImageRecomp","iconXOffset ->${iconXOffset.roundToInt()}")
-                    AsyncImage(
-                        model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
-                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                        //alpha =iconOpacity,
-                        modifier = Modifier
-                            .size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = 0) }
-                    )
-
-                }
-
-
-                Spacer(modifier =Modifier.height(5.dp))
-
-            }
+//            Column() {
+//                Spacer(modifier =Modifier.height(5.dp))
+//                Box(){
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                          //  .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+//                            .pointerInput(Unit) {
+//                                detectTapGestures(
+//                                    onDoubleTap = { tapOffset ->
+//                                        Log.d("DOUBLECLICKERS","double")
+//                                      //  updateIconXOffset(tapOffset.x)
+//                                        //iconYOffset = tapOffset.y
+//
+//                                        Log.d("DOUBLECLICKERS","X ${tapOffset.x}")
+//                                        Log.d("DOUBLECLICKERS","Y ${tapOffset.y}")
+//                                        iconOpacity =1f
+//
+//                                    },
+//                                    onTap = {tapOffset ->
+//                                        Log.d("DOUBLECLICKERS","SINGLE")
+////                                      //  updateClickedUser(
+////                                            twitchUser.displayName.toString(),
+////                                            twitchUser.userId.toString(),
+////                                            twitchUser.banned,
+////                                            twitchUser.mod != "1"
+////                                        )
+//                                        coroutineScope.launch {
+//                                           // bottomModalState.show()
+//                                        }
+//                                    }
+//                                )
+//                            },
+//                        backgroundColor = MaterialTheme.colorScheme.primary,
+//                      //  border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+//
+//                    ) {
+//                        Text(twitchUser.userType?:"", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.secondary)
+////                        Column() {
+////                            CheckIfUserDeleted(twitchUser = twitchUser)
+////                            CheckIfUserIsBanned(twitchUser = twitchUser)
+////                            TextWithChatBadges(
+////                                twitchUser = twitchUser,
+//////                                color = MaterialTheme.colorScheme.secondary,
+//////                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+////                            )
+////                        }
+//                    }
+//
+////                        Icon(
+////                            imageVector = Icons.Default.Favorite,
+////                            contentDescription ="like" ,
+////                            tint = MaterialTheme.colorScheme.secondary.copy(alpha = iconOpacity),
+////                            modifier = Modifier.size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = iconYOffset.roundToInt()) }
+////                        )
+//                   // Log.d("AsyncImageRecomp","iconXOffset ->${iconXOffset.roundToInt()}")
+////                    AsyncImage(
+////                        model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
+////                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
+////                        //alpha =iconOpacity,
+////                        modifier = Modifier
+////                            .size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = 0) }
+////                    )
+//
+//                }
+//
+//
+//                Spacer(modifier =Modifier.height(5.dp))
+//
+//            }
 
         }
 
@@ -315,8 +320,8 @@ import kotlin.math.roundToInt
         @Composable
         fun TextWithChatBadges(
             twitchUser: TwitchUserData,
-            color: Color,
-            fontSize: TextUnit,
+//            color: Color,
+//            fontSize: TextUnit,
 
         ){
             Row(
@@ -329,8 +334,8 @@ import kotlin.math.roundToInt
                     isMod = twitchUser.mod == "1",
                     isSub = twitchUser.subscriber == true,
                     isMonitored =twitchUser.isMonitored,
-                    color = color,
-                    textSize = fontSize
+//                    color = color,
+//                    textSize = fontSize
                 )
 
             } // end of the row
@@ -354,10 +359,12 @@ import kotlin.math.roundToInt
             isMod: Boolean,
             isSub: Boolean,
             isMonitored:Boolean,
-            color: Color,
-            textSize: TextUnit
+//            color: Color,
+//            textSize: TextUnit
         ) {
             //for not these values can stay here hard coded. Until I implement more Icon
+            val color = MaterialTheme.colorScheme.secondary
+            val textSize = MaterialTheme.typography.headlineSmall.fontSize
             val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
             val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
             val modId = "modIcon"

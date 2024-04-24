@@ -647,7 +647,7 @@ class StreamViewModel @Inject constructor(
                     clickedUsernameChats.add(twitchUserMessage.userType!!)
                 }
                 if(monitoredUsers.contains(twitchUserMessage.displayName)){
-                    twitchUserMessage.isMonitored = true
+                    //twitchUserMessage.isMonitored = true
                 }
                 when(twitchUserMessage.messageType){
                     MessageType.CLEARCHAT ->{
