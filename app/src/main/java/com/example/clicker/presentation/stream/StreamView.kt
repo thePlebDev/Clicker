@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
@@ -11,6 +13,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -51,244 +54,267 @@ fun StreamView(
 
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
-    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
-    val chatSettingData = streamViewModel.state.value.chatSettings
-    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-    val filteredChat = streamViewModel.filteredChatList
-    val clickedUsernameChats = streamViewModel.clickedUsernameChats
-    val scope = rememberCoroutineScope()
-    var showAdvancedChatSettings by remember { mutableStateOf(true) }
-
-    val bottomModalState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    val outerBottomModalState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    var oneClickActionsChecked by remember { mutableStateOf(true) }
-
-    //todo: Move these two to the ViewModel
-
-
-    var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
-    val configuration = LocalConfiguration.current
+//    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
+//    val chatSettingData = streamViewModel.state.value.chatSettings
+//    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
+//    val filteredChat = streamViewModel.filteredChatList
+//    val clickedUsernameChats = streamViewModel.clickedUsernameChats
+//    val scope = rememberCoroutineScope()
+//    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 //
-    LaunchedEffect(configuration) {
-        // Save any changes to the orientation value on the configuration object
-        snapshotFlow { configuration.orientation }
-            .collect { orientation = it }
+//    val bottomModalState = rememberModalBottomSheetState(
+//        initialValue = ModalBottomSheetValue.Hidden,
+//        skipHalfExpanded = true
+//    )
+//    val outerBottomModalState = rememberModalBottomSheetState(
+//        initialValue = ModalBottomSheetValue.Hidden,
+//        skipHalfExpanded = true
+//    )
+//    var oneClickActionsChecked by remember { mutableStateOf(true) }
+//
+//    //todo: Move these two to the ViewModel
+//
+//
+//    var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
+//    val configuration = LocalConfiguration.current
+////
+//    LaunchedEffect(configuration) {
+//        // Save any changes to the orientation value on the configuration object
+//        snapshotFlow { configuration.orientation }
+//            .collect { orientation = it }
+//    }
+    TestingLazyColumn(twitchUserChat = twitchUserChat)
+
+//    when (orientation) {
+//
+//        Configuration.ORIENTATION_LANDSCAPE -> {
+//
+//            HorizontalChat(
+//                streamViewModel,
+//                autoModViewModel
+//            )
+//        }
+//        else -> {
+//
+//            // Below is the behemoth I am trying to rework
+//            // be warned, the code below is not for those weak of heart
+//            ModalBottomSheetLayout(
+//                sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                sheetGesturesEnabled =false,
+//                sheetContent ={},
+//                sheetState = outerBottomModalState
+//            ) {
+//
+//
+//                ModalBottomSheetLayout(
+//                    sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+//                    sheetState = bottomModalState,
+//                    sheetContent = {
+//                        // bottom modal below
+//                        BanTimeOutDialogs(
+//                            clickedUsernameChats = clickedUsernameChats,
+//                            clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+//                            bottomModalState = bottomModalState,
+//                            textFieldValue = streamViewModel.textFieldValue,
+//                            closeBottomModal = { scope.launch { bottomModalState.hide() } },
+//                            banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+//                            unbanUser = { streamViewModel.unBanUser() },
+//                            isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+//                            openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+//                            closeTimeoutDialog = {
+//                                streamViewModel.openTimeoutDialog.value = false
+//                            },
+//                            timeOutDialogOpen = streamViewModel.openTimeoutDialog.value,
+//                            timeoutDuration = streamViewModel.state.value.timeoutDuration,
+//                            timeoutReason = streamViewModel.state.value.timeoutReason,
+//                            changeTimeoutDuration = { duration ->
+//                                streamViewModel.changeTimeoutDuration(
+//                                    duration
+//                                )
+//                            },
+//                            changeTimeoutReason = { reason ->
+//                                streamViewModel.changeTimeoutReason(
+//                                    reason
+//                                )
+//                            },
+//                            closeDialog = {
+//                                streamViewModel.openTimeoutDialog.value = false
+//                                scope.launch { bottomModalState.hide() }
+//
+//                            },
+//                            timeOutUser = {
+//                                streamViewModel.timeoutUser()
+//                            },
+//                            banDialogOpen = streamViewModel.openBanDialog.value,
+//                            openBanDialog = { streamViewModel.openBanDialog.value = true },
+//                            closeBanDialog = {
+//                                scope.launch {
+//                                    streamViewModel.openBanDialog.value = false
+//                                }
+//                            },
+//                            banReason = streamViewModel.state.value.banReason,
+//                            changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
+//                            banUser = { streamViewModel.banUser() },
+//                            shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
+//                            updateShouldMonitorUser = {streamViewModel.updateShouldMonitorUser()}
+//                        )
+//
+//                    }
+//                ) {
+//
+//
+//                    SideModal(
+//                        drawerState = drawerState,
+//                        drawerContent = {
+//
+//                            if(showAdvancedChatSettings){
+//                                ChatSettingsContainer.EnhancedChatSettingsBox(
+//                                    enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
+//                                    showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
+//                                    chatSettingsData = streamViewModel.modChatSettingsState.value.data,
+//                                    updateChatSettings = { newData ->
+//                                        streamViewModel.toggleChatSettings(
+//                                            newData
+//                                        )
+//                                    },
+//                                    closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
+//                                    showUndoButton = { showStatus ->
+//                                        streamViewModel.showUndoButton(
+//                                            showStatus
+//                                        )
+//                                    },
+//                                    showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
+//                                    noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+//                                    setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
+//                                    advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+//                                    updateAdvancedChatSettings = { data ->
+//                                        streamViewModel.updateAdvancedChatSettings(
+//                                            data
+//                                        )
+//                                    },
+//                                    userIsModerator = modStatus ?: false
+//                                )
+//                            }else{
+//                                StreamManagerUI(
+//                                    showModView={
+//                                        streamViewModel.setAutoModSettings(false)
+//                                        showStreamManager()
+//                                    },
+//                                )
+//
+//                            }
+//                            //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
+//
+//
+//                        },
+//                        contentCoveredBySideModal = {
+//                            TestingLazyColumn(twitchUserChat = twitchUserChat)
+////                            TextChat(
+////                                notificationAmount =notificationAmount,
+////                                twitchUserChat = twitchUserChat,
+////                                sendMessageToWebSocket = { string ->
+////                                    streamViewModel.sendMessage(string)
+////                                },
+////
+////                                modStatus = modStatus,
+////                                bottomModalState = bottomModalState,
+////                                filteredChatList = filteredChat,
+////                                clickedAutoCompleteText = { username ->
+////                                    streamViewModel.autoTextChange(username)
+////                                },
+////
+////                                addChatter = { username, message ->
+////                                    streamViewModel.addChatter(
+////                                        username,
+////                                        message
+////                                    )
+////                                },
+////                                updateClickedUser = { username, userId, banned, isMod ->
+////
+////                                    streamViewModel.updateClickedChat(
+////                                        username,
+////                                        userId,
+////                                        banned,
+////                                        isMod
+////                                    )
+////                                },
+////                                textFieldValue = streamViewModel.textFieldValue,
+////                                channelName = streamViewModel.channelName.collectAsState().value,
+////                                deleteMessage = { messageId ->
+////                                    streamViewModel.deleteChatMessage(
+////                                        messageId
+////                                    )
+////                                },
+////
+////                                banResponse = streamViewModel.state.value.banResponse,
+////                                undoBan = { streamViewModel.unBanUser() },
+////                                undoBanResponse = streamViewModel.state.value.undoBanResponse,
+////                                showStickyHeader = streamViewModel.state.value.showStickyHeader,
+////                                closeStickyHeader = { streamViewModel.closeStickyHeader() },
+////                                banResponseMessage = streamViewModel.state.value.banResponseMessage,
+////                                restartWebSocket = { streamViewModel.restartWebSocket() },
+////                                showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
+////                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+////                                showOuterBottomModalState = {
+////                                    scope.launch {
+////                                        showAdvancedChatSettings = false
+////                                        drawerState.open()
+////                                    }
+////                                },
+////                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+////                                forwardSlashCommands = streamViewModel.forwardSlashCommands,
+////                                clickedCommandAutoCompleteText={ command ->
+////                                    streamViewModel.autoTextChangeCommand(
+////                                        command
+////                                    )
+////                                },
+////                                toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
+////                                toggleBanDialog={streamViewModel.openBanDialog.value = true},
+////                                openSideDrawer={
+////                                    scope.launch {
+////                                        showAdvancedChatSettings = true
+////                                        drawerState.open()
+////                                    }
+////                                },
+////                                orientationIsVertical =true
+////                            )
+////                            VerticalOverlayView(
+////                                channelName = streamViewModel.clickedStreamInfo.value.channelName,
+////                                streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+////                                category = streamViewModel.clickedStreamInfo.value.category,
+////                                tags = streamViewModel.clickedStreamInfo.value.tags,
+////                                showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
+////                            )
+//                        }
+//                    )
+//                } // end of the bottom modal
+//
+//            }
+//
+//
+//        }
+//    }
+}
+
+@Composable
+fun TestingLazyColumn(
+    twitchUserChat: List<TwitchUserData>,
+){
+    LazyColumn(){
+        items(
+            twitchUserChat,
+            key = { item -> item.id ?:"" }
+        ) {
+            TestingIndivChatMessage(it.userType?:"")
+        }
     }
 
-    when (orientation) {
+}
 
-        Configuration.ORIENTATION_LANDSCAPE -> {
-
-            HorizontalChat(
-                streamViewModel,
-                autoModViewModel
-            )
-        }
-        else -> {
-
-            // Below is the behemoth I am trying to rework
-            // be warned, the code below is not for those weak of heart
-            ModalBottomSheetLayout(
-                sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                sheetGesturesEnabled =false,
-                sheetContent ={},
-                sheetState = outerBottomModalState
-            ) {
-
-
-                ModalBottomSheetLayout(
-                    sheetBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                    sheetState = bottomModalState,
-                    sheetContent = {
-                        // bottom modal below
-                        BanTimeOutDialogs(
-                            clickedUsernameChats = clickedUsernameChats,
-                            clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                            bottomModalState = bottomModalState,
-                            textFieldValue = streamViewModel.textFieldValue,
-                            closeBottomModal = { scope.launch { bottomModalState.hide() } },
-                            banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
-                            unbanUser = { streamViewModel.unBanUser() },
-                            isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-                            openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
-                            closeTimeoutDialog = {
-                                streamViewModel.openTimeoutDialog.value = false
-                            },
-                            timeOutDialogOpen = streamViewModel.openTimeoutDialog.value,
-                            timeoutDuration = streamViewModel.state.value.timeoutDuration,
-                            timeoutReason = streamViewModel.state.value.timeoutReason,
-                            changeTimeoutDuration = { duration ->
-                                streamViewModel.changeTimeoutDuration(
-                                    duration
-                                )
-                            },
-                            changeTimeoutReason = { reason ->
-                                streamViewModel.changeTimeoutReason(
-                                    reason
-                                )
-                            },
-                            closeDialog = {
-                                streamViewModel.openTimeoutDialog.value = false
-                                scope.launch { bottomModalState.hide() }
-
-                            },
-                            timeOutUser = {
-                                streamViewModel.timeoutUser()
-                            },
-                            banDialogOpen = streamViewModel.openBanDialog.value,
-                            openBanDialog = { streamViewModel.openBanDialog.value = true },
-                            closeBanDialog = {
-                                scope.launch {
-                                    streamViewModel.openBanDialog.value = false
-                                }
-                            },
-                            banReason = streamViewModel.state.value.banReason,
-                            changeBanReason = { reason -> streamViewModel.changeBanReason(reason) },
-                            banUser = { streamViewModel.banUser() },
-                            shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
-                            updateShouldMonitorUser = {streamViewModel.updateShouldMonitorUser()}
-                        )
-
-                    }
-                ) {
-
-
-                    SideModal(
-                        drawerState = drawerState,
-                        drawerContent = {
-
-                            if(showAdvancedChatSettings){
-                                ChatSettingsContainer.EnhancedChatSettingsBox(
-                                    enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
-                                    showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
-                                    chatSettingsData = streamViewModel.modChatSettingsState.value.data,
-                                    updateChatSettings = { newData ->
-                                        streamViewModel.toggleChatSettings(
-                                            newData
-                                        )
-                                    },
-                                    closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
-                                    showUndoButton = { showStatus ->
-                                        streamViewModel.showUndoButton(
-                                            showStatus
-                                        )
-                                    },
-                                    showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
-                                    noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                                    setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
-                                    advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                                    updateAdvancedChatSettings = { data ->
-                                        streamViewModel.updateAdvancedChatSettings(
-                                            data
-                                        )
-                                    },
-                                    userIsModerator = modStatus ?: false
-                                )
-                            }else{
-                                StreamManagerUI(
-                                    showModView={
-                                        streamViewModel.setAutoModSettings(false)
-                                        showStreamManager()
-                                    },
-                                )
-
-                            }
-                            //TODO: THIS IS WHERE THE TABBED ROW IS GOING TO GO
-
-
-                        },
-                        contentCoveredBySideModal = {
-                            TextChat(
-                                notificationAmount =notificationAmount,
-                                twitchUserChat = twitchUserChat,
-                                sendMessageToWebSocket = { string ->
-                                    streamViewModel.sendMessage(string)
-                                },
-
-                                modStatus = modStatus,
-                                bottomModalState = bottomModalState,
-                                filteredChatList = filteredChat,
-                                clickedAutoCompleteText = { username ->
-                                    streamViewModel.autoTextChange(username)
-                                },
-
-                                addChatter = { username, message ->
-                                    streamViewModel.addChatter(
-                                        username,
-                                        message
-                                    )
-                                },
-                                updateClickedUser = { username, userId, banned, isMod ->
-
-                                    streamViewModel.updateClickedChat(
-                                        username,
-                                        userId,
-                                        banned,
-                                        isMod
-                                    )
-                                },
-                                textFieldValue = streamViewModel.textFieldValue,
-                                channelName = streamViewModel.channelName.collectAsState().value,
-                                deleteMessage = { messageId ->
-                                    streamViewModel.deleteChatMessage(
-                                        messageId
-                                    )
-                                },
-
-                                banResponse = streamViewModel.state.value.banResponse,
-                                undoBan = { streamViewModel.unBanUser() },
-                                undoBanResponse = streamViewModel.state.value.undoBanResponse,
-                                showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                                closeStickyHeader = { streamViewModel.closeStickyHeader() },
-                                banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                                restartWebSocket = { streamViewModel.restartWebSocket() },
-                                showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
-                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                                showOuterBottomModalState = {
-                                    scope.launch {
-                                        showAdvancedChatSettings = false
-                                        drawerState.open()
-                                    }
-                                },
-                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-                                forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                                clickedCommandAutoCompleteText={ command ->
-                                    streamViewModel.autoTextChangeCommand(
-                                        command
-                                    )
-                                },
-                                toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
-                                toggleBanDialog={streamViewModel.openBanDialog.value = true},
-                                openSideDrawer={
-                                    scope.launch {
-                                        showAdvancedChatSettings = true
-                                        drawerState.open()
-                                    }
-                                },
-                                orientationIsVertical =true
-                            )
-                            VerticalOverlayView(
-                                channelName = streamViewModel.clickedStreamInfo.value.channelName,
-                                streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
-                                category = streamViewModel.clickedStreamInfo.value.category,
-                                tags = streamViewModel.clickedStreamInfo.value.tags,
-                                showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
-                            )
-                        }
-                    )
-                } // end of the bottom modal
-
-            }
-
-
-        }
-    }
+@Composable
+fun TestingIndivChatMessage(message:String){
+    Log.d("TestingIndivChatMessage",message)
+    Text(message, color = MaterialTheme.colorScheme.secondary)
 }
 
 

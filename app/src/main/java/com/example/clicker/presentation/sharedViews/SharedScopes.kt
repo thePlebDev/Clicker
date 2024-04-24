@@ -421,6 +421,7 @@ fun PullToRefreshComponent(
     refreshing:Boolean,
     refreshFunc:()->Unit,
     showNetworkMessage:Boolean,
+
     networkStatus:@Composable NotificationsScope.(modifier:Modifier) -> Unit,
     content:@Composable LiveChannelsLazyColumnScope.() -> Unit,
 ){
@@ -433,7 +434,7 @@ fun PullToRefreshComponent(
     PullToRefresh(
         state = rememberPullToRefreshState(isRefreshing = refreshing),
         onRefresh = { refreshFunc()},
-        indicatorPadding = padding
+        indicatorPadding = padding,
     ) {
         Box(modifier= Modifier
             .fillMaxSize()

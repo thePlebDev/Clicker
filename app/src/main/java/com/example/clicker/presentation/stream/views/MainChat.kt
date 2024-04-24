@@ -594,7 +594,10 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
                     }
                 }
 
-                items(twitchUserChat) { twitchUser ->
+                items(
+                    twitchUserChat,
+                    key = { item -> item.id ?:"" }
+                ) { twitchUser ->
 
                     val color = Color(android.graphics.Color.parseColor(twitchUser.color))
 

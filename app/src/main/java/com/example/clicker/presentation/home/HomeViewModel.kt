@@ -495,7 +495,6 @@ class HomeViewModel @Inject constructor(
         userId: String,
         oAuthToken: String
     ) {
-        Log.d("pullToRefreshHome","PULLED")
         try {
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
 

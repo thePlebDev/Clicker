@@ -59,6 +59,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -383,6 +384,7 @@ fun PullToRefreshIndicator(
                 colorFilter = ColorFilter.tint(textStyle.color)
             )
         }
+
         BasicText(
             text = when {
                     state.isPullInProgress && state.contentOffset >= refreshTriggerPx -> "Release to refresh"
