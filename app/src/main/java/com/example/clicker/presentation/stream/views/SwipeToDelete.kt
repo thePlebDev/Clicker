@@ -7,9 +7,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
@@ -28,9 +31,12 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,6 +57,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -93,6 +100,7 @@ import kotlin.math.roundToInt
         if(color == Color.Black){
             color = MaterialTheme.colorScheme.primary
         }
+        var iconXOffset by remember { mutableFloatStateOf(0f) }
 
         HorizontalDragDetectionBox(
             itemBeingDragged = { dragOffset ->
@@ -110,6 +118,11 @@ import kotlin.math.roundToInt
                             isMod
                         )
                     },
+                    iconXOffset =iconXOffset,
+                    updateIconXOffset = {
+                            value ->iconXOffset = value
+                        Log.d("doubleClickIcons","iconXOffset -->${iconXOffset}")
+                    }
                 )
             },
             quarterSwipeLeftAction = {
@@ -163,7 +176,7 @@ import kotlin.math.roundToInt
          * @param updateClickedUser a function that will run once this composable is clicked and will update the ViewModel with information
          * about the clicked user
          * */
-        @OptIn(ExperimentalMaterialApi::class)
+        @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
         @Composable
         fun ClickableCard(
             twitchUser: TwitchUserData,
@@ -172,41 +185,83 @@ import kotlin.math.roundToInt
             bottomModalState: ModalBottomSheetState,
             fontSize: TextUnit,
             updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+            iconXOffset: Float,
+            updateIconXOffset:(Float) ->Unit
+
 
 
             ){
+            Log.d("ClickableCard","displayName -->,${twitchUser.userType}")
             val coroutineScope = rememberCoroutineScope()
+            var showIcon by remember { mutableStateOf(true) }
+            var iconOpacity by remember { mutableFloatStateOf(0f) }
+          //  var iconXOffset by remember { mutableFloatStateOf(0f) }
+//            var iconYOffset by remember { mutableFloatStateOf(0f) }
             Column() {
                 Spacer(modifier =Modifier.height(5.dp))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-                        .clickable {
-                            updateClickedUser(
-                                twitchUser.displayName.toString(),
-                                twitchUser.userId.toString(),
-                                twitchUser.banned,
-                                twitchUser.mod != "1"
-                            )
-                            coroutineScope.launch {
-                                bottomModalState.show()
-                            }
-                        },
-                    backgroundColor = MaterialTheme.colorScheme.primary,
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+                Box(){
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onDoubleTap = { tapOffset ->
+                                        Log.d("DOUBLECLICKERS","double")
+                                        updateIconXOffset(tapOffset.x)
+                                        //iconYOffset = tapOffset.y
 
-                ) {
-                    Column() {
-                        CheckIfUserDeleted(twitchUser = twitchUser)
-                        CheckIfUserIsBanned(twitchUser = twitchUser)
-                        TextWithChatBadges(
-                            twitchUser = twitchUser,
-                            color = color,
-                            fontSize = fontSize,
-                        )
+                                        Log.d("DOUBLECLICKERS","X ${tapOffset.x}")
+                                        Log.d("DOUBLECLICKERS","Y ${tapOffset.y}")
+                                        iconOpacity =1f
+
+                                    },
+                                    onTap = {tapOffset ->
+                                        Log.d("DOUBLECLICKERS","SINGLE")
+                                        updateClickedUser(
+                                            twitchUser.displayName.toString(),
+                                            twitchUser.userId.toString(),
+                                            twitchUser.banned,
+                                            twitchUser.mod != "1"
+                                        )
+                                        coroutineScope.launch {
+                                            bottomModalState.show()
+                                        }
+                                    }
+                                )
+                            },
+                        backgroundColor = MaterialTheme.colorScheme.primary,
+                      //  border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+
+                    ) {
+                        Column() {
+                            CheckIfUserDeleted(twitchUser = twitchUser)
+                            CheckIfUserIsBanned(twitchUser = twitchUser)
+                            TextWithChatBadges(
+                                twitchUser = twitchUser,
+                                color = color,
+                                fontSize = fontSize,
+                            )
+                        }
                     }
+
+//                        Icon(
+//                            imageVector = Icons.Default.Favorite,
+//                            contentDescription ="like" ,
+//                            tint = MaterialTheme.colorScheme.secondary.copy(alpha = iconOpacity),
+//                            modifier = Modifier.size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = iconYOffset.roundToInt()) }
+//                        )
+                    Log.d("AsyncImageRecomp","iconXOffset ->${iconXOffset.roundToInt()}")
+                    AsyncImage(
+                        model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
+                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                        //alpha =iconOpacity,
+                        modifier = Modifier
+                            .size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = 0) }
+                    )
+
                 }
+
 
                 Spacer(modifier =Modifier.height(5.dp))
 
