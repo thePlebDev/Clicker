@@ -125,106 +125,106 @@ fun HorizontalChat(
                 )
             }
         ) {
-            SideModal(
-                drawerState = drawerState,
-                drawerContent = {
-                    if(showAdvancedChatSettings){
-                        ChatSettingsContainer.EnhancedChatSettingsBox(
-                            enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
-                            showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
-                            chatSettingsData = streamViewModel.modChatSettingsState.value.data,
-                            updateChatSettings = { newData -> streamViewModel.toggleChatSettings(newData) },
-                            closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
-                            showUndoButton = { showStatus -> streamViewModel.showUndoButton(showStatus) },
-                            showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
-                            noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                            setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
-                            advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                            updateAdvancedChatSettings = { data ->
-                                streamViewModel.updateAdvancedChatSettings(
-                                    data
-                                )
-                            },
-                            userIsModerator = modStatus ?: false
-                        )
-                    }else{
-//                        StreamManagerUI(
-//                            showStreamManager = {}
+//            SideModal(
+//                drawerState = drawerState,
+//                drawerContent = {
+//                    if(showAdvancedChatSettings){
+//                        ChatSettingsContainer.EnhancedChatSettingsBox(
+//                            enableSwitches = streamViewModel.modChatSettingsState.value.switchesEnabled,
+//                            showChatSettingAlert = streamViewModel.modChatSettingsState.value.showChatSettingAlert,
+//                            chatSettingsData = streamViewModel.modChatSettingsState.value.data,
+//                            updateChatSettings = { newData -> streamViewModel.toggleChatSettings(newData) },
+//                            closeAlertHeader = { streamViewModel.closeSettingsAlertHeader() },
+//                            showUndoButton = { showStatus -> streamViewModel.showUndoButton(showStatus) },
+//                            showUndoButtonStatus = streamViewModel.modChatSettingsState.value.showUndoButton,
+//                            noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+//                            setNoChatMode = { state -> streamViewModel.setNoChatMode(state) },
+//                            advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+//                            updateAdvancedChatSettings = { data ->
+//                                streamViewModel.updateAdvancedChatSettings(
+//                                    data
+//                                )
+//                            },
+//                            userIsModerator = modStatus ?: false
 //                        )
-                    }
-
-                },
-                contentCoveredBySideModal = {
-                    TextChat(
-                        twitchUserChat = twitchUserChat,
-                        sendMessageToWebSocket = { string ->
-                            streamViewModel.sendMessage(string)
-                        },
-                        modStatus = modStatus,
-                        bottomModalState = bottomModalState,
-                        filteredChatList = filteredChat,
-                        clickedAutoCompleteText = { username ->
-                            streamViewModel.autoTextChange(
-                                username
-                            )
-                        },
-                        addChatter = { username, message ->
-                            streamViewModel.addChatter(
-                                username,
-                                message
-                            )
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            streamViewModel.updateClickedChat(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        textFieldValue = streamViewModel.textFieldValue,
-                        channelName = streamViewModel.channelName.collectAsState().value,
-                        deleteMessage = { messageId ->
-                            streamViewModel.deleteChatMessage(
-                                messageId
-                            )
-                        },
-
-                        banResponse = streamViewModel.state.value.banResponse,
-                        undoBan = { streamViewModel.unBanUser() },
-                        undoBanResponse = streamViewModel.state.value.undoBanResponse,
-                        showStickyHeader = streamViewModel.state.value.showStickyHeader,
-                        closeStickyHeader = { streamViewModel.closeStickyHeader() },
-                        banResponseMessage = streamViewModel.state.value.banResponseMessage,
-                        restartWebSocket = { streamViewModel.restartWebSocket() },
-                        showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
-                        noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                        showOuterBottomModalState = {
-                            scope.launch {
-                                showAdvancedChatSettings = false
-                                drawerState.open()
-                            }
-                        },
-                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                        clickedCommandAutoCompleteText={ command ->
-                            streamViewModel.autoTextChangeCommand(
-                                command
-                            )
-                        },
-                        toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
-                        toggleBanDialog={streamViewModel.openBanDialog.value = true},
-                        openSideDrawer={
-                            scope.launch {
-                                showAdvancedChatSettings = true
-                                drawerState.open()
-                            }
-                        },
-                        orientationIsVertical = false,
-                        notificationAmount = 0
-                    )
-                }
-            )
+//                    }else{
+////                        StreamManagerUI(
+////                            showStreamManager = {}
+////                        )
+//                    }
+//
+//                },
+//                contentCoveredBySideModal = {
+//                    TextChat(
+//                        twitchUserChat = twitchUserChat,
+//                        sendMessageToWebSocket = { string ->
+//                            streamViewModel.sendMessage(string)
+//                        },
+//                        modStatus = modStatus,
+//                        bottomModalState = bottomModalState,
+//                        filteredChatList = filteredChat,
+//                        clickedAutoCompleteText = { username ->
+//                            streamViewModel.autoTextChange(
+//                                username
+//                            )
+//                        },
+//                        addChatter = { username, message ->
+//                            streamViewModel.addChatter(
+//                                username,
+//                                message
+//                            )
+//                        },
+//                        updateClickedUser = { username, userId, banned, isMod ->
+//                            streamViewModel.updateClickedChat(
+//                                username,
+//                                userId,
+//                                banned,
+//                                isMod
+//                            )
+//                        },
+//                        textFieldValue = streamViewModel.textFieldValue,
+//                        channelName = streamViewModel.channelName.collectAsState().value,
+//                        deleteMessage = { messageId ->
+//                            streamViewModel.deleteChatMessage(
+//                                messageId
+//                            )
+//                        },
+//
+//                        banResponse = streamViewModel.state.value.banResponse,
+//                        undoBan = { streamViewModel.unBanUser() },
+//                        undoBanResponse = streamViewModel.state.value.undoBanResponse,
+//                        showStickyHeader = streamViewModel.state.value.showStickyHeader,
+//                        closeStickyHeader = { streamViewModel.closeStickyHeader() },
+//                        banResponseMessage = streamViewModel.state.value.banResponseMessage,
+//                        restartWebSocket = { streamViewModel.restartWebSocket() },
+//                        showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
+//                        noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+//                        showOuterBottomModalState = {
+//                            scope.launch {
+//                                showAdvancedChatSettings = false
+//                                drawerState.open()
+//                            }
+//                        },
+//                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+//                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
+//                        clickedCommandAutoCompleteText={ command ->
+//                            streamViewModel.autoTextChangeCommand(
+//                                command
+//                            )
+//                        },
+//                        toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
+//                        toggleBanDialog={streamViewModel.openBanDialog.value = true},
+//                        openSideDrawer={
+//                            scope.launch {
+//                                showAdvancedChatSettings = true
+//                                drawerState.open()
+//                            }
+//                        },
+//                        orientationIsVertical = false,
+//                        notificationAmount = 0
+//                    )
+//                }
+//            )
         }
     }
 

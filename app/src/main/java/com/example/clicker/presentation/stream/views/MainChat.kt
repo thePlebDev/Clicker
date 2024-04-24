@@ -192,11 +192,7 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
 
             }, // end of enter chat
             scrollToBottom ={boxModifier ->
-                ScrollToBottom(
-                    scrollingPaused = !autoscroll,
-                    enableAutoScroll = { autoscroll = true },
-                    modifier = boxModifier
-                )
+
             },
             draggableButton = {
                 DraggableUndoButton(
@@ -357,30 +353,7 @@ fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.
          * @param enableAutoScroll a function that will be used to change the value of [scrollingPaused]
          * @param modifier a modifier that should be used to determine the placement of ScrollToBottom
          * */
-        @Composable
-        fun ScrollToBottom(
-            scrollingPaused: Boolean,
-            enableAutoScroll: () -> Unit,
-            modifier:Modifier
-        ) {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (scrollingPaused) {
-                   DualIconsButton(
-                        buttonAction = {enableAutoScroll()},
-                        iconImageVector=Icons.Default.ArrowDropDown,
-                        iconDescription = stringResource(R.string.arrow_drop_down_description),
-                        buttonText =stringResource(R.string.scroll_to_bottom)
 
-                    )
-                }
-            }
-        }
 
 
         /**

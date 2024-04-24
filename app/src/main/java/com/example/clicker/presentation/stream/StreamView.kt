@@ -4,12 +4,24 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.DrawerState
@@ -21,16 +33,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
@@ -38,9 +56,13 @@ import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
+import com.example.clicker.presentation.stream.views.ChatUI
+import com.example.clicker.presentation.stream.views.DualIconsButton
+import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
 import com.example.clicker.util.Response
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -83,7 +105,6 @@ fun StreamView(
 //        snapshotFlow { configuration.orientation }
 //            .collect { orientation = it }
 //    }
-    TestingLazyColumn(twitchUserChat = twitchUserChat)
 
 //    when (orientation) {
 //
@@ -291,136 +312,124 @@ fun StreamView(
 //
 //            }
 //
+    ChatUI(twitchUserChat = twitchUserChat)
 //
 //        }
 //    }
 }
 
-@Composable
-fun TestingLazyColumn(
-    twitchUserChat: List<TwitchUserData>,
-){
-    LazyColumn(){
-        items(
-            twitchUserChat,
-            key = { item -> item.id ?:"" }
+
+
+
+
+
+    @Composable
+    fun SideModal(
+        drawerState: DrawerState,
+        contentCoveredBySideModal: @Composable () -> Unit,
+        drawerContent: @Composable () -> Unit,
+
         ) {
-            TestingIndivChatMessage(it.userType?:"")
-        }
-    }
-
-}
-
-@Composable
-fun TestingIndivChatMessage(message:String){
-    Log.d("TestingIndivChatMessage",message)
-    Text(message, color = MaterialTheme.colorScheme.secondary)
-}
-
-
-@Composable
-fun SideModal(
-    drawerState: DrawerState,
-    contentCoveredBySideModal:@Composable () -> Unit,
-    drawerContent:@Composable () -> Unit,
-
-){
-    val enabled = drawerState.currentValue == androidx.compose.material3.DrawerValue.Open
-    ModalNavigationDrawer(
-        drawerState =drawerState,
-        gesturesEnabled = enabled,
-                drawerContent ={
-            ModalDrawerSheet{
-                drawerContent()
+        val enabled = drawerState.currentValue == androidx.compose.material3.DrawerValue.Open
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = enabled,
+            drawerContent = {
+                ModalDrawerSheet {
+                    drawerContent()
+                }
             }
+        ) {
+            contentCoveredBySideModal()
         }
-    ){
-        contentCoveredBySideModal()
     }
-}
 
 
-
-
-
-
-/**THIS IS THE CHAT SHOWING IN THE UI*/
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
-@SuppressLint("SuspiciousIndentation")
-@Composable
-fun TextChat(
-    twitchUserChat: List<TwitchUserData>,
-    sendMessageToWebSocket: (String) -> Unit,
-    openSideDrawer:()->Unit,
-    modStatus: Boolean?,
-    bottomModalState: ModalBottomSheetState,
-    filteredChatList: List<String>,
-    clickedAutoCompleteText: (String) -> Unit,
-    addChatter: (String, String) -> Unit,
-    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-    textFieldValue: MutableState<TextFieldValue>,
-    channelName: String?,
-    deleteMessage: (String) -> Unit,
-    banResponse: Response<Boolean>,
-    undoBanResponse: Boolean,
-    undoBan: () -> Unit,
-    showStickyHeader: Boolean,
-    closeStickyHeader: () -> Unit,
-    banResponseMessage: String,
-    restartWebSocket: () -> Unit,
-    showUndoButton:Boolean,
-    noChatMode:Boolean,
-    showOuterBottomModalState:() ->Unit,
-    newFilterMethod:(TextFieldValue) ->Unit,
-    forwardSlashCommands: List<ForwardSlashCommands>,
-    clickedCommandAutoCompleteText:(String)->Unit,
-    toggleTimeoutDialog:()->Unit,
-    toggleBanDialog:()->Unit,
-    orientationIsVertical:Boolean,
-    notificationAmount:Int
+    /**THIS IS THE CHAT SHOWING IN THE UI*/
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+    @SuppressLint("SuspiciousIndentation")
+    @Composable
+    fun TextChat(
+        twitchUserChat: List<TwitchUserData>,
+        sendMessageToWebSocket: (String) -> Unit,
+        openSideDrawer: () -> Unit,
+        modStatus: Boolean?,
+        bottomModalState: ModalBottomSheetState,
+        filteredChatList: List<String>,
+        clickedAutoCompleteText: (String) -> Unit,
+        addChatter: (String, String) -> Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        textFieldValue: MutableState<TextFieldValue>,
+        channelName: String?,
+        deleteMessage: (String) -> Unit,
+        banResponse: Response<Boolean>,
+        undoBanResponse: Boolean,
+        undoBan: () -> Unit,
+        showStickyHeader: Boolean,
+        closeStickyHeader: () -> Unit,
+        banResponseMessage: String,
+        restartWebSocket: () -> Unit,
+        showUndoButton: Boolean,
+        noChatMode: Boolean,
+        showOuterBottomModalState: () -> Unit,
+        newFilterMethod: (TextFieldValue) -> Unit,
+        forwardSlashCommands: List<ForwardSlashCommands>,
+        clickedCommandAutoCompleteText: (String) -> Unit,
+        toggleTimeoutDialog: () -> Unit,
+        toggleBanDialog: () -> Unit,
+        orientationIsVertical: Boolean,
+        notificationAmount: Int
 
     ) {
 
-    AutoScrollChatWithTextBox(
-        showStickyHeader =showStickyHeader,
-        closeStickyHeader ={closeStickyHeader()},
-        twitchUserChat = twitchUserChat,
-        bottomModalState =bottomModalState,
-        restartWebSocket ={restartWebSocket()},
-        banResponseMessage =banResponseMessage,
-        updateClickedUser ={ username, userId, banned, isMod ->updateClickedUser(username,userId,banned,isMod)},
-        deleteMessage ={ messageId -> deleteMessage(messageId)},
-        sendMessageToWebSocket ={ text -> sendMessageToWebSocket(text) },
-        modStatus = modStatus,
-        filteredChatList = filteredChatList,
-        clickedAutoCompleteText = { username ->
-            clickedAutoCompleteText(
-                username
-            )
-        },
-        textFieldValue = textFieldValue,
-        channelName = channelName,
-        openSideDrawer={
-            openSideDrawer()
-        },
-        undoBan = {undoBan()},
-        showUndoButton =showUndoButton,
-        noChatMode =noChatMode,
-        showOuterBottomModalState ={showOuterBottomModalState()},
-        newFilterMethod ={newTextValue -> newFilterMethod(newTextValue)},
-        forwardSlashCommandsList =forwardSlashCommands,
-        clickedCommandAutoCompleteText={ command ->
-            clickedCommandAutoCompleteText(
-                command
-            )
-        },
-        toggleTimeoutDialog={toggleTimeoutDialog()},
-        toggleBanDialog={toggleBanDialog()},
-        orientationIsVertical =orientationIsVertical,
-        notificationAmount =notificationAmount
-    )
+        AutoScrollChatWithTextBox(
+            showStickyHeader = showStickyHeader,
+            closeStickyHeader = { closeStickyHeader() },
+            twitchUserChat = twitchUserChat,
+            bottomModalState = bottomModalState,
+            restartWebSocket = { restartWebSocket() },
+            banResponseMessage = banResponseMessage,
+            updateClickedUser = { username, userId, banned, isMod ->
+                updateClickedUser(
+                    username,
+                    userId,
+                    banned,
+                    isMod
+                )
+            },
+            deleteMessage = { messageId -> deleteMessage(messageId) },
+            sendMessageToWebSocket = { text -> sendMessageToWebSocket(text) },
+            modStatus = modStatus,
+            filteredChatList = filteredChatList,
+            clickedAutoCompleteText = { username ->
+                clickedAutoCompleteText(
+                    username
+                )
+            },
+            textFieldValue = textFieldValue,
+            channelName = channelName,
+            openSideDrawer = {
+                openSideDrawer()
+            },
+            undoBan = { undoBan() },
+            showUndoButton = showUndoButton,
+            noChatMode = noChatMode,
+            showOuterBottomModalState = { showOuterBottomModalState() },
+            newFilterMethod = { newTextValue -> newFilterMethod(newTextValue) },
+            forwardSlashCommandsList = forwardSlashCommands,
+            clickedCommandAutoCompleteText = { command ->
+                clickedCommandAutoCompleteText(
+                    command
+                )
+            },
+            toggleTimeoutDialog = { toggleTimeoutDialog() },
+            toggleBanDialog = { toggleBanDialog() },
+            orientationIsVertical = orientationIsVertical,
+            notificationAmount = notificationAmount
+        )
 
-}
+    }
+
 
 
 
