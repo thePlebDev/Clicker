@@ -2,6 +2,12 @@ package com.example.clicker.presentation.stream.views
 
 import android.util.Log
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -35,6 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +51,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -183,10 +192,10 @@ import kotlin.math.roundToInt
         @Composable
         fun ClickableCard(
             twitchUser: TwitchUserData,
-           // color: Color,
+            color: Color,
 //            offset: Float,
 //            bottomModalState: ModalBottomSheetState,
-           // fontSize: TextUnit,
+            fontSize: TextUnit,
 //            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 //            iconXOffset: Float,
 //            updateIconXOffset:(Float) ->Unit
@@ -195,84 +204,67 @@ import kotlin.math.roundToInt
 
             ){
             Log.d("TestingIndivChatMessage",twitchUser.userType ?:"")
-//            val coroutineScope = rememberCoroutineScope()
-//            var showIcon by remember { mutableStateOf(true) }
-//            var iconOpacity by remember { mutableFloatStateOf(0f) }
-            Text(twitchUser.userType?:"", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.secondary)
-          //  var iconXOffset by remember { mutableFloatStateOf(0f) }
-//            var iconYOffset by remember { mutableFloatStateOf(0f) }
-//            Column() {
-//                Spacer(modifier =Modifier.height(5.dp))
-//                Box(){
-//                    Card(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                          //  .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-//                            .pointerInput(Unit) {
-//                                detectTapGestures(
-//                                    onDoubleTap = { tapOffset ->
-//                                        Log.d("DOUBLECLICKERS","double")
-//                                      //  updateIconXOffset(tapOffset.x)
-//                                        //iconYOffset = tapOffset.y
-//
-//                                        Log.d("DOUBLECLICKERS","X ${tapOffset.x}")
-//                                        Log.d("DOUBLECLICKERS","Y ${tapOffset.y}")
-//                                        iconOpacity =1f
-//
-//                                    },
-//                                    onTap = {tapOffset ->
-//                                        Log.d("DOUBLECLICKERS","SINGLE")
-////                                      //  updateClickedUser(
-////                                            twitchUser.displayName.toString(),
-////                                            twitchUser.userId.toString(),
-////                                            twitchUser.banned,
-////                                            twitchUser.mod != "1"
-////                                        )
-//                                        coroutineScope.launch {
-//                                           // bottomModalState.show()
-//                                        }
-//                                    }
-//                                )
-//                            },
-//                        backgroundColor = MaterialTheme.colorScheme.primary,
-//                      //  border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
-//
-//                    ) {
-//                        Text(twitchUser.userType?:"", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.secondary)
-////                        Column() {
-////                            CheckIfUserDeleted(twitchUser = twitchUser)
-////                            CheckIfUserIsBanned(twitchUser = twitchUser)
-////                            TextWithChatBadges(
-////                                twitchUser = twitchUser,
-//////                                color = MaterialTheme.colorScheme.secondary,
-//////                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-////                            )
-////                        }
-//                    }
-//
-////                        Icon(
-////                            imageVector = Icons.Default.Favorite,
-////                            contentDescription ="like" ,
-////                            tint = MaterialTheme.colorScheme.secondary.copy(alpha = iconOpacity),
-////                            modifier = Modifier.size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = iconYOffset.roundToInt()) }
-////                        )
-//                   // Log.d("AsyncImageRecomp","iconXOffset ->${iconXOffset.roundToInt()}")
-////                    AsyncImage(
-////                        model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
-////                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
-////                        //alpha =iconOpacity,
-////                        modifier = Modifier
-////                            .size(30.dp).absoluteOffset { IntOffset(x = iconXOffset.roundToInt(), y = 0) }
-////                    )
-//
-//                }
-//
-//
-//                Spacer(modifier =Modifier.height(5.dp))
-//
-//            }
+            val coroutineScope = rememberCoroutineScope()
+          //  val iconXOffset by remember { mutableStateOf(0f) }
+            val iconXOffset = remember { mutableStateOf(0f) }
+            val showIcon = remember { mutableStateOf(false) }
+            Log.d("DOUBLECLICKERS","RECOMP->${iconXOffset}")
+
+            Column(
+                modifier = Modifier.combinedClickable(
+                    enabled = true,
+                    onDoubleClick = {
+                        showIcon.value = true
+                    },
+                    onClick = {}
+                )
+
+            ) {
+                Spacer(modifier =Modifier.height(5.dp))
+                Box(){
+                        Column(modifier = Modifier
+                            .fillMaxWidth()) {
+                            CheckIfUserDeleted(twitchUser = twitchUser)
+                            CheckIfUserIsBanned(twitchUser = twitchUser)
+                            TextWithChatBadges(
+                                twitchUser = twitchUser,
+                                color = color,
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                            )
+                        }
+                    if(showIcon.value){
+                        AysncImageTest()
+                    }
+
+
+                }
+
+
+
+                Spacer(modifier =Modifier.height(5.dp))
+
+            }
 
         }
+@Composable
+fun AysncImageTest(){
+
+    val size = remember { Animatable(10F) }
+    LaunchedEffect(true){
+        size.animateTo(40f)
+    }
+    Box(modifier = Modifier.fillMaxWidth().padding(end=30.dp)){
+        AsyncImage(
+            model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
+            contentDescription = stringResource(R.string.moderator_badge_icon_description),
+            //alpha =iconOpacity,
+            modifier = Modifier
+                .size(size.value.dp)
+                .align(Alignment.CenterEnd)
+        )
+    }
+
+}
 
 
         /**
@@ -320,8 +312,8 @@ import kotlin.math.roundToInt
         @Composable
         fun TextWithChatBadges(
             twitchUser: TwitchUserData,
-//            color: Color,
-//            fontSize: TextUnit,
+            color: Color,
+            fontSize: TextUnit,
 
         ){
             Row(
@@ -334,8 +326,8 @@ import kotlin.math.roundToInt
                     isMod = twitchUser.mod == "1",
                     isSub = twitchUser.subscriber == true,
                     isMonitored =twitchUser.isMonitored,
-//                    color = color,
-//                    textSize = fontSize
+                    color = color,
+                    textSize = fontSize
                 )
 
             } // end of the row
@@ -359,12 +351,12 @@ import kotlin.math.roundToInt
             isMod: Boolean,
             isSub: Boolean,
             isMonitored:Boolean,
-//            color: Color,
-//            textSize: TextUnit
+            color: Color,
+            textSize: TextUnit
         ) {
             //for not these values can stay here hard coded. Until I implement more Icon
-            val color = MaterialTheme.colorScheme.secondary
-            val textSize = MaterialTheme.typography.headlineSmall.fontSize
+//            val color = MaterialTheme.colorScheme.secondary
+//            val textSize = MaterialTheme.typography.headlineSmall.fontSize
             val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
             val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
             val modId = "modIcon"
