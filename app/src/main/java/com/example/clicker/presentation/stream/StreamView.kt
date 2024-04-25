@@ -84,10 +84,10 @@ fun StreamView(
 //    val scope = rememberCoroutineScope()
 //    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 //
-//    val bottomModalState = rememberModalBottomSheetState(
-//        initialValue = ModalBottomSheetValue.Hidden,
-//        skipHalfExpanded = true
-//    )
+    val bottomModalState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
 //    val outerBottomModalState = rememberModalBottomSheetState(
 //        initialValue = ModalBottomSheetValue.Hidden,
 //        skipHalfExpanded = true
@@ -250,15 +250,15 @@ fun StreamView(
 ////                                        message
 ////                                    )
 ////                                },
-////                                updateClickedUser = { username, userId, banned, isMod ->
-////
-////                                    streamViewModel.updateClickedChat(
-////                                        username,
-////                                        userId,
-////                                        banned,
-////                                        isMod
-////                                    )
-////                                },
+//                                updateClickedUser = { username, userId, banned, isMod ->
+//
+//                                    streamViewModel.updateClickedChat(
+//                                        username,
+//                                        userId,
+//                                        banned,
+//                                        isMod
+//                                    )
+//                                },
 ////                                textFieldValue = streamViewModel.textFieldValue,
 ////                                channelName = streamViewModel.channelName.collectAsState().value,
 ////                                deleteMessage = { messageId ->
@@ -312,10 +312,35 @@ fun StreamView(
 //
 //            }
 //
-    ChatUI(twitchUserChat = twitchUserChat)
+    val updateClickedUser:(String,String,Boolean,Boolean)->Unit = remember(streamViewModel) { { username, userId, banned, isMod ->
+        streamViewModel.updateClickedChat(
+                username,
+                userId,
+                banned,
+                isMod
+            )
+    } }
+    ChatUI(
+        twitchUserChat = twitchUserChat,
+        bottomModalState,
+        updateClickedUser = { username, userId, banned, isMod ->
+            updateClickedUser(
+                username,
+                userId,
+                banned,
+                isMod
+            )
+
+        },
+    )
 //
 //        }
 //    }
+}
+
+
+fun someNonScopedFunction() {
+    print("Do something")
 }
 
 
