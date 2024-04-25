@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.MaterialTheme
@@ -42,9 +44,12 @@ import kotlinx.coroutines.launch
 
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ChatUI(
     twitchUserChat: List<TwitchUserData>,
+    bottomModalState: ModalBottomSheetState,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -61,7 +66,17 @@ fun ChatUI(
             ChatUILazyColumn(
                 lazyColumnListState=lazyColumnListState,
                 twitchUserChat=twitchUserChat,
-                autoscroll=autoscroll
+                autoscroll=autoscroll,
+                bottomModalState =bottomModalState,
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                }
+
             )
         },
         scrollToBottom ={modifier ->
@@ -135,11 +150,14 @@ private class ImprovedChatUI(){
 
 
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun ChatUILazyColumn(
         lazyColumnListState: LazyListState,
         twitchUserChat: List<TwitchUserData>,
         autoscroll:Boolean,
+        bottomModalState: ModalBottomSheetState,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -154,14 +172,31 @@ private class ImprovedChatUI(){
                 twitchUserChat,
                 key = { item -> item.id ?:"" }
             ) {indivChatMessage ->
-                ChatMessages(indivChatMessage)
+                ChatMessages(
+                    indivChatMessage,
+                    bottomModalState=bottomModalState,
+                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            isBanned,
+                            isMod
+                        )
+                    }
+
+                )
 
             }
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun ChatMessages(twitchChatMessage: TwitchUserData){
+    fun ChatMessages(
+        twitchChatMessage: TwitchUserData,
+       bottomModalState: ModalBottomSheetState,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
@@ -186,7 +221,16 @@ private class ImprovedChatUI(){
                     ClickableCard(
                         twitchUser =twitchChatMessage,
                         color = color.value,
-                        fontSize = messageFontSize
+                        fontSize = messageFontSize,
+                       bottomModalState =bottomModalState,
+                        updateClickedUser = {  username, userId,isBanned,isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                isBanned,
+                                isMod
+                            )
+                        }
                     )
                 }
 

@@ -104,66 +104,63 @@ import kotlin.math.roundToInt
         toggleBanDialog:()->Unit,
 
     ) {
-//        // no logic here, this should be a clean API wrapper
-//        var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
-//        if(color == Color.Black){
-//            color = MaterialTheme.colorScheme.primary
-//        }
-//        var iconXOffset by remember { mutableFloatStateOf(0f) }
-//        ClickableCard(
-//            twitchUser =twitchUser,
-//        )
-//
-//        HorizontalDragDetectionBox(
-//            itemBeingDragged = { dragOffset ->
+        // no logic here, this should be a clean API wrapper
+        var color by remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUser.color))) }
+        if(color == Color.Black){
+            color = MaterialTheme.colorScheme.primary
+        }
+        var iconXOffset by remember { mutableFloatStateOf(0f) }
+
+        HorizontalDragDetectionBox(
+            itemBeingDragged = { dragOffset ->
 //                ClickableCard(
 //                    twitchUser =twitchUser,
 //                  //  color = color,
-////                    bottomModalState = bottomModalState,
-////                    offset = if (twitchUser.mod != "1") dragOffset else 0f,
-//                   // fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-////                    updateClickedUser = {  username, userId,isBanned,isMod ->
-////                        updateClickedUser(
-////                            username,
-////                            userId,
-////                            isBanned,
-////                            isMod
-////                        )
-////                    },
-////                    iconXOffset =iconXOffset,
-////                    updateIconXOffset = {
-////                            value ->iconXOffset = value
-////                        Log.d("doubleClickIcons","iconXOffset -->${iconXOffset}")
-////                    }
+//                    bottomModalState = bottomModalState,
+//                    offset = if (twitchUser.mod != "1") dragOffset else 0f,
+//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+//                    updateClickedUser = {  username, userId,isBanned,isMod ->
+//                        updateClickedUser(
+//                            username,
+//                            userId,
+//                            isBanned,
+//                            isMod
+//                        )
+//                    },
+//                    iconXOffset =iconXOffset,
+//                    updateIconXOffset = {
+//                            value ->iconXOffset = value
+//                        Log.d("doubleClickIcons","iconXOffset -->${iconXOffset}")
+//                    }
 //                )
-//            },
-//            quarterSwipeLeftAction = {
-////                updateClickedUser(
-////                    twitchUser.displayName?:"",
-////                    twitchUser.userId?:"",
-////                    twitchUser.banned,
-////                    twitchUser.mod == "1"
-////                )
-////                toggleTimeoutDialog()
-//            },
-//            quarterSwipeRightAction = {
-//
-////                updateClickedUser(
-////                    twitchUser.displayName?:"",
-////                    twitchUser.userId?:"",
-////                    twitchUser.banned,
-////                    twitchUser.mod == "1"
-////                )
-////                toggleBanDialog()
-//            },
-//            halfSwipeAction = {
-//               // deleteMessage(twitchUser.id ?: "")
-//
-//            },
-//            twoSwipeOnly = false,
-//            swipeEnabled = false
-//
-//        )
+            },
+            quarterSwipeLeftAction = {
+//                updateClickedUser(
+//                    twitchUser.displayName?:"",
+//                    twitchUser.userId?:"",
+//                    twitchUser.banned,
+//                    twitchUser.mod == "1"
+//                )
+//                toggleTimeoutDialog()
+            },
+            quarterSwipeRightAction = {
+
+//                updateClickedUser(
+//                    twitchUser.displayName?:"",
+//                    twitchUser.userId?:"",
+//                    twitchUser.banned,
+//                    twitchUser.mod == "1"
+//                )
+//                toggleBanDialog()
+            },
+            halfSwipeAction = {
+               // deleteMessage(twitchUser.id ?: "")
+
+            },
+            twoSwipeOnly = false,
+            swipeEnabled = false
+
+        )
 
     }
 
@@ -194,11 +191,9 @@ import kotlin.math.roundToInt
             twitchUser: TwitchUserData,
             color: Color,
 //            offset: Float,
-//            bottomModalState: ModalBottomSheetState,
+            bottomModalState: ModalBottomSheetState,
             fontSize: TextUnit,
-//            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-//            iconXOffset: Float,
-//            updateIconXOffset:(Float) ->Unit
+            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
 
 
@@ -216,7 +211,17 @@ import kotlin.math.roundToInt
                     onDoubleClick = {
                         showIcon.value = true
                     },
-                    onClick = {}
+                    onClick = {
+                        updateClickedUser(
+                            twitchUser.displayName?:"",
+                            twitchUser.userId?:"",
+                            twitchUser.banned,
+                            twitchUser.mod == "1"
+                        )
+//                        coroutineScope.launch {
+//                            bottomModalState.show()
+//                        }
+                    }
                 )
 
             ) {

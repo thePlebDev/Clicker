@@ -441,6 +441,9 @@ class StreamViewModel @Inject constructor(
         banned: Boolean,
         isMod: Boolean
     ) {
+        Log.d("updateClickedChat","CLICKED")
+        Log.d("updateClickedChat","clickedUsername ->${clickedUsername}")
+
 
         clickedUsernameChats.clear()
         val messages = listChats.filter {
