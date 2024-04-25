@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
@@ -165,6 +166,10 @@ private class ImprovedChatUI(){
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
         val errorScope = remember(){ ErrorScope(messageFontSize) }
+        val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
+        if(color.value == Color.Black){
+            color.value = MaterialTheme.colorScheme.primary
+        }
         with(chatScope) {
 
             when (twitchChatMessage.messageType) {
@@ -177,12 +182,12 @@ private class ImprovedChatUI(){
 
                 MessageType.USER -> { //added
                     // individualSwipableChatMessage()
-                    TestingIndivChatMessage(twitchChatMessage)
-//                    ClickableCard(
-//                        twitchUser =twitchChatMessage,
-//                      //  color = MaterialTheme.colorScheme.secondary,
-//                       // fontSize = messageFontSize
-//                    )
+                  //  TestingIndivChatMessage(twitchChatMessage)
+                    ClickableCard(
+                        twitchUser =twitchChatMessage,
+                        color = color.value,
+                        fontSize = messageFontSize
+                    )
                 }
 
                 MessageType.ANNOUNCEMENT -> { //added
