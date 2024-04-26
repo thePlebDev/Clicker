@@ -190,7 +190,7 @@ import kotlin.math.roundToInt
         fun ClickableCard(
             twitchUser: TwitchUserData,
             color: Color,
-//            offset: Float,
+            offset: Float,
             showBottomModal:()->Unit,
             fontSize: TextUnit,
             updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
@@ -229,7 +229,9 @@ import kotlin.math.roundToInt
                 Spacer(modifier =Modifier.height(5.dp))
                 Box(){
                         Column(modifier = Modifier
-                            .fillMaxWidth()) {
+                            .fillMaxWidth()
+
+                        ) {
                             CheckIfUserDeleted(twitchUser = twitchUser)
                             CheckIfUserIsBanned(twitchUser = twitchUser)
                             TextWithChatBadges(

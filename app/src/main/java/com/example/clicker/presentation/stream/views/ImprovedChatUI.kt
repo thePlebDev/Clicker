@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.presentation.modView.views.HorizontalDragDetectionBox
 import com.example.clicker.presentation.sharedViews.ChatScope
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
@@ -218,6 +219,15 @@ private class ImprovedChatUI(){
                 MessageType.USER -> { //added
                     // individualSwipableChatMessage()
                   //  TestingIndivChatMessage(twitchChatMessage)
+                    HorizontalDragDetectionBox(
+                        itemBeingDragged = {
+
+                        },
+                        quarterSwipeLeftAction={},
+                        quarterSwipeRightAction={},
+                        swipeEnabled = true,
+                        twoSwipeOnly= false
+                    )
                     ClickableCard(
                         twitchUser =twitchChatMessage,
                         color = color.value,
