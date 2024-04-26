@@ -90,6 +90,7 @@ object BottomModal{
      * @param banUser A function that will actually ban the user
      * @param clickedUserId A string representing the UserId of the user that we have clicked
      * */
+    //todo: I think this should be reworked to remove the dialogs
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun BanTimeOutDialogs(
@@ -126,8 +127,6 @@ object BottomModal{
 
             // TODO: this should 100% not be filteredChat. Need to create new variable
             clickedUsernameChats = clickedUsernameChats,
-
-
             timeoutDialogContent ={
                 if(timeOutDialogOpen){
                     Dialogs.TimeoutDialog(
@@ -235,6 +234,68 @@ object BottomModal{
 
             } // END OF THE COLUMN
 
+
+        }
+    }
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun BottomModalBuilder(
+        clickedUsernameChats: List<String>,
+        clickedUsername: String,
+        bottomModalState: ModalBottomSheetState,
+        textFieldValue: MutableState<TextFieldValue>,
+
+        closeBottomModal: () -> Unit,
+        banned: Boolean,
+        isMod: Boolean,
+        unbanUser: () -> Unit,
+        openTimeoutDialog: () -> Unit,
+        openBanDialog: () -> Unit,
+        updateShouldMonitorUser: () -> Unit,
+        shouldMonitorUser:Boolean
+
+    ){
+        ImprovedBottomModal(
+            clickedUsernameChats=clickedUsernameChats,
+            clickedUsernameBanner ={
+                BottomModalParts.ContentBanner(
+                    clickedUsername = clickedUsername,
+                    bottomModalState = bottomModalState,
+                    textFieldValue = textFieldValue
+
+                )
+            },
+            clickedUserBottomBanner ={
+                BottomModalParts.ContentBottomPart(
+                    banned =banned,
+                    isMod =isMod,
+                    closeBottomModal ={closeBottomModal()},
+                    unbanUser ={unbanUser()},
+                    openTimeoutDialog={openTimeoutDialog()},
+                    openBanDialog ={openBanDialog()},
+                    updateShouldMonitorUser = {updateShouldMonitorUser()},
+                    shouldMonitorUser = shouldMonitorUser
+                )
+            }
+
+        )
+    }
+    @Composable
+    fun ImprovedBottomModal(
+        clickedUsernameChats: List<String>,
+        clickedUsernameBanner: @Composable () -> Unit,
+        clickedUserBottomBanner: @Composable () -> Unit,
+    ){
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            clickedUsernameBanner()
+            clickedUserBottomBanner()
+            Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
+
+            BottomModalParts.ClickedUserMessages(clickedUsernameChats)
 
         }
     }

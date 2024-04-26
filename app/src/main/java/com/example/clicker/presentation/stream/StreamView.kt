@@ -55,6 +55,7 @@ import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoMod
 import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BanTimeOutDialogs
+import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
 import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.presentation.stream.views.ChatUI
 import com.example.clicker.presentation.stream.views.DualIconsButton
@@ -80,8 +81,8 @@ fun StreamView(
 //    val chatSettingData = streamViewModel.state.value.chatSettings
 //    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
 //    val filteredChat = streamViewModel.filteredChatList
-//    val clickedUsernameChats = streamViewModel.clickedUsernameChats
-//    val scope = rememberCoroutineScope()
+    val clickedUsernameChats = streamViewModel.clickedUsernameChats
+    val scope = rememberCoroutineScope()
 //    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 //
     val bottomModalState = rememberModalBottomSheetState(
@@ -320,22 +321,60 @@ fun StreamView(
                 isMod
             )
     } }
-    ChatUI(
-        twitchUserChat = twitchUserChat,
-        bottomModalState,
-        updateClickedUser = { username, userId, banned, isMod ->
-            updateClickedUser(
-                username,
-                userId,
-                banned,
-                isMod
-            )
+    val showBottomModal:()->Unit =remember(bottomModalState) { {
+        scope.launch {
+            bottomModalState.show()
+        }
+    } }
 
-        },
-    )
-//
-//        }
-//    }
+    ModalBottomSheetLayout(
+                    sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+                    sheetState = bottomModalState,
+                    sheetContent = {
+                        BottomModalBuilder(
+                            clickedUsernameChats = clickedUsernameChats,
+                            clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                            bottomModalState = bottomModalState,
+                            textFieldValue = streamViewModel.textFieldValue,
+                            closeBottomModal = {
+
+                                               },
+                            banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                            unbanUser = {
+                              //  streamViewModel.unBanUser()
+                                        },
+                            isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+                            openTimeoutDialog = {
+                              //  streamViewModel.openTimeoutDialog.value = true
+                                                },
+
+                            openBanDialog = {  },
+                            shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
+                            updateShouldMonitorUser = {
+                               // streamViewModel.updateShouldMonitorUser()
+                            }
+                        )
+                    }
+    ){
+        //this is where the chatUI goes
+        ChatUI(
+            twitchUserChat = twitchUserChat,
+            showBottomModal={
+                showBottomModal()
+            },
+            updateClickedUser = { username, userId, banned, isMod ->
+                updateClickedUser(
+                    username,
+                    userId,
+                    banned,
+                    isMod
+                )
+
+            },
+        )
+   }
+
+
 }
 
 

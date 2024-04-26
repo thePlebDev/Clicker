@@ -191,7 +191,7 @@ import kotlin.math.roundToInt
             twitchUser: TwitchUserData,
             color: Color,
 //            offset: Float,
-            bottomModalState: ModalBottomSheetState,
+            showBottomModal:()->Unit,
             fontSize: TextUnit,
             updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
@@ -218,6 +218,7 @@ import kotlin.math.roundToInt
                             twitchUser.banned,
                             twitchUser.mod == "1"
                         )
+                        showBottomModal()
 //                        coroutineScope.launch {
 //                            bottomModalState.show()
 //                        }
