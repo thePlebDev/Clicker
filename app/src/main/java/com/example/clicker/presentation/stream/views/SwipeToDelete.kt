@@ -230,6 +230,7 @@ import kotlin.math.roundToInt
                 Box(){
                         Column(modifier = Modifier
                             .fillMaxWidth()
+                            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
 
                         ) {
                             CheckIfUserDeleted(twitchUser = twitchUser)

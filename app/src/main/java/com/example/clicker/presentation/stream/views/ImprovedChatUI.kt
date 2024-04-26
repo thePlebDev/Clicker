@@ -220,28 +220,29 @@ private class ImprovedChatUI(){
                     // individualSwipableChatMessage()
                   //  TestingIndivChatMessage(twitchChatMessage)
                     HorizontalDragDetectionBox(
-                        itemBeingDragged = {
-
+                        itemBeingDragged = {dragOffset ->
+                            ClickableCard(
+                                twitchUser =twitchChatMessage,
+                                color = color.value,
+                                fontSize = messageFontSize,
+                                showBottomModal={showBottomModal()},
+                                updateClickedUser = {  username, userId,isBanned,isMod ->
+                                    updateClickedUser(
+                                        username,
+                                        userId,
+                                        isBanned,
+                                        isMod
+                                    )
+                                },
+                                offset = dragOffset
+                            )
                         },
                         quarterSwipeLeftAction={},
                         quarterSwipeRightAction={},
                         swipeEnabled = true,
                         twoSwipeOnly= false
                     )
-                    ClickableCard(
-                        twitchUser =twitchChatMessage,
-                        color = color.value,
-                        fontSize = messageFontSize,
-                        showBottomModal={showBottomModal()},
-                        updateClickedUser = {  username, userId,isBanned,isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                isBanned,
-                                isMod
-                            )
-                        }
-                    )
+
                 }
 
                 MessageType.ANNOUNCEMENT -> { //added
