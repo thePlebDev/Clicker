@@ -70,7 +70,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.presentation.modView.views.HorizontalDragDetectionBox
+import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.util.rememberSwipeableActionsState
 import kotlinx.coroutines.launch
@@ -173,107 +173,6 @@ import kotlin.math.roundToInt
      * */
 
 
-        /**
-         * ClickableCard is the composable that implements the functionality that allows the user to click on a chat message
-         * and have the bottom modal pop up
-         *
-         * @param twitchUser a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object that represents the state of an individual user and their chat message
-         * @param color  a Color that will eventually be passed to [ChatBadges] and represent the color of the text
-         * @param offset a Float representing how far this composable will be moving on screen
-         * @param bottomModalState the state of a [ModalBottomSheetState][androidx.compose.material]
-         * @param fontSize the font size of the text inside the [ChatBadges] composable
-         * @param updateClickedUser a function that will run once this composable is clicked and will update the ViewModel with information
-         * about the clicked user
-         * */
-        @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
-        @Composable
-        fun ClickableCard(
-            twitchUser: TwitchUserData,
-            color: Color,
-            offset: Float,
-            showBottomModal:()->Unit,
-            fontSize: TextUnit,
-            updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-
-
-
-            ){
-            Log.d("TestingIndivChatMessage",twitchUser.userType ?:"")
-            val coroutineScope = rememberCoroutineScope()
-          //  val iconXOffset by remember { mutableStateOf(0f) }
-            val iconXOffset = remember { mutableStateOf(0f) }
-            val showIcon = remember { mutableStateOf(false) }
-            Log.d("DOUBLECLICKERS","RECOMP->${iconXOffset}")
-
-            Column(
-                modifier = Modifier.combinedClickable(
-                    enabled = true,
-                    onDoubleClick = {
-                        showIcon.value = true
-                    },
-                    onClick = {
-                        updateClickedUser(
-                            twitchUser.displayName?:"",
-                            twitchUser.userId?:"",
-                            twitchUser.banned,
-                            twitchUser.mod == "1"
-                        )
-                        showBottomModal()
-//                        coroutineScope.launch {
-//                            bottomModalState.show()
-//                        }
-                    }
-                )
-
-            ) {
-                Spacer(modifier =Modifier.height(5.dp))
-                Box(){
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-
-                        ) {
-                            CheckIfUserDeleted(twitchUser = twitchUser)
-                            CheckIfUserIsBanned(twitchUser = twitchUser)
-                            TextWithChatBadges(
-                                twitchUser = twitchUser,
-                                color = color,
-                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                            )
-                        }
-                    if(showIcon.value){
-                        AysncImageTest()
-                    }
-
-
-                }
-
-
-
-                Spacer(modifier =Modifier.height(5.dp))
-
-            }
-
-        }
-@Composable
-fun AysncImageTest(){
-
-    val size = remember { Animatable(10F) }
-    LaunchedEffect(true){
-        size.animateTo(40f)
-    }
-    Box(modifier = Modifier.fillMaxWidth().padding(end=30.dp)){
-        AsyncImage(
-            model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
-            contentDescription = stringResource(R.string.moderator_badge_icon_description),
-            //alpha =iconOpacity,
-            modifier = Modifier
-                .size(size.value.dp)
-                .align(Alignment.CenterEnd)
-        )
-    }
-
-}
 
 
         /**
