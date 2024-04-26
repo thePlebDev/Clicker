@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatUI(
     twitchUserChat: List<TwitchUserData>,
-    bottomModalState: ModalBottomSheetState,
+    showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
@@ -67,7 +67,7 @@ fun ChatUI(
                 lazyColumnListState=lazyColumnListState,
                 twitchUserChat=twitchUserChat,
                 autoscroll=autoscroll,
-                bottomModalState =bottomModalState,
+                showBottomModal={showBottomModal()},
                 updateClickedUser = {  username, userId,isBanned,isMod ->
                     updateClickedUser(
                         username,
@@ -156,7 +156,7 @@ private class ImprovedChatUI(){
         lazyColumnListState: LazyListState,
         twitchUserChat: List<TwitchUserData>,
         autoscroll:Boolean,
-        bottomModalState: ModalBottomSheetState,
+        showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ){
         val coroutineScope = rememberCoroutineScope()
@@ -174,7 +174,7 @@ private class ImprovedChatUI(){
             ) {indivChatMessage ->
                 ChatMessages(
                     indivChatMessage,
-                    bottomModalState=bottomModalState,
+                    showBottomModal={showBottomModal()},
                     updateClickedUser = {  username, userId,isBanned,isMod ->
                         updateClickedUser(
                             username,
@@ -194,7 +194,7 @@ private class ImprovedChatUI(){
     @Composable
     fun ChatMessages(
         twitchChatMessage: TwitchUserData,
-       bottomModalState: ModalBottomSheetState,
+        showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
@@ -222,7 +222,7 @@ private class ImprovedChatUI(){
                         twitchUser =twitchChatMessage,
                         color = color.value,
                         fontSize = messageFontSize,
-                       bottomModalState =bottomModalState,
+                        showBottomModal={showBottomModal()},
                         updateClickedUser = {  username, userId,isBanned,isMod ->
                             updateClickedUser(
                                 username,
