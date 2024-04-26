@@ -1,9 +1,6 @@
 package com.example.clicker.presentation.stream.views
 
-import android.util.Log
-
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
 
 import androidx.compose.material3.MaterialTheme
@@ -12,10 +9,8 @@ import androidx.compose.runtime.remember
 
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.presentation.sharedViews.ChatScope
+import com.example.clicker.presentation.stream.views.chat.ChatScope
 import com.example.clicker.presentation.sharedViews.ErrorScope
-
-import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 
 
 //parts builders implementations (PBI architecture for short)
