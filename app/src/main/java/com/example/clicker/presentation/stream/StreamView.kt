@@ -302,7 +302,7 @@ fun StreamView(
                             unbanUser = {
                               //  streamViewModel.unBanUser()
                                         },
-                            isMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+                            isMod = true,
                             openTimeoutDialog = {
                               //  streamViewModel.openTimeoutDialog.value = true
                                                 },

@@ -59,6 +59,7 @@ import com.example.clicker.presentation.stream.views.CheckIfUserDeleted
 import com.example.clicker.presentation.stream.views.CheckIfUserIsBanned
 import com.example.clicker.presentation.stream.views.DualIconsButton
 import com.example.clicker.presentation.stream.views.TextWithChatBadges
+
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import kotlinx.coroutines.launch
@@ -219,10 +220,12 @@ private class ImprovedChatUI(){
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
         val errorScope = remember(){ ErrorScope(messageFontSize) }
+        var showTimeoutDialog = remember(){ false}
         val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
         if(color.value == Color.Black){
             color.value = MaterialTheme.colorScheme.primary
         }
+
         with(chatScope) {
 
             when (twitchChatMessage.messageType) {
@@ -249,11 +252,17 @@ private class ImprovedChatUI(){
                                         isMod
                                     )
                                 },
-                                offset = dragOffset
+                                offset = if (twitchChatMessage.mod != "1") dragOffset else 0f
                             )
                         },
-                        quarterSwipeLeftAction={},
-                        quarterSwipeRightAction={},
+                        quarterSwipeLeftAction={
+                            Log.d("quarterSwipeLeftAction","Cclicked")
+                            showTimeoutDialog = true
+                        },
+                        quarterSwipeRightAction={
+                            Log.d("quarterSwipeLeftAction","Cclicked")
+                            showTimeoutDialog = true
+                        },
                         swipeEnabled = true,
                         twoSwipeOnly= false
                     )
@@ -312,6 +321,9 @@ private class ImprovedChatUI(){
 
             }
         }
+
+
+
     }
 
 
@@ -368,9 +380,8 @@ fun ClickableCard(
 
     ){
     Log.d("TestingIndivChatMessage",twitchUser.userType ?:"")
-    val iconXOffset = remember { mutableStateOf(0f) }
     val showIcon = remember { mutableStateOf(false) }
-    Log.d("DOUBLECLICKERS","RECOMP->${iconXOffset}")
+
 
     Column(
         modifier = Modifier.combinedClickable(
