@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.TextFieldValue
@@ -22,6 +23,8 @@ import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
+import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
@@ -285,6 +288,8 @@ fun StreamView(
             bottomModalState.show()
         }
     } }
+    val showTimeOutDialog = remember{ mutableStateOf(false) }
+    val showBanDialog = remember{ mutableStateOf(false) }
 
     ModalBottomSheetLayout(
                     sheetBackgroundColor = MaterialTheme.colorScheme.primary,
@@ -302,20 +307,48 @@ fun StreamView(
                             unbanUser = {
                               //  streamViewModel.unBanUser()
                                         },
-                            isMod = true,
+                            isMod = true
                             openTimeoutDialog = {
                               //  streamViewModel.openTimeoutDialog.value = true
+                                showTimeOutDialog.value = true
                                                 },
 
-                            openBanDialog = {  },
+                            openBanDialog = { showBanDialog.value = true },
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                             updateShouldMonitorUser = {
                                // streamViewModel.updateShouldMonitorUser()
-                            }
+                            },
+
                         )
                     }
     ){
         //this is where the chatUI goes
+
+        if(showTimeOutDialog.value){
+
+            ImprovedTimeoutDialog(
+                onDismissRequest ={
+                    showTimeOutDialog.value = false
+                },
+                username = streamViewModel.clickedUIState.value.clickedUsername,
+                timeOutUser={},
+                timeoutDuration=streamViewModel.state.value.timeoutDuration,
+                changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
+                timeoutReason=streamViewModel.state.value.timeoutReason,
+                changeTimeoutReason = {reason ->streamViewModel.changeTimeoutReason(reason)},
+            )
+        }
+        if(showBanDialog.value){
+            ImprovedBanDialog(
+                onDismissRequest ={
+                    showBanDialog.value = false
+                },
+                changeBanReason = {},
+                username = streamViewModel.clickedUIState.value.clickedUsername,
+                banUser  ={},
+                banReason = "",
+            )
+        }
         ChatUI(
             twitchUserChat = twitchUserChat,
             showBottomModal={
@@ -328,17 +361,15 @@ fun StreamView(
                     banned,
                     isMod
                 )
-
             },
+            showTimeoutDialog={
+                showTimeOutDialog.value = true
+            },
+            showBanDialog = {showBanDialog.value = true}
         )
    }
 
 
-}
-
-
-fun someNonScopedFunction() {
-    print("Do something")
 }
 
 

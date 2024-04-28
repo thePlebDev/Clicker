@@ -127,42 +127,42 @@ object BottomModal{
         updateShouldMonitorUser: () -> Unit,
         shouldMonitorUser:Boolean
     ){
-        BottomModalBuilders.BottomModalContent(
-
-            // TODO: this should 100% not be filteredChat. Need to create new variable
-            clickedUsernameChats = clickedUsernameChats,
-            timeoutDialogContent ={
-                if(timeOutDialogOpen){
-
-                }
-            },
-            banDialogContent ={
-                if(banDialogOpen){
-
-                }
-            },
-            clickedUsernameBanner ={
-                BottomModalParts.ContentBanner(
-                    clickedUsername = clickedUsername,
-                    bottomModalState = bottomModalState,
-                    textFieldValue = textFieldValue
-
-                )
-            },
-            clickedUserBottomBanner ={
-                BottomModalParts.ContentBottomPart(
-                    banned =banned,
-                    isMod =isMod,
-                    closeBottomModal ={closeBottomModal()},
-                    unbanUser ={unbanUser()},
-                    openTimeoutDialog={openTimeoutDialog()},
-                    openBanDialog ={openBanDialog()},
-                    updateShouldMonitorUser = {updateShouldMonitorUser()},
-                    shouldMonitorUser = shouldMonitorUser
-                )
-            }
-
-        )
+//        BottomModalBuilders.BottomModalContent(
+//
+//            // TODO: this should 100% not be filteredChat. Need to create new variable
+//            clickedUsernameChats = clickedUsernameChats,
+//            timeoutDialogContent ={
+//                if(timeOutDialogOpen){
+//
+//                }
+//            },
+//            banDialogContent ={
+//                if(banDialogOpen){
+//
+//                }
+//            },
+//            clickedUsernameBanner ={
+//                BottomModalParts.ContentBanner(
+//                    clickedUsername = clickedUsername,
+//                    bottomModalState = bottomModalState,
+//                    textFieldValue = textFieldValue
+//
+//                )
+//            },
+//            clickedUserBottomBanner ={
+//                BottomModalParts.ContentBottomPart(
+//                    banned =banned,
+//                    isMod =isMod,
+//                    closeBottomModal ={closeBottomModal()},
+//                    unbanUser ={unbanUser()},
+//                    openTimeoutDialog={openTimeoutDialog()},
+//                    openBanDialog ={openBanDialog()},
+//                    updateShouldMonitorUser = {updateShouldMonitorUser()},
+//                    shouldMonitorUser = shouldMonitorUser
+//                )
+//            }
+//
+//        )
     }
 
     /**
@@ -225,36 +225,10 @@ object BottomModal{
         openTimeoutDialog: () -> Unit,
         openBanDialog: () -> Unit,
         updateShouldMonitorUser: () -> Unit,
-        shouldMonitorUser:Boolean
+        shouldMonitorUser:Boolean,
+
 
     ){
-        var showTimeoutDialog by remember { mutableStateOf(true) }
-        var showBanDialog by remember { mutableStateOf(false) }
-        if(showTimeoutDialog){
-
-            ImprovedTimeoutDialog(
-                onDismissRequest ={
-                    showTimeoutDialog = false
-                },
-                changeTimeoutDuration={},
-                changeTimeoutReason = {},
-                username = "Bobberton42",
-                timeOutUser={},
-                timeoutDuration=60,
-                timeoutReason=""
-            )
-        }
-        if(showBanDialog){
-            ImprovedBanDialog(
-                onDismissRequest ={
-                    showBanDialog = false
-                },
-                changeBanReason = {},
-                username = "Bobberton42",
-                banUser  ={},
-                banReason = "",
-            )
-        }
 
 
         ImprovedBottomModal(
@@ -273,7 +247,9 @@ object BottomModal{
                     isMod =isMod,
                     closeBottomModal ={closeBottomModal()},
                     unbanUser ={unbanUser()},
-                    openTimeoutDialog={showTimeoutDialog = true},
+                    openTimeoutDialog={
+                        openTimeoutDialog()
+                    },
                     openBanDialog ={openBanDialog()},
                     updateShouldMonitorUser = {updateShouldMonitorUser()},
                     shouldMonitorUser = shouldMonitorUser
