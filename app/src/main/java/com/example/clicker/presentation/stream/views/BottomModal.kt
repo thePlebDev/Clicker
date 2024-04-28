@@ -28,8 +28,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
-import com.example.clicker.presentation.stream.views.dialogs.Dialogs
+import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
+import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 
 
 import kotlinx.coroutines.launch
@@ -129,43 +133,12 @@ object BottomModal{
             clickedUsernameChats = clickedUsernameChats,
             timeoutDialogContent ={
                 if(timeOutDialogOpen){
-                    Dialogs.TimeoutDialog(
-                        onDismissRequest = {
-                            closeTimeoutDialog()
-                        },
-                        username = clickedUsername,
-                        timeoutDuration = timeoutDuration,
-                        timeoutReason = timeoutReason,
-                        changeTimeoutDuration = { duration ->
-                            changeTimeoutDuration(duration)
-                        },
-                        changeTimeoutReason = { reason ->
-                            changeTimeoutReason(reason)
-                        },
-                        closeDialog = {
-                            closeDialog()
 
-                        },
-                        timeOutUser = {
-                            timeOutUser()
-                        }
-                    )
                 }
             },
             banDialogContent ={
                 if(banDialogOpen){
-                    Dialogs.BanDialog(
-                        onDismissRequest = {
-                            closeBanDialog()
-                        },
-                        username = clickedUsername,
-                        banReason = banReason,
-                        changeBanReason = { reason -> changeBanReason(reason) },
-                        banUser = {   banUser() },
-                        closeDialog = {
-                            closeBanDialog()
-                        },
-                    )
+
                 }
             },
             clickedUsernameBanner ={
@@ -255,6 +228,35 @@ object BottomModal{
         shouldMonitorUser:Boolean
 
     ){
+        var showTimeoutDialog by remember { mutableStateOf(false) }
+        var showBanDialog by remember { mutableStateOf(true) }
+        if(showTimeoutDialog){
+
+            ImprovedTimeoutDialog(
+                onDismissRequest ={
+                    showTimeoutDialog = false
+                },
+                changeTimeoutDuration={},
+                changeTimeoutReason = {},
+                username = "Bobberton42",
+                timeOutUser={},
+                timeoutDuration=4,
+                timeoutReason=""
+            )
+        }
+        if(showBanDialog){
+            ImprovedBanDialog(
+                onDismissRequest ={
+                    showBanDialog = false
+                },
+                changeBanReason = {},
+                username = "Bobberton42",
+                banUser  ={},
+                banReason = "",
+            )
+        }
+
+
         ImprovedBottomModal(
             clickedUsernameChats=clickedUsernameChats,
             clickedUsernameBanner ={
@@ -271,7 +273,7 @@ object BottomModal{
                     isMod =isMod,
                     closeBottomModal ={closeBottomModal()},
                     unbanUser ={unbanUser()},
-                    openTimeoutDialog={openTimeoutDialog()},
+                    openTimeoutDialog={showTimeoutDialog = true},
                     openBanDialog ={openBanDialog()},
                     updateShouldMonitorUser = {updateShouldMonitorUser()},
                     shouldMonitorUser = shouldMonitorUser
