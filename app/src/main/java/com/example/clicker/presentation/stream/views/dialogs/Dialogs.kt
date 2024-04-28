@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -36,11 +37,29 @@ import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.presentation.sharedViews.ButtonScope
 
 
+/**
+ * TimeListData is used inside of the dialogs to model the internal duration(sent to server) of the timeout/ban and the visual
+ * information shown to the user
+ *
+ * @param time a Int representing the data that is sent to the server
+ * @param textDescription a String representing the data that is shown to the user
+ * */
 data class TimeListData(
     val time:Int,
     val textDescription:String
 )
 
+/**
+ * ImprovedBanDialog is a composable that represents the dialog a user sees when they want to ban a user
+ * - UI demonstration of ImprovedBanDialog is [HERE](https://github.com/thePlebDev/Clicker/wiki/Dialogs#improvedbandialog)
+ *
+ * @param onDismissRequest a function that is used to close this dialog
+ * @param username a String representing the display name for the user that this dialog will affect
+ * @param banReason a String representing the reason that this user is going to get banned
+ * @param changeBanReason a function used to change the [banReason]
+ * @param banUser a function that is used to make the server call to twitch to ban the user
+
+ * */
 @Composable
 fun ImprovedBanDialog(
     onDismissRequest: () -> Unit,
@@ -58,7 +77,7 @@ fun ImprovedBanDialog(
     val onSecondary = MaterialTheme.colorScheme.onSecondary
     DialogBuilder(
         dialogHeaderContent = {
-            DialogHeader(
+            DialogHeaderRow(
                 username,
                 stringResource(R.string.ban)
             )
@@ -69,7 +88,7 @@ fun ImprovedBanDialog(
             )
         },
         dialogRadioButtonsContent = {
-           DialogRadioButtons(
+            DialogRadioButtonsRow(
                 dialogDuration = 0,
                 changeDialogDuration = {},
                 timeList = timeList
@@ -93,7 +112,6 @@ fun ImprovedBanDialog(
         dialogConfirmCancelContent = {
            DialogConfirmCancelButtonRow(
                 onDismissRequest = { onDismissRequest() },
-                closeDialog = { onDismissRequest() },
                 cancelText = stringResource(R.string.cancel),
                 confirmText = stringResource(R.string.ban),
                 confirmAction = {
@@ -109,6 +127,20 @@ fun ImprovedBanDialog(
         )
 
 }
+
+/**
+ * ImprovedTimeoutDialog is a composable that represents the dialog a user sees when they want to timeout a user
+ * - UI demonstration of ImprovedTimeoutDialog is [HERE](https://github.com/thePlebDev/Clicker/wiki/Dialogs#improvedtimeoutdialog)
+ *
+ * @param onDismissRequest a function that is used to close this dialog
+ * @param username a String representing the display name for the user that this dialog will affect
+ * @param timeoutReason a String representing the reason that this user is going to get banned
+ * @param changeTimeoutReason a function used to change the [timeoutReason]
+ * @param timeoutDuration a Int used to represent what the current timeout duration
+ * @param changeTimeoutDuration a function used to change the [timeoutDuration] duration
+ * @param timeOutUser a function that is used to make the server call to Twitch to timeout the user
+
+ * */
 @Composable
 fun ImprovedTimeoutDialog(
     onDismissRequest: () -> Unit,
@@ -132,7 +164,7 @@ fun ImprovedTimeoutDialog(
     )
     DialogBuilder(
         dialogHeaderContent = {
-            DialogHeader(
+            DialogHeaderRow(
                 username,
                 stringResource(R.string.timeout_text),
             )
@@ -143,14 +175,14 @@ fun ImprovedTimeoutDialog(
             )
         },
         dialogRadioButtonsContent = {
-            DialogRadioButtons(
+            DialogRadioButtonsRow(
                 dialogDuration = timeoutDuration,
                 changeDialogDuration = { duration -> changeTimeoutDuration(duration) },
                 timeList = timeList
             )
         },
         dialogTextFieldContent = {
-            DialogTextField(
+            DialogOutlinedTextField(
                 timeoutReason = timeoutReason,
                 changeTimeoutReason = { changeTimeoutReason(it) },
             )
@@ -158,7 +190,6 @@ fun ImprovedTimeoutDialog(
         dialogConfirmCancelContent = {
             DialogConfirmCancelButtonRow(
                 onDismissRequest = { onDismissRequest() },
-                closeDialog = { onDismissRequest() },
                 confirmAction = { timeOutUser() },
                 confirmText = stringResource(R.string.timeout_confirm),
                 cancelText = stringResource(R.string.cancel)
@@ -173,19 +204,27 @@ fun ImprovedTimeoutDialog(
 
 }
 
+/**
+ * DialogBuilder is a private function that is used to quickly and consistently create properly styled [Dialog] composables
+ * */
 @Composable
 private fun DialogBuilder(
-    dialogHeaderContent:@Composable ImprovedDialog.() -> Unit,
-    dialogSubHeaderContent:@Composable ImprovedDialog.() -> Unit,
-    dialogRadioButtonsContent:@Composable ImprovedDialog.() -> Unit,
-    dialogTextFieldContent:@Composable ImprovedDialog.() -> Unit,
-    dialogConfirmCancelContent:@Composable ImprovedDialog.() -> Unit,
+    dialogHeaderContent:@Composable ImprovedDialogScope.() -> Unit,
+    dialogSubHeaderContent:@Composable ImprovedDialogScope.() -> Unit,
+    dialogRadioButtonsContent:@Composable ImprovedDialogScope.() -> Unit,
+    dialogTextFieldContent:@Composable ImprovedDialogScope.() -> Unit,
+    dialogConfirmCancelContent:@Composable ImprovedDialogScope.() -> Unit,
     onDismissRequest: () -> Unit,
     primary: Color,
     onPrimary: Color,
-    secondary: Color
+    secondary: Color,
+
 ){
-    val dialogScope = remember{ImprovedDialog(onPrimary,secondary)}
+    val largeFontSize = MaterialTheme.typography.headlineLarge.fontSize
+    val mediumFontSize = MaterialTheme.typography.headlineMedium.fontSize
+    val dialogScope = remember{
+        ImprovedDialogScope(onPrimary,secondary,largeFontSize,mediumFontSize)
+    }
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
@@ -213,14 +252,36 @@ private fun DialogBuilder(
 
 }
 
+/**
+ * ImprovedDialogScope is a private class that contains all the composables that are used to create Dialogs inside of this application
+ *
+ * @param onPrimary a [Color] that is used to show information that is on a dark background
+ * @param secondary a [Color] that is represents a purple color and is used to highlight non-primary information
+ *
+ * @property DialogHeaderRow
+ * @property SubHeader
+ * @property DialogRadioButtonsRow
+ * @property DialogOutlinedTextField
+ * @property DialogConfirmCancelButtonRow
+ * */
 @Stable
-private class ImprovedDialog(
+private class ImprovedDialogScope(
     val onPrimary: Color,
-    val secondary: Color
+    val secondary: Color,
+    val largeFontSize:TextUnit,
+    val mediumFontSize:TextUnit,
 ){
 
+    /**
+     * DialogHeaderRow is a [Row] composable that is meant to show the user very important information.
+     * [username] and [headerText] are shown to the user in the largest possible font size, `MaterialTheme.typography.headlineLarge.fontSize`
+     *
+     * @param username the display name of the user the dialog is about
+     * @param headerText the direct information that is meant to be shown to the user of this dialog, ie, `Timeout`/`Ban`.
+     *
+     * */
     @Composable
-    fun DialogHeader(
+    fun DialogHeaderRow(
         username:String,
         headerText:String,
     ){
@@ -229,21 +290,39 @@ private class ImprovedDialog(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text(headerText, fontSize = MaterialTheme.typography.headlineLarge.fontSize,color = onPrimary)
-            Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize,color = onPrimary)
+            Text(headerText, fontSize = largeFontSize,color = onPrimary)
+            Text(username, fontSize = largeFontSize,color = onPrimary)
         }
     }
 
+    /**
+     * SubHeader is a composable that is meant to display information that is meant to be `secondary`. Information that is
+     * not as important as the information displayed in [DialogHeaderRow]
+     *
+     * @param subTitleText a String representing a small amount of information displayed to the user
+     *
+     * */
     @Composable
     fun SubHeader(
         subTitleText:String
     ){
         Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-        Text(subTitleText,color = onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Text(subTitleText,color = onPrimary, fontSize = mediumFontSize)
     }
 
+
+
+    /**
+     * DialogRadioButtonsRow a [Row] composable will show the a number of [RadioButton] composables
+     *
+     * @param dialogDuration a Int used to determine what [RadioButton] is currently selected
+     * @param changeDialogDuration a function used to change the [dialogDuration]
+     * @param timeList a list of [TimeListData] objects. The length of this list will determine the number of
+     * [RadioButton] composables
+     *
+     * */
     @Composable
-    fun DialogRadioButtons(
+    fun DialogRadioButtonsRow(
         dialogDuration: Int,
         changeDialogDuration: (Int) -> Unit,
         timeList:List<TimeListData>,
@@ -266,8 +345,17 @@ private class ImprovedDialog(
             }
         }
     }
+
+    /**
+     * DialogOutlinedTextField a [OutlinedTextField] composables that is used to capture user input
+     *
+
+     * @param timeoutReason a String meant ot represent the reason the dialog is being used
+     * @param changeTimeoutReason a function used to change [timeoutReason]
+     *
+     * */
     @Composable
-    fun DialogTextField(
+    fun DialogOutlinedTextField(
         timeoutReason:String,
         changeTimeoutReason: (String) -> Unit
     ){
@@ -287,10 +375,20 @@ private class ImprovedDialog(
             modifier = Modifier.fillMaxWidth()
         )
     }
+
+    /**
+     * DialogConfirmCancelButtonRow a
+     *
+
+     * @param onDismissRequest a function that is used to close the current dialog
+     * @param confirmAction a function that is used to confirm the action of the current dialog
+     * @param cancelText a String meant to represent the cancelation of the dialogs intended action.
+     * @param confirmText a String meant to represent the confirmation of the dialogs intended action.
+     *
+     * */
     @Composable
     fun DialogConfirmCancelButtonRow(
         onDismissRequest: () -> Unit,
-        closeDialog: () -> Unit,
         confirmAction: () -> Unit,
         cancelText:String,
         confirmText:String
@@ -310,7 +408,7 @@ private class ImprovedDialog(
                 this.Button(
                     text =confirmText,
                     onClick = {
-                        closeDialog()
+                        onDismissRequest()
                         confirmAction()
                     },
 

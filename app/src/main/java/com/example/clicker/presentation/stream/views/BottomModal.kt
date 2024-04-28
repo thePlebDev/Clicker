@@ -228,8 +228,8 @@ object BottomModal{
         shouldMonitorUser:Boolean
 
     ){
-        var showTimeoutDialog by remember { mutableStateOf(false) }
-        var showBanDialog by remember { mutableStateOf(true) }
+        var showTimeoutDialog by remember { mutableStateOf(true) }
+        var showBanDialog by remember { mutableStateOf(false) }
         if(showTimeoutDialog){
 
             ImprovedTimeoutDialog(
@@ -240,7 +240,7 @@ object BottomModal{
                 changeTimeoutReason = {},
                 username = "Bobberton42",
                 timeOutUser={},
-                timeoutDuration=4,
+                timeoutDuration=60,
                 timeoutReason=""
             )
         }
