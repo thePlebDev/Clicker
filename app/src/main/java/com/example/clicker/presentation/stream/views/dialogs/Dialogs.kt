@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -21,6 +23,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -359,21 +362,28 @@ private class ImprovedDialogScope(
         timeoutReason:String,
         changeTimeoutReason: (String) -> Unit
     ){
-        OutlinedTextField(
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = onPrimary,
-                focusedLabelColor = onPrimary,
-                focusedIndicatorColor = onPrimary,
-                unfocusedIndicatorColor = onPrimary,
-                unfocusedLabelColor = onPrimary
-            ),
-            value = timeoutReason,
-            onValueChange = { changeTimeoutReason(it) },
-            label = {
-                Text(stringResource(R.string.reason))
-                    },
-            modifier = Modifier.fillMaxWidth()
+        val customTextSelectionColors = TextSelectionColors(
+            handleColor = MaterialTheme.colorScheme.secondary,
+            backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
         )
+        CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+            OutlinedTextField(
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = onPrimary,
+                    focusedLabelColor = onPrimary,
+                    focusedIndicatorColor = onPrimary,
+                    unfocusedIndicatorColor = onPrimary,
+                    unfocusedLabelColor = onPrimary
+                ),
+                value = timeoutReason,
+                onValueChange = { changeTimeoutReason(it) },
+                label = {
+                    Text(stringResource(R.string.reason))
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
     }
 
     /**

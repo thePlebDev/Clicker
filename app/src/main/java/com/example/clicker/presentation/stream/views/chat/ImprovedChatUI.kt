@@ -71,6 +71,8 @@ fun ChatUI(
     twitchUserChat: List<TwitchUserData>,
     showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -89,6 +91,8 @@ fun ChatUI(
                 twitchUserChat=twitchUserChat,
                 autoscroll=autoscroll,
                 showBottomModal={showBottomModal()},
+                showTimeoutDialog={showTimeoutDialog()},
+                showBanDialog={showBanDialog()},
                 updateClickedUser = {  username, userId,isBanned,isMod ->
                     updateClickedUser(
                         username,
@@ -176,6 +180,8 @@ private class ImprovedChatUI(){
         twitchUserChat: List<TwitchUserData>,
         autoscroll:Boolean,
         showBottomModal:()->Unit,
+        showTimeoutDialog:()->Unit,
+        showBanDialog:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     ){
         val coroutineScope = rememberCoroutineScope()
@@ -201,7 +207,9 @@ private class ImprovedChatUI(){
                             isBanned,
                             isMod
                         )
-                    }
+                    },
+                    showTimeoutDialog ={showTimeoutDialog()},
+                    showBanDialog={showBanDialog()}
 
                 )
 
@@ -215,12 +223,13 @@ private class ImprovedChatUI(){
         twitchChatMessage: TwitchUserData,
         showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        showTimeoutDialog:()->Unit,
+        showBanDialog:()->Unit,
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
         val errorScope = remember(){ ErrorScope(messageFontSize) }
-        var showTimeoutDialog = remember(){ false}
         val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
         if(color.value == Color.Black){
             color.value = MaterialTheme.colorScheme.primary
@@ -257,11 +266,29 @@ private class ImprovedChatUI(){
                         },
                         quarterSwipeLeftAction={
                             Log.d("quarterSwipeLeftAction","Cclicked")
-                            showTimeoutDialog = true
+                            if(twitchChatMessage.mod != "1"){
+                                updateClickedUser(
+                                    twitchChatMessage.displayName?:"",
+                                    twitchChatMessage.userId?:"",
+                                    twitchChatMessage.banned,
+                                    twitchChatMessage.mod == "1"
+                                )
+                                showTimeoutDialog()
+                            }
+
                         },
                         quarterSwipeRightAction={
                             Log.d("quarterSwipeLeftAction","Cclicked")
-                            showTimeoutDialog = true
+                            if(twitchChatMessage.mod != "1"){
+                                updateClickedUser(
+                                    twitchChatMessage.displayName?:"",
+                                    twitchChatMessage.userId?:"",
+                                    twitchChatMessage.banned,
+                                    twitchChatMessage.mod == "1"
+                                )
+                                showBanDialog()
+                            }
+
                         },
                         swipeEnabled = true,
                         twoSwipeOnly= false
