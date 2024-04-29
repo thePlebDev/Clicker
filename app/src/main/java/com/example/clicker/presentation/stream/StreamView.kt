@@ -307,7 +307,7 @@ fun StreamView(
                             unbanUser = {
                               //  streamViewModel.unBanUser()
                                         },
-                            isMod = true
+                            isMod = true,
                             openTimeoutDialog = {
                               //  streamViewModel.openTimeoutDialog.value = true
                                 showTimeOutDialog.value = true
@@ -331,7 +331,9 @@ fun StreamView(
                     showTimeOutDialog.value = false
                 },
                 username = streamViewModel.clickedUIState.value.clickedUsername,
-                timeOutUser={},
+                timeOutUser={
+                            streamViewModel.timeoutUser()
+                },
                 timeoutDuration=streamViewModel.state.value.timeoutDuration,
                 changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
                 timeoutReason=streamViewModel.state.value.timeoutReason,
@@ -345,7 +347,9 @@ fun StreamView(
                 },
                 changeBanReason = {},
                 username = streamViewModel.clickedUIState.value.clickedUsername,
-                banUser  ={},
+                banUser  ={
+                          streamViewModel.banUser()
+                },
                 banReason = "",
             )
         }

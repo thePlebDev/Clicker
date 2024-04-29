@@ -40,6 +40,7 @@ class ParsingEngine @Inject constructor() {
         if (channelNameFound == null) {
             return banUserParsing(text)
         } else {
+            Log.d("noticeParsingTHings", "clearChatParsing() Global Id used -->$text")
             return clearChatParsing()
         }
     }
@@ -155,6 +156,7 @@ class ParsingEngine @Inject constructor() {
      * @return a [TwitchUserData] used to notify the user that they have connected to a streamer's chat room
      */
     fun createJoinObject(): TwitchUserData {
+
         globalId += 1
         return TwitchUserDataObjectMother.addColor("#000000")
             .addDisplayName("Room update")
@@ -166,7 +168,7 @@ class ParsingEngine @Inject constructor() {
 
     fun noticeParsing(text: String, streamerChannelName: String): TwitchUserData {
         globalId += 1
-        Log.d("noticeParsingTHings",text)
+        Log.d("noticeParsingTHings", "noticeParsing() Global Id used -->$text")
         if(text.contains("NOTICE *")){
             val regexPattern ="(NOTICE \\* :)(.+)".toRegex()
             val matchedPattern= regexPattern.find(text)?.groupValues?.get(2) ?: "Room information updated"

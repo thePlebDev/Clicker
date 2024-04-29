@@ -352,7 +352,6 @@ private class ImprovedDialogScope(
     /**
      * DialogOutlinedTextField a [OutlinedTextField] composables that is used to capture user input
      *
-
      * @param timeoutReason a String meant ot represent the reason the dialog is being used
      * @param changeTimeoutReason a function used to change [timeoutReason]
      *

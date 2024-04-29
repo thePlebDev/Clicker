@@ -93,7 +93,6 @@ data class StreamUIState(
     val timeoutUserError:Boolean = false,
     val banUserError:Boolean = false,
 
-
     val banDuration: Int = 0, //twitchRepoImpl
     val banReason: String = "", //twitchRepoImpl
     val timeoutDuration: Int = 60, //twitchRepoImpl
