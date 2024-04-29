@@ -225,7 +225,7 @@ class TwitchWebSocket @Inject constructor(
                     _state.tryEmit(parsedTwitchUserData)
                 }
                 MessageType.CLEARCHAT ->{
-                    _state.tryEmit(parsedTwitchUserData)
+                  //  _state.tryEmit(parsedTwitchUserData)
                     _latestBannedUserId.tryEmit(parsedTwitchUserData.id)
                 }
                 else->{
@@ -248,6 +248,7 @@ class TwitchWebSocket @Inject constructor(
         }
 
         if (text.contains(" JOIN ")) {
+            Log.d("noticeParsingTHings", "createJoinObject() Global Id used -->$text")
             val joinObject = twitchParsingEngine.createJoinObject()
             _state.tryEmit(joinObject)
         }
