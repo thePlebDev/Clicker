@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
@@ -32,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,6 +48,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,10 @@ import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.CheckIfUserDeleted
 import com.example.clicker.presentation.stream.views.CheckIfUserIsBanned
 import com.example.clicker.presentation.stream.views.DualIconsButton
+import com.example.clicker.presentation.stream.views.FilteredMentionLazyRow
+import com.example.clicker.presentation.stream.views.ShowIconBasedOnTextLength
+import com.example.clicker.presentation.stream.views.ShowModStatus
+import com.example.clicker.presentation.stream.views.StylizedTextField
 import com.example.clicker.presentation.stream.views.TextWithChatBadges
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
@@ -74,6 +81,17 @@ fun ChatUI(
     showTimeoutDialog:()->Unit,
     showBanDialog:()->Unit,
     doubleClickMessage:(String)->Unit,
+    //below is what is needed for the chat UI
+    filteredChatList: List<String>,
+    textFieldValue: MutableState<TextFieldValue>,
+    clickedAutoCompleteText: (String) -> Unit,
+    modStatus: Boolean?,
+    sendMessageToWebSocket: (String) -> Unit,
+    showModal: () -> Unit,
+    showOuterBottomModalState:() ->Unit,
+    newFilterMethod:(TextFieldValue) ->Unit,
+    orientationIsVertical:Boolean,
+    notificationAmount:Int
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -86,7 +104,7 @@ fun ChatUI(
                 setAutoScrollTrue = { autoscroll = true },
             )
         },
-        chatUI={
+        chatUI={modifier ->
             ChatUILazyColumn(
                 lazyColumnListState=lazyColumnListState,
                 twitchUserChat=twitchUserChat,
@@ -102,7 +120,8 @@ fun ChatUI(
                         isMod
                     )
                 },
-                doubleClickMessage={username ->doubleClickMessage(username)}
+                doubleClickMessage={username ->doubleClickMessage(username)},
+                modifier=modifier
 
             )
         },
@@ -113,6 +132,45 @@ fun ChatUI(
                 modifier = modifier
             )
         },
+        enterChat = {modifier ->
+            EnterChatColumn(
+                modifier = modifier,
+                filteredRow = {
+                    FilteredMentionLazyRow(
+                        filteredChatList = filteredChatList,
+                        clickedAutoCompleteText = { username ->
+                            clickedAutoCompleteText(
+                                username
+                            )
+                        }
+                    )
+                },
+                showModStatus = {
+                    ShowModStatus(
+                        modStatus =modStatus,
+                        showOuterBottomModalState={showOuterBottomModalState()},
+                        orientationIsVertical =orientationIsVertical,
+                        notificationAmount=notificationAmount
+                    )
+                },
+                stylizedTextField ={boxModifier ->
+                    StylizedTextField(
+                        modifier = boxModifier,
+                        textFieldValue = textFieldValue,
+                        newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
+
+                        )
+                },
+                showIconBasedOnTextLength ={
+                    ShowIconBasedOnTextLength(
+                        textFieldValue =textFieldValue,
+                        chat = {item -> sendMessageToWebSocket(item)},
+                        showModal ={showModal()}
+                    )
+                },
+            )
+
+        }
 
         )
 }
@@ -120,15 +178,26 @@ fun ChatUI(
 @Composable
  private fun ChatUIBox(
     determineScrollState: @Composable ImprovedChatUI.() -> Unit,
-    chatUI: @Composable ImprovedChatUI.() -> Unit,
+    chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
+    enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
 ){
     val chatUIScope = remember(){ ImprovedChatUI() }
     with(chatUIScope){
         Box(modifier = Modifier.fillMaxSize()){
+            Column(Modifier.fillMaxSize()) {
+
+                chatUI(modifier =Modifier.weight(1f))
+                enterChat(
+                    Modifier
+                        .fillMaxWidth(),
+                )
+            }
             determineScrollState()
-            chatUI()
-            scrollToBottom(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 30.dp))
+
+            scrollToBottom(modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 60.dp))
         }
     }
 
@@ -186,9 +255,11 @@ private class ImprovedChatUI(){
         showBanDialog:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         doubleClickMessage:(String)->Unit,
+        modifier: Modifier
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
+            modifier =modifier,
             state = lazyColumnListState
         ){
             coroutineScope.launch {
@@ -472,7 +543,9 @@ fun DoubleClickSeemsGoodIcon(){
     LaunchedEffect(true){
         size.animateTo(40f)
     }
-    Box(modifier = Modifier.fillMaxWidth().padding(end=30.dp)){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(end = 30.dp)){
         AsyncImage(
             model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
             contentDescription = stringResource(R.string.moderator_badge_icon_description),
@@ -616,4 +689,30 @@ fun HorizontalDragDetectionBox(
     }
 
 
+}
+
+/**
+ * This is the entire chat textfield with the filtered row above it
+ * */
+@Composable
+fun EnterChatColumn(
+    modifier: Modifier,
+    filteredRow:@Composable () -> Unit,
+    showModStatus:@Composable () -> Unit,
+    stylizedTextField:@Composable (modifier:Modifier) -> Unit,
+    showIconBasedOnTextLength:@Composable () -> Unit,
+) {
+
+    Column(
+        modifier = modifier.background(MaterialTheme.colorScheme.primary)
+
+    ) {
+        filteredRow()
+        Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
+            verticalAlignment = Alignment.CenterVertically){
+            showModStatus()
+            stylizedTextField(modifier = Modifier.weight(2f))
+            showIconBasedOnTextLength()
+        }
+    }
 }
