@@ -384,6 +384,11 @@ class StreamViewModel @Inject constructor(
         }
 
     }
+    fun sendDoubleTapEmote(username:String){
+        if(username.isNotEmpty()){
+            webSocket.sendMessage("@$username SeemsGood")
+        }
+    }
 
 
     //TWITCH METHOD

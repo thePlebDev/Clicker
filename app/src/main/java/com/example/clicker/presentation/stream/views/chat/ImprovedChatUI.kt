@@ -73,6 +73,7 @@ fun ChatUI(
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     showTimeoutDialog:()->Unit,
     showBanDialog:()->Unit,
+    doubleClickMessage:(String)->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -100,7 +101,8 @@ fun ChatUI(
                         isBanned,
                         isMod
                     )
-                }
+                },
+                doubleClickMessage={username ->doubleClickMessage(username)}
 
             )
         },
@@ -183,6 +185,7 @@ private class ImprovedChatUI(){
         showTimeoutDialog:()->Unit,
         showBanDialog:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        doubleClickMessage:(String)->Unit,
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -209,7 +212,8 @@ private class ImprovedChatUI(){
                         )
                     },
                     showTimeoutDialog ={showTimeoutDialog()},
-                    showBanDialog={showBanDialog()}
+                    showBanDialog={showBanDialog()},
+                    doubleClickMessage={username ->doubleClickMessage(username)}
 
                 )
 
@@ -225,6 +229,7 @@ private class ImprovedChatUI(){
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         showTimeoutDialog:()->Unit,
         showBanDialog:()->Unit,
+        doubleClickMessage:(String)->Unit,
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -261,7 +266,8 @@ private class ImprovedChatUI(){
                                         isMod
                                     )
                                 },
-                                offset = if (twitchChatMessage.mod != "1") dragOffset else 0f
+                                offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
+                                doubleClickMessage ={username ->doubleClickMessage(username)}
                             )
                         },
                         quarterSwipeLeftAction={
@@ -402,7 +408,7 @@ fun ClickableCard(
     showBottomModal:()->Unit,
     fontSize: TextUnit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-
+    doubleClickMessage:(String)->Unit,
 
 
     ){
@@ -415,6 +421,7 @@ fun ClickableCard(
             enabled = true,
             onDoubleClick = {
                 showIcon.value = true
+                doubleClickMessage(twitchUser.displayName?:"")
             },
             onClick = {
                 updateClickedUser(

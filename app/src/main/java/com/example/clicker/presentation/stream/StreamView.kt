@@ -369,7 +369,8 @@ fun StreamView(
             showTimeoutDialog={
                 showTimeOutDialog.value = true
             },
-            showBanDialog = {showBanDialog.value = true}
+            showBanDialog = {showBanDialog.value = true},
+            doubleClickMessage={username->streamViewModel.sendDoubleTapEmote(username)}
         )
    }
 
