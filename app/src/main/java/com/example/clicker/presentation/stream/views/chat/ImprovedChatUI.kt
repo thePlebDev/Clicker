@@ -269,7 +269,6 @@ private class ImprovedChatUI(){
             }
             items(
                 twitchUserChat,
-                key = { item -> item.id ?:"" }
             ) {indivChatMessage ->
                 ChatMessages(
                     indivChatMessage,
