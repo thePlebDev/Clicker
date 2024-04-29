@@ -42,7 +42,7 @@ fun StreamView(
 //    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
 //    val chatSettingData = streamViewModel.state.value.chatSettings
 //    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-//    val filteredChat = streamViewModel.filteredChatList
+    val filteredChat = streamViewModel.filteredChatList
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
     val scope = rememberCoroutineScope()
 //    var showAdvancedChatSettings by remember { mutableStateOf(true) }
@@ -196,17 +196,17 @@ fun StreamView(
 ////                            TextChat(
 ////                                notificationAmount =notificationAmount,
 ////                                twitchUserChat = twitchUserChat,
-////                                sendMessageToWebSocket = { string ->
-////                                    streamViewModel.sendMessage(string)
-////                                },
-////
-////                                modStatus = modStatus,
-////                                bottomModalState = bottomModalState,
-////                                filteredChatList = filteredChat,
-////                                clickedAutoCompleteText = { username ->
-////                                    streamViewModel.autoTextChange(username)
-////                                },
-////
+//                                sendMessageToWebSocket = { string ->
+//                                    streamViewModel.sendMessage(string)
+//                                },
+//
+//                                modStatus = modStatus,
+//                                bottomModalState = bottomModalState,
+//                                filteredChatList = filteredChat,
+//                                clickedAutoCompleteText = { username ->
+//                                    streamViewModel.autoTextChange(username)
+//                                },
+//
 ////                                addChatter = { username, message ->
 ////                                    streamViewModel.addChatter(
 ////                                        username,
@@ -237,31 +237,31 @@ fun StreamView(
 ////                                closeStickyHeader = { streamViewModel.closeStickyHeader() },
 ////                                banResponseMessage = streamViewModel.state.value.banResponseMessage,
 ////                                restartWebSocket = { streamViewModel.restartWebSocket() },
-////                                showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
-////                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
-////                                showOuterBottomModalState = {
-////                                    scope.launch {
-////                                        showAdvancedChatSettings = false
-////                                        drawerState.open()
-////                                    }
-////                                },
-////                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-////                                forwardSlashCommands = streamViewModel.forwardSlashCommands,
-////                                clickedCommandAutoCompleteText={ command ->
-////                                    streamViewModel.autoTextChangeCommand(
-////                                        command
-////                                    )
-////                                },
-////                                toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
-////                                toggleBanDialog={streamViewModel.openBanDialog.value = true},
-////                                openSideDrawer={
-////                                    scope.launch {
-////                                        showAdvancedChatSettings = true
-////                                        drawerState.open()
-////                                    }
-////                                },
-////                                orientationIsVertical =true
-////                            )
+//                                showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
+//                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
+//                                showOuterBottomModalState = {
+//                                    scope.launch {
+//                                        showAdvancedChatSettings = false
+//                                        drawerState.open()
+//                                    }
+//                                },
+//                                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+//                                forwardSlashCommands = streamViewModel.forwardSlashCommands,
+//                                clickedCommandAutoCompleteText={ command ->
+//                                    streamViewModel.autoTextChangeCommand(
+//                                        command
+//                                    )
+//                                },
+//                                toggleTimeoutDialog={streamViewModel.openTimeoutDialog.value = true},
+//                                toggleBanDialog={streamViewModel.openBanDialog.value = true},
+//                                openSideDrawer={
+//                                    scope.launch {
+//                                        showAdvancedChatSettings = true
+//                                        drawerState.open()
+//                                    }
+//                                },
+//                                orientationIsVertical =true
+//                            )
 ////                            VerticalOverlayView(
 ////                                channelName = streamViewModel.clickedStreamInfo.value.channelName,
 ////                                streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
@@ -287,6 +287,10 @@ fun StreamView(
         scope.launch {
             bottomModalState.show()
         }
+    } }
+
+    val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
+        streamViewModel.sendDoubleTapEmote(it)
     } }
     val showTimeOutDialog = remember{ mutableStateOf(false) }
     val showBanDialog = remember{ mutableStateOf(false) }
@@ -324,35 +328,27 @@ fun StreamView(
     ){
         //this is where the chatUI goes
 
-        if(showTimeOutDialog.value){
+        //todo:this is the dialogs
+        TimeoutBanDialogs(
+            showTimeOutDialog =showTimeOutDialog.value,
+            username = streamViewModel.clickedUIState.value.clickedUsername,
+            timeoutUser={
+                streamViewModel.timeoutUser()
+            },
+            timeoutDuration=streamViewModel.state.value.timeoutDuration,
+            closeTimeoutDialog = {showTimeOutDialog.value = false},
+            changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
+            timeoutReason=streamViewModel.state.value.timeoutReason,
+            changeTimeoutReason = {reason ->streamViewModel.changeTimeoutReason(reason)},
+            showBanDialog =showBanDialog.value,
+            changeBanReason = {newReason -> streamViewModel.changeBanReason(newReason)},
+            banUser  ={
+                streamViewModel.banUser()
+            },
+            closeBanDialog = {showBanDialog.value = false},
+            banReason = streamViewModel.state.value.banReason,
+        )
 
-            ImprovedTimeoutDialog(
-                onDismissRequest ={
-                    showTimeOutDialog.value = false
-                },
-                username = streamViewModel.clickedUIState.value.clickedUsername,
-                timeOutUser={
-                            streamViewModel.timeoutUser()
-                },
-                timeoutDuration=streamViewModel.state.value.timeoutDuration,
-                changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
-                timeoutReason=streamViewModel.state.value.timeoutReason,
-                changeTimeoutReason = {reason ->streamViewModel.changeTimeoutReason(reason)},
-            )
-        }
-        if(showBanDialog.value){
-            ImprovedBanDialog(
-                onDismissRequest ={
-                    showBanDialog.value = false
-                },
-                changeBanReason = {},
-                username = streamViewModel.clickedUIState.value.clickedUsername,
-                banUser  ={
-                          streamViewModel.banUser()
-                },
-                banReason = "",
-            )
-        }
         ChatUI(
             twitchUserChat = twitchUserChat,
             showBottomModal={
@@ -370,11 +366,84 @@ fun StreamView(
                 showTimeOutDialog.value = true
             },
             showBanDialog = {showBanDialog.value = true},
-            doubleClickMessage={username->streamViewModel.sendDoubleTapEmote(username)}
+            doubleClickMessage={ username->
+                doubleClickChat(username)
+                               },
+
+            showOuterBottomModalState = {
+                scope.launch {
+
+                }
+            },
+            newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+
+            orientationIsVertical =true,
+
+            modStatus = true,
+            filteredChatList = filteredChat,
+            clickedAutoCompleteText = { username ->
+                streamViewModel.autoTextChange(username)
+            },
+            showModal = {  },
+            notificationAmount =notificationAmount,
+            textFieldValue = streamViewModel.textFieldValue,
+            sendMessageToWebSocket = { string ->
+                streamViewModel.sendMessage(string)
+            },
         )
    }
 
 
+}
+
+@Composable
+fun TimeoutBanDialogs(
+    showTimeOutDialog:Boolean,
+    closeTimeoutDialog:()->Unit,
+    timeoutDuration:Int,
+    changeTimeoutDuration:(Int)->Unit,
+    timeoutReason:String,
+    changeTimeoutReason: (String) -> Unit,
+    timeoutUser:()->Unit,
+    username:String,
+
+    showBanDialog:Boolean,
+    closeBanDialog:()->Unit,
+    banReason:String,
+    changeBanReason:(String)->Unit,
+    banUser:()->Unit,
+){
+    if(showTimeOutDialog){
+
+        ImprovedTimeoutDialog(
+            onDismissRequest ={
+                closeTimeoutDialog()
+            },
+            username = username,
+            timeOutUser={
+                timeoutUser()
+            },
+            timeoutDuration=timeoutDuration,
+            changeTimeoutDuration={newDuration -> changeTimeoutDuration(newDuration) },
+            timeoutReason=timeoutReason,
+            changeTimeoutReason = {reason ->changeTimeoutReason(reason)},
+        )
+    }
+    if(showBanDialog){
+        ImprovedBanDialog(
+            onDismissRequest ={
+                closeBanDialog()
+            },
+            changeBanReason = {reason ->
+                changeBanReason(reason)
+            },
+            username = username,
+            banUser  ={
+                banUser()
+            },
+            banReason = banReason,
+        )
+    }
 }
 
 
