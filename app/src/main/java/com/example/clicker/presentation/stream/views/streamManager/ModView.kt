@@ -74,6 +74,10 @@ import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.sharedViews.ButtonScope
+import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
+import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
+import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
+import com.example.clicker.presentation.stream.views.chat.SubscriberOnlySwitch
 import com.example.clicker.util.Response
 
 /**
@@ -544,8 +548,6 @@ import com.example.clicker.util.Response
                 deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)}
             )
 
-
-
             }
     }
 
@@ -676,228 +678,14 @@ import com.example.clicker.util.Response
     }
 
 
-    @Composable
-    fun FollowersOnlyCheck(
-        setExpanded: (Boolean) -> Unit,
-        chatSettingsEnabled:Boolean,
-        followersOnlyList: List<ListTitleValue>,
-        selectedFollowersModeItem:ListTitleValue,
-        changeSelectedFollowersModeItem:(ListTitleValue)->Unit,
-    ){
-        DropdownMenuItem(
-            onClick = {
-                setExpanded(false)
-            },
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Icon(imageVector =Icons.Default.Favorite, contentDescription ="Emote icon" )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Followers-only chat", color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                   // Text("Off", color = MaterialTheme.colorScheme.onPrimary)
-                    EmbeddedDropDownMenu(
-                        titleList =followersOnlyList,
-                        selectedItem = selectedFollowersModeItem,
-                        changeSelectedItem = {selectedItem ->changeSelectedFollowersModeItem(selectedItem)},
-                        chatSettingsEnabled =chatSettingsEnabled
-                    )
-                }
-            }
-        )
-    }
-
-    @Composable
-    fun EmbeddedDropDownMenu(
-        titleList: List<ListTitleValue>, //this is the list shown to the user
-        selectedItem:ListTitleValue,
-        changeSelectedItem:(ListTitleValue)->Unit,
-        chatSettingsEnabled:Boolean
-    ) {
-
-        //var text by remember { mutableStateOf("Off") }
-        var expanded by remember {
-            mutableStateOf(false)
-        }
-        //todo: change this value to actual title stored in the viewModel
-
-        Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
-
-            OutlinedTextField(
-                modifier = Modifier
-                    .width(200.dp)
-                    .clickable {
-                        if (chatSettingsEnabled) {
-                            expanded = true
-                        }
-                    },
-                enabled = false,
-                //todo: this is what is shown to the user as the selected choice
-                value = selectedItem.title,
-                onValueChange = { },
-                label = {  },
-                colors = TextFieldDefaults.colors(
-                    disabledTextColor = Color.White,
-                    disabledContainerColor = Color.DarkGray,
-                    disabledTrailingIconColor = Color.Unspecified,
-                    disabledLabelColor = Color.Unspecified,
-                    disabledPlaceholderColor = Color.Unspecified,
-                    disabledSupportingTextColor = Color.Unspecified,
-                    disabledPrefixColor = Color.Unspecified,
-                    disabledSuffixColor = Color.Unspecified
-                )
-            )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color.DarkGray
-                    )
-            ){
-                for (item in titleList){
-                    TextMenuItem(
-                        setExpanded={newValue -> expanded=newValue},
-                        title = item.title,
-                        selectText={
-                            //todo: changeSelectedTitle(it.title)
-                            changeSelectedItem(item)
-                        }
-                    )
-                }
-
-            }
-
-        }
 
 
-    }
-    @Composable
-    fun TextMenuItem(
-        setExpanded: (Boolean) -> Unit,
-        selectText:()->Unit,
-        title:String,
-    ){
-        DropdownMenuItem(
-            onClick = {
-                setExpanded(false)
-                selectText()
-            },
-            text = {
-                Text(title, color = MaterialTheme.colorScheme.onPrimary)
-                    }
-        )
-    }
 
-    @Composable
-    fun SlowModeCheck(
-        setExpanded: (Boolean) -> Unit,
-        chatSettingsEnabled:Boolean,
-        selectedSlowModeItem:ListTitleValue,
-        changeSelectedSlowModeItem:(ListTitleValue)->Unit,
-        slowModeList: List<ListTitleValue>,
-    ){
 
-        DropdownMenuItem(
-            onClick = {
-                setExpanded(false)
-            },
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Icon(painter = painterResource(id =R.drawable.baseline_hourglass_empty_24), contentDescription = "slow mode identifier")
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Slow Mode", color = MaterialTheme.colorScheme.onPrimary)
-                    }
 
-                    EmbeddedDropDownMenu(
-                        titleList =slowModeList,
-                        selectedItem = selectedSlowModeItem,
-                        changeSelectedItem = {selectedValue ->changeSelectedSlowModeItem(selectedValue) },
-                        chatSettingsEnabled=chatSettingsEnabled
-                    )
-                }
-            }
-        )
-    }
 
-    @Composable
-    fun SubscriberOnlySwitch(
-        setExpanded:(Boolean)->Unit,
-        subscriberOnly:Boolean,
-        setSubscriberOnly:(Boolean) ->Unit,
-        switchEnabled:Boolean
 
-    ){
-        DropdownMenuItem(
-            onClick = {
-                setExpanded(false)
-            },
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Icon(imageVector =Icons.Default.Person, contentDescription ="Emote icon" )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Subscriber-only chat", color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                    Switch(
-                        enabled=switchEnabled,
-                        checked = subscriberOnly,
-                        onCheckedChange = {
-                            setSubscriberOnly(it)
-                        }
-                    )
-                }
-            }
-        )
-    }
 
-    @Composable
-    fun EmoteOnlySwitch(
-        setExpanded:(Boolean)->Unit,
-        emoteOnly:Boolean,
-        setEmoteOnly:(Boolean) ->Unit,
-        switchEnabled:Boolean
-    ){
-        DropdownMenuItem(
-            onClick = {
-                setExpanded(false)
-            },
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Icon(imageVector =Icons.Default.Face, contentDescription ="Emote icon" )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Emotes-only chat", color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                    Switch(
-                        enabled =switchEnabled,
-                        checked = emoteOnly,
-                        onCheckedChange = {
-                            setEmoteOnly(it)
-                        }
-                    )
-                }
-            }
-        )
-    }
 
     /**
      * DetectDoubleClickSpacer is a composable used to overlay items inside of the [DraggingBox][com.example.clicker.presentation.stream.views.streamManager.util.ModViewDragSection]

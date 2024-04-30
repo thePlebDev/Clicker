@@ -469,7 +469,7 @@ private class ImprovedChatUI(){
  * @param updateClickedUser a function that will run once this composable is clicked and will update the ViewModel with information
  * about the clicked user
  * */
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn( ExperimentalFoundationApi::class)
 @Composable
 fun ClickableCard(
     twitchUser: TwitchUserData,
