@@ -2,6 +2,8 @@ package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
@@ -11,17 +13,20 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
+import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
@@ -51,10 +56,10 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-//    val outerBottomModalState = rememberModalBottomSheetState(
-//        initialValue = ModalBottomSheetValue.Hidden,
-//        skipHalfExpanded = true
-//    )
+    val outerBottomModalState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Expanded,
+        skipHalfExpanded = true
+    )
 //    var oneClickActionsChecked by remember { mutableStateOf(true) }
 //
 //    //todo: Move these two to the ViewModel
@@ -283,9 +288,14 @@ fun StreamView(
                 isMod
             )
     } }
-    val showBottomModal:()->Unit =remember(bottomModalState) { {
+    val showClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
             bottomModalState.show()
+        }
+    } }
+    val showChatSettingsBottomModal:()->Unit =remember(bottomModalState) { {
+        scope.launch {
+            outerBottomModalState.show()
         }
     } }
 
@@ -294,6 +304,15 @@ fun StreamView(
     } }
     val showTimeOutDialog = remember{ mutableStateOf(false) }
     val showBanDialog = remember{ mutableStateOf(false) }
+
+    ModalBottomSheetLayout(
+        sheetState = outerBottomModalState,
+        sheetContent ={
+            ChatSettingsColumn()
+        }
+    ) {
+
+
 
     ModalBottomSheetLayout(
                     sheetBackgroundColor = MaterialTheme.colorScheme.primary,
@@ -352,7 +371,7 @@ fun StreamView(
         ChatUI(
             twitchUserChat = twitchUserChat,
             showBottomModal={
-                showBottomModal()
+                showClickedUserBottomModal()
             },
             updateClickedUser = { username, userId, banned, isMod ->
                 updateClickedUser(
@@ -384,7 +403,9 @@ fun StreamView(
             clickedAutoCompleteText = { username ->
                 streamViewModel.autoTextChange(username)
             },
-            showModal = {  },
+            showModal = {
+                showChatSettingsBottomModal()
+            },
             notificationAmount =notificationAmount,
             textFieldValue = streamViewModel.textFieldValue,
             sendMessageToWebSocket = { string ->
@@ -392,6 +413,7 @@ fun StreamView(
             },
         )
    }
+    }
 
 
 }
