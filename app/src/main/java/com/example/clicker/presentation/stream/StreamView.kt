@@ -16,6 +16,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,6 +31,7 @@ import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
+import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
@@ -57,7 +59,7 @@ fun StreamView(
         skipHalfExpanded = true
     )
     val outerBottomModalState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Expanded,
+        initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
 //    var oneClickActionsChecked by remember { mutableStateOf(true) }
@@ -198,9 +200,9 @@ fun StreamView(
 //                        },
 //                        contentCoveredBySideModal = {
 //                            TestingLazyColumn(twitchUserChat = twitchUserChat)
-////                            TextChat(
-////                                notificationAmount =notificationAmount,
-////                                twitchUserChat = twitchUserChat,
+//                            TextChat(
+//                                notificationAmount =notificationAmount,
+//                                twitchUserChat = twitchUserChat,
 //                                sendMessageToWebSocket = { string ->
 //                                    streamViewModel.sendMessage(string)
 //                                },
@@ -212,13 +214,13 @@ fun StreamView(
 //                                    streamViewModel.autoTextChange(username)
 //                                },
 //
-////                                addChatter = { username, message ->
-////                                    streamViewModel.addChatter(
-////                                        username,
-////                                        message
-////                                    )
-////                                },
-//                                updateClickedUser = { username, userId, banned, isMod ->
+//                                addChatter = { username, message ->
+//                                    streamViewModel.addChatter(
+//                                        username,
+//                                        message
+//                                    )
+//                                },
+    //                            updateClickedUser = { username, userId, banned, isMod ->
 //
 //                                    streamViewModel.updateClickedChat(
 //                                        username,
@@ -227,22 +229,22 @@ fun StreamView(
 //                                        isMod
 //                                    )
 //                                },
-////                                textFieldValue = streamViewModel.textFieldValue,
-////                                channelName = streamViewModel.channelName.collectAsState().value,
-////                                deleteMessage = { messageId ->
-////                                    streamViewModel.deleteChatMessage(
-////                                        messageId
-////                                    )
-////                                },
-////
-////                                banResponse = streamViewModel.state.value.banResponse,
-////                                undoBan = { streamViewModel.unBanUser() },
-////                                undoBanResponse = streamViewModel.state.value.undoBanResponse,
-////                                showStickyHeader = streamViewModel.state.value.showStickyHeader,
-////                                closeStickyHeader = { streamViewModel.closeStickyHeader() },
-////                                banResponseMessage = streamViewModel.state.value.banResponseMessage,
-////                                restartWebSocket = { streamViewModel.restartWebSocket() },
-//                                showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
+//                                textFieldValue = streamViewModel.textFieldValue,
+//                                channelName = streamViewModel.channelName.collectAsState().value,
+//                                deleteMessage = { messageId ->
+//                                    streamViewModel.deleteChatMessage(
+//                                        messageId
+//                                    )
+//                                },
+//
+//                                banResponse = streamViewModel.state.value.banResponse,
+//                                undoBan = { streamViewModel.unBanUser() },
+//                                undoBanResponse = streamViewModel.state.value.undoBanResponse,
+//                                showStickyHeader = streamViewModel.state.value.showStickyHeader,
+//                                closeStickyHeader = { streamViewModel.closeStickyHeader() },
+//                                banResponseMessage = streamViewModel.state.value.banResponseMessage,
+//                                restartWebSocket = { streamViewModel.restartWebSocket() },
+  //                              showUndoButton = streamViewModel.modChatSettingsState.value.showUndoButton,
 //                                noChatMode = streamViewModel.advancedChatSettingsState.value.noChatMode,
 //                                showOuterBottomModalState = {
 //                                    scope.launch {
@@ -267,14 +269,8 @@ fun StreamView(
 //                                },
 //                                orientationIsVertical =true
 //                            )
-////                            VerticalOverlayView(
-////                                channelName = streamViewModel.clickedStreamInfo.value.channelName,
-////                                streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
-////                                category = streamViewModel.clickedStreamInfo.value.category,
-////                                tags = streamViewModel.clickedStreamInfo.value.tags,
-////                                showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
-////                            )
-//                        }
+
+  //                      }
 //                    )
 //                } // end of the bottom modal
 //
@@ -304,6 +300,7 @@ fun StreamView(
     } }
     val showTimeOutDialog = remember{ mutableStateOf(false) }
     val showBanDialog = remember{ mutableStateOf(false) }
+
 
     ModalBottomSheetLayout(
         sheetState = outerBottomModalState,
@@ -346,6 +343,7 @@ fun StreamView(
                     }
     ){
         //this is where the chatUI goes
+
 
         //todo:this is the dialogs
         TimeoutBanDialogs(
@@ -412,6 +410,16 @@ fun StreamView(
                 streamViewModel.sendMessage(string)
             },
         )
+
+        //tags --> streamViewModel.clickedStreamInfo.value.tags
+        VerticalOverlayView(
+            channelName = streamViewModel.clickedStreamInfo.value.channelName,
+            streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+            category = streamViewModel.clickedStreamInfo.value.category,
+            tags = listOf<String>("Another","Meatball","Tim","turkey"),
+            showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
+        )
+
    }
     }
 
