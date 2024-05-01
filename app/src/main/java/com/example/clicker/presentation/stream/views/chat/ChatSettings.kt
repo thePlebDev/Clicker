@@ -41,7 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ListTitleValue
-
+import com.example.clicker.presentation.stream.AdvancedChatSettings
 
 
 val followerModeList =listOf(
@@ -70,7 +70,11 @@ val slowModeList =listOf(
 
 
 @Composable
-fun ChatSettingsColumn(){
+fun ChatSettingsColumn(
+     advancedChatSettings: AdvancedChatSettings,
+     changeAdvancedChatSettings: (AdvancedChatSettings)->Unit
+
+){
     Log.d("ChatSettingsColumn","Recomping")
     var emoteOnly by remember {
         mutableStateOf(false)
@@ -128,42 +132,58 @@ fun ChatSettingsColumn(){
             selectedFollowersModeItem=selectedFollowerModeItem,
             changeSelectedFollowersModeItem ={newValue -> selectedFollowerModeItem = newValue}
         )
+        AdvancedChatSettings(
+            advancedChatSettings = advancedChatSettings,
+            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)}
+        )
+
+    }
+
+}
+
+@Composable
+fun AdvancedChatSettings(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings)->Unit
+){
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text("Advanced chat settings",color = Color.White,
             modifier= Modifier.padding(start=15.dp),
             fontSize = MaterialTheme.typography.headlineLarge.fontSize
         )
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal = 15.dp))
         Spacer(modifier =Modifier.size(10.dp))
-        ReSubSwitch(
-            enableSwitches = true,
-            checked = reSubEnabled,
-            switchFunction = {newValue -> reSubEnabled = newValue},
-            switchLabel = "Re-Sub messages"
 
+        AdvancedShowReSubsSwitch(
+            advancedChatSettings=advancedChatSettings,
+            changeAdvancedChatSettings={ newValue ->
+
+                changeAdvancedChatSettings(newValue)
+            }
         )
-        SubSwitch(
-            enableSwitches = true,
-            checked = reSubEnabled,
-            switchFunction = {newValue -> reSubEnabled = newValue},
-            switchLabel = "Sub messages"
 
+        AdvancedShowSubsSwitch(
+            advancedChatSettings=advancedChatSettings,
+            changeAdvancedChatSettings={ newValue ->
+
+                changeAdvancedChatSettings(newValue)
+            }
         )
-        AnonymousGiftSubSwitch(
-            enableSwitches = true,
-            checked = reSubEnabled,
-            switchFunction = {newValue -> reSubEnabled = newValue},
-            switchLabel = "Anonymous Gift Sub messages"
+        AdvancedShowAnonGiftSubsSwitch(
+            advancedChatSettings=advancedChatSettings,
+            changeAdvancedChatSettings={ newValue ->
 
+                changeAdvancedChatSettings(newValue)
+            }
         )
-        GiftSubSwitch(
-            enableSwitches = true,
-            checked = reSubEnabled,
-            switchFunction = {newValue -> reSubEnabled = newValue},
-            switchLabel = "Gift Sub messages"
+        AdvancedShowGiftSubsSwitch(
+            advancedChatSettings=advancedChatSettings,
+            changeAdvancedChatSettings={ newValue ->
 
+                changeAdvancedChatSettings(newValue)
+            }
         )
     }
-
 }
 
 @Composable
@@ -402,71 +422,10 @@ fun TextMenuItem(
 }
 
 @Composable
-fun ReSubSwitch(
-    enableSwitches: Boolean,
-    checked: Boolean,
-    switchLabel: String,
-    switchFunction: (Boolean) -> Unit
+fun AdvancedShowSubsSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
 ){
-    SwitchPart(
-        enableSwitches,
-        checked,
-        switchLabel,
-        switchFunction={newValue ->switchFunction(newValue)}
-    )
-}
-@Composable
-fun SubSwitch(
-    enableSwitches: Boolean,
-    checked: Boolean,
-    switchLabel: String,
-    switchFunction: (Boolean) -> Unit
-){
-    SwitchPart(
-        enableSwitches,
-        checked,
-        switchLabel,
-        switchFunction={newValue ->switchFunction(newValue)}
-    )
-}
-@Composable
-fun AnonymousGiftSubSwitch(
-    enableSwitches: Boolean,
-    checked: Boolean,
-    switchLabel: String,
-    switchFunction: (Boolean) -> Unit
-){
-    SwitchPart(
-        enableSwitches,
-        checked,
-        switchLabel,
-        switchFunction={newValue ->switchFunction(newValue)}
-    )
-}
-
-@Composable
-fun GiftSubSwitch(
-    enableSwitches: Boolean,
-    checked: Boolean,
-    switchLabel: String,
-    switchFunction: (Boolean) -> Unit
-){
-    SwitchPart(
-        enableSwitches,
-        checked,
-        switchLabel,
-        switchFunction={newValue ->switchFunction(newValue)}
-    )
-}
-
-@Composable
-fun SwitchPart(
-    enableSwitches: Boolean,
-    checked: Boolean,
-    switchLabel: String,
-    switchFunction: (Boolean) -> Unit
-) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -475,15 +434,118 @@ fun SwitchPart(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = switchLabel,
+            text = "Sub messages",
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
         Switch(
-            checked = checked,
-            enabled = enableSwitches,
+            checked = advancedChatSettings.showSubs,
+            enabled = true,
             onCheckedChange = {
-                switchFunction(it)
+                val newValue =advancedChatSettings.copy(showSubs = it)
+                changeAdvancedChatSettings(newValue)
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
+    }
+}
+
+@Composable
+fun AdvancedShowGiftSubsSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Gift Sub messages",
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Switch(
+            checked = advancedChatSettings.showGiftSubs,
+            enabled = true,
+            onCheckedChange = {
+                val newValue =advancedChatSettings.copy(showGiftSubs = it)
+                changeAdvancedChatSettings(newValue)
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
+    }
+}
+
+
+@Composable
+fun AdvancedShowAnonGiftSubsSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Anonymous Gift Sub messages",
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Switch(
+            checked = advancedChatSettings.showAnonSubs,
+            enabled = true,
+            onCheckedChange = {
+                val newValue =advancedChatSettings.copy(showAnonSubs = it)
+                changeAdvancedChatSettings(newValue)
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
+    }
+}
+//"Re-Sub messages"
+
+@Composable
+fun AdvancedShowReSubsSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Re-Sub messages",
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Switch(
+            checked = advancedChatSettings.showReSubs,
+            enabled = true,
+            onCheckedChange = {
+                val newValue =advancedChatSettings.copy(showReSubs = it)
+                changeAdvancedChatSettings(newValue)
             },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.secondary,

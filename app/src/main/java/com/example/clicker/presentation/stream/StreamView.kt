@@ -305,7 +305,10 @@ fun StreamView(
     ModalBottomSheetLayout(
         sheetState = outerBottomModalState,
         sheetContent ={
-            ChatSettingsColumn()
+            ChatSettingsColumn(
+                advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)}
+            )
         }
     ) {
 
@@ -411,12 +414,12 @@ fun StreamView(
             },
         )
 
-        //tags --> streamViewModel.clickedStreamInfo.value.tags
+
         VerticalOverlayView(
             channelName = streamViewModel.clickedStreamInfo.value.channelName,
             streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
             category = streamViewModel.clickedStreamInfo.value.category,
-            tags = listOf<String>("Another","Meatball","Tim","turkey"),
+            tags = streamViewModel.clickedStreamInfo.value.tags,
             showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
         )
 
