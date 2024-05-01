@@ -68,10 +68,15 @@ data class ModChatSettings(
 )
 /**
  * AdvancedChatSettings holds all the data representing the current advanced settings relating to the chat messages
+ *
+ * @param noChatMode a boolean determining if the user should be shown the chat messages or not
+ * @param showSubs a boolean determining if the user should be shown subscription messages or not
+ * @param showReSubs a boolean determining if the user should be shown re-subscription messages or not
+ * @param showAnonSubs a boolean determining if the user should be shown anonymous subscription messages or not
+ * @param showGiftSubs a boolean determining if the user should be shown gift subscription messages or not
  * */
 data class AdvancedChatSettings(
     val noChatMode:Boolean = false,
-
     val showSubs:Boolean = true,
     val showReSubs:Boolean = true,
     val showAnonSubs:Boolean = true,
