@@ -249,7 +249,8 @@ fun StreamView(
                         sendMessageToWebSocket = { string ->
                             streamViewModel.sendMessage(string)
                         },
-                        noChat = streamViewModel.advancedChatSettingsState.value.noChatMode
+                        noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                        deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)}
                     )
 
 

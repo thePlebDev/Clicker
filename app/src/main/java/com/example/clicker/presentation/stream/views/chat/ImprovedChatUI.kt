@@ -92,7 +92,8 @@ fun ChatUI(
     newFilterMethod:(TextFieldValue) ->Unit,
     orientationIsVertical:Boolean,
     notificationAmount:Int,
-    noChat:Boolean
+    noChat:Boolean,
+    deleteChatMessage:(String)->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -122,7 +123,8 @@ fun ChatUI(
                     )
                 },
                 doubleClickMessage={username ->doubleClickMessage(username)},
-                modifier=modifier
+                modifier=modifier,
+                deleteChatMessage={messageId ->deleteChatMessage(messageId)}
 
             )
         },
@@ -271,6 +273,7 @@ private class ImprovedChatUI(){
         showBanDialog:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         doubleClickMessage:(String)->Unit,
+        deleteChatMessage:(String)->Unit,
         modifier: Modifier
     ){
         val coroutineScope = rememberCoroutineScope()
@@ -299,7 +302,8 @@ private class ImprovedChatUI(){
                     },
                     showTimeoutDialog ={showTimeoutDialog()},
                     showBanDialog={showBanDialog()},
-                    doubleClickMessage={username ->doubleClickMessage(username)}
+                    doubleClickMessage={username ->doubleClickMessage(username)},
+                    deleteChatMessage={messageId->deleteChatMessage(messageId)}
 
                 )
 
@@ -316,6 +320,7 @@ private class ImprovedChatUI(){
         showTimeoutDialog:()->Unit,
         showBanDialog:()->Unit,
         doubleClickMessage:(String)->Unit,
+        deleteChatMessage:(String)->Unit,
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -381,6 +386,9 @@ private class ImprovedChatUI(){
                                 showBanDialog()
                             }
 
+                        },
+                        halfSwipeAction={
+                            deleteChatMessage(twitchChatMessage.id?:"" )
                         },
                         swipeEnabled = true,
                         twoSwipeOnly= false
