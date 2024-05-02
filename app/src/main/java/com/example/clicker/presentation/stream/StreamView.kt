@@ -24,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.modView.followerModeList
+import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
@@ -40,6 +43,7 @@ import kotlinx.coroutines.launch
 fun StreamView(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
+    modViewViewModel: ModViewViewModel,
     homeViewModel: HomeViewModel,
     showStreamManager:()->Unit,
     notificationAmount: Int
@@ -308,7 +312,14 @@ fun StreamView(
             ChatSettingsColumn(
                 advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
                 changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
-                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)}
+                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
+                chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
+                followerModeList= followerModeList,
+                selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+                changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+                slowModeList= slowModeList,
+                selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+                changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
             )
         }
     ) {

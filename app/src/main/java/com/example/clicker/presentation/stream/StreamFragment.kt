@@ -344,6 +344,7 @@ fun setOrientation(
                 StreamView(
                     streamViewModel,
                     autoModViewModel,
+                    modViewViewModel,
                     homeViewModel,
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     showStreamManager={
