@@ -307,7 +307,8 @@ fun StreamView(
         sheetContent ={
             ChatSettingsColumn(
                 advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)}
+                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
+                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)}
             )
         }
     ) {
@@ -412,6 +413,7 @@ fun StreamView(
             sendMessageToWebSocket = { string ->
                 streamViewModel.sendMessage(string)
             },
+            noChat = streamViewModel.advancedChatSettingsState.value.noChatMode
         )
 
 

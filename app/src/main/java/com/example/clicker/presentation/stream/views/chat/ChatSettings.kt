@@ -72,7 +72,8 @@ val slowModeList =listOf(
 @Composable
 fun ChatSettingsColumn(
      advancedChatSettings: AdvancedChatSettings,
-     changeAdvancedChatSettings: (AdvancedChatSettings)->Unit
+     changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
+     changeNoChatMode:(Boolean)->Unit
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
@@ -134,8 +135,10 @@ fun ChatSettingsColumn(
         )
         AdvancedChatSettings(
             advancedChatSettings = advancedChatSettings,
-            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)}
+            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)},
+            changeNoChatMode ={newValue ->changeNoChatMode(newValue)}
         )
+
 
     }
 
@@ -144,7 +147,8 @@ fun ChatSettingsColumn(
 @Composable
 fun AdvancedChatSettings(
     advancedChatSettings: AdvancedChatSettings,
-    changeAdvancedChatSettings: (AdvancedChatSettings)->Unit
+    changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
+    changeNoChatMode:(Boolean)->Unit
 ){
     Column(modifier = Modifier.fillMaxWidth()) {
         Text("Advanced chat settings",color = Color.White,
@@ -154,7 +158,7 @@ fun AdvancedChatSettings(
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal = 15.dp))
         Spacer(modifier =Modifier.size(10.dp))
 
-        AdvancedShowReSubsSwitch(
+       ReSubsSwitch(
             advancedChatSettings=advancedChatSettings,
             changeAdvancedChatSettings={ newValue ->
 
@@ -162,26 +166,30 @@ fun AdvancedChatSettings(
             }
         )
 
-        AdvancedShowSubsSwitch(
+        SubsSwitch(
             advancedChatSettings=advancedChatSettings,
             changeAdvancedChatSettings={ newValue ->
 
                 changeAdvancedChatSettings(newValue)
             }
         )
-        AdvancedShowAnonGiftSubsSwitch(
+        AnonGiftSubsSwitch(
             advancedChatSettings=advancedChatSettings,
             changeAdvancedChatSettings={ newValue ->
 
                 changeAdvancedChatSettings(newValue)
             }
         )
-        AdvancedShowGiftSubsSwitch(
+        GiftSubsSwitch(
             advancedChatSettings=advancedChatSettings,
             changeAdvancedChatSettings={ newValue ->
 
                 changeAdvancedChatSettings(newValue)
             }
+        )
+        NoChatSwitch(
+            advancedChatSettings = advancedChatSettings,
+            changeNoChatMode={newValue ->changeNoChatMode(newValue)}
         )
     }
 }
@@ -422,7 +430,7 @@ fun TextMenuItem(
 }
 
 @Composable
-fun AdvancedShowSubsSwitch(
+fun SubsSwitch(
     advancedChatSettings: AdvancedChatSettings,
     changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
 ){
@@ -456,7 +464,7 @@ fun AdvancedShowSubsSwitch(
 }
 
 @Composable
-fun AdvancedShowGiftSubsSwitch(
+fun GiftSubsSwitch(
     advancedChatSettings: AdvancedChatSettings,
     changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
 ){
@@ -491,7 +499,7 @@ fun AdvancedShowGiftSubsSwitch(
 
 
 @Composable
-fun AdvancedShowAnonGiftSubsSwitch(
+fun AnonGiftSubsSwitch(
     advancedChatSettings: AdvancedChatSettings,
     changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
 ){
@@ -525,7 +533,7 @@ fun AdvancedShowAnonGiftSubsSwitch(
 //"Re-Sub messages"
 
 @Composable
-fun AdvancedShowReSubsSwitch(
+fun ReSubsSwitch(
     advancedChatSettings: AdvancedChatSettings,
     changeAdvancedChatSettings: (AdvancedChatSettings) ->Unit
 ){
@@ -546,6 +554,38 @@ fun AdvancedShowReSubsSwitch(
             onCheckedChange = {
                 val newValue =advancedChatSettings.copy(showReSubs = it)
                 changeAdvancedChatSettings(newValue)
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
+    }
+}
+
+@Composable
+fun NoChatSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeNoChatMode:(Boolean)->Unit,
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("No chat mode",
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Switch(
+            checked = advancedChatSettings.noChatMode,
+            enabled = true,
+            onCheckedChange = {
+                changeNoChatMode(it)
             },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.secondary,

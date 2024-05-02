@@ -91,7 +91,8 @@ fun ChatUI(
     showOuterBottomModalState:() ->Unit,
     newFilterMethod:(TextFieldValue) ->Unit,
     orientationIsVertical:Boolean,
-    notificationAmount:Int
+    notificationAmount:Int,
+    noChat:Boolean
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -169,8 +170,8 @@ fun ChatUI(
                     )
                 },
             )
-
-        }
+        },
+        noChat=noChat
 
         )
 }
@@ -181,7 +182,13 @@ fun ChatUI(
     chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
+    noChat:Boolean
 ){
+    val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
+    val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
+    val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
+
+
     val chatUIScope = remember(){ ImprovedChatUI() }
     with(chatUIScope){
         Box(modifier = Modifier.fillMaxSize()){
@@ -194,6 +201,15 @@ fun ChatUI(
                 )
             }
             determineScrollState()
+            if(noChat){
+                    with(chatScope){
+                        NoticeMessages(
+                            systemMessage="",
+                            message ="You are in No Chat mode"
+                        )
+                    }
+
+            }
 
             scrollToBottom(modifier = Modifier
                 .align(Alignment.BottomCenter)
