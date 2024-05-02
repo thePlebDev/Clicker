@@ -83,16 +83,15 @@ fun ChatSettingsColumn(
      slowModeList: List<ListTitleValue>,
      selectedSlowModeItem: ListTitleValue,
      changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
-     chatSettingsEnabled:Boolean
+     chatSettingsEnabled:Boolean,
+     emoteOnly:Boolean,
+     setEmoteOnly:(Boolean) ->Unit,
+     subscriberOnly:Boolean,
+     setSubscriberOnly:(Boolean) ->Unit,
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
-    var emoteOnly by remember {
-        mutableStateOf(false)
-    }
-    var subscriberOnly by remember {
-        mutableStateOf(false)
-    }
+
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -107,13 +106,13 @@ fun ChatSettingsColumn(
         EmoteOnlySwitch(
             setExpanded ={newValue -> },
             emoteOnly =emoteOnly,
-            setEmoteOnly={newValue -> emoteOnly = newValue},
+            setEmoteOnly={newValue ->setEmoteOnly(newValue)},
             switchEnabled=chatSettingsEnabled
         )
         SubscriberOnlySwitch(
             setExpanded ={newValue -> },
             subscriberOnly = subscriberOnly,
-            setSubscriberOnly = {newValue -> subscriberOnly = newValue },
+            setSubscriberOnly = {newValue -> setSubscriberOnly(newValue) },
             switchEnabled=chatSettingsEnabled
         )
 
