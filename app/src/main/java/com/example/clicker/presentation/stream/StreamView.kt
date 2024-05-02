@@ -320,6 +320,10 @@ fun StreamView(
                 slowModeList= slowModeList,
                 selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
                 changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+                emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+                setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+                subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
+                setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
             )
         }
     ) {

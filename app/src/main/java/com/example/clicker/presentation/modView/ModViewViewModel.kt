@@ -47,7 +47,10 @@ data class ModViewViewModelUIState(
     val enabledChatSettings:Boolean = true,
     val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
     val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
-    val autoModQuePedingMessages:Int =0
+    val autoModQuePedingMessages:Int =0,
+    val emoteOnly:Boolean = false,
+    val subscriberOnly:Boolean = false,
+
 )
 data class ListTitleValue(
     val title:String,
@@ -118,6 +121,8 @@ class ModViewViewModel @Inject constructor(
                     nullableChatData?.also {chatSettingsData ->
                         checkSlowModeWaitTime(chatSettingsData.slowModeWaitTime)
                         checkFollowerModeDuration(chatSettingsData.followerModeDuration)
+                        Log.d("monitorForChatSettingsUpdate","emoteMode--> ${chatSettingsData.emoteMode}")
+                        Log.d("monitorForChatSettingsUpdate","subscriberMode--> ${chatSettingsData.subscriberMode}")
 
                         _uiState.value = _uiState.value.copy(
                             chatSettings = _uiState.value.chatSettings.copy(
@@ -483,11 +488,11 @@ class ModViewViewModel @Inject constructor(
                 ).collect{response ->
                     when(response){
                         is Response.Loading ->{
-                            Log.d("getChatSettings", "LOADING")
+                            Log.d("checkSlowModeWaitTime", "getChatSettings")
                         }
                         is Response.Success ->{
                             val data = response.data.data[0]
-
+                            Log.d("getChatSettings", "LOADING")
                             checkSlowModeWaitTime(data.slowModeWaitTime)
                             checkFollowerModeDuration(data.followerModeDuration)
 
@@ -499,8 +504,9 @@ class ModViewViewModel @Inject constructor(
                                     followerModeDuration =data.followerModeDuration,
                                     subscriberMode=data.subscriberMode,
                                     emoteMode = data.emoteMode,
-
-                                )
+                                ),
+                                emoteOnly = data.emoteMode,
+                                subscriberOnly = data.subscriberMode
                             )
                             Log.d("getChatSettings", "COLLECT SUCCESS")
                             Log.d("DataForChatSettings", "COLLECT data ->${response.data}")
@@ -556,6 +562,7 @@ class ModViewViewModel @Inject constructor(
     fun updateEmoteOnly(emoteValue:Boolean){
         _uiState.value = _uiState.value.copy(
             chatSettings = _uiState.value.chatSettings.copy(emoteMode = emoteValue),
+            emoteOnly = emoteValue
         )
         val body =ChatSettingsData(
             emoteMode = emoteValue,
@@ -580,6 +587,7 @@ class ModViewViewModel @Inject constructor(
                         }
                         is Response.Success ->{
                             val data = response.data.data[0]
+                            Log.d("checkSlowModeWaitTime","updateEmoteOnly")
                             checkSlowModeWaitTime(data.slow_mode_wait_time)
                             checkFollowerModeDuration(data.follower_mode_duration)
 
@@ -591,7 +599,8 @@ class ModViewViewModel @Inject constructor(
                                     followerModeDuration =data.follower_mode_duration,
                                     subscriberMode=data.subscriber_mode,
                                     emoteMode = data.emote_mode,
-                                )
+                                ),
+                                emoteOnly = emoteValue
                             )
                         }
                         is Response.Failure ->{
@@ -603,7 +612,8 @@ class ModViewViewModel @Inject constructor(
                                     followerModeDuration = _uiState.value.chatSettings.followerModeDuration,
                                     slowMode =_uiState.value.chatSettings.slowMode,
                                     slowModeWaitTime = _uiState.value.chatSettings.slowModeWaitTime
-                                )
+                                ),
+                                emoteOnly = !emoteValue
                             )
 
                         }
@@ -617,7 +627,8 @@ class ModViewViewModel @Inject constructor(
     }
     fun updateSubscriberOnly(subscriberValue:Boolean){
         _uiState.value = _uiState.value.copy(
-            chatSettings = _uiState.value.chatSettings.copy(subscriberMode = subscriberValue)
+            chatSettings = _uiState.value.chatSettings.copy(subscriberMode = subscriberValue),
+            subscriberOnly = subscriberValue
         )
         viewModelScope.launch {
             withContext(Dispatchers.IO){
@@ -643,6 +654,7 @@ class ModViewViewModel @Inject constructor(
                         }
                         is Response.Success ->{
                             val data = response.data.data[0]
+                            Log.d("checkSlowModeWaitTime","updateSubscriberOnly")
                             checkSlowModeWaitTime(data.slow_mode_wait_time)
                             checkFollowerModeDuration(data.follower_mode_duration)
 
@@ -654,7 +666,8 @@ class ModViewViewModel @Inject constructor(
                                     followerModeDuration =data.follower_mode_duration,
                                     subscriberMode=data.subscriber_mode,
                                     emoteMode = data.emote_mode,
-                                )
+                                ),
+                                subscriberOnly = subscriberValue
                             )
                         }
                         is Response.Failure ->{
@@ -666,7 +679,8 @@ class ModViewViewModel @Inject constructor(
                                     followerModeDuration = _uiState.value.chatSettings.followerModeDuration,
                                     slowMode =_uiState.value.chatSettings.slowMode,
                                     slowModeWaitTime = _uiState.value.chatSettings.slowModeWaitTime
-                                )
+                                ),
+                                subscriberOnly = !subscriberValue
                             )
                         }
                     }
@@ -705,6 +719,7 @@ class ModViewViewModel @Inject constructor(
 
                     }
                     is Response.Success ->{
+
                         val data = response.data.data[0]
                         checkSlowModeWaitTime(data.slow_mode_wait_time)
                         checkFollowerModeDuration(data.follower_mode_duration)

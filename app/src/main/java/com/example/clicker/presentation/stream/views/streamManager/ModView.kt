@@ -464,6 +464,7 @@ import com.example.clicker.util.Response
         setExpanded:(Boolean)->Unit,
         blockedTerms:List<BlockedTerm>,
         deleteBlockedTerm:(String) ->Unit,
+
         emoteOnly:Boolean,
         setEmoteOnly:(Boolean) ->Unit,
         subscriberOnly:Boolean,
