@@ -216,7 +216,7 @@ fun HorizontalChat(
                 showModal = {
                     showChatSettingsBottomModal()
                 },
-                notificationAmount =notificationAmount,
+                notificationAmount =0,
                 textFieldValue = streamViewModel.textFieldValue,
                 sendMessageToWebSocket = { string ->
                     streamViewModel.sendMessage(string)
