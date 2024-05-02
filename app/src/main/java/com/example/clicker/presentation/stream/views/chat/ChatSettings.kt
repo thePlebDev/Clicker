@@ -73,7 +73,17 @@ val slowModeList =listOf(
 fun ChatSettingsColumn(
      advancedChatSettings: AdvancedChatSettings,
      changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
-     changeNoChatMode:(Boolean)->Unit
+     changeNoChatMode:(Boolean)->Unit,
+
+
+     followerModeList: List<ListTitleValue>,
+     selectedFollowersModeItem: ListTitleValue,
+     changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+
+     slowModeList: List<ListTitleValue>,
+     selectedSlowModeItem: ListTitleValue,
+     changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+     chatSettingsEnabled:Boolean
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
@@ -83,18 +93,7 @@ fun ChatSettingsColumn(
     var subscriberOnly by remember {
         mutableStateOf(false)
     }
-    val slowModeList = remember { mutableStateListOf(slowModeList[0],slowModeList[1],slowModeList[2],slowModeList[3],slowModeList[4],slowModeList[5],slowModeList[6],)}
-    var selectedSlowModeItem by remember {
-        mutableStateOf(slowModeList[0])
-    }
-    val followerModeList = remember { mutableStateListOf(followerModeList[0],followerModeList[1],followerModeList[2],followerModeList[3],followerModeList[4],followerModeList[5],followerModeList[6],)}
-    var selectedFollowerModeItem by remember {
-        mutableStateOf(followerModeList[0])
-    }
 
-    var reSubEnabled by remember {
-        mutableStateOf(false)
-    }
     Column(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)) {
@@ -109,30 +108,37 @@ fun ChatSettingsColumn(
             setExpanded ={newValue -> },
             emoteOnly =emoteOnly,
             setEmoteOnly={newValue -> emoteOnly = newValue},
-            switchEnabled=true
+            switchEnabled=chatSettingsEnabled
         )
         SubscriberOnlySwitch(
             setExpanded ={newValue -> },
             subscriberOnly = subscriberOnly,
             setSubscriberOnly = {newValue -> subscriberOnly = newValue },
-            switchEnabled=true
+            switchEnabled=chatSettingsEnabled
         )
 
+        //todo: these are the modal items the pop up
         SlowModeCheck(
             setExpanded ={newValue -> },
-            chatSettingsEnabled=true,
+            chatSettingsEnabled=chatSettingsEnabled,
             slowModeList=slowModeList,
             selectedSlowModeItem=selectedSlowModeItem,
-            changeSelectedSlowModeItem ={newValue -> selectedSlowModeItem = newValue},
+            changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue)},
         )
 
         FollowersOnlyCheck(
-            chatSettingsEnabled=true,
+            chatSettingsEnabled=chatSettingsEnabled,
             setExpanded ={newValue -> },
             followersOnlyList=followerModeList,
-            selectedFollowersModeItem=selectedFollowerModeItem,
-            changeSelectedFollowersModeItem ={newValue -> selectedFollowerModeItem = newValue}
+            selectedFollowersModeItem=selectedFollowersModeItem,
+            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)}
         )
+        //todo: these are the modal items the pop up
+
+
+
+
+
         AdvancedChatSettings(
             advancedChatSettings = advancedChatSettings,
             changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)},
