@@ -387,71 +387,71 @@ fun setOrientation(
     binding.nestedDraggableComposeView?.apply {
         setContent {
             AppTheme{
-                ManageStreamInformation(
-                    closeStreamInfo={
-                        val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
-                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-                        val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
+//                ManageStreamInformation(
+//                    closeStreamInfo={
+//                        val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
+//                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+//                        val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
+////
+//                        //// Create ObjectAnimator for translationY property
+//                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY)
 //
-                        //// Create ObjectAnimator for translationY property
-                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY)
-
-                        // Set the duration of the animation
-                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
-
-                        // Start the animation
-                        animator.start()
-                    },
-                    modViewDragStateViewModel =modViewDragStateViewModel,
-                    chatMessages = streamViewModel.listChats,
-                    clickedUserData = streamViewModel.clickedUIState.value,
-                    clickedUserChatMessages =streamViewModel.clickedUsernameChats,
-                    updateClickedUser = {  username, userId,isBanned,isMod ->
-                        streamViewModel.updateClickedChat(
-                            username,
-                            userId,
-                            isBanned,
-                            isMod
-                        )
-                    },
-                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
-                    changeTimeoutDuration={newValue -> streamViewModel.changeTimeoutDuration(newValue)},
-                    timeoutReason = streamViewModel.state.value.timeoutReason,
-                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)},
-                    banDuration = 0,
-                    changeBanDuration={},
-                    banReason= streamViewModel.state.value.banReason,
-                    changeBanReason = {newValue ->streamViewModel.changeBanReason(newValue)},
-                    clickedUserIsMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-                    loggedInUserIsMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                    timeoutUser = {streamViewModel.timeoutUser()},
-                    showTimeoutErrorMessage= streamViewModel.state.value.timeoutUserError,
-                    setTimeoutShowErrorMessage ={newValue ->streamViewModel.setTimeoutUserError(newValue)},
-                    showBanErrorMessage= streamViewModel.state.value.banUserError,
-                    setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
-                    banUser = {streamViewModel.banUser()},
-                    modActionList = streamViewModel.modActionList,
-                    autoModMessageList = modViewViewModel.autoModMessageList,
-                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)},
-                    connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
-                    reconnect ={modViewViewModel.createEventSubSubscription()},
-                    blockedTerms =modViewViewModel.blockedTermsList,
-                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)},
-                    emoteOnly = modViewViewModel.uiState.value.chatSettings.emoteMode,
-                    setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
-                    subscriberOnly =modViewViewModel.uiState.value.chatSettings.subscriberMode,
-                    setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
-
-                    chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
-                    followersOnlyList=followerModeList,
-                    selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                    changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-                    slowModeList=slowModeList,
-                    selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                    changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
-                    deleteMessage ={messageId ->streamViewModel.deleteChatMessage(messageId)}
-
-                )
+//                        // Set the duration of the animation
+//                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
+//
+//                        // Start the animation
+//                        animator.start()
+//                    },
+//                    modViewDragStateViewModel =modViewDragStateViewModel,
+//                    chatMessages = streamViewModel.listChats,
+//                    clickedUserData = streamViewModel.clickedUIState.value,
+//                    clickedUserChatMessages =streamViewModel.clickedUsernameChats,
+//                    updateClickedUser = {  username, userId,isBanned,isMod ->
+//                        streamViewModel.updateClickedChat(
+//                            username,
+//                            userId,
+//                            isBanned,
+//                            isMod
+//                        )
+//                    },
+//                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
+//                    changeTimeoutDuration={newValue -> streamViewModel.changeTimeoutDuration(newValue)},
+//                    timeoutReason = streamViewModel.state.value.timeoutReason,
+//                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)},
+//                    banDuration = 0,
+//                    changeBanDuration={},
+//                    banReason= streamViewModel.state.value.banReason,
+//                    changeBanReason = {newValue ->streamViewModel.changeBanReason(newValue)},
+//                    clickedUserIsMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
+//                    loggedInUserIsMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+//                    timeoutUser = {streamViewModel.timeoutUser()},
+//                    showTimeoutErrorMessage= streamViewModel.state.value.timeoutUserError,
+//                    setTimeoutShowErrorMessage ={newValue ->streamViewModel.setTimeoutUserError(newValue)},
+//                    showBanErrorMessage= streamViewModel.state.value.banUserError,
+//                    setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
+//                    banUser = {streamViewModel.banUser()},
+//                    modActionList = streamViewModel.modActionList,
+//                    autoModMessageList = modViewViewModel.autoModMessageList,
+//                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)},
+//                    connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
+//                    reconnect ={modViewViewModel.createEventSubSubscription()},
+//                    blockedTerms =modViewViewModel.blockedTermsList,
+//                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)},
+//                    emoteOnly = modViewViewModel.uiState.value.chatSettings.emoteMode,
+//                    setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+//                    subscriberOnly =modViewViewModel.uiState.value.chatSettings.subscriberMode,
+//                    setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+//
+//                    chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
+//                    followersOnlyList=followerModeList,
+//                    selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+//                    changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+//                    slowModeList=slowModeList,
+//                    selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+//                    changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+//                    deleteMessage ={messageId ->streamViewModel.deleteChatMessage(messageId)}
+//
+//                )
 
 
 
