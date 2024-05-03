@@ -386,8 +386,6 @@ fun ShowModStatus(
                 )
             }
         }
-
-
     }else{
         if (modStatus != null && modStatus == true) {
             Box(){

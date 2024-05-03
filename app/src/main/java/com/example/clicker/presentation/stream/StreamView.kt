@@ -128,7 +128,8 @@ fun StreamView(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
                         changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
                         changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
-                        chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
+
+                        chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                         followerModeList= followerModeList,
                         selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
                         changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
@@ -161,9 +162,9 @@ fun StreamView(
                             unbanUser = {
                                 //  streamViewModel.unBanUser()
                             },
-                            isMod = true,
+                            isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                             openTimeoutDialog = {
-                                //  streamViewModel.openTimeoutDialog.value = true
+
                                 streamViewModel.openTimeoutDialog.value = true
                             },
 
@@ -172,7 +173,7 @@ fun StreamView(
                                             },
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                             updateShouldMonitorUser = {
-                                // streamViewModel.updateShouldMonitorUser()
+
                             },
 
                             )
@@ -236,7 +237,7 @@ fun StreamView(
 
                         orientationIsVertical =true,
 
-                        modStatus = true,
+                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                         filteredChatList = filteredChat,
                         clickedAutoCompleteText = { username ->
                             streamViewModel.autoTextChange(username)
