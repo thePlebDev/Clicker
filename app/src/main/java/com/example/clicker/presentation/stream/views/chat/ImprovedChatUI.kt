@@ -24,17 +24,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -46,17 +55,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.MessageType
@@ -65,10 +77,7 @@ import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.CheckIfUserDeleted
 import com.example.clicker.presentation.stream.views.CheckIfUserIsBanned
-import com.example.clicker.presentation.stream.views.FilteredMentionLazyRow
-import com.example.clicker.presentation.stream.views.ShowIconBasedOnTextLength
-import com.example.clicker.presentation.stream.views.ShowModStatus
-import com.example.clicker.presentation.stream.views.StylizedTextField
+
 import com.example.clicker.presentation.stream.views.TextWithChatBadges
 
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
@@ -843,4 +852,240 @@ fun DualIconsButton(
             modifier = Modifier
         )
     }
+}
+
+
+/**
+ * This composable represents a clickable username shown to the user. When the [username] is clicked it will
+ * automatically be added to the users text that they are typing
+ *
+ * @param clickedAutoCompleteText a function that will do the auto completing when this text is clicked
+ * @param username the String shown to the user. This represents a username of a user in chat.
+ * */
+@Composable
+fun ClickedAutoText(
+    clickedAutoCompleteText: (String) -> Unit,
+    username:String
+){
+    Box(
+        Modifier
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(horizontal = 5.dp)){
+        androidx.compose.material.Text(
+            text = username,
+            Modifier
+                .clip(RoundedCornerShape(5.dp))
+                .background(Color.DarkGray)
+                .padding(horizontal = 10.dp, vertical = 5.dp)
+                .clickable {
+                    clickedAutoCompleteText(username)
+                },
+            color = Color.White,
+
+            )
+    }
+
+
+}
+
+/**
+ * A [LazyRow] used to represent all the usernames of every chatter in chat. This will be triggered to be shown
+ * when a user enters the ***@*** character. This composable is also made up of the [TextChatParts.ClickedAutoText]
+ * composable
+ *
+ * @param filteredChatList a list of Strings meant to represent all of the users in chat
+ * @param clickedAutoCompleteText a function passed to [TextChatParts.ClickedAutoText] that enables autocomplete on click
+ * */
+@Composable
+fun FilteredMentionLazyRow(
+    filteredChatList: List<String>,
+    clickedAutoCompleteText: (String) -> Unit,
+){
+    LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
+        items(filteredChatList) {
+
+            ClickedAutoText(
+                clickedAutoCompleteText ={
+                        username ->clickedAutoCompleteText(username)},
+                username =it
+            )
+
+
+        }
+    }
+}
+
+
+/**
+ * A Composable that will show an Icon based on the length of [textFieldValue]. If the length is greater than 0 then
+ * the [ArrowForward] will be shown. If the length is less then or equal to 0 then the [MoreVert] will be shown
+ *
+ * @param textFieldValue the values used to determine which icon should be shown
+ * @param chat a function that is used to send a message to the websocket and allows the user to communicate with other users
+ * @param showModal a function that is used to open the side chat and show the chat settings
+ * */
+@Composable
+fun ShowIconBasedOnTextLength(
+    textFieldValue: MutableState<TextFieldValue>,
+    chat: (String) -> Unit,
+    showModal: () -> Unit
+){
+    if (textFieldValue.value.text.isNotEmpty()) {
+        androidx.compose.material.Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = stringResource(R.string.send_chat),
+            modifier = Modifier
+                .size(35.dp)
+                .clickable { chat(textFieldValue.value.text) }
+                .padding(start = 5.dp),
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    } else {
+        androidx.compose.material.Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = stringResource(R.string.more_vert_icon_description),
+            modifier = Modifier
+                .size(35.dp)
+                .clickable { showModal() }
+                .padding(start = 5.dp),
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+
+/**
+ * A styled [TextField] to allow the user to enter chat messages
+ *
+ * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
+ * @param textFieldValue The value that the user it currently typing in
+ * @param newFilterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
+ *
+ * */
+@Composable
+fun StylizedTextField(
+    modifier: Modifier,
+    textFieldValue: MutableState<TextFieldValue>,
+    newFilterMethod:(TextFieldValue) ->Unit,
+){
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+
+
+
+
+        TextField(
+
+            modifier = modifier.padding(top =5.dp),
+            singleLine = false,
+            value = textFieldValue.value,
+            shape = RoundedCornerShape(8.dp),
+            onValueChange = { newText ->
+                newFilterMethod(newText)
+                textFieldValue.value = TextFieldValue(
+                    text = newText.text,
+                    selection = newText.selection
+                )
+
+            },
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.White,
+                backgroundColor = Color.DarkGray,
+                cursorColor = Color.White,
+                disabledLabelColor = Color.White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            placeholder = {
+                androidx.compose.material.Text(stringResource(R.string.send_a_message), color = Color.White)
+            }
+        )
+
+    }
+
+}
+
+
+
+
+
+
+/**
+ * A composable meant to show a moderator Icon based on the status of [modStatus]
+ *
+ * @param modStatus a boolean meant to determine if the user is a moderator or not.
+ * @param showOuterBottomModalState a function used to show the a bottom layout sheet
+ * */
+@Composable
+fun ShowModStatus(
+    modStatus: Boolean?,
+    showOuterBottomModalState: () ->Unit,
+    orientationIsVertical:Boolean,
+    notificationAmount:Int
+){
+    val scope = rememberCoroutineScope()
+
+    if(BuildConfig.BUILD_TYPE== "debug"){
+        Box(){
+
+            AsyncImage(
+                modifier = Modifier
+                    .clickable {
+                        if (orientationIsVertical){
+                            showOuterBottomModalState()
+                        }
+                    }
+                    .padding(top =10.dp,end = 2.dp)
+                ,
+                model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                contentDescription = stringResource(R.string.moderator_badge_icon_description)
+            )
+            if(notificationAmount>0){
+                androidx.compose.material.Text(
+                    "$notificationAmount",
+                    modifier = Modifier.align(Alignment.TopStart)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Red)
+                        .padding(horizontal = 3.dp),
+                    color = Color.White, fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }else{
+        if (modStatus != null && modStatus == true) {
+            Box(){
+
+                AsyncImage(
+                    modifier = Modifier
+                        .clickable {
+                            if (orientationIsVertical){
+                                showOuterBottomModalState()
+                            }
+
+                        },
+                    model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description)
+                )
+                if(notificationAmount>0){
+                    androidx.compose.material.Text(
+                        "$notificationAmount",
+                        modifier = Modifier.align(Alignment.TopStart)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.Red)
+                            .padding(horizontal = 3.dp),
+                        color = Color.White,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+
+
+
 }
