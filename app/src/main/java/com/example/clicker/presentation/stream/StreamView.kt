@@ -33,8 +33,7 @@ import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
-import com.example.clicker.presentation.stream.util.ForwardSlashCommands
-import com.example.clicker.presentation.stream.views.AutoScrollChatWithTextBox
+
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
