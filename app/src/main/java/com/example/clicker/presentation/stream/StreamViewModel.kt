@@ -31,7 +31,6 @@ import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.util.TokenMonitoring
-import com.example.clicker.presentation.stream.views.ChatSettingsContainer
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
