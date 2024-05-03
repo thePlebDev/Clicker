@@ -60,156 +60,6 @@ import kotlinx.coroutines.launch
  * */
 object BottomModal{
 
-    /**
-     * BanTimeOutDialogs contains everything that is shown inside of a [ModalBottomSheetLayout] when a user clicks the
-     * individual chat. Also, it contains [Dialogs.TimeoutDialog] and [Dialogs.BanDialog] to handle if the user wants to
-     * ban or timeout a user
-     *
-     * @param clickedUsernameChats a list of all the clicked username's chat messages. It will update in real time
-     * @param clickedUsername the username of the clicked chat message
-     * @param bottomModalState the state for the [ModalBottomSheetLayout] and determines if the bottom modal should pop up or no
-     * @param textFieldValue A string value meant to represent what the user is typing. This is used when the user hits the reply
-     * functionality on the [BottomModalParts.ContentBanner]
-     * @param closeBottomModal A function meant to close the [ModalBottomSheetLayout]
-     * @param banned A boolean to determine if the user is banned or not
-     * @param isMod A boolean to determine if the user is a mod or not
-     * @param unbanUser A function that will be used to unban a user
-     * @param openTimeoutDialog A function that when trigger will shown the [Dialogs.TimeoutDialog]
-     * @param closeTimeoutDialog A function that when trigger will close the [Dialogs.TimeoutDialog]
-     * @param timeOutDialogOpen A Boolean to determine if the [Dialogs.TimeoutDialog] should be shown or not
-     *
-     *
-     * @param timeoutDuration An integer meant to represent the amount of time(in seconds) a user is timed out
-     * @param timeoutReason A String that is given to represent why the user is timed out
-     * @param changeTimeoutDuration a function meant to change the [timeoutDuration]
-     * @param changeTimeoutReason A function meant to change the [timeoutReason]
-     * @param closeDialog A function meant to close the Dialogs.TimeoutDialog]
-     * @param timeOutUser A function that will actually send the request to timeout the user
-     *
-     * @param banDialogOpen A boolean to determine if the [Dialogs.BanDialog] should be shown
-     * @param openBanDialog A function that is used to show the [Dialogs.BanDialog]
-     * @param closeBanDialog A function that is used to close the [Dialogs.BanDialog]
-     * @param banReason A string meant to represent the reason a user is getting banned
-     * @param changeBanReason  A function meant the change the [banReason]
-     * @param banUser A function that will actually ban the user
-     * @param clickedUserId A string representing the UserId of the user that we have clicked
-     * */
-    //todo: I think this should be reworked to remove the dialogs
-    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    fun BanTimeOutDialogs(
-        clickedUsernameChats: List<String>,
-        clickedUsername: String,
-        bottomModalState: ModalBottomSheetState,
-        textFieldValue: MutableState<TextFieldValue>,
-
-        closeBottomModal: () -> Unit,
-        banned: Boolean,
-        isMod: Boolean,
-        unbanUser: () -> Unit,
-        openTimeoutDialog: () -> Unit,
-        closeTimeoutDialog: () -> Unit,
-        timeOutDialogOpen:Boolean,
-
-        timeoutDuration: Int,
-        timeoutReason: String,
-        changeTimeoutDuration: (Int) -> Unit,
-        changeTimeoutReason: (String) -> Unit,
-        closeDialog: () -> Unit,
-        timeOutUser: () -> Unit,
-
-        banDialogOpen:Boolean,
-        openBanDialog: () -> Unit,
-        closeBanDialog: () -> Unit,
-        banReason: String,
-        changeBanReason: (String) -> Unit,
-        banUser: () -> Unit,
-        updateShouldMonitorUser: () -> Unit,
-        shouldMonitorUser:Boolean
-    ){
-//        BottomModalBuilders.BottomModalContent(
-//
-//            // TODO: this should 100% not be filteredChat. Need to create new variable
-//            clickedUsernameChats = clickedUsernameChats,
-//            timeoutDialogContent ={
-//                if(timeOutDialogOpen){
-//
-//                }
-//            },
-//            banDialogContent ={
-//                if(banDialogOpen){
-//
-//                }
-//            },
-//            clickedUsernameBanner ={
-//                BottomModalParts.ContentBanner(
-//                    clickedUsername = clickedUsername,
-//                    bottomModalState = bottomModalState,
-//                    textFieldValue = textFieldValue
-//
-//                )
-//            },
-//            clickedUserBottomBanner ={
-//                BottomModalParts.ContentBottomPart(
-//                    banned =banned,
-//                    isMod =isMod,
-//                    closeBottomModal ={closeBottomModal()},
-//                    unbanUser ={unbanUser()},
-//                    openTimeoutDialog={openTimeoutDialog()},
-//                    openBanDialog ={openBanDialog()},
-//                    updateShouldMonitorUser = {updateShouldMonitorUser()},
-//                    shouldMonitorUser = shouldMonitorUser
-//                )
-//            }
-//
-//        )
-    }
-
-    /**
-     * BottomModalBuilders represents the most generic parts of all [BottomModal]. The builder is meant to be a design layout
-     * meaning that all implementations that use this builder will share the same basic design layout
-     * */
-    private object BottomModalBuilders{
-
-
-        /**
-         *
-         * BottomModalContent is the basic layout for the bottom modal and dialog experience. A example of what the typical UI looks like
-         * with this builder can be found [HERE](https://theplebdev.github.io/Modderz-style-guide/#BottomModalContent)
-         * */
-        @OptIn(ExperimentalMaterialApi::class)
-        @Composable
-        fun BottomModalContent(
-            clickedUsernameChats: List<String>,
-
-            timeoutDialogContent:@Composable () -> Unit,
-
-            banDialogContent:@Composable () -> Unit,
-            clickedUsernameBanner: @Composable () -> Unit,
-            clickedUserBottomBanner: @Composable () -> Unit,
-
-            ) {
-
-
-            timeoutDialogContent()
-            banDialogContent()
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-            ) {
-                clickedUsernameBanner()
-                clickedUserBottomBanner()
-                Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
-
-                BottomModalParts.ClickedUserMessages(clickedUsernameChats)
-
-            } // END OF THE COLUMN
-
-
-        }
-    }
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun BottomModalBuilder(
@@ -429,12 +279,6 @@ object BottomModal{
                     }
                 }
 
-//                ModeratorButtonRow(
-//                    shouldMonitorUser =shouldMonitorUser,
-//                    updateShouldMonitorUser={
-//                        updateShouldMonitorUser()
-//                    }
-//                )
 
             }/**End of the column**/
 
@@ -443,36 +287,6 @@ object BottomModal{
 
 }// end of BottomModal
 
-@Composable
-fun ModeratorButtonRow(
-    shouldMonitorUser: Boolean,
-    updateShouldMonitorUser: () -> Unit
-){
-    Row(modifier=Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ){
-
-        Icon(
-            painter = painterResource(id = R.drawable.visibility_24),
-            "Moderation Icon",
-            tint= if(shouldMonitorUser) Color.Yellow else MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(35.dp)
-        )
-
-
-        Button(
-            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-            onClick = {
-                updateShouldMonitorUser()
-            }) {
-            Text(
-
-                if(shouldMonitorUser)"UnMonitor" else "Monitor",
-                color = MaterialTheme.colorScheme.onSecondary)
-        }
-    }
-}
 @Composable
 fun BanUnBanButtons(
     banned: Boolean,
