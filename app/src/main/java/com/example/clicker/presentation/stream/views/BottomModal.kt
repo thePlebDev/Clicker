@@ -429,12 +429,12 @@ object BottomModal{
                     }
                 }
 
-                ModeratorButtonRow(
-                    shouldMonitorUser =shouldMonitorUser,
-                    updateShouldMonitorUser={
-                        updateShouldMonitorUser()
-                    }
-                )
+//                ModeratorButtonRow(
+//                    shouldMonitorUser =shouldMonitorUser,
+//                    updateShouldMonitorUser={
+//                        updateShouldMonitorUser()
+//                    }
+//                )
 
             }/**End of the column**/
 
