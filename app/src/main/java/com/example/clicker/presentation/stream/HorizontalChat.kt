@@ -28,7 +28,7 @@ import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.stream.views.AutoMod
 
 import com.example.clicker.presentation.stream.views.BottomModal
-import com.example.clicker.presentation.stream.views.ChatSettingsContainer
+
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
