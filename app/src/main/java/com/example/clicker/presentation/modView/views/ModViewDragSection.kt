@@ -74,11 +74,12 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
-import com.example.clicker.presentation.stream.views.isScrolledToEnd
+
 import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
 import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.DetectDoubleClickSpacer
 import com.example.clicker.presentation.stream.views.streamManager.DetectDraggingOrNotAtBottomButton
 import com.example.clicker.presentation.stream.views.streamManager.DropDownMenuHeaderBox

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -25,6 +26,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,17 +61,16 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
+import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.views.ChatBadges
 import com.example.clicker.presentation.stream.views.CheckIfUserDeleted
 import com.example.clicker.presentation.stream.views.CheckIfUserIsBanned
-import com.example.clicker.presentation.stream.views.DualIconsButton
 import com.example.clicker.presentation.stream.views.FilteredMentionLazyRow
 import com.example.clicker.presentation.stream.views.ShowIconBasedOnTextLength
 import com.example.clicker.presentation.stream.views.ShowModStatus
 import com.example.clicker.presentation.stream.views.StylizedTextField
 import com.example.clicker.presentation.stream.views.TextWithChatBadges
 
-import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -761,5 +764,83 @@ fun EnterChatColumn(
             stylizedTextField(modifier = Modifier.weight(2f))
             showIconBasedOnTextLength()
         }
+    }
+}
+
+
+@Composable
+fun ForwardSlash(
+    modifier:Modifier,
+    forwardSlashCommandList: List<ForwardSlashCommands>,
+    clickedCommandAutoCompleteText:(String)->Unit,
+){
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary),
+        reverseLayout = true
+    ){
+        items(forwardSlashCommandList){command ->
+            Column(modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 5.dp)
+                .clickable {
+                    clickedCommandAutoCompleteText(command.clickedValue)
+                }
+            ){
+                androidx.compose.material.Text(
+                    command.title,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                androidx.compose.material.Text(
+                    command.subtitle,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
+
+    }
+
+}
+
+/**Extension function used to determine if the use has scrolled to the end of the chat*/
+fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+
+
+/**
+ * - Contains 0 extra parts
+ * A [Button] meant to display a message surrounded by two icons.
+ *
+ * @param buttonAction a function that will run when this button is clicked
+ * @param iconImageVector the image vector for the two icons surrounding the [buttonText]
+ * @param iconDescription a String that will act as the contentDescription for the two icons created by the [iconImageVector]
+ * @param buttonText a String that will be displayed on top of the Button. This String should be short and no longer than
+ * 3 words
+ * */
+@Composable
+fun DualIconsButton(
+    buttonAction: () -> Unit,
+    iconImageVector: ImageVector,
+    iconDescription:String,
+    buttonText:String,
+){
+    Button(
+        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+        onClick = { buttonAction() }
+    ) {
+        androidx.compose.material.Icon(
+            imageVector = iconImageVector,
+            contentDescription = iconDescription,
+            tint =  MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier
+        )
+        androidx.compose.material.Text(buttonText,color =  MaterialTheme.colorScheme.onSecondary,)
+        androidx.compose.material.Icon(
+            imageVector = iconImageVector,
+            contentDescription = iconDescription,
+            tint =  MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier
+        )
     }
 }

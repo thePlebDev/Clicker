@@ -72,12 +72,12 @@ import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.modView.views.SharedBottomModal
 
-import com.example.clicker.presentation.stream.views.isScrolledToEnd
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
 import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
 import com.example.clicker.presentation.stream.views.chat.SubscriberOnlySwitch
+import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.util.Response
 
 /**
