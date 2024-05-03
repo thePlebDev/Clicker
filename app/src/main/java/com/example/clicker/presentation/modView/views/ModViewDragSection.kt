@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -75,8 +76,7 @@ import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
 
-import com.example.clicker.presentation.stream.views.streamManager.ModActionMessage
-import com.example.clicker.presentation.stream.views.streamManager.ModViewChat
+
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
@@ -200,55 +200,7 @@ import kotlin.math.roundToInt
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxOneDragging,
                 setDragging={newValue->setBoxOneDragging(newValue)},
-                content={
-                    ChatBox(
-                        dragging = boxOneDragging,
-                        chatMessageList = chatMessages,
-                        setDragging = {newValue ->setBoxOneDragging(newValue)},
-                        triggerBottomModal = { triggerBottomModal()},
-                        updateClickedUser = {  username, userId,isBanned,isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                isBanned,
-                                isMod
-                            )
-                        },
-                        clickedUserData = clickedUserData,
-                        timeoutDuration=timeoutDuration,
-                        changeTimeoutDuration={newValue->changeTimeoutDuration(newValue)},
-                        timeoutReason = timeoutReason,
-                        changeTimeoutReason ={newValue ->changeTimeoutReason(newValue)},
-
-                        banDuration = banDuration,
-                        changeBanDuration={newValue ->changeBanDuration(newValue)},
-                        banReason= banReason,
-                        changeBanReason = {newValue ->changeBanReason(newValue)},
-                        timeoutUser = {timeoutUser()},
-                        showTimeoutErrorMessage= showTimeoutErrorMessage,
-                        setTimeoutShowErrorMessage ={newValue ->setTimeoutShowErrorMessage(newValue)},
-
-                        showBanErrorMessage= showBanErrorMessage,
-                        setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
-                        banUser = {banUser()},
-                        blockedTerms =blockedTerms,
-                        deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
-                        emoteOnly =emoteOnly,
-                        setEmoteOnly={newValue -> setEmoteOnly(newValue)},
-                        subscriberOnly =subscriberOnly,
-                        setSubscriberOnly={newValue -> setSubscriberOnly(newValue)},
-
-                        chatSettingsEnabled=chatSettingsEnabled,
-                        switchEnabled =switchEnabled,
-                        followersOnlyList=followersOnlyList,
-                        selectedFollowersModeItem=selectedFollowersModeItem,
-                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
-                        slowModeList=slowModeList,
-                        selectedSlowModeItem=selectedSlowModeItem,
-                        changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
-                        deleteMessage={messageId ->deleteMessage(messageId)}
-                    )
-                }
+                content={}
 
             )
 
@@ -387,330 +339,6 @@ import kotlin.math.roundToInt
     }
 
 
-    /**
-     * ChatBox is the composable function that is used inside of [DraggableBackground] to represent the chat messages shown to the user
-     *
-     * @param dragging a Boolean used to determine if the user is dragging this component
-     * @param setDragging a function used to set the value of [dragging]
-     * @param chatMessageList a list of [TwitchUserData] objects. Represents all of the current chat messages
-     * @param triggerBottomModal a function used to determine if the the bottom modal should be shown to the user
-     * */
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    fun ChatBox(
-        dragging:Boolean,
-        setDragging:(Boolean)->Unit,
-        chatMessageList: List<TwitchUserData>,
-        triggerBottomModal:()->Unit,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-        clickedUserData: ClickedUIState,
-        timeoutDuration:Int,
-        changeTimeoutDuration:(Int)->Unit,
-        timeoutReason:String,
-        changeTimeoutReason: (String) -> Unit,
-
-        banDuration:Int,
-        changeBanDuration:(Int)->Unit,
-        banReason:String,
-        changeBanReason: (String) -> Unit,
-        timeoutUser:()->Unit,
-        deleteMessage:(String)->Unit,
-
-        showTimeoutErrorMessage:Boolean,
-        setTimeoutShowErrorMessage:(Boolean)->Unit,
-        showBanErrorMessage:Boolean,
-        setBanShowErrorMessage:(Boolean)->Unit,
-        banUser:()->Unit,
-        blockedTerms:List<BlockedTerm>,
-        deleteBlockedTerm:(String) ->Unit,
-        emoteOnly:Boolean,
-        setEmoteOnly:(Boolean) ->Unit,
-        subscriberOnly:Boolean,
-        setSubscriberOnly:(Boolean) ->Unit,
-        chatSettingsEnabled:Boolean,
-        switchEnabled: Boolean,
-
-        followersOnlyList: List<ListTitleValue>,
-        selectedFollowersModeItem: ListTitleValue,
-        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
-        slowModeList: List<ListTitleValue>,
-        selectedSlowModeItem: ListTitleValue,
-        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
-
-        ){
-        Log.d("ChatBoxTesting","RECOMP!!!!!!")
-        val opacity = if(dragging) 0.5f else 0f
-        val listState = rememberLazyListState()
-        val scope = rememberCoroutineScope()
-        var showTimeOutDialog by remember{ mutableStateOf(false) }
-        var showBanDialog by remember{ mutableStateOf(false) }
-        val hapticFeedback = LocalHapticFeedback.current
-
-
-        var autoscroll by remember { mutableStateOf(true) }
-        val interactionSource = listState.interactionSource
-
-
-        LaunchedEffect(interactionSource) {
-            interactionSource.interactions.collect { interaction ->
-                when (interaction) {
-                    is DragInteraction.Start -> {
-                        autoscroll = false
-                    }
-                    is PressInteraction.Press -> {
-                        autoscroll = false
-                    }
-                }
-            }
-        }
-
-        val endOfListReached by remember {
-            derivedStateOf {
-                listState.isScrolledToEnd()
-            }
-        }
-        // observer when reached end of list
-        LaunchedEffect(endOfListReached) {
-            // do your stuff
-            if (endOfListReached) {
-                autoscroll = true
-            }
-        }
-
-
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
-
-
-        ){
-
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(vertical = 5.dp)
-                ){
-                    stickyHeader {
-                        DropDownMenuHeaderBox(
-                            headerTitle ="CHAT",
-                            blockedTerms =blockedTerms,
-                            deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
-                            emoteOnly =emoteOnly,
-                            setEmoteOnly={newValue -> setEmoteOnly(newValue)},
-                            subscriberOnly =subscriberOnly,
-                            setSubscriberOnly ={newValue ->setSubscriberOnly(newValue)},
-                            chatSettingsEnabled=chatSettingsEnabled,
-                            switchEnabled=switchEnabled,
-                            followersOnlyList=followersOnlyList,
-                            selectedFollowersModeItem=selectedFollowersModeItem,
-                            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
-                            slowModeList=slowModeList,
-                            selectedSlowModeItem=selectedSlowModeItem,
-                            changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
-                        )
-                    }
-                    scope.launch {
-                        if(autoscroll){
-                            listState.scrollToItem(chatMessageList.size)
-                        }
-                    }
-
-                    items(chatMessageList){chatTwitchUserData ->
-                        when(chatTwitchUserData.messageType){
-                            MessageType.NOTICE ->{
-                                Log.d("MODACTIONS","NOTICE")
-
-
-                            }
-                            MessageType.CLEARCHAT ->{
-                                Log.d("MODACTIONS","CLEARCHAT")
-                            }
-                            MessageType.ANNOUNCEMENT->{
-
-                            }
-                            MessageType.RESUB->{
-
-                            }
-                            MessageType.SUB->{
-
-                            }
-                            MessageType.MYSTERYGIFTSUB->{
-
-                            }
-                            MessageType.GIFTSUB->{
-
-                            }
-                            else->{
-                                HorizontalDragDetectionBox(
-                                    itemBeingDragged = {dragOffset ->
-                                        ModViewChat.ChatMessageCard(
-                                            offset = if(chatTwitchUserData.mod !="1") dragOffset else 0f,
-                                            setDragging={newValue ->setDragging(newValue)},
-                                            indivUserChatMessage =chatTwitchUserData,
-                                            triggerBottomModal={triggerBottomModal()},
-                                            updateClickedUser = {  username, userId,isBanned,isMod ->
-                                                updateClickedUser(
-                                                    username,
-                                                    userId,
-                                                    isBanned,
-                                                    isMod
-                                                )
-                                            },
-                                        )
-                                    },
-                                    quarterSwipeLeftAction={
-                                        updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
-                                        showTimeOutDialog = true
-                                    },
-                                    quarterSwipeRightAction = {
-                                        updateClickedUser(chatTwitchUserData.displayName?:"",chatTwitchUserData.userId?:"",chatTwitchUserData.banned,chatTwitchUserData.mod =="1")
-                                        showBanDialog =true
-                                    },
-                                    halfSwipeAction={
-                                        deleteMessage(chatTwitchUserData.id?:"")
-
-                                    },
-                                    twoSwipeOnly = false,
-                                    swipeEnabled = chatTwitchUserData.mod !="1"
-
-                                )
-                            }
-                        }
-
-
-                    }
-                }
-            if(showTimeoutErrorMessage){
-                TimeoutErrorMessage(
-                    modifier = Modifier.align(Alignment.Center),
-                    setTimeoutShowErrorMessage ={newValue ->setTimeoutShowErrorMessage(newValue)}
-                )
-
-            }
-            if(showBanErrorMessage){
-                BanErrorMessage(
-                    modifier = Modifier.align(Alignment.Center),
-                    setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)}
-                )
-            }
-
-
-
-            if(dragging){
-                DetectDoubleClickSpacer(
-                    opacity,
-                    setDragging={newValue ->setDragging(newValue)},
-                    hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
-                )
-            }
-            DetectDraggingOrNotAtBottomButton(
-                dragging = dragging,
-                modifier = Modifier.align(Alignment.BottomCenter),
-                listState = listState,
-                scrollToBottomOfList = {
-                    scope.launch {
-                        listState.animateScrollToItem(chatMessageList.lastIndex)
-                    }
-                }
-            )
-
-
-        } //End of box
-        if(showTimeOutDialog){
-            ModViewDialogs.ModViewTimeoutDialog(
-                closeDialog = {showTimeOutDialog = false},
-                swipedMessageUsername = clickedUserData.clickedUsername,
-                timeoutDuration =timeoutDuration,
-                changeTimeoutDuration={newValue -> changeTimeoutDuration(newValue)},
-                timeoutReason = timeoutReason,
-                changeTimeoutReason ={newValue->changeTimeoutReason(newValue)},
-                timeoutUser = {timeoutUser()}
-            )
-        }
-
-        if(showBanDialog){
-            ModViewDialogs.ModViewBanDialog(
-                closeDialog = {showBanDialog =false},
-                swipedMessageUsername =clickedUserData.clickedUsername,
-                banDuration = banDuration,
-                changeBanDuration={newValue ->changeBanDuration(newValue)},
-                banReason= banReason,
-                changeBanReason = {newValue ->changeBanReason(newValue)},
-                banUser={banUser()}
-            )
-        }
-
-    }
-
-    @Composable
-    fun TimeoutErrorMessage(
-        modifier: Modifier,
-        setTimeoutShowErrorMessage:(Boolean)->Unit,
-    ){
-
-        var offsetX by remember { mutableStateOf(0f) }
-        var opacity by remember { mutableStateOf(0.9f) }
-
-        val dragState = rememberDraggableState{delta ->
-            if(opacity>0.1f){
-                opacity -= 0.05f
-            }
-            offsetX += (delta/2)
-        }
-
-            Row(modifier = modifier
-                .fillMaxWidth()
-                , horizontalArrangement = Arrangement.Center){
-                Text("You are not a moderator",modifier = Modifier
-                    .offset { IntOffset(offsetX.roundToInt(), 0) }
-                    .draggable(
-                        state = dragState,
-                        orientation = Orientation.Horizontal,
-                        onDragStopped = {
-                            setTimeoutShowErrorMessage(false)
-
-                        }
-                    )
-                    .background(Color.Red.copy(alpha = opacity))
-                    .padding(10.dp),
-                    color = Color.White.copy(alpha = opacity))
-            }
-    }
-    @Composable
-    fun BanErrorMessage(
-        modifier: Modifier,
-        setBanShowErrorMessage:(Boolean)->Unit,
-    ){
-
-        var offsetX by remember { mutableStateOf(0f) }
-        var opacity by remember { mutableStateOf(0.9f) }
-
-        val dragState = rememberDraggableState{delta ->
-            if(opacity>0.1f){
-                opacity -= 0.05f
-            }
-            offsetX += (delta/2)
-        }
-
-        Row(modifier = modifier
-            .fillMaxWidth()
-            , horizontalArrangement = Arrangement.Center){
-            Text("You are not a moderator",modifier = Modifier
-                .offset { IntOffset(offsetX.roundToInt(), 0) }
-                .draggable(
-                    state = dragState,
-                    orientation = Orientation.Horizontal,
-                    onDragStopped = {
-                        setBanShowErrorMessage(false)
-                    }
-                )
-                .background(Color.Red.copy(alpha = opacity))
-                .padding(10.dp),
-                color = Color.White.copy(alpha = opacity))
-        }
-    }
 
 
 
@@ -1125,4 +753,118 @@ import kotlin.math.roundToInt
     }
 
 
+object ModActionMessage{
+    @Composable
+    fun DeletedMessage(
+        message:String,
+    ){
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
 
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.mod_view_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Spacer(modifier = Modifier.height(10.dp))
+
+            }
+            Spacer(modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(Color.White.copy(0.6f)))
+
+        }
+    }
+
+    @Composable
+    fun TimeoutMessage(
+        message:String,
+    ){
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Spacer(modifier = Modifier.height(10.dp))
+
+            }
+            Spacer(modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(Color.White.copy(0.6f)))
+
+        }
+    }
+
+    @Composable
+    fun ClearChatMessage(
+        message:String,
+    ){
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.clear_chat_alt_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Spacer(modifier = Modifier.height(10.dp))
+
+            }
+            Spacer(modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(Color.White.copy(0.6f)))
+
+        }
+    }
+
+    @Composable
+    fun NoticeMessage(
+        message:String,
+    ){
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.person_outline_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Spacer(modifier = Modifier.height(10.dp))
+
+            }
+            Spacer(modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(Color.White.copy(0.6f)))
+
+        }
+    }
+
+
+}
