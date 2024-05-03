@@ -17,7 +17,7 @@ import com.example.clicker.network.clients.ChannelInformation
 
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
-import com.example.clicker.presentation.stream.views.TitleSubTitle
+
 import com.example.clicker.util.Response
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.lifecycle.HiltViewModel

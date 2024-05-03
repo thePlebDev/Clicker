@@ -35,7 +35,6 @@ import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
-import com.example.clicker.presentation.stream.views.streamManager.ManageStreamInformation
 import com.example.clicker.ui.theme.AppTheme
 
 

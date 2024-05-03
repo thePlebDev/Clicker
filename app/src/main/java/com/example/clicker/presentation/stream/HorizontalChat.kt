@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
-import com.example.clicker.presentation.stream.views.AutoMod
+
 
 import com.example.clicker.presentation.stream.views.BottomModal
 
