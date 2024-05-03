@@ -28,6 +28,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
@@ -62,8 +64,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -74,11 +81,7 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
-import com.example.clicker.presentation.stream.views.ChatBadges
-import com.example.clicker.presentation.stream.views.CheckIfUserDeleted
-import com.example.clicker.presentation.stream.views.CheckIfUserIsBanned
 
-import com.example.clicker.presentation.stream.views.TextWithChatBadges
 
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 import kotlinx.coroutines.launch
@@ -1088,4 +1091,197 @@ fun ShowModStatus(
 
 
 
+}
+
+/**
+ * CheckIfUserDeleted is the composable that will be used to determine if there should be extra information shown
+ * depending if the user's message has been deleted or not
+ *
+ * @param twitchUser a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object that represents the state of an individual user and their chat message
+ * */
+@Composable
+fun CheckIfUserDeleted(twitchUser: TwitchUserData){
+    if (twitchUser.deleted) {
+        androidx.compose.material.Text(
+            stringResource(R.string.moderator_deleted_comment),
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier.padding(start = 5.dp),
+            color = androidx.compose.material.MaterialTheme.colors.onPrimary
+        )
+    }
+}
+/**
+ *
+ * CheckIfUserIsBanned is the composable that will be used to determine if there should be extra information shown
+ * depending if the user has been banned by a moderator
+ *
+ * @param twitchUser a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object that represents the state of an individual user and their chat message
+ *
+ * */
+@Composable
+fun CheckIfUserIsBanned(twitchUser: TwitchUserData){
+    if (twitchUser.banned) {
+        val duration = if (twitchUser.bannedDuration != null) "Banned for ${twitchUser.bannedDuration} seconds" else "Banned permanently"
+        androidx.compose.material.Text(
+            duration,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier.padding(start = 5.dp)
+        )
+    }
+}
+
+/**
+ *
+ * TextWithChatBadges is really just a wrapper class around [ChatBadges] to allow us to use it a little more cleanly
+ * throughout our code
+ *
+ * @param twitchUser a [TwitchUserData][com.example.clicker.network.websockets.models.TwitchUserData] object that represents the state of an individual user and their chat message
+ * @param color  a color passed to [ChatBadges]
+ * @param fontSize a font size passed to [ChatBadges]
+ * */
+@Composable
+fun TextWithChatBadges(
+    twitchUser: TwitchUserData,
+    color: Color,
+    fontSize: TextUnit,
+
+    ){
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        ChatBadges(
+            username = "${twitchUser.displayName} :",
+            message = " ${twitchUser.userType}",
+            isMod = twitchUser.mod == "1",
+            isSub = twitchUser.subscriber == true,
+            isMonitored =twitchUser.isMonitored,
+            color = color,
+            textSize = fontSize
+        )
+
+    } // end of the row
+}
+
+/**
+ *
+ * ChatBadges is the composable that is responsible for showing the chat badges(mod or sub) beside the users username
+ *
+ * @param username a String representing the user that is currently sending chats
+ * @param message  a String representing the message sent by this user
+ * @param isMod a boolean determining if the user is a moderator or not
+ * @param isSub a boolean determining if the user is a subscriber or not
+ * @param color the color of the text
+ * @param textSize the size of the text
+ * */
+@Composable
+fun ChatBadges(
+    username: String,
+    message: String,
+    isMod: Boolean,
+    isSub: Boolean,
+    isMonitored:Boolean,
+    color: Color,
+    textSize: TextUnit
+) {
+    //for not these values can stay here hard coded. Until I implement more Icon
+//            val color = MaterialTheme.colorScheme.secondary
+//            val textSize = MaterialTheme.typography.headlineSmall.fontSize
+    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
+    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val modId = "modIcon"
+    val subId = "subIcon"
+    val monitorId ="monitorIcon"
+    val text = buildAnnotatedString {
+        // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
+        if(isMonitored){
+            appendInlineContent(monitorId, "[monitorIcon]")
+        }
+
+        if (isMod) {
+            appendInlineContent(modId, "[icon]")
+        }
+        if (isSub) {
+            appendInlineContent(subId, "[subicon]")
+        }
+        withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
+            append(username)
+        }
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
+            append(message)
+        }
+    }
+
+    val inlineContent = mapOf(
+        Pair(
+
+            modId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            subId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = stringResource(R.string.sub_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            monitorId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                androidx.compose.material.Icon(
+                    painter = painterResource(id = R.drawable.visibility_24),
+                    "contentDescription",
+                    tint= Color.Yellow,
+                    modifier = Modifier.size(35.dp)
+                )
+            }
+        )
+
+    )
+
+    androidx.compose.material.Text(
+        text = text,
+        inlineContent = inlineContent,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        color = color,
+        fontSize = textSize
+    )
 }
