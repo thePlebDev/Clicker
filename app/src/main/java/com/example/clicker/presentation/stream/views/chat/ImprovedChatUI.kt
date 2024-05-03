@@ -85,7 +85,7 @@ fun ChatUI(
     filteredChatList: List<String>,
     textFieldValue: MutableState<TextFieldValue>,
     clickedAutoCompleteText: (String) -> Unit,
-    modStatus: Boolean?,
+    isMod: Boolean,
     sendMessageToWebSocket: (String) -> Unit,
     showModal: () -> Unit,
     showOuterBottomModalState:() ->Unit,
@@ -124,7 +124,8 @@ fun ChatUI(
                 },
                 doubleClickMessage={username ->doubleClickMessage(username)},
                 modifier=modifier,
-                deleteChatMessage={messageId ->deleteChatMessage(messageId)}
+                deleteChatMessage={messageId ->deleteChatMessage(messageId)},
+                isMod = isMod
 
             )
         },
@@ -150,7 +151,7 @@ fun ChatUI(
                 },
                 showModStatus = {
                     ShowModStatus(
-                        modStatus =modStatus,
+                        modStatus =isMod,
                         showOuterBottomModalState={showOuterBottomModalState()},
                         orientationIsVertical =orientationIsVertical,
                         notificationAmount=notificationAmount
@@ -274,7 +275,8 @@ private class ImprovedChatUI(){
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
-        modifier: Modifier
+        modifier: Modifier,
+        isMod: Boolean
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -303,7 +305,8 @@ private class ImprovedChatUI(){
                     showTimeoutDialog ={showTimeoutDialog()},
                     showBanDialog={showBanDialog()},
                     doubleClickMessage={username ->doubleClickMessage(username)},
-                    deleteChatMessage={messageId->deleteChatMessage(messageId)}
+                    deleteChatMessage={messageId->deleteChatMessage(messageId)},
+                    isMod = isMod
 
                 )
 
@@ -321,6 +324,7 @@ private class ImprovedChatUI(){
         showBanDialog:()->Unit,
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
+        isMod:Boolean
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -342,57 +346,77 @@ private class ImprovedChatUI(){
                 }
 
                 MessageType.USER -> { //added
-                    HorizontalDragDetectionBox(
-                        itemBeingDragged = {dragOffset ->
-                            ClickableCard(
-                                twitchUser =twitchChatMessage,
-                                color = color.value,
-                                fontSize = messageFontSize,
-                                showBottomModal={showBottomModal()},
-                                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    if(isMod){
+                        HorizontalDragDetectionBox(
+                            itemBeingDragged = {dragOffset ->
+                                ClickableCard(
+                                    twitchUser =twitchChatMessage,
+                                    color = color.value,
+                                    fontSize = messageFontSize,
+                                    showBottomModal={showBottomModal()},
+                                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                                        updateClickedUser(
+                                            username,
+                                            userId,
+                                            isBanned,
+                                            isMod
+                                        )
+                                    },
+                                    offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
+                                    doubleClickMessage ={username ->doubleClickMessage(username)}
+                                )
+                            },
+                            quarterSwipeLeftAction={
+                                Log.d("quarterSwipeLeftAction","Cclicked")
+                                if(twitchChatMessage.mod != "1"){
                                     updateClickedUser(
-                                        username,
-                                        userId,
-                                        isBanned,
-                                        isMod
+                                        twitchChatMessage.displayName?:"",
+                                        twitchChatMessage.userId?:"",
+                                        twitchChatMessage.banned,
+                                        twitchChatMessage.mod == "1"
                                     )
-                                },
-                                offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
-                                doubleClickMessage ={username ->doubleClickMessage(username)}
-                            )
-                        },
-                        quarterSwipeLeftAction={
-                            Log.d("quarterSwipeLeftAction","Cclicked")
-                            if(twitchChatMessage.mod != "1"){
-                                updateClickedUser(
-                                    twitchChatMessage.displayName?:"",
-                                    twitchChatMessage.userId?:"",
-                                    twitchChatMessage.banned,
-                                    twitchChatMessage.mod == "1"
-                                )
-                                showTimeoutDialog()
-                            }
+                                    showTimeoutDialog()
+                                }
 
-                        },
-                        quarterSwipeRightAction={
-                            Log.d("quarterSwipeLeftAction","Cclicked")
-                            if(twitchChatMessage.mod != "1"){
-                                updateClickedUser(
-                                    twitchChatMessage.displayName?:"",
-                                    twitchChatMessage.userId?:"",
-                                    twitchChatMessage.banned,
-                                    twitchChatMessage.mod == "1"
-                                )
-                                showBanDialog()
-                            }
+                            },
+                            quarterSwipeRightAction={
+                                Log.d("quarterSwipeLeftAction","Cclicked")
+                                if(twitchChatMessage.mod != "1"){
+                                    updateClickedUser(
+                                        twitchChatMessage.displayName?:"",
+                                        twitchChatMessage.userId?:"",
+                                        twitchChatMessage.banned,
+                                        twitchChatMessage.mod == "1"
+                                    )
+                                    showBanDialog()
+                                }
 
-                        },
-                        halfSwipeAction={
-                            deleteChatMessage(twitchChatMessage.id?:"" )
-                        },
-                        swipeEnabled = true,
-                        twoSwipeOnly= false
-                    )
+                            },
+                            halfSwipeAction={
+                                deleteChatMessage(twitchChatMessage.id?:"" )
+                            },
+                            swipeEnabled = true,
+                            twoSwipeOnly= false
+                        )
+                    }else{
+                        ClickableCard(
+                            twitchUser =twitchChatMessage,
+                            color = color.value,
+                            fontSize = messageFontSize,
+                            showBottomModal={showBottomModal()},
+                            updateClickedUser = {  username, userId,isBanned,isMod ->
+                                updateClickedUser(
+                                    username,
+                                    userId,
+                                    isBanned,
+                                    isMod
+                                )
+                            },
+                            offset = 0f,
+                            doubleClickMessage ={username ->doubleClickMessage(username)}
+                        )
+                    }
+
 
                 }
 

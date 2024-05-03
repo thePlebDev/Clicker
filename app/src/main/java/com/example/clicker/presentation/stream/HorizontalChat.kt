@@ -208,7 +208,7 @@ fun HorizontalChat(
 
                 orientationIsVertical =false,
 
-                modStatus = true,
+                isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                 filteredChatList = filteredChat,
                 clickedAutoCompleteText = { username ->
                     streamViewModel.autoTextChange(username)
