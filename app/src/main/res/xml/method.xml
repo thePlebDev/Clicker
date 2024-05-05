@@ -1,0 +1,17 @@
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:settingsActivity="com.example.clicker.keyboard.CustomInputMethodService"
+    android:supportsInlineSuggestions="true"
+    android:supportsSwitchingToNextInputMethod="true"
+    tools:targetApi="r">
+
+    <!-- Add default system subtype so we can properly set the icon and label -->
+    <subtype
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="AsciiCapable"
+        android:isAsciiCapable="true"
+        android:overridesImplicitlyEnabledSubtype="true"/>
+
+</input-method>

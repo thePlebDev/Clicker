@@ -19,6 +19,7 @@
     <!-- HomeView CustomTopBar composable -->
     <string name="menu_icon_description">Menu</string>
     <string name="live_channels">Live channels</string>
+    <string name="label_subtype_generic">%s</string>
 
 
     <!-- HomeView LoginCard composable -->
