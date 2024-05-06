@@ -2,6 +2,9 @@ package com.example.clicker.presentation.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -18,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 
 
@@ -50,67 +54,66 @@ fun ValidationView(
 
 
 
-//    HomeViewImplementation(
-//        bottomModalState =bottomModalState,
-//        loginWithTwitch ={loginWithTwitch()},
-//        domainIsRegistered =domainIsRegistered,
-//        addToLinks = { addToLinks() },
-//        onNavigate = {id -> onNavigate(id) },
-//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-//            streamViewModel.updateChannelNameAndClientIdAndUserId(
-//                streamerName,
-//                clientId,
-//                broadcasterId,
-//                userId,
-//                login =homeViewModel.validatedUser.value?.login ?:""
-//            )
-//            autoModViewModel.updateAutoModCredentials(
-//                oAuthToken = homeViewModel.state.value.oAuthToken,
-//                clientId = streamViewModel.state.value.clientId,
-//                moderatorId = streamViewModel.state.value.userId,
-//                broadcasterId = streamViewModel.state.value.broadcasterId,
-//            )
-//            updateModViewSettings(
-//                homeViewModel.state.value.oAuthToken,
-//                streamViewModel.state.value.clientId,
-//                streamViewModel.state.value.broadcasterId,
-//                streamViewModel.state.value.userId,
-//            )
-//            createNewTwitchEventWebSocket()
-//
-//        },
-//        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-//        clientId = clientId ?: "",
-//        userId = userId ?: "",
-//        height = homeViewModel.state.value.aspectHeight,
-//        width = homeViewModel.state.value.width,
-//        logout = {
-//            homeViewModel.beginLogout(
-//                clientId = clientId?:"",
-//                oAuthToken = oAuthToken
-//            )
-//            //homeViewModel.logout()
-//            homeViewModel.hideLogoutDialog()
-//
-//        },
-//        userIsAuthenticated =userIsAuthenticated,
-//        screenDensity = homeViewModel.state.value.screenDensity,
-//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-//        networkMessageColor=Color.Red,
-//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-//        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
-//        hapticFeedBackError={hapticFeedBackError()}
-//
-//    )
+    HomeViewImplementation(
+        bottomModalState =bottomModalState,
+        loginWithTwitch ={loginWithTwitch()},
+        domainIsRegistered =domainIsRegistered,
+        addToLinks = { addToLinks() },
+        onNavigate = {id -> onNavigate(id) },
+        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+            streamViewModel.updateChannelNameAndClientIdAndUserId(
+                streamerName,
+                clientId,
+                broadcasterId,
+                userId,
+                login =homeViewModel.validatedUser.value?.login ?:""
+            )
+            autoModViewModel.updateAutoModCredentials(
+                oAuthToken = homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+                moderatorId = streamViewModel.state.value.userId,
+                broadcasterId = streamViewModel.state.value.broadcasterId,
+            )
+            updateModViewSettings(
+                homeViewModel.state.value.oAuthToken,
+                streamViewModel.state.value.clientId,
+                streamViewModel.state.value.broadcasterId,
+                streamViewModel.state.value.userId,
+            )
+            createNewTwitchEventWebSocket()
 
-    TestingAnother()
+        },
+        updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
+        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+        clientId = clientId ?: "",
+        userId = userId ?: "",
+        height = homeViewModel.state.value.aspectHeight,
+        width = homeViewModel.state.value.width,
+        logout = {
+            homeViewModel.beginLogout(
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
+            )
+            //homeViewModel.logout()
+            homeViewModel.hideLogoutDialog()
+
+        },
+        userIsAuthenticated =userIsAuthenticated,
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+        networkMessageColor=Color.Red,
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
+        hapticFeedBackError={hapticFeedBackError()}
+
+    )
+
 
 }
 
@@ -124,17 +127,6 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
     )
 }
 
-@Composable
-fun TestingAnother(){
-    var text by remember { mutableStateOf("Hello") }
-
-    TextField(
-        value = text,
-        onValueChange = { text = it },
-        label = { Text("Label") }
-    )
-
-}
 
 
 

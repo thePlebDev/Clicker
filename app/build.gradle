@@ -200,6 +200,8 @@ dependencies {
 
     implementation("androidx.compose.material3:material3:1.1.2")
 
+    implementation "androidx.lifecycle:lifecycle-runtime:2.7.0"
+
 
 
 
