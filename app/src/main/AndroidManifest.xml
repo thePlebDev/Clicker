@@ -13,18 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
         tools:targetApi="31">
-        <!-- IME service -->
-        <service
-            android:name="com.example.clicker.keyboard.CustomInputMethodService"
-            android:label="Twitch Emote Keyboard"
-            android:permission="android.permission.BIND_INPUT_METHOD"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.view.InputMethod"/>
-            </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/method"/>
 
-        </service>
         <activity
             android:name=".MainActivity"
             android:exported="true"
