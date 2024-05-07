@@ -254,7 +254,9 @@ fun StreamView(
                             streamViewModel.sendMessage(string)
                         },
                         noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                        deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)}
+                        deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                        clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)}
                     )
 
 
