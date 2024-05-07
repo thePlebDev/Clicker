@@ -73,12 +73,12 @@ class TokenMonitoring @Inject constructor(){
                         }
                     }else{
                         val message = TwitchUserDataObjectMother
-                            .addUserType("You are not a moderator in this chat")
+                            .addUserType("You are not a moderator in this chat. You do not have the proper permissions for this command")
                             .addColor("#BF40BF")
                             .addDisplayName("System message")
                             .addMod("mod")
                             .addSystemMessage("")
-                            .addMessageType(MessageType.ANNOUNCEMENT)
+                            .addMessageType(MessageType.ERROR)
                             .build()
                         addMessageToListChats(message)
 
