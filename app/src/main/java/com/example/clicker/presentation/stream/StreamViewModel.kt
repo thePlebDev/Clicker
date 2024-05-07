@@ -1027,6 +1027,15 @@ class StreamViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     timeoutUserError = false,
                 )
+                val message = TwitchUserDataObjectMother
+                    .addUserType("You are not a moderator in this chat. You do not have the proper permissions for this command")
+                    .addColor("#BF40BF")
+                    .addDisplayName("System message")
+                    .addMod("mod")
+                    .addSystemMessage("")
+                    .addMessageType(MessageType.ERROR)
+                    .build()
+                listChats.add(message)
             }
             }
 

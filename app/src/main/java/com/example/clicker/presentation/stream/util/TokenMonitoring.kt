@@ -35,7 +35,7 @@ class TokenMonitoring @Inject constructor(){
                     val message = TwitchUserDataObjectMother
                         .addUserType(chatMessage)
                         .addColor("#BF40BF")
-                        .addSystemMessage("")
+                        .addSystemMessage("Unrecognized command ")
                         .addDisplayName("Unrecognized command")
                         .addMod("mod")
                         .addMessageType(MessageType.ANNOUNCEMENT)
@@ -54,7 +54,7 @@ class TokenMonitoring @Inject constructor(){
                                 .addColor("#BF40BF")
                                 .addDisplayName("Unrecognized username")
                                 .addMod("mod")
-                                .addSystemMessage("")
+                                .addSystemMessage("${tokenCommand.username} not found in this session")
                                 .addMessageType(MessageType.ANNOUNCEMENT)
                                 .build()
                             addMessageToListChats(message)
