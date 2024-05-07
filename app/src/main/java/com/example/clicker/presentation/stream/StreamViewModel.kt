@@ -497,7 +497,7 @@ class StreamViewModel @Inject constructor(
      *
      * @param command  a string meant to represent the slash command that was clicked on by the user
      * */
-    fun autoTextChangeCommand(command: String) {
+    fun clickedCommandAutoCompleteText(command: String) {
         textParsing.clickSlashCommandTextAutoChange(
             command =command,
         )

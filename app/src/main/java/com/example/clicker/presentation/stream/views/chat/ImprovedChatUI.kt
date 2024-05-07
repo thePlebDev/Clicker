@@ -109,6 +109,8 @@ fun ChatUI(
     notificationAmount:Int,
     noChat:Boolean,
     deleteChatMessage:(String)->Unit,
+    forwardSlashCommands: List<ForwardSlashCommands>,
+    clickedCommandAutoCompleteText: (String) -> Unit
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -189,7 +191,9 @@ fun ChatUI(
                 },
             )
         },
-        noChat=noChat
+        noChat=noChat,
+        forwardSlashCommands =forwardSlashCommands,
+        clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
 
         )
 }
@@ -200,11 +204,14 @@ fun ChatUI(
     chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
-    noChat:Boolean
+    noChat:Boolean,
+    forwardSlashCommands: List<ForwardSlashCommands>,
+    clickedCommandAutoCompleteText: (String) -> Unit
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
     val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
+
 
 
     val chatUIScope = remember(){ ImprovedChatUI() }
@@ -231,13 +238,22 @@ fun ChatUI(
 
             scrollToBottom(modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 60.dp))
+                .padding(bottom = 60.dp)
+            )
+            ForwardSlash(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 60.dp),
+                forwardSlashCommandList = forwardSlashCommands,
+                clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
+            )
         }
     }
 
 
 }
+@Composable
+fun SlashUI(){
 
+}
 
 
 @Stable
@@ -794,18 +810,18 @@ fun ForwardSlash(
         reverseLayout = true
     ){
         items(forwardSlashCommandList){command ->
-            Column(modifier = Modifier.fillMaxWidth()
+            Column(modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 5.dp)
                 .clickable {
                     clickedCommandAutoCompleteText(command.clickedValue)
                 }
             ){
-                androidx.compose.material.Text(
+                Text(
                     command.title,
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
-                androidx.compose.material.Text(
+               Text(
                     command.subtitle,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
