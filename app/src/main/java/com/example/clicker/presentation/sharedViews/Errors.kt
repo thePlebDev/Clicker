@@ -39,63 +39,7 @@ class ErrorScope(
     val fontSize: TextUnit
 ) {
 
-    @Composable
-    fun ChatErrorMessage(
-        message:String
-    ){
 
-        val sideFade = Brush.horizontalGradient(
-            listOf(
-                Color.Red, Color.Red.copy(alpha = 0.8f), Color.Red.copy(alpha = 0.6f),
-                Color.Red.copy(alpha = 0.4f), Color.Red.copy(alpha = 0.2f), Color.Red.copy(alpha = 0.0f)
-            ),
-            startX = 0.0f,
-            endX = 130.0f
-        )
-        Box(
-            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
-        ){
-            Spacer(modifier = Modifier.align(Alignment.CenterStart)
-                .width(130.dp)
-                .fadingEdge(sideFade)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.Red)
-                .height(80.dp)
-
-            )
-            Row(){
-                Spacer(modifier = Modifier
-                    .height(80.dp)
-
-                )
-                Spacer(modifier = Modifier
-                    .width(17.dp)
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Text("Error", color = MaterialTheme.colorScheme.onPrimary,fontSize=fontSize)
-                        Spacer(modifier = Modifier
-                            .width(6.dp)
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.error_outline_24),
-                            contentDescription = "Chat error",
-                            tint = Color.Red,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Text(message, color = MaterialTheme.colorScheme.onPrimary,fontSize=fontSize)
-                }
-            }
-
-        }
-
-
-    }// end or chat error message
 
 
     @Composable
