@@ -37,7 +37,7 @@ import com.example.clicker.presentation.sharedViews.fadingEdge
 
 /**
  * ChatScope contains all the System level(sent from the Twitch servers) chat messages used throughout the application. ChatScope
- * contains 7 properties
+ * contains 8 properties
  *
  * @param titleFontSize a [TextUnit] that is used to determine the the size of the messageType parameter used in all the composables
  * @param messageFontSize a [TextUnit] that is used to determine the the size of the message parameter used in all the composables
@@ -49,6 +49,7 @@ import com.example.clicker.presentation.sharedViews.fadingEdge
  * @property GiftSubMessages
  * @property AnonGiftMessages
  * @property JoinMessage
+ * @property ChatErrorMessage
  * */
 @Stable
 class ChatScope(
@@ -264,8 +265,73 @@ class ChatScope(
 
         }
 
-
     }
+
+    /**
+     * ChatErrorMessage is a composable meant to signify to the user that an error has occurred relating to chat, ie, the intended
+     * action has not taken place
+     *
+     * - UI demonstration of ChatErrorMessage is [HERE](https://github.com/thePlebDev/Clicker/wiki/System-Level-Chat-messages#ChatErrorMessage)
+     *
+     * @param message a String meant to display the error information to the user
+     * */
+    @Composable
+    fun ChatErrorMessage(
+        message:String
+    ){
+
+        val sideFade = Brush.horizontalGradient(
+            listOf(
+                Color.Red, Color.Red.copy(alpha = 0.8f), Color.Red.copy(alpha = 0.6f),
+                Color.Red.copy(alpha = 0.4f), Color.Red.copy(alpha = 0.2f), Color.Red.copy(alpha = 0.0f)
+            ),
+            startX = 0.0f,
+            endX = 130.0f
+        )
+        Box(
+            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+        ){
+            Spacer(modifier = Modifier.align(Alignment.CenterStart)
+                .width(130.dp)
+                .fadingEdge(sideFade)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color.Red)
+                .height(80.dp)
+
+            )
+            Row(){
+                Spacer(modifier = Modifier
+                    .height(80.dp)
+
+                )
+                Spacer(modifier = Modifier
+                    .width(17.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically){
+                        Text("Error", color = MaterialTheme.colorScheme.onPrimary,fontSize=titleFontSize)
+                        Spacer(modifier = Modifier
+                            .width(6.dp)
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.error_outline_24),
+                            contentDescription = "Chat error",
+                            tint = Color.Red,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Text(message, color = MaterialTheme.colorScheme.onPrimary,fontSize=messageFontSize)
+                }
+            }
+
+        }
+
+
+    }// end or chat error message
 
 
 

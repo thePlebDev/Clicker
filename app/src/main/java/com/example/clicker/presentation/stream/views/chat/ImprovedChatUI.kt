@@ -250,11 +250,6 @@ fun ChatUI(
 
 
 }
-@Composable
-fun SlashUI(){
-
-}
-
 
 @Stable
 private class ImprovedChatUI(){
@@ -360,7 +355,6 @@ private class ImprovedChatUI(){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
-        val errorScope = remember(){ ErrorScope(messageFontSize) }
         val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
         if(color.value == Color.Black){
             color.value = MaterialTheme.colorScheme.primary
@@ -486,9 +480,7 @@ private class ImprovedChatUI(){
                 }
 
                 MessageType.ERROR -> {
-                    with(errorScope){
-                        ChatErrorMessage(twitchChatMessage.userType ?:"")
-                    }
+                    ChatErrorMessage(twitchChatMessage.userType ?:"")
                 }
 
                 MessageType.JOIN -> {
