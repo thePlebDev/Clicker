@@ -1,5 +1,6 @@
 package com.example.clicker.network.models.websockets
 
+import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageType
 
 /**
@@ -76,7 +77,8 @@ data class TwitchUserData(
     val banned: Boolean = false,
     val bannedDuration: Int? = null,
     val systemMessage: String? = null,
-    val isMonitored:Boolean = false
+    val isMonitored:Boolean = false,
+    val emoteInTextList:List<EmoteInText>
 )
 
 /**

@@ -2,6 +2,7 @@ package com.example.clicker
 
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.ParsingEngine
+import com.example.clicker.network.websockets.findEmoteNames
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import org.junit.Assert
 import org.junit.Test
@@ -220,8 +221,32 @@ class ParsingEngineTest {
         val messageIdExpected ="msg-id=emote_only_on"
         val testString ="@msg-id=emote_only_on :tmi.twitch.tv NOTICE #theplebdev :This room is now in emote-only mode."
         val pattern = "msg-id=emote_only_on".toRegex()
+
         val foundId = pattern.find(testString)?.value
 
         Assert.assertEquals(messageIdExpected, foundId)
     }
+
+    @Test
+    fun parsing_seems_good(){
+        /**GIVEN*/
+        val channelName ="theplebdev"
+        val foundEmoteOne = "SeemsGood"
+        val foundEmoteTwo = "GoldPLZ"
+        val privateMsgPattern = "(#$channelName :)(.+)".toRegex()
+        val input ="@badge-info=;badges=;client-nonce=3f38fcdc2df589ee2c07f582ddb1941b;color=;display-name=meanermeeny;emotes=64138:24-32;first-msg=0;flags=;id=ef438e2b-3117-49ee-b4f6-7086f078c8d8;mod=0;returning-chatter=0;room-id=520593641;subscriber=0;tmi-sent-ts=1715189385354;turbo=0;user-id=949335660;user-type= :meanermeeny!meanermeeny@meanermeeny.tmi.twitch.tv PRIVMSG #theplebdev :testing $foundEmoteOne $foundEmoteTwo  again"
+        val privateMsgResult = privateMsgPattern.find(input)
+        val privateMsg = privateMsgResult?.groupValues?.get(2) ?: ""
+        val emoteNames = listOf("SeemsGood","ChewyYAY", "GoatEmotey", "GoldPLZ", "ForSigmar", "TwitchConHYPE", "PopNemo", "FlawlessVictory", "PikaRamen", "DinoDance", "NiceTry", "LionOfYara", "NewRecord", "Lechonk", "Getcamped", "SUBprise", "FallHalp", "FallCry", "FallWinning")
+
+        /**WHEN*/
+        val foundEmotes = findEmoteNames(privateMsg, emoteNames)
+
+        /**THEN*/
+        Assert.assertEquals(foundEmotes[0].emoteKey, foundEmoteOne)
+
+    }
 }
+
+
+

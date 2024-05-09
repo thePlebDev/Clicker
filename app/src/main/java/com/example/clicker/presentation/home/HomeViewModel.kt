@@ -495,6 +495,7 @@ class HomeViewModel @Inject constructor(
         userId: String,
         oAuthToken: String
     ) {
+        Log.d("getLiveStreams","OAuthToken --> ${oAuthToken}")
         try {
             withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
 
