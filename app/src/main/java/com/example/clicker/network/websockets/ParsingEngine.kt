@@ -13,6 +13,22 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+data class EmoteInText(
+    val emoteKey:String,
+    val startIndex:Int,
+    val endIndex:Int
+)
+
+fun findEmoteNames(input: String, emoteNames: List<String>): List<EmoteInText> {
+    val regex = Regex("\\b(?:${emoteNames.joinToString("|")})\\b")
+    return regex.findAll(input).map {
+        EmoteInText(
+            emoteKey = it.value,
+            startIndex = it.range.first,
+            endIndex = it.range.last
+        )
+    }.toList()
+}
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
@@ -253,7 +269,7 @@ class ParsingEngine @Inject constructor() {
         val privateMsgPattern = "(#$channelName :)(.+)".toRegex()
         //Log.d("TextChatNumber","total number of messages = ${textChatCount++} ")
 
-//        Log.d("privateMessageParsing","string --> $text")
+        Log.d("privateMessageParsing","string --> $text")
 
         val matchResults = pattern.findAll(text)
         val privateMsgResult = privateMsgPattern.find(text)
@@ -284,7 +300,8 @@ class ParsingEngine @Inject constructor() {
             turbo = parsedData["turbo"]?.toIntOrNull() == 1,
             userType = privateMsg,
             userId = parsedData["user-id"],
-            messageType = MessageType.USER
+            messageType = MessageType.USER,
+            emoteInTextList =
         )
     }
 
