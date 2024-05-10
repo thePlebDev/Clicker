@@ -1202,13 +1202,14 @@ fun ChatBadges(
     textSize: TextUnit,
     messageList:List<MessageToken>
 ) {
+    Log.d("ChatBadgesMessageList","$messageList")
     //for not these values can stay here hard coded. Until I implement more Icon
 //            val color = MaterialTheme.colorScheme.secondary
 //            val textSize = MaterialTheme.typography.headlineSmall.fontSize
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     val feelsGood = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
-    val feelsGoodId ="feelsGood"
+    val feelsGoodId ="SeemsGood"
     val modId = "modIcon"
     val subId = "subIcon"
     val monitorId ="monitorIcon"
@@ -1234,11 +1235,7 @@ fun ChatBadges(
                     append(" ${messageToken.messageValue} ")
                 }
             }else{
-
-                    appendInlineContent(feelsGoodId, "[feelsGoodId]")
-                append
-
-
+                    appendInlineContent(messageToken.messageValue, "[${messageToken.messageValue}]")
             }
         }
 
@@ -1326,7 +1323,7 @@ fun ChatBadges(
         ),
 
     )
-    val ImageInlineContentKey = InlineContentKey("image")
+
 
     Text(
         text = text,
@@ -1338,3 +1335,4 @@ fun ChatBadges(
         fontSize = textSize
     )
 }
+

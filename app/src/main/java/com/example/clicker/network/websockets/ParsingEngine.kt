@@ -422,6 +422,7 @@ class MessageScanner(
     init {
         map["SeemsGood"] = MessageToken(
             messageType = PrivateMessageType.EMOTE,
+            messageValue="SeemsGood",
             url = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
         )
     }
