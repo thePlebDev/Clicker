@@ -1,5 +1,6 @@
 package com.example.clicker.network.models.websockets
 
+import androidx.compose.runtime.Immutable
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageType
 
@@ -54,6 +55,7 @@ data class LoggedInUserData(
  * @property systemMessage representing a message sent by the Twitch irc server
  * @constructor Creates the state representing a chatting user.
  */
+@Immutable
 data class TwitchUserData(
     val badgeInfo: String?,
     val badges: String?,
@@ -78,7 +80,7 @@ data class TwitchUserData(
     val bannedDuration: Int? = null,
     val systemMessage: String? = null,
     val isMonitored:Boolean = false,
-    val emoteInTextList:List<EmoteInText>
+    val emoteInTextList:List<EmoteInText> = listOf()
 )
 
 /**

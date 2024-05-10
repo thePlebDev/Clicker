@@ -78,6 +78,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
@@ -241,7 +242,9 @@ fun ChatUI(
                 .padding(bottom = 60.dp)
             )
             ForwardSlash(
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 60.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 60.dp),
                 forwardSlashCommandList = forwardSlashCommands,
                 clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
             )
@@ -553,9 +556,8 @@ fun ClickableCard(
 
 
     ){
-    Log.d("TestingIndivChatMessage",twitchUser.userType ?:"")
+    Log.d("TestingIndivChatMessage", "list --> ${twitchUser.emoteInTextList }")
     val showIcon = remember { mutableStateOf(false) }
-
 
     Column(
         modifier = Modifier.combinedClickable(
@@ -592,6 +594,7 @@ fun ClickableCard(
                     twitchUser = twitchUser,
                     color = color,
                     fontSize = fontSize,
+                    emoteInTextList =twitchUser.emoteInTextList
                 )
             }
             if(showIcon.value){
@@ -1045,11 +1048,11 @@ fun ShowModStatus(
             AsyncImage(
                 modifier = Modifier
                     .clickable {
-                        if (orientationIsVertical){
+                        if (orientationIsVertical) {
                             showOuterBottomModalState()
                         }
                     }
-                    .padding(top =10.dp,end = 2.dp)
+                    .padding(top = 10.dp, end = 2.dp)
                 ,
                 model = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/3",
                 contentDescription = stringResource(R.string.moderator_badge_icon_description)
@@ -1057,7 +1060,8 @@ fun ShowModStatus(
             if(notificationAmount>0){
                 androidx.compose.material.Text(
                     "$notificationAmount",
-                    modifier = Modifier.align(Alignment.TopStart)
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
                         .clip(RoundedCornerShape(4.dp))
                         .background(Color.Red)
                         .padding(horizontal = 3.dp),
@@ -1084,7 +1088,8 @@ fun ShowModStatus(
                 if(notificationAmount>0){
                     androidx.compose.material.Text(
                         "$notificationAmount",
-                        modifier = Modifier.align(Alignment.TopStart)
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
                             .clip(RoundedCornerShape(4.dp))
                             .background(Color.Red)
                             .padding(horizontal = 3.dp),
@@ -1152,6 +1157,7 @@ fun TextWithChatBadges(
     twitchUser: TwitchUserData,
     color: Color,
     fontSize: TextUnit,
+    emoteInTextList: List<EmoteInText>
 
     ){
     Row(
@@ -1165,7 +1171,8 @@ fun TextWithChatBadges(
             isSub = twitchUser.subscriber == true,
             isMonitored =twitchUser.isMonitored,
             color = color,
-            textSize = fontSize
+            textSize = fontSize,
+            emoteInTextList =emoteInTextList
         )
 
     } // end of the row
@@ -1190,13 +1197,16 @@ fun ChatBadges(
     isSub: Boolean,
     isMonitored:Boolean,
     color: Color,
-    textSize: TextUnit
+    textSize: TextUnit,
+    emoteInTextList: List<EmoteInText>
 ) {
     //for not these values can stay here hard coded. Until I implement more Icon
 //            val color = MaterialTheme.colorScheme.secondary
 //            val textSize = MaterialTheme.typography.headlineSmall.fontSize
     val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
+    val feelsGood = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
+    val feelsGoodId ="feelsGood"
     val modId = "modIcon"
     val subId = "subIcon"
     val monitorId ="monitorIcon"
@@ -1214,6 +1224,13 @@ fun ChatBadges(
         }
         withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
             append(username)
+        }
+        if(emoteInTextList.isNotEmpty()){
+            append(message.substring(0,emoteInTextList[0].startIndex))
+            for(emotes in emoteInTextList){
+                appendInlineContent(feelsGoodId, "[feelsGoodId]")
+                append(message.substring(emotes.startIndex,emotes.endIndex))
+            }
         }
         withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
             append(message)
@@ -1279,11 +1296,31 @@ fun ChatBadges(
                     modifier = Modifier.size(35.dp)
                 )
             }
-        )
+        ),
+        Pair(
+
+            feelsGoodId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = MaterialTheme.typography.headlineMedium.fontSize,
+                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = feelsGood,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
 
     )
 
-    androidx.compose.material.Text(
+    Text(
         text = text,
         inlineContent = inlineContent,
         modifier = Modifier

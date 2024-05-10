@@ -14,7 +14,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class EmoteInText(
-    val emoteKey:String,
+    val emoteUrl:String,
     val startIndex:Int,
     val endIndex:Int
 )
@@ -23,12 +23,13 @@ fun findEmoteNames(input: String, emoteNames: List<String>): List<EmoteInText> {
     val regex = Regex("\\b(?:${emoteNames.joinToString("|")})\\b")
     return regex.findAll(input).map {
         EmoteInText(
-            emoteKey = it.value,
+            emoteUrl = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
             startIndex = it.range.first,
             endIndex = it.range.last
         )
     }.toList()
 }
+
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
  */
@@ -281,6 +282,8 @@ class ParsingEngine @Inject constructor() {
             val (key, value) = matchResult.destructured
             parsedData[key] = value
         }
+        val emoteNames = listOf("SeemsGood","ChewyYAY", "GoatEmotey", "GoldPLZ", "ForSigmar", "TwitchConHYPE", "PopNemo", "FlawlessVictory", "PikaRamen", "DinoDance", "NiceTry", "LionOfYara", "NewRecord", "Lechonk", "Getcamped", "SUBprise", "FallHalp", "FallCry", "FallWinning")
+        val emoteInTextList = findEmoteNames(privateMsg,emoteNames)
 
         return TwitchUserData(
             badgeInfo = parsedData["badge-info"],
@@ -301,9 +304,10 @@ class ParsingEngine @Inject constructor() {
             userType = privateMsg,
             userId = parsedData["user-id"],
             messageType = MessageType.USER,
-            emoteInTextList =
+            emoteInTextList = emoteInTextList
         )
     }
+
 
     /**
      * Parses the information relate to the chat rooms state. Should be run when ROOMSTATE is sent
