@@ -74,12 +74,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.EmoteInText
+import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 
@@ -556,7 +559,6 @@ fun ClickableCard(
 
 
     ){
-    Log.d("TestingIndivChatMessage", "list --> ${twitchUser.emoteInTextList }")
     val showIcon = remember { mutableStateOf(false) }
 
     Column(
@@ -594,7 +596,7 @@ fun ClickableCard(
                     twitchUser = twitchUser,
                     color = color,
                     fontSize = fontSize,
-                    emoteInTextList =twitchUser.emoteInTextList
+
                 )
             }
             if(showIcon.value){
@@ -1157,7 +1159,6 @@ fun TextWithChatBadges(
     twitchUser: TwitchUserData,
     color: Color,
     fontSize: TextUnit,
-    emoteInTextList: List<EmoteInText>
 
     ){
     Row(
@@ -1172,7 +1173,8 @@ fun TextWithChatBadges(
             isMonitored =twitchUser.isMonitored,
             color = color,
             textSize = fontSize,
-            emoteInTextList =emoteInTextList
+            messageList=twitchUser.messageList
+
         )
 
     } // end of the row
@@ -1198,7 +1200,7 @@ fun ChatBadges(
     isMonitored:Boolean,
     color: Color,
     textSize: TextUnit,
-    emoteInTextList: List<EmoteInText>
+    messageList:List<MessageToken>
 ) {
     //for not these values can stay here hard coded. Until I implement more Icon
 //            val color = MaterialTheme.colorScheme.secondary
@@ -1225,16 +1227,21 @@ fun ChatBadges(
         withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
             append(username)
         }
-        if(emoteInTextList.isNotEmpty()){
-            append(message.substring(0,emoteInTextList[0].startIndex))
-            for(emotes in emoteInTextList){
-                appendInlineContent(feelsGoodId, "[feelsGoodId]")
-                append(message.substring(emotes.startIndex,emotes.endIndex))
+       //todo:below should get replaced with the new messageList
+        for(messageToken in messageList){
+            if(messageToken.messageType == PrivateMessageType.MESSAGE){
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
+                    append(" ${messageToken.messageValue} ")
+                }
+            }else{
+
+                    appendInlineContent(feelsGoodId, "[feelsGoodId]")
+                append
+
+
             }
         }
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
-            append(message)
-        }
+
     }
 
     val inlineContent = mapOf(
@@ -1303,8 +1310,8 @@ fun ChatBadges(
             InlineTextContent(
 
                 Placeholder(
-                    width = MaterialTheme.typography.headlineMedium.fontSize,
-                    height = MaterialTheme.typography.headlineMedium.fontSize,
+                    width = 35.sp,
+                    height = 35.sp,
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
@@ -1319,6 +1326,7 @@ fun ChatBadges(
         ),
 
     )
+    val ImageInlineContentKey = InlineContentKey("image")
 
     Text(
         text = text,

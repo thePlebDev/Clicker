@@ -2,6 +2,7 @@ package com.example.clicker.network.models.websockets
 
 import androidx.compose.runtime.Immutable
 import com.example.clicker.network.websockets.EmoteInText
+import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
 
 /**
@@ -80,7 +81,7 @@ data class TwitchUserData(
     val bannedDuration: Int? = null,
     val systemMessage: String? = null,
     val isMonitored:Boolean = false,
-    val emoteInTextList:List<EmoteInText> = listOf()
+    val messageList:List<MessageToken> = listOf()
 )
 
 /**

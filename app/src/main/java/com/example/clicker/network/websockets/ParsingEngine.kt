@@ -282,8 +282,9 @@ class ParsingEngine @Inject constructor() {
             val (key, value) = matchResult.destructured
             parsedData[key] = value
         }
-        val emoteNames = listOf("SeemsGood","ChewyYAY", "GoatEmotey", "GoldPLZ", "ForSigmar", "TwitchConHYPE", "PopNemo", "FlawlessVictory", "PikaRamen", "DinoDance", "NiceTry", "LionOfYara", "NewRecord", "Lechonk", "Getcamped", "SUBprise", "FallHalp", "FallCry", "FallWinning")
-        val emoteInTextList = findEmoteNames(privateMsg,emoteNames)
+        val messageTokenScanner = MessageScanner(privateMsg)
+        messageTokenScanner.startScanningTokens()
+
 
         return TwitchUserData(
             badgeInfo = parsedData["badge-info"],
@@ -304,7 +305,7 @@ class ParsingEngine @Inject constructor() {
             userType = privateMsg,
             userId = parsedData["user-id"],
             messageType = MessageType.USER,
-            emoteInTextList = emoteInTextList
+            messageList = messageTokenScanner.tokenList
         )
     }
 
@@ -401,3 +402,75 @@ class ParsingEngine @Inject constructor() {
     }
 }
 
+enum class PrivateMessageType {
+    MESSAGE, EMOTE
+}
+data class MessageToken(
+    val messageType:PrivateMessageType,
+    val messageValue:String ="",
+    val url:String=""
+)
+
+class MessageScanner(
+    private val source:String
+){
+    private val map = hashMapOf<String, MessageToken>()
+
+    private val tokens = mutableListOf<MessageToken>()
+    val tokenList:List<MessageToken> = tokens
+
+    init {
+        map["SeemsGood"] = MessageToken(
+            messageType = PrivateMessageType.EMOTE,
+            url = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
+        )
+    }
+
+    private var start = 0
+    private var current =0
+
+    fun startScanningTokens(){
+        while(!isAtEnd()){
+            start = current
+            scanToken()
+        }
+    }
+
+    private fun scanToken(){
+        val c = advance()
+        when(c){
+            ' '->{}
+            else->{
+                while (notEndNullOrEmptySpace(peek())){
+                    advance()
+                }
+                addToken()
+            }
+
+        }
+    }
+
+    private fun addToken(){
+        val text = source.substring(start, current)
+        val tokenType = map[text]?:  MessageToken(messageType = PrivateMessageType.MESSAGE, messageValue = text)
+        tokens.add(tokenType)
+    }
+
+    private fun notEndNullOrEmptySpace(c:Char):Boolean{
+        return !isAtEnd() && c != '\u0000' && c != '\u0020'
+    }
+
+    private fun isAtEnd():Boolean{
+        return current>=source.length
+    }
+    private fun advance(): Char {
+        return source[current++]
+    }
+
+    private fun peek(): Char {
+        return if (isAtEnd()) '\u0000' else source[current]
+    }
+
+
+
+}
