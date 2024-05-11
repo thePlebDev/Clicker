@@ -81,6 +81,10 @@ fun ValidationView(
                 streamViewModel.state.value.userId,
             )
             createNewTwitchEventWebSocket()
+            streamViewModel.getGlobalEmotes(
+                homeViewModel.state.value.oAuthToken,
+                streamViewModel.state.value.clientId,
+            )
 
         },
         updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },

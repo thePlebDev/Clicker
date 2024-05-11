@@ -75,6 +75,7 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+
 //    var oneClickActionsChecked by remember { mutableStateOf(true) }
 //
 //    //todo: Move these two to the ViewModel
@@ -256,7 +257,8 @@ fun StreamView(
                         noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                         deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
                         forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                        clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)}
+                        clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                        inlineContentMap = streamViewModel.inlineTextContentTest.value
                     )
 
 

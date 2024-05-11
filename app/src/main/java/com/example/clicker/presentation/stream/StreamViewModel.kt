@@ -1,19 +1,35 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.material.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.text.input.getTextAfterSelection
 import androidx.compose.ui.text.input.getTextBeforeSelection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
+import com.example.clicker.R
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
@@ -25,6 +41,7 @@ import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.presentation.stream.util.EmoteMap
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
@@ -49,6 +66,7 @@ data class ChattingUser(
     val username: String,
     val message: String
 )
+
 
 
 /**
@@ -133,10 +151,12 @@ class StreamViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val autoCompleteChat: AutoCompleteChat,
     private val networkMonitoring: NetworkMonitoring,
+    private val emoteMap:EmoteMap,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {
+
 
 
     /**
@@ -147,6 +167,8 @@ class StreamViewModel @Inject constructor(
 
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
+
+    val inlineTextContentTest = emoteMap.emoteList
 
     /**
      * A list representing all the chats users have sent
@@ -310,6 +332,23 @@ class StreamViewModel @Inject constructor(
 
             }
         }
+    }
+
+    /***/
+    fun getGlobalEmotes(
+        oAuthToken: String,
+        clientId: String
+    ){
+        Log.d("getGlobalEmotes","getGlobalEmotes called")
+        viewModelScope.launch {
+            emoteMap.getGlobalEmotes(
+                oAuthToken,clientId
+            ).collect{
+
+            }
+        }
+
+
     }
 
 

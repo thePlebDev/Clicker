@@ -84,6 +84,7 @@ import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
+import com.example.clicker.presentation.stream.util.EmoteListTest
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 
 
@@ -114,7 +115,8 @@ fun ChatUI(
     noChat:Boolean,
     deleteChatMessage:(String)->Unit,
     forwardSlashCommands: List<ForwardSlashCommands>,
-    clickedCommandAutoCompleteText: (String) -> Unit
+    clickedCommandAutoCompleteText: (String) -> Unit,
+    inlineContentMap:EmoteListTest
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -146,7 +148,8 @@ fun ChatUI(
                 doubleClickMessage={username ->doubleClickMessage(username)},
                 modifier=modifier,
                 deleteChatMessage={messageId ->deleteChatMessage(messageId)},
-                isMod = isMod
+                isMod = isMod,
+                inlineContentMap=inlineContentMap
 
             )
         },
@@ -308,7 +311,8 @@ private class ImprovedChatUI(){
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
         modifier: Modifier,
-        isMod: Boolean
+        isMod: Boolean,
+        inlineContentMap: EmoteListTest
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -338,7 +342,8 @@ private class ImprovedChatUI(){
                     showBanDialog={showBanDialog()},
                     doubleClickMessage={username ->doubleClickMessage(username)},
                     deleteChatMessage={messageId->deleteChatMessage(messageId)},
-                    isMod = isMod
+                    isMod = isMod,
+                    inlineContentMap=inlineContentMap
 
                 )
 
@@ -356,7 +361,8 @@ private class ImprovedChatUI(){
         showBanDialog:()->Unit,
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
-        isMod:Boolean
+        isMod:Boolean,
+        inlineContentMap:EmoteListTest
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -394,7 +400,8 @@ private class ImprovedChatUI(){
                                         )
                                     },
                                     offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
-                                    doubleClickMessage ={username ->doubleClickMessage(username)}
+                                    doubleClickMessage ={username ->doubleClickMessage(username)},
+                                    inlineContentMap=inlineContentMap
                                 )
                             },
                             quarterSwipeLeftAction={
@@ -444,7 +451,8 @@ private class ImprovedChatUI(){
                                 )
                             },
                             offset = 0f,
-                            doubleClickMessage ={username ->doubleClickMessage(username)}
+                            doubleClickMessage ={username ->doubleClickMessage(username)},
+                            inlineContentMap=inlineContentMap
                         )
                     }
 
@@ -556,6 +564,7 @@ fun ClickableCard(
     fontSize: TextUnit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     doubleClickMessage:(String)->Unit,
+    inlineContentMap: EmoteListTest
 
 
     ){
@@ -596,6 +605,7 @@ fun ClickableCard(
                     twitchUser = twitchUser,
                     color = color,
                     fontSize = fontSize,
+                    inlineContentMap=inlineContentMap
 
                 )
             }
@@ -1159,6 +1169,7 @@ fun TextWithChatBadges(
     twitchUser: TwitchUserData,
     color: Color,
     fontSize: TextUnit,
+    inlineContentMap: EmoteListTest
 
     ){
     Row(
@@ -1173,7 +1184,8 @@ fun TextWithChatBadges(
             isMonitored =twitchUser.isMonitored,
             color = color,
             textSize = fontSize,
-            messageList=twitchUser.messageList
+            messageList=twitchUser.messageList,
+            inlineContentMap =inlineContentMap
 
         )
 
@@ -1200,16 +1212,14 @@ fun ChatBadges(
     isMonitored:Boolean,
     color: Color,
     textSize: TextUnit,
-    messageList:List<MessageToken>
+    messageList:List<MessageToken>,
+    inlineContentMap: EmoteListTest
 ) {
     Log.d("ChatBadgesMessageList","$messageList")
     //for not these values can stay here hard coded. Until I implement more Icon
 //            val color = MaterialTheme.colorScheme.secondary
 //            val textSize = MaterialTheme.typography.headlineSmall.fontSize
-    val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
-    val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
-    val feelsGood = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
-    val feelsGoodId ="SeemsGood"
+
     val modId = "modIcon"
     val subId = "subIcon"
     val monitorId ="monitorIcon"
@@ -1226,13 +1236,14 @@ fun ChatBadges(
             appendInlineContent(subId, "[subicon]")
         }
         withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
-            append(username)
+            append("$username ")
         }
        //todo:below should get replaced with the new messageList
         for(messageToken in messageList){
             if(messageToken.messageType == PrivateMessageType.MESSAGE){
                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
-                    append(" ${messageToken.messageValue} ")
+
+                    appendInlineContent(messageToken.messageValue, "${messageToken.messageValue} ")
                 }
             }else{
                     appendInlineContent(messageToken.messageValue, "[${messageToken.messageValue}]")
@@ -1241,93 +1252,11 @@ fun ChatBadges(
 
     }
 
-    val inlineContent = mapOf(
-        Pair(
-
-            modId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = MaterialTheme.typography.headlineMedium.fontSize,
-                    height = MaterialTheme.typography.headlineMedium.fontSize,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = modBadge,
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-        Pair(
-
-            subId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = MaterialTheme.typography.headlineMedium.fontSize,
-                    height = MaterialTheme.typography.headlineMedium.fontSize,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = subBadge,
-                    contentDescription = stringResource(R.string.sub_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-        Pair(
-
-            monitorId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = MaterialTheme.typography.headlineMedium.fontSize,
-                    height = MaterialTheme.typography.headlineMedium.fontSize,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                androidx.compose.material.Icon(
-                    painter = painterResource(id = R.drawable.visibility_24),
-                    "contentDescription",
-                    tint= Color.Yellow,
-                    modifier = Modifier.size(35.dp)
-                )
-            }
-        ),
-        Pair(
-
-            feelsGoodId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 35.sp,
-                    height = 35.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = feelsGood,
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-
-    )
 
 
     Text(
         text = text,
-        inlineContent = inlineContent,
+        inlineContent = inlineContentMap.map,
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp),
