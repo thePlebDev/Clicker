@@ -6,6 +6,7 @@ import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
@@ -23,6 +24,7 @@ import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.interceptors.RetryInterceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Interceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.ResponseChecker
+import com.example.clicker.network.repository.DebugRetrofitResponse
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchEventSub
@@ -74,6 +76,18 @@ object SingletonModule {
             .addConverterFactory(GsonConverterFactory.create())
             .client(monitorClient)
             .build().create(TwitchClient::class.java)
+    }
+
+    @Singleton //scope binding
+    @Provides
+    fun providersTwitchEmoteClient():TwitchEmoteClient{
+        val debugRetrofit = OkHttpClient.Builder()
+            .addInterceptor(DebugRetrofitResponse())
+            .build()
+        return Retrofit.Builder()
+            .baseUrl("https://api.twitch.tv/helix/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(TwitchEmoteClient::class.java)
     }
 
     @Singleton //scope binding

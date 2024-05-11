@@ -238,6 +238,12 @@ interface TwitchClient {
 
     ): Response<ModViewChatSettings>
 
+    @GET("chat/emotes/global")
+    suspend fun getGlobalEmotes(
+        @Header("Authorization") authorization: String,
+        @Header("Client-Id") clientId: String,
+    ): Response<EmoteData>
+
 
 
 
