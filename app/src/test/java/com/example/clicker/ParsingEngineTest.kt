@@ -1,5 +1,6 @@
 package com.example.clicker
 
+import com.example.clicker.network.clients.Emote
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.ParsingEngine
@@ -264,6 +265,7 @@ class ParsingEngineTest {
         Assert.assertEquals(tokenList.size, 4)
 
     }
+
 }
 
 

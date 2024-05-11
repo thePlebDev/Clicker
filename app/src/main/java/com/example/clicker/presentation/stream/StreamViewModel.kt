@@ -40,8 +40,9 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
-import com.example.clicker.presentation.stream.util.EmoteMap
+
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
@@ -151,7 +152,7 @@ class StreamViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val autoCompleteChat: AutoCompleteChat,
     private val networkMonitoring: NetworkMonitoring,
-    private val emoteMap:EmoteMap,
+    private val twitchEmoteImpl: TwitchEmoteImpl,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
@@ -168,7 +169,7 @@ class StreamViewModel @Inject constructor(
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
 
-    val inlineTextContentTest = emoteMap.emoteList
+    val inlineTextContentTest = twitchEmoteImpl.emoteList
 
     /**
      * A list representing all the chats users have sent
@@ -341,7 +342,7 @@ class StreamViewModel @Inject constructor(
     ){
         Log.d("getGlobalEmotes","getGlobalEmotes called")
         viewModelScope.launch {
-            emoteMap.getGlobalEmotes(
+            twitchEmoteImpl.getGlobalEmotes(
                 oAuthToken,clientId
             ).collect{
 

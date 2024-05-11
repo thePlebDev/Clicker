@@ -79,12 +79,13 @@ import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteListTest
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.presentation.sharedViews.ErrorScope
-import com.example.clicker.presentation.stream.util.EmoteListTest
+
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 
 
@@ -116,7 +117,7 @@ fun ChatUI(
     deleteChatMessage:(String)->Unit,
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
-    inlineContentMap:EmoteListTest
+    inlineContentMap: EmoteListTest
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
