@@ -24,22 +24,7 @@ interface TwitchEmoteClient {
 
 
 
-data class Daum(
-    @SerializedName("set_id")
-    val setId: String,
-    val versions: List<Version>,
-)
 
-data class Version(
-    val id: String,
-    val image_url_1x: String,
-    val image_url_2x: String,
-    val image_url_4x: String,
-    val title: String,
-    val description: String,
-    val click_action: String,
-    val click_url: String,
-)
 
 //below
 data class Emote(
