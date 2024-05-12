@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TwitchEmoteClient
+import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +31,7 @@ import javax.inject.Inject
 
 class TwitchEmoteImpl @Inject constructor(
     private val twitchEmoteClient: TwitchEmoteClient
-){
+): TwitchEmoteRepo {
 
     private val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     private val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
@@ -39,6 +40,10 @@ class TwitchEmoteImpl @Inject constructor(
     private val modId = "modIcon"
     private val subId = "subIcon"
     private val monitorId ="monitorIcon"
+    /** - inlineContentMap represents the inlineConent for the sub,mod and SeemsGood icons.
+     * This is created before the [getGlobalEmotes] method is called so that there can still be mod and sub icons as soon as the
+     * user loads into chat
+     * */
     private val inlineContentMap = mapOf(
         Pair(
 
@@ -121,10 +126,11 @@ class TwitchEmoteImpl @Inject constructor(
         ),
 
         )
-    private val _emoteList: MutableState<EmoteListTest> = mutableStateOf(EmoteListTest(inlineContentMap))
-    val emoteList: State<EmoteListTest> = _emoteList
+    private val _emoteList: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMap))
 
-      fun getGlobalEmotes(
+    override val emoteList: State<EmoteListMap> = _emoteList
+
+      override fun getGlobalEmotes(
         oAuthToken: String,
         clientId: String,
     ): Flow<Response<Boolean>> = flow {
@@ -135,35 +141,19 @@ class TwitchEmoteImpl @Inject constructor(
          )
           val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
-
-
           if (response.isSuccessful) {
-            val data = response.body()?.data
-              inlineContentMap.forEach{
-                  innerInlineContentMap[it.key] = it.value
-              }
+              val data = response.body()?.data
+                  inlineContentMap.forEach{
+                      innerInlineContentMap[it.key] = it.value
+                  }
 
+            val parsedEmoteData = data?.map { EmoteNameUrl(it.name,it.images.url_1x) }
+              parsedEmoteData?.forEach {emoteValue ->
+                createMapValue(
+                    emoteValue,
+                    innerInlineContentMap
+                )
 
-            val anotherData = data?.map { EmoteNameUrl(it.name,it.images.url_1x) }
-            anotherData?.forEach {
-                val url = it.url
-               val value = InlineTextContent(
-                        Placeholder(
-                            width = 35.sp,
-                            height = 35.sp,
-                            placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                        )
-                    ) {
-                        AsyncImage(
-                            model = url,
-                            contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(2.dp)
-                        )
-                    }
-
-                innerInlineContentMap[it.name] = value
             }
               _emoteList.value = emoteList.value.copy(
               map = innerInlineContentMap
@@ -189,12 +179,37 @@ class TwitchEmoteImpl @Inject constructor(
 
 
 }
+
+fun createMapValue(
+    emoteValue: EmoteNameUrl,
+    innerInlineContentMap: MutableMap<String, InlineTextContent>
+){
+    val url = emoteValue.url
+    val value = InlineTextContent(
+        Placeholder(
+            width = 35.sp,
+            height = 35.sp,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+        )
+    ) {
+        AsyncImage(
+            model = url,
+            contentDescription = stringResource(R.string.moderator_badge_icon_description),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(2.dp)
+        )
+    }
+
+    innerInlineContentMap[emoteValue.name] = value
+
+}
 data class EmoteNameUrl(
     val name:String,
     val url:String
 )
 
 @Immutable
-data class EmoteListTest(
+data class EmoteListMap(
     val map:Map<String, InlineTextContent>
 )

@@ -79,7 +79,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.repository.EmoteListTest
+import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
@@ -117,7 +117,7 @@ fun ChatUI(
     deleteChatMessage:(String)->Unit,
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
-    inlineContentMap: EmoteListTest
+    inlineContentMap: EmoteListMap
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -313,7 +313,7 @@ private class ImprovedChatUI(){
         deleteChatMessage:(String)->Unit,
         modifier: Modifier,
         isMod: Boolean,
-        inlineContentMap: EmoteListTest
+        inlineContentMap: EmoteListMap
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -363,7 +363,7 @@ private class ImprovedChatUI(){
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
         isMod:Boolean,
-        inlineContentMap:EmoteListTest
+        inlineContentMap:EmoteListMap
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -565,7 +565,7 @@ fun ClickableCard(
     fontSize: TextUnit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     doubleClickMessage:(String)->Unit,
-    inlineContentMap: EmoteListTest
+    inlineContentMap: EmoteListMap
 
 
     ){
@@ -1170,7 +1170,7 @@ fun TextWithChatBadges(
     twitchUser: TwitchUserData,
     color: Color,
     fontSize: TextUnit,
-    inlineContentMap: EmoteListTest
+    inlineContentMap: EmoteListMap
 
     ){
     Row(
@@ -1214,7 +1214,7 @@ fun ChatBadges(
     color: Color,
     textSize: TextUnit,
     messageList:List<MessageToken>,
-    inlineContentMap: EmoteListTest
+    inlineContentMap: EmoteListMap
 ) {
     Log.d("ChatBadgesMessageList","$messageList")
     //for not these values can stay here hard coded. Until I implement more Icon

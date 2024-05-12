@@ -33,6 +33,7 @@ import com.example.clicker.R
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
+import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
@@ -152,7 +153,7 @@ class StreamViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val autoCompleteChat: AutoCompleteChat,
     private val networkMonitoring: NetworkMonitoring,
-    private val twitchEmoteImpl: TwitchEmoteImpl,
+    private val twitchEmoteImpl: TwitchEmoteRepo,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
