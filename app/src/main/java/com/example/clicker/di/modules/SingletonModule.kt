@@ -10,6 +10,7 @@ import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
+import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.domain.TwitchRepo
@@ -27,6 +28,7 @@ import com.example.clicker.network.interceptors.responseCodeInterceptors.Respons
 import com.example.clicker.network.repository.DebugRetrofitResponse
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
+import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.TwitchStreamImpl
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
@@ -140,6 +142,13 @@ object SingletonModule {
     @Provides
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
+    }
+
+    @Provides
+    fun providesTwitchEmoteRepo(
+       twitchEmoteClient: TwitchEmoteClient
+    ): TwitchEmoteRepo {
+        return TwitchEmoteImpl(twitchEmoteClient)
     }
 
     @Singleton
