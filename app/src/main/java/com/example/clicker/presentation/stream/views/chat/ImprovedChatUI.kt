@@ -56,12 +56,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -71,6 +73,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -90,6 +93,7 @@ import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 
 
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -117,10 +121,13 @@ fun ChatUI(
     deleteChatMessage:(String)->Unit,
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    showManager:()-> Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
+    val emoteKeyBoardHeight = remember { mutableStateOf(0.dp) }
+    val scope = rememberCoroutineScope()
 
     ChatUIBox(
         determineScrollState={
@@ -194,14 +201,23 @@ fun ChatUI(
                     ShowIconBasedOnTextLength(
                         textFieldValue =textFieldValue,
                         chat = {item -> sendMessageToWebSocket(item)},
-                        showModal ={showModal()}
+                        showModal ={showModal()},
+                        showManager={
+                            showManager()
+                            scope.launch {
+                                delay(100)
+                                emoteKeyBoardHeight.value = 300.dp
+                            }
+
+                        }
                     )
                 },
             )
         },
         noChat=noChat,
         forwardSlashCommands =forwardSlashCommands,
-        clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
+        clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
+        emoteKeyBoardHeight =emoteKeyBoardHeight.value
 
         )
 }
@@ -214,7 +230,8 @@ fun ChatUI(
     enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     noChat:Boolean,
     forwardSlashCommands: List<ForwardSlashCommands>,
-    clickedCommandAutoCompleteText: (String) -> Unit
+    clickedCommandAutoCompleteText: (String) -> Unit,
+    emoteKeyBoardHeight:Dp,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -232,6 +249,12 @@ fun ChatUI(
                     Modifier
                         .fillMaxWidth(),
                 )
+                Column(modifier= Modifier
+                    .fillMaxWidth()
+                    .height(emoteKeyBoardHeight)
+                    .background(MaterialTheme.colorScheme.primary)) {
+
+                }
             }
             determineScrollState()
             if(noChat){
@@ -951,12 +974,16 @@ fun FilteredMentionLazyRow(
  * @param chat a function that is used to send a message to the websocket and allows the user to communicate with other users
  * @param showModal a function that is used to open the side chat and show the chat settings
  * */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ShowIconBasedOnTextLength(
     textFieldValue: MutableState<TextFieldValue>,
     chat: (String) -> Unit,
-    showModal: () -> Unit
+    showModal: () -> Unit,
+    showManager:()-> Unit,
 ){
+    val controller = LocalSoftwareKeyboardController.current
+
     if (textFieldValue.value.text.isNotEmpty()) {
         androidx.compose.material.Icon(
             imageVector = Icons.Default.ArrowForward,
@@ -973,7 +1000,10 @@ fun ShowIconBasedOnTextLength(
             contentDescription = stringResource(R.string.more_vert_icon_description),
             modifier = Modifier
                 .size(35.dp)
-                .clickable { showModal() }
+                .clickable {
+                    showManager()
+                    //showModal()
+                }
                 .padding(start = 5.dp),
             tint = MaterialTheme.colorScheme.onPrimary
         )
@@ -1216,6 +1246,7 @@ fun ChatBadges(
     messageList:List<MessageToken>,
     inlineContentMap: EmoteListMap
 ) {
+
     Log.d("ChatBadgesMessageList","$messageList")
     //for not these values can stay here hard coded. Until I implement more Icon
 //            val color = MaterialTheme.colorScheme.secondary

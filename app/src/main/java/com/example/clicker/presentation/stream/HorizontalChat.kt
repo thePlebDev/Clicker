@@ -225,7 +225,8 @@ fun HorizontalChat(
                 deleteChatMessage = {messageId ->streamViewModel.deleteChatMessage(messageId)},
                 forwardSlashCommands = streamViewModel.forwardSlashCommands,
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
-                inlineContentMap = streamViewModel.inlineTextContentTest.value
+                inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                showManager={}
             )
 
 

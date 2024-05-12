@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Insets
@@ -15,14 +16,28 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.view.WindowInsets
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -31,8 +46,6 @@ import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.modView.followerModeList
-import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.ui.theme.AppTheme
@@ -61,8 +74,10 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     @SuppressLint("SetJavaScriptEnabled", "SuspiciousIndentation")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -106,6 +121,9 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         // val view = binding.root
         val orientationIsLandscape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val window =activity?.window
+
+
 
         val view = setOrientation(
             resources = resources,
@@ -115,7 +133,12 @@ class StreamFragment : Fragment(), View.OnClickListener {
             homeViewModel = homeViewModel,
             modViewDragStateViewModel =modViewDragStateViewModel,
             modViewViewModel=modViewViewModel,
-            orientationIsLandscape =orientationIsLandscape
+            orientationIsLandscape =orientationIsLandscape,
+            window =window,
+            hideSoftKeyboard={
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken,0)
+            }
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView)
@@ -274,6 +297,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
             streamManagerUI.translationY = height
 
+
             val clickableWebView: ClickableWebView = myWebView as ClickableWebView
             clickableWebView.singleTapMethod={
                 if(autoModViewModel.verticalOverlayIsVisible.value){
@@ -332,10 +356,13 @@ fun setOrientation(
     homeViewModel: HomeViewModel,
     modViewDragStateViewModel: ModViewDragStateViewModel,
     modViewViewModel: ModViewViewModel,
-    orientationIsLandscape:Boolean
+    orientationIsLandscape:Boolean,
+    window: Window?,
+    hideSoftKeyboard:() ->Unit
 ): FrameLayout {
 
-    //val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
+
+
 
     binding.composeView.apply {
         setContent {
@@ -348,20 +375,22 @@ fun setOrientation(
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     showStreamManager={
                         if(!orientationIsLandscape){
+                            Log.d("BindingComposeView","clicked")
+                            hideSoftKeyboard()
 
-                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
-                            /**THE ANIMATION*/
-
-                        val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
-
-                        //// Create ObjectAnimator for translationY property
-                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
-
-
-                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
-
-//                        // Start the animation
-                        animator.start()
+//                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
+//                            /**THE ANIMATION*/
+//
+//                        val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
+//
+//                        //// Create ObjectAnimator for translationY property
+//                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
+//
+//
+//                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
+//
+////                        // Start the animation
+//                        animator.start()
                         }
 
 
@@ -384,8 +413,24 @@ fun setOrientation(
         }
     }
     binding.nestedDraggableComposeView?.apply {
+
         setContent {
             AppTheme{
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .background(Color.Red)){
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Blue)
+                    Text("antother one",fontSize=30.sp,color = Color.Red)
+                    Text("antother one",fontSize=30.sp,color = Color.Red)
+                }
 //                ManageStreamInformation(
 //                    closeStreamInfo={
 //                        val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
