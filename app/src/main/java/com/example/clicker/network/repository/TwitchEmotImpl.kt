@@ -132,8 +132,8 @@ class TwitchEmoteImpl @Inject constructor(
 
     override val emoteList: State<EmoteListMap> = _emoteList
 
-    private val _emoteBoardGlobalList = mutableStateListOf<EmoteNameUrl>()
-    override val emoteBoardGlobalList = _emoteBoardGlobalList
+    private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
+    override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
 
       override fun getGlobalEmotes(
         oAuthToken: String,
@@ -152,7 +152,9 @@ class TwitchEmoteImpl @Inject constructor(
                       innerInlineContentMap[it.key] = it.value
                   }
 
-            val parsedEmoteData = data?.map { EmoteNameUrl(it.name,it.images.url_1x) }
+            val parsedEmoteData = data?.map {
+                EmoteNameUrl(it.name,it.images.url_1x)
+            }
               parsedEmoteData?.forEach {emoteValue ->
                 createMapValue(
                     emoteValue,
@@ -164,9 +166,11 @@ class TwitchEmoteImpl @Inject constructor(
               map = innerInlineContentMap
           )
               parsedEmoteData?.also {
-                  _emoteBoardGlobalList.addAll(it)
+                  _emoteBoardGlobalList.value = _emoteBoardGlobalList.value.copy(
+                      list = it
+                  )
               }
-              Log.d("FlowRowSimpleUsageExampleClicked", "twitchImpl size ->${_emoteBoardGlobalList.size}")
+
 
 
 
@@ -217,6 +221,11 @@ fun createMapValue(
 data class EmoteNameUrl(
     val name:String,
     val url:String
+)
+
+@Immutable
+data class EmoteNameUrlList(
+ val list:List<EmoteNameUrl> = listOf()
 )
 
 @Immutable

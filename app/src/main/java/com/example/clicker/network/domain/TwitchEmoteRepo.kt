@@ -3,6 +3,7 @@ package com.example.clicker.network.domain
 import androidx.compose.runtime.State
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
@@ -12,7 +13,7 @@ interface TwitchEmoteRepo {
      * */
     val emoteList: State<EmoteListMap>
 
-    val emoteBoardGlobalList: List<EmoteNameUrl>
+    val emoteBoardGlobalList: State<EmoteNameUrlList>
 
     /**
      * getGlobalEmotes
