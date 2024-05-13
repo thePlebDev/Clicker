@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
@@ -227,7 +228,7 @@ fun HorizontalChat(
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
                 hideSoftKeyboard ={},
-                emoteBoardGlobalList = streamViewModel.globalEmoteUrlList
+                emoteBoardGlobalList = EmoteNameUrlList()
             )
 
 

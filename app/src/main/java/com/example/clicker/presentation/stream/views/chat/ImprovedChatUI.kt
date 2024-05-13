@@ -98,6 +98,7 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
@@ -138,7 +139,7 @@ fun ChatUI(
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
-    emoteBoardGlobalList: List<EmoteNameUrl>
+    emoteBoardGlobalList: EmoteNameUrlList
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -239,7 +240,8 @@ fun ChatUI(
         forwardSlashCommands =forwardSlashCommands,
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
-        emoteBoardGlobalList=emoteBoardGlobalList
+        emoteBoardGlobalList =emoteBoardGlobalList
+
 
         )
 }
@@ -253,13 +255,15 @@ fun ChatUI(
     noChat:Boolean,
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
-    emoteKeyBoardHeight:Dp,
-    emoteBoardGlobalList: List<EmoteNameUrl>
+    emoteKeyBoardHeight: Dp,
+    emoteBoardGlobalList: EmoteNameUrlList
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
     val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
 
+
+    //todo: add a conditional to show emoteBoard to help with recomps
 
 
     val chatUIScope = remember(){ ImprovedChatUI() }
@@ -272,7 +276,11 @@ fun ChatUI(
                     Modifier
                         .fillMaxWidth(),
                 )
-                EmoteBoard(emoteKeyBoardHeight,emoteBoardGlobalList)
+                if(emoteKeyBoardHeight==300.dp){
+                    EmoteBoard(
+                        emoteKeyBoardHeight,emoteBoardGlobalList
+                    )
+                }
             }
             determineScrollState()
             if(noChat){
@@ -309,8 +317,9 @@ fun LazyGridScope.header(
 @Composable
 fun EmoteBoard(
     emoteKeyBoardHeight:Dp,
-    emoteBoardGlobalList: List<EmoteNameUrl>
+    emoteBoardGlobalList: EmoteNameUrlList
 ){
+    Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 65.dp),
         modifier= Modifier
@@ -343,7 +352,7 @@ fun EmoteBoard(
 
         }
 
-        items(emoteBoardGlobalList){
+        items(emoteBoardGlobalList.list){
             AsyncImage(
                 model = it.url,
                 contentDescription = stringResource(R.string.moderator_badge_icon_description),
