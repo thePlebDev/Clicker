@@ -54,7 +54,7 @@ fun StreamView(
     autoModViewModel: AutoModViewModel,
     modViewViewModel: ModViewViewModel,
     homeViewModel: HomeViewModel,
-    showStreamManager:()->Unit,
+    hideSoftKeyboard:()->Unit,
     notificationAmount: Int
 
 ) {
@@ -259,7 +259,7 @@ fun StreamView(
                         forwardSlashCommands = streamViewModel.forwardSlashCommands,
                         clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                         inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                        showManager={showStreamManager()}
+                        hideSoftKeyboard={hideSoftKeyboard()},
                     )
 
 

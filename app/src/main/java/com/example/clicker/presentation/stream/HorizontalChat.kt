@@ -226,7 +226,7 @@ fun HorizontalChat(
                 forwardSlashCommands = streamViewModel.forwardSlashCommands,
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                showManager={}
+                hideSoftKeyboard ={}
             )
 
 

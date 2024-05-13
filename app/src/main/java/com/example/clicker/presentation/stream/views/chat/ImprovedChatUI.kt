@@ -9,7 +9,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +61,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -122,7 +126,7 @@ fun ChatUI(
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
-    showManager:()-> Unit,
+    hideSoftKeyboard:()-> Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -194,6 +198,19 @@ fun ChatUI(
                         modifier = boxModifier,
                         textFieldValue = textFieldValue,
                         newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
+                        showEmoteBoard = {
+                            hideSoftKeyboard()
+                            scope.launch {
+                                delay(100)
+                                emoteKeyBoardHeight.value = 300.dp
+                            }
+                        },
+                        showKeyBoard = {
+                            scope.launch {
+                                delay(100)
+                                emoteKeyBoardHeight.value = 0.dp
+                            }
+                        }
 
                         )
                 },
@@ -202,14 +219,6 @@ fun ChatUI(
                         textFieldValue =textFieldValue,
                         chat = {item -> sendMessageToWebSocket(item)},
                         showModal ={showModal()},
-                        showManager={
-                            showManager()
-                            scope.launch {
-                                delay(100)
-                                emoteKeyBoardHeight.value = 300.dp
-                            }
-
-                        }
                     )
                 },
             )
@@ -980,7 +989,6 @@ fun ShowIconBasedOnTextLength(
     textFieldValue: MutableState<TextFieldValue>,
     chat: (String) -> Unit,
     showModal: () -> Unit,
-    showManager:()-> Unit,
 ){
     val controller = LocalSoftwareKeyboardController.current
 
@@ -1001,8 +1009,7 @@ fun ShowIconBasedOnTextLength(
             modifier = Modifier
                 .size(35.dp)
                 .clickable {
-                    showManager()
-                    //showModal()
+                    showModal()
                 }
                 .padding(start = 5.dp),
             tint = MaterialTheme.colorScheme.onPrimary
@@ -1019,49 +1026,103 @@ fun ShowIconBasedOnTextLength(
  * @param newFilterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
  *
  * */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StylizedTextField(
     modifier: Modifier,
     textFieldValue: MutableState<TextFieldValue>,
     newFilterMethod:(TextFieldValue) ->Unit,
+    showKeyBoard:()->Unit,
+    showEmoteBoard:() ->Unit,
 ){
+    //todo: NOW I NEED TO MAKE THE EMOTE BOARD AND KEYBOARD SHOW AT ALL
+    var iconClicked by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val source = remember {
+        MutableInteractionSource()
+    }
+
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
         backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
     )
+    if ( source.collectIsPressedAsState().value && iconClicked){
+        Log.d("TextFieldClicked","clicked and iconclicked")
+        iconClicked = false
+        showKeyBoard()
+    }
+
+
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
 
+        Box(
+            modifier =modifier.padding(top =5.dp)
+        ){
+            TextField(
+                interactionSource = source,
+                modifier = Modifier.fillMaxWidth()
+                    .focusRequester(focusRequester),
+                singleLine = false,
+                value = textFieldValue.value,
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { newText ->
+                    newFilterMethod(newText)
+                    textFieldValue.value = TextFieldValue(
+                        text = newText.text,
+                        selection = newText.selection
+                    )
+
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.White,
+                    backgroundColor = Color.DarkGray,
+                    cursorColor = Color.White,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                placeholder = {
+                    Text(stringResource(R.string.send_a_message), color = Color.White)
+                },
+                trailingIcon = {
+                    if(!iconClicked){
+                        Icon(
+                            painter = painterResource(id =R.drawable.emote_face_24),
+                            contentDescription = "",
+                            tint = Color.White,
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                                .padding(end=5.dp)
+                                .clickable{
+                                    iconClicked = true
+                                    showEmoteBoard()
+                                }
+                        )
+                    }else{
+                        Icon(
+                            painter = painterResource(id =R.drawable.keyboard_24),
+                            contentDescription = "",
+                            tint = Color.White,
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                                .padding(end=5.dp)
+                                .clickable{
+                                    iconClicked = false
+                                    showKeyBoard()
+                                    keyboard?.show()
+                                    focusRequester.requestFocus()
+                                }
+                        )
+                    }
+                }
+            )
 
 
+        }
 
-        TextField(
 
-            modifier = modifier.padding(top =5.dp),
-            singleLine = false,
-            value = textFieldValue.value,
-            shape = RoundedCornerShape(8.dp),
-            onValueChange = { newText ->
-                newFilterMethod(newText)
-                textFieldValue.value = TextFieldValue(
-                    text = newText.text,
-                    selection = newText.selection
-                )
-
-            },
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.White,
-                backgroundColor = Color.DarkGray,
-                cursorColor = Color.White,
-                disabledLabelColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            placeholder = {
-                androidx.compose.material.Text(stringResource(R.string.send_a_message), color = Color.White)
-            }
-        )
 
     }
+
 
 }
 

@@ -134,10 +134,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
             modViewDragStateViewModel =modViewDragStateViewModel,
             modViewViewModel=modViewViewModel,
             orientationIsLandscape =orientationIsLandscape,
-            window =window,
             hideSoftKeyboard={
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken,0)
+            },
+            showSoftKeyboard = {
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.root, InputMethodManager.RESULT_SHOWN);
             }
         )
 
@@ -357,8 +360,8 @@ fun setOrientation(
     modViewDragStateViewModel: ModViewDragStateViewModel,
     modViewViewModel: ModViewViewModel,
     orientationIsLandscape:Boolean,
-    window: Window?,
-    hideSoftKeyboard:() ->Unit
+    hideSoftKeyboard:() ->Unit,
+    showSoftKeyboard:()->Unit,
 ): FrameLayout {
 
 
@@ -373,7 +376,7 @@ fun setOrientation(
                     modViewViewModel,
                     homeViewModel,
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
-                    showStreamManager={
+                    hideSoftKeyboard ={
                         if(!orientationIsLandscape){
                             Log.d("BindingComposeView","clicked")
                             hideSoftKeyboard()
