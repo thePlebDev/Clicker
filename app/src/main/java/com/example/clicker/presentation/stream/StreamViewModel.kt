@@ -170,7 +170,9 @@ class StreamViewModel @Inject constructor(
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
 
+
     val inlineTextContentTest = twitchEmoteImpl.emoteList
+    val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
 
     /**
      * A list representing all the chats users have sent

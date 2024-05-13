@@ -9,6 +9,7 @@ import androidx.compose.material.Icon
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +23,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -130,6 +132,9 @@ class TwitchEmoteImpl @Inject constructor(
 
     override val emoteList: State<EmoteListMap> = _emoteList
 
+    private val _emoteBoardGlobalList = mutableStateListOf<EmoteNameUrl>()
+    override val emoteBoardGlobalList = _emoteBoardGlobalList
+
       override fun getGlobalEmotes(
         oAuthToken: String,
         clientId: String,
@@ -142,8 +147,8 @@ class TwitchEmoteImpl @Inject constructor(
           val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
           if (response.isSuccessful) {
-              val data = response.body()?.data
-                  inlineContentMap.forEach{
+               val data = response.body()?.data
+                   inlineContentMap.forEach{
                       innerInlineContentMap[it.key] = it.value
                   }
 
@@ -158,6 +163,10 @@ class TwitchEmoteImpl @Inject constructor(
               _emoteList.value = emoteList.value.copy(
               map = innerInlineContentMap
           )
+              parsedEmoteData?.also {
+                  _emoteBoardGlobalList.addAll(it)
+              }
+              Log.d("FlowRowSimpleUsageExampleClicked", "twitchImpl size ->${_emoteBoardGlobalList.size}")
 
 
 
@@ -204,6 +213,7 @@ fun createMapValue(
     innerInlineContentMap[emoteValue.name] = value
 
 }
+
 data class EmoteNameUrl(
     val name:String,
     val url:String

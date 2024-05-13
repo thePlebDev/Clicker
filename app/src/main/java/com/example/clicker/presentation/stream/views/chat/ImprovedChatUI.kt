@@ -15,6 +15,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,9 +26,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +52,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -87,6 +97,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
@@ -127,6 +138,7 @@ fun ChatUI(
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
+    emoteBoardGlobalList: List<EmoteNameUrl>
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -226,7 +238,8 @@ fun ChatUI(
         noChat=noChat,
         forwardSlashCommands =forwardSlashCommands,
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
-        emoteKeyBoardHeight =emoteKeyBoardHeight.value
+        emoteKeyBoardHeight =emoteKeyBoardHeight.value,
+        emoteBoardGlobalList=emoteBoardGlobalList
 
         )
 }
@@ -241,6 +254,7 @@ fun ChatUI(
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight:Dp,
+    emoteBoardGlobalList: List<EmoteNameUrl>
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -258,12 +272,7 @@ fun ChatUI(
                     Modifier
                         .fillMaxWidth(),
                 )
-                Column(modifier= Modifier
-                    .fillMaxWidth()
-                    .height(emoteKeyBoardHeight)
-                    .background(MaterialTheme.colorScheme.primary)) {
-
-                }
+                EmoteBoard(emoteKeyBoardHeight,emoteBoardGlobalList)
             }
             determineScrollState()
             if(noChat){
@@ -290,7 +299,86 @@ fun ChatUI(
         }
     }
 
+}
+fun LazyGridScope.header(
+    content: @Composable LazyGridItemScope.() -> Unit
+) {
+    item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
+}
 
+@Composable
+fun EmoteBoard(
+    emoteKeyBoardHeight:Dp,
+    emoteBoardGlobalList: List<EmoteNameUrl>
+){
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 65.dp),
+        modifier= Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp)
+            .height(emoteKeyBoardHeight)
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Global Emote",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(10.dp))
+            }
+
+        }
+
+        items(emoteBoardGlobalList){
+            AsyncImage(
+                model = it.url,
+                contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                modifier = Modifier
+                    .width(65.dp)
+                    .height(65.dp)
+                    .padding(5.dp)
+                    .clickable {
+                        Log.d("FlowRowSimpleUsageExampleClicked", it.name)
+                    }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FlowRowSimpleUsageExample(
+    emoteBoardGlobalList: List<EmoteNameUrl>
+) {
+    FlowRow(modifier = Modifier.padding(8.dp)) {
+        emoteBoardGlobalList.forEach{
+            AsyncImage(
+                model = it.url,
+                contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
+                    .clickable {
+                        Log.d("FlowRowSimpleUsageExampleClicked", it.name)
+                    }
+            )
+        }
+
+    }
 }
 
 @Stable
@@ -990,7 +1078,6 @@ fun ShowIconBasedOnTextLength(
     chat: (String) -> Unit,
     showModal: () -> Unit,
 ){
-    val controller = LocalSoftwareKeyboardController.current
 
     if (textFieldValue.value.text.isNotEmpty()) {
         androidx.compose.material.Icon(
@@ -1061,7 +1148,8 @@ fun StylizedTextField(
         ){
             TextField(
                 interactionSource = source,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .focusRequester(focusRequester),
                 singleLine = false,
                 value = textFieldValue.value,
@@ -1091,9 +1179,10 @@ fun StylizedTextField(
                             painter = painterResource(id =R.drawable.emote_face_24),
                             contentDescription = "",
                             tint = Color.White,
-                            modifier = Modifier.align(Alignment.CenterEnd)
-                                .padding(end=5.dp)
-                                .clickable{
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 5.dp)
+                                .clickable {
                                     iconClicked = true
                                     showEmoteBoard()
                                 }
@@ -1103,9 +1192,10 @@ fun StylizedTextField(
                             painter = painterResource(id =R.drawable.keyboard_24),
                             contentDescription = "",
                             tint = Color.White,
-                            modifier = Modifier.align(Alignment.CenterEnd)
-                                .padding(end=5.dp)
-                                .clickable{
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 5.dp)
+                                .clickable {
                                     iconClicked = false
                                     showKeyBoard()
                                     keyboard?.show()
