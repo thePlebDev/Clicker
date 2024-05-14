@@ -221,7 +221,6 @@ fun ChatUI(
                         },
                         showKeyBoard = {
                             scope.launch {
-                                delay(100)
                                 emoteKeyBoardHeight.value = 0.dp
                             }
                         }
