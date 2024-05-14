@@ -260,7 +260,8 @@ fun StreamView(
                         clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                         inlineContentMap = streamViewModel.inlineTextContentTest.value,
                         hideSoftKeyboard={hideSoftKeyboard()},
-                        emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value
+                        emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                        updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)}
                     )
 
 

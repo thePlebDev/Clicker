@@ -66,6 +66,19 @@ class TextParsing @Inject constructor() {
 
     }
 
+    fun updateTextField(emoteText:String){
+        val currentString = textFieldValue.value.text
+        val cursorPosition = textFieldValue.value.selection.start
+
+        val newText = StringBuilder(currentString).insert(cursorPosition, emoteText).toString()
+        val newCursorPosition = cursorPosition + emoteText.length
+
+        textFieldValue.value = textFieldValue.value.copy(
+            text = newText,
+            selection = TextRange(newCursorPosition, newCursorPosition)
+        )
+    }
+
     /**
      * clickUsernameAutoTextChange() is a function meant to be run when a user clicks on a slash command after typing the `\` symbol.
      * It will create a new text with the clicked slash command and replace the old text that the user was typing

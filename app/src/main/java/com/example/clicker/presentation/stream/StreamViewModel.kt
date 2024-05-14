@@ -42,6 +42,8 @@ import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.TwitchEmoteImpl
+import com.example.clicker.network.websockets.MessageToken
+import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
@@ -229,6 +231,7 @@ class StreamViewModel @Inject constructor(
     val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
+
 
 
     /**
@@ -532,7 +535,9 @@ class StreamViewModel @Inject constructor(
         textParsing.clickUsernameAutoTextChange(
             username =username,
         )
-
+    }
+    fun addEmoteToText(emoteText:String){
+        textParsing.updateTextField(" $emoteText ")
     }
 
     /**
@@ -799,6 +804,7 @@ class StreamViewModel @Inject constructor(
         scanner.scanTokens()
         val tokenList = scanner.tokenList
         Log.d("TokenTextCommand","tokenList ->${tokenList}")
+        val messageTokenList = tokenList.map { MessageToken(PrivateMessageType.MESSAGE, messageValue = it.lexeme) }
        val textCommands = tokenCommand.checkForSlashCommands(tokenList)
 
         Log.d("TokenTextCommand","text command username ->${textCommands.username}")
@@ -808,7 +814,8 @@ class StreamViewModel @Inject constructor(
             textCommands,
             chatMessage,
             isMod = _uiState.value.loggedInUserData?.mod ?: false,
-            addMessageToListChats ={message -> listChats.add(message)}
+            addMessageToListChats ={message -> listChats.add(message)},
+            messageTokenList=messageTokenList
         )
 
         // val messageResult = webSocket.sendMessage(chatMessage)
@@ -824,6 +831,7 @@ class StreamViewModel @Inject constructor(
         chatMessage:String,
         isMod: Boolean,
         addMessageToListChats:(TwitchUserData)->Unit,
+        messageTokenList: List<MessageToken>
 
     ){
             tokenMonitoring.runMonitorToken(
@@ -845,7 +853,8 @@ class StreamViewModel @Inject constructor(
                 currentUsername = _uiState.value.loggedInUserData?.displayName?:"",
                 sendToWebSocket = {message ->
                     webSocket.sendMessage(message)
-                }
+                },
+                messageTokenList=messageTokenList
 
             )
 

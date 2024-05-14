@@ -139,7 +139,8 @@ fun ChatUI(
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
-    emoteBoardGlobalList: EmoteNameUrlList
+    emoteBoardGlobalList: EmoteNameUrlList,
+    updateTextWithEmote:(String) ->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -240,7 +241,8 @@ fun ChatUI(
         forwardSlashCommands =forwardSlashCommands,
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
-        emoteBoardGlobalList =emoteBoardGlobalList
+        emoteBoardGlobalList =emoteBoardGlobalList,
+        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)}
 
 
         )
@@ -256,7 +258,8 @@ fun ChatUI(
     forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight: Dp,
-    emoteBoardGlobalList: EmoteNameUrlList
+    emoteBoardGlobalList: EmoteNameUrlList,
+    updateTextWithEmote:(String) ->Unit,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -278,7 +281,9 @@ fun ChatUI(
                 )
                 if(emoteKeyBoardHeight==300.dp){
                     EmoteBoard(
-                        emoteKeyBoardHeight,emoteBoardGlobalList
+                        emoteKeyBoardHeight,
+                        emoteBoardGlobalList,
+                        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)}
                     )
                 }
             }
@@ -317,7 +322,8 @@ fun LazyGridScope.header(
 @Composable
 fun EmoteBoard(
     emoteKeyBoardHeight:Dp,
-    emoteBoardGlobalList: EmoteNameUrlList
+    emoteBoardGlobalList: EmoteNameUrlList,
+    updateTextWithEmote:(String) ->Unit,
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     LazyVerticalGrid(
@@ -361,34 +367,13 @@ fun EmoteBoard(
                     .height(65.dp)
                     .padding(5.dp)
                     .clickable {
-                        Log.d("FlowRowSimpleUsageExampleClicked", it.name)
+                        updateTextWithEmote(it.name)
                     }
             )
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun FlowRowSimpleUsageExample(
-    emoteBoardGlobalList: List<EmoteNameUrl>
-) {
-    FlowRow(modifier = Modifier.padding(8.dp)) {
-        emoteBoardGlobalList.forEach{
-            AsyncImage(
-                model = it.url,
-                contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(2.dp)
-                    .clickable {
-                        Log.d("FlowRowSimpleUsageExampleClicked", it.name)
-                    }
-            )
-        }
-
-    }
-}
 
 @Stable
 private class ImprovedChatUI(){
