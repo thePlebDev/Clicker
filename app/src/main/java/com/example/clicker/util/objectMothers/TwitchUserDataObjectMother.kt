@@ -2,6 +2,7 @@ package com.example.clicker.util.objectMothers
 
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.MessageToken
 
 class TwitchUserDataObjectMother private constructor() {
 
@@ -38,6 +39,11 @@ class TwitchUserDataObjectMother private constructor() {
         fun addBadgeInfo(badgeInfo: String) = apply {
             twitchUserData = twitchUserData.copy(
                 badgeInfo = badgeInfo
+            )
+        }
+        fun addMessageTokens(messageTokenList: List<MessageToken>)= apply{
+            twitchUserData = twitchUserData.copy(
+                messageList = messageTokenList
             )
         }
         fun addBadges(badges: String) = apply {

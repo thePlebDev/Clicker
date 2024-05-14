@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream.util
 
 import android.util.Log
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,8 @@ class TokenMonitoring @Inject constructor(){
         getUserId:((TwitchUserData)->Boolean)->String?,
         unbanUserSlashTest:(String)->Unit,
         addToMonitorUser:(String) ->Unit,
-        removeFromMonitorUser:(String) ->Unit
+        removeFromMonitorUser:(String) ->Unit,
+        messageTokenList: List<MessageToken>
 
     ){
          Log.d("monitoringTokens", "username ->${tokenCommand.username}")
@@ -39,6 +41,7 @@ class TokenMonitoring @Inject constructor(){
                         .addDisplayName("Unrecognized command")
                         .addMod("mod")
                         .addMessageType(MessageType.ANNOUNCEMENT)
+                        .addMessageTokens(messageTokenList)
                         .build()
                     addMessageToListChats(message)
                 }
@@ -56,6 +59,7 @@ class TokenMonitoring @Inject constructor(){
                                 .addMod("mod")
                                 .addSystemMessage("${tokenCommand.username} not found in this session")
                                 .addMessageType(MessageType.ANNOUNCEMENT)
+                                .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
                         }
@@ -67,6 +71,7 @@ class TokenMonitoring @Inject constructor(){
                                 .addDisplayName(currentUsername)
                                 .addMod("mod")
                                 .addMessageType(MessageType.USER)
+                                .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
                             banUserSlashCommandTest(userId,tokenCommand.reason)
@@ -79,6 +84,7 @@ class TokenMonitoring @Inject constructor(){
                             .addMod("mod")
                             .addSystemMessage("")
                             .addMessageType(MessageType.ERROR)
+                            .addMessageTokens(messageTokenList)
                             .build()
                         addMessageToListChats(message)
 
@@ -101,6 +107,7 @@ class TokenMonitoring @Inject constructor(){
                                 .addSystemMessage("")
                                 .addMod("mod")
                                 .addMessageType(MessageType.ANNOUNCEMENT)
+                                .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
                         }else{
@@ -111,6 +118,7 @@ class TokenMonitoring @Inject constructor(){
                                 .addDisplayName(currentUsername)
                                 .addMod("mod")
                                 .addMessageType(MessageType.USER)
+                                .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
                             unbanUserSlashTest(userId)
@@ -124,6 +132,7 @@ class TokenMonitoring @Inject constructor(){
                             .addMod("mod")
                             .addSystemMessage("")
                             .addMessageType(MessageType.ANNOUNCEMENT)
+                            .addMessageTokens(messageTokenList)
                             .build()
                         addMessageToListChats(message)
                     }
@@ -139,6 +148,7 @@ class TokenMonitoring @Inject constructor(){
                         .addMod("mod")
                         .addSystemMessage("")
                         .addMessageType(MessageType.ANNOUNCEMENT)
+                        .addMessageTokens(messageTokenList)
                         .build()
                     addMessageToListChats(message)
                 }
@@ -152,6 +162,7 @@ class TokenMonitoring @Inject constructor(){
                         .addDisplayName(currentUsername)
                         .addMod("mod")
                         .addMessageType(MessageType.USER)
+                        .addMessageTokens(messageTokenList)
                         .build()
                     addMessageToListChats(message)
                 }
@@ -165,6 +176,7 @@ class TokenMonitoring @Inject constructor(){
                         .addDisplayName(currentUsername)
                         .addMod("mod")
                         .addMessageType(MessageType.USER)
+                        .addMessageTokens(messageTokenList)
                         .build()
                     addMessageToListChats(message)
                 }
@@ -178,6 +190,7 @@ class TokenMonitoring @Inject constructor(){
                         .addDisplayName(currentUsername)
                         .addMod("mod")
                         .addMessageType(MessageType.USER)
+                        .addMessageTokens(messageTokenList)
                         .build()
                     addMessageToListChats(message)
                 }
