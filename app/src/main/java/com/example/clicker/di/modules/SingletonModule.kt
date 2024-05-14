@@ -139,11 +139,14 @@ object SingletonModule {
         return NetworkMonitorImpl()
     }
 
+
     @Provides
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
     }
 
+
+    @Singleton
     @Provides
     fun providesTwitchEmoteRepo(
        twitchEmoteClient: TwitchEmoteClient

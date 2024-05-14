@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.GetModChannelsData
 import com.example.clicker.network.domain.TwitchAuthentication
+import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
@@ -82,7 +83,8 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val networkMonitoring:NetworkMonitoring
+    private val networkMonitoring:NetworkMonitoring,
+    private val twitchEmoteImpl: TwitchEmoteRepo,
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -234,6 +236,7 @@ class HomeViewModel @Inject constructor(
                     userId = _validatedUser.value?.userId ?:"",
                     oAuthToken = _oAuthToken.value ?: "",
                 )
+                getGlobalEmote(_oAuthToken.value ?: "",_validatedUser.value?.clientId ?:"")
             }
 
 
@@ -342,6 +345,7 @@ class HomeViewModel @Inject constructor(
                         userId = nonNullValidatedUser.userId,
                         oAuthToken = _uiState.value.oAuthToken
                     )
+                    getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
                 }
             }
         }
@@ -356,7 +360,21 @@ class HomeViewModel @Inject constructor(
             _oAuthToken.collect{nullableOAuthToken ->
                 nullableOAuthToken?.also { nonNullOAuthToken ->
                     validateOAuthToken(nonNullOAuthToken)
+
                 }
+
+            }
+        }
+    }
+
+    private fun getGlobalEmote(oAuthToken:String,clientId: String) {
+        //_validatedUser.value?.clientId ?:""
+        Log.d("getGlobalEmoteHomeViewModel","clientId --> $clientId")
+        Log.d("getGlobalEmoteHomeViewModel","oAuthToken --> $oAuthToken")
+        viewModelScope.launch {
+            twitchEmoteImpl.getGlobalEmotes(
+                oAuthToken, clientId
+            ).collect {
 
             }
         }

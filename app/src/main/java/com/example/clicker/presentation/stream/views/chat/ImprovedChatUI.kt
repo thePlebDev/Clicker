@@ -342,7 +342,7 @@ fun EmoteBoard(
             ) {
                 Spacer(modifier  = Modifier.padding(5.dp))
                 Text(
-                    "Global Emote",
+                    "Global Emotes",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = MaterialTheme.typography.headlineLarge.fontSize
                 ) // or any composable for your single row
