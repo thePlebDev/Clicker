@@ -330,6 +330,80 @@ fun EmoteBoard(
     updateTextWithEmote:(String) ->Unit,
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
+    Column() {
+        LazyGridEmotes(
+            emoteKeyBoardHeight=emoteKeyBoardHeight,
+            emoteBoardGlobalList=emoteBoardGlobalList,
+            emoteBoardChannelList=emoteBoardChannelList,
+            updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
+
+        )
+        EmoteBottomUI()
+    }
+
+}
+@Composable
+fun EmoteBottomUI(){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 5.dp, horizontal = 10.dp)
+        .background(MaterialTheme.colorScheme.primary),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        Row(verticalAlignment = Alignment.CenterVertically,){
+            Icon(
+                modifier= Modifier.size(30.dp)
+                    .clickable {
+                               Log.d("EmoteBottomUI","close emote keyboard")
+                    },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.keyboard_arrow_down_24),
+                contentDescription = "click to close keyboard emote")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier.size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI","RECENT")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier.size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI","CHANNEL")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.channel_emotes_24), contentDescription = "click to scroll to channel emotes")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier.size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI","GLOBAL")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.world_emotes_24), contentDescription = "click to scroll to gloabl emotes")
+
+
+        }
+        Icon(modifier= Modifier.size(25.dp)
+            .clickable {
+                Log.d("EmoteBottomUI","DELETE")
+            },
+            tint = MaterialTheme.colorScheme.onPrimary,
+            painter = painterResource(id =R.drawable.baseline_backspace_24), contentDescription = "click to delete emote")
+
+    }
+}
+
+@Composable
+fun LazyGridEmotes(
+    emoteKeyBoardHeight:Dp,
+    emoteBoardGlobalList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlList,
+    updateTextWithEmote:(String) ->Unit,
+){
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 65.dp),
         modifier= Modifier
