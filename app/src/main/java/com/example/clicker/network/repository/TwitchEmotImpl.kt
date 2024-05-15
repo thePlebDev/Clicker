@@ -135,6 +135,9 @@ class TwitchEmoteImpl @Inject constructor(
     private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
 
+    private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
+    override val emoteBoardChannelList:State<EmoteNameUrlList> = _emoteBoardChannelList
+
       override fun getGlobalEmotes(
         oAuthToken: String,
         clientId: String,
@@ -195,7 +198,7 @@ class TwitchEmoteImpl @Inject constructor(
             broadcasterId = broadcasterId
         )
         if(response.isSuccessful){
-            
+
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
             val data = response.body()?.data
@@ -216,6 +219,11 @@ class TwitchEmoteImpl @Inject constructor(
             _emoteList.value = emoteList.value.copy(
                 map = innerInlineContentMap
             )
+            parsedEmoteData?.also {
+                _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
+                    list = it
+                )
+            }
 
             Log.d("getChannelEmotes","body--> ${response.body()}")
 

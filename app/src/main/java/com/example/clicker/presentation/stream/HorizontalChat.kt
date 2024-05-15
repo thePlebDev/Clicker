@@ -229,7 +229,8 @@ fun HorizontalChat(
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
                 hideSoftKeyboard ={},
                 emoteBoardGlobalList = EmoteNameUrlList(),
-                updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)}
+                updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value
             )
 
 

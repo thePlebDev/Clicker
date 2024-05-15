@@ -15,6 +15,8 @@ interface TwitchEmoteRepo {
 
     val emoteBoardGlobalList: State<EmoteNameUrlList>
 
+    val emoteBoardChannelList:State<EmoteNameUrlList>
+
     /**
      * getGlobalEmotes
      * */

@@ -140,6 +140,7 @@ fun ChatUI(
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
@@ -241,7 +242,8 @@ fun ChatUI(
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
         emoteBoardGlobalList =emoteBoardGlobalList,
-        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)}
+        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
+        emoteBoardChannelList=emoteBoardChannelList
 
 
         )
@@ -258,6 +260,7 @@ fun ChatUI(
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
@@ -282,7 +285,8 @@ fun ChatUI(
                     EmoteBoard(
                         emoteKeyBoardHeight,
                         emoteBoardGlobalList,
-                        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)}
+                        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
+                        emoteBoardChannelList=emoteBoardChannelList
                     )
                 }
             }
@@ -322,6 +326,7 @@ fun LazyGridScope.header(
 fun EmoteBoard(
     emoteKeyBoardHeight:Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
@@ -335,6 +340,42 @@ fun EmoteBoard(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Channel Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(10.dp))
+            }
+
+        }
+
+        items(emoteBoardChannelList.list){
+            AsyncImage(
+                model = it.url,
+                contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                modifier = Modifier
+                    .width(65.dp)
+                    .height(65.dp)
+                    .padding(5.dp)
+                    .clickable {
+                        updateTextWithEmote(it.name)
+                    }
+            )
+        }
+        /****START OF THE GLOBAL EMOTES*****/
         header {
             Column(modifier= Modifier
                 .fillMaxWidth()
