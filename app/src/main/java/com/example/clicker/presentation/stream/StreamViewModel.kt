@@ -344,17 +344,18 @@ class StreamViewModel @Inject constructor(
     /***/
     fun getGlobalEmotes(
         oAuthToken: String,
-        clientId: String
+        clientId: String,
+        broadcasterId: String
     ){
         Log.d("getGlobalEmotes","getGlobalEmotes called")
         //todo: this needs to become a get channel specific emotes
-//        viewModelScope.launch {
-//            twitchEmoteImpl.getGlobalEmotes(
-//                oAuthToken,clientId
-//            ).collect{
-//
-//            }
-//        }
+        viewModelScope.launch {
+            twitchEmoteImpl.getChannelEmotes(
+                oAuthToken,clientId,broadcasterId
+            ).collect{
+
+            }
+        }
 
 
     }
