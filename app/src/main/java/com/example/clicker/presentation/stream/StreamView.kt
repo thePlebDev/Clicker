@@ -261,7 +261,8 @@ fun StreamView(
                         inlineContentMap = streamViewModel.inlineTextContentTest.value,
                         hideSoftKeyboard={hideSoftKeyboard()},
                         emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                        updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)}
+                        updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                        emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value
                     )
 
 

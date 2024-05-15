@@ -175,6 +175,7 @@ class StreamViewModel @Inject constructor(
 
     val inlineTextContentTest = twitchEmoteImpl.emoteList
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
+    val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
 
     /**
      * A list representing all the chats users have sent
