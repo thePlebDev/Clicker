@@ -146,6 +146,7 @@ fun ChatUI(
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
     val emoteKeyBoardHeight = remember { mutableStateOf(0.dp) }
+    var iconClicked by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     ChatUIBox(
@@ -221,11 +222,10 @@ fun ChatUI(
                             }
                         },
                         showKeyBoard = {
-                            scope.launch {
                                 emoteKeyBoardHeight.value = 0.dp
-                            }
-                        }
-
+                        },
+                        iconClicked=iconClicked,
+                        setIconClicked = {newValue -> iconClicked = newValue}
                         )
                 },
                 showIconBasedOnTextLength ={
@@ -243,7 +243,11 @@ fun ChatUI(
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
         emoteBoardGlobalList =emoteBoardGlobalList,
         updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
-        emoteBoardChannelList=emoteBoardChannelList
+        emoteBoardChannelList=emoteBoardChannelList,
+        closeEmoteBoard = {
+            emoteKeyBoardHeight.value = 0.dp
+            iconClicked = false
+        }
 
 
         )
@@ -262,6 +266,7 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
+    closeEmoteBoard: () -> Unit
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -286,7 +291,8 @@ fun ChatUI(
                         emoteKeyBoardHeight,
                         emoteBoardGlobalList,
                         updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
-                        emoteBoardChannelList=emoteBoardChannelList
+                        emoteBoardChannelList=emoteBoardChannelList,
+                        closeEmoteBoard={closeEmoteBoard()}
                     )
                 }
             }
@@ -328,6 +334,7 @@ fun EmoteBoard(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
+    closeEmoteBoard: () -> Unit
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     Column() {
@@ -338,12 +345,16 @@ fun EmoteBoard(
             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
 
         )
-        EmoteBottomUI()
+        EmoteBottomUI(
+            closeEmoteBoard={closeEmoteBoard()}
+        )
     }
 
 }
 @Composable
-fun EmoteBottomUI(){
+fun EmoteBottomUI(
+    closeEmoteBoard:()->Unit,
+){
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 5.dp, horizontal = 10.dp)
@@ -355,7 +366,7 @@ fun EmoteBottomUI(){
             Icon(
                 modifier= Modifier.size(30.dp)
                     .clickable {
-                               Log.d("EmoteBottomUI","close emote keyboard")
+                        closeEmoteBoard()
                     },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.keyboard_arrow_down_24),
@@ -1229,9 +1240,11 @@ fun StylizedTextField(
     newFilterMethod:(TextFieldValue) ->Unit,
     showKeyBoard:()->Unit,
     showEmoteBoard:() ->Unit,
+    iconClicked:Boolean,
+    setIconClicked:(Boolean)->Unit,
 ){
     //todo: NOW I NEED TO MAKE THE EMOTE BOARD AND KEYBOARD SHOW AT ALL
-    var iconClicked by remember { mutableStateOf(false) }
+
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     val source = remember {
@@ -1244,7 +1257,7 @@ fun StylizedTextField(
     )
     if ( source.collectIsPressedAsState().value && iconClicked){
         Log.d("TextFieldClicked","clicked and iconclicked")
-        iconClicked = false
+        setIconClicked(false)
         showKeyBoard()
     }
 
@@ -1291,7 +1304,7 @@ fun StylizedTextField(
                                 .align(Alignment.CenterEnd)
                                 .padding(end = 5.dp)
                                 .clickable {
-                                    iconClicked = true
+                                    setIconClicked(true)
                                     showEmoteBoard()
                                 }
                         )
@@ -1304,7 +1317,7 @@ fun StylizedTextField(
                                 .align(Alignment.CenterEnd)
                                 .padding(end = 5.dp)
                                 .clickable {
-                                    iconClicked = false
+                                    setIconClicked(false)
                                     showKeyBoard()
                                     keyboard?.show()
                                     focusRequester.requestFocus()
