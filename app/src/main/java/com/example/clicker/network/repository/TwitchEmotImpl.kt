@@ -171,10 +171,6 @@ class TwitchEmoteImpl @Inject constructor(
                   )
               }
 
-
-
-
-
             emit(Response.Success(true))
         } else {
             Log.d("getGlobalEmotes","FAIL")
@@ -189,6 +185,53 @@ class TwitchEmoteImpl @Inject constructor(
         handleException(cause)
     }
 
+    override fun getChannelEmotes(
+        oAuthToken: String, clientId: String,broadcasterId:String
+    ): Flow<Response<Boolean>> =flow{
+        emit(Response.Loading)
+        val response = twitchEmoteClient.getChannelEmotes(
+            authorization = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId
+        )
+        if(response.isSuccessful){
+            
+            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
+
+            val data = response.body()?.data
+            inlineContentMap.forEach{
+                innerInlineContentMap[it.key] = it.value
+            }
+
+            val parsedEmoteData = data?.map {
+                EmoteNameUrl(it.name,it.images.url_1x)
+            }
+            parsedEmoteData?.forEach {emoteValue ->
+                createMapValue(
+                    emoteValue,
+                    innerInlineContentMap
+                )
+
+            }
+            _emoteList.value = emoteList.value.copy(
+                map = innerInlineContentMap
+            )
+
+            Log.d("getChannelEmotes","body--> ${response.body()}")
+
+        }else{
+            Log.d("getChannelEmotes","FAIL")
+            Log.d("getChannelEmotes","MESSAGE --> ${response.code()}")
+            Log.d("getChannelEmotes","MESSAGE--> ${response.message()}")
+            emit(Response.Failure(Exception("Unable to delete message")))
+        }
+
+    }.catch { cause ->
+        Log.d("getChannelEmotes","EXCEPTION error message ->${cause.message}")
+        Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
+
+
+    }
 
 
 }

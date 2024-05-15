@@ -84,6 +84,7 @@ fun ValidationView(
             streamViewModel.getGlobalEmotes(
                 homeViewModel.state.value.oAuthToken,
                 streamViewModel.state.value.clientId,
+                streamViewModel.state.value.broadcasterId,
             )
 
         },

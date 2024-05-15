@@ -22,4 +22,10 @@ interface TwitchEmoteRepo {
         oAuthToken: String,
         clientId: String,
     ): Flow<Response<Boolean>>
+
+    fun getChannelEmotes(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId:String
+    ): Flow<Response<Boolean>>
 }
