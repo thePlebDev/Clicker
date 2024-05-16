@@ -76,7 +76,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -142,6 +144,7 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
+    deleteEmote:()->Unit
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -247,7 +250,8 @@ fun ChatUI(
         closeEmoteBoard = {
             emoteKeyBoardHeight.value = 0.dp
             iconClicked = false
-        }
+        },
+        deleteEmote={deleteEmote()}
 
 
         )
@@ -266,7 +270,8 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
-    closeEmoteBoard: () -> Unit
+    closeEmoteBoard: () -> Unit,
+    deleteEmote:()->Unit
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -292,7 +297,8 @@ fun ChatUI(
                         emoteBoardGlobalList,
                         updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
                         emoteBoardChannelList=emoteBoardChannelList,
-                        closeEmoteBoard={closeEmoteBoard()}
+                        closeEmoteBoard={closeEmoteBoard()},
+                        deleteEmote={deleteEmote()}
                     )
                 }
             }
@@ -334,7 +340,8 @@ fun EmoteBoard(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
-    closeEmoteBoard: () -> Unit
+    closeEmoteBoard: () -> Unit,
+    deleteEmote:()->Unit
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     Column() {
@@ -346,7 +353,8 @@ fun EmoteBoard(
 
         )
         EmoteBottomUI(
-            closeEmoteBoard={closeEmoteBoard()}
+            closeEmoteBoard={closeEmoteBoard()},
+            deleteEmote={deleteEmote()}
         )
     }
 
@@ -354,7 +362,9 @@ fun EmoteBoard(
 @Composable
 fun EmoteBottomUI(
     closeEmoteBoard:()->Unit,
+    deleteEmote:()->Unit
 ){
+    val haptic = LocalHapticFeedback.current
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 5.dp, horizontal = 10.dp)
@@ -398,12 +408,22 @@ fun EmoteBottomUI(
 
 
         }
-        Icon(modifier= Modifier.size(25.dp)
+        Box(modifier= Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color.DarkGray)
             .clickable {
-                Log.d("EmoteBottomUI","DELETE")
-            },
-            tint = MaterialTheme.colorScheme.onPrimary,
-            painter = painterResource(id =R.drawable.baseline_backspace_24), contentDescription = "click to delete emote")
+                deleteEmote()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+            .padding(vertical =5.dp, horizontal = 10.dp)
+
+        ){
+            Icon(modifier= Modifier.size(25.dp),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.baseline_backspace_24), contentDescription = "click to delete emote"
+            )
+        }
+
 
     }
 }
