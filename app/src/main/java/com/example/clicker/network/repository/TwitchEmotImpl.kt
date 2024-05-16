@@ -202,7 +202,7 @@ class TwitchEmoteImpl @Inject constructor(
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
             val data = response.body()?.data
-            inlineContentMap.forEach{
+            _emoteList.value.map.forEach{
                 innerInlineContentMap[it.key] = it.value
             }
 
