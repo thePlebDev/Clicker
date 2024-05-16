@@ -34,8 +34,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -344,17 +346,31 @@ fun EmoteBoard(
     deleteEmote:()->Unit
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
+    val lazyGridState = rememberLazyGridState()
+    val scope = rememberCoroutineScope()
     Column() {
         LazyGridEmotes(
             emoteKeyBoardHeight=emoteKeyBoardHeight,
             emoteBoardGlobalList=emoteBoardGlobalList,
             emoteBoardChannelList=emoteBoardChannelList,
             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
+            lazyGridState =lazyGridState
 
         )
         EmoteBottomUI(
             closeEmoteBoard={closeEmoteBoard()},
-            deleteEmote={deleteEmote()}
+            deleteEmote={deleteEmote()},
+            scrollToGlobalEmotes={
+                scope.launch {
+                    lazyGridState.scrollToItem(emoteBoardChannelList.list.size+1)
+                }
+            },
+            scrollToChannelEmotes={
+                scope.launch {
+                    lazyGridState.scrollToItem(0)
+                }
+            }
+
         )
     }
 
@@ -362,7 +378,9 @@ fun EmoteBoard(
 @Composable
 fun EmoteBottomUI(
     closeEmoteBoard:()->Unit,
-    deleteEmote:()->Unit
+    deleteEmote:()->Unit,
+    scrollToGlobalEmotes:() ->Unit,
+    scrollToChannelEmotes:()->Unit
 ){
     val haptic = LocalHapticFeedback.current
     Row(modifier = Modifier
@@ -374,7 +392,8 @@ fun EmoteBottomUI(
     ){
         Row(verticalAlignment = Alignment.CenterVertically,){
             Icon(
-                modifier= Modifier.size(30.dp)
+                modifier= Modifier
+                    .size(30.dp)
                     .clickable {
                         closeEmoteBoard()
                     },
@@ -383,25 +402,30 @@ fun EmoteBottomUI(
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
 
-            Icon(modifier= Modifier.size(25.dp)
+            Icon(modifier= Modifier
+                .size(25.dp)
                 .clickable {
-                    Log.d("EmoteBottomUI","RECENT")
+                    Log.d("EmoteBottomUI", "RECENT")
                 },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
             Spacer(modifier = Modifier.width(10.dp))
 
-            Icon(modifier= Modifier.size(25.dp)
+            Icon(modifier= Modifier
+                .size(25.dp)
                 .clickable {
-                    Log.d("EmoteBottomUI","CHANNEL")
+                    scrollToChannelEmotes()
+                    Log.d("EmoteBottomUI", "CHANNEL")
                 },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.channel_emotes_24), contentDescription = "click to scroll to channel emotes")
             Spacer(modifier = Modifier.width(10.dp))
 
-            Icon(modifier= Modifier.size(25.dp)
+            Icon(modifier= Modifier
+                .size(25.dp)
                 .clickable {
-                    Log.d("EmoteBottomUI","GLOBAL")
+                    scrollToGlobalEmotes()
+                    Log.d("EmoteBottomUI", "GLOBAL")
                 },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.world_emotes_24), contentDescription = "click to scroll to gloabl emotes")
@@ -415,7 +439,7 @@ fun EmoteBottomUI(
                 deleteEmote()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
-            .padding(vertical =5.dp, horizontal = 10.dp)
+            .padding(vertical = 5.dp, horizontal = 10.dp)
 
         ){
             Icon(modifier= Modifier.size(25.dp),
@@ -434,8 +458,12 @@ fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
+    lazyGridState: LazyGridState
 ){
+
+
     LazyVerticalGrid(
+        state = lazyGridState,
         columns = GridCells.Adaptive(minSize = 65.dp),
         modifier= Modifier
             .fillMaxWidth()
