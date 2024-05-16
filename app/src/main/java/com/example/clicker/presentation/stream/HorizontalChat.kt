@@ -230,7 +230,8 @@ fun HorizontalChat(
                 hideSoftKeyboard ={},
                 emoteBoardGlobalList = EmoteNameUrlList(),
                 updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value
+                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                deleteEmote={streamViewModel.deleteEmote()}
             )
 
 

@@ -1,12 +1,15 @@
 package com.example.clicker.presentation.stream.util
 
 import android.util.Log
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getTextBeforeSelection
+import com.example.clicker.network.websockets.MessageToken
+import com.example.clicker.network.websockets.PrivateMessageType
 
 import javax.inject.Inject
 
@@ -78,6 +81,28 @@ class TextParsing @Inject constructor() {
             selection = TextRange(newCursorPosition, newCursorPosition)
         )
     }
+
+    fun deleteEmote(
+        emoteMap:Map<String, InlineTextContent>
+
+    ){
+        val tokenScanner = DeletingEmotes(
+            textFieldValue.value,
+            deleteEmotes={
+                    newText,newCursorIndex ->
+                            textFieldValue.value = textFieldValue.value.copy(
+                                text = newText,
+                                selection = TextRange(newCursorIndex, newCursorIndex)
+                            )
+            },
+            emoteMap=emoteMap,
+        )
+        Log.d("addToken","startScanningTokens()")
+        tokenScanner.startScanningTokens()
+
+
+    }
+
 
     /**
      * clickUsernameAutoTextChange() is a function meant to be run when a user clicks on a slash command after typing the `\` symbol.
@@ -236,6 +261,90 @@ class TextParsing @Inject constructor() {
      * */
     private fun negateSlashCommandStateNClearForwardSlashCommands(){
         slashCommandState = false
+    }
+
+}
+
+class DeletingEmotes(
+    private val source:TextFieldValue,
+    private val deleteEmotes:(String,Int)->Unit,
+    private val emoteMap:Map<String, InlineTextContent>
+    ){
+    private var start = 0
+    private var current =source.text.length -1
+
+    fun startScanningTokens(){
+        if(source.text.isNotEmpty()){
+            start = current
+            scanToken()
+        }
+    }
+    private fun scanToken(){
+        val c = source.text[current]
+        Log.d("addToken","current -> ${c}")
+        when(c){
+            ' '->{
+               // Log.d("deleteSpacered","c -> $c <---")
+                deleteSpace()
+            }
+            else->{
+                while (notStartNullOrEmptySpace(peek())){
+                    Log.d("whileLooping","current -> ${current}")
+                    reverse()
+                }
+                deleteToken()
+            }
+
+        }
+    }
+
+    private fun isAtStart():Boolean{
+        return current<=0
+    }
+    private fun reverse(){
+
+        current = -- current
+    }
+
+    private fun deleteSpace(){
+        Log.d("addToken","deleteSpace")
+
+        val newString = source.text.removeRange(current,source.selection.start)
+
+        val newCursorIndex = newString.length
+
+        deleteEmotes(newString,newCursorIndex)
+    }
+
+    private fun deleteToken(){
+        val text = source.text.substring(current, source.selection.start)
+        val newString = source.text.removeRange(current,source.selection.start)
+        Log.d("addToken","deleteToken")
+
+
+        if(emoteMap.containsKey(source.text.substring(current+1, source.selection.start))){
+            Log.d("addToken","true")
+            val newCursorIndex = newString.length
+
+            deleteEmotes(newString,newCursorIndex)
+        }else{
+            Log.d("addToken","deleteSingleItem-> $text")
+            deleteSingleItem()
+        }
+    }
+    private fun deleteSingleItem(){
+        val newString = source.text.removeRange(source.selection.start-1,source.selection.start)
+        val newCursorIndex = newString.length
+
+        deleteEmotes(newString,newCursorIndex)
+    }
+    private fun peek(): Char {
+        return if (isAtStart()) '\u0000' else source.text[current]
+    }
+    private fun notStartNullOrEmptySpace(c:Char):Boolean{
+        Log.d("notStartNullOrEmptySpace","c check -> ${c != ' '}")
+        Log.d("notStartNullOrEmptySpace","current check -> ${current<=0}")
+        return c != ' ' && current>0
     }
 
 }

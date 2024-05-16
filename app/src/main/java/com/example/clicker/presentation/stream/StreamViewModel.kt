@@ -542,6 +542,13 @@ class StreamViewModel @Inject constructor(
     fun addEmoteToText(emoteText:String){
         textParsing.updateTextField(" $emoteText ")
     }
+    fun deleteEmote(){
+//        val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
+//        val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList.value
+//        val inlineTextContentTest = twitchEmoteImpl.emoteList.value.map
+        Log.d("addToken","deleteEmote()")
+        textParsing.deleteEmote(inlineTextContentTest.value.map)
+    }
 
     /**
      * autoTextChangeCommand is function that is used to change the value of [textFieldValue] with [command]
