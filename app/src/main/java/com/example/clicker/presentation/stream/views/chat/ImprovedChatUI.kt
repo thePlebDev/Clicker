@@ -461,7 +461,6 @@ fun LazyGridEmotes(
     lazyGridState: LazyGridState
 ){
 
-
     LazyVerticalGrid(
         state = lazyGridState,
         columns = GridCells.Adaptive(minSize = 65.dp),
