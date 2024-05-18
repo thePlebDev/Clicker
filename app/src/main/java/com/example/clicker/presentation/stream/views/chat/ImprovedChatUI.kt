@@ -401,15 +401,15 @@ fun EmoteBottomUI(
                 painter = painterResource(id =R.drawable.keyboard_arrow_down_24),
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
-
-            Icon(modifier= Modifier
-                .size(25.dp)
-                .clickable {
-                    Log.d("EmoteBottomUI", "RECENT")
-                },
-                tint = MaterialTheme.colorScheme.onPrimary,
-                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-            Spacer(modifier = Modifier.width(10.dp))
+//
+//            Icon(modifier= Modifier
+//                .size(25.dp)
+//                .clickable {
+//                    Log.d("EmoteBottomUI", "RECENT")
+//                },
+//                tint = MaterialTheme.colorScheme.onPrimary,
+//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+//            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
