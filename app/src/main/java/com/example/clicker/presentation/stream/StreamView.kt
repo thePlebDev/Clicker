@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -121,7 +122,10 @@ fun StreamView(
             HorizontalChat(
                 streamViewModel,
                 autoModViewModel,
-                modViewViewModel
+                modViewViewModel,
+                hideSoftKeyboard={
+                    hideSoftKeyboard()
+                }
             )
         }
         else -> {
