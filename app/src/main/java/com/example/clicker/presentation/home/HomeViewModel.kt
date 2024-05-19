@@ -369,14 +369,19 @@ class HomeViewModel @Inject constructor(
 
     private fun getGlobalEmote(oAuthToken:String,clientId: String) {
         //_validatedUser.value?.clientId ?:""
-        Log.d("getGlobalEmoteHomeViewModel","clientId --> $clientId")
-        Log.d("getGlobalEmoteHomeViewModel","oAuthToken --> $oAuthToken")
         viewModelScope.launch {
             twitchEmoteImpl.getGlobalEmotes(
                 oAuthToken, clientId
-            ).collect {
-
-            }
+            ).mapWithRetry(
+                action={
+                    // result is the result from getGlobalEmotes()
+                        result -> result
+                },
+                predicate = { result, attempt ->
+                    val repeatResult = result is Response.Failure && attempt < 3
+                    repeatResult
+                }
+            ).collect{}
         }
     }
 
