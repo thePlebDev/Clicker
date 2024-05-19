@@ -330,6 +330,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
             myWebView = myWebView,
             url = url
         )
+        val root = view.rootView
+        root.viewTreeObserver.addOnGlobalLayoutListener {
+            val heightDiff = root.rootView.height - root.height
+            // IF height diff is more than 150, consider keyboard as visible.
+            Log.d("SOFTKEYBOARDTRIGGER","height ->$heightDiff")
+            Log.d("SOFTKEYBOARDTRIGGER","height DP ->${heightDiff/3.3}")
+        }
 
         return view
     }

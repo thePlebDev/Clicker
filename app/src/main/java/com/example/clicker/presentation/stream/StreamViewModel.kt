@@ -71,6 +71,11 @@ data class ChattingUser(
     val message: String
 )
 
+data class EmoteBoardData(
+    val height:Int,
+    val showBoard:Boolean
+)
+
 
 
 /**
@@ -171,6 +176,9 @@ class StreamViewModel @Inject constructor(
 
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
+
+    private val _emoteBoardData: MutableState<EmoteBoardData> = mutableStateOf(EmoteBoardData(200,false))
+    val emoteBoardData: State<EmoteBoardData> = _emoteBoardData
 
 
     val inlineTextContentTest = twitchEmoteImpl.emoteList

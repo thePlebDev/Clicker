@@ -20,10 +20,13 @@ import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -80,6 +83,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -223,7 +227,7 @@ fun ChatUI(
                             hideSoftKeyboard()
                             scope.launch {
                                 delay(100)
-                                emoteKeyBoardHeight.value = 300.dp
+                                emoteKeyBoardHeight.value = 350.dp
                             }
                         },
                         showKeyBoard = {
@@ -280,6 +284,7 @@ fun ChatUI(
     val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
 
 
+
     //todo: add a conditional to show emoteBoard to help with recomps
 
 
@@ -293,7 +298,7 @@ fun ChatUI(
                     Modifier
                         .fillMaxWidth(),
                 )
-                if(emoteKeyBoardHeight==300.dp){
+                if(emoteKeyBoardHeight==350.dp){
                     EmoteBoard(
                         emoteKeyBoardHeight,
                         emoteBoardGlobalList,
@@ -348,6 +353,7 @@ fun EmoteBoard(
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
+    //modifier =Modifier.weight(1f)
     Column() {
         LazyGridEmotes(
             emoteKeyBoardHeight=emoteKeyBoardHeight,
@@ -390,6 +396,11 @@ fun EmoteBottomUI(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ){
+        Log.d("EmoteBottomUIRedererd", "RENDERED")
+
+//        val imeHeightPx = with(LocalDensity.current) { insets.getBottom() }
+//        var imeHeightDp by remember { mutableStateOf(0.dp) }
+
         Row(verticalAlignment = Alignment.CenterVertically,){
             Icon(
                 modifier= Modifier
@@ -467,7 +478,7 @@ fun LazyGridEmotes(
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
-            .height(emoteKeyBoardHeight)
+            .height(200.dp)
             .background(MaterialTheme.colorScheme.primary),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
