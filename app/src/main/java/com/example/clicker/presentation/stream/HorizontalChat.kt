@@ -227,8 +227,10 @@ fun HorizontalChat(
                 forwardSlashCommands = streamViewModel.forwardSlashCommands,
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                hideSoftKeyboard ={},
-                emoteBoardGlobalList = EmoteNameUrlList(),
+                hideSoftKeyboard ={
+
+                },
+                emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
                 updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                 emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
                 deleteEmote={streamViewModel.deleteEmote()}
