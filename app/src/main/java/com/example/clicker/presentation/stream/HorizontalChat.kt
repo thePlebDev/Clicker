@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 fun HorizontalChat(
     streamViewModel: StreamViewModel,
     autoModViewModel:AutoModViewModel,
-    modViewViewModel:ModViewViewModel
+    modViewViewModel:ModViewViewModel,
+    hideSoftKeyboard:()->Unit,
 ){
     val twitchUserChat = streamViewModel.listChats.toList()
     val lazyColumnListState = rememberLazyListState()
@@ -228,7 +229,7 @@ fun HorizontalChat(
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
                 hideSoftKeyboard ={
-
+                    hideSoftKeyboard()
                 },
                 emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
                 updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},

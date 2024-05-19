@@ -384,9 +384,10 @@ fun setOrientation(
                     homeViewModel,
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     hideSoftKeyboard ={
+                        hideSoftKeyboard()
                         if(!orientationIsLandscape){
                             Log.d("BindingComposeView","clicked")
-                            hideSoftKeyboard()
+
 
 //                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
 //                            /**THE ANIMATION*/
