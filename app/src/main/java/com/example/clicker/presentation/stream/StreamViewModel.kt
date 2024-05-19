@@ -53,6 +53,7 @@ import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.util.TokenMonitoring
 import com.example.clicker.util.Response
+import com.example.clicker.util.mapWithRetry
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -60,9 +61,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -361,13 +364,22 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch {
             twitchEmoteImpl.getChannelEmotes(
                 oAuthToken,clientId,broadcasterId
-            ).collect{
-
-            }
+            ).mapWithRetry(
+                action={
+                    // result is the result from getChannelEmotes()
+                        result -> result
+                       },
+                predicate = { result, attempt ->
+                    val repeatResult = result is Response.Failure && attempt < 3
+                    repeatResult
+                }
+            ).collect{}
         }
 
 
     }
+
+
 
 
 
