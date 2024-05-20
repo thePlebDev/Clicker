@@ -104,9 +104,20 @@ fun HorizontalLongPressView(
                                 height = homeViewModel.state.value.aspectHeight,
                                 width = homeViewModel.state.value.width,
                                 density =homeViewModel.state.value.screenDensity,
-                                loadURL ={newUrl -> loadURL(newUrl)},
+                                loadURL ={
+                                        newUrl -> loadURL(newUrl)
+                                         },
                                 reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},
                                 listData = homeViewModel.state.value.horizontalLongHoldStreamList,
+                                getChannelEmotes={
+                                        broadcasterId ->
+                                    streamViewModel.getChannelEmotes(
+                                        homeViewModel.state.value.oAuthToken,
+                                        streamViewModel.state.value.clientId,
+                                        broadcasterId,
+                                    )
+
+                                }
 
                                 )
                         }
@@ -148,6 +159,7 @@ fun TestingLazyColumnItem(
     density:Float,
     loadURL: (String) -> Unit,
     reconnectWebSocketChat:(String)->Unit,
+    getChannelEmotes:(String) ->Unit,
     listData: NetworkNewUserResponse<List<StreamData>>
     ){
     LazyColumn(
@@ -177,7 +189,11 @@ fun TestingLazyColumnItem(
                         width = width,
                         viewCount = streamItem.viewerCount,
                         density =density,
-                        loadURL ={newUrl -> loadURL(newUrl)},
+                        loadURL ={
+                                newUrl ->
+                            loadURL(newUrl)
+                            getChannelEmotes(streamItem.userId)
+                                 },
                         reconnectWebSocketChat ={channelName ->reconnectWebSocketChat(channelName)}
                     )
                 }
