@@ -102,6 +102,12 @@ fun ModChannelView(
                     streamViewModel.state.value.userId,
                 )
                 createNewTwitchEventWebSocket()
+                //
+                streamViewModel.getChannelEmotes(
+                    homeViewModel.state.value.oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                )
                                  },
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={

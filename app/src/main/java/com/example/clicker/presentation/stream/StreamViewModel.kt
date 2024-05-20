@@ -354,7 +354,7 @@ class StreamViewModel @Inject constructor(
     }
 
     /***/
-    fun getGlobalEmotes(
+    fun getChannelEmotes(
         oAuthToken: String,
         clientId: String,
         broadcasterId: String
@@ -375,8 +375,6 @@ class StreamViewModel @Inject constructor(
                 }
             ).collect{}
         }
-
-
     }
 
 
