@@ -362,19 +362,22 @@ class StreamViewModel @Inject constructor(
         Log.d("getGlobalEmotes","getGlobalEmotes called")
         //todo: this needs to become a get channel specific emotes
         viewModelScope.launch {
-            twitchEmoteImpl.getChannelEmotes(
-                oAuthToken,clientId,broadcasterId
-            ).mapWithRetry(
-                action={
-                    // result is the result from getChannelEmotes()
-                        result -> result
-                       },
-                predicate = { result, attempt ->
-                    val repeatResult = result is Response.Failure && attempt < 3
-                    repeatResult
-                }
-            ).collect{}
-        }
+            withContext(Dispatchers.IO){
+                twitchEmoteImpl.getChannelEmotes(
+                    oAuthToken,clientId,broadcasterId
+                ).mapWithRetry(
+                    action={
+                        // result is the result from getChannelEmotes()
+                            result -> result
+                    },
+                    predicate = { result, attempt ->
+                        val repeatResult = result is Response.Failure && attempt < 3
+                        repeatResult
+                    }
+                ).collect{}
+            }
+            }
+
     }
 
 
@@ -561,9 +564,6 @@ class StreamViewModel @Inject constructor(
         textParsing.updateTextField(" $emoteText ")
     }
     fun deleteEmote(){
-//        val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
-//        val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList.value
-//        val inlineTextContentTest = twitchEmoteImpl.emoteList.value.map
         Log.d("addToken","deleteEmote()")
         textParsing.deleteEmote(inlineTextContentTest.value.map)
     }
