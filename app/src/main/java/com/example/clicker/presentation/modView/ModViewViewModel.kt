@@ -270,11 +270,7 @@ class ModViewViewModel @Inject constructor(
     }
 
     private fun createChatSettingsSubscriptionEvent(){
-        Log.d("createChatSettingsSubscriptionEvent","oAuthToken -->${_requestIds.value.oAuthToken}")
-        Log.d("createChatSettingsSubscriptionEvent","clientId -->${_requestIds.value.clientId}")
-        Log.d("createChatSettingsSubscriptionEvent","broadcasterId -->${_requestIds.value.broadcasterId}")
-        Log.d("createChatSettingsSubscriptionEvent","moderatorId -->${_requestIds.value.moderatorId}")
-        Log.d("createChatSettingsSubscriptionEvent","sessionId -->${_requestIds.value.sessionId}")
+       
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 twitchEventSub.createEventSubSubscriptionUserId(
