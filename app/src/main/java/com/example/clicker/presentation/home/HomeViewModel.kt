@@ -34,7 +34,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 /**
  * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
@@ -398,13 +400,11 @@ class HomeViewModel @Inject constructor(
         tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
             Log.d("monitorForNetworkConnection","getOAuthToken  ---> TOKKEN:$storedOAuthToken")
 
-
             if (storedOAuthToken.length > 2) {
+
                 //need to call the validateToken
                 //this should emit a value to a HOT storedOAuthToken flow which then runs the validateOAuthToken
                 _oAuthToken.tryEmit(storedOAuthToken)
-
-
             } else {
                 _uiState.value = _uiState.value.copy(
                     streamersListLoading = NetworkNewUserResponse.NewUser(
@@ -429,6 +429,22 @@ class HomeViewModel @Inject constructor(
         Log.d("setOAuthToken", "token -> $oAuthToken")
         tokenDataStore.setOAuthToken(oAuthToken)
         _oAuthToken.tryEmit(oAuthToken)
+    }
+
+    fun isUserNew(): Boolean {
+
+         var returnValue = false
+            runBlocking(Dispatchers.IO) {
+
+                val token = tokenDataStore.getOAuthToken().first()
+
+                Log.d("getIsReadyToken","Token -->$token")
+                if (token.length >2){
+                    returnValue = true
+                }
+            }
+
+        return returnValue
     }
 
     /**
