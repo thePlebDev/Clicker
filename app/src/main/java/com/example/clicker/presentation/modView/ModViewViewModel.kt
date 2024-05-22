@@ -270,7 +270,7 @@ class ModViewViewModel @Inject constructor(
     }
 
     private fun createChatSettingsSubscriptionEvent(){
-       
+
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 twitchEventSub.createEventSubSubscriptionUserId(

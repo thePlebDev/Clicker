@@ -16,7 +16,9 @@ import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -24,6 +26,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
+import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
@@ -33,6 +36,9 @@ import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -73,6 +79,8 @@ class HomeFragment : Fragment() {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
+        checkIfUserIsNew(view)
+
 
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -214,6 +222,26 @@ class HomeFragment : Fragment() {
 
             homeViewModel.setOAuthToken(authCode)
         }
+    }
+
+    private fun checkIfUserIsNew(view: FrameLayout){
+        view.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // Check if the initial data is ready.
+                    return if (homeViewModel.isUserNew()) {
+                        // The content is ready; start drawing.
+                        view.viewTreeObserver.removeOnPreDrawListener(this)
+                        true
+                    } else {
+                        // The content is not ready; suspend.
+                        view.viewTreeObserver.removeOnPreDrawListener(this)
+                        findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
+                        true
+                    }
+                }
+            }
+        )
     }
 
 }
