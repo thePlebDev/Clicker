@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.logout
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -37,6 +38,7 @@ import androidx.core.view.updatePadding
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
+import com.example.clicker.presentation.logout.views.MainComponent
 
 
 class LogoutFragment : Fragment() {
@@ -46,10 +48,12 @@ class LogoutFragment : Fragment() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
       val activityContext = activity?.applicationContext!!
         getActivity()?.window?.statusBarColor = ContextCompat.getColor(activityContext, R.color.red)
         getActivity()?.window?.navigationBarColor = ContextCompat.getColor(activityContext, R.color.black)
         super.onCreate(savedInstanceState)
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 
     }
 
@@ -68,7 +72,7 @@ class LogoutFragment : Fragment() {
 
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                TestingLogoutUI()
+                MainComponent()
             }
         }
 
@@ -76,66 +80,4 @@ class LogoutFragment : Fragment() {
         return binding.root
     }
 
-}
-
-@Composable
-fun TestingLogoutUI(){
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Red,
-                        Color.Black
-                    ),
-                    startY = 0f,
-                    endY = (screenHeight * 1.6).toFloat()
-
-                )
-            )
-    ) {
-        Column(
-            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier =Modifier.height(90.dp))
-            Icon(
-                tint = Color.White,
-                painter = painterResource(id =R.drawable.ic_launcher_foreground),
-                contentDescription = "Modderz logo",
-                modifier = Modifier
-                    .size(100.dp)
-            )
-        }
-
-        Column(modifier= Modifier
-            .align(Alignment.Center)
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text ="Modderz",color = Color.White, fontSize = 40.sp)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
-        }
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(20.dp)
-        ) {
-            Button(
-                onClick ={},
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-            ) {
-                Text("Login with Twitch", color = Color.White, fontSize = 18.sp)
-            }
-        }
-
-
-    }
 }
