@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_homeFragment_to_newUserFragment"
             app:destination="@id/newUserFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_logoutFragment"
+            app:destination="@id/logoutFragment" />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
@@ -44,5 +47,18 @@
         android:id="@+id/newUserFragment"
         android:name="com.example.clicker.presentation.newUser.NewUserFragment"
         android:label="fragment_new_user"
-        tools:layout="@layout/fragment_new_user" />
+        tools:layout="@layout/fragment_new_user" >
+        <action
+            android:id="@+id/action_newUserFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/logoutFragment"
+        android:name="com.example.clicker.presentation.logout.LogoutFragment"
+        android:label="fragment_logout"
+        tools:layout="@layout/fragment_logout" >
+        <action
+            android:id="@+id/action_logoutFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
 </navigation>

@@ -362,9 +362,7 @@ class HomeViewModel @Inject constructor(
             _oAuthToken.collect{nullableOAuthToken ->
                 nullableOAuthToken?.also { nonNullOAuthToken ->
                     validateOAuthToken(nonNullOAuthToken)
-
                 }
-
             }
         }
     }
@@ -431,16 +429,21 @@ class HomeViewModel @Inject constructor(
         _oAuthToken.tryEmit(oAuthToken)
     }
 
+    /**
+     * isUserNew() is a thread blocking function that is used to determine if the user is a new user of not.
+     *
+     * @return a Boolean determining if the user is new or not
+     * */
     fun isUserNew(): Boolean {
 
-         var returnValue = false
+         var returnValue = true
             runBlocking(Dispatchers.IO) {
 
                 val token = tokenDataStore.getOAuthToken().first()
 
                 Log.d("getIsReadyToken","Token -->$token")
                 if (token.length >2){
-                    returnValue = true
+                    returnValue = false
                 }
             }
 

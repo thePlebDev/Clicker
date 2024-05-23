@@ -224,12 +224,16 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /**
+     * checkIfUserIsNew() is a thread blocking function that is used to determine if the user is a new user of not.
+     *
+     * */
     private fun checkIfUserIsNew(view: FrameLayout){
         view.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     // Check if the initial data is ready.
-                    return if (homeViewModel.isUserNew()) {
+                    return if (!homeViewModel.isUserNew()) {
                         // The content is ready; start drawing.
                         view.viewTreeObserver.removeOnPreDrawListener(this)
                         true
