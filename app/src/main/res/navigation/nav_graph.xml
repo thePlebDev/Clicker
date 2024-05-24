@@ -21,7 +21,10 @@
             app:destination="@id/newUserFragment" />
         <action
             android:id="@+id/action_homeFragment_to_logoutFragment"
-            app:destination="@id/logoutFragment" />
+            app:destination="@id/logoutFragment"
+            app:popUpTo="@+id/homeFragment"
+            app:popUpToInclusive="true"
+            />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
