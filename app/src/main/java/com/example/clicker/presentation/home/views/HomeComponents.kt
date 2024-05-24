@@ -164,9 +164,8 @@ import com.example.clicker.util.Response
                         closeDialog = {hideLogoutDialog()},
                         logout={
                             //todo: this is where we are going to navigate to the logout UI
-                            onNavigate(R.id.action_homeFragment_to_logoutFragment)
 
-                          //  logout()
+                            logout()
                         },
                         currentUsername =currentUsername
                     )

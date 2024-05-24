@@ -22,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
+import com.example.clicker.presentation.logout.LogoutViewModel
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -33,6 +35,7 @@ import com.example.clicker.presentation.stream.StreamViewModel
 fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
+    logoutViewModel: LogoutViewModel,
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     addToLinks: () -> Unit,
@@ -51,7 +54,7 @@ fun ValidationView(
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
-    val isUserLoggedIn = homeViewModel.state.value.userIsLoggedIn
+
 
 
 
@@ -96,10 +99,12 @@ fun ValidationView(
         height = homeViewModel.state.value.aspectHeight,
         width = homeViewModel.state.value.width,
         logout = {
-            homeViewModel.beginLogout(
+
+            logoutViewModel.logout(
                 clientId = clientId?:"",
                 oAuthToken = oAuthToken
             )
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
             homeViewModel.hideLogoutDialog()
 
         },
