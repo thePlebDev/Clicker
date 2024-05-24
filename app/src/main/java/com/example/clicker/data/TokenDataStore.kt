@@ -27,11 +27,9 @@ class TokenDataStore @Inject constructor(
     private val oAuthTokenKey = stringPreferencesKey("oAuth_token")
     private val usernameKey = stringPreferencesKey("username_value")
 
-    private val oneClickActionsKey = booleanPreferencesKey("one_click_action")
 
-    init{
+    private val userLoggedOutKey = booleanPreferencesKey("user_logged_out")
 
-    }
 
     override suspend fun setOAuthToken(oAuthToken: String) {
         val another =context.dataStore.edit { tokens ->
@@ -59,6 +57,22 @@ class TokenDataStore @Inject constructor(
         val username: Flow<String> = context.dataStore.data
             .map { preferences ->
                 preferences[usernameKey] ?: ""
+            }
+        return username
+    }
+
+    override suspend fun setLoggedOutStatus(loggedOut: Boolean) {
+
+        context.dataStore.edit { tokens ->
+            tokens[userLoggedOutKey] = loggedOut
+        }
+    }
+
+    override fun getLoggedOutStatus(): Flow<Boolean> {
+
+        val username: Flow<Boolean> = context.dataStore.data
+            .map { preferences ->
+                preferences[userLoggedOutKey] ?: false
             }
         return username
     }

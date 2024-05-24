@@ -35,16 +35,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
 import com.example.clicker.presentation.logout.views.MainComponent
+import com.example.clicker.presentation.stream.StreamViewModel
 
 
 class LogoutFragment : Fragment() {
 
     private var _binding: FragmentLogoutBinding? = null
     private val binding get() = _binding!!
+    private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

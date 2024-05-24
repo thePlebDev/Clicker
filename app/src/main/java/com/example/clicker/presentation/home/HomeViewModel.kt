@@ -141,63 +141,6 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun beginLogout(clientId: String,oAuthToken: String) = viewModelScope.launch {
-//
-        withContext(ioDispatcher + CoroutineName("BeginLogout")) {
-            authentication.logout(
-                clientId = clientId,
-                token = oAuthToken
-            )
-                .collect { response ->
-                    when (response) {
-                        is NetworkAuthResponse.Loading -> {
-                            _uiState.value = _uiState.value.copy(
-                                streamersListLoading = NetworkNewUserResponse.Loading,
-                                showFailedDialog = false
-                            )
-                            _modChannelUIState.value =_modChannelUIState.value.copy(
-                                modChannelResponseState = NetworkNewUserResponse.Loading,
-                            )
-                        }
-                        is NetworkAuthResponse.Success -> {
-                            _uiState.value = _uiState.value.copy(
-                                userIsLoggedIn = response,
-                                homeRefreshing = false,
-
-                            )
-                            _modChannelUIState.value =_modChannelUIState.value.copy(
-                                modChannelResponseState = NetworkNewUserResponse.Auth401Failure(
-                                    Exception("Success! Login with Twitch")
-                                ),
-                                modRefreshing = false,
-                            )
-                            _validatedUser.value = null
-                        }
-                        is NetworkAuthResponse.Failure -> {
-                            _uiState.value = _uiState.value.copy(
-                                userIsLoggedIn = response,
-                                showFailedDialog = true
-                                )
-                        }
-                        is NetworkAuthResponse.NetworkFailure->{
-                            _uiState.value = _uiState.value.copy(
-                                userIsLoggedIn = response,
-                                showFailedDialog = true
-                            )
-                        }
-                        is NetworkAuthResponse.Auth401Failure ->{
-                            _uiState.value = _uiState.value.copy(
-                                userIsLoggedIn = response,
-                                showFailedDialog = true
-                            )
-                        }
-
-
-                    }
-                }
-        }
-    }
-
 
 
     fun registerDomian(isRegistered: Boolean) {
@@ -444,7 +387,7 @@ class HomeViewModel @Inject constructor(
      * */
     fun determineUserType(): UserTypes = runBlocking(Dispatchers.IO) {
         val token = tokenDataStore.getOAuthToken().first()
-        val loggedOut = false
+        val loggedOut = tokenDataStore.getLoggedOutStatus().first()
         when {
             token.length < 2 -> UserTypes.NEW
             loggedOut -> UserTypes.LOGGEDOUT
