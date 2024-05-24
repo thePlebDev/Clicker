@@ -79,7 +79,8 @@ class HomeFragment : Fragment() {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
-        checkIfUserIsNew(view)
+       // checkIfUserIsNew(view)
+        checkUserType(view)
 
 
         binding.composeView.apply {
@@ -224,24 +225,32 @@ class HomeFragment : Fragment() {
         }
     }
 
+
+
     /**
-     * checkIfUserIsNew() is a thread blocking function that is used to determine if the user is a new user of not.
-     *
+     * checkUserType() is a thread blocking function that is used to determine if the user is a new user, returning user or a
+     * logged out user
      * */
-    private fun checkIfUserIsNew(view: FrameLayout){
+    private fun checkUserType(view: FrameLayout){
         view.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     // Check if the initial data is ready.
-                    return if (!homeViewModel.isUserNew()) {
-                        // The content is ready; start drawing.
-                        view.viewTreeObserver.removeOnPreDrawListener(this)
-                        true
-                    } else {
-                        // The content is not ready; suspend.
-                        view.viewTreeObserver.removeOnPreDrawListener(this)
-                        findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
-                        true
+                    return when(homeViewModel.determineUserType()){
+                        UserTypes.NEW ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
+                            true
+                        }
+                        UserTypes.RETURNING ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            true
+                        }
+                        UserTypes.LOGGEDOUT ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            findNavController().navigate(R.id.action_homeFragment_to_logoutFragment)
+                            true
+                        }
                     }
                 }
             }
