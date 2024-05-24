@@ -46,6 +46,7 @@ fun ValidationView(
     val scope = rememberCoroutineScope()
 
 
+
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
@@ -99,7 +100,6 @@ fun ValidationView(
                 clientId = clientId?:"",
                 oAuthToken = oAuthToken
             )
-            //homeViewModel.logout()
             homeViewModel.hideLogoutDialog()
 
         },
