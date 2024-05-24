@@ -38,6 +38,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+
+/**
+ * UserTypes is used to in the [determineUserType()][com.example.clicker.presentation.home.HomeViewModel.determineUserType] method
+ * to determine the type of user the current user is
+ * */
+enum class UserTypes {
+    NEW, RETURNING, LOGGEDOUT,
+}
 /**
  * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
  * are fetched
@@ -430,25 +438,21 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * isUserNew() is a thread blocking function that is used to determine if the user is a new user of not.
-     *
-     * @return a Boolean determining if the user is new or not
+     * determineUserType() is a thread blocking function that is used to determine if the user is a new user, returning user or a
+     * logged out user
+     * @return a [UserTypes] object used to determine the current user's type
      * */
-    fun isUserNew(): Boolean {
-
-         var returnValue = true
-            runBlocking(Dispatchers.IO) {
-
-                val token = tokenDataStore.getOAuthToken().first()
-
-                Log.d("getIsReadyToken","Token -->$token")
-                if (token.length >2){
-                    returnValue = false
-                }
-            }
-
-        return returnValue
+    fun determineUserType(): UserTypes = runBlocking(Dispatchers.IO) {
+        val token = tokenDataStore.getOAuthToken().first()
+        val loggedOut = false
+        when {
+            token.length < 2 -> UserTypes.NEW
+            loggedOut -> UserTypes.LOGGEDOUT
+            else -> UserTypes.RETURNING
+        }
     }
+
+
 
     /**
      * The second method to be called in the authentication flow.
