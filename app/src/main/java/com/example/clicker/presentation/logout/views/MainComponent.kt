@@ -15,6 +15,8 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -24,12 +26,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.presentation.home.disableClickAndRipple
 
 
 @Composable
 fun MainComponent(){
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
+    val showLoginLoader = remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,21 +51,35 @@ fun MainComponent(){
     ) {
         LogoIcon(modifier = Modifier.align(Alignment.TopCenter))
         ModderzTagLine(modifier = Modifier.align(Alignment.Center))
-        LoginWithTwitchButton( modifier = Modifier.align(Alignment.BottomEnd))
-
-
+        LoginWithTwitchButton(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            loginTwitch={showLoginLoader.value = true}
+        )
+        if(showLoginLoader.value){
+            Spacer(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .disableClickAndRipple()
+                    .background(
+                        color = Color.Black.copy(alpha = .7f)
+                    )
+            )
+        }
     }
 }
 
 @Composable
-fun LoginWithTwitchButton(modifier: Modifier){
+fun LoginWithTwitchButton(
+    modifier: Modifier,
+    loginTwitch:()->Unit
+){
     Column(
         modifier = modifier
 
             .padding(20.dp)
     ) {
         Button(
-            onClick ={},
+            onClick ={loginTwitch()},
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
         ) {
             Text("Login with Twitch", color = Color.White, fontSize = 18.sp)
