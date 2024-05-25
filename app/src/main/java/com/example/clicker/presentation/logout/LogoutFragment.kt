@@ -1,16 +1,20 @@
 package com.example.clicker.presentation.logout
 
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,7 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import com.example.clicker.R
@@ -50,11 +56,13 @@ class LogoutFragment : Fragment() {
     private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
-      val activityContext = activity?.applicationContext!!
-        getActivity()?.window?.statusBarColor = ContextCompat.getColor(activityContext, R.color.red)
-        getActivity()?.window?.navigationBarColor = ContextCompat.getColor(activityContext, R.color.black)
+        val window = requireActivity().window
+
+        setImmersiveEdgeToEdgeMode(window)
+
         super.onCreate(savedInstanceState)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 
@@ -73,6 +81,7 @@ class LogoutFragment : Fragment() {
 
         binding.composeView.apply {
 
+
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MainComponent()
@@ -83,4 +92,26 @@ class LogoutFragment : Fragment() {
         return binding.root
     }
 
+}
+
+fun setImmersiveEdgeToEdgeMode(window: Window){
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        // For SDK >= 30, use WindowInsetsControllerCompat
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController?.let {
+            it.hide(WindowInsetsCompat.Type.systemBars())
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    } else {
+        // For SDK < 30, use systemUiVisibility
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
+    }
 }

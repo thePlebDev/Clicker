@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         val context: Context = this
 
+
         val minimunRequiredVersion = Build.VERSION_CODES.S
         val deviceVersion = Build.VERSION.SDK_INT
 
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         // Registers BroadcastReceiver to track network connection changes.
+
 
 
 
