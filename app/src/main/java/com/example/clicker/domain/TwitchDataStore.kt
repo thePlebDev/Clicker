@@ -15,5 +15,10 @@ interface TwitchDataStore {
     suspend fun setLoggedOutStatus(loggedOut:Boolean)
     fun getLoggedOutStatus(): Flow<Boolean>
 
+    suspend fun setLoggedOutLoading(loggedOutStatus:Boolean)
+    fun getLoggedOutLoading(): Flow<Boolean>
+
+
+
 
 }

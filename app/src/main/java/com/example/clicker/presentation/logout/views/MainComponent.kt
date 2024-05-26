@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.logout.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -32,13 +34,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.logout.LogoutViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun MainComponent(){
+fun MainComponent(
+    loginWithTwitch:()-> Unit,
+    logoutViewModel: LogoutViewModel,
+    navigateToHomeFragment:() ->Unit
+){
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    val showLoginLoader = remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+//    if(logoutViewModel.navigateHome.value){
+//        logoutViewModel.setNavigateHome(false)
+//        navigateToHomeFragment()
+//    }
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,9 +73,17 @@ fun MainComponent(){
         ModderzTagLine(modifier = Modifier.align(Alignment.Center))
         LoginWithTwitchButton(
             modifier = Modifier.align(Alignment.BottomEnd),
-            loginTwitch={showLoginLoader.value = true}
+            loginTwitch={
+                logoutViewModel.setShowLogin(true)
+                scope.launch {
+
+                    loginWithTwitch()
+                }
+
+            }
         )
-        if(showLoginLoader.value){
+        Log.d("showLogingState","state -> ${logoutViewModel.showLoading.value}")
+        if(logoutViewModel.showLoading.value){
             Spacer(
                 modifier = Modifier
                     .fillMaxSize()
@@ -69,10 +92,12 @@ fun MainComponent(){
                         color = Color.Black.copy(alpha = .7f)
                     )
             )
-            
+
                     CircularProgressIndicator(
                         color = Color.Red,
-                        modifier = Modifier.align(Alignment.Center).size(50.dp)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp)
                     )
 
 
