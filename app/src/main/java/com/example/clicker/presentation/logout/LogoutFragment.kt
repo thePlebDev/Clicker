@@ -1,14 +1,20 @@
 package com.example.clicker.presentation.logout
 
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Resources
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +48,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
@@ -54,6 +62,8 @@ class LogoutFragment : Fragment() {
     private var _binding: FragmentLogoutBinding? = null
     private val binding get() = _binding!!
     private val logoutViewModel: LogoutViewModel by activityViewModels()
+    val clientId = BuildConfig.CLIENT_ID
+    val redirectUrl = BuildConfig.REDIRECT_URL
 
 
 
@@ -61,18 +71,31 @@ class LogoutFragment : Fragment() {
 
         val window = requireActivity().window
 
-        setImmersiveEdgeToEdgeMode(window)
+      //  setImmersiveEdgeToEdgeMode(window)
 
         super.onCreate(savedInstanceState)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels+channel:manage:broadcast+user:edit:broadcast+moderator:manage:automod+moderator:manage:blocked_terms+user:read:chat+user:bot+channel:bot"
+
+        val twitchIntent2 = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse(
+                authorizationUrl
+            )
+        )
+
+
+
+
 
 
         _binding = FragmentLogoutBinding.inflate(inflater, container, false)
@@ -84,14 +107,52 @@ class LogoutFragment : Fragment() {
 
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MainComponent()
+                MainComponent(
+                    loginWithTwitch={startActivity(twitchIntent2)},
+                    logoutViewModel = logoutViewModel,
+                    navigateToHomeFragment = { findNavController().navigate(R.id.action_logoutFragment_to_homeFragment) }
+                )
             }
         }
 
 
         return binding.root
     }
+    override fun onResume() {
+        super.onResume()
+//        Log.d("LoginViewModelLifecycle","onResume")
 
+        val uri: Uri? = activity?.intent?.data
+        if(uri != null){
+            val accessTokenRegex = "#access_token=([^&]+)".toRegex()
+
+            val matchResult = accessTokenRegex.find(uri.toString())
+            val oAuthToken = matchResult?.groupValues?.get(1)?:""
+            logoutViewModel.validateOAuthToken(oAuthToken)
+            Log.d("LoginFragmentOAuthtoken", "authCode -> $oAuthToken")
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+//        Log.d("LoginViewModelLifecycle","onDestroyView")
+        _binding = null
+    }
+
+    override fun onPause() {
+//        Log.d("LoginViewModelLifecycle","onPause")
+        super.onPause()
+    }
+
+    override fun onStop() {
+//        Log.d("LoginViewModelLifecycle","onPause")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+//        Log.d("LoginViewModelLifecycle","onPause")
+        super.onDestroy()
+    }
 }
 
 fun setImmersiveEdgeToEdgeMode(window: Window){

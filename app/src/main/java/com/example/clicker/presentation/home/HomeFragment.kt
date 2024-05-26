@@ -17,11 +17,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.Window
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -202,6 +206,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         Log.d("HomeFragmentLifeCycle","onResume")
         //networkMonitorViewModel.startService()
+       // setImmersiveEdgeToEdgeMode(requireActivity().window)
         val screenDensity =Resources.getSystem().displayMetrics.density
         //networkMonitorViewModel.startService(serviceIntent)
         val height = Resources.getSystem().displayMetrics.heightPixels
