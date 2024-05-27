@@ -12,7 +12,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.Window
+import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
@@ -53,8 +55,11 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
+import com.example.clicker.presentation.home.UserTypes
 import com.example.clicker.presentation.logout.views.MainComponent
 import com.example.clicker.presentation.stream.StreamViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class LogoutFragment : Fragment() {
@@ -65,6 +70,10 @@ class LogoutFragment : Fragment() {
     val clientId = BuildConfig.CLIENT_ID
     val redirectUrl = BuildConfig.REDIRECT_URL
 
+    init {
+
+    }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,8 +81,16 @@ class LogoutFragment : Fragment() {
         val window = requireActivity().window
 
       //  setImmersiveEdgeToEdgeMode(window)
+        Log.d("AnotherOneTestingOnCreate","onCreate()")
+        val testing =logoutViewModel.navigateHome.value
+        Log.d("AnotherOneTestingOnCreate","onCreate() value $testing")
+        if(testing == true){
+            Log.d("AnotherOneTestingOnCreate","onCreate() true")
+            logoutViewModel.setNavigateHome(false)
+        }
 
         super.onCreate(savedInstanceState)
+
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 
     }
@@ -101,6 +118,7 @@ class LogoutFragment : Fragment() {
         _binding = FragmentLogoutBinding.inflate(inflater, container, false)
         // Make the fragment fullscreen
 
+        checkNavigationStatus(binding.root)
 
         binding.composeView.apply {
 
@@ -110,10 +128,14 @@ class LogoutFragment : Fragment() {
                 MainComponent(
                     loginWithTwitch={startActivity(twitchIntent2)},
                     logoutViewModel = logoutViewModel,
-                    navigateToHomeFragment = { findNavController().navigate(R.id.action_logoutFragment_to_homeFragment) }
+                    navigateToHomeFragment = {
+                        findNavController().navigate(R.id.action_logoutFragment_to_homeFragment)
+                    }
                 )
             }
         }
+
+
 
 
         return binding.root
@@ -153,6 +175,31 @@ class LogoutFragment : Fragment() {
 //        Log.d("LoginViewModelLifecycle","onPause")
         super.onDestroy()
     }
+
+    private fun checkNavigationStatus(view: FrameLayout){
+        view.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // Check if the initial data is ready.
+                    return when(logoutViewModel.navigateHome.value){
+                        true->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            logoutViewModel.setNavigateHome(false)
+                            true
+                        }
+                        false ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            true
+                        }
+                        else ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            true
+                        }
+                    }
+                }
+            }
+        )
+    }
 }
 
 fun setImmersiveEdgeToEdgeMode(window: Window){
@@ -176,3 +223,4 @@ fun setImmersiveEdgeToEdgeMode(window: Window){
                 )
     }
 }
+

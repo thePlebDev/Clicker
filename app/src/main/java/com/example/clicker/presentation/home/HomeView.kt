@@ -100,12 +100,13 @@ fun ValidationView(
         width = homeViewModel.state.value.width,
         logout = {
 
+            logoutViewModel.setNavigateHome(false)
             logoutViewModel.logout(
                 clientId = clientId?:"",
                 oAuthToken = oAuthToken
             )
-            onNavigate(R.id.action_homeFragment_to_logoutFragment)
             homeViewModel.hideLogoutDialog()
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
 
         },
         userIsAuthenticated =userIsAuthenticated,

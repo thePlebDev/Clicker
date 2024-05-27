@@ -15,6 +15,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,10 +30,13 @@ class LogoutViewModel @Inject constructor(
     private var _showLoading: MutableState<Boolean> = mutableStateOf(false)
     val showLoading: State<Boolean> = _showLoading
 
-    private var _navigateHome: MutableState<Boolean> = mutableStateOf(false)
-    val navigateHome: State<Boolean> = _navigateHome
+
+
+    private val _navigateHome: MutableState<Boolean?> = mutableStateOf(null)
+    val navigateHome: State<Boolean?> = _navigateHome
 
     init {
+        _navigateHome.value = false
 
         getInitialLoggedOut()
     }
@@ -42,7 +47,13 @@ class LogoutViewModel @Inject constructor(
     }
     fun setNavigateHome(value:Boolean)=viewModelScope.launch{
         _navigateHome.value = value
+        Log.d("setNavigateHome","_navigateHome.value = value -->${_navigateHome.value}")
 
+    }
+    fun setLoggedOutStatus(value:Boolean){
+        viewModelScope.launch {
+            tokenDataStore.setLoggedOutStatus(value)
+        }
     }
 
     fun logout(clientId:String,oAuthToken:String)  = viewModelScope.launch{
@@ -60,8 +71,7 @@ class LogoutViewModel @Inject constructor(
 
                         }
                         is NetworkAuthResponse.Success -> {
-                            tokenDataStore.setLoggedOutStatus(true)
-                            setNavigateHome(true)
+                            setLoggedOutStatus(true)
                             Log.d("newlogoutFunction","SUCCESS")
                         }
                         is NetworkAuthResponse.Failure -> {
@@ -85,7 +95,7 @@ class LogoutViewModel @Inject constructor(
 
     fun getInitialLoggedOut(){
         viewModelScope.launch {
-            //tokenDataStore.setLoggedOutLoading(false)
+           // tokenDataStore.setLoggedOutLoading(false)
             tokenDataStore.getLoggedOutLoading().collect{loggedOutStatus ->
                 Log.d("LoginViewModelLifecycle","getInitialLoggedOutStatus --> $loggedOutStatus")
                 _showLoading.value = loggedOutStatus
@@ -114,6 +124,9 @@ class LogoutViewModel @Inject constructor(
                    }
                    is NetworkNewUserResponse.Success ->{
                        Log.d("validateOAuthTokenCall","Success")
+                       //todo: set the logout and login idea: set up the homeViewModel.determineUserType()
+                       tokenDataStore.setOAuthToken(oAuthToken)
+                       tokenDataStore.setLoggedOutStatus(false)
                        setShowLogin(false)
                        setNavigateHome(true)
                    }

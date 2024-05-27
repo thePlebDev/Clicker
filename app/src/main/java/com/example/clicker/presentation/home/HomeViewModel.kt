@@ -422,6 +422,7 @@ class HomeViewModel @Inject constructor(
                             oAuthToken = oAuthenticationToken,
                             userIsLoggedIn = NetworkAuthResponse.Success(true)
                         )
+                        //todo: set the logout and login idea
 
                         _validatedUser.tryEmit(response.data)
                         Log.d("monitorForNetworkConnection","Login ->${response.data.login}")
