@@ -20,6 +20,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,10 +50,14 @@ fun MainComponent(
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
     val scope = rememberCoroutineScope()
-//    if(logoutViewModel.navigateHome.value){
-//        logoutViewModel.setNavigateHome(false)
-//        navigateToHomeFragment()
-//    }
+//
+
+        if (logoutViewModel.navigateHome.value == true) {
+            Log.d("AnotherOneTestingagain", "value -> ${logoutViewModel.navigateHome.value}")
+            navigateToHomeFragment()
+            logoutViewModel.setNavigateHome(false)
+        }
+
 
 
     Box(
@@ -76,7 +82,7 @@ fun MainComponent(
             loginTwitch={
                 logoutViewModel.setShowLogin(true)
                 scope.launch {
-
+                   // navigateToHomeFragment()
                     loginWithTwitch()
                 }
 
@@ -99,8 +105,6 @@ fun MainComponent(
                             .align(Alignment.Center)
                             .size(50.dp)
                     )
-
-
         }
     }
 }
