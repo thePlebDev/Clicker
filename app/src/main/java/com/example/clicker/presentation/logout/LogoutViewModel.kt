@@ -50,7 +50,7 @@ class LogoutViewModel @Inject constructor(
         Log.d("setNavigateHome","_navigateHome.value = value -->${_navigateHome.value}")
 
     }
-    fun setLoggedOutStatus(value:Boolean){
+    fun setLoggedOutStatus(value:String){
         viewModelScope.launch {
             tokenDataStore.setLoggedOutStatus(value)
         }
@@ -59,37 +59,38 @@ class LogoutViewModel @Inject constructor(
     fun logout(clientId:String,oAuthToken:String)  = viewModelScope.launch{
         //so I need to logout and on success I need to set the internal logout flag to true
         Log.d("newlogoutFunction","LogoutViewModel.logout() called")
+        setLoggedOutStatus("WAITING")
         withContext(Dispatchers.IO) {
-            authentication.logout(
-                clientId = clientId,
-                token = oAuthToken
-            )
-                .collect { response ->
-                    when (response) {
-                        is NetworkAuthResponse.Loading -> {
-                            Log.d("newlogoutFunction","LOADING")
-
-                        }
-                        is NetworkAuthResponse.Success -> {
-                            setLoggedOutStatus(true)
-                            Log.d("newlogoutFunction","SUCCESS")
-                        }
-                        is NetworkAuthResponse.Failure -> {
-                            Log.d("newlogoutFunction","FAILED")
-
-                        }
-                        is NetworkAuthResponse.NetworkFailure->{
-                            Log.d("newlogoutFunction","NETWORK FAILURE")
-
-                        }
-                        is NetworkAuthResponse.Auth401Failure ->{
-                            Log.d("newlogoutFunction","401 AUTH FAILURE")
-
-                        }
-
-
-                    }
-                }
+//            authentication.logout(
+//                clientId = clientId,
+//                token = oAuthToken
+//            )
+//                .collect { response ->
+//                    when (response) {
+//                        is NetworkAuthResponse.Loading -> {
+//                            Log.d("newlogoutFunction","LOADING")
+//
+//                        }
+//                        is NetworkAuthResponse.Success -> {
+//                            setLoggedOutStatus("TRUE")
+//                            Log.d("newlogoutFunction","SUCCESS")
+//                        }
+//                        is NetworkAuthResponse.Failure -> {
+//                            Log.d("newlogoutFunction","FAILED")
+//
+//                        }
+//                        is NetworkAuthResponse.NetworkFailure->{
+//                            Log.d("newlogoutFunction","NETWORK FAILURE")
+//
+//                        }
+//                        is NetworkAuthResponse.Auth401Failure ->{
+//                            Log.d("newlogoutFunction","401 AUTH FAILURE")
+//
+//                        }
+//
+//
+//                    }
+//                }
         }
     }
 
@@ -126,7 +127,7 @@ class LogoutViewModel @Inject constructor(
                        Log.d("validateOAuthTokenCall","Success")
                        //todo: set the logout and login idea: set up the homeViewModel.determineUserType()
                        tokenDataStore.setOAuthToken(oAuthToken)
-                       tokenDataStore.setLoggedOutStatus(false)
+                       tokenDataStore.setLoggedOutStatus("FALSE")
                        setShowLogin(false)
                        setNavigateHome(true)
                    }

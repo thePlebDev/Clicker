@@ -18,7 +18,10 @@
             app:destination="@id/modChannelsFragment" />
         <action
             android:id="@+id/action_homeFragment_to_newUserFragment"
-            app:destination="@id/newUserFragment" />
+            app:destination="@id/newUserFragment"
+            app:popUpTo="@+id/homeFragment"
+            app:popUpToInclusive="true"
+            />
         <action
             android:id="@+id/action_homeFragment_to_logoutFragment"
             app:destination="@id/logoutFragment"
