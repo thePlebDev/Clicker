@@ -35,10 +35,16 @@ class LogoutViewModel @Inject constructor(
     private val _navigateHome: MutableState<Boolean?> = mutableStateOf(null)
     val navigateHome: State<Boolean?> = _navigateHome
 
+    private val _showLoginWithTwitchButton: MutableState<Boolean> = mutableStateOf(false)
+    val showLoginWithTwitchButton: State<Boolean> = _showLoginWithTwitchButton
+
     init {
         _navigateHome.value = false
 
         getInitialLoggedOut()
+    }
+    fun setShowLoginWithTwitchButton(value:Boolean){
+        _showLoginWithTwitchButton.value = value
     }
 
     fun setShowLogin(value:Boolean)=viewModelScope.launch{

@@ -83,22 +83,15 @@ fun NewUserComponent(
         LogoIcon(modifier = Modifier.align(Alignment.TopCenter))
         ModderzTagLine(
             modifier = Modifier.align(Alignment.Center),
+            showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value
         )
-        VerifyDomainButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            verifyDomain ={verifyDomain()}
+        ShowButtonsConditional(
+            showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
+            loginWithTwitch = {loginWithTwitch()},
+            verifyDomain={verifyDomain()},
+            modifier = Modifier.align(Alignment.BottomEnd)
         )
-//        LoginWithTwitchButton(
-//            modifier = Modifier.align(Alignment.BottomEnd),
-//            loginTwitch={
-//                logoutViewModel.setShowLogin(true)
-//                scope.launch {
-//
-//                    loginWithTwitch()
-//                }
-//
-//            }
-//        )
+
         Log.d("showLogingState","state -> ${logoutViewModel.showLoading.value}")
         if(logoutViewModel.showLoading.value){
             Spacer(
@@ -117,6 +110,27 @@ fun NewUserComponent(
                     .size(50.dp)
             )
         }
+    }
+}
+@Composable
+fun ShowButtonsConditional(
+    showLoginWithTwitchButton:Boolean,
+    loginWithTwitch: () -> Unit,
+    verifyDomain: () -> Unit,
+    modifier: Modifier
+){
+    if(showLoginWithTwitchButton){
+        LoginWithTwitchButton(
+            modifier = modifier,
+            loginTwitch={
+                loginWithTwitch()
+            }
+        )
+    }else{
+        VerifyDomainButton(
+            modifier = modifier,
+            verifyDomain ={verifyDomain()}
+        )
     }
 }
 @Composable
@@ -151,7 +165,7 @@ fun LoginWithTwitchButton(
     ) {
         Button(
             onClick ={loginTwitch()},
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+
         ) {
             Text("Login with Twitch", color = Color.White, fontSize = 18.sp)
         }
@@ -161,6 +175,7 @@ fun LoginWithTwitchButton(
 @Composable
 fun ModderzTagLine(
     modifier: Modifier,
+    showLoginWithTwitchButton:Boolean
 
 ){
     Column(modifier= modifier
@@ -170,9 +185,14 @@ fun ModderzTagLine(
     ) {
         Text(text ="Modderz",color = Color.White, fontSize = 40.sp)
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text ="You are new here! To comply with Google's Authentication you must first verify the domain, `com.example.modderz` before you can login with Twitch",color = Color.White, fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(10.dp))
-        TestingImage()
+        if(showLoginWithTwitchButton){
+            Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
+        }else{
+            Text(text ="You are new here! To comply with Google's Authentication you must first verify the domain, `com.example.modderz` before you can login with Twitch",color = Color.White, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(10.dp))
+            TestingImage()
+        }
+
 
     }
 }
