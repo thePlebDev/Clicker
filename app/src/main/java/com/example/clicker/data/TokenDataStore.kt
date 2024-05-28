@@ -28,7 +28,7 @@ class TokenDataStore @Inject constructor(
     private val usernameKey = stringPreferencesKey("username_value")
 
 
-    private val userLoggedOutKey = booleanPreferencesKey("user_logged_out")
+    private val userLoggedOutKey = stringPreferencesKey("user_logged_out")
     private val userLoggedOutStatusKey = booleanPreferencesKey("user_logged_out_loading_status")
 
 
@@ -62,21 +62,25 @@ class TokenDataStore @Inject constructor(
         return username
     }
 
-    override suspend fun setLoggedOutStatus(loggedOut: Boolean) {
+    /*****CHANGIGN THE ONES BELOW******/
+    override suspend fun setLoggedOutStatus(loggedOut: String) {
 
         context.dataStore.edit { tokens ->
             tokens[userLoggedOutKey] = loggedOut
         }
     }
 
-    override fun getLoggedOutStatus(): Flow<Boolean> {
+    override fun getLoggedOutStatus(): Flow<String?> {
 
-        val username: Flow<Boolean> = context.dataStore.data
+        val username: Flow<String?> = context.dataStore.data
             .map { preferences ->
-                preferences[userLoggedOutKey] ?: false
+                preferences[userLoggedOutKey]
             }
+
         return username
     }
+
+    /*****CHANGIGN THE ONES ABOVE******/
 
     override suspend fun setLoggedOutLoading(loggedOutStatus: Boolean) {
         context.dataStore.edit { tokens ->

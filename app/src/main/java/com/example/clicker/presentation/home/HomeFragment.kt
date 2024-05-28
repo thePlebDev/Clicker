@@ -86,79 +86,106 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
        // checkIfUserIsNew(view)
-        checkUserType(view)
-
-
-        binding.composeView.apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                val clientId = BuildConfig.CLIENT_ID
-                val redirectUrl = BuildConfig.REDIRECT_URL
-
-                val tokenString: String = java.util.UUID.randomUUID().toString()
-
-                val twitchIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(
-                        "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
-                    )
-                )
-
-
-                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels+channel:manage:broadcast+user:edit:broadcast+moderator:manage:automod+moderator:manage:blocked_terms+user:read:chat+user:bot+channel:bot"
-
-                val twitchIntent2 = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(
-                        authorizationUrl
-                    )
-                )
-                val intent = CustomTabsIntent.Builder().build()
-                // twitchIntent.setPackage("com.example.clicker")
-                val domainIntent = Intent(
-                    Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                    Uri.parse("package:${context.packageName}")
-                )
-
-                val height = getScreenHeight(requireActivity())
-                val quarterTotalScreenHeight = height/8
-                val loadingPadding = quarterTotalScreenHeight/14
-
-
-
-                AppTheme{
-                    ValidationView(
-                        homeViewModel = homeViewModel,
-                        streamViewModel = streamViewModel,
-                        loginWithTwitch = {
-                            startActivity(twitchIntent2)
-                            intent.launchUrl(
-                                requireActivity(),
-                                Uri.parse(authorizationUrl)
-                            )
-                        },
-                        onNavigate = { dest -> findNavController().navigate(dest) },
-                        addToLinks = { context.startActivity(domainIntent) },
-                        autoModViewModel =autoModViewModel,
-                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
-                            modViewViewModel.updateAutoModTokens(
-                                oAuthToken =oAuthToken,
-                                clientId =clientId,
-                                broadcasterId=broadcasterId,
-                                moderatorId =moderatorId
-                            )
-                        },
-                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
-                        hapticFeedBackError = {
-                            view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                        },
-                        logoutViewModel=logoutViewModel
-
-                    )
+        //checkUserType(view)
+        val value = homeViewModel.determineUserType()
+        view.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // Check if the initial data is ready.
+                    return when(value){
+                        UserTypes.NEW ->{
+                            findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            true
+                        }
+                        UserTypes.RETURNING ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            true
+                        }
+                        UserTypes.LOGGEDOUT ->{
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
+                            findNavController().navigate(R.id.action_homeFragment_to_logoutFragment)
+                            true
+                        }
+                    }
                 }
+            }
+        )
+        if(value !=UserTypes.NEW){
+            binding.composeView.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    val clientId = BuildConfig.CLIENT_ID
+                    val redirectUrl = BuildConfig.REDIRECT_URL
 
+                    val tokenString: String = java.util.UUID.randomUUID().toString()
+
+                    val twitchIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(
+                            "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:manage:chat_messages+moderator:manage:banned_users"
+                        )
+                    )
+
+
+                    val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels+channel:manage:broadcast+user:edit:broadcast+moderator:manage:automod+moderator:manage:blocked_terms+user:read:chat+user:bot+channel:bot"
+
+                    val twitchIntent2 = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(
+                            authorizationUrl
+                        )
+                    )
+                    val intent = CustomTabsIntent.Builder().build()
+                    // twitchIntent.setPackage("com.example.clicker")
+                    val domainIntent = Intent(
+                        Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+                        Uri.parse("package:${context.packageName}")
+                    )
+
+                    val height = getScreenHeight(requireActivity())
+                    val quarterTotalScreenHeight = height/8
+                    val loadingPadding = quarterTotalScreenHeight/14
+
+
+
+                    AppTheme{
+                        ValidationView(
+                            homeViewModel = homeViewModel,
+                            streamViewModel = streamViewModel,
+                            loginWithTwitch = {
+                                startActivity(twitchIntent2)
+                                intent.launchUrl(
+                                    requireActivity(),
+                                    Uri.parse(authorizationUrl)
+                                )
+                            },
+                            onNavigate = { dest -> findNavController().navigate(dest) },
+                            addToLinks = { context.startActivity(domainIntent) },
+                            autoModViewModel =autoModViewModel,
+                            updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                                modViewViewModel.updateAutoModTokens(
+                                    oAuthToken =oAuthToken,
+                                    clientId =clientId,
+                                    broadcasterId=broadcasterId,
+                                    moderatorId =moderatorId
+                                )
+                            },
+                            createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                            hapticFeedBackError = {
+                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                            },
+                            logoutViewModel=logoutViewModel
+
+                        )
+                    }
+
+                }
             }
         }
+
+
+
         return view
     }
 
@@ -245,8 +272,8 @@ class HomeFragment : Fragment() {
                     // Check if the initial data is ready.
                     return when(homeViewModel.determineUserType()){
                         UserTypes.NEW ->{
-                            view.viewTreeObserver.removeOnPreDrawListener(this)
                             findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
+                            view.viewTreeObserver.removeOnPreDrawListener(this)
                             true
                         }
                         UserTypes.RETURNING ->{
