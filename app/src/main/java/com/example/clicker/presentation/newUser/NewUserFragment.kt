@@ -33,10 +33,17 @@ class NewUserFragment : Fragment() {
     private val logoutViewModel: LogoutViewModel by activityViewModels()
     // twitchIntent.setPackage("com.example.clicker")
 
-    @RequiresApi(Build.VERSION_CODES.S)
+
     override fun onResume() {
         super.onResume()
-        checkDomainVerification()
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
+
+            checkDomainVerification()
+        }else{
+            logoutViewModel.setShowLoginWithTwitchButton(true)
+        }
+
 
        // Log.d("NewUserFragment", "allowed -> $allowed")
     }
