@@ -2,6 +2,7 @@ package com.example.clicker.presentation.logout
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -70,9 +71,7 @@ class LogoutFragment : Fragment() {
     val clientId = BuildConfig.CLIENT_ID
     val redirectUrl = BuildConfig.REDIRECT_URL
 
-    init {
 
-    }
 
 
 
@@ -140,6 +139,7 @@ class LogoutFragment : Fragment() {
 
         return binding.root
     }
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
         super.onResume()
 //        Log.d("LoginViewModelLifecycle","onResume")
