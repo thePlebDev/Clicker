@@ -96,9 +96,9 @@ fun NewUserComponent(
         ShowButtonsConditional(
             showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
             loginWithTwitch = {
-               // loginWithTwitch()
-                showErrorMessage = true
-                failedHapticFeedback()
+                loginWithTwitch()
+//                showErrorMessage = true
+//                failedHapticFeedback()
                               },
             verifyDomain={verifyDomain()},
             modifier = Modifier.align(Alignment.BottomEnd)
