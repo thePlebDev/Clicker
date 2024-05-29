@@ -19,14 +19,20 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -50,11 +57,12 @@ fun NewUserComponent(
     loginWithTwitch:()-> Unit,
     logoutViewModel: LogoutViewModel,
     navigateToHomeFragment:() ->Unit,
-    verifyDomain:() ->Unit
+    verifyDomain:() ->Unit,
+    failedHapticFeedback:() ->Unit,
 ){
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    val scope = rememberCoroutineScope()
+    var showErrorMessage by remember { mutableStateOf(false) }
 //
 
     if (logoutViewModel.navigateHome.value == true) {
@@ -87,7 +95,11 @@ fun NewUserComponent(
         )
         ShowButtonsConditional(
             showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
-            loginWithTwitch = {loginWithTwitch()},
+            loginWithTwitch = {
+               // loginWithTwitch()
+                showErrorMessage = true
+                failedHapticFeedback()
+                              },
             verifyDomain={verifyDomain()},
             modifier = Modifier.align(Alignment.BottomEnd)
         )
@@ -110,6 +122,10 @@ fun NewUserComponent(
                     .size(50.dp)
             )
         }
+        if (showErrorMessage){
+            ErrorMessage(modifier = Modifier.align(Alignment.BottomCenter))
+        }
+
     }
 }
 @Composable
@@ -220,7 +236,9 @@ fun LogoIcon(
 @Composable
 fun TestingImage(){
     Column(
-        modifier = Modifier.fillMaxWidth().height(130.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -237,10 +255,14 @@ fun TestingImage(){
                 0 ->{
 
                     SubcomposeAsyncImage(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
                         model = "https://github.com/thePlebDev/Clicker/assets/47083513/d006257a-a800-44bb-b4f1-6f6c1636d3e3",
                         loading = {
-                            Column(modifier = Modifier.fillMaxWidth().height(100.dp),
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ){
@@ -253,10 +275,14 @@ fun TestingImage(){
                 }
                 1 ->{
                     SubcomposeAsyncImage(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
                         model = "https://github.com/thePlebDev/Clicker/assets/47083513/415d67a7-65c8-46f7-8755-5502658cdd61",
                         loading = {
-                            Column(modifier = Modifier.fillMaxWidth().height(100.dp),
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ){
@@ -269,10 +295,14 @@ fun TestingImage(){
                 2 ->{
 
                     SubcomposeAsyncImage(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
                         model = "https://github.com/thePlebDev/Clicker/assets/47083513/f0fac6b7-8dc4-4007-99b3-4e4a0b6ad6bd",
                         loading = {
-                            Column(modifier = Modifier.fillMaxWidth().height(100.dp),
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ){
@@ -304,8 +334,37 @@ fun TestingImage(){
                 )
             }
         }
+    }
+}
+@Composable
+fun ErrorMessage(modifier: Modifier){
+    Box(
+        modifier = modifier
+            .width(220.dp)
+            .clip(
+                RoundedCornerShape(30.dp)
+            )
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Red)
+                .padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
 
+        ) {
+            Icon(
+                painter = painterResource(id =R.drawable.ic_launcher_foreground),
+                contentDescription ="modderz logo",
+                modifier = Modifier.size(30.dp),
+                tint = Color.White
+            )
+            Spacer(modifier =Modifier.width(10.dp))
+
+            Text(
+                "Failed request",
+                color = Color.White, fontSize = 20.sp)
+        }
 
     }
-
 }

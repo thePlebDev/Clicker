@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -78,6 +79,9 @@ class NewUserFragment : Fragment() {
                     navigateToHomeFragment = {},
                     verifyDomain={
                         context.startActivity(domainIntent)
+                    },
+                    failedHapticFeedback = {
+                        binding.root.performHapticFeedback(HapticFeedbackConstants.REJECT)
                     }
                 )
             }
