@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.activityViewModels
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
@@ -32,7 +33,8 @@ class NewUserFragment : Fragment() {
     private var _binding: FragmentNewUserBinding? = null
     private val binding get() = _binding!!
     private val logoutViewModel: LogoutViewModel by activityViewModels()
-    // twitchIntent.setPackage("com.example.clicker")
+    private val clientId = BuildConfig.CLIENT_ID
+    private val redirectUrl = BuildConfig.REDIRECT_URL
 
 
     override fun onResume() {
@@ -44,9 +46,26 @@ class NewUserFragment : Fragment() {
         }else{
             logoutViewModel.setShowLoginWithTwitchButton(true)
         }
+        checkForOAuthToken()
 
 
        // Log.d("NewUserFragment", "allowed -> $allowed")
+    }
+    /**
+     * checkForOAuthToken() is a private function meant to check if there is data from the intent. If there is then
+     * it should parse that data to check for the a access token
+     *
+     * */
+    private fun checkForOAuthToken(){
+        val uri: Uri? = activity?.intent?.data
+        if(uri != null){
+            val accessTokenRegex = "#access_token=([^&]+)".toRegex()
+
+            val matchResult = accessTokenRegex.find(uri.toString())
+            val oAuthToken = matchResult?.groupValues?.get(1)?:""
+//            logoutViewModel.validateOAuthToken(oAuthToken)
+            Log.d("NewUserFragmentOAuthToken", "authCode -> $oAuthToken")
+        }
     }
 
 
@@ -62,6 +81,13 @@ class NewUserFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels+channel:manage:broadcast+user:edit:broadcast+moderator:manage:automod+moderator:manage:blocked_terms+user:read:chat+user:bot+channel:bot"
+
+        val twitchIntent2 = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse(
+                authorizationUrl
+            ))
 
 
         _binding = FragmentNewUserBinding.inflate(inflater, container, false)
@@ -74,7 +100,9 @@ class NewUserFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 NewUserComponent(
-                    loginWithTwitch={},
+                    loginWithTwitch={
+                        startActivity(twitchIntent2)
+                    },
                     logoutViewModel=logoutViewModel,
                     navigateToHomeFragment = {},
                     verifyDomain={
