@@ -63,7 +63,7 @@ class NewUserFragment : Fragment() {
 
             val matchResult = accessTokenRegex.find(uri.toString())
             val oAuthToken = matchResult?.groupValues?.get(1)?:""
-//            logoutViewModel.validateOAuthToken(oAuthToken)
+            logoutViewModel.setShowLogin(true)
             Log.d("NewUserFragmentOAuthToken", "authCode -> $oAuthToken")
         }
     }

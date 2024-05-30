@@ -109,9 +109,7 @@ sealed class NetworkNewUserResponse<out T> {
         val data: T
     ) : NetworkNewUserResponse<T>()
 
-    data class NewUser(
-        val message:String
-    ): NetworkNewUserResponse<Nothing>()
+
 
 
     data class Failure(
