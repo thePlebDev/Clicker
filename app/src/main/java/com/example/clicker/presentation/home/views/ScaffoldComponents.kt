@@ -855,12 +855,7 @@ class LiveChannelsLazyColumnScope(){
                         }
 
                     }
-                    is NetworkNewUserResponse.NewUser ->{
-                        item{
 
-                            newUserAlert(message = followedStreamerList.message)
-                        }
-                    }
                     is NetworkNewUserResponse.Auth401Failure ->{
                         item{
                             newUserAlert(message = followedStreamerList.e.message ?:"Error! Re-login with Twitch")

@@ -49,7 +49,7 @@ class LogoutViewModel @Inject constructor(
 
     fun setShowLogin(value:Boolean)=viewModelScope.launch{
         _showLoading.value = value
-        tokenDataStore.setLoggedOutLoading(value)
+       // tokenDataStore.setLoggedOutLoading(value)
     }
     fun setNavigateHome(value:Boolean)=viewModelScope.launch{
         _navigateHome.value = value
@@ -126,9 +126,6 @@ class LogoutViewModel @Inject constructor(
                    is NetworkNewUserResponse.Loading->{
                        Log.d("validateOAuthTokenCall","Loading")
                    }
-                   is NetworkNewUserResponse.NewUser->{
-                       Log.d("validateOAuthTokenCall","NewUser")
-                   }
                    is NetworkNewUserResponse.Success ->{
                        Log.d("validateOAuthTokenCall","Success")
                        //todo: set the logout and login idea: set up the homeViewModel.determineUserType()
@@ -154,6 +151,42 @@ class LogoutViewModel @Inject constructor(
            }
 
        }
+    }
+
+    fun validateTokenNewUser(oAuthToken:String){
+        viewModelScope.launch(Dispatchers.IO){
+            delay(1000)
+            authentication.validateToken(oAuthToken).collect{response ->
+                when (response) {
+                    is NetworkNewUserResponse.Loading->{
+                        Log.d("validateOAuthTokenCall","Loading")
+                    }
+
+                    is NetworkNewUserResponse.Success ->{
+                        Log.d("validateOAuthTokenCall","Success")
+                        //todo: set the logout and login idea: set up the homeViewModel.determineUserType()
+                        tokenDataStore.setOAuthToken(oAuthToken)
+                        tokenDataStore.setLoggedOutStatus("FALSE")
+                        setShowLogin(false)
+                        setNavigateHome(true)
+                    }
+                    is NetworkNewUserResponse.Failure ->{
+                        Log.d("validateOAuthTokenCall","Failure")
+                        setShowLogin(false)
+                    }
+                    is NetworkNewUserResponse.NetworkFailure->{
+                        Log.d("validateOAuthTokenCall","NetworkFailure")
+                        setShowLogin(false)
+                    }
+                    is NetworkNewUserResponse.Auth401Failure ->{
+                        Log.d("validateOAuthTokenCall","Auth401Failure")
+                        setShowLogin(false)
+                    }
+                }
+
+            }
+
+        }
     }
 
 

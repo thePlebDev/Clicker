@@ -354,9 +354,6 @@ object ModChannelComponents{
                             showLoginModal()
 
                         }
-                        is NetworkNewUserResponse.NewUser->{
-
-                        }
 
                     }
                 }

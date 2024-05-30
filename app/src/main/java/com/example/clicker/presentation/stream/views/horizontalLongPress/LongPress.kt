@@ -220,13 +220,7 @@ fun TestingLazyColumnItem(
                 }
 
             }
-            is NetworkNewUserResponse.NewUser ->{
-                val message = "Error try again"
-                item {
-                    GettingStreamsError(message)
-                }
 
-            }
         }
 
 
