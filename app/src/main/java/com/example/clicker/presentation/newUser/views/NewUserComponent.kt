@@ -66,7 +66,7 @@ fun NewUserComponent(
 ){
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    var showErrorMessage by remember { mutableStateOf(false) }
+
 //
 
     if (logoutViewModel.newUserNavigateHome.value) {

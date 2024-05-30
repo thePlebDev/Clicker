@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.logout.LogoutViewModel
+import com.example.clicker.presentation.newUser.views.VerifyDomainButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -45,7 +46,8 @@ import kotlinx.coroutines.launch
 fun MainComponent(
     loginWithTwitch:()-> Unit,
     logoutViewModel: LogoutViewModel,
-    navigateToHomeFragment:() ->Unit
+    navigateToHomeFragment:() ->Unit,
+    verifyDomain:() ->Unit,
 ){
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
@@ -76,17 +78,15 @@ fun MainComponent(
             )
     ) {
         LogoIcon(modifier = Modifier.align(Alignment.TopCenter))
-        ModderzTagLine(modifier = Modifier.align(Alignment.Center))
-        LoginWithTwitchButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            loginTwitch={
-                logoutViewModel.setShowLogin(true)
-                scope.launch {
-                   // navigateToHomeFragment()
-                    loginWithTwitch()
-                }
-
-            }
+        ModderzTagLine(
+            modifier = Modifier.align(Alignment.Center),
+            showLoginText= logoutViewModel.showLoginWithTwitchButton.value
+        )
+        ShowButtonsConditional(
+            showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
+            loginWithTwitch = { loginWithTwitch() },
+            verifyDomain = { verifyDomain() },
+            modifier = Modifier.align(Alignment.BottomEnd)
         )
         Log.d("showLogingState","state -> ${logoutViewModel.showLoading.value}")
         if(logoutViewModel.showLoading.value){
@@ -108,6 +108,47 @@ fun MainComponent(
         }
     }
 }
+@Composable
+fun ShowButtonsConditional(
+    showLoginWithTwitchButton:Boolean,
+    loginWithTwitch: () -> Unit,
+    verifyDomain: () -> Unit,
+    modifier: Modifier
+){
+    if(showLoginWithTwitchButton){
+        LoginWithTwitchButton(
+            modifier = modifier,
+            loginTwitch = {
+                loginWithTwitch()
+            }
+        )
+    }else{
+        VerifyDomainButtons(
+            modifier = modifier,
+            verifyDomain ={verifyDomain()}
+        )
+    }
+}
+
+@Composable
+fun VerifyDomainButtons(
+    modifier: Modifier,
+    verifyDomain: () -> Unit
+){
+    Column(
+        modifier = modifier
+
+            .padding(20.dp)
+    ) {
+        Button(
+            onClick ={verifyDomain()},
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+        ) {
+            Text("Verify the domain", color = Color.White, fontSize = 18.sp)
+        }
+    }
+
+}
 
 @Composable
 fun LoginWithTwitchButton(
@@ -121,15 +162,18 @@ fun LoginWithTwitchButton(
     ) {
         Button(
             onClick ={loginTwitch()},
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-        ) {
+
+            ) {
             Text("Login with Twitch", color = Color.White, fontSize = 18.sp)
         }
     }
 }
 
 @Composable
-fun ModderzTagLine(modifier: Modifier){
+fun ModderzTagLine(
+    modifier: Modifier,
+    showLoginText:Boolean
+){
     Column(modifier= modifier
         .fillMaxWidth()
         .padding(horizontal = 10.dp),
@@ -137,7 +181,11 @@ fun ModderzTagLine(modifier: Modifier){
     ) {
         Text(text ="Modderz",color = Color.White, fontSize = 40.sp)
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
+        if(showLoginText){
+            Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
+        }else{
+            Text(text ="You must verify the domain before you can login with Twitch",color = Color.White, fontSize = 30.sp)
+        }
     }
 }
 
