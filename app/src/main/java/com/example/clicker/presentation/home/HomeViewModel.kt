@@ -71,7 +71,6 @@ data class HomeUIState(
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
     val streamersListLoading: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-    val domainIsRegistered: Boolean = false,
     val oAuthToken: String = "",
 
     val networkConnectionState:Boolean = true,
@@ -140,14 +139,6 @@ class HomeViewModel @Inject constructor(
         getOAuthToken()
     }
 
-
-
-
-    fun registerDomian(isRegistered: Boolean) {
-        _uiState.value = _uiState.value.copy(
-            domainIsRegistered = isRegistered
-        )
-    }
 
 
 
@@ -376,9 +367,7 @@ class HomeViewModel @Inject constructor(
      * @return a [UserTypes] object used to determine the current user's type
      * */
     fun determineUserType(): UserTypes = runBlocking {
-        //val token = tokenDataStore.getOAuthToken().first()
-
-        val token = ""
+        val token = tokenDataStore.getOAuthToken().first()
         val loggedOut = tokenDataStore.getLoggedOutStatus().first()
         when {
             token.length < 2 -> UserTypes.NEW

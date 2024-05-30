@@ -94,15 +94,18 @@ class HomeFragment : Fragment() {
                     // Check if the initial data is ready.
                     return when(value){
                         UserTypes.NEW ->{
+                            Log.d("HomeFragmentCheck","NEW")
                             findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             true
                         }
                         UserTypes.RETURNING ->{
+                            Log.d("HomeFragmentCheck","RETURNING")
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             true
                         }
                         UserTypes.LOGGEDOUT ->{
+                            Log.d("HomeFragmentCheck","LOGGEDOUT")
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             findNavController().navigate(R.id.action_homeFragment_to_logoutFragment)
                             true
@@ -138,10 +141,7 @@ class HomeFragment : Fragment() {
                     )
                     val intent = CustomTabsIntent.Builder().build()
                     // twitchIntent.setPackage("com.example.clicker")
-                    val domainIntent = Intent(
-                        Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                        Uri.parse("package:${context.packageName}")
-                    )
+
 
                     val height = getScreenHeight(requireActivity())
                     val quarterTotalScreenHeight = height/8
@@ -161,7 +161,6 @@ class HomeFragment : Fragment() {
                                 )
                             },
                             onNavigate = { dest -> findNavController().navigate(dest) },
-                            addToLinks = { context.startActivity(domainIntent) },
                             autoModViewModel =autoModViewModel,
                             updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
                                 modViewViewModel.updateAutoModTokens(

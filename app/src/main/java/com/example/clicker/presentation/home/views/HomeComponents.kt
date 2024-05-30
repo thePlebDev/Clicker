@@ -79,8 +79,6 @@ import com.example.clicker.util.Response
     fun HomeViewImplementation(
         bottomModalState: ModalBottomSheetState,
         loginWithTwitch: () -> Unit,
-        domainIsRegistered: Boolean,
-        addToLinks: () -> Unit,
         onNavigate: (Int) -> Unit,
         updateStreamerName: (String, String, String, String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
@@ -152,11 +150,7 @@ import com.example.clicker.util.Response
                 )
 
             },
-            forceRegisterLinks ={
-                DisableForceRegister(
-                    addToLinks = { addToLinks() }
-                )
-            },
+
             logoutDialog ={
 
                     LogoutDialog(
@@ -173,7 +167,6 @@ import com.example.clicker.util.Response
 
             },
             bottomModalState =bottomModalState,
-            domainIsRegistered =domainIsRegistered
         )
     }
 
@@ -194,10 +187,8 @@ import com.example.clicker.util.Response
         fun HomeModalBottomSheetBuilder(
             loginBottomModal:@Composable Parts.() -> Unit,
             scaffoldHomeView:@Composable MainScaffoldScope.() -> Unit,
-            forceRegisterLinks:@Composable Parts.() -> Unit,
             logoutDialog:@Composable HomeDialogs.() -> Unit,
             bottomModalState: ModalBottomSheetState,
-            domainIsRegistered: Boolean
         ){
             val partsScope = remember() { Parts() }
             val homeDialogScope = remember(){HomeDialogs()}
@@ -215,11 +206,7 @@ import com.example.clicker.util.Response
                     scaffoldHomeView()
                 }
             }
-            if (!domainIsRegistered) {
-                with(partsScope) {
-                    forceRegisterLinks()
-                }
-            }
+
             with(homeDialogScope) {
                 logoutDialog()
             }
