@@ -231,6 +231,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.d("HomeFragmentLifeCycle","onResume")
+        logoutViewModel.setShowLogin(false)
         //networkMonitorViewModel.startService()
        // setImmersiveEdgeToEdgeMode(requireActivity().window)
         val screenDensity =Resources.getSystem().displayMetrics.density

@@ -3,6 +3,7 @@ package com.example.clicker.presentation.logout
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.verify.domain.DomainVerificationManager
+import android.content.pm.verify.domain.DomainVerificationUserState
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -120,6 +121,10 @@ class LogoutFragment : Fragment() {
         checkNavigationStatus(binding.root)
 
         binding.composeView.apply {
+            val domainIntent = Intent(
+                Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS, //todo: Need to add implementations to lower the API levels
+                Uri.parse("package:${context.packageName}")
+            )
 
 
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -129,6 +134,9 @@ class LogoutFragment : Fragment() {
                     logoutViewModel = logoutViewModel,
                     navigateToHomeFragment = {
                         findNavController().navigate(R.id.action_logoutFragment_to_homeFragment)
+                    },
+                    verifyDomain={
+                        context.startActivity(domainIntent)
                     }
                 )
             }
@@ -143,6 +151,7 @@ class LogoutFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 //        Log.d("LoginViewModelLifecycle","onResume")
+        checkDomainVerification()
 
         val uri: Uri? = activity?.intent?.data
         if(uri != null){
@@ -199,6 +208,21 @@ class LogoutFragment : Fragment() {
                 }
             }
         )
+    }
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun checkDomainVerification(){
+        val manager = context?.getSystemService(DomainVerificationManager::class.java)
+        val userState = manager?.getDomainVerificationUserState(requireContext().packageName)
+        val allowed = userState?.isLinkHandlingAllowed //this is determine if link handling is allowed
+
+        val selectedDomains = userState?.hostToStateMap
+            ?.filterValues { it == DomainVerificationUserState.DOMAIN_STATE_SELECTED }
+        val domainVerified =selectedDomains?.get("com.example.modderz")
+        when {
+            allowed == false -> logoutViewModel.setShowLoginWithTwitchButton(false)
+            domainVerified == 1 -> logoutViewModel.setShowLoginWithTwitchButton(true)
+            else -> logoutViewModel.setShowLoginWithTwitchButton(false)
+        }
     }
 }
 

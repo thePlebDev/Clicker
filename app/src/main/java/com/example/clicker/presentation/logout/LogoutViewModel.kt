@@ -169,7 +169,6 @@ class LogoutViewModel @Inject constructor(
             setShowLogin(true)
             delay(1000)
 
-
             authentication.validateToken(oAuthToken).collect{response ->
                 when (response) {
                     is NetworkNewUserResponse.Loading->{
@@ -199,7 +198,6 @@ class LogoutViewModel @Inject constructor(
     private suspend fun newUserReturnHome(oAuthToken: String){
         tokenDataStore.setOAuthToken(oAuthToken)
         tokenDataStore.setLoggedOutStatus("FALSE")
-        setShowLogin(false)
         _newUserNavigateHome.value = true
     }
 private suspend fun setResponseState(message:String){
