@@ -38,15 +38,12 @@ fun ValidationView(
     logoutViewModel: LogoutViewModel,
     loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
-    addToLinks: () -> Unit,
     autoModViewModel: AutoModViewModel,
     updateModViewSettings:(String,String,String,String,)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val domainIsRegistered = homeViewModel.state.value.domainIsRegistered
-    val scope = rememberCoroutineScope()
 
 
 
@@ -61,8 +58,6 @@ fun ValidationView(
     HomeViewImplementation(
         bottomModalState =bottomModalState,
         loginWithTwitch ={loginWithTwitch()},
-        domainIsRegistered =domainIsRegistered,
-        addToLinks = { addToLinks() },
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId,broadcasterId,userId->
             streamViewModel.updateChannelNameAndClientIdAndUserId(

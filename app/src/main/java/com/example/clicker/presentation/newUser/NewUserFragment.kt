@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
@@ -39,6 +40,7 @@ class NewUserFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        logoutViewModel.setNewUserNavigateHome(false)
 
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
 
@@ -64,6 +66,7 @@ class NewUserFragment : Fragment() {
             val matchResult = accessTokenRegex.find(uri.toString())
             val oAuthToken = matchResult?.groupValues?.get(1)?:""
             logoutViewModel.setShowLogin(true)
+            logoutViewModel.validateTokenNewUser(oAuthToken)
             Log.d("NewUserFragmentOAuthToken", "authCode -> $oAuthToken")
         }
     }
@@ -104,7 +107,9 @@ class NewUserFragment : Fragment() {
                         startActivity(twitchIntent2)
                     },
                     logoutViewModel=logoutViewModel,
-                    navigateToHomeFragment = {},
+                    navigateToHomeFragment = {
+                        findNavController().navigate(R.id.action_newUserFragment_to_homeFragment)
+                    },
                     verifyDomain={
                         context.startActivity(domainIntent)
                     },

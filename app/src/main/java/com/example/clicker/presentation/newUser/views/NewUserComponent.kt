@@ -1,6 +1,10 @@
 package com.example.clicker.presentation.newUser.views
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -65,11 +69,12 @@ fun NewUserComponent(
     var showErrorMessage by remember { mutableStateOf(false) }
 //
 
-    if (logoutViewModel.navigateHome.value == true) {
+    if (logoutViewModel.newUserNavigateHome.value) {
         Log.d("AnotherOneTestingagain", "value -> ${logoutViewModel.navigateHome.value}")
+        logoutViewModel.setNewUserNavigateHome(false)
         navigateToHomeFragment()
-        logoutViewModel.setNavigateHome(false)
     }
+
 
 
 
@@ -95,11 +100,7 @@ fun NewUserComponent(
         )
         ShowButtonsConditional(
             showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
-            loginWithTwitch = {
-                loginWithTwitch()
-//                showErrorMessage = true
-//                failedHapticFeedback()
-                              },
+            loginWithTwitch = {loginWithTwitch()},
             verifyDomain={verifyDomain()},
             modifier = Modifier.align(Alignment.BottomEnd)
         )
@@ -122,9 +123,17 @@ fun NewUserComponent(
                     .size(50.dp)
             )
         }
-        if (showErrorMessage){
-            ErrorMessage(modifier = Modifier.align(Alignment.BottomCenter))
-        }
+
+            AnimatedVisibility(
+                logoutViewModel.showErrorMessage.value,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                ErrorMessage(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    message = logoutViewModel.errorMessage.value
+                )
+            }
+
 
     }
 }
@@ -337,34 +346,35 @@ fun TestingImage(){
     }
 }
 @Composable
-fun ErrorMessage(modifier: Modifier){
-    Box(
-        modifier = modifier
-            .width(220.dp)
-            .clip(
-                RoundedCornerShape(30.dp)
-            )
-    ){
+fun ErrorMessage(
+    modifier: Modifier,
+    message:String,
+){
+
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = modifier
+                .clip(
+                    RoundedCornerShape(20.dp)
+                )
                 .background(Color.Red)
-                .padding(horizontal = 10.dp),
+                .padding(vertical = 5.dp, horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
+
 
         ) {
             Icon(
                 painter = painterResource(id =R.drawable.ic_launcher_foreground),
                 contentDescription ="modderz logo",
-                modifier = Modifier.size(30.dp),
+                modifier = Modifier.size(25.dp),
                 tint = Color.White
             )
-            Spacer(modifier =Modifier.width(10.dp))
 
             Text(
-                "Failed request",
-                color = Color.White, fontSize = 20.sp)
-        }
+                text =message,
+                color = Color.White,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+            )
 
-    }
+        }
 }
