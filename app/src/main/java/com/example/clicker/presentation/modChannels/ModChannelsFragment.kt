@@ -21,6 +21,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.logout.LogoutViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -39,6 +40,7 @@ class ModChannelsFragment : Fragment() {
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val autoModViewModel: AutoModViewModel by activityViewModels()
     private val modViewViewModel: ModViewViewModel by activityViewModels()
+    private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,29 +59,11 @@ class ModChannelsFragment : Fragment() {
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val clientId = BuildConfig.CLIENT_ID
-                val redirectUrl = BuildConfig.REDIRECT_URL
-                val twitchIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(
-                        "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels"
-                    )
-                )
-                val intent = CustomTabsIntent.Builder().build()
-                val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels"
-
                 AppTheme{
                     ModChannelView(
                         popBackStackNavigation = {  findNavController().popBackStack() },
                         homeViewModel = homeViewModel,
                         streamViewModel =streamViewModel,
-                        loginWithTwitch = {
-                           // startActivity(twitchIntent)
-                            intent.launchUrl(
-                                requireActivity(),
-                                Uri.parse(authorizationUrl)
-                            )
-                        },
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         autoModViewModel = autoModViewModel,
                         updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
@@ -91,14 +75,12 @@ class ModChannelsFragment : Fragment() {
                             )
                         },
                         createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
-                        hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)}
+                        hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
+                        logoutViewModel =logoutViewModel
                     )
                 }
             }
         }
-
-
-
 
         return view
     }

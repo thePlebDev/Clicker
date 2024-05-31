@@ -36,7 +36,6 @@ fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     logoutViewModel: LogoutViewModel,
-    loginWithTwitch: () -> Unit,
     onNavigate: (Int) -> Unit,
     autoModViewModel: AutoModViewModel,
     updateModViewSettings:(String,String,String,String,)->Unit,
@@ -57,7 +56,10 @@ fun ValidationView(
 
     HomeViewImplementation(
         bottomModalState =bottomModalState,
-        loginWithTwitch ={loginWithTwitch()},
+        loginWithTwitch ={
+            logoutViewModel.setLoggedOutStatus("TRUE")
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
+                         },
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId,broadcasterId,userId->
             streamViewModel.updateChannelNameAndClientIdAndUserId(
