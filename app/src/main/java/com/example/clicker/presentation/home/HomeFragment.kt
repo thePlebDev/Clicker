@@ -270,6 +270,7 @@ class HomeFragment : Fragment() {
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     // Check if the initial data is ready.
+
                     return when(homeViewModel.determineUserType()){
                         UserTypes.NEW ->{
                             findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)

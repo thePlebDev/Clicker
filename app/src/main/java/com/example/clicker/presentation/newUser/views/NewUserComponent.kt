@@ -172,7 +172,7 @@ fun VerifyDomainButton(
             onClick ={verifyDomain()},
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
         ) {
-            Text("Verify the domain", color = Color.White, fontSize = 18.sp)
+            Text("Verify the link", color = Color.White, fontSize = 18.sp)
         }
     }
 
@@ -213,9 +213,9 @@ fun ModderzTagLine(
         if(showLoginWithTwitchButton){
             Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
         }else{
-            Text(text ="You are new here! To comply with Google's Authentication you must first verify the domain, `com.example.modderz` before you can login with Twitch",color = Color.White, fontSize = 20.sp)
+            Text(text ="You are new here! To comply with Google's Authentication you must verify the link, `com.example.modderz` to enable login with Twitch",color = Color.White, fontSize = 20.sp)
             Spacer(modifier = Modifier.height(10.dp))
-            TestingImage()
+          //  TestingImage()
         }
 
 

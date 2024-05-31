@@ -31,6 +31,8 @@ class TokenDataStore @Inject constructor(
     private val userLoggedOutKey = stringPreferencesKey("user_logged_out")
     private val userLoggedOutStatusKey = booleanPreferencesKey("user_logged_out_loading_status")
 
+    private val clientIdKey = stringPreferencesKey("client_id")
+
 
     override suspend fun setOAuthToken(oAuthToken: String) {
         val another =context.dataStore.edit { tokens ->
@@ -94,6 +96,20 @@ class TokenDataStore @Inject constructor(
                 preferences[userLoggedOutStatusKey] ?: false
             }
         return loggedOutStatus
+    }
+
+    override suspend fun setClientId(clientId: String) {
+        context.dataStore.edit { tokens ->
+            tokens[clientIdKey] = clientId
+        }
+    }
+
+    override fun getClientId(): Flow<String> {
+        val clientId: Flow<String> = context.dataStore.data
+            .map { preferences ->
+                preferences[clientIdKey] ?: ""
+            }
+        return clientId
     }
 }
 
