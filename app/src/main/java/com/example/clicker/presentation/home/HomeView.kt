@@ -96,6 +96,7 @@ fun ValidationView(
         logout = {
 
             logoutViewModel.setNavigateHome(false)
+            logoutViewModel.setLoggedOutStatus("TRUE")
             logoutViewModel.logout(
                 clientId = clientId?:"",
                 oAuthToken = oAuthToken

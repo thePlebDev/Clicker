@@ -369,6 +369,8 @@ class HomeViewModel @Inject constructor(
     fun determineUserType(): UserTypes = runBlocking {
         val token = tokenDataStore.getOAuthToken().first()
         val loggedOut = tokenDataStore.getLoggedOutStatus().first()
+        Log.d("UserTypes ", "Token --> $token")
+        Log.d("UserTypes ", "loggedOut --> $loggedOut")
         when {
             token.length < 2 -> UserTypes.NEW
             loggedOut=="TRUE" -> UserTypes.LOGGEDOUT

@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.logout.views
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,13 +38,14 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.logout.LogoutViewModel
+import com.example.clicker.presentation.newUser.views.ErrorMessage
 import com.example.clicker.presentation.newUser.views.VerifyDomainButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun MainComponent(
+fun LogoutMainComponent(
     loginWithTwitch:()-> Unit,
     logoutViewModel: LogoutViewModel,
     navigateToHomeFragment:() ->Unit,
@@ -52,6 +54,7 @@ fun MainComponent(
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
     val scope = rememberCoroutineScope()
+    val loggedInStatus = logoutViewModel.loggedOutStatus.value == "WAITING"
 //
 
         if (logoutViewModel.navigateHome.value == true) {
@@ -59,6 +62,9 @@ fun MainComponent(
             navigateToHomeFragment()
             logoutViewModel.setNavigateHome(false)
         }
+    if(logoutViewModel.navigateToLoginWithTwitch.value){
+        loginWithTwitch()
+    }
 
 
 
@@ -84,7 +90,14 @@ fun MainComponent(
         )
         ShowButtonsConditional(
             showLoginWithTwitchButton = logoutViewModel.showLoginWithTwitchButton.value,
-            loginWithTwitch = { loginWithTwitch() },
+            loginWithTwitch = {
+                if(loggedInStatus){
+                    logoutViewModel.logoutAgain()
+                }else{
+                    loginWithTwitch()
+                }
+
+                              },
             verifyDomain = { verifyDomain() },
             modifier = Modifier.align(Alignment.BottomEnd)
         )
@@ -105,6 +118,15 @@ fun MainComponent(
                             .align(Alignment.Center)
                             .size(50.dp)
                     )
+        }
+        AnimatedVisibility(
+            logoutViewModel.showErrorMessage.value,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            ErrorMessage(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                message = logoutViewModel.errorMessage.value
+            )
         }
     }
 }

@@ -58,7 +58,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
 import com.example.clicker.presentation.home.UserTypes
-import com.example.clicker.presentation.logout.views.MainComponent
+import com.example.clicker.presentation.logout.views.LogoutMainComponent
 import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -77,6 +77,7 @@ class LogoutFragment : Fragment() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("LoginFragmentLifeCycleCheck", "onCreate()")
 
         val window = requireActivity().window
 
@@ -100,6 +101,7 @@ class LogoutFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("LoginFragmentLifeCycleCheck", "onCreateView()")
         // Inflate the layout for this fragment
         val authorizationUrl = "https://id.twitch.tv/oauth2/authorize?client_id=$clientId&redirect_uri=$redirectUrl&response_type=token&scope=user:read:follows+channel:moderate+moderation:read+chat:read+chat:edit+channel:read:editors+moderator:manage:chat_settings+moderator:read:automod_settings+moderator:manage:chat_messages+moderator:manage:automod_settings+moderator:manage:banned_users+user:read:moderated_channels+channel:manage:broadcast+user:edit:broadcast+moderator:manage:automod+moderator:manage:blocked_terms+user:read:chat+user:bot+channel:bot"
 
@@ -129,7 +131,7 @@ class LogoutFragment : Fragment() {
 
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MainComponent(
+                LogoutMainComponent(
                     loginWithTwitch={startActivity(twitchIntent2)},
                     logoutViewModel = logoutViewModel,
                     navigateToHomeFragment = {
@@ -149,16 +151,21 @@ class LogoutFragment : Fragment() {
     }
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
+        Log.d("LoginFragmentLifeCycleCheck", "onResume()")
         super.onResume()
 //        Log.d("LoginViewModelLifecycle","onResume")
+
         checkDomainVerification()
+        logoutViewModel.setNavigateToLoginWithTwitch(false)
 
         val uri: Uri? = activity?.intent?.data
+
         if(uri != null){
             val accessTokenRegex = "#access_token=([^&]+)".toRegex()
 
             val matchResult = accessTokenRegex.find(uri.toString())
             val oAuthToken = matchResult?.groupValues?.get(1)?:""
+            activity?.intent?.data = null
             logoutViewModel.validateOAuthToken(oAuthToken)
             Log.d("LoginFragmentOAuthtoken", "authCode -> $oAuthToken")
         }
