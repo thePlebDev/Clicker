@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.logout.LogoutViewModel
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -47,10 +48,10 @@ fun ModChannelView(
     autoModViewModel:AutoModViewModel,
     popBackStackNavigation: () -> Unit,
     onNavigate: (Int) -> Unit,
-    loginWithTwitch: () -> Unit,
     updateModViewSettings:(String,String,String,String,)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
+    logoutViewModel: LogoutViewModel,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -66,7 +67,12 @@ fun ModChannelView(
     ModalBottomSheetLayout(
         sheetState = bottomModalState,
         sheetContent = {
-            BottomModalSheetContent(loginWithTwitch= { loginWithTwitch() })
+            BottomModalSheetContent(
+                loginWithTwitch= {
+                    logoutViewModel.setLoggedOutStatus("TRUE")
+                    onNavigate(R.id.action_modChannelsFragment_to_logoutFragment)
+                }
+            )
         }
     ) {
 
@@ -146,9 +152,9 @@ fun BottomModalSheetContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Login with Twitch",
+            "Log out to be issued a new Twitch authentication token",
             color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 30.sp,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
             modifier = Modifier
                 .padding(bottom = 10.dp)
                 .fillMaxWidth(),
@@ -156,7 +162,7 @@ fun BottomModalSheetContent(
         )
         with(buttonScope){
             this.Button(
-                text =stringResource(R.string.login_with_twitch),
+                text ="Log out of Twitch",
                 onClick = { loginWithTwitch()},
             )
         }

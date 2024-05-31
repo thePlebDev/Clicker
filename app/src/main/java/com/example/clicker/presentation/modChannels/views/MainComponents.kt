@@ -349,7 +349,7 @@ object ModChannelComponents{
                         is NetworkNewUserResponse.Auth401Failure->{
                             item{
 
-                                ErrorPullToRefresh("Please login with Twitch")
+                                ErrorPullToRefresh("Error! Re-login with Twitch")
                             }
                             showLoginModal()
 

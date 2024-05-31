@@ -246,16 +246,16 @@ import com.example.clicker.util.Response
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Login with Twitch",
+                    "Log out to be issued a new Twitch authentication token",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
                 Button(onClick = { loginWithTwitch() }) {
-                    Text(text = stringResource(R.string.login_with_twitch))
+                    Text(text = "Log out of Twitch")
                 }
             }
         }

@@ -48,6 +48,12 @@
         <action
             android:id="@+id/action_modChannelsFragment_to_streamFragment"
             app:destination="@id/streamFragment" />
+        <action
+            android:id="@+id/action_modChannelsFragment_to_logoutFragment"
+            app:destination="@id/logoutFragment"
+            app:popUpTo="@+id/modChannelsFragment"
+            app:popUpToInclusive="true"
+            />
     </fragment>
     <fragment
         android:id="@+id/newUserFragment"
