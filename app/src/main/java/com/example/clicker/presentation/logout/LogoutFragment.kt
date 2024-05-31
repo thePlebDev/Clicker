@@ -154,8 +154,8 @@ class LogoutFragment : Fragment() {
         Log.d("LoginFragmentLifeCycleCheck", "onResume()")
         super.onResume()
 //        Log.d("LoginViewModelLifecycle","onResume")
+        checkAndroidVersion()
 
-        checkDomainVerification()
         logoutViewModel.setNavigateToLoginWithTwitch(false)
 
         val uri: Uri? = activity?.intent?.data
@@ -171,25 +171,14 @@ class LogoutFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-//        Log.d("LoginViewModelLifecycle","onDestroyView")
-        _binding = null
-    }
 
-    override fun onPause() {
-//        Log.d("LoginViewModelLifecycle","onPause")
-        super.onPause()
-    }
+    fun checkAndroidVersion(){
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
 
-    override fun onStop() {
-//        Log.d("LoginViewModelLifecycle","onPause")
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-//        Log.d("LoginViewModelLifecycle","onPause")
-        super.onDestroy()
+            checkDomainVerification()
+        }else{
+            logoutViewModel.setShowLoginWithTwitchButton(true)
+        }
     }
 
     private fun checkNavigationStatus(view: FrameLayout){

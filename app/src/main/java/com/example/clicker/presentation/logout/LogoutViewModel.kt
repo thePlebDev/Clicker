@@ -34,19 +34,17 @@ class LogoutViewModel @Inject constructor(
     private val _navigateToLoginWithTwitch: MutableState<Boolean> = mutableStateOf(false)
     val navigateToLoginWithTwitch: State<Boolean> = _navigateToLoginWithTwitch
 
-
-
-
     private val _navigateHome: MutableState<Boolean?> = mutableStateOf(null)
     val navigateHome: State<Boolean?> = _navigateHome
-
     private val _showLoginWithTwitchButton: MutableState<Boolean> = mutableStateOf(false)
     val showLoginWithTwitchButton: State<Boolean> = _showLoginWithTwitchButton
-
     private val _showErrorMessage: MutableState<Boolean> = mutableStateOf(false)
     val showErrorMessage: State<Boolean> = _showErrorMessage
     private val _errorMessage: MutableState<String> = mutableStateOf("Failed")
     val errorMessage: State<String> = _errorMessage
+
+
+
     private val _newUserNavigateHome: MutableState<Boolean> = mutableStateOf(false)
     val newUserNavigateHome: State<Boolean> = _newUserNavigateHome
 
@@ -55,6 +53,12 @@ class LogoutViewModel @Inject constructor(
      * */
     private val _loggedOutStatus: MutableState<String> = mutableStateOf("FALSE")
     val loggedOutStatus: State<String> = _loggedOutStatus // if this is WAITING the we make the login with Twitch logout first
+
+    /**
+     * login with Twitch Button disabled
+     * */
+    private val _loginWithTwitchButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
+    val buttonEnabled: State<Boolean> = _loginWithTwitchButtonEnabled
 
     init {
         _navigateHome.value = false
@@ -69,11 +73,18 @@ class LogoutViewModel @Inject constructor(
         }
     }
 
+    private fun getInitialLoggedOut(){
+        viewModelScope.launch {
+            tokenDataStore.getLoggedOutLoading().collect{loggedOutStatus ->
+                Log.d("LoginViewModelLifecycle","getInitialLoggedOutStatus --> $loggedOutStatus")
+                _showLoading.value = loggedOutStatus
+            }
+
+        }
+    }
+
     fun setNavigateToLoginWithTwitch(value:Boolean){
         _navigateToLoginWithTwitch.value = value
-    }
-    fun setNewUserNavigateHome(value:Boolean){
-        _newUserNavigateHome.value = value
     }
     fun setShowLoginWithTwitchButton(value:Boolean){
         _showLoginWithTwitchButton.value = value
@@ -102,13 +113,20 @@ class LogoutViewModel @Inject constructor(
         }
     }
 
+    private suspend fun setLogoutWaitingState(clientId: String){
+        setLoggedOutStatus("WAITING")
+        setShowLogin(true)
+        tokenDataStore.setClientId(clientId)
+        _loggedOutStatus.value = "WAITING"
+        _loginWithTwitchButtonEnabled.value = false
+    }
 
+
+    //
     fun logout(clientId:String,oAuthToken:String)  = viewModelScope.launch{
         //so I need to logout and on success I need to set the internal logout flag to true
         Log.d("newlogoutFunction","clientId -->$clientId")
-        setLoggedOutStatus("WAITING")
-        setShowLogin(true)
-        _loggedOutStatus.value = "WAITING"
+        setLogoutWaitingState(clientId)
         withContext(Dispatchers.IO) {
             authentication.logout(
                 clientId = clientId,
@@ -123,15 +141,19 @@ class LogoutViewModel @Inject constructor(
                         Log.d("newlogoutFunction","SUCCESS")
                         setLoggedOutStatus("TRUE")
                         tokenDataStore.setOAuthToken("loggedOut")
+                        _loginWithTwitchButtonEnabled.value = true
                     }
                     is  NetworkAuthResponse.Failure ->{
                         Log.d("newlogoutFunction","FAILURE")
+                        _loginWithTwitchButtonEnabled.value = true
                     }
                     is  NetworkAuthResponse.NetworkFailure ->{
                         Log.d("newlogoutFunction","NETWORK FAILURE")
+                        _loginWithTwitchButtonEnabled.value = true
                     }
                     is  NetworkAuthResponse.Auth401Failure ->{
                         Log.d("newlogoutFunction","AUTH 401 FAILURE")
+                        _loginWithTwitchButtonEnabled.value = true
                     }
 
                 }
@@ -140,10 +162,11 @@ class LogoutViewModel @Inject constructor(
         }
     }
 
-    fun logoutAgain() = viewModelScope.launch{
+
+    fun logoutAgain() = viewModelScope.launch(Dispatchers.IO){
         Log.d("logoutAgainTesting", "logoutAgain")
-        val clientId = "xk7p10b4gwoacyi40rlktnxvyjn990"
         val oAuthToken = tokenDataStore.getOAuthToken().first()
+        val clientId = tokenDataStore.getClientId().first()
         Log.d("logoutAgainTesting", "clientId --> $clientId")
         Log.d("logoutAgainTesting", "oAuthToken --> $oAuthToken")
         setShowLogin(true)
@@ -184,16 +207,7 @@ class LogoutViewModel @Inject constructor(
 
     }
 
-    fun getInitialLoggedOut(){
-        viewModelScope.launch {
-           // tokenDataStore.setLoggedOutLoading(false)
-            tokenDataStore.getLoggedOutLoading().collect{loggedOutStatus ->
-                Log.d("LoginViewModelLifecycle","getInitialLoggedOutStatus --> $loggedOutStatus")
-                _showLoading.value = loggedOutStatus
-            }
 
-        }
-    }
 
 
 
@@ -204,9 +218,7 @@ class LogoutViewModel @Inject constructor(
            setShowLogin(true)
            delay(1000)
            Log.d("validateOAuthTokenCall","getLoginStatus --> $getLoginStatus")
-           if(getLoginStatus == "WAITING"){
 
-           }else{
                authentication.validateToken(oAuthToken).collect{response ->
                    when (response) {
                        is NetworkNewUserResponse.Loading->{
@@ -229,14 +241,29 @@ class LogoutViewModel @Inject constructor(
                        }
                    }
                }
-           }
+
        }
     }
+
+    private suspend fun returningUserReturnHome(oAuthToken: String){
+        tokenDataStore.setOAuthToken(oAuthToken)
+        tokenDataStore.setLoggedOutStatus("FALSE")
+
+        _navigateHome.value = true
+    }
+private suspend fun setResponseState(message:String){
+    setShowLogin(false)
+    _errorMessage.value = message
+    _showErrorMessage.value = true
+    delay(1000)
+    _showErrorMessage.value = false
+}
+
+    /*********ALL FUNCTIONS THAT ARE MEANT FOR NEW USERS SHOULD BE BELOW THIS LINE************/
 
     fun validateTokenNewUser(oAuthToken:String){
         viewModelScope.launch(Dispatchers.IO){
             setShowLogin(true)
-            delay(1000)
 
             authentication.validateToken(oAuthToken).collect{response ->
                 when (response) {
@@ -244,7 +271,7 @@ class LogoutViewModel @Inject constructor(
                     }
                     is NetworkNewUserResponse.Success ->{
                         Log.d("validateOAuthTokenCall","Success")
-                      //todo: might also have to do something with the validated User but We will see
+                        //todo: might also have to do something with the validated User but We will see
                         newUserReturnHome(oAuthToken)
                     }
                     is NetworkNewUserResponse.Failure ->{
@@ -263,24 +290,14 @@ class LogoutViewModel @Inject constructor(
 
         }
     }
-
     private suspend fun newUserReturnHome(oAuthToken: String){
         tokenDataStore.setOAuthToken(oAuthToken)
         tokenDataStore.setLoggedOutStatus("FALSE")
         _newUserNavigateHome.value = true
     }
-    private suspend fun returningUserReturnHome(oAuthToken: String){
-        tokenDataStore.setOAuthToken(oAuthToken)
-        tokenDataStore.setLoggedOutStatus("FALSE")
 
-        _navigateHome.value = true
+    fun setNewUserNavigateHome(value:Boolean){
+        _newUserNavigateHome.value = value
     }
-private suspend fun setResponseState(message:String){
-    setShowLogin(false)
-    _errorMessage.value = message
-    _showErrorMessage.value = true
-    delay(1000)
-    _showErrorMessage.value = false
-}
 
 }

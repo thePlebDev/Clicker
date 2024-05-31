@@ -32,6 +32,9 @@ interface TwitchDataStore {
      * */
     fun getLoggedOutLoading(): Flow<Boolean>
 
+    suspend fun setClientId(clientId:String)
+    fun getClientId(): Flow<String>
+
 
 
 
