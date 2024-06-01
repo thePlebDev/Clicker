@@ -3,6 +3,7 @@ package com.example.clicker.presentation.home
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.graphics.Insets
 import android.net.ConnectivityManager
@@ -81,6 +82,7 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         //networkMonitorViewModel.startService()
         context?.startService(Intent(context, NetworkMonitorService::class.java))
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
