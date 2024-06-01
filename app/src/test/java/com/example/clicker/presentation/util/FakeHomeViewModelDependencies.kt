@@ -80,4 +80,28 @@ class FakeTokenDataStore(
         emit("")
     }
 
+    override suspend fun setLoggedOutStatus(loggedOut: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLoggedOutStatus(): Flow<String?> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setLoggedOutLoading(loggedOutStatus: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLoggedOutLoading(): Flow<Boolean> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setClientId(clientId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getClientId(): Flow<String> {
+        TODO("Not yet implemented")
+    }
+
 }
