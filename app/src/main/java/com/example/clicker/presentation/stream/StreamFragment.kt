@@ -38,6 +38,10 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -121,7 +125,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
 
         // val view = binding.root
         val orientationIsLandscape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val window =activity?.window
+       // val window =activity?.window
 
 
 
@@ -144,7 +148,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
             }
         )
 
-        val myWebView: WebView = view.findViewById(R.id.webView)
+        val myWebView: WebView = view.findViewById(R.id.webView) //this is the horizontal view
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
 
 
@@ -166,18 +170,22 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
                 overlayComposeParams.width =rootConstraintLayout.width
 
-
 //            Create layout parameters to match parent
                 val layoutParams = ConstraintLayout.LayoutParams(
                     ConstraintLayout.LayoutParams.MATCH_PARENT,
                     ConstraintLayout.LayoutParams.MATCH_PARENT
                 )
 
+                setImmersiveMode(requireActivity().window)
+
+
+
                 //View.VISIBLE, View.INVISIBLE, View.GONE
                 composeView.visibility = View.INVISIBLE
                 longPressComposeView.visibility = View.INVISIBLE
 
                 myWebView.layoutParams = layoutParams
+
                 overlayComposeView.layoutParams = overlayComposeParams
             }
 
@@ -355,6 +363,14 @@ private fun removeComposeWidthConstraint(view: ComposeView) {
     val constraintSet = ConstraintSet()
     constraintSet.clear(view.id)
 
+}
+fun setImmersiveMode(window: Window){
+    WindowCompat.setDecorFitsSystemWindows(window, false) // this is saying ignore the insets
+    val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+    windowInsetsController.let {
+        it.hide(WindowInsetsCompat.Type.systemBars()) //hide the insets
+        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
