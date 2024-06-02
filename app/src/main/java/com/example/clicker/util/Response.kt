@@ -88,9 +88,8 @@ sealed class NetworkAuthResponse<out T> {
 /**
  * Represents a network response and its specific error
  *
- * This class represents the 5 possible states of network responses in this application.
+ * This class represents the 4 possible states of network responses in this application.
  * - [NetworkNewUserResponse.Loading]
- * - [NetworkNewUserResponse.NewUser]
  * - [NetworkNewUserResponse.Success]
  * - [NetworkNewUserResponse.Failure]
  * - [NetworkNewUserResponse.NetworkFailure]
