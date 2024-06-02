@@ -4,6 +4,7 @@ import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.repository.util.TwitchClientBuilderUtil
+import com.example.clicker.network.repository.util.createJsonBodyFrom
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.Response
@@ -59,25 +60,20 @@ class TwitchAuthenticationImplTest {
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
 
         /**WHEN*/
-//        val actualResponse = underTest.validateToken("","").last()
-//
-//
-//        /**THEN*/
-//        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        val actualResponse = underTest.validateToken("").last()
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 
-    fun <T> createJsonBodyFrom(body:T): String {
-        val gson = Gson()
-        return gson.toJson(body)
-    }
 
 
 
 
     @Test
     fun `when validateToken() returns a successful response with all interceptors`()= runTest{
-
         /**GIVEN*/
         val retrofitClient: TwitchAuthenticationClient = TwitchClientBuilderUtil
             .addMockedUrl(mockWebServer.url("/").toString())
@@ -93,10 +89,10 @@ class TwitchAuthenticationImplTest {
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
-//        /**WHEN*/
-//        val actualResponse = underTest.validateToken("","").last()
-//        /**THEN*/
-//        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        /**WHEN*/
+        val actualResponse = underTest.validateToken("").last()
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 
@@ -113,15 +109,15 @@ class TwitchAuthenticationImplTest {
 
         //The expected response and body from calling underTest.validateToken("","")
         val expectedBody = ValidatedUser("","", listOf(""),"",0)
-        val expectedResponse = NetworkAuthResponse.NetworkFailure(Exception("Network error, please try again later"))
+        val expectedResponse = NetworkAuthResponse.NetworkFailure(Exception("Network error! Pull down to refresh"))
 
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
         /**WHEN*/
-//        val actualResponse = underTest.validateToken("","").last()
-//        /**THEN*/
-//        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        val actualResponse = underTest.validateToken("").last()
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 
@@ -138,15 +134,17 @@ class TwitchAuthenticationImplTest {
 
         //The expected response and body from calling underTest.validateToken("","")
         val expectedBody = ValidatedUser("","", listOf(""),"",0)
-        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Authentication error, please try again later"))
+        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Error! Re-login with Twitch"))
 
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
         /**WHEN*/
-//        val actualResponse = underTest.validateToken("","").last()
-//        /**THEN*/
-//        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        val actualResponse = underTest.validateToken("").last()
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 
@@ -169,14 +167,14 @@ class TwitchAuthenticationImplTest {
         val jsonBody = createJsonBodyFrom(expectedBody)
         mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody(jsonBody))
         /**WHEN*/
-//        val actualResponse = underTest.validateToken("","").last()
+        val actualResponse = underTest.validateToken("").last()
         /**THEN*/
-      //  Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
 
     }
 
 
-    /**TESTING TwitchAuthentication.logout()*/
+    /*****************TESTING TwitchAuthentication.logout() below*****************/
 
     @Test
     fun `when logout() is run but NetworkInterceptor throws an error`()= runTest{
