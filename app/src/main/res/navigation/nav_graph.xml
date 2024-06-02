@@ -57,7 +57,7 @@
     </fragment>
     <fragment
         android:id="@+id/newUserFragment"
-        android:name="com.example.clicker.presentation.newUser.NewUserFragment"
+        android:name="com.example.clicker.presentation.authentication.newUser.NewUserFragment"
         android:label="fragment_new_user"
         tools:layout="@layout/fragment_new_user" >
         <action
@@ -69,7 +69,7 @@
     </fragment>
     <fragment
         android:id="@+id/logoutFragment"
-        android:name="com.example.clicker.presentation.logout.LogoutFragment"
+        android:name="com.example.clicker.presentation.authentication.logout.LogoutFragment"
         android:label="fragment_logout"
         tools:layout="@layout/fragment_logout" >
         <action

@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.logout
+package com.example.clicker.presentation.authentication.logout
 
 import android.util.Log
 import androidx.compose.runtime.MutableState

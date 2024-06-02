@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.logout.LogoutFragment">
+    tools:context=".presentation.authentication.logout.LogoutFragment">
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose_view"

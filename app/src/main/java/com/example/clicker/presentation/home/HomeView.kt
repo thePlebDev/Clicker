@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
-import com.example.clicker.presentation.logout.LogoutViewModel
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel

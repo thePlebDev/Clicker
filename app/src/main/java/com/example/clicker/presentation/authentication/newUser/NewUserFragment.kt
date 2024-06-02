@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.newUser
+package com.example.clicker.presentation.authentication.newUser
 
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
@@ -25,8 +25,8 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
-import com.example.clicker.presentation.logout.LogoutViewModel
-import com.example.clicker.presentation.newUser.views.NewUserComponent
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.authentication.newUser.views.NewUserComponent
 
 
 class NewUserFragment : Fragment() {

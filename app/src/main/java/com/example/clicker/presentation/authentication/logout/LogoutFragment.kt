@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.logout
+package com.example.clicker.presentation.authentication.logout
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -58,7 +58,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
 import com.example.clicker.presentation.home.UserTypes
-import com.example.clicker.presentation.logout.views.LogoutMainComponent
+import com.example.clicker.presentation.authentication.logout.views.LogoutMainComponent
 import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
