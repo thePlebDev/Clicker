@@ -60,7 +60,7 @@ class TwitchRepoImplTest {
     @Test
     fun `when getModeratedChannels() returns a successful response with all interceptors`()= runTest{
         // make the retrofit client
-
+        /**GIVEN*/
         val retrofitClient:TwitchHomeClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
             .addNetworkInterceptor(true)
@@ -86,8 +86,7 @@ class TwitchRepoImplTest {
 
     @Test
     fun `calls getModeratedChannels() but NetworkInterceptor throws exception`()= runTest{
-        // make the retrofit client
-
+        /**GIVEN*/
         val retrofitClient:TwitchHomeClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
             .addNetworkInterceptor(false)
@@ -110,11 +109,10 @@ class TwitchRepoImplTest {
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
-
     @Test
-    fun `when getFollowedLiveStreams() returns a successful response with all interceptors`()= runTest{
+    fun `calls getModeratedChannels() but the call is not successful 500 response code`()= runTest{
         // make the retrofit client
-
+        /**GIVEN*/
         val retrofitClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
             .addNetworkInterceptor(true)
@@ -123,14 +121,75 @@ class TwitchRepoImplTest {
         underTest = TwitchRepoImpl(retrofitClient)
 
         //The expected response and body from calling underTest.validateToken("","")
+        val expectedBody = GetModChannels(data= listOf())
+        val expectedResponse = NetworkAuthResponse.Failure(Exception("Error!, Please try again"))
+
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+
+        /**WHEN*/
+        val actualResponse = underTest.getModeratedChannels("","","").last()
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+
+
+    @Test
+    fun `calls getModeratedChannels() but Authentication401Interceptor throws exception`()= runTest{
+        // make the retrofit client
+        /**GIVEN*/
+        val retrofitClient = TwitchHomeClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(true)
+            .build()
+        underTest = TwitchRepoImpl(retrofitClient)
+
+        //The expected response and body from calling underTest.validateToken("","")
+        val expectedBody = GetModChannels(data= listOf())
+        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Authentication error, please try again later"))
+
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
+
+        /**WHEN*/
+        val actualResponse = underTest.getModeratedChannels("","","").last()
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
+    }
+
+    /*************************************** BELOW HERE SHOULD BE ONLY getFollowedLiveStreams() TESTS***********************************************/
+
+    @Test
+    fun `when getFollowedLiveStreams() returns a successful response with all interceptors`()= runTest{
+        // make the retrofit client
+
+        /**GIVEN*/
+        val retrofitClient = TwitchHomeClientBuilder
+            .addMockedUrl(mockWebServer.url("/").toString())
+            .addNetworkInterceptor(true)
+            .addAuthentication401Interceptor(false)
+            .build()
+        underTest = TwitchRepoImpl(retrofitClient)
+
         val expectedBody = FollowedLiveStreams(data =listOf<StreamData>(
             StreamData("", "","","",
                 "","","","",0,
                 "","","", listOf(""), listOf(""),false
             )
         ))
-        val transformedData  =StreamInfo(streamerName="", streamTitle="", gameTitle="", views=0, url="", broadcasterId="")
-        val expectedResponse = NetworkAuthResponse.Success(listOf(transformedData))
+
+        val testing = StreamData("", "","","", "","","","",0,
+            "","","", listOf(""), listOf(""),false
+        )
+        val expectedResponse = NetworkAuthResponse.Success(listOf(testing))
 
 
         // Schedule a successful response
@@ -164,64 +223,10 @@ class TwitchRepoImplTest {
 
 
 
-    @Test
-    fun `calls getModeratedChannels() but Authentication401Interceptor throws exception`()= runTest{
-        // make the retrofit client
-
-        val retrofitClient = TwitchHomeClientBuilder
-            .addMockedUrl(mockWebServer.url("/").toString())
-            .addNetworkInterceptor(true)
-            .addAuthentication401Interceptor(true)
-            .build()
-        underTest = TwitchRepoImpl(retrofitClient)
-
-        //The expected response and body from calling underTest.validateToken("","")
-        val expectedBody = GetModChannels(data= listOf())
-        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Authentication error, please try again later"))
-
-        // Schedule a successful response
-        val jsonBody = createJsonBodyFrom(expectedBody)
-        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
-
-        /**WHEN*/
-        val actualResponse = underTest.getModeratedChannels("","","").last()
-
-
-        /**THEN*/
-        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
-    }
-    @Test
-    fun `calls getModeratedChannels() but the call is not successful 500 response code`()= runTest{
-        // make the retrofit client
-
-        val retrofitClient = TwitchHomeClientBuilder
-            .addMockedUrl(mockWebServer.url("/").toString())
-            .addNetworkInterceptor(true)
-            .addAuthentication401Interceptor(false)
-            .build()
-        underTest = TwitchRepoImpl(retrofitClient)
-
-        //The expected response and body from calling underTest.validateToken("","")
-        val expectedBody = GetModChannels(data= listOf())
-        val expectedResponse = NetworkAuthResponse.Failure(Exception("Error!, Please try again"))
-
-        // Schedule a successful response
-        val jsonBody = createJsonBodyFrom(expectedBody)
-        mockWebServer.enqueue(MockResponse().setResponseCode(500))
-
-        /**WHEN*/
-        val actualResponse = underTest.getModeratedChannels("","","").last()
-
-
-        /**THEN*/
-        Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
-    }
-
 
     @Test
     fun `calls getFollowedLiveStreams() but NetworkInterceptor throws exception`()= runTest{
-        // make the retrofit client
-
+        /**GIVEN*/
         val retrofitClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
             .addNetworkInterceptor(false)
@@ -231,7 +236,7 @@ class TwitchRepoImplTest {
 
         //The expected response
 
-        val expectedResponse = NetworkAuthResponse.NetworkFailure(Exception("Network error, please try again later"))
+        val expectedResponse = NetworkAuthResponse.NetworkFailure(Exception("Network error! Pull down to refresh"))
 
 
         /**WHEN*/
@@ -244,7 +249,7 @@ class TwitchRepoImplTest {
 
     @Test
     fun `calls getFollowedLiveStreams() but Authentication401Interceptor throws exception`()= runTest{
-        // make the retrofit client
+        /**GIVEN*/
 
         val retrofitClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
@@ -255,7 +260,7 @@ class TwitchRepoImplTest {
 
         //The expected response and body from calling underTest.validateToken("","")
         val expectedBody = GetModChannels(data= listOf())
-        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Authentication error, please try again later"))
+        val expectedResponse = NetworkAuthResponse.Auth401Failure(Exception("Error! Re-login with Twitch"))
 
         // Schedule a successful response
         val jsonBody = createJsonBodyFrom(expectedBody)
@@ -271,7 +276,7 @@ class TwitchRepoImplTest {
 
     @Test
     fun `calls getFollowedLiveStreams() but the call is not successful 500 response code`()= runTest{
-        // make the retrofit client
+        /**GIVEN*/
 
         val retrofitClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())

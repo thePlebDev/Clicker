@@ -70,10 +70,7 @@ fun NewUserComponent(
     verifyDomain:() ->Unit,
     failedHapticFeedback:() ->Unit,
 ){
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp
 
-//
 
     if (logoutViewModel.newUserNavigateHome.value) {
         logoutViewModel.setNewUserNavigateHome(false)
