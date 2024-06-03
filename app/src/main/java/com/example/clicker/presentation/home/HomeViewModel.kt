@@ -92,7 +92,6 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val networkMonitoring:NetworkMonitoring,
     private val twitchEmoteImpl: TwitchEmoteRepo,
 ) : ViewModel() {
 

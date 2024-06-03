@@ -42,7 +42,7 @@ class TwitchAuthenticationImplTest {
 
 
 
-    /**TESTING TwitchAuthentication.validateToken()*/
+    /******************TESTING TwitchAuthentication.validateToken() BELOW ******************************************************/
     @Test
     fun `when validateToken() returns a successful response BETTER version`()= runTest{
         /**GIVEN*/
@@ -174,7 +174,7 @@ class TwitchAuthenticationImplTest {
     }
 
 
-    /*****************TESTING TwitchAuthentication.logout() below*****************/
+    /*****************TESTING TwitchAuthentication.logout() BELOW***************************************************************/
 
     @Test
     fun `when logout() is run but NetworkInterceptor throws an error`()= runTest{
