@@ -9,7 +9,6 @@ import androidx.compose.material.Icon
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +22,6 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
-import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +30,8 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class TwitchEmoteImpl @Inject constructor(
-    private val twitchEmoteClient: TwitchEmoteClient
+    private val twitchEmoteClient: TwitchEmoteClient,
+
 ): TwitchEmoteRepo {
 
     private val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
@@ -42,9 +41,12 @@ class TwitchEmoteImpl @Inject constructor(
     private val modId = "modIcon"
     private val subId = "subIcon"
     private val monitorId ="monitorIcon"
+
     /** - inlineContentMap represents the inlineConent for the sub,mod and SeemsGood icons.
      * This is created before the [getGlobalEmotes] method is called so that there can still be mod and sub icons as soon as the
      * user loads into chat
+     * - This value is hardcoded, so that even if all the other requests fail, the user will still be able to see the sub and mod badges
+     *
      * */
     private val inlineContentMap = mapOf(
         Pair(
@@ -149,30 +151,39 @@ class TwitchEmoteImpl @Inject constructor(
          )
           val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
+
           if (response.isSuccessful) {
-               val data = response.body()?.data
-                   inlineContentMap.forEach{
-                      innerInlineContentMap[it.key] = it.value
-                  }
-
-            val parsedEmoteData = data?.map {
-                EmoteNameUrl(it.name,it.images.url_1x)
-            }
-              parsedEmoteData?.forEach {emoteValue ->
-                createMapValue(
-                    emoteValue,
-                    innerInlineContentMap
-                )
-
-            }
-              _emoteList.value = emoteList.value.copy(
-              map = innerInlineContentMap
-          )
-              parsedEmoteData?.also {
-                  _emoteBoardGlobalList.value = _emoteBoardGlobalList.value.copy(
-                      list = it
-                  )
+              val data = response.body()?.data
+              val parsedEmoteData = data?.map {
+                  EmoteNameUrl(it.name,it.images.url_1x)
               }
+              globalEmoteParsing(
+                  innerInlineContentMap,
+                  parsedEmoteData =parsedEmoteData,
+                  updateEmoteListMap={item ->
+                      _emoteList.value = emoteList.value.copy(
+                          map = item
+                      )
+                  },
+                  updateEmoteList={item ->
+                      _emoteBoardGlobalList.value = _emoteBoardGlobalList.value.copy(
+                          list = item
+                      )
+                  },
+                  createMapValueForCompose={emoteValue, innerInlineContentMap ->
+                      createMapValue(
+                          emoteValue,
+                          innerInlineContentMap
+                      )
+                  },
+                  updateInlineContent={
+                      inlineContentMap.forEach{
+                          innerInlineContentMap[it.key] = it.value
+                      }
+                  }
+              )
+
+
 
             emit(Response.Success(true))
         } else {
@@ -188,6 +199,41 @@ class TwitchEmoteImpl @Inject constructor(
         handleException(cause)
     }
 
+
+    /**
+     * globalEmoteParsing() is a private function used to update the [emoteList], [emoteBoardGlobalList]
+     * and the [inlineContentMap].
+     *
+     * @param innerInlineContentMap is a [MutableMap] used to hold values used by the [InlineTextContent] objects showing the emotes
+     * in the text chat
+     * @param parsedEmoteData is a nullable List of [EmoteNameUrl] objects that is parsed from the request.
+     * @param updateEmoteListMap a function used to update the local [emoteList] object
+     * @param updateEmoteList a function used to update the local [emoteBoardGlobalList] object
+     * @param createMapValueForCompose a function that is used to take [EmoteNameUrl] objects and add them to the [innerInlineContentMap]
+     * @param updateInlineContent a function used to transfer the objects inside of [inlineContentMap] to the newly created [innerInlineContentMap]
+     * */
+    private fun globalEmoteParsing(
+        innerInlineContentMap: MutableMap<String, InlineTextContent>,
+        parsedEmoteData: List<EmoteNameUrl>?,
+        updateEmoteListMap:(innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+        updateEmoteList:(item:List<EmoteNameUrl>) ->Unit,
+        createMapValueForCompose:(emoteValue: EmoteNameUrl, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+        updateInlineContent:()->Unit,
+
+    ){
+        updateInlineContent()
+        if(parsedEmoteData !== null){
+            parsedEmoteData.forEach {emoteValue ->
+                createMapValueForCompose(emoteValue,innerInlineContentMap)
+            }
+            updateEmoteListMap(innerInlineContentMap)
+            parsedEmoteData.also {
+                updateEmoteList(it)
+            }
+        }
+
+    }
+
     override fun getChannelEmotes(
         oAuthToken: String, clientId: String,broadcasterId:String
     ): Flow<Response<Boolean>> =flow{
@@ -200,30 +246,32 @@ class TwitchEmoteImpl @Inject constructor(
         if(response.isSuccessful){
 
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-
             val data = response.body()?.data
-            _emoteList.value.map.forEach{
-                innerInlineContentMap[it.key] = it.value
-            }
-
             val parsedEmoteData = data?.map {
                 EmoteNameUrl(it.name,it.images.url_1x)
             }
-            parsedEmoteData?.forEach {emoteValue ->
-                createMapValue(
-                    emoteValue,
-                    innerInlineContentMap
-                )
 
-            }
-            _emoteList.value = emoteList.value.copy(
-                map = innerInlineContentMap
+            channelEmoteParsing(
+                parsedEmoteData,
+                innerInlineContentMap,
+                updateEmoteListMap={item ->
+                    _emoteList.value = emoteList.value.copy(
+                        map = item
+                    )
+                },
+                updateChannelEmoteList={item ->
+                    _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
+                        list = item
+                    )
+                },
+                createMapValueForCompose={emoteValue, innerInlineContentMap ->
+                    createMapValue(
+                        emoteValue,
+                        innerInlineContentMap
+                    )
+                }
             )
-            parsedEmoteData?.also {
-                _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
-                    list = it
-                )
-            }
+
 
             Log.d("getChannelEmotes","body--> ${response.body()}")
 
@@ -231,20 +279,57 @@ class TwitchEmoteImpl @Inject constructor(
             Log.d("getChannelEmotes","FAIL")
             Log.d("getChannelEmotes","MESSAGE --> ${response.code()}")
             Log.d("getChannelEmotes","MESSAGE--> ${response.message()}")
-            emit(Response.Failure(Exception("Unable to delete message")))
+            emit(Response.Failure(Exception("Unable to get emotes")))
         }
 
     }.catch { cause ->
         Log.d("getChannelEmotes","EXCEPTION error message ->${cause.message}")
         Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
-
-
+        emit(Response.Failure(Exception("Unable to get emotes")))
     }
+
+    /**
+     * channelEmoteParsing() is a private function that is used for parsing out the emotes from the request asking Twitch servers
+     * to get Channel specific emotes
+     * @param innerInlineContentMap is a [MutableMap] used to hold values used by the [InlineTextContent] objects showing the emotes
+     * in the text chat
+     * @param parsedEmoteData is a nullable List of [EmoteNameUrl] objects that is parsed from the request.
+     * @param updateEmoteListMap a function used to update the local [emoteList] object
+     * @param createMapValueForCompose a function that is used to take [EmoteNameUrl] objects and add them to the [innerInlineContentMap]
+     * */
+    private fun channelEmoteParsing(
+        parsedEmoteData: List<EmoteNameUrl>?,
+        innerInlineContentMap:MutableMap<String, InlineTextContent>,
+        updateEmoteListMap:(innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+        updateChannelEmoteList:(parsedEmoteData: List<EmoteNameUrl>) ->Unit,
+        createMapValueForCompose:(emoteValue: EmoteNameUrl, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+
+    ){
+        if(parsedEmoteData !== null){
+            parsedEmoteData.forEach {emoteValue ->
+                createMapValueForCompose(
+                    emoteValue,
+                    innerInlineContentMap
+                )
+
+            }
+            updateEmoteListMap(innerInlineContentMap)
+            updateChannelEmoteList(parsedEmoteData)
+        }
+    }
+
 
 
 }
 
-fun createMapValue(
+/**
+ * createMapValue is a private function that creates the a [InlineTextContent] object and adds it to the
+ * [innerInlineContentMap] parameter
+ *
+ * @param emoteValue a [EmoteNameUrl] object used to represent a Twitch emote
+ * @param innerInlineContentMap a map used to represent what items are to be shown to the user
+ * */
+private fun createMapValue(
     emoteValue: EmoteNameUrl,
     innerInlineContentMap: MutableMap<String, InlineTextContent>
 ){
@@ -269,6 +354,12 @@ fun createMapValue(
 
 }
 
+/**
+ * EmoteNameUrl represents a single Twitch Emote from the Twitch servers. Each instance of this class is a unique Emote
+ *
+ * @param name the name of the Twitch emote
+ * @param url the url that is hosted on the twitch servers and is what we use to load the image
+ * */
 data class EmoteNameUrl(
     val name:String,
     val url:String
