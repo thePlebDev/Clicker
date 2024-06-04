@@ -22,6 +22,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
+import com.example.clicker.network.repository.util.EmoteParsing
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,7 @@ import javax.inject.Inject
 
 class TwitchEmoteImpl @Inject constructor(
     private val twitchEmoteClient: TwitchEmoteClient,
+    private val emoteParsing:EmoteParsing = EmoteParsing()
 
 ): TwitchEmoteRepo {
 
@@ -227,11 +229,8 @@ class TwitchEmoteImpl @Inject constructor(
                 createMapValueForCompose(emoteValue,innerInlineContentMap)
             }
             updateEmoteListMap(innerInlineContentMap)
-            parsedEmoteData.also {
-                updateEmoteList(it)
-            }
+            updateEmoteList(parsedEmoteData)
         }
-
     }
 
     override fun getChannelEmotes(
@@ -324,41 +323,27 @@ class TwitchEmoteImpl @Inject constructor(
         }
     }
 
-
-
-}
-
-/**
- * createMapValue is a private function that creates the a [InlineTextContent] object and adds it to the
- * [innerInlineContentMap] parameter
- *
- * @param emoteValue a [EmoteNameUrl] object used to represent a Twitch emote
- * @param innerInlineContentMap a map used to represent what items are to be shown to the user
- * */
-private fun createMapValue(
-    emoteValue: EmoteNameUrl,
-    innerInlineContentMap: MutableMap<String, InlineTextContent>
-){
-    val url = emoteValue.url
-    val value = InlineTextContent(
-        Placeholder(
-            width = 35.sp,
-            height = 35.sp,
-            placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+    /**
+     * createMapValue is a private function that creates the a [InlineTextContent] object and adds it to the
+     * [innerInlineContentMap] parameter
+     *
+     * @param emoteValue a [EmoteNameUrl] object used to represent a Twitch emote
+     * @param innerInlineContentMap a map used to represent what items are to be shown to the user
+     * */
+    private fun createMapValue(
+        emoteValue: EmoteNameUrl,
+        innerInlineContentMap: MutableMap<String, InlineTextContent>
+    ){
+        emoteParsing.createMapValueForComposeChat(
+            emoteValue,
+            innerInlineContentMap
         )
-    ) {
-        AsyncImage(
-            model = url,
-            contentDescription = stringResource(R.string.moderator_badge_icon_description),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(2.dp)
-        )
+
     }
 
-    innerInlineContentMap[emoteValue.name] = value
-
 }
+
+
 
 /**
  * EmoteNameUrl represents a single Twitch Emote from the Twitch servers. Each instance of this class is a unique Emote
