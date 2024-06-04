@@ -170,10 +170,10 @@ class TwitchEmoteImpl @Inject constructor(
                           list = item
                       )
                   },
-                  createMapValueForCompose={emoteValue, innerInlineContentMap ->
+                  createMapValueForCompose={emoteValue, innerInlineContentMapThinger ->
                       createMapValue(
                           emoteValue,
-                          innerInlineContentMap
+                          innerInlineContentMapThinger
                       )
                   },
                   updateInlineContent={
@@ -264,7 +264,7 @@ class TwitchEmoteImpl @Inject constructor(
                         list = item
                     )
                 },
-                createMapValueForCompose={emoteValue, innerInlineContentMap ->
+                createMapValueForCompose={emoteValue, innerInlineContentMapThing ->
                     createMapValue(
                         emoteValue,
                         innerInlineContentMap
