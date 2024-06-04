@@ -244,31 +244,39 @@ class TwitchEmoteImpl @Inject constructor(
             broadcasterId = broadcasterId
         )
         if(response.isSuccessful){
-
-            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
             val data = response.body()?.data
-            _emoteList.value.map.forEach{
-                innerInlineContentMap[it.key] = it.value
-            }
 
-            val parsedEmoteData = data?.map {
+            val parsedEmoteData = data?.map {// getting data from the request
                 EmoteNameUrl(it.name,it.images.url_1x)
             }
-            parsedEmoteData?.forEach {emoteValue ->
-                createMapValue(
-                    emoteValue,
-                    innerInlineContentMap
-                )
+            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
-            }
-            _emoteList.value = emoteList.value.copy(
-                map = innerInlineContentMap
+            channelEmoteParsing(
+                parsedEmoteData,
+                innerInlineContentMap,
+                copyGlobalEmoteMap={innerMap ->
+                    _emoteList.value.map.forEach{
+                        innerMap[it.key] = it.value //transfers all the keys and values from _emoteList to innerInlineContentMap
+                    }
+                },
+                convertResponseDataToGlobalEmoteMap={emoteValue,innerMap ->
+                    createMapValue(
+                        emoteValue,
+                        innerMap
+                    )
+                },
+                updateGlobalEmoteMap={innerMap ->
+                    _emoteList.value = emoteList.value.copy( // update _emoteList with the newly updated innerInlineContentMap
+                        map = innerMap
+                    )
+                },
+                updateChannelEmoteBoard={channelEmoteList ->
+                    _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
+                        list = channelEmoteList
+                    )
+                }
             )
-            parsedEmoteData?.also {
-                _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
-                    list = it
-                )
-            }
+
 
 
             Log.d("getChannelEmotes","body--> ${response.body()}")
@@ -292,27 +300,27 @@ class TwitchEmoteImpl @Inject constructor(
      * @param innerInlineContentMap is a [MutableMap] used to hold values used by the [InlineTextContent] objects showing the emotes
      * in the text chat
      * @param parsedEmoteData is a nullable List of [EmoteNameUrl] objects that is parsed from the request.
-     * @param updateEmoteListMap a function used to update the local [emoteList] object
-     * @param createMapValueForCompose a function that is used to take [EmoteNameUrl] objects and add them to the [innerInlineContentMap]
+     * @param convertResponseDataToGlobalEmoteMap a function used to convert the data coming from the request to a map that can be added to the emote map
+     * @param copyGlobalEmoteMap a function that is used to copy the global [emoteList] values into the local [innerInlineContentMap]
+     * @param updateGlobalEmoteMap a function that takes the newly updated [innerInlineContentMap] and adds it to the [emoteList]
+     * @param updateChannelEmoteBoard a function that takes the [parsedEmoteData] and updates the [emoteBoardChannelList]
      * */
     private fun channelEmoteParsing(
         parsedEmoteData: List<EmoteNameUrl>?,
-        innerInlineContentMap:MutableMap<String, InlineTextContent>,
-        updateEmoteListMap:(innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
-        updateChannelEmoteList:(parsedEmoteData: List<EmoteNameUrl>) ->Unit,
-        createMapValueForCompose:(emoteValue: EmoteNameUrl, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
-
+        innerInlineContentMap: MutableMap<String, InlineTextContent>,
+        convertResponseDataToGlobalEmoteMap:(emoteValue: EmoteNameUrl, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+        copyGlobalEmoteMap:(innerInlineContentMap: MutableMap<String, InlineTextContent>)->Unit,
+        updateGlobalEmoteMap:(innerMap: MutableMap<String, InlineTextContent>)->Unit,
+        updateChannelEmoteBoard:(channelEmoteList:List<EmoteNameUrl>)->Unit
     ){
         if(parsedEmoteData !== null){
-            parsedEmoteData.forEach {emoteValue ->
-                createMapValueForCompose(
-                    emoteValue,
-                    innerInlineContentMap
-                )
-
+            copyGlobalEmoteMap(innerInlineContentMap)
+            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
+                convertResponseDataToGlobalEmoteMap(emoteValue,innerInlineContentMap)
             }
-            updateEmoteListMap(innerInlineContentMap)
-            updateChannelEmoteList(parsedEmoteData)
+            updateGlobalEmoteMap(innerInlineContentMap)
+            updateChannelEmoteBoard(parsedEmoteData)
+
         }
     }
 
