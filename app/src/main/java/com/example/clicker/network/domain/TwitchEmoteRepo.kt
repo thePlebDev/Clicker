@@ -11,9 +11,13 @@ import kotlinx.coroutines.flow.Flow
 /**
  * TwitchEmoteRepo is the interface that acts as the API for all the methods needed to interact with Twitch's emote servers
  *
- * @property emoteList a [State] object containing a map of all the emotes
- * @property emoteBoardGlobalList a [State] object containing a map of all the global
- * @property emoteBoardChannelList a [State] object containing a map of all the channel emotes
+ * @property emoteList a [State] object containing a map of all the emotes.
+ * This holds all of the combined values that will be shown in chat. So all the values inside of this object represent all the emotes
+ * that will be visible inside of chat
+ * @property emoteBoardGlobalList a [State] object containing a map of all the global emotes. These are the global emotes that the
+ * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
+ * @property emoteBoardChannelList a [State] object containing a map of all the channel emotes.These are the channel emotes that the
+ * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
  *
  * @property getGlobalEmotes()
  * @property getChannelEmotes()
