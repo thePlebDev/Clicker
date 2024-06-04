@@ -278,9 +278,12 @@ class StreamFragment : Fragment(), View.OnClickListener {
             }
             /**collapsed method*/
             horizontalClickableWebView.collapsedMethod = {
+                unsetImmersiveMode(requireActivity().window)
                 Log.d("collapsedMethodAgain","collapsedMethod()")
-                val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
+                val webViewWidth =(rootConstraintLayout.width * 0.56).toInt()
                 val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+
+
 
 
 
@@ -371,6 +374,14 @@ fun setImmersiveMode(window: Window){
         it.hide(WindowInsetsCompat.Type.systemBars()) //hide the insets
         it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
+}
+fun unsetImmersiveMode(window: Window) {
+    WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
+//    val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+//    windowInsetsController.let {
+//        it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
+//        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
+//    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

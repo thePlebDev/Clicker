@@ -38,9 +38,6 @@ class TwitchAuthenticationImplTest {
         mockWebServer.shutdown()
     }
 
-//
-
-
 
     /******************TESTING TwitchAuthentication.validateToken() BELOW ******************************************************/
     @Test

@@ -100,6 +100,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
@@ -194,6 +195,7 @@ fun ChatUI(
             ScrollToBottom(
                 scrollingPaused = !autoscroll,
                 enableAutoScroll = { autoscroll = true },
+                emoteKeyBoardHeight =emoteKeyBoardHeight.value,
                 modifier = modifier
             )
         },
@@ -291,22 +293,29 @@ fun ChatUI(
     val chatUIScope = remember(){ ImprovedChatUI() }
     with(chatUIScope){
         Box(modifier = Modifier.fillMaxSize()){
+            scrollToBottom(
+                modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+                .zIndex(5f)
+            )
             Column(Modifier.fillMaxSize()) {
 
-                chatUI(modifier =Modifier.weight(1f))
-                enterChat(
-                    Modifier
-                        .fillMaxWidth(),
-                )
+                chatUI(modifier = Modifier.weight(1f))
+                enterChat(Modifier.fillMaxWidth())
+
                 if(emoteKeyBoardHeight==350.dp){
-                    EmoteBoard(
-                        emoteKeyBoardHeight,
-                        emoteBoardGlobalList,
-                        updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
-                        emoteBoardChannelList=emoteBoardChannelList,
-                        closeEmoteBoard={closeEmoteBoard()},
-                        deleteEmote={deleteEmote()}
-                    )
+
+                        EmoteBoard(
+                            modifier = Modifier.zIndex(8f),
+                            emoteKeyBoardHeight,
+                            emoteBoardGlobalList,
+                            updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
+                            emoteBoardChannelList=emoteBoardChannelList,
+                            closeEmoteBoard={closeEmoteBoard()},
+                            deleteEmote={deleteEmote()}
+                        )
+
                 }
             }
             determineScrollState()
@@ -320,10 +329,7 @@ fun ChatUI(
 
             }
 
-            scrollToBottom(modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 60.dp)
-            )
+
             ForwardSlash(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -343,6 +349,7 @@ fun LazyGridScope.header(
 
 @Composable
 fun EmoteBoard(
+    modifier:Modifier,
     emoteKeyBoardHeight:Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
@@ -354,7 +361,9 @@ fun EmoteBoard(
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     //modifier =Modifier.weight(1f)
-    Column() {
+    Column(
+        modifier = modifier
+    ) {
         LazyGridEmotes(
             emoteKeyBoardHeight=emoteKeyBoardHeight,
             emoteBoardGlobalList=emoteBoardGlobalList,
@@ -817,25 +826,31 @@ private class ImprovedChatUI(){
     fun ScrollToBottom(
         scrollingPaused: Boolean,
         enableAutoScroll: () -> Unit,
+        emoteKeyBoardHeight: Dp,
         modifier: Modifier
     ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (scrollingPaused) {
-                DualIconsButton(
-                    buttonAction = { enableAutoScroll() },
-                    iconImageVector = Icons.Default.ArrowDropDown,
-                    iconDescription = stringResource(R.string.arrow_drop_down_description),
-                    buttonText = stringResource(R.string.scroll_to_bottom)
+        if(emoteKeyBoardHeight == 350.dp){
 
-                )
+        }else{
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (scrollingPaused) {
+                    DualIconsButton(
+                        buttonAction = { enableAutoScroll() },
+                        iconImageVector = Icons.Default.ArrowDropDown,
+                        iconDescription = stringResource(R.string.arrow_drop_down_description),
+                        buttonText = stringResource(R.string.scroll_to_bottom)
+
+                    )
+                }
             }
         }
+
     }
 }
 
