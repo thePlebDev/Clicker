@@ -170,10 +170,10 @@ class TwitchEmoteImpl @Inject constructor(
                           list = item
                       )
                   },
-                  createMapValueForCompose={emoteValue, innerInlineContentMap ->
+                  createMapValueForCompose={emoteValue, innerInlineContentMapThinger ->
                       createMapValue(
                           emoteValue,
-                          innerInlineContentMap
+                          innerInlineContentMapThinger
                       )
                   },
                   updateInlineContent={
@@ -247,30 +247,28 @@ class TwitchEmoteImpl @Inject constructor(
 
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
             val data = response.body()?.data
+            _emoteList.value.map.forEach{
+                innerInlineContentMap[it.key] = it.value
+            }
+
             val parsedEmoteData = data?.map {
                 EmoteNameUrl(it.name,it.images.url_1x)
             }
+            parsedEmoteData?.forEach {emoteValue ->
+                createMapValue(
+                    emoteValue,
+                    innerInlineContentMap
+                )
 
-            channelEmoteParsing(
-                parsedEmoteData,
-                innerInlineContentMap,
-                updateEmoteListMap={item ->
-                    _emoteList.value = emoteList.value.copy(
-                        map = item
-                    )
-                },
-                updateChannelEmoteList={item ->
-                    _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
-                        list = item
-                    )
-                },
-                createMapValueForCompose={emoteValue, innerInlineContentMap ->
-                    createMapValue(
-                        emoteValue,
-                        innerInlineContentMap
-                    )
-                }
+            }
+            _emoteList.value = emoteList.value.copy(
+                map = innerInlineContentMap
             )
+            parsedEmoteData?.also {
+                _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
+                    list = it
+                )
+            }
 
 
             Log.d("getChannelEmotes","body--> ${response.body()}")
