@@ -24,6 +24,7 @@ import com.example.clicker.util.Response
 import com.example.clicker.util.logCoroutineInfo
 import com.example.clicker.util.mapWithRetry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -117,11 +118,6 @@ class HomeViewModel @Inject constructor(
             logoutDialogIsOpen = true
         )
     }
-    fun hideDialog(){
-        _uiState.value = _uiState.value.copy(
-            showFailedDialog = false
-        )
-    }
 
 
     /**Initial state monitoring
@@ -142,7 +138,7 @@ class HomeViewModel @Inject constructor(
 
 
     fun pullToRefreshModChannels(){
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _modChannelUIState.value = _modChannelUIState.value.copy(
                 modRefreshing = true,
             )
@@ -165,7 +161,7 @@ class HomeViewModel @Inject constructor(
 
     private fun pullToRefreshHome(){
 
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _uiState.value = _uiState.value.copy(
                 homeRefreshing = true,
             )
@@ -279,7 +275,7 @@ class HomeViewModel @Inject constructor(
  * to be emitted. Once a non null value is emitted to [_validatedUser] this function will then call [getLiveStreams]
  * */
     private fun monitorForValidatedUser(){
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _validatedUser.collect{nullableValidatedUser ->
                 nullableValidatedUser?.also{nonNullValidatedUser ->
                     Log.d("nullableValidatedUser","RUNNING")
@@ -299,11 +295,23 @@ class HomeViewModel @Inject constructor(
      * a new non null value is emitted to [_oAuthToken], [validateOAuthToken] will be called
      * */
     private fun monitorForOAuthToken(){
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _oAuthToken.collect{nullableOAuthToken ->
                 nullableOAuthToken?.also { nonNullOAuthToken ->
                     validateOAuthToken(nonNullOAuthToken)
                 }
+            }
+        }
+    }
+    /**
+     * getOAuthToken is a private function that upon the initialization of this viewModel is meant to try and retrieve the locally
+     * stored oAuth token from [tokenDataStore]. If successful the oAuth token is emitted to [_oAuthToken]. If a oAuth token
+     * is not found then the user is notified by telling them they need to sign in
+     * */
+    private fun getOAuthToken() = viewModelScope.launch(ioDispatcher) {
+        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
+            if (storedOAuthToken.length > 2) {
+                _oAuthToken.tryEmit(storedOAuthToken)
             }
         }
     }
@@ -330,29 +338,13 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    /**
-     * getOAuthToken is a private function that upon the initialization of this viewModel is meant to try and retrieve the locally
-     * stored oAuth token from [tokenDataStore]. If successful the oAuth token is emitted to [_oAuthToken]. If a oAuth token
-     * is not found then the user is notified by telling them they need to sign in
-     * */
-    private fun getOAuthToken() = viewModelScope.launch {
-        tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
-            Log.d("monitorForNetworkConnection","getOAuthToken  ---> TOKKEN:$storedOAuthToken")
 
-            if (storedOAuthToken.length > 2) {
-
-                //need to call the validateToken
-                //this should emit a value to a HOT storedOAuthToken flow which then runs the validateOAuthToken
-                _oAuthToken.tryEmit(storedOAuthToken)
-            }
-        }
-    }
     /**
      * setOAuthToken is a function called to set the locally stored authentication token
      *
      * @param oAuthToken a string representing the authentication token that is to be stored locally
      */
-    fun setOAuthToken(oAuthToken: String) = viewModelScope.launch {
+    fun setOAuthToken(oAuthToken: String) = viewModelScope.launch(ioDispatcher) {
         // need to make a call to exchange the authCode for a validationToken
 
         Log.d("setOAuthToken", "token -> $oAuthToken")
@@ -464,7 +456,7 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    suspend fun getLiveStreams(
+    private suspend fun getLiveStreams(
         clientId: String,
         userId: String,
         oAuthToken: String
