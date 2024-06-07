@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -55,14 +56,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -108,11 +112,14 @@ import kotlin.math.roundToInt
     /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
      * composables
      * */
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun DraggableModViewBox(
         boxOneOffsetY:Float,
         boxTwoOffsetY:Float,
         boxThreeOffsetY:Float,
+
+        deleteOffsetY:Float,
 
         boxOneDragState: DraggableState,
         boxTwoDragState: DraggableState,
@@ -138,49 +145,20 @@ import kotlin.math.roundToInt
         boxThreeDragging:Boolean,
         setBoxThreeDragging:(Boolean)->Unit,
         contentPaddingValues: PaddingValues,
-        chatMessages:List<TwitchUserData>,
-        triggerBottomModal: () -> Unit,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-        clickedUserData: ClickedUIState,
-        timeoutDuration:Int,
-        changeTimeoutDuration: (Int) -> Unit,
-        timeoutReason: String,
-        changeTimeoutReason: (String) -> Unit,
 
-        banDuration:Int,
-        changeBanDuration:(Int)->Unit,
-        banReason:String,
-        changeBanReason: (String) -> Unit,
+        boxOneIndex:Int,
+        boxTwoIndex:Int,
+        boxThreeIndex:Int,
+        setBoxIndex:(String,Int) ->Unit,
 
-        timeoutUser: () -> Unit,
-        showTimeoutErrorMessage:Boolean,
-        setTimeoutShowErrorMessage:(Boolean)->Unit,
+        boxOneHeight:Dp,
+        boxTwoHeight:Dp,
+        boxThreeHeight:Dp,
 
-        showBanErrorMessage:Boolean,
-        setBanShowErrorMessage:(Boolean)->Unit,
-        banUser:()->Unit,
-        modActionList: List<TwitchUserData>,
-        autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit,
-        connectionError: Response<Boolean>,
-        reconnect:()->Unit,
-        blockedTerms:List<BlockedTerm>,
-        deleteBlockedTerm:(String) ->Unit,
-        emoteOnly:Boolean,
-        setEmoteOnly:(Boolean) ->Unit,
-        subscriberOnly:Boolean,
-        setSubscriberOnly:(Boolean) ->Unit,
-        chatSettingsEnabled:Boolean,
-        switchEnabled:Boolean,
-        followersOnlyList: List<ListTitleValue>,
-        selectedFollowersModeItem: ListTitleValue,
-        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
-        slowModeList: List<ListTitleValue>,
-        selectedSlowModeItem: ListTitleValue,
-        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
-        deleteMessage:(String)->Unit,
 
         ) {
+
+
 
 
         Box(
@@ -194,13 +172,27 @@ import kotlin.math.roundToInt
                 boxDragState=boxOneDragState,
                 boxZIndex =boxOneZIndex,
                 setBoxOffset ={newValue->setBoxOneOffset(newValue)},
-                height = indivBoxSize,
+                height = boxOneHeight,
                 boxColor =Color.Red,
                 sectionBreakPoint =sectionBreakPoint,
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxOneDragging,
                 setDragging={newValue->setBoxOneDragging(newValue)},
-                content={}
+                changeBackgroundColor={
+                    if(boxOneOffsetY>deleteOffsetY){
+                        setBoxIndex("ONE",0)
+                    }
+                },
+                content={
+
+                    ChangingBoxTypes(
+                        boxOneIndex,
+                        setDraggingTrue = {setBoxOneDragging(true)},
+                        "1"
+                    )
+
+
+                }
 
             )
 
@@ -211,21 +203,33 @@ import kotlin.math.roundToInt
                 boxDragState=boxTwoDragState,
                 boxZIndex =boxTwoZIndex,
                 setBoxOffset ={newValue->setBoxTwoOffset(newValue)},
-                height = indivBoxSize,
+                height = boxTwoHeight,
                 boxColor =Color.Cyan,
                 sectionBreakPoint =sectionBreakPoint,
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxTwoDragging,
                 setDragging={newValue -> setBoxTwoDragging(newValue)},
+                changeBackgroundColor={
+                    if(boxTwoOffsetY>deleteOffsetY){
+
+                        setBoxIndex("TWO",0)
+                    }
+                },
                 content={
-                    AutoModQueueBox(
-                        dragging =boxTwoDragging,
-                        setDragging={newValue -> setBoxTwoDragging(newValue)},
-                        autoModMessageList =autoModMessageList,
-                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)},
-                        connectionError =connectionError,
-                        reconnect = {reconnect()}
+
+                    ChangingBoxTypes(
+                        boxTwoIndex,
+                        setDraggingTrue = {setBoxTwoDragging(true)},
+                        "2"
                     )
+//                    AutoModQueueBox(
+//                        dragging =boxTwoDragging,
+//                        setDragging={newValue -> setBoxTwoDragging(newValue)},
+//                        autoModMessageList =autoModMessageList,
+//                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)},
+//                        connectionError =connectionError,
+//                        reconnect = {reconnect()}
+//                    )
                 }
             )
 
@@ -235,25 +239,244 @@ import kotlin.math.roundToInt
                 boxDragState=boxThreeDragState,
                 boxZIndex =boxThreeZIndex,
                 setBoxOffset ={newValue->setBoxThreeOffset(newValue)},
-                height = indivBoxSize,
+                height = boxThreeHeight,
                 boxColor =Color.Magenta,
                 sectionBreakPoint =sectionBreakPoint,
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxThreeDragging,
                 setDragging={newValue -> setBoxThreeDragging(newValue)},
+                changeBackgroundColor={
+                    if(boxThreeOffsetY>deleteOffsetY){
+                        setBoxIndex("THREE",0)
+                    }
+                },
                 content={
-                    ModActions(
-                        dragging =boxThreeDragging,
-                        setDragging={newValue -> setBoxThreeDragging(newValue)},
-                        modActionList =modActionList
+                    ChangingBoxTypes(
+                        boxThreeIndex,
+                        setDraggingTrue = {setBoxThreeDragging(true)},
+                        "3"
                     )
+
+//                    ModActions(
+//                        dragging =boxThreeDragging,
+//                        setDragging={newValue -> setBoxThreeDragging(newValue)},
+//                        modActionList =modActionList
+//                    )
                 }
             )
+
+            BoxDeleteSection(
+                boxThreeDragging,boxTwoDragging,boxOneDragging,
+                deleteOffsetY,
+                boxThreeOffsetY,boxTwoOffsetY,boxOneOffsetY,
+                Modifier.align(Alignment.BottomCenter)
+            )
+
         }// This is the end of the box
 
 
     }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChangingBoxTypes(
+    boxIndex:Int,
+    setDraggingTrue: () -> Unit,
+    boxNumber:String
+){
+    when(boxIndex){
+        0 ->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ){
+                Text(
+                    text = boxNumber,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+        }
+        1->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Green)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "Chat $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+        }
+        2->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Magenta)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "AutoMod Queue $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+        }
+        3->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Blue)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "Mod Actions $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+
+        }
+        4->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Yellow)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "Unban requests $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+
+        }
+        5->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.LightGray)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "Discord chat $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+        }
+        6->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Cyan)
+                    .combinedClickable(
+                        onDoubleClick = { setDraggingTrue() },
+                        onClick = {}
+                    )
+            ){
+                Text(
+                    text = "Moderators $boxNumber",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp
+                )
+
+            }
+        }
+    }
+
+}
+
+@Composable
+fun BoxDeleteSection(
+    boxThreeDragging:Boolean,
+    boxTwoDragging:Boolean,
+    boxOneDragging:Boolean,
+    deleteOffsetY: Float,
+    boxThreeOffsetY: Float,
+    boxTwoOffsetY: Float,
+    boxOneOffsetY: Float,
+    modifier: Modifier
+
+){
+    val colorStops = arrayOf(
+        0.0f to Color.Red.copy(0.0f),
+        0.2f to Color.Red.copy(0.2f),
+        0.4f to Color.Red.copy(0.4f),
+        0.6f to Color.Red.copy(0.6f),
+        1f to Color.Red
+    )
+
+    if(boxThreeDragging  || boxTwoDragging || boxOneDragging){
+        if(boxThreeOffsetY > deleteOffsetY|| boxTwoOffsetY> deleteOffsetY || boxOneOffsetY> deleteOffsetY){
+            Row(modifier = modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(Brush.verticalGradient(colorStops = colorStops))
+                .zIndex(10f)
+            ){
+
+            }
+        }else{
+            Row(modifier = modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .background(Brush.verticalGradient(colorStops = colorStops))
+                .zIndex(10f)
+            ){
+
+            }
+        }
+
+    }
+}
 
 
 
@@ -287,6 +510,7 @@ import kotlin.math.roundToInt
         animateToOnDragStop:Float,
         dragging:Boolean,
         setDragging:(Boolean)->Unit,
+        changeBackgroundColor:()->Unit,
         content:@Composable () -> Unit,
 
         ){
@@ -304,6 +528,7 @@ import kotlin.math.roundToInt
                     orientation = Orientation.Vertical,
                     state = boxDragState,
                     onDragStopped = {
+                        changeBackgroundColor()
                         setDragging(false)
                         when {
                             boxOffsetY < sectionBreakPoint -> {

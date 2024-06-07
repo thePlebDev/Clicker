@@ -6,10 +6,12 @@ import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,18 +26,29 @@ data class IsBoxDragging(
     val boxTwoDragging:Boolean = false,
     val boxThreeDragging:Boolean = false,
 )
-data class BoxIndexes(
+data class BoxZIndexes(
     val boxOneZIndex:Float = 0F,
     val boxTwoZIndex:Float = 0F,
     val boxThreeZIndex:Float = 0F,
 
     )
+data class BoxTypeIndex(
+    val boxOneIndex:Int = 1,
+    val boxTwoIndex:Int = 2,
+    val boxThreeIndex:Int = 3,
+)
+data class IndivBoxHeight(
+    val boxOne:Dp = 0.dp,
+    val boxTwo:Dp = 0.dp,
+    val boxThree:Dp = 0.dp
+)
 
 @HiltViewModel
 class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     private val boxOne = "BOXONE"
     private val boxTwo = "BOXTWO"
     private val boxThree= "BOXTHREE"
+    private var fullModeActive = false
     val indivBoxSize = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp //264
     val sectionBreakPoint = ((Resources.getSystem().displayMetrics.heightPixels/3.20)-200).toInt() //539
     val animateToOnDragStop = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat() //704f
@@ -49,8 +62,26 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     private var _isDragging: MutableState<IsBoxDragging> = mutableStateOf(IsBoxDragging())
     val isDragging: State<IsBoxDragging> = _isDragging
 
-    private val _boxIndexes: MutableState<BoxIndexes> = mutableStateOf(BoxIndexes())
-    val boxIndexes: State<BoxIndexes> = _boxIndexes
+    private val _boxIndexes: MutableState<BoxZIndexes> = mutableStateOf(BoxZIndexes())
+    val boxIndexes: State<BoxZIndexes> = _boxIndexes
+
+    private val _boxTypeIndex: MutableState<BoxTypeIndex> = mutableStateOf(BoxTypeIndex())
+    val boxTypeIndex: State<BoxTypeIndex> = _boxTypeIndex
+
+    private val _indivBoxHeight: MutableState<IndivBoxHeight> = mutableStateOf(
+        IndivBoxHeight(
+            boxOne = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
+            boxTwo = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
+            boxThree = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp
+        )
+    )
+    val indivBoxHeight: State<IndivBoxHeight> = _indivBoxHeight
+
+    private val _deleteOffset: MutableState<Float> = mutableStateOf(0f)
+    val deleteOffset: State<Float> = _deleteOffset
+
+    private val _showDrawerError: MutableState<Boolean> = mutableStateOf(false)
+    val showDrawerError: State<Boolean> = _showDrawerError
 
 
     private val stateList = MutableStateFlow(listOf(boxOne,boxTwo,boxThree))
@@ -62,7 +93,205 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
             boxThreeOffsetY = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat() *2
 
         )
+        Log.d("bottomOfTheScreen","indiv box height --> ${indivBoxSize}")
+        Log.d("bottomOfTheScreen","indiv box height float --> ${indivBoxSize.value}")
+        Log.d("bottomOfTheScreen","box 3 offset --> ${_dragStateOffsets.value.boxThreeOffsetY}")
+        Log.d("bottomOfTheScreen",
+            "combined values --> ${indivBoxSize.value + _dragStateOffsets.value.boxThreeOffsetY}")
+        Log.d("bottomOfTheScreen",
+            "boxThreeOffsetY --> ${indivBoxSize.value + _dragStateOffsets.value.boxThreeOffsetY}")
+        val combinedOffset = (indivBoxSize.value + _dragStateOffsets.value.boxThreeOffsetY) - 150f
+        _deleteOffset.value =combinedOffset
 
+
+    }
+
+    fun changeBoxTypeIndex(box:String,value:Int){
+        if(box == "ONE"){
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                boxOneIndex = value
+            )
+
+        }
+        if(box == "TWO"){
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                boxTwoIndex = value
+            )
+
+        }
+        if(box == "THREE"){
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                boxThreeIndex = value
+            )
+        }
+    }
+
+    fun checkBoxIndexAvailability(newBoxIndex:Int){
+        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
+        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
+        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
+
+        if(boxOneIndex != 0 && boxTwoIndex != 0 && boxThreeIndex != 0){
+            _showDrawerError.value = true
+            viewModelScope.launch {
+                delay(1000)
+                _showDrawerError.value = false
+            }
+        }else{
+            if(fullModeActive){
+                resetBodySizes()
+            }
+            if(boxOneIndex == 0){
+                checkTripleIndexBoxOne(newBoxIndex)
+            }
+            else if(boxTwoIndex == 0){
+                checkTripleIndexBoxTwo(newBoxIndex)
+
+            }
+            else if(boxThreeIndex == 0){
+                checkTripleIndexBoxThree(newBoxIndex)
+
+            }
+        }
+
+    }
+    private fun checkDoubleMode(newBoxIndex: Int):Boolean{
+        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
+        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
+        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
+       return when{
+            boxOneIndex == newBoxIndex ->{
+                true
+            }
+            boxTwoIndex == newBoxIndex ->{
+                true
+            }
+            boxThreeIndex == newBoxIndex ->{
+               true
+            }
+
+           else -> {false}
+       }
+
+    }
+    fun resetBodySizes(){
+        _boxTypeIndex.value = _boxTypeIndex.value.copy(
+            boxOneIndex = 0,
+            boxTwoIndex = 0,
+            boxThreeIndex = 0
+        )
+        _indivBoxHeight.value = _indivBoxHeight.value.copy(
+            boxOne = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
+            boxTwo =(Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
+            boxThree =(Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
+        )
+        fullModeActive = false
+    }
+
+    fun checkTripleIndexBoxOne(newBoxIndex: Int){
+//        private val boxOne = "BOXONE"
+//        private val boxTwo = "BOXTWO"
+//        private val boxThree= "BOXTHREE"
+        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
+        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
+        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
+
+        if(boxTwoIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
+            Log.d("checkTripleIndexBoxOne","FULL MODE ")
+            fullModeActive = true
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxOneIndex = newBoxIndex)
+            setBottomBoxLarge()
+
+
+        }else{
+            Log.d("checkTripleIndexBoxOne","NORMAL")
+
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxOneIndex = newBoxIndex)
+        }
+
+    }
+    fun checkTripleIndexBoxTwo(newBoxIndex: Int){
+//        private val boxOne = "BOXONE"
+//        private val boxTwo = "BOXTWO"
+//        private val boxThree= "BOXTHREE"
+        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
+        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
+        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
+
+        if(boxOneIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
+            fullModeActive = true
+            Log.d("checkTripleIndexBoxOne","FULL MODE ")
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxTwoIndex = newBoxIndex)
+            setBottomBoxLarge()
+
+        }else{
+
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxTwoIndex = newBoxIndex)
+        }
+
+    }
+    //todo: find who has the same index and where is it on the array
+
+    fun checkTripleIndexBoxThree(newBoxIndex: Int){
+
+//        private val boxOne = "BOXONE"
+//        private val boxTwo = "BOXTWO"
+//        private val boxThree= "BOXTHREE"
+        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
+        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
+        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
+
+        if(boxTwoIndex == newBoxIndex && boxOneIndex == newBoxIndex) {
+            fullModeActive = true
+            Log.d("checkTripleIndexBoxOne","FULL MODE ")
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
+            setBottomBoxLarge()
+
+        }else{
+            Log.d("checkTripleIndexBoxOne","NORMAL")
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
+        }
+
+    }
+
+    fun setBottomBoxLarge(){
+        when(stateList.value[0]){
+            "BOXONE" ->{
+                _indivBoxHeight.value = _indivBoxHeight.value.copy(
+                    boxOne = ((Resources.getSystem().displayMetrics.heightPixels/8.4).dp * 3),
+                    boxTwo = 0.dp,
+                    boxThree = 0.dp
+                )
+                _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                    boxTwoIndex = 0,
+                    boxThreeIndex = 0
+                )
+
+            }
+            "BOXTWO" ->{
+                _indivBoxHeight.value = _indivBoxHeight.value.copy(
+                    boxTwo = ((Resources.getSystem().displayMetrics.heightPixels/8.4).dp * 3),
+                    boxOne = 0.dp,
+                    boxThree = 0.dp
+                )
+                _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                    boxOneIndex = 0,
+                    boxThreeIndex = 0
+                )
+
+            }
+            "BOXTHREE" ->{
+                _indivBoxHeight.value = _indivBoxHeight.value.copy(
+                    boxThree = ((Resources.getSystem().displayMetrics.heightPixels/8.4).dp * 3),
+                    boxOne = 0.dp,
+                    boxTwo = 0.dp
+                )
+                _boxTypeIndex.value = _boxTypeIndex.value.copy(
+                    boxOneIndex = 0,
+                    boxTwoIndex = 0
+                )
+            }
+        }
     }
 
 

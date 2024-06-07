@@ -28,11 +28,13 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,11 +45,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,12 +77,14 @@ import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.sharedViews.ButtonScope
+import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
 import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
 import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
 import com.example.clicker.presentation.stream.views.chat.SubscriberOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.util.Response
+import kotlinx.coroutines.launch
 
 /**
  * ModView contains all the composable functions that are used to create the `chat modes header`
@@ -113,58 +119,27 @@ import com.example.clicker.util.Response
     fun ModViewScaffold(
         closeStreamInfo:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
-        chatMessages:List<TwitchUserData>,
+
         clickedUserData: ClickedUIState,
         clickedUserChats:List<String>,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-        timeoutDuration:Int,
-        changeTimeoutDuration:(Int)->Unit,
-        timeoutReason: String,
-        changeTimeoutReason: (String) -> Unit,
 
-        banDuration:Int,
-        changeBanDuration:(Int)->Unit,
-        banReason:String,
-        changeBanReason: (String) -> Unit,
         loggedInUserIsMod:Boolean,
         clickedUserIsMod:Boolean,
-        timeoutUser:()->Unit,
-        showTimeoutErrorMessage:Boolean,
-        setTimeoutShowErrorMessage:(Boolean)->Unit,
-
-        showBanErrorMessage:Boolean,
-        setBanShowErrorMessage:(Boolean)->Unit,
-        banUser:()->Unit,
-        modActionList: List<TwitchUserData>,
-        autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit,
-        connectionError: Response<Boolean>,
-        reconnect:()->Unit,
-        blockedTerms:List<BlockedTerm>,
-        deleteBlockedTerm:(String) ->Unit,
-
-        emoteOnly:Boolean,
-        setEmoteOnly:(Boolean) ->Unit,
-        subscriberOnly:Boolean,
-        setSubscriberOnly:(Boolean) ->Unit,
-
-        chatSettingsEnabled:Boolean,
-        switchEnabled:Boolean,
-
-        followersOnlyList: List<ListTitleValue>,
-        selectedFollowersModeItem: ListTitleValue,
-        changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
-        slowModeList: List<ListTitleValue>,
-        selectedSlowModeItem: ListTitleValue,
-        changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
-        deleteMessage:(String)->Unit,
 
     ){
         //todo: this is where the draggable boxes go
+//        val deleteOffset = modViewDragStateViewModel.deleteOffset.value
+//        val boxThreeOffset =modViewDragStateViewModel.dragStateOffsets.value.boxThreeOffsetY
+//        Log.d("deletingOffsetTest","deleteOffset --> $deleteOffset")
+//        Log.d("deletingOffsetTest","boxThreeOffset --> $boxThreeOffset")
+//        Log.d("deletingOffsetTest","boxThreeOffset > deleteOffset --> ${(boxThreeOffset > deleteOffset)}")
+
 
         val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
         var showBottomSheet by remember { mutableStateOf(false) }
         val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
 
 
         if(showBottomSheet){
@@ -217,15 +192,17 @@ import com.example.clicker.util.Response
             }
         }
 
-        SharedComponents.NoDrawerScaffold(
+        ModViewScaffoldWithDrawer(
             topBar = {
                 IconTextTopBarRow(
                     icon = {
                         BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "close this section of UI",
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "Open the menu",
                             onClick = {
-                                closeStreamInfo()
+                                scope.launch {
+                                    drawerState.open()
+                                }
                             }
                         )
                     },
@@ -234,9 +211,12 @@ import com.example.clicker.util.Response
                     horizontalArrangement = Arrangement.SpaceBetween
                 )
             },
+            drawerState=drawerState,
             bottomBar = {
                 //there is no bottom bar intentionally
-            }
+            },
+            showError = modViewDragStateViewModel.showDrawerError.value,
+            checkIndexAvailability ={index ->modViewDragStateViewModel.checkBoxIndexAvailability(index)}
         ) {contentPadding ->
             Log.d("contentPaddingModView","contentPadding --> ${contentPadding.calculateTopPadding().value}")
 
@@ -267,52 +247,18 @@ import com.example.clicker.util.Response
                 boxTwoDragging =modViewDragStateViewModel.isDragging.value.boxTwoDragging,
                 setBoxThreeDragging ={newValue -> modViewDragStateViewModel.setBoxThreeDragging(newValue)},
                 setBoxTwoDragging ={newValue -> modViewDragStateViewModel.setBoxTwoDragging(newValue)},
-                chatMessages =chatMessages,
-                triggerBottomModal = {showBottomSheet = true},
-                updateClickedUser = {  username, userId,isBanned,isMod ->
-                    updateClickedUser(
-                        username,
-                        userId,
-                        isBanned,
-                        isMod
-                    )
-                },
-                clickedUserData = clickedUserData,
-                timeoutDuration=timeoutDuration,
-                changeTimeoutDuration={newValue ->changeTimeoutDuration(newValue)},
-                timeoutReason = timeoutReason,
-                changeTimeoutReason = {newValue->changeTimeoutReason(newValue)},
-                banDuration = banDuration,
-                changeBanDuration={newValue ->changeBanDuration(newValue)},
-                banReason= banReason,
-                changeBanReason = {newValue ->changeBanReason(newValue)},
-                timeoutUser = {timeoutUser()},
-                showTimeoutErrorMessage= showTimeoutErrorMessage,
-                setTimeoutShowErrorMessage ={newValue ->setTimeoutShowErrorMessage(newValue)},
-                showBanErrorMessage= showBanErrorMessage,
-                setBanShowErrorMessage ={newValue ->setBanShowErrorMessage(newValue)},
-                banUser={banUser()},
-                modActionList =modActionList,
-                autoModMessageList =autoModMessageList,
-                manageAutoModMessage={messageId,userId, action ->manageAutoModMessage(messageId,userId,action)},
-                connectionError =connectionError,
-                reconnect ={reconnect()},
-                blockedTerms=blockedTerms,
-                deleteBlockedTerm ={blockedTermId ->deleteBlockedTerm(blockedTermId)},
-                emoteOnly =emoteOnly,
-                setEmoteOnly={newValue -> setEmoteOnly(newValue)},
-                subscriberOnly =subscriberOnly,
-                setSubscriberOnly={newValue -> setSubscriberOnly(newValue)},
 
-                chatSettingsEnabled=chatSettingsEnabled,
-                switchEnabled=switchEnabled,
-                followersOnlyList=followersOnlyList,
-                selectedFollowersModeItem=selectedFollowersModeItem,
-                changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
-                slowModeList=slowModeList,
-                selectedSlowModeItem=selectedSlowModeItem,
-                changeSelectedSlowModeItem ={newValue ->changeSelectedSlowModeItem(newValue)},
-                deleteMessage ={messageId -> deleteMessage(messageId)}
+                deleteOffsetY = modViewDragStateViewModel.deleteOffset.value,
+                boxOneIndex = modViewDragStateViewModel.boxTypeIndex.value.boxOneIndex,
+                boxTwoIndex = modViewDragStateViewModel.boxTypeIndex.value.boxTwoIndex,
+                boxThreeIndex = modViewDragStateViewModel.boxTypeIndex.value.boxThreeIndex,
+                setBoxIndex = {box,value -> modViewDragStateViewModel.changeBoxTypeIndex(box,value)},
+
+                boxOneHeight = modViewDragStateViewModel.indivBoxHeight.value.boxOne,
+                boxTwoHeight = modViewDragStateViewModel.indivBoxHeight.value.boxTwo,
+                boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree
+
+
 
 
 
