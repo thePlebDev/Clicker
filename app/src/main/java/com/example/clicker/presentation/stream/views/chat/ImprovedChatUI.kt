@@ -1446,7 +1446,7 @@ fun ShowModStatus(
                 contentDescription = stringResource(R.string.moderator_badge_icon_description)
             )
             if(notificationAmount>0){
-                androidx.compose.material.Text(
+                Text(
                     "$notificationAmount",
                     modifier = Modifier
                         .align(Alignment.TopStart)
