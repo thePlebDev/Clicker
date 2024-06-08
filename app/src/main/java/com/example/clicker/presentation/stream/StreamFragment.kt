@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.WindowMetrics
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -60,7 +61,7 @@ import com.example.clicker.ui.theme.AppTheme
  * create an instance of this fragment.
  * [View.OnClickListener] is used for the back button on the stream
  */
-class StreamFragment : Fragment(), View.OnClickListener {
+class StreamFragment : Fragment() {
 
     private var _binding: FragmentStreamBinding? = null
     private val binding get() = _binding!!
@@ -114,7 +115,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
         overlayComposeView: View,
         composeView: ComposeView,
         longPressComposeView: View,
-        width: Int,
+        rootConstraintLayout: ConstraintLayout
     ){
         horizontalClickableWebView.expandedMethod = {
             Log.d("lOGGGINTHEDOUBLECLICK", "called to make view expanded")
@@ -122,10 +123,11 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 "(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();",
                 null
             );
+            setImmersiveMode(requireActivity().window)
 
             val overlayComposeParams =
                 overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
-            overlayComposeParams.width = width
+            overlayComposeParams.width = rootConstraintLayout.width
 
 //      Create layout parameters to match parent
             val layoutParams = ConstraintLayout.LayoutParams(
@@ -133,7 +135,7 @@ class StreamFragment : Fragment(), View.OnClickListener {
                 ConstraintLayout.LayoutParams.MATCH_PARENT
             )
 
-            setImmersiveMode(requireActivity().window)
+            //setImmersiveMode(requireActivity().window)
 
 
             //View.VISIBLE, View.INVISIBLE, View.GONE
@@ -198,6 +200,193 @@ class StreamFragment : Fragment(), View.OnClickListener {
         }
     }
 
+    //
+    private fun horizontalOverlayHeightAnimation(
+        horizontalClickableWebView: HorizontalClickableWebView,
+        overlapView: View,
+        rootConstraintLayout: ConstraintLayout
+    ){
+        horizontalClickableWebView.singleTapMethod={
+            val overlayHeight = overlapView.height
+            val determinedHeight = (rootConstraintLayout.height * 0.9).toInt()
+
+            //This is true
+            if(overlayHeight == 1){
+                animateHeight(
+                    layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                    finalHeight = determinedHeight,
+                    overlapView = overlapView
+                )
+                autoModViewModel.setHorizontalOverlayToVisible()
+
+            }else{
+                animateHeight(
+                    layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                    finalHeight = 1,
+                    overlapView = overlapView
+                )
+                autoModViewModel.setHorizontalOverlayToHidden()
+
+            }//todo:end
+
+        }
+
+        autoModViewModel.singleTapHideHorizontalVisibility ={
+            animateHeight(
+                layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
+                finalHeight = 1,
+                overlapView = overlapView
+            )
+        }
+
+    }
+    /**
+     * collapseMethodLongPress is a private function that is used to determine what will happen when the user is in horizontal
+     * mode and they do a long click. THis function will make the UI go from whatever state it is in, to the long press UI
+     * */
+    private fun setCollapseMethodLongPress(
+        horizontalClickableWebView: HorizontalClickableWebView,
+        overlayComposeView: View,
+        myWebView: WebView,
+        composeView: ComposeView,
+        rootConstraintLayout: ConstraintLayout,
+
+    ){
+        horizontalClickableWebView.collapsedMethodLongPress = {
+            unsetImmersiveMode(requireActivity().window)
+            Log.d("collapsedMethodAgain","LONG COLLAPSE")
+
+            val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
+            val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+            //todo: it definetly has to be the ImmersiveMode
+
+
+
+            val webViewLayout = ConstraintLayout.LayoutParams(
+                webViewWidth,
+                ConstraintLayout.LayoutParams.MATCH_PARENT
+            )
+
+
+            composeView.visibility = View.VISIBLE
+            myWebView.layoutParams = webViewLayout
+
+            //  overlayComposeParams.startToStart =ConstraintLayout.LayoutParams.PARENT_ID
+            overlayComposeParams.endToEnd =myWebView.id
+            overlayComposeParams.startToStart =myWebView.id
+            overlayComposeParams.width =webViewWidth
+
+
+            overlayComposeView.layoutParams = overlayComposeParams
+
+        }
+    }
+
+    /**
+     * collapseMethodLongPress is a private function that is used to determine what will happen when the user is in horizontal
+     * mode and they do a double click. THis function will make the UI go from whatever state it is in, to the double click UI
+     * */
+    private fun setCollapseMethodDoubleClick(
+        horizontalClickableWebView: HorizontalClickableWebView,
+        overlayComposeView: View,
+        myWebView: WebView,
+        composeView: ComposeView,
+        rootConstraintLayout: ConstraintLayout,
+        ){
+        horizontalClickableWebView.collapsedMethodDoubleClick = {
+            unsetImmersiveMode(requireActivity().window)
+            Log.d("collapsedMethodAgain","DOUBLE COLLAPSE")
+            val webViewWidth =(rootConstraintLayout.width * 0.56).toInt()
+            val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
+
+
+            val webViewLayout = ConstraintLayout.LayoutParams(
+                webViewWidth,
+                ConstraintLayout.LayoutParams.MATCH_PARENT
+            )
+
+
+            composeView.visibility = View.VISIBLE
+            myWebView.layoutParams = webViewLayout
+
+            //  overlayComposeParams.startToStart =ConstraintLayout.LayoutParams.PARENT_ID
+            overlayComposeParams.endToEnd =myWebView.id
+            overlayComposeParams.startToStart =myWebView.id
+            overlayComposeParams.width =webViewWidth
+
+
+            overlayComposeView.layoutParams = overlayComposeParams
+
+        }
+
+    }
+    /**
+     * setHorizontalUIClickAndLongPressMethods is a utility function and it's entire function is to call the functions,
+     * [setHorizontalExpandedClick], [setHorizontalLongPress], [setHorizontalLongPress], [horizontalOverlayHeightAnimation],
+     * [setCollapseMethodLongPress] and [setCollapseMethodDoubleClick]
+     *
+     * */
+    private fun setHorizontalUIClickAndLongPressMethods(
+        myWebView: WebView,
+        horizontalClickableWebView: HorizontalClickableWebView,
+        overlayComposeView: View,
+        composeView: ComposeView,
+        longPressComposeView: View,
+        rootConstraintLayout: ConstraintLayout,
+        overlapView: View
+    ){
+        setHorizontalExpandedClick(
+            myWebView =myWebView,
+            horizontalClickableWebView =horizontalClickableWebView,
+            overlayComposeView =overlayComposeView,
+            composeView =composeView,
+            longPressComposeView =longPressComposeView,
+            rootConstraintLayout = rootConstraintLayout
+        )
+
+
+        //todo: changing showLongClickView() into its own method
+        /*******************showLongClickView()********************************************************************/
+
+        setHorizontalLongPress(
+            horizontalClickableWebView =horizontalClickableWebView,
+            overlayComposeView=overlayComposeView,
+            composeView =composeView,
+            myWebView =myWebView,
+            longPressComposeView =longPressComposeView,
+            rootConstraintLayout =rootConstraintLayout,
+            overlapView =overlapView
+        )
+
+
+
+        /******************************singleTapMethod()*******************************************************/
+        horizontalOverlayHeightAnimation(
+            horizontalClickableWebView=horizontalClickableWebView,
+            overlapView=overlapView,
+            rootConstraintLayout=rootConstraintLayout
+        )
+
+
+        /**********************collapsed methods***************************************************************/
+
+        setCollapseMethodLongPress(
+            myWebView =myWebView,
+            horizontalClickableWebView =horizontalClickableWebView,
+            overlayComposeView =overlayComposeView,
+            composeView =composeView,
+            rootConstraintLayout = rootConstraintLayout
+        )
+        setCollapseMethodDoubleClick(
+            myWebView =myWebView,
+            horizontalClickableWebView =horizontalClickableWebView,
+            overlayComposeView =overlayComposeView,
+            composeView =composeView,
+            rootConstraintLayout = rootConstraintLayout
+        )
+
+    }
+
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -253,54 +442,13 @@ class StreamFragment : Fragment(), View.OnClickListener {
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val longPressComposeView:View = view.findViewById(R.id.compose_view_long_press)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
-
-
-            // Do some stuff
             val horizontalClickableWebView: HorizontalClickableWebView = myWebView as HorizontalClickableWebView
 
+
             (horizontalClickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
-            //todo: inside of horizontalClickableWebView.expandedMethod should be its own function
-//            setHorizontalExpandedClick(
-//                myWebView =myWebView,
-//                horizontalClickableWebView =horizontalClickableWebView,
-//                overlayComposeView =overlayComposeView,
-//                composeView =composeView,
-//                longPressComposeView =longPressComposeView,
-//                width = rootConstraintLayout.width
-//            )
-            horizontalClickableWebView.expandedMethod = {
-                Log.d("lOGGGINTHEDOUBLECLICK", "called to make view expanded")
-                horizontalClickableWebView.evaluateJavascript(
-                    "(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();",
-                    null
-                );
-
-                val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
-                overlayComposeParams.width = rootConstraintLayout.width
-
-//      Create layout parameters to match parent
-                val layoutParams = ConstraintLayout.LayoutParams(
-                    ConstraintLayout.LayoutParams.MATCH_PARENT,
-                    ConstraintLayout.LayoutParams.MATCH_PARENT
-                )
-
-                setImmersiveMode(requireActivity().window)
 
 
-                //View.VISIBLE, View.INVISIBLE, View.GONE
-                composeView.visibility = View.INVISIBLE
-                longPressComposeView.visibility = View.INVISIBLE
-
-                myWebView.layoutParams = layoutParams
-
-                overlayComposeView.layoutParams = overlayComposeParams
-            }
-
-
-            //todo: changing showLongClickView() into its own method
-            /*******************showLongClickView()********************************************************************/
-
-            setHorizontalLongPress(
+            setHorizontalUIClickAndLongPressMethods(
                 horizontalClickableWebView =horizontalClickableWebView,
                 overlayComposeView=overlayComposeView,
                 composeView =composeView,
@@ -311,127 +459,68 @@ class StreamFragment : Fragment(), View.OnClickListener {
             )
 
 
-
-            /******************************singleTapMethod()*******************************************************/
-            horizontalClickableWebView.singleTapMethod={
-                val overlayHeight = overlapView.height
-                val determinedHeight = (rootConstraintLayout.height * 0.9).toInt()
-
-
-
-                if(overlayHeight == 1){
-                    animateHeight(
-                        layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
-                        finalHeight = determinedHeight,
-                        overlapView = overlapView
-                    )
-                    autoModViewModel.setHorizontalOverlayToVisible()
-
-                }else{
-                    animateHeight(
-                        layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
-                        finalHeight = 1,
-                        overlapView = overlapView
-                    )
-                    autoModViewModel.setHorizontalOverlayToHidden()
-
-
-
-                }//todo:end
-
-            }
-
-            autoModViewModel.singleTapHideHorizontalVisibility ={
-                animateHeight(
-                    layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
-                    finalHeight = 1,
-                    overlapView = overlapView
-                )
-            }
-            /**collapsed method*/
-            horizontalClickableWebView.collapsedMethod = {
-                unsetImmersiveMode(requireActivity().window)
-                Log.d("collapsedMethodAgain","collapsedMethod()")
-                val webViewWidth =(rootConstraintLayout.width * 0.56).toInt()
-                val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
-
-
-                val webViewLayout = ConstraintLayout.LayoutParams(
-                    webViewWidth,
-                    ConstraintLayout.LayoutParams.MATCH_PARENT
-                )
-
-
-                composeView.visibility = View.VISIBLE
-                myWebView.layoutParams = webViewLayout
-
-              //  overlayComposeParams.startToStart =ConstraintLayout.LayoutParams.PARENT_ID
-                overlayComposeParams.endToEnd =myWebView.id
-                overlayComposeParams.startToStart =myWebView.id
-                overlayComposeParams.width =webViewWidth
-
-
-                overlayComposeView.layoutParams = overlayComposeParams
-
-            }
+            /******************END OF THE IF STATEMENT*****************************/
         }else{
             /**THIS conditional means that the phone is vertical */
-            val streamManagerUI: View = view.findViewById(R.id.nested_draggable_compose_view)
-            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-            streamManagerUI.translationY = height
-
-
-            val clickableWebView: ClickableWebView = myWebView as ClickableWebView
-            clickableWebView.singleTapMethod={
-                if(autoModViewModel.verticalOverlayIsVisible.value){
-                    autoModViewModel.setVerticalOverlayToHidden()
-                }else{
-                    autoModViewModel.setVerticalOverlayToVisible()
-                }
-                clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
-
-            }
-            val backButton: ImageButton? = view.findViewById(R.id.backButton)
-            backButton?.setOnClickListener(this)
+            //I think this is the UI where the modView goes
+            setModViewUIOffScreen(view)
+            verticalWebViewOverlayClicked(myWebView as ClickableWebView)
+            setBackButtonOnClick(view)
 
 
         }
-
-        /**Below should happen on the double tap*/
-
-
-        /**above should happen on the double tap*/
 
         setWebView(
             myWebView = myWebView,
             url = url
         )
-        val root = view.rootView
-        root.viewTreeObserver.addOnGlobalLayoutListener {
-            val heightDiff = root.rootView.height - root.height
-            // IF height diff is more than 150, consider keyboard as visible.
-            Log.d("SOFTKEYBOARDTRIGGER","height ->$heightDiff")
-            Log.d("SOFTKEYBOARDTRIGGER","height DP ->${heightDiff/3.3}")
-        }
+
 
         return view
     }
 
-    override fun onClick(p0: View?) {
-        Log.d("CLICKEDNLOADED", "IT DO BE CLICKING SOMETHING FIERCE")
-        findNavController().popBackStack()
+    /**
+     * verticalWebViewOverlayClicked is a private function that is used to set up the functionality what happens when the stream is
+     * in a vertical UI and and the clicks the webView
+     * */
+    private fun verticalWebViewOverlayClicked(
+        clickableWebView: ClickableWebView
+    ){
+        clickableWebView.singleTapMethod={
+            if(autoModViewModel.verticalOverlayIsVisible.value){
+                autoModViewModel.setVerticalOverlayToHidden()
+            }else{
+                autoModViewModel.setVerticalOverlayToVisible()
+            }
+            clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+
+        }
     }
-}
-private fun removeWidthConstraint( view: WebView) {
-    val constraintSet = ConstraintSet()
-    constraintSet.clear(view.id)
+
+    /**
+     * setBackButtonOnClick is a private function used to set the clicking functionality of the back button UI
+     * */
+    private fun setBackButtonOnClick(view: FrameLayout){
+        val backButton: ImageButton? = view.findViewById(R.id.backButton)
+        backButton?.setOnClickListener {
+            // Your code to be executed on button click
+            findNavController().popBackStack()
+        }
+    }
+
+    /**
+     * setModViewUIOffScreen function is used to make sure the ModViewUI is off the screen
+     * */
+    private fun setModViewUIOffScreen(
+        view: FrameLayout
+    ){
+        val streamManagerUI: View = view.findViewById(R.id.nested_draggable_compose_view)
+        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+        streamManagerUI.translationY = height
+    }
 
 }
-private fun removeComposeWidthConstraint(view: ComposeView) {
-    val constraintSet = ConstraintSet()
-    constraintSet.clear(view.id)
 
-}
 fun setImmersiveMode(window: Window){
     WindowCompat.setDecorFitsSystemWindows(window, false) // this is saying ignore the insets
     val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -442,11 +531,11 @@ fun setImmersiveMode(window: Window){
 }
 fun unsetImmersiveMode(window: Window) {
     WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
-//    val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-//    windowInsetsController.let {
-//        it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
-//        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
-//    }
+    val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+    windowInsetsController.let {
+        it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
+        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -477,10 +566,10 @@ fun setOrientation(
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     hideSoftKeyboard ={
                         hideSoftKeyboard()
-                        if(!orientationIsLandscape){
-                            Log.d("BindingComposeView","clicked")
-
-
+//                        if(!orientationIsLandscape){
+//                            Log.d("BindingComposeView","clicked")
+//
+//
 //                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
 //                            /**THE ANIMATION*/
 //
@@ -491,10 +580,10 @@ fun setOrientation(
 //
 //
 //                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
-//
-////                        // Start the animation
+////
+//////                        // Start the animation
 //                        animator.start()
-                        }
+//                        }
 
 
                     }
