@@ -103,7 +103,8 @@ class HorizontalClickableWebView: WebView {
 
 
     var expandedMethod ={} //called to make the webView full screen
-    var collapsedMethod={}
+    var collapsedMethodDoubleClick={}
+    var collapsedMethodLongPress={}
     var singleTapMethod={}
     var showLongClickView ={}
     var hideLongClickView ={}
@@ -128,7 +129,7 @@ class HorizontalClickableWebView: WebView {
                         longPressOpen = false
                         Log.d("onDoubleTapEvent","collapsedMethod()")
                         hideLongClickView()
-                        collapsedMethod()
+                        collapsedMethodDoubleClick()
                     }
                 }
             }
@@ -146,7 +147,7 @@ class HorizontalClickableWebView: WebView {
 
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
-                collapsedMethod()
+            collapsedMethodLongPress()
                 showLongClickView()
             expanded = false
         }
