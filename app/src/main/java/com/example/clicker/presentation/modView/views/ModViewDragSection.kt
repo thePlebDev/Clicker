@@ -188,7 +188,9 @@ import kotlin.math.roundToInt
                     ChangingBoxTypes(
                         boxOneIndex,
                         setDraggingTrue = {setBoxOneDragging(true)},
-                        "1"
+                        setBoxDragging={value -> setBoxOneDragging(value)},
+                        boxTwoDragging =boxTwoDragging,
+                        boxThreeDragging = boxThreeDragging
                     )
 
 
@@ -220,16 +222,11 @@ import kotlin.math.roundToInt
                     ChangingBoxTypes(
                         boxTwoIndex,
                         setDraggingTrue = {setBoxTwoDragging(true)},
-                        "2"
+                        setBoxDragging={value -> setBoxTwoDragging(value)},
+                        boxTwoDragging =boxTwoDragging,
+                        boxThreeDragging = boxThreeDragging
                     )
-//                    AutoModQueueBox(
-//                        dragging =boxTwoDragging,
-//                        setDragging={newValue -> setBoxTwoDragging(newValue)},
-//                        autoModMessageList =autoModMessageList,
-//                        manageAutoModMessage ={messageId, userId,action ->manageAutoModMessage(messageId,userId,action)},
-//                        connectionError =connectionError,
-//                        reconnect = {reconnect()}
-//                    )
+
                 }
             )
 
@@ -254,14 +251,11 @@ import kotlin.math.roundToInt
                     ChangingBoxTypes(
                         boxThreeIndex,
                         setDraggingTrue = {setBoxThreeDragging(true)},
-                        "3"
+                        setBoxDragging={value -> setBoxThreeDragging(value)},
+                        boxTwoDragging =boxTwoDragging,
+                        boxThreeDragging = boxThreeDragging
                     )
 
-//                    ModActions(
-//                        dragging =boxThreeDragging,
-//                        setDragging={newValue -> setBoxThreeDragging(newValue)},
-//                        modActionList =modActionList
-//                    )
                 }
             )
 
@@ -282,7 +276,10 @@ import kotlin.math.roundToInt
 fun ChangingBoxTypes(
     boxIndex:Int,
     setDraggingTrue: () -> Unit,
-    boxNumber:String
+    setBoxDragging:(value:Boolean) -> Unit,
+
+    boxTwoDragging: Boolean,
+    boxThreeDragging:Boolean,
 ){
     when(boxIndex){
         0 ->{
@@ -291,14 +288,7 @@ fun ChangingBoxTypes(
                     .fillMaxSize()
                     .background(Color.Black)
             ){
-                Text(
-                    text = boxNumber,
-                    color = Color.Red,
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    fontSize = 30.sp
-                )
+
 
             }
         }
@@ -313,7 +303,7 @@ fun ChangingBoxTypes(
                     )
             ){
                 Text(
-                    text = "Chat $boxNumber",
+                    text = "Chat ",
                     color = Color.Red,
                     modifier = Modifier
                         .align(Alignment.Center),
@@ -333,13 +323,14 @@ fun ChangingBoxTypes(
                         onClick = {}
                     )
             ){
-                Text(
-                    text = "AutoMod Queue $boxNumber",
-                    color = Color.Red,
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    fontSize = 30.sp
+
+                AutoModQueueBox(
+                    dragging =boxTwoDragging,
+                    setDragging={newValue -> setBoxDragging(newValue)},
+                    autoModMessageList = listOf(),
+                    manageAutoModMessage ={messageId, userId,action ->},
+                    connectionError =Response.Success(true),
+                    reconnect = {}
                 )
 
             }
@@ -355,12 +346,17 @@ fun ChangingBoxTypes(
                     )
             ){
                 Text(
-                    text = "Mod Actions $boxNumber",
+                    text = "Mod Actions ",
                     color = Color.Red,
                     modifier = Modifier
                         .align(Alignment.Center),
                     textAlign = TextAlign.Center,
                     fontSize = 30.sp
+                )
+                ModActions(
+                    dragging =boxThreeDragging,
+                    setDragging={newValue -> setBoxDragging(newValue)},
+                    modActionList = listOf()
                 )
 
             }
@@ -377,7 +373,7 @@ fun ChangingBoxTypes(
                     )
             ){
                 Text(
-                    text = "Unban requests $boxNumber",
+                    text = "Unban requests ",
                     color = Color.Red,
                     modifier = Modifier
                         .align(Alignment.Center),
@@ -399,7 +395,7 @@ fun ChangingBoxTypes(
                     )
             ){
                 Text(
-                    text = "Discord chat $boxNumber",
+                    text = "Discord chat ",
                     color = Color.Red,
                     modifier = Modifier
                         .align(Alignment.Center),
@@ -420,13 +416,23 @@ fun ChangingBoxTypes(
                     )
             ){
                 Text(
-                    text = "Moderators $boxNumber",
+                    text = "Moderators ",
                     color = Color.Red,
                     modifier = Modifier
                         .align(Alignment.Center),
                     textAlign = TextAlign.Center,
                     fontSize = 30.sp
                 )
+
+            }
+        }
+        7 ->{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ){
+
 
             }
         }

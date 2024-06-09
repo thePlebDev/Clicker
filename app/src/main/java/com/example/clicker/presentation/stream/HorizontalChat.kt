@@ -234,7 +234,8 @@ fun HorizontalChat(
                 emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
                 updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                 emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                deleteEmote={streamViewModel.deleteEmote()}
+                deleteEmote={streamViewModel.deleteEmote()},
+                showModView = {}
             )
 
 

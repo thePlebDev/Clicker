@@ -151,7 +151,8 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
     updateTextWithEmote:(String) ->Unit,
-    deleteEmote:()->Unit
+    deleteEmote:()->Unit,
+    showModView:()->Unit,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -217,7 +218,8 @@ fun ChatUI(
                         modStatus =isMod,
                         showOuterBottomModalState={showOuterBottomModalState()},
                         orientationIsVertical =orientationIsVertical,
-                        notificationAmount=notificationAmount
+                        notificationAmount=notificationAmount,
+                        showModView={showModView()}
                     )
                 },
                 stylizedTextField ={boxModifier ->
@@ -1426,7 +1428,8 @@ fun ShowModStatus(
     modStatus: Boolean?,
     showOuterBottomModalState: () ->Unit,
     orientationIsVertical:Boolean,
-    notificationAmount:Int
+    notificationAmount:Int,
+    showModView:()->Unit,
 ){
     val scope = rememberCoroutineScope()
 
@@ -1437,7 +1440,7 @@ fun ShowModStatus(
                 modifier = Modifier
                     .clickable {
                         if (orientationIsVertical) {
-                            showOuterBottomModalState()
+                            showModView()
                         }
                     }
                     .padding(top = 10.dp, end = 2.dp)
