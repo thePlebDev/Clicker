@@ -34,6 +34,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -53,6 +54,7 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
+import com.example.clicker.presentation.stream.views.streamManager.ModViewScaffold
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -75,6 +77,10 @@ class StreamFragment : Fragment() {
         super.onResume()
         autoModViewModel.setHorizontalOverlayToVisible()
         autoModViewModel.setVerticalOverlayToVisible()
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -463,7 +469,7 @@ class StreamFragment : Fragment() {
         }else{
             /**THIS conditional means that the phone is vertical */
             //I think this is the UI where the modView goes
-            setModViewUIOffScreen(view)
+           // setModViewUIOffScreen(view)
             verticalWebViewOverlayClicked(myWebView as ClickableWebView)
             setBackButtonOnClick(view)
 
@@ -556,6 +562,7 @@ fun setOrientation(
 
 
     binding.composeView.apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             AppTheme{
                 StreamView(
@@ -566,25 +573,27 @@ fun setOrientation(
                     notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     hideSoftKeyboard ={
                         hideSoftKeyboard()
-//                        if(!orientationIsLandscape){
-//                            Log.d("BindingComposeView","clicked")
-//
-//
+
+                    },
+                    showModView={
+                        if(!orientationIsLandscape){
+                            Log.d("ShowModViewFunction","clicked")
+                            modViewDragStateViewModel.setShowModView(true)
+
 //                            val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
 //                            /**THE ANIMATION*/
 //
-//                        val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
+//                            val newTranslationY = 0 // Replace R.dimen.new_translation_y with your desired dimension resource
 //
-//                        //// Create ObjectAnimator for translationY property
-//                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
+//                            //// Create ObjectAnimator for translationY property
+//                            val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY.toFloat())
 //
 //
-//                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
+//                            animator.duration = 300 // Adjust the duration as needed (in milliseconds)
 ////
 //////                        // Start the animation
-//                        animator.start()
-//                        }
-
+//                            animator.start()
+                        }
 
                     }
                 )
@@ -594,6 +603,7 @@ fun setOrientation(
         }
     }
     binding.overlapComposeView?.apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             AppTheme{
                 HorizontalOverlayView(
@@ -605,97 +615,29 @@ fun setOrientation(
         }
     }
     binding.nestedDraggableComposeView?.apply {
-
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
-            AppTheme{
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(500.dp)
-                        .background(Color.Red)){
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Blue)
-                    Text("antother one",fontSize=30.sp,color = Color.Red)
-                    Text("antother one",fontSize=30.sp,color = Color.Red)
+            if(modViewDragStateViewModel.showModView.value){
+                AppTheme{
+                    //todo: fill this in
+                    ModViewScaffold(
+                        modViewDragStateViewModel=modViewDragStateViewModel,
+                        closeModView ={
+                            modViewDragStateViewModel.setShowModView(false)
+//                            val streamManagerUI: View = binding.root.findViewById(R.id.nested_draggable_compose_view)
+//                            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+//                            streamManagerUI.translationY = height
+                        },
+                    )
+
                 }
-//                ManageStreamInformation(
-//                    closeStreamInfo={
-//                        val editStreamInfoUI:View =binding.root.findViewById(R.id.nested_draggable_compose_view)
-//                        val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-//                        val newTranslationY = height // Replace R.dimen.new_translation_y with your desired dimension resource
-////
-//                        //// Create ObjectAnimator for translationY property
-//                        val animator = ObjectAnimator.ofFloat(editStreamInfoUI, "translationY", newTranslationY)
-//
-//                        // Set the duration of the animation
-//                        animator.duration = 300 // Adjust the duration as needed (in milliseconds)
-//
-//                        // Start the animation
-//                        animator.start()
-//                    },
-//                    modViewDragStateViewModel =modViewDragStateViewModel,
-//                    chatMessages = streamViewModel.listChats,
-//                    clickedUserData = streamViewModel.clickedUIState.value,
-//                    clickedUserChatMessages =streamViewModel.clickedUsernameChats,
-//                    updateClickedUser = {  username, userId,isBanned,isMod ->
-//                        streamViewModel.updateClickedChat(
-//                            username,
-//                            userId,
-//                            isBanned,
-//                            isMod
-//                        )
-//                    },
-//                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
-//                    changeTimeoutDuration={newValue -> streamViewModel.changeTimeoutDuration(newValue)},
-//                    timeoutReason = streamViewModel.state.value.timeoutReason,
-//                    changeTimeoutReason = {newValue->streamViewModel.changeTimeoutReason(newValue)},
-//                    banDuration = 0,
-//                    changeBanDuration={},
-//                    banReason= streamViewModel.state.value.banReason,
-//                    changeBanReason = {newValue ->streamViewModel.changeBanReason(newValue)},
-//                    clickedUserIsMod = streamViewModel.clickedUIState.value.clickedUsernameIsMod,
-//                    loggedInUserIsMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-//                    timeoutUser = {streamViewModel.timeoutUser()},
-//                    showTimeoutErrorMessage= streamViewModel.state.value.timeoutUserError,
-//                    setTimeoutShowErrorMessage ={newValue ->streamViewModel.setTimeoutUserError(newValue)},
-//                    showBanErrorMessage= streamViewModel.state.value.banUserError,
-//                    setBanShowErrorMessage ={newValue ->streamViewModel.setBanUserError(newValue)},
-//                    banUser = {streamViewModel.banUser()},
-//                    modActionList = streamViewModel.modActionList,
-//                    autoModMessageList = modViewViewModel.autoModMessageList,
-//                    manageAutoModMessage={messageId,userId,action ->modViewViewModel.manageAutoModMessage(messageId,userId, action)},
-//                    connectionError =modViewViewModel.uiState.value.showSubscriptionEventError,
-//                    reconnect ={modViewViewModel.createEventSubSubscription()},
-//                    blockedTerms =modViewViewModel.blockedTermsList,
-//                    deleteBlockedTerm ={blockedTermId ->modViewViewModel.deleteBlockedTerm(blockedTermId)},
-//                    emoteOnly = modViewViewModel.uiState.value.chatSettings.emoteMode,
-//                    setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
-//                    subscriberOnly =modViewViewModel.uiState.value.chatSettings.subscriberMode,
-//                    setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
-//
-//                    chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
-//                    followersOnlyList=followerModeList,
-//                    selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-//                    changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-//                    slowModeList=slowModeList,
-//                    selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-//                    changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
-//                    deleteMessage ={messageId ->streamViewModel.deleteChatMessage(messageId)}
-//
-//                )
-
-
-
             }
+
 
         }
     }
     binding.composeViewLongPress?.apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         val webView:WebView = binding.root.findViewById(R.id.webView)
         setContent {
             AppTheme{
@@ -709,18 +651,6 @@ fun setOrientation(
     }
 
     return binding.root
-}
-fun getScreenWidth(activity: Activity): Int {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        val windowMetrics = activity.windowManager.currentWindowMetrics
-        val insets: Insets = windowMetrics.windowInsets
-            .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
-        windowMetrics.bounds.width() - insets.left - insets.right //width of the content area of the current window or activity
-    } else {
-        val displayMetrics = DisplayMetrics()
-        activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
-        displayMetrics.widthPixels // total width of the screen, regardless of the current activity,
-    }
 }
 
 fun setWebView(

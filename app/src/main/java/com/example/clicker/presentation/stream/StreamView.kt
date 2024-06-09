@@ -56,7 +56,9 @@ fun StreamView(
     modViewViewModel: ModViewViewModel,
     homeViewModel: HomeViewModel,
     hideSoftKeyboard:()->Unit,
-    notificationAmount: Int
+    notificationAmount: Int,
+    showModView:()->Unit,
+//    hideModView:() ->Unit,
 
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
@@ -267,7 +269,8 @@ fun StreamView(
                         emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
                         updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                         emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                        deleteEmote={streamViewModel.deleteEmote()}
+                        deleteEmote={streamViewModel.deleteEmote()},
+                        showModView={showModView()}
                     )
 
 

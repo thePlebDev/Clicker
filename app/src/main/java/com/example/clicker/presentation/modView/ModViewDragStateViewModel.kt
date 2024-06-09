@@ -84,7 +84,15 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     val showDrawerError: State<Boolean> = _showDrawerError
 
 
+    private val _showModView: MutableState<Boolean> = mutableStateOf(false)
+    val showModView: State<Boolean> = _showModView
+
+
     private val stateList = MutableStateFlow(listOf(boxOne,boxTwo,boxThree))
+
+    fun setShowModView(value:Boolean){
+        _showModView.value = value
+    }
 
     init{
         _dragStateOffsets.value =_dragStateOffsets.value.copy(
@@ -262,9 +270,10 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
                     boxTwo = 0.dp,
                     boxThree = 0.dp
                 )
+                // todo: I think that this is causing the problem
                 _boxTypeIndex.value = _boxTypeIndex.value.copy(
-                    boxTwoIndex = 0,
-                    boxThreeIndex = 0
+                    boxTwoIndex = 7,
+                    boxThreeIndex = 7
                 )
 
             }
@@ -275,8 +284,8 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
                     boxThree = 0.dp
                 )
                 _boxTypeIndex.value = _boxTypeIndex.value.copy(
-                    boxOneIndex = 0,
-                    boxThreeIndex = 0
+                    boxOneIndex = 7,
+                    boxThreeIndex = 7
                 )
 
             }
@@ -287,8 +296,8 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
                     boxTwo = 0.dp
                 )
                 _boxTypeIndex.value = _boxTypeIndex.value.copy(
-                    boxOneIndex = 0,
-                    boxTwoIndex = 0
+                    boxOneIndex = 7,
+                    boxTwoIndex = 7
                 )
             }
         }

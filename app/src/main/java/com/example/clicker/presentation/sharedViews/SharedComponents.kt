@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.util.NetworkAuthResponse
+import kotlinx.coroutines.launch
 
 /**
  * SharedComponents represents the most used and most stable versions of components used throughout this application
@@ -146,7 +147,7 @@ object SharedComponents {
 
 @Composable
 fun ModViewScaffoldWithDrawer(
-    topBar:@Composable ScaffoldTopBarScope.() -> Unit,
+    topBar:@Composable (showDrawer:()->Unit) -> Unit,
     bottomBar:@Composable ScaffoldBottomBarScope.() -> Unit,
     drawerState: DrawerState,
     checkIndexAvailability:(Int)->Unit,
@@ -175,9 +176,15 @@ fun ModViewScaffoldWithDrawer(
                 Row(modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)){
-                    with(topBarScaffoldScope){
-                        topBar()
-                    }
+
+                        topBar(
+                            showDrawer={
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        )
+
                 }
 
             },

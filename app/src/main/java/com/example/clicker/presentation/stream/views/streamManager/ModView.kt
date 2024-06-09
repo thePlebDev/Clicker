@@ -117,99 +117,55 @@ import kotlinx.coroutines.launch
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun ModViewScaffold(
-        closeStreamInfo:()->Unit,
+        closeModView:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
 
-        clickedUserData: ClickedUIState,
-        clickedUserChats:List<String>,
-
-        loggedInUserIsMod:Boolean,
-        clickedUserIsMod:Boolean,
 
     ){
-        //todo: this is where the draggable boxes go
-//        val deleteOffset = modViewDragStateViewModel.deleteOffset.value
-//        val boxThreeOffset =modViewDragStateViewModel.dragStateOffsets.value.boxThreeOffsetY
-//        Log.d("deletingOffsetTest","deleteOffset --> $deleteOffset")
-//        Log.d("deletingOffsetTest","boxThreeOffset --> $boxThreeOffset")
-//        Log.d("deletingOffsetTest","boxThreeOffset > deleteOffset --> ${(boxThreeOffset > deleteOffset)}")
 
 
-        val state = rememberModalBottomSheetState(skipPartiallyExpanded =false)
-        var showBottomSheet by remember { mutableStateOf(false) }
-        val textFieldValue =remember { mutableStateOf(TextFieldValue("Testing")) }
+
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
 
 
-        if(showBottomSheet){
-            ModalBottomSheet(
-                sheetState = state,
-                onDismissRequest = {
-                    showBottomSheet = false
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                dragHandle= {
+        ModViewScaffoldWithDrawer(
+            topBar = {showDrawerFunc ->
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Row(
+
+                    ){
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "close mod view",
+                            modifier = Modifier
+                                .clickable {
+                                    showDrawerFunc()
+                                }
+                                .size(35.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text("Mod View", fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+                    }
+
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "close mod view",
                         modifier = Modifier
-                            .size(30.dp)
+                            .clickable {
+                                closeModView()
+                            }
+                            .size(35.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
 
+
                 }
-            ){
-                SharedBottomModal.ClickedUserBottomModal(
-                    bottomModalHeaders = {
-                        this.ContentHeaderRow(
-                            clickedUsername = clickedUserData.clickedUsername,
-                            textFieldValue = textFieldValue,
-                            closeBottomModal={showBottomSheet = false}
-                        )
-                    },
-                    bottomModalButtons = {
-                        this.ContentBottom(
-                            banned =clickedUserData.clickedUsernameBanned,
-                            loggedInUserIsMod =loggedInUserIsMod,
-                            clickedUserIsMod=clickedUserIsMod,
-                            closeBottomModal = { /*TODO*/ },
-                            unbanUser = { /*TODO*/ },
-                            openTimeoutDialog = { /*TODO*/ },
-                            openBanDialog = { /*TODO*/ },
-                            shouldMonitorUser = clickedUserData.shouldMonitorUser
-                        ) {
-
-                        }
-                    },
-                    bottomModalRecentMessages={
-                        this.ClickedUserMessages(
-                            clickedUsernameChats = clickedUserChats
-                        )
-                    }
-                )
-
-            }
-        }
-
-        ModViewScaffoldWithDrawer(
-            topBar = {
-                IconTextTopBarRow(
-                    icon = {
-                        BasicIcon(color = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Open the menu",
-                            onClick = {
-                                scope.launch {
-                                    drawerState.open()
-                                }
-                            }
-                        )
-                    },
-                    text="Mod View",
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                )
             },
             drawerState=drawerState,
             bottomBar = {
