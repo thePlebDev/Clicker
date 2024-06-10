@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -264,7 +265,11 @@ import kotlin.math.roundToInt
                 sectionBreakPoint =sectionBreakPoint,
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxThreeDragging,
-                setDragging={newValue -> setBoxThreeDragging(newValue)},
+                setDragging={
+
+                        newValue -> setBoxThreeDragging(newValue)
+                    Log.d("WHERETHEDOUBLEIS","DraggingBox")
+                            },
                 changeBackgroundColor={
                     if(boxThreeOffsetY>deleteOffsetY){
                         setBoxIndex("THREE",0)
@@ -273,8 +278,14 @@ import kotlin.math.roundToInt
                 content={
                     ChangingBoxTypes(
                         boxThreeIndex,
-                        setDraggingTrue = {setBoxThreeDragging(true)},
-                        setBoxDragging={value -> setBoxThreeDragging(value)},
+                        setDraggingTrue = {
+                            setBoxThreeDragging(true)
+                            Log.d("WHERETHEDOUBLEIS","setDraggingTrue")
+                                          },
+                        setBoxDragging={
+                                value -> setBoxThreeDragging(value)
+                            Log.d("WHERETHEDOUBLEIS","ChangingBoxTypes")
+                                       },
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
                         inlineContentMap=inlineContentMap,
@@ -325,10 +336,6 @@ fun ChangingBoxTypes(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.primary)
-                    .combinedClickable(
-                        onDoubleClick = { setDraggingTrue() },
-                        onClick = {}
-                    )
             ){
                 SmallChat(
                     twitchUserChat=twitchUserChat,
@@ -339,7 +346,8 @@ fun ChangingBoxTypes(
                     doubleClickMessage={},
                     deleteChatMessage={},
                     isMod =true,
-                    inlineContentMap =inlineContentMap
+                    inlineContentMap =inlineContentMap,
+                    setDragging = {value -> setBoxDragging(value)}
                 )
 
             }
@@ -348,11 +356,7 @@ fun ChangingBoxTypes(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Magenta)
-                    .combinedClickable(
-                        onDoubleClick = { setDraggingTrue() },
-                        onClick = {}
-                    )
+
             ){
 
                 AutoModQueueBox(
@@ -370,20 +374,9 @@ fun ChangingBoxTypes(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Blue)
-                    .combinedClickable(
-                        onDoubleClick = { setDraggingTrue() },
-                        onClick = {}
-                    )
+
             ){
-                Text(
-                    text = "Mod Actions ",
-                    color = Color.Red,
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    fontSize = 30.sp
-                )
+
                 ModActions(
                     dragging =boxThreeDragging,
                     setDragging={newValue -> setBoxDragging(newValue)},
@@ -626,15 +619,7 @@ fun BoxDeleteSection(
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
-            .combinedClickable(
-                onDoubleClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    setDragging(true)
-                },
-                onClick = {
 
-                }
-            )
         ){
             LazyColumn(
                 modifier =Modifier.fillMaxSize()
@@ -646,7 +631,15 @@ fun BoxDeleteSection(
                         fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primary)
+                            .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                            .combinedClickable(
+                                onDoubleClick = {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    setDragging(true)
+                                },
+                                onClick = {}
+                            )
+                            .padding(horizontal = 10.dp)
                     )
                 }
 
@@ -913,19 +906,8 @@ fun BoxDeleteSection(
                 autoscroll = true
             }
         }
-
         Box(modifier = Modifier
             .fillMaxSize()
-            .combinedClickable(
-                onDoubleClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    setDragging(true)
-                },
-                // onLongClick = {setDragging(true)},
-                onClick = {
-                    Log.d("AnotherTapping", "CLICK")
-                }
-            )
         ) {
                 LazyColumn(
                     state = listState,
@@ -937,12 +919,20 @@ fun BoxDeleteSection(
                 ) {
                     stickyHeader {
                         Text(
-                            "MOD ACTIONS: ${modActionList.size}",
+                            "MOD ACTIONS: ${modActionList.size} ",
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.primary)
+                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                .combinedClickable(
+                                    onDoubleClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        setDragging(true)
+                                                    },
+                                    onClick = {}
+                                )
+                                .padding(horizontal = 10.dp)
                         )
                     }
                     scope.launch {
@@ -988,24 +978,24 @@ fun BoxDeleteSection(
                 }
 
             if(dragging){
-                DetectDoubleClickSpacer(
-                    opacity,
-                    setDragging={newValue ->setDragging(newValue)},
-                    hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
-                )
+//                DetectDoubleClickSpacer(
+//                    opacity,
+//                    setDragging={newValue ->setDragging(newValue)},
+//                    hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
+//                )
             }
 
 
-            DetectDraggingOrNotAtBottomButton(
-                dragging = dragging,
-                modifier = Modifier.align(Alignment.BottomCenter),
-                listState = listState,
-                scrollToBottomOfList = {
-                    scope.launch {
-                        listState.animateScrollToItem(modActionList.lastIndex)
-                    }
-                }
-            )
+//            DetectDraggingOrNotAtBottomButton(
+//                dragging = dragging,
+//                modifier = Modifier.align(Alignment.BottomCenter),
+//                listState = listState,
+//                scrollToBottomOfList = {
+//                    scope.launch {
+//                        listState.animateScrollToItem(modActionList.lastIndex)
+//                    }
+//                }
+//            )
 
 
         }
@@ -1140,12 +1130,14 @@ fun SmallChat(
     deleteChatMessage:(String)->Unit,
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
+    setDragging: (Boolean) -> Unit,
+
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
     SmallChatUIBox(
         chatUI = { modifier ->
-            ChatUILazyColumn(
+            SmallChatUILazyColumn(
                 lazyColumnListState=lazyColumnListState,
                 twitchUserChat=twitchUserChat,
                 autoscroll=autoscroll,
@@ -1164,7 +1156,8 @@ fun SmallChat(
                 modifier=modifier,
                 deleteChatMessage={messageId ->deleteChatMessage(messageId)},
                 isMod = isMod,
-                inlineContentMap=inlineContentMap
+                inlineContentMap=inlineContentMap,
+                setDragging = {value -> setDragging(value)},
 
             )
         },
@@ -1184,6 +1177,8 @@ fun SmallChat(
         }
     )
 }
+
+
 
 @Composable
 fun SmallChatScrollToBottom(
@@ -1270,4 +1265,82 @@ fun SmallChatDetermineScrollState(
         }
     }
 
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SmallChatUILazyColumn(
+    lazyColumnListState: LazyListState,
+    twitchUserChat: List<TwitchUserData>,
+    autoscroll:Boolean,
+    showBottomModal:()->Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    doubleClickMessage:(String)->Unit,
+    deleteChatMessage:(String)->Unit,
+    modifier: Modifier,
+    isMod: Boolean,
+    inlineContentMap: EmoteListMap,
+    setDragging: (Boolean) -> Unit,
+){
+    val coroutineScope = rememberCoroutineScope()
+    val chatUIScope = remember(){ ImprovedChatUI() }
+    val hapticFeedback = LocalHapticFeedback.current
+    LazyColumn(
+        modifier =modifier,
+        state = lazyColumnListState
+    ){
+        coroutineScope.launch {
+            if (autoscroll) {
+                lazyColumnListState.scrollToItem(twitchUserChat.size)
+            }
+        }
+        stickyHeader {
+            Text(
+                "Chat",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                    .combinedClickable(
+                        onDoubleClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            setDragging(true)
+                        },
+                        onClick = {}
+                    )
+                    .padding(horizontal = 10.dp)
+            )
+        }
+        with(chatUIScope){
+            items(
+                twitchUserChat,
+            ) {indivChatMessage ->
+
+                ChatMessages(
+                    indivChatMessage,
+                    showBottomModal={showBottomModal()},
+                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            isBanned,
+                            isMod
+                        )
+                    },
+                    showTimeoutDialog ={showTimeoutDialog()},
+                    showBanDialog={showBanDialog()},
+                    doubleClickMessage={username ->doubleClickMessage(username)},
+                    deleteChatMessage={messageId->deleteChatMessage(messageId)},
+                    isMod = isMod,
+                    inlineContentMap=inlineContentMap
+
+                )
+
+            }
+        }
+
+    }
 }
