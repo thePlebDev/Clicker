@@ -628,6 +628,8 @@ fun setOrientation(
 //                            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
 //                            streamManagerUI.translationY = height
                         },
+                        inlineContentMap=streamViewModel.inlineTextContentTest.value,
+                        twitchUserChat=streamViewModel.listChats.toList()
                     )
 
                 }

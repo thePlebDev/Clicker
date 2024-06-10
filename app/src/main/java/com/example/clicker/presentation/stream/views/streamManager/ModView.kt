@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -119,9 +120,11 @@ import kotlinx.coroutines.launch
     fun ModViewScaffold(
         closeModView:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
+        inlineContentMap: EmoteListMap,
+        twitchUserChat: List<TwitchUserData>,
 
 
-    ){
+        ){
 
 
 
@@ -212,10 +215,9 @@ import kotlinx.coroutines.launch
 
                 boxOneHeight = modViewDragStateViewModel.indivBoxHeight.value.boxOne,
                 boxTwoHeight = modViewDragStateViewModel.indivBoxHeight.value.boxTwo,
-                boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree
-
-
-
+                boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree,
+                inlineContentMap=inlineContentMap,
+                twitchUserChat=twitchUserChat
 
 
             )

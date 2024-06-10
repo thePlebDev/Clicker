@@ -268,7 +268,7 @@ fun ChatUI(
 }
 
 @Composable
- private fun ChatUIBox(
+fun ChatUIBox(
     determineScrollState: @Composable ImprovedChatUI.() -> Unit,
     chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
@@ -343,6 +343,12 @@ fun ChatUI(
     }
 
 }
+
+@Composable
+fun SmallChatUI(){
+
+}
+
 fun LazyGridScope.header(
     content: @Composable LazyGridItemScope.() -> Unit
 ) {
@@ -570,7 +576,7 @@ fun LazyGridEmotes(
 
 
 @Stable
-private class ImprovedChatUI(){
+class ImprovedChatUI(){
     @Composable
     fun DetermineScrollState(
         lazyColumnListState: LazyListState,

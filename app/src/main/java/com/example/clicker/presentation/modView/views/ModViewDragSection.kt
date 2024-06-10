@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,8 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -64,6 +67,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -76,13 +80,24 @@ import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
 
 
 import com.example.clicker.presentation.stream.ClickedUIState
+import com.example.clicker.presentation.stream.views.chat.ChatUIBox
+import com.example.clicker.presentation.stream.views.chat.DualIconsButton
+import com.example.clicker.presentation.stream.views.chat.EmoteBoard
+import com.example.clicker.presentation.stream.views.chat.EnterChatColumn
+import com.example.clicker.presentation.stream.views.chat.FilteredMentionLazyRow
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import com.example.clicker.presentation.stream.views.chat.ImprovedChatUI
+import com.example.clicker.presentation.stream.views.chat.ShowIconBasedOnTextLength
+import com.example.clicker.presentation.stream.views.chat.ShowModStatus
+import com.example.clicker.presentation.stream.views.chat.StylizedTextField
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.presentation.stream.views.streamManager.DetectDoubleClickSpacer
 import com.example.clicker.presentation.stream.views.streamManager.DetectDraggingOrNotAtBottomButton
@@ -91,6 +106,7 @@ import com.example.clicker.presentation.stream.views.streamManager.util.remember
 
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 /**
@@ -155,6 +171,9 @@ import kotlin.math.roundToInt
         boxTwoHeight:Dp,
         boxThreeHeight:Dp,
 
+        inlineContentMap: EmoteListMap,
+        twitchUserChat: List<TwitchUserData>,
+
 
         ) {
 
@@ -190,7 +209,9 @@ import kotlin.math.roundToInt
                         setDraggingTrue = {setBoxOneDragging(true)},
                         setBoxDragging={value -> setBoxOneDragging(value)},
                         boxTwoDragging =boxTwoDragging,
-                        boxThreeDragging = boxThreeDragging
+                        boxThreeDragging = boxThreeDragging,
+                        inlineContentMap=inlineContentMap,
+                        twitchUserChat=twitchUserChat
                     )
 
 
@@ -224,7 +245,9 @@ import kotlin.math.roundToInt
                         setDraggingTrue = {setBoxTwoDragging(true)},
                         setBoxDragging={value -> setBoxTwoDragging(value)},
                         boxTwoDragging =boxTwoDragging,
-                        boxThreeDragging = boxThreeDragging
+                        boxThreeDragging = boxThreeDragging,
+                        inlineContentMap=inlineContentMap,
+                        twitchUserChat=twitchUserChat
                     )
 
                 }
@@ -253,7 +276,9 @@ import kotlin.math.roundToInt
                         setDraggingTrue = {setBoxThreeDragging(true)},
                         setBoxDragging={value -> setBoxThreeDragging(value)},
                         boxTwoDragging =boxTwoDragging,
-                        boxThreeDragging = boxThreeDragging
+                        boxThreeDragging = boxThreeDragging,
+                        inlineContentMap=inlineContentMap,
+                        twitchUserChat=twitchUserChat
                     )
 
                 }
@@ -280,6 +305,9 @@ fun ChangingBoxTypes(
 
     boxTwoDragging: Boolean,
     boxThreeDragging:Boolean,
+
+    twitchUserChat: List<TwitchUserData>,
+    inlineContentMap: EmoteListMap
 ){
     when(boxIndex){
         0 ->{
@@ -296,19 +324,22 @@ fun ChangingBoxTypes(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Green)
+                    .background(MaterialTheme.colorScheme.primary)
                     .combinedClickable(
                         onDoubleClick = { setDraggingTrue() },
                         onClick = {}
                     )
             ){
-                Text(
-                    text = "Chat ",
-                    color = Color.Red,
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    fontSize = 30.sp
+                SmallChat(
+                    twitchUserChat=twitchUserChat,
+                    showBottomModal ={},
+                    updateClickedUser={val1,val2,val3,val4 ->},
+                    showTimeoutDialog ={},
+                    showBanDialog={},
+                    doubleClickMessage={},
+                    deleteChatMessage={},
+                    isMod =true,
+                    inlineContentMap =inlineContentMap
                 )
 
             }
@@ -568,9 +599,6 @@ fun BoxDeleteSection(
 
         }
     }
-
-
-
 
 
 
@@ -1097,5 +1125,149 @@ object ModActionMessage{
         }
     }
 
+
+}
+
+
+@Composable
+fun SmallChat(
+    twitchUserChat: List<TwitchUserData>,
+    showBottomModal:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
+    doubleClickMessage:(String)->Unit,
+    deleteChatMessage:(String)->Unit,
+    isMod: Boolean,
+    inlineContentMap: EmoteListMap,
+){
+    val lazyColumnListState = rememberLazyListState()
+    var autoscroll by remember { mutableStateOf(true) }
+    SmallChatUIBox(
+        chatUI = { modifier ->
+            ChatUILazyColumn(
+                lazyColumnListState=lazyColumnListState,
+                twitchUserChat=twitchUserChat,
+                autoscroll=autoscroll,
+                showBottomModal={showBottomModal()},
+                showTimeoutDialog={showTimeoutDialog()},
+                showBanDialog={showBanDialog()},
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                },
+                doubleClickMessage={username ->},
+                modifier=modifier,
+                deleteChatMessage={messageId ->deleteChatMessage(messageId)},
+                isMod = isMod,
+                inlineContentMap=inlineContentMap
+
+            )
+        },
+        scrollToBottom = { modifier ->
+            SmallChatScrollToBottom(
+                scrollingPaused =!autoscroll,
+                enableAutoScroll = { autoscroll = true },
+                modifier = modifier
+            )
+        },
+        determineScrollState = {
+            SmallChatDetermineScrollState(
+                lazyColumnListState = lazyColumnListState,
+                setAutoScrollFalse = { autoscroll = false },
+                setAutoScrollTrue = { autoscroll = true },
+            )
+        }
+    )
+}
+
+@Composable
+fun SmallChatScrollToBottom(
+    scrollingPaused: Boolean,
+    enableAutoScroll: () -> Unit,
+    modifier: Modifier
+) {
+
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (scrollingPaused) {
+                DualIconsButton(
+                    buttonAction = { enableAutoScroll() },
+                    iconImageVector = Icons.Default.ArrowDropDown,
+                    iconDescription = stringResource(R.string.arrow_drop_down_description),
+                    buttonText = stringResource(R.string.scroll_to_bottom)
+
+                )
+            }
+        }
+
+}
+
+@Composable
+fun SmallChatUIBox(
+    chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
+    determineScrollState: @Composable () -> Unit,
+    scrollToBottom: @Composable (modifier:Modifier) -> Unit,
+){
+    val chatUIScope = remember(){ ImprovedChatUI() }
+    Box(modifier = Modifier.fillMaxSize()){
+        determineScrollState()
+        with(chatUIScope){
+            chatUI(modifier = Modifier.fillMaxSize())
+        }
+        scrollToBottom(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp)
+                .zIndex(5f)
+        )
+
+
+    }
+
+}
+
+@Composable
+fun SmallChatDetermineScrollState(
+    lazyColumnListState: LazyListState,
+    setAutoScrollFalse:()->Unit,
+    setAutoScrollTrue:()->Unit,
+){
+    val interactionSource = lazyColumnListState.interactionSource
+    val endOfListReached by remember {
+        derivedStateOf {
+            lazyColumnListState.isScrolledToEnd()
+        }
+    }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    setAutoScrollFalse()
+                }
+                is PressInteraction.Press -> {
+                    setAutoScrollFalse()
+                }
+            }
+        }
+    }
+
+    // observer when reached end of list
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if (endOfListReached) {
+            setAutoScrollTrue()
+        }
+    }
 
 }
