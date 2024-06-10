@@ -204,7 +204,10 @@ import kotlinx.coroutines.launch
 
                 boxThreeDragging =modViewDragStateViewModel.isDragging.value.boxThreeDragging,
                 boxTwoDragging =modViewDragStateViewModel.isDragging.value.boxTwoDragging,
-                setBoxThreeDragging ={newValue -> modViewDragStateViewModel.setBoxThreeDragging(newValue)},
+                setBoxThreeDragging ={
+                        newValue -> modViewDragStateViewModel.setBoxThreeDragging(newValue)
+                    Log.d("WHERETHEDOUBLEIS","DraggableModViewBox")
+                                     },
                 setBoxTwoDragging ={newValue -> modViewDragStateViewModel.setBoxTwoDragging(newValue)},
 
                 deleteOffsetY = modViewDragStateViewModel.deleteOffset.value,
