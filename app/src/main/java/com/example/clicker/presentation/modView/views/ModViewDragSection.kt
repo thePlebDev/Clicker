@@ -174,6 +174,8 @@ import kotlin.math.roundToInt
 
         inlineContentMap: EmoteListMap,
         twitchUserChat: List<TwitchUserData>,
+        showBottomModal:()->Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 
 
         ) {
@@ -212,7 +214,19 @@ import kotlin.math.roundToInt
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
                         inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat
+                        twitchUserChat=twitchUserChat,
+                        showBottomModal={
+                            showBottomModal()
+                            Log.d("BoxThreeChat","Clicked")
+                        },
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
                     )
 
 
@@ -248,7 +262,16 @@ import kotlin.math.roundToInt
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
                         inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat
+                        twitchUserChat=twitchUserChat,
+                        showBottomModal={showBottomModal()},
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
                     )
 
                 }
@@ -265,11 +288,7 @@ import kotlin.math.roundToInt
                 sectionBreakPoint =sectionBreakPoint,
                 animateToOnDragStop=animateToOnDragStop,
                 dragging = boxThreeDragging,
-                setDragging={
-
-                        newValue -> setBoxThreeDragging(newValue)
-                    Log.d("WHERETHEDOUBLEIS","DraggingBox")
-                            },
+                setDragging={ newValue -> setBoxThreeDragging(newValue) },
                 changeBackgroundColor={
                     if(boxThreeOffsetY>deleteOffsetY){
                         setBoxIndex("THREE",0)
@@ -278,18 +297,21 @@ import kotlin.math.roundToInt
                 content={
                     ChangingBoxTypes(
                         boxThreeIndex,
-                        setDraggingTrue = {
-                            setBoxThreeDragging(true)
-                            Log.d("WHERETHEDOUBLEIS","setDraggingTrue")
-                                          },
-                        setBoxDragging={
-                                value -> setBoxThreeDragging(value)
-                            Log.d("WHERETHEDOUBLEIS","ChangingBoxTypes")
-                                       },
+                        setDraggingTrue = { setBoxThreeDragging(true) },
+                        setBoxDragging={ value -> setBoxThreeDragging(value) },
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
                         inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat
+                        twitchUserChat=twitchUserChat,
+                        showBottomModal={ showBottomModal() },
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
                     )
 
                 }
@@ -318,7 +340,9 @@ fun ChangingBoxTypes(
     boxThreeDragging:Boolean,
 
     twitchUserChat: List<TwitchUserData>,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    showBottomModal:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
 ){
     when(boxIndex){
         0 ->{
@@ -339,8 +363,15 @@ fun ChangingBoxTypes(
             ){
                 SmallChat(
                     twitchUserChat=twitchUserChat,
-                    showBottomModal ={},
-                    updateClickedUser={val1,val2,val3,val4 ->},
+                    showBottomModal ={ showBottomModal() },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
                     showTimeoutDialog ={},
                     showBanDialog={},
                     doubleClickMessage={},

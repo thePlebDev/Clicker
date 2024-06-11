@@ -20,6 +20,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
@@ -63,6 +66,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
@@ -72,6 +76,8 @@ import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.modView.followerModeList
+import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.views.DraggableModViewBox
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
@@ -79,6 +85,9 @@ import com.example.clicker.presentation.modView.views.SharedBottomModal
 
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
+import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
 import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
@@ -87,46 +96,90 @@ import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
-/**
- * ModView contains all the composable functions that are used to create the `chat modes header`
- *
- * @property ModViewScaffold
- * @property SectionHeaderRow
- * @property ModesHeaderRow
- * @property DropDownMenuHeaderBox
- * @property DropdownMenuColumn
- * @property BlockedTermsDropdownMenuItem
- * @property PermittedWordsDropdownMenuItem
- * @property AddSearchPermittedTermsDropdownMenu
- * @property PermittedTermsLazyColumn
- * @property FollowersOnlyCheck
- * @property EmbeddedDropDownMenu
- * @property TextMenuItem
- * @property SlowModeCheck
- * @property SubscriberOnlySwitch
- * @property EmoteOnlySwitch
- * @property DetectDoubleClickSpacer
- * @property DetectDraggingOrNotAtBottomButton
- * */
-    /**
-     * ModViewScaffold is a `Scaffold` based component that is responsible for showing the user all the information related to
-     * the created modView. The ModView shows the user 3 sections. 1) chat, 2) mod actions, 3) automod queue
-     *
-     *
-     * @param closeStreamInfo represents the action needed to be taken when the close button is pressed
-     * */
-    @OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ModViewComponent(
+    closeModView:()->Unit,
+    modViewDragStateViewModel: ModViewDragStateViewModel,
+    inlineContentMap: EmoteListMap,
+    twitchUserChat: List<TwitchUserData>,
+    streamViewModel:StreamViewModel,
+    modViewViewModel:ModViewViewModel
+){
+    val bottomModalState = androidx.compose.material.rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val updateClickedUser:(String,String,Boolean,Boolean)->Unit = remember(streamViewModel) { { username, userId, banned, isMod ->
+        streamViewModel.updateClickedChat(
+            username,
+            userId,
+            banned,
+            isMod
+        )
+    } }
+    val scope = rememberCoroutineScope()
+    ModalBottomSheetLayout(
+        sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+        sheetState = bottomModalState,
+        sheetContent = {
+            BottomModal.BottomModalBuilder(
+                clickedUsernameChats = streamViewModel.clickedUsernameChats,
+                clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                bottomModalState = bottomModalState,
+                textFieldValue = streamViewModel.textFieldValue,
+                closeBottomModal = {},
+                banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                unbanUser = {
+                    //  streamViewModel.unBanUser()
+                },
+                //todo: turn this back into --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                isMod = true,
+                openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+                openBanDialog = { streamViewModel.openBanDialog.value = true },
+                shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
+                updateShouldMonitorUser = {},
+            )
+        }
+
+    ){
+        ModViewScaffold(
+            modViewDragStateViewModel=modViewDragStateViewModel,
+            closeModView ={
+                closeModView()
+            },
+            inlineContentMap=inlineContentMap,
+            twitchUserChat=twitchUserChat,
+            showBottomModal={
+                scope.launch {
+                    bottomModalState.show()
+                }
+            },
+            updateClickedUser = {  username, userId,isBanned,isMod ->
+                updateClickedUser(
+                    username,
+                    userId,
+                    isBanned,
+                    isMod
+                )
+            },
+        )
+
+    }
+
+}
+
+
     @Composable
     fun ModViewScaffold(
         closeModView:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
         inlineContentMap: EmoteListMap,
         twitchUserChat: List<TwitchUserData>,
-
-
+        showBottomModal:()->Unit,
+        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         ){
-
-
 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -220,7 +273,16 @@ import kotlinx.coroutines.launch
                 boxTwoHeight = modViewDragStateViewModel.indivBoxHeight.value.boxTwo,
                 boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree,
                 inlineContentMap=inlineContentMap,
-                twitchUserChat=twitchUserChat
+                twitchUserChat=twitchUserChat,
+                showBottomModal={showBottomModal()},
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                },
 
 
             )
