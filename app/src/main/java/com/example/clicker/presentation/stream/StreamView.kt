@@ -48,6 +48,9 @@ import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayVie
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
+
+
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StreamView(
@@ -165,27 +168,16 @@ fun StreamView(
                             clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                             bottomModalState = bottomModalState,
                             textFieldValue = streamViewModel.textFieldValue,
-                            closeBottomModal = {
-
-                            },
+                            closeBottomModal = {},
                             banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                             unbanUser = {
                                 //  streamViewModel.unBanUser()
                             },
                             isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                            openTimeoutDialog = {
-
-                                streamViewModel.openTimeoutDialog.value = true
-                            },
-
-                            openBanDialog = {
-                                streamViewModel.openBanDialog.value = true
-                                            },
+                            openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+                            openBanDialog = { streamViewModel.openBanDialog.value = true },
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
-                            updateShouldMonitorUser = {
-
-                            },
-
+                            updateShouldMonitorUser = {},
                             )
                     }
                 ){

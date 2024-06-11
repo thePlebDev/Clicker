@@ -54,6 +54,7 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
+import com.example.clicker.presentation.stream.views.streamManager.ModViewComponent
 import com.example.clicker.presentation.stream.views.streamManager.ModViewScaffold
 import com.example.clicker.ui.theme.AppTheme
 
@@ -620,7 +621,7 @@ fun setOrientation(
             if(modViewDragStateViewModel.showModView.value){
                 AppTheme{
                     //todo: fill this in
-                    ModViewScaffold(
+                    ModViewComponent(
                         modViewDragStateViewModel=modViewDragStateViewModel,
                         closeModView ={
                             modViewDragStateViewModel.setShowModView(false)
@@ -629,7 +630,10 @@ fun setOrientation(
 //                            streamManagerUI.translationY = height
                         },
                         inlineContentMap=streamViewModel.inlineTextContentTest.value,
-                        twitchUserChat=streamViewModel.listChats.toList()
+                        twitchUserChat=streamViewModel.listChats.toList(),
+                        modViewViewModel=modViewViewModel,
+                        streamViewModel = streamViewModel
+
                     )
 
                 }
