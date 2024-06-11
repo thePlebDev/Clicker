@@ -88,6 +88,7 @@ import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
+import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
 import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
@@ -119,6 +120,7 @@ fun ModViewComponent(
             isMod
         )
     } }
+    val fullModeActive = modViewDragStateViewModel.fullModeActive.value
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
@@ -164,6 +166,70 @@ fun ModViewComponent(
                     isMod
                 )
             },
+            fullModeActive=fullModeActive,
+            fullChat = {
+                ChatUI(
+                    twitchUserChat = twitchUserChat,
+                    showBottomModal={
+                        scope.launch {
+                            bottomModalState.show()
+                        }
+                    },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    showTimeoutDialog={
+                        streamViewModel.openTimeoutDialog.value = true
+                    },
+                    showBanDialog = {streamViewModel.openBanDialog.value = true},
+                    doubleClickMessage={ username->
+
+                    },
+
+                    showOuterBottomModalState = {
+                        scope.launch {
+
+                        }
+                    },
+                    newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+
+                    orientationIsVertical =true,
+
+                    isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                    filteredChatList = listOf(),
+                    clickedAutoCompleteText = { username ->
+                        streamViewModel.autoTextChange(username)
+                    },
+                    showModal = {
+                       // showChatSettingsBottomModal()
+                    },
+                    notificationAmount =0,
+                    textFieldValue = streamViewModel.textFieldValue,
+                    sendMessageToWebSocket = { string ->
+                        streamViewModel.sendMessage(string)
+                    },
+                    noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                    deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                    forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                    clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                    inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                    hideSoftKeyboard={
+
+                                     },
+                    emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                    updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                    emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                    deleteEmote={streamViewModel.deleteEmote()},
+                    showModView={
+                        
+                    }
+                )
+            }
         )
 
     }
@@ -179,6 +245,8 @@ fun ModViewComponent(
         twitchUserChat: List<TwitchUserData>,
         showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        fullModeActive:Boolean,
+        fullChat: @Composable () ->Unit
         ){
 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -283,6 +351,8 @@ fun ModViewComponent(
                         isMod
                     )
                 },
+                fullModeActive=fullModeActive,
+                fullChat={fullChat()}
 
 
             )

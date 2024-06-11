@@ -176,6 +176,8 @@ import kotlin.math.roundToInt
         twitchUserChat: List<TwitchUserData>,
         showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+        fullModeActive:Boolean,
+        fullChat: @Composable ()-> Unit
 
 
         ) {
@@ -227,6 +229,8 @@ import kotlin.math.roundToInt
                                 isMod
                             )
                         },
+                        fullModeActive=fullModeActive,
+                        fullChat={fullChat()}
                     )
 
 
@@ -272,6 +276,8 @@ import kotlin.math.roundToInt
                                 isMod
                             )
                         },
+                        fullModeActive=fullModeActive,
+                        fullChat={fullChat()}
                     )
 
                 }
@@ -312,6 +318,8 @@ import kotlin.math.roundToInt
                                 isMod
                             )
                         },
+                        fullModeActive=fullModeActive,
+                        fullChat={fullChat()}
                     )
 
                 }
@@ -343,6 +351,8 @@ fun ChangingBoxTypes(
     inlineContentMap: EmoteListMap,
     showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    fullModeActive:Boolean,
+    fullChat: @Composable ()-> Unit
 ){
     when(boxIndex){
         0 ->{
@@ -361,25 +371,31 @@ fun ChangingBoxTypes(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.primary)
             ){
-                SmallChat(
-                    twitchUserChat=twitchUserChat,
-                    showBottomModal ={ showBottomModal() },
-                    updateClickedUser = { username, userId, banned, isMod ->
-                        updateClickedUser(
-                            username,
-                            userId,
-                            banned,
-                            isMod
-                        )
-                    },
-                    showTimeoutDialog ={},
-                    showBanDialog={},
-                    doubleClickMessage={},
-                    deleteChatMessage={},
-                    isMod =true,
-                    inlineContentMap =inlineContentMap,
-                    setDragging = {value -> setBoxDragging(value)}
-                )
+                if(fullModeActive){
+                    fullChat()
+
+                }else{
+                    SmallChat(
+                        twitchUserChat=twitchUserChat,
+                        showBottomModal ={ showBottomModal() },
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
+                        showTimeoutDialog ={},
+                        showBanDialog={},
+                        doubleClickMessage={},
+                        deleteChatMessage={},
+                        isMod =true,
+                        inlineContentMap =inlineContentMap,
+                        setDragging = {value -> setBoxDragging(value)}
+                    )
+                }
+
 
             }
         }

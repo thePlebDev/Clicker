@@ -344,10 +344,6 @@ fun ChatUIBox(
 
 }
 
-@Composable
-fun SmallChatUI(){
-
-}
 
 fun LazyGridScope.header(
     content: @Composable LazyGridItemScope.() -> Unit
