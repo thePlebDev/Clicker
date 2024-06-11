@@ -91,6 +91,7 @@ import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.EmoteOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.FollowersOnlyCheck
+import com.example.clicker.presentation.stream.views.chat.FullChatModView
 import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
 import com.example.clicker.presentation.stream.views.chat.SubscriberOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
@@ -109,6 +110,10 @@ fun ModViewComponent(
     modViewViewModel:ModViewViewModel
 ){
     val bottomModalState = androidx.compose.material.rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = false
+    )
+    val chatSettingModal = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
@@ -167,68 +172,103 @@ fun ModViewComponent(
                 )
             },
             fullModeActive=fullModeActive,
-            fullChat = {
-                ChatUI(
-                    twitchUserChat = twitchUserChat,
-                    showBottomModal={
-                        scope.launch {
-                            bottomModalState.show()
-                        }
-                    },
-                    updateClickedUser = { username, userId, banned, isMod ->
-                        updateClickedUser(
-                            username,
-                            userId,
-                            banned,
-                            isMod
+            fullChat = {setDraggingFunc->
+                //todo: I need to implement a ModalBottomSheetLayout with the chat settings
+                ModalBottomSheetLayout(
+                    sheetState = chatSettingModal,
+                    sheetContent ={
+                        ChatSettingsColumn(
+                            advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                            changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
+                            changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
+
+                            chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                            followerModeList= followerModeList,
+                            selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+                            changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+                            slowModeList= slowModeList,
+                            selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+                            changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+                            emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+                            setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+                            subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
+                            setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
                         )
-                    },
-                    showTimeoutDialog={
-                        streamViewModel.openTimeoutDialog.value = true
-                    },
-                    showBanDialog = {streamViewModel.openBanDialog.value = true},
-                    doubleClickMessage={ username->
-
-                    },
-
-                    showOuterBottomModalState = {
-                        scope.launch {
-
-                        }
-                    },
-                    newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-
-                    orientationIsVertical =true,
-
-                    isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                    filteredChatList = listOf(),
-                    clickedAutoCompleteText = { username ->
-                        streamViewModel.autoTextChange(username)
-                    },
-                    showModal = {
-                       // showChatSettingsBottomModal()
-                    },
-                    notificationAmount =0,
-                    textFieldValue = streamViewModel.textFieldValue,
-                    sendMessageToWebSocket = { string ->
-                        streamViewModel.sendMessage(string)
-                    },
-                    noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                    deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
-                    forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                    clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
-                    inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                    hideSoftKeyboard={
-
-                                     },
-                    emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                    updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                    emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                    deleteEmote={streamViewModel.deleteEmote()},
-                    showModView={
-                        
                     }
-                )
+                ) {
+                    //todo: this is where FullChatModView goes
+                    FullChatModView(
+                        twitchUserChat = twitchUserChat,
+                        showBottomModal={
+                            scope.launch {
+                                bottomModalState.show()
+                            }
+                        },
+                        updateClickedUser = { username, userId, banned, isMod ->
+                            updateClickedUser(
+                                username,
+                                userId,
+                                banned,
+                                isMod
+                            )
+                        },
+                        showTimeoutDialog={
+                            streamViewModel.openTimeoutDialog.value = true
+                        },
+                        showBanDialog = {streamViewModel.openBanDialog.value = true},
+                        doubleClickMessage={ username->
+
+                        },
+
+                        showOuterBottomModalState = {
+                            Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
+                            scope.launch {
+
+                            }
+                        },
+                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+
+                        orientationIsVertical =true,
+
+                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                        filteredChatList = listOf(),
+                        clickedAutoCompleteText = { username ->
+                            streamViewModel.autoTextChange(username)
+                        },
+                        showModal = {
+                            //todo: This is what is clicked when I want to launch the bottom modal
+                            scope.launch {
+                                chatSettingModal.show()
+                            }
+                        },
+                        notificationAmount =0,
+                        textFieldValue = streamViewModel.textFieldValue,
+                        sendMessageToWebSocket = { string ->
+                            streamViewModel.sendMessage(string)
+                        },
+                        noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                        deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                        clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                        inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                        hideSoftKeyboard={
+
+                        },
+                        emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                        updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                        emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                        deleteEmote={streamViewModel.deleteEmote()},
+                        showModView={
+                            closeModView()
+                        },
+                        fullMode = fullModeActive,
+                        setDragging = {
+                            Log.d("doubleClickingThings","CLICKED")
+                            setDraggingFunc()
+                        }
+                    )
+                }
+
             }
         )
 
@@ -246,7 +286,7 @@ fun ModViewComponent(
         showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         fullModeActive:Boolean,
-        fullChat: @Composable () ->Unit
+        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ){
 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -352,7 +392,11 @@ fun ModViewComponent(
                     )
                 },
                 fullModeActive=fullModeActive,
-                fullChat={fullChat()}
+                fullChat={ setDraggingFunc ->
+                    fullChat(
+                        setDraggingTrue={setDraggingFunc()}
+                    )
+                }
 
 
             )
