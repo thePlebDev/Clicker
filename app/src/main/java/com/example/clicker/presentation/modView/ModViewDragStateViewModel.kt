@@ -48,10 +48,13 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     private val boxOne = "BOXONE"
     private val boxTwo = "BOXTWO"
     private val boxThree= "BOXTHREE"
-    private var fullModeActive = false
     val indivBoxSize = (Resources.getSystem().displayMetrics.heightPixels/8.4).dp //264
     val sectionBreakPoint = ((Resources.getSystem().displayMetrics.heightPixels/3.20)-200).toInt() //539
     val animateToOnDragStop = (Resources.getSystem().displayMetrics.heightPixels/3.20).toFloat() //704f
+
+
+    private var _fullModeActive: MutableState<Boolean> = mutableStateOf(false)
+    val fullModeActive: State<Boolean> = _fullModeActive
 
 
     private var _dragStateOffsets: MutableState<BoxDragStateOffsets> = mutableStateOf(
@@ -146,7 +149,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
                 _showDrawerError.value = false
             }
         }else{
-            if(fullModeActive){
+            if(_fullModeActive.value){
                 resetBodySizes()
             }
             if(boxOneIndex == 0){
@@ -182,7 +185,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
        }
 
     }
-    fun resetBodySizes(){
+    private fun resetBodySizes(){
         _boxTypeIndex.value = _boxTypeIndex.value.copy(
             boxOneIndex = 0,
             boxTwoIndex = 0,
@@ -193,10 +196,10 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
             boxTwo =(Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
             boxThree =(Resources.getSystem().displayMetrics.heightPixels/8.4).dp,
         )
-        fullModeActive = false
+        _fullModeActive.value = false
     }
 
-    fun checkTripleIndexBoxOne(newBoxIndex: Int){
+    private fun checkTripleIndexBoxOne(newBoxIndex: Int){
 //        private val boxOne = "BOXONE"
 //        private val boxTwo = "BOXTWO"
 //        private val boxThree= "BOXTHREE"
@@ -206,7 +209,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
 
         if(boxTwoIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
             Log.d("checkTripleIndexBoxOne","FULL MODE ")
-            fullModeActive = true
+            _fullModeActive.value = true
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxOneIndex = newBoxIndex)
             setBottomBoxLarge()
 
@@ -218,7 +221,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
         }
 
     }
-    fun checkTripleIndexBoxTwo(newBoxIndex: Int){
+    private fun checkTripleIndexBoxTwo(newBoxIndex: Int){
 //        private val boxOne = "BOXONE"
 //        private val boxTwo = "BOXTWO"
 //        private val boxThree= "BOXTHREE"
@@ -227,7 +230,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
         val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
 
         if(boxOneIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
-            fullModeActive = true
+            _fullModeActive.value = true
             Log.d("checkTripleIndexBoxOne","FULL MODE ")
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxTwoIndex = newBoxIndex)
             setBottomBoxLarge()
@@ -250,7 +253,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
         val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
 
         if(boxTwoIndex == newBoxIndex && boxOneIndex == newBoxIndex) {
-            fullModeActive = true
+            _fullModeActive.value = true
             Log.d("checkTripleIndexBoxOne","FULL MODE ")
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
             setBottomBoxLarge()
@@ -262,7 +265,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
 
     }
 
-    fun setBottomBoxLarge(){
+    private fun setBottomBoxLarge(){
         when(stateList.value[0]){
             "BOXONE" ->{
                 _indivBoxHeight.value = _indivBoxHeight.value.copy(
