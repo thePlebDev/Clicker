@@ -82,6 +82,7 @@ import com.example.clicker.presentation.modView.views.DraggableModViewBox
 import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.modView.views.SharedBottomModal
+import com.example.clicker.presentation.modView.views.SmallChat
 
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
@@ -109,7 +110,7 @@ fun ModViewComponent(
     streamViewModel:StreamViewModel,
     modViewViewModel:ModViewViewModel
 ){
-    val bottomModalState = androidx.compose.material.rememberModalBottomSheetState(
+    val clickedChatterUserState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = false
     )
@@ -129,12 +130,12 @@ fun ModViewComponent(
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
-        sheetState = bottomModalState,
+        sheetState = clickedChatterUserState,
         sheetContent = {
             BottomModal.BottomModalBuilder(
                 clickedUsernameChats = streamViewModel.clickedUsernameChats,
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                bottomModalState = bottomModalState,
+                bottomModalState = clickedChatterUserState,
                 textFieldValue = streamViewModel.textFieldValue,
                 closeBottomModal = {},
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
@@ -156,21 +157,7 @@ fun ModViewComponent(
             closeModView ={
                 closeModView()
             },
-            inlineContentMap=inlineContentMap,
-            twitchUserChat=twitchUserChat,
-            showBottomModal={
-                scope.launch {
-                    bottomModalState.show()
-                }
-            },
-            updateClickedUser = {  username, userId,isBanned,isMod ->
-                updateClickedUser(
-                    username,
-                    userId,
-                    isBanned,
-                    isMod
-                )
-            },
+           
             fullModeActive=fullModeActive,
             fullChat = {setDraggingFunc->
                 //todo: I need to implement a ModalBottomSheetLayout with the chat settings
@@ -201,7 +188,7 @@ fun ModViewComponent(
                         twitchUserChat = twitchUserChat,
                         showBottomModal={
                             scope.launch {
-                                bottomModalState.show()
+                                clickedChatterUserState.show()
                             }
                         },
                         updateClickedUser = { username, userId, banned, isMod ->
@@ -269,6 +256,31 @@ fun ModViewComponent(
                     )
                 }
 
+            },
+            smallChat = {setDraggingFunc->
+                SmallChat(
+                    twitchUserChat=twitchUserChat,
+                    showBottomModal ={
+                        scope.launch {
+                            clickedChatterUserState.show()
+                        }
+                    },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    showTimeoutDialog ={},
+                    showBanDialog={},
+                    doubleClickMessage={},
+                    deleteChatMessage={},
+                    isMod =true,
+                    inlineContentMap =inlineContentMap,
+                    setDragging = {value -> setDraggingFunc()}
+                )
             }
         )
 
@@ -281,12 +293,10 @@ fun ModViewComponent(
     fun ModViewScaffold(
         closeModView:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
-        inlineContentMap: EmoteListMap,
-        twitchUserChat: List<TwitchUserData>,
-        showBottomModal:()->Unit,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+
         fullModeActive:Boolean,
-        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
+        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
+        smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ){
 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -380,20 +390,16 @@ fun ModViewComponent(
                 boxOneHeight = modViewDragStateViewModel.indivBoxHeight.value.boxOne,
                 boxTwoHeight = modViewDragStateViewModel.indivBoxHeight.value.boxTwo,
                 boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree,
-                inlineContentMap=inlineContentMap,
-                twitchUserChat=twitchUserChat,
-                showBottomModal={showBottomModal()},
-                updateClickedUser = {  username, userId,isBanned,isMod ->
-                    updateClickedUser(
-                        username,
-                        userId,
-                        isBanned,
-                        isMod
-                    )
-                },
+
+
                 fullModeActive=fullModeActive,
                 fullChat={ setDraggingFunc ->
                     fullChat(
+                        setDraggingTrue={setDraggingFunc()}
+                    )
+                },
+                smallChat={ setDraggingFunc ->
+                    smallChat(
                         setDraggingTrue={setDraggingFunc()}
                     )
                 }
