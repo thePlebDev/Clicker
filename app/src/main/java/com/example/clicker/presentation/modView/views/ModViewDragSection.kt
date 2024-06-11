@@ -177,7 +177,7 @@ import kotlin.math.roundToInt
         showBottomModal:()->Unit,
         updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         fullModeActive:Boolean,
-        fullChat: @Composable ()-> Unit
+        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 
 
         ) {
@@ -230,7 +230,11 @@ import kotlin.math.roundToInt
                             )
                         },
                         fullModeActive=fullModeActive,
-                        fullChat={fullChat()}
+                        fullChat={ setDraggingFunc ->
+                            fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        }
                     )
 
 
@@ -277,7 +281,11 @@ import kotlin.math.roundToInt
                             )
                         },
                         fullModeActive=fullModeActive,
-                        fullChat={fullChat()}
+                        fullChat={ setDraggingFunc ->
+                            fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        }
                     )
 
                 }
@@ -319,7 +327,11 @@ import kotlin.math.roundToInt
                             )
                         },
                         fullModeActive=fullModeActive,
-                        fullChat={fullChat()}
+                        fullChat={ setDraggingFunc ->
+                            fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        }
                     )
 
                 }
@@ -352,7 +364,7 @@ fun ChangingBoxTypes(
     showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     fullModeActive:Boolean,
-    fullChat: @Composable ()-> Unit
+    fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 ){
     when(boxIndex){
         0 ->{
@@ -372,8 +384,7 @@ fun ChangingBoxTypes(
                     .background(MaterialTheme.colorScheme.primary)
             ){
                 if(fullModeActive){
-                    fullChat()
-
+                    fullChat(setDraggingTrue={setDraggingTrue()})
                 }else{
                     SmallChat(
                         twitchUserChat=twitchUserChat,

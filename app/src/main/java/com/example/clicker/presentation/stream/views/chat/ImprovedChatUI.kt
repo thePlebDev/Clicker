@@ -610,6 +610,7 @@ class ImprovedChatUI(){
     }
 
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun ChatUILazyColumn(
         lazyColumnListState: LazyListState,
@@ -623,7 +624,9 @@ class ImprovedChatUI(){
         deleteChatMessage:(String)->Unit,
         modifier: Modifier,
         isMod: Boolean,
-        inlineContentMap: EmoteListMap
+        inlineContentMap: EmoteListMap,
+        fullMode:Boolean= false,
+        setDragging:()->Unit ={},
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -633,6 +636,25 @@ class ImprovedChatUI(){
             coroutineScope.launch {
                 if (autoscroll) {
                     lazyColumnListState.scrollToItem(twitchUserChat.size)
+                }
+            }
+            if(fullMode){
+                stickyHeader {
+                    Text(
+                        "Chat",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                            .combinedClickable(
+                                onDoubleClick = {
+                                    setDragging()
+                                },
+                                onClick = {}
+                            )
+                            .padding(horizontal = 10.dp)
+                    )
                 }
             }
             items(
