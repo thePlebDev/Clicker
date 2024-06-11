@@ -172,14 +172,9 @@ import kotlin.math.roundToInt
         boxTwoHeight:Dp,
         boxThreeHeight:Dp,
 
-        inlineContentMap: EmoteListMap,
-        twitchUserChat: List<TwitchUserData>,
-        showBottomModal:()->Unit,
-        updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
         fullModeActive:Boolean,
-        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
-
-
+        fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
+        smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ) {
 
 
@@ -215,23 +210,14 @@ import kotlin.math.roundToInt
                         setBoxDragging={value -> setBoxOneDragging(value)},
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
-                        inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat,
-                        showBottomModal={
-                            showBottomModal()
-                            Log.d("BoxThreeChat","Clicked")
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
                         fullModeActive=fullModeActive,
                         fullChat={ setDraggingFunc ->
                             fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        },
+                        smallChat={ setDraggingFunc ->
+                            smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         }
@@ -269,20 +255,14 @@ import kotlin.math.roundToInt
                         setBoxDragging={value -> setBoxTwoDragging(value)},
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
-                        inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat,
-                        showBottomModal={showBottomModal()},
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
                         fullModeActive=fullModeActive,
                         fullChat={ setDraggingFunc ->
                             fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        },
+                        smallChat={ setDraggingFunc ->
+                            smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         }
@@ -315,20 +295,14 @@ import kotlin.math.roundToInt
                         setBoxDragging={ value -> setBoxThreeDragging(value) },
                         boxTwoDragging =boxTwoDragging,
                         boxThreeDragging = boxThreeDragging,
-                        inlineContentMap=inlineContentMap,
-                        twitchUserChat=twitchUserChat,
-                        showBottomModal={ showBottomModal() },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
                         fullModeActive=fullModeActive,
                         fullChat={ setDraggingFunc ->
                             fullChat(
+                                setDraggingTrue={setDraggingFunc()}
+                            )
+                        },
+                        smallChat={ setDraggingFunc ->
+                            smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         }
@@ -355,16 +329,11 @@ fun ChangingBoxTypes(
     boxIndex:Int,
     setDraggingTrue: () -> Unit,
     setBoxDragging:(value:Boolean) -> Unit,
-
     boxTwoDragging: Boolean,
     boxThreeDragging:Boolean,
-
-    twitchUserChat: List<TwitchUserData>,
-    inlineContentMap: EmoteListMap,
-    showBottomModal:()->Unit,
-    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     fullModeActive:Boolean,
-    fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
+    fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
+    smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 ){
     when(boxIndex){
         0 ->{
@@ -386,25 +355,9 @@ fun ChangingBoxTypes(
                 if(fullModeActive){
                     fullChat(setDraggingTrue={setDraggingTrue()})
                 }else{
-                    SmallChat(
-                        twitchUserChat=twitchUserChat,
-                        showBottomModal ={ showBottomModal() },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        showTimeoutDialog ={},
-                        showBanDialog={},
-                        doubleClickMessage={},
-                        deleteChatMessage={},
-                        isMod =true,
-                        inlineContentMap =inlineContentMap,
-                        setDragging = {value -> setBoxDragging(value)}
-                    )
+                    smallChat(setDraggingTrue={setDraggingTrue()})
+
+
                 }
 
 
