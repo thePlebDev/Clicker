@@ -208,6 +208,7 @@ fun ModViewComponent(
                         },
                         showBanDialog = {streamViewModel.openBanDialog.value = true},
                         doubleClickMessage={ username->
+                            doubleClickChat(username)
 
                         },
 
