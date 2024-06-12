@@ -2,6 +2,7 @@ package com.example.clicker.presentation.sharedViews
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -24,15 +27,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -213,25 +222,28 @@ fun ModViewDrawerContent(
             modifier = Modifier.padding(horizontal = 10.dp)
         ) {
             item {
-                ElevatedCardExample(
-                    Color.Green,
+                ElevatedCardSwitchTextRow(
                     "Chat",
-                    checkIndexAvailability={checkIndexAvailability(1)}
+                    checkIndexAvailability={checkIndexAvailability(1)},
+                    painter = painterResource(id =R.drawable.keyboard_24),
                 )
+
             }
             item{
-                ElevatedCardExample(
-                    Color.Magenta,
+                ElevatedCardSwitchRow(
                     "AutoMod Queue",
-                    checkIndexAvailability={checkIndexAvailability(2)}
+                    checkIndexAvailability={checkIndexAvailability(2)},
+                    painter = painterResource(id =R.drawable.mod_view_24)
                 )
             }
             item{
-                ElevatedCardExample(
-                    Color.Blue,
+                ElevatedCardSwitchRow(
                     "Mod actions",
-                    checkIndexAvailability={checkIndexAvailability(3)}
+                    checkIndexAvailability={checkIndexAvailability(3)},
+                    painter = painterResource(id =R.drawable.clear_chat_alt_24)
                 )
+
+
             }
 
 //            item{
@@ -277,30 +289,149 @@ fun ModViewDrawerContent(
 }
 
 @Composable
-fun ElevatedCardExample(
-    backgroundColor:Color,
-    type:String,
-    checkIndexAvailability:()->Unit
+fun ElevatedCardSwitchRow(
+    text:String,
+    checkIndexAvailability: () -> Unit,
+    painter: Painter
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        ElevatedCardWithIcon(
+            text,
+            checkIndexAvailability={checkIndexAvailability()},
+            painter = painter
+        )
+
+        SwitchWithIcon()
+    }
+}
+
+@Composable
+fun ElevatedCardSwitchTextRow(
+    text:String,
+    checkIndexAvailability: () -> Unit,
+    painter: Painter
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        ElevatedCardWithIcon(
+            text,
+            checkIndexAvailability={checkIndexAvailability()},
+            painter = painter,
+
+            )
+
+        TextColumn(text="Notifications")
+    }
+}
+
+@Composable
+fun SwitchWithIcon(
+
 ) {
-    Spacer(modifier =Modifier.height(5.dp))
-    ElevatedCard(
-        colors = CardDefaults.cardColors(containerColor =backgroundColor),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
-        modifier = Modifier.size(width = 280.dp, height = 140.dp).clickable { checkIndexAvailability() }
+    var checked by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = type,
-            color = Color.Red,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 30.sp
+
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                checked = it
+            },
+            thumbContent = if (checked) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                        tint = Color.White
+                    )
+                }
+            } else {
+                null
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
         )
     }
-    Spacer(modifier =Modifier.height(5.dp))
+
+}
+
+@Composable
+fun TextColumn(
+    text:String
+) {
+
+
+    Column(
+        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 20.sp
+        )
+    }
+
+}
+
+@Composable
+fun ElevatedCardWithIcon(
+    type:String,
+    checkIndexAvailability:()->Unit,
+    painter: Painter
+) {
+    Column() {
+        Spacer(modifier =Modifier.height(15.dp))
+        ElevatedCard(
+            colors = CardDefaults.cardColors(containerColor = Color.DarkGray),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 6.dp
+            ),
+            modifier = Modifier
+                .size(width = 200.dp, height = 80.dp)
+                .clickable { checkIndexAvailability() }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ){
+                Text(
+                    text = type,
+                    color = Color.White,
+                    modifier = Modifier,
+                    fontSize = 20.sp
+                )
+                Icon(
+                    painter = painter,
+                    contentDescription ="",
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+
+            }
+
+
+        }
+        Spacer(modifier =Modifier.height(15.dp))
+    }
+
 }
 @Composable
 fun ErrorMessage(
