@@ -157,7 +157,7 @@ fun ModViewComponent(
             closeModView ={
                 closeModView()
             },
-           
+
             fullModeActive=fullModeActive,
             fullChat = {setDraggingFunc->
                 //todo: I need to implement a ModalBottomSheetLayout with the chat settings
