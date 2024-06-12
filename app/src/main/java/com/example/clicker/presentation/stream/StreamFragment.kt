@@ -632,7 +632,10 @@ fun setOrientation(
                         inlineContentMap=streamViewModel.inlineTextContentTest.value,
                         twitchUserChat=streamViewModel.listChats.toList(),
                         modViewViewModel=modViewViewModel,
-                        streamViewModel = streamViewModel
+                        streamViewModel = streamViewModel,
+                        hideSoftKeyboard ={
+                            hideSoftKeyboard()
+                        },
 
                     )
 
