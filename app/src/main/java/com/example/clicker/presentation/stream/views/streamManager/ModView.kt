@@ -108,7 +108,8 @@ fun ModViewComponent(
     inlineContentMap: EmoteListMap,
     twitchUserChat: List<TwitchUserData>,
     streamViewModel:StreamViewModel,
-    modViewViewModel:ModViewViewModel
+    modViewViewModel:ModViewViewModel,
+    hideSoftKeyboard:()->Unit,
 ){
     val clickedChatterUserState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -214,6 +215,7 @@ fun ModViewComponent(
 
                         showOuterBottomModalState = {
                             Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
+                            //seems fine that it is empy
                             scope.launch {
 
                             }
@@ -224,7 +226,7 @@ fun ModViewComponent(
 
                         //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
                         isMod = true,
-                        filteredChatList = listOf(),
+                        filteredChatList = streamViewModel.filteredChatList,
                         clickedAutoCompleteText = { username ->
                             streamViewModel.autoTextChange(username)
                         },
@@ -245,6 +247,7 @@ fun ModViewComponent(
                         clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                         inlineContentMap = streamViewModel.inlineTextContentTest.value,
                         hideSoftKeyboard={
+                            hideSoftKeyboard()
 
                         },
                         emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
