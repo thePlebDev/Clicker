@@ -459,6 +459,7 @@ class StreamViewModel @Inject constructor(
 
     }
     fun sendDoubleTapEmote(username:String){
+        Log.d("SendingDoubleClick","username -->$username")
         if(username.isNotEmpty()){
             webSocket.sendMessage("@$username SeemsGood")
         }
