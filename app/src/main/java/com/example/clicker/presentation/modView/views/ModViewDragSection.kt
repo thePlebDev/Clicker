@@ -1163,7 +1163,7 @@ fun SmallChat(
                         isMod
                     )
                 },
-                doubleClickMessage={username ->},
+                doubleClickMessage={username ->doubleClickMessage(username)},
                 modifier=modifier,
                 deleteChatMessage={messageId ->deleteChatMessage(messageId)},
                 isMod = isMod,

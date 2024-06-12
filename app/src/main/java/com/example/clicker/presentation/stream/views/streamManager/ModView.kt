@@ -126,6 +126,10 @@ fun ModViewComponent(
             isMod
         )
     } }
+    val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
+        streamViewModel.sendDoubleTapEmote(it)
+    } }
+
     val fullModeActive = modViewDragStateViewModel.fullModeActive.value
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
@@ -217,7 +221,8 @@ fun ModViewComponent(
 
                         orientationIsVertical =true,
 
-                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                        //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                        isMod = true,
                         filteredChatList = listOf(),
                         clickedAutoCompleteText = { username ->
                             streamViewModel.autoTextChange(username)
@@ -273,11 +278,16 @@ fun ModViewComponent(
                             isMod
                         )
                     },
-                    showTimeoutDialog ={},
-                    showBanDialog={},
-                    doubleClickMessage={},
-                    deleteChatMessage={},
-                    isMod =true,
+                    showTimeoutDialog={
+                        streamViewModel.openTimeoutDialog.value = true
+                    },
+                    showBanDialog = {streamViewModel.openBanDialog.value = true},
+                    doubleClickMessage={ username->
+                        doubleClickChat(username)
+                    },
+                    deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                    //todo:change back to --> true for testing
+                    isMod =streamViewModel.state.value.loggedInUserData?.mod ?: false,
                     inlineContentMap =inlineContentMap,
                     setDragging = {value -> setDraggingFunc()}
                 )
