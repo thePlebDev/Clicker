@@ -155,6 +155,7 @@ fun parseEventSubWelcomeMessage(stringToParse:String):String?{
     val pattern = "\"id\":([^,]+)".toRegex()
     val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
     val parsedMessageId = messageId?.replace("\"","")
+    Log.d("parseEventSubWelcomeMessageData","parsedMessagId --> $parsedMessageId")
     return parsedMessageId
 }
 
@@ -171,10 +172,20 @@ fun notificationTypeIsNotification(stringToParse:String):Boolean{
     val messageType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
     return messageType == wantedNotification
 }
+/**
+ * notificationTypeIsWelcome is a function that is used to determine if the [stringToParse] is a welcome message or not
+ *
+ * @param stringToParse a String that represents a piece of meta data that is sent by the Twitch websocket
+ *
+ * @return a Boolean that is used to determine if the [stringToParse] contains a `session_welcome` parameter
+ *
+ * */
 fun notificationTypeIsWelcome(stringToParse:String):Boolean{
     val wantedNotification ="session_welcome"
     val messageTypeRegex = "\"message_type\":([^,]+)".toRegex()
     val messageType = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","")
+    Log.d("MessageTypeIsWelcome","string to parse -->$stringToParse")
+    Log.d("MessageTypeIsWelcome","is it message type -->${messageType == wantedNotification}")
     return messageType == wantedNotification
 }
 
