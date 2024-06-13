@@ -45,6 +45,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -655,6 +657,7 @@ fun BoxDeleteSection(
                 }
 
 
+
                 items(autoModMessageList){autoModMessage->
                     AutoModBoxHorizontalDragBox(
                         autoModMessage=autoModMessage,
@@ -662,8 +665,6 @@ fun BoxDeleteSection(
                                 messageId,userId,action->manageAutoModMessage(messageId,userId,action)
                         }
                     )
-
-
                 }
 
 
@@ -892,6 +893,7 @@ fun BoxDeleteSection(
         val interactionSource = listState.interactionSource
 
 
+
         LaunchedEffect(interactionSource) {
             interactionSource.interactions.collect { interaction ->
                 when (interaction) {
@@ -917,6 +919,8 @@ fun BoxDeleteSection(
                 autoscroll = true
             }
         }
+
+
         Box(modifier = Modifier
             .fillMaxSize()
         ) {
@@ -940,7 +944,7 @@ fun BoxDeleteSection(
                                     onDoubleClick = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         setDragging(true)
-                                                    },
+                                    },
                                     onClick = {}
                                 )
                                 .padding(horizontal = 10.dp)
@@ -984,34 +988,71 @@ fun BoxDeleteSection(
 
                         }
 
+
                     }
 
                 }
-
-            if(dragging){
-//                DetectDoubleClickSpacer(
-//                    opacity,
-//                    setDragging={newValue ->setDragging(newValue)},
-//                    hapticFeedback ={hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
-//                )
-            }
-
-
-//            DetectDraggingOrNotAtBottomButton(
-//                dragging = dragging,
-//                modifier = Modifier.align(Alignment.BottomCenter),
-//                listState = listState,
-//                scrollToBottomOfList = {
-//                    scope.launch {
-//                        listState.animateScrollToItem(modActionList.lastIndex)
-//                    }
-//                }
-//            )
+            ErrorMessage403(
+                hapticFeedback =hapticFeedback,
+                setDragging={value -> setDragging(value)},
+                modActionListSize = modActionList.size
+            )
 
 
         }
+
     }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ErrorMessage403(
+    hapticFeedback: HapticFeedback,
+    setDragging: (Boolean) -> Unit,
+    modActionListSize: Int
+){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Text(
+            "MOD ACTIONS: $modActionListSize ",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+                .align(Alignment.TopCenter)
+        )
+        ElevatedCardError(
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+    }
+}
+
+@Composable
+fun IconTextRow(
+    modifier:Modifier
+) {
+
+            Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+                Text(
+                    text = "Token error! Please login again to be issued a new token from Twitch",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+
+}
 
 object ModActionMessage{
     @Composable

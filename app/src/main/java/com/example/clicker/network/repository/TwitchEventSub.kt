@@ -50,8 +50,13 @@ class TwitchEventSub @Inject constructor(
 
 
         if (response.isSuccessful) {
+            Log.d("createEventSubSubscription","SUCCESS type ->$type")
             emit(Response.Success(true))
         } else {
+            Log.d("createEventSubSubscription","type ->$type")
+            Log.d("createEventSubSubscription","code is 403 ->${response.code() == 403}")
+            Log.d("createEventSubSubscription","message ->${response.message()}")
+            Log.d("createEventSubSubscription","body ->${response.body()}")
             emit(Response.Failure(Exception("failed request")))
         }
 
