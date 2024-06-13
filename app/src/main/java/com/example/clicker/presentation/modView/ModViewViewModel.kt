@@ -107,6 +107,7 @@ class ModViewViewModel @Inject constructor(
     init{
         monitorForAutoModMessageUpdates()
     }
+    //
     fun createNewTwitchEventWebSocket(){
         twitchEventSubWebSocket.newWebSocket()
     }
@@ -197,6 +198,10 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
+    /**
+     * To read more about the subscripting events, look [HERE][https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscribing-to-events]
+     * at the docs
+     * */
     fun createEventSubSubscription(){
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
