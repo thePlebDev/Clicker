@@ -151,6 +151,7 @@ class ModViewViewModel @Inject constructor(
             withContext(Dispatchers.IO){
                 twitchEventSubWebSocket.parsedSessionId.collect{nullableSessionId ->
                     nullableSessionId?.also {  sessionId ->
+                        Log.d("monitorForSessionId","sessionId --> $sessionId")
                         _requestIds.value = _requestIds.value.copy(
                             sessionId = sessionId
                         )
@@ -164,6 +165,7 @@ class ModViewViewModel @Inject constructor(
 
         }
     }
+
 
     /**
      * monitorForAutoModMessageUpdates monitors the updates to current automod messages.
@@ -198,6 +200,46 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
+
+    /**
+     *
+     * */
+    fun createModerationActionSubscription(){
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("createModerationActionSubscription","oAuthToken --> ${_requestIds.value.oAuthToken}")
+            Log.d("createModerationActionSubscription","clientId --> ${_requestIds.value.clientId}")
+            Log.d("createModerationActionSubscription","broadcasterId --> ${_requestIds.value.broadcasterId}")
+            Log.d("createModerationActionSubscription","moderatorId --> ${_requestIds.value.moderatorId}")
+            Log.d("createModerationActionSubscription","sessionId --> ${_requestIds.value.sessionId}")
+            twitchEventSub.createEventSubSubscription(
+                oAuthToken = _requestIds.value.oAuthToken,
+                clientId = _requestIds.value.clientId,
+                broadcasterId = _requestIds.value.broadcasterId,
+                moderatorId = _requestIds.value.moderatorId,
+                sessionId = _requestIds.value.sessionId,
+                type = "channel.moderate"
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {}
+                    is Response.Success -> {
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Success(true)
+                        )
+                        createAnotherSubscriptionEvent()
+                    }
+
+                    is Response.Failure -> {
+                        _uiState.value = _uiState.value.copy(
+                            showSubscriptionEventError = Response.Failure(response.e)
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
+
     /**
      * To read more about the subscripting events, look [HERE][https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscribing-to-events]
      * at the docs
@@ -207,6 +249,7 @@ class ModViewViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
 
+                createModerationActionSubscription()
                 _uiState.value = _uiState.value.copy(
                     showSubscriptionEventError = Response.Loading
                 )
