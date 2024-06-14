@@ -935,40 +935,7 @@ fun BoxDeleteSection(
         Box(modifier = Modifier
             .fillMaxSize()
         ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(vertical = 5.dp)
 
-                ) {
-                    stickyHeader {
-                        Text(
-                            "MOD ACTIONS: ${modActionList.size} ",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                                .combinedClickable(
-                                    onDoubleClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        setDragging(true)
-                                    },
-                                    onClick = {}
-                                )
-                                .padding(horizontal = 10.dp)
-                        )
-                    }
-                    scope.launch {
-                        if(autoscroll){
-                            listState.scrollToItem(modActionList.size)
-                        }
-                    }
-
-
-                }
             when(modActionStatus){
                 is WebSocketResponse.Loading -> {
 
@@ -981,6 +948,41 @@ fun BoxDeleteSection(
                 }
                 is WebSocketResponse.Success -> {
                     // this should be the individual moderation actions
+
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(vertical = 5.dp)
+
+                    ) {
+                        stickyHeader {
+                            Text(
+                                "MOD ACTIONS: ${modActionList.size} ",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                    .combinedClickable(
+                                        onDoubleClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            setDragging(true)
+                                        },
+                                        onClick = {}
+                                    )
+                                    .padding(horizontal = 10.dp)
+                            )
+                        }
+                        scope.launch {
+                            if(autoscroll){
+                                listState.scrollToItem(modActionList.size)
+                            }
+                        }
+
+
+                    }
                 }
 
                 is WebSocketResponse.Failure -> {
@@ -1182,6 +1184,7 @@ object ModActionMessage{
     @Composable
     fun TimeoutMessage(
         message:String,
+        userTimedOut:String
     ){
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(10.dp))
@@ -1193,7 +1196,7 @@ object ModActionMessage{
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                    Text(text ="  $userTimedOut", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
                 }
                 Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
@@ -1202,7 +1205,36 @@ object ModActionMessage{
             Spacer(modifier = Modifier
                 .height(2.dp)
                 .fillMaxWidth()
-                .background(Color.White.copy(0.6f)))
+                .background(MaterialTheme.colorScheme.onPrimary.copy(0.5f)))
+
+        }
+    }
+
+    @Composable
+    fun UnTimeoutMessage(
+        message:String,
+        userTimedOut:String
+    ){
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.baseline_check_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  $userTimedOut", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                }
+                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                Spacer(modifier = Modifier.height(10.dp))
+
+            }
+            Spacer(modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.onPrimary.copy(0.5f)))
 
         }
     }
