@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +47,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -108,6 +110,7 @@ import com.example.clicker.presentation.stream.views.streamManager.DropDownMenuH
 import com.example.clicker.presentation.stream.views.streamManager.util.rememberDraggableActions
 
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -174,6 +177,8 @@ import kotlin.math.roundToInt
         boxTwoHeight:Dp,
         boxThreeHeight:Dp,
 
+        modActionStatus: WebSocketResponse<Boolean>,
+
         fullModeActive:Boolean,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
         smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
@@ -222,7 +227,8 @@ import kotlin.math.roundToInt
                             smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
-                        }
+                        },
+                        modActionStatus=modActionStatus
                     )
 
 
@@ -267,7 +273,8 @@ import kotlin.math.roundToInt
                             smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
-                        }
+                        },
+                        modActionStatus=modActionStatus
                     )
 
                 }
@@ -307,7 +314,8 @@ import kotlin.math.roundToInt
                             smallChat(
                                 setDraggingTrue={setDraggingFunc()}
                             )
-                        }
+                        },
+                        modActionStatus=modActionStatus
                     )
 
                 }
@@ -334,6 +342,7 @@ fun ChangingBoxTypes(
     boxTwoDragging: Boolean,
     boxThreeDragging:Boolean,
     fullModeActive:Boolean,
+    modActionStatus: WebSocketResponse<Boolean>,
     fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
     smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 ){
@@ -393,7 +402,8 @@ fun ChangingBoxTypes(
                 ModActions(
                     dragging =boxThreeDragging,
                     setDragging={newValue -> setBoxDragging(newValue)},
-                    modActionList = listOf()
+                    modActionList = listOf(),
+                    modActionStatus =modActionStatus
                 )
 
             }
@@ -881,7 +891,8 @@ fun BoxDeleteSection(
     fun ModActions(
         dragging:Boolean,
         setDragging:(Boolean)->Unit,
-        modActionList:List<TwitchUserData>
+        modActionList:List<TwitchUserData>,
+        modActionStatus: WebSocketResponse<Boolean>
         ){
         val hapticFeedback = LocalHapticFeedback.current
 
@@ -957,51 +968,136 @@ fun BoxDeleteSection(
                     }
 
 
+                }
+            when(modActionStatus){
+                is WebSocketResponse.Loading -> {
 
-                    items(modActionList) {messageItem ->
-                        Log.d("modActionListTesting","bannedDuration -->${messageItem.bannedDuration}<--")
-                        when(messageItem.messageType){
-                            MessageType.CLEARCHAT ->{
-                                if(messageItem.bannedDuration != null){
-                                    ModActionMessage.TimeoutMessage(
-                                        message= messageItem.userType ?:"No message"
-                                    )
-                                }else{
-                                    ModActionMessage.DeletedMessage(
-                                        message= messageItem.userType ?:"No message"
-                                    )
-                                }
-                            }
-                            MessageType.CLEARCHATALL ->{
-                                ModActionMessage.ClearChatMessage(
-                                    message= messageItem.userType ?:"No message"
-                                )
-                            }
-                            MessageType.NOTICE ->{
-                                ModActionMessage.NoticeMessage(
-                                    message= messageItem.userType ?:"No message"
-                                )
-                            }
-                            else ->{
-
-                            }
-
-                        }
-
-
-                    }
+                    LoadingIndicator(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        modActionListSize = modActionList.size
+                    )
 
                 }
-            ErrorMessage403(
-                hapticFeedback =hapticFeedback,
-                setDragging={value -> setDragging(value)},
-                modActionListSize = modActionList.size
-            )
+                is WebSocketResponse.Success -> {
+                    // this should be the individual moderation actions
+                }
+
+                is WebSocketResponse.Failure -> {
+                    //should be a button to retry
+                    FailedClickToTryAgainBox(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        modActionListSize = modActionList.size
+                    )
+
+                }
+                is WebSocketResponse.FailureAuth403 ->{
+                    ErrorMessage403(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        modActionListSize = modActionList.size
+                    )
+                }
+            }
+
 
 
         }
 
     }
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun FailedClickToTryAgainBox(
+    hapticFeedback: HapticFeedback,
+    setDragging: (Boolean) -> Unit,
+    modActionListSize: Int
+){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Text(
+            "MOD ACTIONS: $modActionListSize ",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+                .align(Alignment.TopCenter)
+        )
+
+            ElevatedButton(
+                onClick = {  },
+                modifier = Modifier.align(Alignment.Center),
+                border = BorderStroke(1.dp,Color.Red),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Text(
+                        text = "Try again",
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                    )
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+                }
+            }
+
+
+
+
+    }
+}
+
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LoadingIndicator(
+    hapticFeedback: HapticFeedback,
+    setDragging: (Boolean) -> Unit,
+    modActionListSize: Int
+){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Text(
+            "MOD ACTIONS: $modActionListSize ",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+                .align(Alignment.TopCenter)
+        )
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1030,7 +1126,7 @@ fun ErrorMessage403(
                 .padding(horizontal = 10.dp)
                 .align(Alignment.TopCenter)
         )
-        ElevatedCardError(
+        IconTextRow(
             modifier = Modifier.align(Alignment.Center)
         )
 

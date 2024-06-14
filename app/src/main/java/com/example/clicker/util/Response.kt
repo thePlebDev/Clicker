@@ -23,6 +23,24 @@ sealed class Response<out T> {
     ) : Response<Nothing>()
 }
 
+sealed class WebSocketResponse<out T> {
+
+    object Loading : WebSocketResponse<Nothing>()
+
+    data class Success<out T>(
+        val data: T
+    ) : WebSocketResponse<T>()
+
+    data class FailureAuth403(
+        val e: Exception
+    ) : WebSocketResponse<Nothing>()
+
+    data class Failure(
+        val e: Exception
+    ) : WebSocketResponse<Nothing>()
+
+}
+
 /**
  * Represents a network response and its specific error
  *

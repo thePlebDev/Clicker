@@ -21,7 +21,9 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.presentation.stream.StreamUIState
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -55,6 +57,10 @@ data class ModViewViewModelUIState(
 data class ListTitleValue(
     val title:String,
     val value:Int?
+)
+
+data class ModViewStatus(
+    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Failure(Exception("try again"))
 )
 
 val followerModeList =listOf(
@@ -96,6 +102,9 @@ class ModViewViewModel @Inject constructor(
     val uiState: State<ModViewViewModelUIState> = _uiState
 
      val blockedTermsList = mutableStateListOf<BlockedTerm>()
+
+    private var _modViewStatus: MutableState<ModViewStatus> = mutableStateOf(ModViewStatus())
+    val modViewStatus: State<ModViewStatus> = _modViewStatus
 
     init{
         monitorForSessionId()
@@ -202,15 +211,13 @@ class ModViewViewModel @Inject constructor(
 
 
     /**
-     *
+     * - createModerationActionSubscription is a private function that is meant to establish a EventSub subsctiption type of `channel.moderate`. This will send a
+     * notification when a moderator performs a moderation action in a channel.
+     * - You can read more about this subscription type on Twitch's documentation site, [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelmoderate)
      * */
-    fun createModerationActionSubscription(){
+    private fun createModerationActionSubscription(){
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("createModerationActionSubscription","oAuthToken --> ${_requestIds.value.oAuthToken}")
-            Log.d("createModerationActionSubscription","clientId --> ${_requestIds.value.clientId}")
-            Log.d("createModerationActionSubscription","broadcasterId --> ${_requestIds.value.broadcasterId}")
-            Log.d("createModerationActionSubscription","moderatorId --> ${_requestIds.value.moderatorId}")
-            Log.d("createModerationActionSubscription","sessionId --> ${_requestIds.value.sessionId}")
+
             twitchEventSub.createEventSubSubscription(
                 oAuthToken = _requestIds.value.oAuthToken,
                 clientId = _requestIds.value.clientId,
@@ -220,18 +227,21 @@ class ModViewViewModel @Inject constructor(
                 type = "channel.moderate"
             ).collect { response ->
                 when (response) {
-                    is Response.Loading -> {}
-                    is Response.Success -> {
+                    is WebSocketResponse.Loading -> {}
+                    is WebSocketResponse.Success -> {
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
                         createAnotherSubscriptionEvent()
                     }
 
-                    is Response.Failure -> {
+                    is WebSocketResponse.Failure -> {
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
+                    }
+                    is WebSocketResponse.FailureAuth403 ->{
+
                     }
                 }
             }
@@ -263,19 +273,24 @@ class ModViewViewModel @Inject constructor(
                     type = "automod.message.hold"
                 ).collect { response ->
                     when (response) {
-                        is Response.Loading -> {}
-                        is Response.Success -> {
+                        is WebSocketResponse.Loading -> {}
+                        is WebSocketResponse.Success -> {
                             _uiState.value = _uiState.value.copy(
                                 showSubscriptionEventError = Response.Success(true)
                             )
                             createAnotherSubscriptionEvent()
                         }
 
-                        is Response.Failure -> {
+                        is WebSocketResponse.Failure -> {
                             _uiState.value = _uiState.value.copy(
                                 showSubscriptionEventError = Response.Failure(response.e)
                             )
                         }
+                        is WebSocketResponse.FailureAuth403 ->{
+
+                        }
+
+
                     }
                 }
             }
@@ -293,11 +308,11 @@ class ModViewViewModel @Inject constructor(
                 type = "automod.message.update"
             ).collect { response ->
                 when (response) {
-                    is Response.Loading -> {
+                    is WebSocketResponse.Loading -> {
                         Log.d("createAnotherSubscriptionEvent", "response -->LOADING")
                     }
 
-                    is Response.Success -> {
+                    is WebSocketResponse.Success -> {
                         Log.d("createAnotherSubscriptionEvent", "response -->SUCCESS")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
@@ -305,11 +320,14 @@ class ModViewViewModel @Inject constructor(
                         createChatSettingsSubscriptionEvent()
                     }
 
-                    is Response.Failure -> {
+                    is WebSocketResponse.Failure -> {
                         Log.d("createAnotherSubscriptionEvent", "response -->FAILED")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
+                    }
+                    is WebSocketResponse.FailureAuth403 ->{
+
                     }
                 }
             }
