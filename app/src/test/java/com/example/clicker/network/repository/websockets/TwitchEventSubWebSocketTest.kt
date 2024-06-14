@@ -11,6 +11,10 @@ import com.example.clicker.network.websockets.parseStatusType
 import com.example.clicker.network.websockets.parseSubscriptionType
 import org.junit.Assert
 import org.junit.Test
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class TwitchEventSubWebSocketTest {
 
@@ -28,6 +32,7 @@ class TwitchEventSubWebSocketTest {
         Assert.assertEquals(expectedMessageId, parsedMessageId)
 
     }
+
     @Test
     fun parsing_notification_message_type(){
         /**GIVEN*/
@@ -153,6 +158,127 @@ class TwitchEventSubWebSocketTest {
 
     }
 
+
+
+    //parse out the action --> "action": "timeout",
+    //parse: followers
+    //parse: slow
+    //parse: vip
+    //parse: unvip
+    //parse: mod
+    //parse: unmod
+    //parse: ban
+    //parse: unban
+    //parse: timeout
+    //parse: untimeout
+    //parse: raid
+    //parse: unraid
+    //parse: delete
+    //parse: automod_terms
+    //parse: unban_request  DEFINETLY DO THIS ONE LAST
+    @Test
+    fun `parsing moderation action`(){
+        val stringToParse ="{\"metadata\":{\"message_id\":\"a2bfJHk2z_vTexJKgMVqKT0Fz68r7nFTeERPwEgHEUI=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-14T01:57:06.371464897Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"7caf1631-1c0e-408c-985d-adf5b7b5101a\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQTbl6eU93QxqK0eBXgjgo8RIGY2VsbC1i\"},\"created_at\":\"2024-06-14T01:55:43.164335608Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"untimeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\"},\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
+
+        val timeoutString ="{\"metadata\":{\"message_id\":\"Cth4OcXFrhfVCHk3o0Yr_FxBsW-TzEmXY_8KoMKDyww=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-14T16:14:21.056265756Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"92bdf45e-8427-4c07-98bb-97362a2e5a0c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQ-1V029d3Q-Owp90na8K3HhIGY2VsbC1i\"},\"created_at\":\"2024-06-14T16:14:04.804257892Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"timeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"reason\":\"\",\"expires_at\":\"2024-06-14T19:39:37.444980148Z\"},\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
+
+        whenAction(
+            getActionFromString(timeoutString),
+            timeoutString
+        )
+
+        Assert.assertEquals(1, 2)
+    }
+    fun getActionFromString(stringToParse:String):String?{
+
+        val messageTypeRegex = "\"action\":\"([a-zA-Z]+)\"".toRegex()
+        return messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+
+    }
+
+    fun getModeratorUsername(stringToParse:String):String?{
+        val messageTypeRegex = "\"moderator_user_name\":\"([^\"]*)\"".toRegex()
+        val parsedModeratorUserName = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        println(parsedModeratorUserName)
+        return parsedModeratorUserName
+        // this also works but I understand it less --> (.*?)
+    }
+
+//    fun getUntimedOut(stringToParse: String){
+//        val messageTypeRegex = "\"untimeout\":\\{([^}]*)".toRegex()
+//        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+//        println(foundString)
+//    }
+    fun getUserId(stringToParse: String){
+        val messageTypeRegex = "\"user_id\":\"([^\"]*)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        println(foundString)
+
+    }
+    fun getUserName(stringToParse: String){
+        val messageTypeRegex = "\"user_name\":\"([^\"]*)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        println(foundString)
+
+    }
+    fun getReason(stringToParse: String){
+        //"reason":"stinky",
+        val messageTypeRegex = "\"reason\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        println("reason -->$foundString")
+    }
+    fun getExpiresAt(stringToParse: String){
+
+        val messageTypeRegex = "\"expires_at\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        foundString?.also {
+            convertToReadableDate(it)
+        }
+
+    }
+    fun convertToReadableDate(timestamp:String){
+//        val timestamp = "2024-06-14T16:24:21.030926728Z"
+        //val 9000 seconds 2024-06-14T19:39:37.444980148Z
+
+        val currentInstant = Instant.now()
+
+        // Convert the given timestamp to an Instant
+        val instant = Instant.parse(timestamp)
+
+        // Calculate the difference in seconds between the two Instants
+        val secondsSinceEpoch = instant.epochSecond
+        val currentSecondsSinceEpoch = currentInstant.epochSecond
+        val bannedSeconds = secondsSinceEpoch - currentSecondsSinceEpoch
+
+        println("banned for: $bannedSeconds seconds")
+    }
+
+
+    fun whenAction(action:String?,stringToParse: String){
+        when(action){
+            "untimeout" ->{
+                //moderator name, user id, username
+                getModeratorUsername(stringToParse)
+                getUserId(stringToParse)
+                getUserName(stringToParse)
+            }
+            "timeout" ->{
+                println("TIMEOUT ACTION")
+                getModeratorUsername(stringToParse)
+                getUserId(stringToParse)
+                getUserName(stringToParse)
+                getReason(stringToParse)
+                getExpiresAt(stringToParse)
+
+            }
+            else ->{
+                println("ACTION NULL")
+            }
+
+        }
+    }
 
 
 

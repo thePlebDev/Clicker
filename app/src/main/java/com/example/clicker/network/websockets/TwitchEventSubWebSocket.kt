@@ -47,6 +47,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         //TODO: THIS SHOULD CHECK IF IT IS A WELCOMING MESSAGE. similar to notificationTypeIsNotification()
          //TODO: THIS SHOULD NOT BE DOING THIS EVERY TIME
         //if()
+        Log.d("EventWebsocketMessage", text)
         if(notificationTypeIsWelcome(text)){
             val parsedSessionId = parseEventSubWelcomeMessage(text)
             _parsedSessionId.tryEmit(parsedSessionId)
