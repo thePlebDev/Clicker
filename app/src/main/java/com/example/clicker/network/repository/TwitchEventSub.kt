@@ -15,6 +15,7 @@ import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlinx.coroutines.flow.catch
@@ -30,8 +31,8 @@ class TwitchEventSub @Inject constructor(
         moderatorId:String,
         sessionId:String,
         type:String,
-    ):Flow<Response<Boolean>> = flow {
-        emit(Response.Loading)
+    ):Flow<WebSocketResponse<Boolean>> = flow {
+        emit(WebSocketResponse.Loading)
 
         val body = EvenSubSubscription(
             type = type,
@@ -51,17 +52,23 @@ class TwitchEventSub @Inject constructor(
 
         if (response.isSuccessful) {
             Log.d("createEventSubSubscription","SUCCESS type ->$type")
-            emit(Response.Success(true))
+            emit(WebSocketResponse.Success(true))
         } else {
-            Log.d("createEventSubSubscription","type ->$type")
-            Log.d("createEventSubSubscription","code is 403 ->${response.code() == 403}")
-            Log.d("createEventSubSubscription","message ->${response.message()}")
-            Log.d("createEventSubSubscription","body ->${response.body()}")
-            emit(Response.Failure(Exception("failed request")))
+            if(response.code() == 403){
+                emit(WebSocketResponse.FailureAuth403(Exception("Token error")))
+
+            }else{
+                Log.d("createEventSubSubscription","type ->$type")
+                Log.d("createEventSubSubscription","code is 403 ->${response.code() == 403}")
+                Log.d("createEventSubSubscription","message ->${response.message()}")
+                Log.d("createEventSubSubscription","body ->${response.body()}")
+                emit(WebSocketResponse.Failure(Exception("failed request")))
+            }
+
         }
 
     }.catch { cause ->
-        emit(Response.Failure(Exception("Error caught")))
+        emit(WebSocketResponse.Failure(Exception("Error caught")))
     }
 
     data class ConditionUserId(

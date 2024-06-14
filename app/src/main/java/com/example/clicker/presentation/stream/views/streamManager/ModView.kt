@@ -97,6 +97,7 @@ import com.example.clicker.presentation.stream.views.chat.SlowModeCheck
 import com.example.clicker.presentation.stream.views.chat.SubscriberOnlySwitch
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import kotlinx.coroutines.launch
 
 
@@ -266,6 +267,7 @@ fun ModViewComponent(
                 }
 
             },
+            modActionStatus = modViewViewModel.modViewStatus.value.modActions,
             smallChat = {setDraggingFunc->
                 SmallChat(
                     twitchUserChat=twitchUserChat,
@@ -307,6 +309,8 @@ fun ModViewComponent(
     fun ModViewScaffold(
         closeModView:()->Unit,
         modViewDragStateViewModel: ModViewDragStateViewModel,
+
+        modActionStatus: WebSocketResponse<Boolean>,
 
         fullModeActive:Boolean,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
@@ -405,6 +409,7 @@ fun ModViewComponent(
                 boxTwoHeight = modViewDragStateViewModel.indivBoxHeight.value.boxTwo,
                 boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree,
 
+                modActionStatus=modActionStatus,
 
                 fullModeActive=fullModeActive,
                 fullChat={ setDraggingFunc ->

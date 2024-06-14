@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.ModViewChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import kotlinx.coroutines.flow.Flow
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -39,7 +40,7 @@ interface TwitchEventSubscriptions {
         moderatorId:String,
         sessionId:String,
         type:String,
-    ): Flow<Response<Boolean>>
+    ): Flow<WebSocketResponse<Boolean>>
 
     fun createEventSubSubscriptionUserId(
         oAuthToken:String,
