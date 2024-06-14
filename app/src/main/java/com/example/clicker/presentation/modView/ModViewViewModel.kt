@@ -60,7 +60,7 @@ data class ListTitleValue(
 )
 
 data class ModViewStatus(
-    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Failure(Exception("try again"))
+    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Success(true)
 )
 
 val followerModeList =listOf(
