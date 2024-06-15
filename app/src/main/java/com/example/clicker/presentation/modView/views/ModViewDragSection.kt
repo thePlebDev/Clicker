@@ -44,6 +44,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -90,6 +91,7 @@ import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
+import com.example.clicker.presentation.modView.ModActionData
 
 
 import com.example.clicker.presentation.stream.ClickedUIState
@@ -178,6 +180,7 @@ import kotlin.math.roundToInt
         boxThreeHeight:Dp,
 
         modActionStatus: WebSocketResponse<Boolean>,
+        modActionsList: List<ModActionData>,
 
         fullModeActive:Boolean,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
@@ -228,7 +231,8 @@ import kotlin.math.roundToInt
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         },
-                        modActionStatus=modActionStatus
+                        modActionStatus=modActionStatus,
+                        modActionsList =modActionsList,
                     )
 
 
@@ -274,7 +278,8 @@ import kotlin.math.roundToInt
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         },
-                        modActionStatus=modActionStatus
+                        modActionStatus=modActionStatus,
+                        modActionsList =modActionsList,
                     )
 
                 }
@@ -315,7 +320,8 @@ import kotlin.math.roundToInt
                                 setDraggingTrue={setDraggingFunc()}
                             )
                         },
-                        modActionStatus=modActionStatus
+                        modActionStatus=modActionStatus,
+                        modActionsList =modActionsList,
                     )
 
                 }
@@ -343,6 +349,7 @@ fun ChangingBoxTypes(
     boxThreeDragging:Boolean,
     fullModeActive:Boolean,
     modActionStatus: WebSocketResponse<Boolean>,
+    modActionsList: List<ModActionData>,
     fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
     smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 ){
@@ -402,8 +409,8 @@ fun ChangingBoxTypes(
                 ModActions(
                     dragging =boxThreeDragging,
                     setDragging={newValue -> setBoxDragging(newValue)},
-                    modActionList = listOf(),
-                    modActionStatus =modActionStatus
+                    modActionStatus =modActionStatus,
+                    modActionsList=modActionsList
                 )
 
             }
@@ -891,10 +898,12 @@ fun BoxDeleteSection(
     fun ModActions(
         dragging:Boolean,
         setDragging:(Boolean)->Unit,
-        modActionList:List<TwitchUserData>,
-        modActionStatus: WebSocketResponse<Boolean>
+        modActionStatus: WebSocketResponse<Boolean>,
+        modActionsList: List<ModActionData>
         ){
         val hapticFeedback = LocalHapticFeedback.current
+        //todo: GET THIS LIST FROM THE WEBSOCKET
+
 
         val listState = rememberLazyListState()
         val opacity = if(dragging) 0.5f else 0f
@@ -942,7 +951,7 @@ fun BoxDeleteSection(
                     LoadingIndicator(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionList.size
+                        modActionListSize = modActionsList.size
                     )
 
                 }
@@ -959,7 +968,7 @@ fun BoxDeleteSection(
                     ) {
                         stickyHeader {
                             Text(
-                                "MOD ACTIONS: ${modActionList.size} ",
+                                "MOD ACTIONS: ${modActionsList.size} ",
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                                 modifier = Modifier
@@ -975,30 +984,18 @@ fun BoxDeleteSection(
                                     .padding(horizontal = 10.dp)
                             )
                         }
-                        item{
+                        items(modActionsList){modAction->
                             ModActionNotificationMessage(
-                                username="Fuckering",
-                                message="Added as Blocked Term by thePlebDev",
-                                icon = painterResource(id =R.drawable.lock_24)
+                                title=modAction.title,
+                                message=modAction.message,
+                                icon = painterResource(id =modAction.iconId),
+                                secondaryErrorMessage = modAction.secondaryMessage
                             )
                         }
-                        item{
-                            ModActionNotificationMessage(
-                                username="poop",
-                                message="Removed as Blocked Term by thePlebDev",
-                                icon = painterResource(id =R.drawable.lock_open_24)
-                            )
-                        }
-                        item{
-                            ModActionNotificationMessage(
-                                username="meanerMeeny",
-                                message="Banned by theplebdev ofr 4000 seconds",
-                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
-                            )
-                        }
+
                         scope.launch {
                             if(autoscroll){
-                                listState.scrollToItem(modActionList.size)
+                                listState.scrollToItem(modActionsList.size)
                             }
                         }
 
@@ -1011,7 +1008,7 @@ fun BoxDeleteSection(
                     FailedClickToTryAgainBox(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionList.size
+                        modActionListSize = modActionsList.size
                     )
 
                 }
@@ -1019,7 +1016,7 @@ fun BoxDeleteSection(
                     ErrorMessage403(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionList.size
+                        modActionListSize = modActionsList.size
                     )
                 }
             }
@@ -1174,14 +1171,19 @@ fun IconTextRow(
 }
 
 
+
+
     @Composable
     fun ModActionNotificationMessage(
+        title:String,
         message:String,
-        username:String,
-        icon:Painter
+        icon:Painter,
+        secondaryErrorMessage:String? = null
 
     ){
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)) {
             Spacer(modifier = Modifier.height(5.dp))
 
             Column(modifier = Modifier
@@ -1191,10 +1193,13 @@ fun IconTextRow(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     Icon(painter = icon, modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  $username", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                    Text(text ="  $title", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
                 }
                 Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
+                if(secondaryErrorMessage!= null){
+                    Text(text =secondaryErrorMessage, color = Color.Red.copy(alpha = 0.7f), fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+                }
+                Spacer(modifier = Modifier.height(5.dp))
 
             }
             Spacer(modifier = Modifier

@@ -1,8 +1,12 @@
 package com.example.clicker.network.websockets
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import com.example.clicker.R
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
@@ -10,6 +14,12 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -32,6 +42,9 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
     private val _updatedChatSettingsData: MutableStateFlow<ChatSettingsData?> = MutableStateFlow(null)
     // The UI collects from this StateFlow to get its state updates
     override val updatedChatSettingsData: StateFlow<ChatSettingsData?> = _updatedChatSettingsData
+
+    private val _modActions: MutableStateFlow<ModActionData?> = MutableStateFlow(null)
+    override val modActions: StateFlow<ModActionData?> = _modActions
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
@@ -58,17 +71,26 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             val subscriptionType = parseSubscriptionType(text)
 
             //todo: These could probably be stored in maps
-            if(subscriptionType =="automod.message.hold"){
-                _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
-            }
-            else if(subscriptionType =="automod.message.update"){
-                val messageId =parseMessageId(text)?:""
-                val messageUpdate = checkUpdateStatus(text,messageId)
-                _messageIdForAutoModQueue.tryEmit(messageUpdate)
-            }
-            else if(subscriptionType == "channel.chat_settings.update"){
-                val parsedChatSettingsData = parseChatSettingsData(text)
-                _updatedChatSettingsData.tryEmit(parsedChatSettingsData)
+            when (subscriptionType) {
+                "automod.message.hold" -> {
+                    _autoModMessageQueue.tryEmit(parseAutoModQueueMessage(text))
+                }
+                "channel.moderate" -> {
+                    Log.d("ChannelModerateParsing", "TIME TO PARSE!!!!")
+                    val action = parseActionFromString(text)
+                    whenAction(
+                        action,text
+                    )
+                }
+                "automod.message.update" -> {
+                    val messageId = parseMessageId(text) ?: ""
+                    val messageUpdate = checkUpdateStatus(text, messageId)
+                    _messageIdForAutoModQueue.tryEmit(messageUpdate)
+                }
+                "channel.chat_settings.update" -> {
+                    val parsedChatSettingsData = parseChatSettingsData(text)
+                    _updatedChatSettingsData.tryEmit(parsedChatSettingsData)
+                }
             }
 
         }
@@ -109,6 +131,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         super.onFailure(webSocket, t, response)
         Log.d("TwitchEventSubWebSocket","onFailure()")
+        Log.d("TwitchEventSubWebSocket","response --> ${response?.message}")
+        Log.d("TwitchEventSubWebSocket","body --> ${response?.body}")
     }
 
      override fun newWebSocket() {
@@ -142,8 +166,241 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         webSocket = null
     }
 
+    /***************BELOW IS ALL THE PARSING FOR THE channel.moderate***********************/
+//1) get the action(DONE) 2) determine the action 3) parse and send data to UI
 
-}
+    fun parseActionFromString(stringToParse:String):String?{
+
+        val messageTypeRegex = "\"action\":\"([^\"]*)\"".toRegex()
+        return messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+
+    }
+    private fun whenAction(action:String?,stringToParse: String){
+        when(action){
+            "untimeout" ->{
+                //moderator name, user id, username
+                Log.d("TimeoutActions","untimeout")
+                val data = ModActionData(
+                    title = getUserName(stringToParse),
+                    message="Timeout removed by ${getModeratorUsername(stringToParse)}",
+                    iconId = R.drawable.baseline_check_24
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "timeout" ->{
+                Log.d("TimeoutActions","text ->$stringToParse")
+                val data = ModActionData(
+                    title = getUserName(stringToParse) ,
+                    message="Timed out by ${getModeratorUsername(stringToParse)} for ${getExpiresAt(stringToParse)} seconds. ${getReason(stringToParse)}",
+                    iconId = R.drawable.time_out_24
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "ban"->{
+                println("BAN ACTION")
+                val data = ModActionData(
+                    title = getUserName(stringToParse),
+                    message="Banned by ${getModeratorUsername(stringToParse)}. ${getReason(stringToParse)}",
+                    iconId = R.drawable.clear_chat_alt_24
+                )
+                _modActions.tryEmit(data)
+            }
+            "unban" ->{
+                val data = ModActionData(
+                    title = getUserName(stringToParse),
+                    message="Unbanned  by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.baseline_check_24
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "delete"->{
+                val data = ModActionData(
+                    title = getUserName(stringToParse),
+                    message="Message deleted by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.delete_outline_24,
+                    secondaryMessage = getMessageBody(stringToParse)
+                )
+                _modActions.tryEmit(data)
+
+            }
+
+            "remove_blocked_term"->{
+                val data = ModActionData(
+                    title = getBlockedTerms(stringToParse),
+                    message="Removed as Blocked Term by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.lock_open_24,
+                )
+                _modActions.tryEmit(data)
+            }
+
+            "add_blocked_term"->{
+                val data = ModActionData(
+                    title = getBlockedTerms(stringToParse),
+                    message="Added as Blocked Term by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.lock_24,
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "emoteonly"->{
+                val data = ModActionData(
+                    title = "Emote-Only Chat",
+                    message="Enabled by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.emote_face_24,
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "followers"->{
+                val data = ModActionData(
+                    title = "Follower-Only Chat",
+                    message="Enabled with ${getFollowerTime(stringToParse)} min following age, by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.favorite_24,
+                )
+                _modActions.tryEmit(data)
+            }
+            "slow" ->{
+                val data = ModActionData(
+                    title = "Slow Mode",
+                    message="Enabled with ${getSlowModeTime(stringToParse)}s wait time, by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.baseline_hourglass_empty_24,
+                )
+                _modActions.tryEmit(data)
+
+
+            }
+            "slowoff"->{
+                val data = ModActionData(
+                    title = "Slow Mode Off",
+                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.baseline_hourglass_empty_24,
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "followersoff"->{
+                val data = ModActionData(
+                    title = "Followers-Only Off",
+                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.favorite_24,
+                )
+                _modActions.tryEmit(data)
+
+            }
+            "emoteonlyoff"->{
+                val data = ModActionData(
+                    title = "Emotes-Only Off",
+                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    iconId = R.drawable.emote_face_24,
+                )
+                _modActions.tryEmit(data)
+
+            }
+            else ->{
+
+            }
+
+        }
+    }
+
+    private fun getModeratorUsername(stringToParse:String):String{
+        val messageTypeRegex = "\"moderator_user_name\":\"([^\"]*)\"".toRegex()
+        val parsedModeratorUserName = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?:""
+
+        return parsedModeratorUserName
+        // this also works but I understand it less --> (.*?)
+    }
+
+    private fun getUserId(stringToParse: String):String?{
+        val messageTypeRegex = "\"user_id\":\"([^\"]*)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        return foundString
+
+    }
+    private fun getUserName(stringToParse: String):String{
+        val messageTypeRegex = "\"user_name\":\"([^\"]*)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        return foundString?:"A user"
+
+    }
+
+    private fun getReason(stringToParse: String):String{
+        val messageTypeRegex = "\"reason\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
+        return foundString
+    }
+    private fun getExpiresAt(stringToParse: String):String{
+
+        val messageTypeRegex = "\"expires_at\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        if(foundString != null){
+            return convertToReadableDate(foundString) ?:""
+        }
+        else return ""
+    }
+    private fun getMessageBody(stringToParse: String):String?{
+        //"reason":"stinky",
+        val messageTypeRegex = "\"message_body\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+        return foundString
+    }
+    fun getBlockedTerms(stringToParse: String):String{
+
+        val messageTypeRegex = "\"terms\":\\[\"([^\"\\]]*)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
+        return foundString
+    }
+    fun getFollowerTime(stringToParse: String):String{
+        val followersTime ="\"followers\":{\"follow_duration_minutes\":10},"
+        val messageTypeRegex = "\"follow_duration_minutes\":(\\d+)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
+        return foundString
+
+    }
+    fun getSlowModeTime(stringToParse: String):String{
+        //wait_time_seconds
+
+        val messageTypeRegex = "\"wait_time_seconds\":(\\d+)".toRegex()
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
+        return foundString
+    }
+
+    fun convertToReadableDate(timestamp: String): String {
+        // Define the date format expected for the timestamp
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'", Locale.getDefault())
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        // Parse the timestamp to a Date object
+        val date: Date
+        try {
+            date = dateFormat.parse(timestamp)
+        } catch (e: Exception) {
+            return ""
+        }
+
+        // Get the current date and time
+        val currentDate = Calendar.getInstance().time
+
+        // Calculate the difference in seconds
+        val bannedSeconds = (date.time - currentDate.time) / 1000
+
+        return bannedSeconds.toString()
+    }
+
+
+
+
+    /***************ABOVE IS ALL THE PARSING FOR THE channel.moderate***********************/
+
+
+} /***END OF TwitchEventSubWebSocket****/
 
 /**
  * parseEventSubWelcomeMessage is a function meant to parse out the session id from the
@@ -310,6 +567,7 @@ fun parseAutoModQueueMessage(stringToParse:String):AutoModQueueMessage{
         messageId = messageId ?:""
     )
 }
+
 
 
 

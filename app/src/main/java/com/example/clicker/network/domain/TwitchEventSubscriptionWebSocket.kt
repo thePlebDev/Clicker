@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.websockets.AutoModMessageUpdate
 import com.example.clicker.network.websockets.AutoModQueueMessage
+import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @property autoModMessageQueue a [StateFlow] object containing the most recent [AutoModQueueMessage] object sent from the Twitch server
  * @property messageIdForAutoModQueue a [StateFlow] object containing the most recent [AutoModMessageUpdate] object sent from the Twitch server
  * @property updatedChatSettingsData a [StateFlow] object containing the most recent [ChatSettingsData] object sent from the Twitch server
+ * @property modActions a [StateFlow] object containing the most recent [ModActionData] object sent from the Twitch server
  *
  * @property newWebSocket()
  * @property closeWebSocket()
@@ -28,6 +30,7 @@ interface TwitchEventSubscriptionWebSocket {
     val autoModMessageQueue: StateFlow<AutoModQueueMessage?>
     val messageIdForAutoModQueue: StateFlow<AutoModMessageUpdate?>
     val updatedChatSettingsData: StateFlow<ChatSettingsData?>
+    val modActions: StateFlow<ModActionData?>
 
 
     /**
