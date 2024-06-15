@@ -977,16 +977,16 @@ fun BoxDeleteSection(
                         }
                         item{
                             ModActionNotificationMessage(
-                                username="meanerMeeny",
-                                message="Banned by theplebdev ofr 4000 seconds",
-                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
+                                username="Fuckering",
+                                message="Added as Blocked Term by thePlebDev",
+                                icon = painterResource(id =R.drawable.lock_24)
                             )
                         }
                         item{
                             ModActionNotificationMessage(
-                                username="meanerMeeny",
-                                message="Banned by theplebdev ofr 4000 seconds",
-                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
+                                username="poop",
+                                message="Removed as Blocked Term by thePlebDev",
+                                icon = painterResource(id =R.drawable.lock_open_24)
                             )
                         }
                         item{
