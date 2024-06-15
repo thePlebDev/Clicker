@@ -570,6 +570,7 @@ class HomeViewModel @Inject constructor(
 
 /***END OF VIEWMODEL**/
 
+//todo: this can cause a crash
 fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamData {
 
     return copy(
