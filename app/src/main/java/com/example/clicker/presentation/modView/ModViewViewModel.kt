@@ -8,9 +8,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
@@ -63,6 +65,26 @@ data class ModViewStatus(
     val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Success(true)
 )
 
+/**
+ * - ModActionData represents an individual event sent by the Twitch servers when a moderator takes action inside of the chat
+ * - You can read more about the moderation action [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelmoderate)
+ *
+ * @param title a String that represents the main information shown to the user when a moderation action takes place. This should be as short as possible
+ * @param message a String that represents information that needs to be shown to the user. It is meant to elaborate on [title].
+ * Should tell the details of this moderation action
+ * @param iconId a Int that represents the id of the drawable resource that is going to be used as the icon.
+ * This will be turned into a [Painter] object and shown to the user as an icon next to [title]
+ * @param secondaryMessage a nullable String object that represents a message that can be shown to the user. The text is shown in red.
+ * This is mainly only used for displaying text that was deleted during a message deleted moderation event.
+ *
+ * */
+data class ModActionData(
+    val title:String,
+    val message:String,
+    val iconId: Int,
+    val secondaryMessage:String? =null
+)
+
 val followerModeList =listOf(
 ListTitleValue("Off",null),ListTitleValue("0 minutes(any followers)",0),
 ListTitleValue("10 minutes(most used)",10),
@@ -106,6 +128,15 @@ class ModViewViewModel @Inject constructor(
     private var _modViewStatus: MutableState<ModViewStatus> = mutableStateOf(ModViewStatus())
     val modViewStatus: State<ModViewStatus> = _modViewStatus
 
+//
+//        val modActionsList = listOf<ModActionData>(
+//        ModActionData("Emotes-Only Chat","Removed by thepleddev", R.drawable.emote_face_24),
+//        ModActionData("Followers-Only Chat","Removed by thepleddev", R.drawable.favorite_24),
+//        ModActionData("Slow Mode","Enabled with 20s wait time, by theplebdev", R.drawable.person_outline_24),
+//        ModActionData("meenermeeny","Message Deleted by by thepleddev:", R.drawable.delete_outline_24,"wtf this is some bull shit"),
+//    )
+    val modActionsList =mutableStateListOf<ModActionData>()
+
     init{
         monitorForSessionId()
     }
@@ -118,10 +149,25 @@ class ModViewViewModel @Inject constructor(
     }
     //
     fun createNewTwitchEventWebSocket(){
+        modActionsList.clear()
         twitchEventSubWebSocket.newWebSocket()
     }
     init{
         monitorForChatSettingsUpdate()
+    }
+    init{
+        monitorForModActions()
+    }
+
+
+    private fun monitorForModActions() = viewModelScope.launch(Dispatchers.IO){
+        twitchEventSubWebSocket.modActions.collect{nullableModAction ->
+            nullableModAction?.also {nonNullableModAction ->
+                Log.d("ModActionsHappending","action ->$nonNullableModAction")
+                modActionsList.add(nonNullableModAction)
+
+            }
+        }
     }
 
     private fun monitorForChatSettingsUpdate(){

@@ -11,10 +11,15 @@ import com.example.clicker.network.websockets.parseStatusType
 import com.example.clicker.network.websockets.parseSubscriptionType
 import org.junit.Assert
 import org.junit.Test
+import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class TwitchEventSubWebSocketTest {
 
@@ -158,6 +163,50 @@ class TwitchEventSubWebSocketTest {
 
     }
 
+    @Test
+    fun `testing failing thinger`(){
+        // I need to test
+        val testingString = "{\"metadata\":{\"message_id\":\"pjsWbBkLJwRarWHDkTpCB7YV6LNc2fZt1Q8VPfRWOSg=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T22:17:46.833518239Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"d40b2695-ecbd-4b25-ae13-1b54c5d1c0c1\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQxz8Sci1BSTOkdudModlGhhIGY2VsbC1i\"},\"created_at\":\"2024-06-15T22:17:36.135821546Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"timeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"reason\":\"\",\"expires_at\":\"2024-06-15T22:27:46.81829331Z\"},\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
+
+        println("expires in"+getExpiresAtTest(testingString))
+        Assert.assertEquals(1, 2)
+
+
+    }
+    private fun getExpiresAtTest(stringToParse: String):String{
+
+        val messageTypeRegex = "\"expires_at\":\"([^\"]*)".toRegex()
+
+        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
+
+        if(foundString != null){
+            return convertToReadableDateTest(foundString) ?:""
+        }
+        else return ""
+    }
+
+    fun convertToReadableDateTest(timestamp: String): String {
+        // Define the date format expected for the timestamp
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'", Locale.getDefault())
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        // Parse the timestamp to a Date object
+        val date: Date
+        try {
+            date = dateFormat.parse(timestamp)
+        } catch (e: Exception) {
+            return ""
+        }
+
+        // Get the current date and time
+        val currentDate = Calendar.getInstance().time
+
+        // Calculate the difference in seconds
+        val bannedSeconds = (date.time - currentDate.time) / 10000
+
+        return bannedSeconds.toString()
+    }
+
 
 
     //parse out the action --> "action": "timeout",
@@ -197,8 +246,8 @@ class TwitchEventSubWebSocketTest {
         val timeoutString ="{\"metadata\":{\"message_id\":\"Cth4OcXFrhfVCHk3o0Yr_FxBsW-TzEmXY_8KoMKDyww=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-14T16:14:21.056265756Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"92bdf45e-8427-4c07-98bb-97362a2e5a0c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQ-1V029d3Q-Owp90na8K3HhIGY2VsbC1i\"},\"created_at\":\"2024-06-14T16:14:04.804257892Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"timeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"reason\":\"\",\"expires_at\":\"2024-06-14T19:39:37.444980148Z\"},\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
 
         whenAction(
-            getActionFromString(slowModeString),
-            slowModeString
+            getActionFromString(timeoutString),
+            timeoutString
         )
 
         Assert.assertEquals(1, 2)
@@ -218,11 +267,6 @@ class TwitchEventSubWebSocketTest {
         // this also works but I understand it less --> (.*?)
     }
 
-//    fun getUntimedOut(stringToParse: String){
-//        val messageTypeRegex = "\"untimeout\":\\{([^}]*)".toRegex()
-//        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-//        println(foundString)
-//    }
     fun getUserId(stringToParse: String){
         val messageTypeRegex = "\"user_id\":\"([^\"]*)".toRegex()
         val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
@@ -280,15 +324,12 @@ class TwitchEventSubWebSocketTest {
         println(foundString)
     }
     fun convertToReadableDate(timestamp:String){
-//        val timestamp = "2024-06-14T16:24:21.030926728Z"
-        //val 9000 seconds 2024-06-14T19:39:37.444980148Z
+
 
         val currentInstant = Instant.now()
 
         // Convert the given timestamp to an Instant
         val instant = Instant.parse(timestamp)
-
-        // Calculate the difference in seconds between the two Instants
         val secondsSinceEpoch = instant.epochSecond
         val currentSecondsSinceEpoch = currentInstant.epochSecond
         val bannedSeconds = secondsSinceEpoch - currentSecondsSinceEpoch
@@ -373,7 +414,6 @@ class TwitchEventSubWebSocketTest {
                 getModeratorUsername(stringToParse)
 
             }
-
             else ->{
                 println("ACTION NULL")
             }

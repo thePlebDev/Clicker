@@ -74,6 +74,7 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.websockets.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ListTitleValue
+import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
@@ -267,6 +268,7 @@ fun ModViewComponent(
                 }
 
             },
+            modActionsList = modViewViewModel.modActionsList,
             modActionStatus = modViewViewModel.modViewStatus.value.modActions,
             smallChat = {setDraggingFunc->
                 SmallChat(
@@ -311,6 +313,7 @@ fun ModViewComponent(
         modViewDragStateViewModel: ModViewDragStateViewModel,
 
         modActionStatus: WebSocketResponse<Boolean>,
+        modActionsList: List<ModActionData>,
 
         fullModeActive:Boolean,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
@@ -410,6 +413,7 @@ fun ModViewComponent(
                 boxThreeHeight = modViewDragStateViewModel.indivBoxHeight.value.boxThree,
 
                 modActionStatus=modActionStatus,
+                modActionsList=modActionsList,
 
                 fullModeActive=fullModeActive,
                 fullChat={ setDraggingFunc ->

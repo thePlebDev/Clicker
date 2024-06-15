@@ -46,6 +46,7 @@ import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 
+
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
@@ -262,6 +263,8 @@ class StreamViewModel @Inject constructor(
     private val monitoredUsers = mutableStateListOf<String>()
      val shouldMonitorUser:State<Boolean>
         get() = mutableStateOf(monitoredUsers.contains(_clickedUIState.value.clickedUsername))
+
+
 
 
 
