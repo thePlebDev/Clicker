@@ -975,6 +975,27 @@ fun BoxDeleteSection(
                                     .padding(horizontal = 10.dp)
                             )
                         }
+                        item{
+                            ModActionNotificationMessage(
+                                username="meanerMeeny",
+                                message="Banned by theplebdev ofr 4000 seconds",
+                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
+                            )
+                        }
+                        item{
+                            ModActionNotificationMessage(
+                                username="meanerMeeny",
+                                message="Banned by theplebdev ofr 4000 seconds",
+                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
+                            )
+                        }
+                        item{
+                            ModActionNotificationMessage(
+                                username="meanerMeeny",
+                                message="Banned by theplebdev ofr 4000 seconds",
+                                icon = painterResource(id =R.drawable.clear_chat_alt_24)
+                            )
+                        }
                         scope.launch {
                             if(autoscroll){
                                 listState.scrollToItem(modActionList.size)
@@ -1152,13 +1173,16 @@ fun IconTextRow(
 
 }
 
-object ModActionMessage{
+
     @Composable
-    fun DeletedMessage(
+    fun ModActionNotificationMessage(
         message:String,
+        username:String,
+        icon:Painter
+
     ){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
+            Spacer(modifier = Modifier.height(5.dp))
 
             Column(modifier = Modifier
                 .fillMaxWidth()
@@ -1166,37 +1190,8 @@ object ModActionMessage{
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Icon(painter = painterResource(id =R.drawable.mod_view_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                }
-                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
-
-            }
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth()
-                .background(Color.White.copy(0.6f)))
-
-        }
-    }
-
-    @Composable
-    fun TimeoutMessage(
-        message:String,
-        userTimedOut:String
-    ){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painter = painterResource(id =R.drawable.time_out_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  $userTimedOut", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+                    Icon(painter = icon, modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                    Text(text ="  $username", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
                 }
                 Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
                 Spacer(modifier = Modifier.height(10.dp))
@@ -1209,94 +1204,6 @@ object ModActionMessage{
 
         }
     }
-
-    @Composable
-    fun UnTimeoutMessage(
-        message:String,
-        userTimedOut:String
-    ){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painter = painterResource(id =R.drawable.baseline_check_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  $userTimedOut", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                }
-                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
-
-            }
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.onPrimary.copy(0.5f)))
-
-        }
-    }
-
-    @Composable
-    fun ClearChatMessage(
-        message:String,
-    ){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painter = painterResource(id =R.drawable.clear_chat_alt_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                }
-                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
-
-            }
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth()
-                .background(Color.White.copy(0.6f)))
-
-        }
-    }
-
-    @Composable
-    fun NoticeMessage(
-        message:String,
-    ){
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 0.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(painter = painterResource(id =R.drawable.person_outline_24), modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
-                    Text(text ="  Moderator Action", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
-                }
-                Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
-                Spacer(modifier = Modifier.height(10.dp))
-
-            }
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth()
-                .background(Color.White.copy(0.6f)))
-
-        }
-    }
-
-
-}
 
 
 @Composable
