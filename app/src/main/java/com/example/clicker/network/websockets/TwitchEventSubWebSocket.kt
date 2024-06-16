@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import com.example.clicker.R
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,9 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebSocket, WebSocketListener() {
+class TwitchEventSubWebSocket @Inject constructor(
+    private val modActionParsing:ModActionParsing
+): TwitchEventSubscriptionWebSocket, WebSocketListener() {
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket: WebSocket? = null
 
@@ -45,6 +48,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
     private val _modActions: MutableStateFlow<ModActionData?> = MutableStateFlow(null)
     override val modActions: StateFlow<ModActionData?> = _modActions
+
+
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
@@ -77,10 +82,15 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
                 }
                 "channel.moderate" -> {
                     Log.d("ChannelModerateParsing", "TIME TO PARSE!!!!")
-                    val action = parseActionFromString(text)
-                    whenAction(
-                        action,text
+                    val action = modActionParsing.parseActionFromString(text)
+                    modActionParsing.whenAction(
+                        action =action,
+                        stringToParse =text,
+                        emitData ={modActionData ->_modActions.tryEmit(modActionData)}
                     )
+//                    whenAction(
+//                        action,text
+//                    )
                 }
                 "automod.message.update" -> {
                     val messageId = parseMessageId(text) ?: ""
@@ -169,20 +179,16 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
     /***************BELOW IS ALL THE PARSING FOR THE channel.moderate***********************/
 //1) get the action(DONE) 2) determine the action 3) parse and send data to UI
 
-    fun parseActionFromString(stringToParse:String):String?{
 
-        val messageTypeRegex = "\"action\":\"([^\"]*)\"".toRegex()
-        return messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
 
-    }
     private fun whenAction(action:String?,stringToParse: String){
         when(action){
             "untimeout" ->{
                 //moderator name, user id, username
                 Log.d("TimeoutActions","untimeout")
                 val data = ModActionData(
-                    title = getUserName(stringToParse),
-                    message="Timeout removed by ${getModeratorUsername(stringToParse)}",
+                    title = modActionParsing.getUserName(stringToParse),
+                    message="Timeout removed by ${modActionParsing.getModeratorUsername(stringToParse)}",
                     iconId = R.drawable.baseline_check_24
                 )
                 _modActions.tryEmit(data)
@@ -191,8 +197,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "timeout" ->{
                 Log.d("TimeoutActions","text ->$stringToParse")
                 val data = ModActionData(
-                    title = getUserName(stringToParse) ,
-                    message="Timed out by ${getModeratorUsername(stringToParse)} for ${getExpiresAt(stringToParse)} seconds. ${getReason(stringToParse)}",
+                    title = modActionParsing.getUserName(stringToParse) ,
+                    message="Timed out by ${modActionParsing.getModeratorUsername(stringToParse)} for ${modActionParsing.getExpiresAt(stringToParse)} seconds. ${modActionParsing.getReason(stringToParse)}",
                     iconId = R.drawable.time_out_24
                 )
                 _modActions.tryEmit(data)
@@ -201,16 +207,16 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "ban"->{
                 println("BAN ACTION")
                 val data = ModActionData(
-                    title = getUserName(stringToParse),
-                    message="Banned by ${getModeratorUsername(stringToParse)}. ${getReason(stringToParse)}",
+                    title = modActionParsing.getUserName(stringToParse),
+                    message="Banned by ${modActionParsing.getModeratorUsername(stringToParse)}. ${modActionParsing.getReason(stringToParse)}",
                     iconId = R.drawable.clear_chat_alt_24
                 )
                 _modActions.tryEmit(data)
             }
             "unban" ->{
                 val data = ModActionData(
-                    title = getUserName(stringToParse),
-                    message="Unbanned  by ${getModeratorUsername(stringToParse)}.",
+                    title = modActionParsing.getUserName(stringToParse),
+                    message="Unbanned  by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.baseline_check_24
                 )
                 _modActions.tryEmit(data)
@@ -218,10 +224,10 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             }
             "delete"->{
                 val data = ModActionData(
-                    title = getUserName(stringToParse),
-                    message="Message deleted by ${getModeratorUsername(stringToParse)}.",
+                    title = modActionParsing.getUserName(stringToParse),
+                    message="Message deleted by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.delete_outline_24,
-                    secondaryMessage = getMessageBody(stringToParse)
+                    secondaryMessage = modActionParsing.getMessageBody(stringToParse)
                 )
                 _modActions.tryEmit(data)
 
@@ -229,8 +235,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
             "remove_blocked_term"->{
                 val data = ModActionData(
-                    title = getBlockedTerms(stringToParse),
-                    message="Removed as Blocked Term by ${getModeratorUsername(stringToParse)}.",
+                    title = modActionParsing.getBlockedTerms(stringToParse),
+                    message="Removed as Blocked Term by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.lock_open_24,
                 )
                 _modActions.tryEmit(data)
@@ -238,8 +244,8 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
 
             "add_blocked_term"->{
                 val data = ModActionData(
-                    title = getBlockedTerms(stringToParse),
-                    message="Added as Blocked Term by ${getModeratorUsername(stringToParse)}.",
+                    title = modActionParsing.getBlockedTerms(stringToParse),
+                    message="Added as Blocked Term by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.lock_24,
                 )
                 _modActions.tryEmit(data)
@@ -248,7 +254,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "emoteonly"->{
                 val data = ModActionData(
                     title = "Emote-Only Chat",
-                    message="Enabled by ${getModeratorUsername(stringToParse)}.",
+                    message="Enabled by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.emote_face_24,
                 )
                 _modActions.tryEmit(data)
@@ -257,7 +263,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "followers"->{
                 val data = ModActionData(
                     title = "Follower-Only Chat",
-                    message="Enabled with ${getFollowerTime(stringToParse)} min following age, by ${getModeratorUsername(stringToParse)}.",
+                    message="Enabled with ${modActionParsing.getFollowerTime(stringToParse)} min following age, by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.favorite_24,
                 )
                 _modActions.tryEmit(data)
@@ -265,7 +271,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "slow" ->{
                 val data = ModActionData(
                     title = "Slow Mode",
-                    message="Enabled with ${getSlowModeTime(stringToParse)}s wait time, by ${getModeratorUsername(stringToParse)}.",
+                    message="Enabled with ${modActionParsing.getSlowModeTime(stringToParse)}s wait time, by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.baseline_hourglass_empty_24,
                 )
                 _modActions.tryEmit(data)
@@ -275,7 +281,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "slowoff"->{
                 val data = ModActionData(
                     title = "Slow Mode Off",
-                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.baseline_hourglass_empty_24,
                 )
                 _modActions.tryEmit(data)
@@ -284,7 +290,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "followersoff"->{
                 val data = ModActionData(
                     title = "Followers-Only Off",
-                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.favorite_24,
                 )
                 _modActions.tryEmit(data)
@@ -293,7 +299,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
             "emoteonlyoff"->{
                 val data = ModActionData(
                     title = "Emotes-Only Off",
-                    message="Removed by ${getModeratorUsername(stringToParse)}.",
+                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
                     iconId = R.drawable.emote_face_24,
                 )
                 _modActions.tryEmit(data)
@@ -306,93 +312,7 @@ class TwitchEventSubWebSocket @Inject constructor(): TwitchEventSubscriptionWebS
         }
     }
 
-    private fun getModeratorUsername(stringToParse:String):String{
-        val messageTypeRegex = "\"moderator_user_name\":\"([^\"]*)\"".toRegex()
-        val parsedModeratorUserName = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)?:""
 
-        return parsedModeratorUserName
-        // this also works but I understand it less --> (.*?)
-    }
-
-    private fun getUserId(stringToParse: String):String?{
-        val messageTypeRegex = "\"user_id\":\"([^\"]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        return foundString
-
-    }
-    private fun getUserName(stringToParse: String):String{
-        val messageTypeRegex = "\"user_name\":\"([^\"]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        return foundString?:"A user"
-
-    }
-
-    private fun getReason(stringToParse: String):String{
-        val messageTypeRegex = "\"reason\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
-        return foundString
-    }
-    private fun getExpiresAt(stringToParse: String):String{
-
-        val messageTypeRegex = "\"expires_at\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        if(foundString != null){
-            return convertToReadableDate(foundString) ?:""
-        }
-        else return ""
-    }
-    private fun getMessageBody(stringToParse: String):String?{
-        //"reason":"stinky",
-        val messageTypeRegex = "\"message_body\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        return foundString
-    }
-    fun getBlockedTerms(stringToParse: String):String{
-
-        val messageTypeRegex = "\"terms\":\\[\"([^\"\\]]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
-        return foundString
-    }
-    fun getFollowerTime(stringToParse: String):String{
-        val followersTime ="\"followers\":{\"follow_duration_minutes\":10},"
-        val messageTypeRegex = "\"follow_duration_minutes\":(\\d+)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
-        return foundString
-
-    }
-    fun getSlowModeTime(stringToParse: String):String{
-        //wait_time_seconds
-
-        val messageTypeRegex = "\"wait_time_seconds\":(\\d+)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1) ?:""
-        return foundString
-    }
-
-    fun convertToReadableDate(timestamp: String): String {
-        // Define the date format expected for the timestamp
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'", Locale.getDefault())
-        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-
-        // Parse the timestamp to a Date object
-        val date: Date
-        try {
-            date = dateFormat.parse(timestamp)
-        } catch (e: Exception) {
-            return ""
-        }
-
-        // Get the current date and time
-        val currentDate = Calendar.getInstance().time
-
-        // Calculate the difference in seconds
-        val bannedSeconds = (date.time - currentDate.time) / 1000
-
-        return bannedSeconds.toString()
-    }
 
 
 

@@ -1,6 +1,7 @@
 package com.example.clicker.network.repository.websockets
 
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.notificationTypeIsNotification
 import com.example.clicker.network.websockets.notificationTypeIsWelcome
 import com.example.clicker.network.websockets.parseAutoModQueueMessage
@@ -22,6 +23,8 @@ import java.util.Locale
 import java.util.TimeZone
 
 class TwitchEventSubWebSocketTest {
+
+    val modActionParsing = ModActionParsing()
 
 
     @Test
@@ -207,32 +210,16 @@ class TwitchEventSubWebSocketTest {
         return bannedSeconds.toString()
     }
 
-
-
-    //parse out the action --> "action": "timeout",
-    //parse: followers
-    //parse: slow
-    //parse: vip
-    //parse: unvip
-    //parse: mod
-    //parse: unmod
-    //parse: ban
-    //parse: unban
-    //parse: timeout
-    //parse: untimeout
-    //parse: raid
-    //parse: unraid
-    //parse: delete
-    //parse: automod_terms
-    //parse: unban_request  DEFINETLY DO THIS ONE LAST
     @Test
     fun `parsing moderation action`(){
         val stringToParse ="{\"metadata\":{\"message_id\":\"a2bfJHk2z_vTexJKgMVqKT0Fz68r7nFTeERPwEgHEUI=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-14T01:57:06.371464897Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"7caf1631-1c0e-408c-985d-adf5b7b5101a\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQTbl6eU93QxqK0eBXgjgo8RIGY2VsbC1i\"},\"created_at\":\"2024-06-14T01:55:43.164335608Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"untimeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\"},\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
 
+        val subscribersOnlyOffString ="{\"metadata\":{\"message_id\":\"bDvc1KOhpHgOCHAUNWVmllDLDWD4SY2BizmhLmbZxK0=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-16T17:00:09.35426471Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"07a6ce98-5afd-4148-8636-372ce9a4e30c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQLAd-3Yi_SVmoLHdSRCXFCBIGY2VsbC1i\"},\"created_at\":\"2024-06-16T17:00:00.922161673Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"subscribersoff\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val emoteOnlyOff ="{\"metadata\":{\"message_id\":\"te_Ier_0QeMRNnzMB3LzCJ2vLqpFchCeUly4g1O_CLU=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:10:09.222309637Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"emoteonlyoff\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val followersOffString ="{\"metadata\":{\"message_id\":\"mq_pOx72Z2EMf3WfaNucb2hxAZ0_fnc9195uqclG-lY=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:10:08.176556348Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"followersoff\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val slowModeOffString ="{\"metadata\":{\"message_id\":\"vqLFkigIcmKay6lSaUvxg6EPSl3Io1YG3tVFlGx1GM4=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:10:04.259505497Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"slowoff\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
 
+        val subscribersOnlyString ="{\"metadata\":{\"message_id\":\"bDvc1KOhpHgOCHAUNWVmllDLDWD4SY2BizmhLmbZxK0=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-16T17:00:09.35426471Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"07a6ce98-5afd-4148-8636-372ce9a4e30c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQLAd-3Yi_SVmoLHdSRCXFCBIGY2VsbC1i\"},\"created_at\":\"2024-06-16T17:00:00.922161673Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"subscribers\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val slowModeString ="{\"metadata\":{\"message_id\":\"U5cBONBn1cfheY4OwQ50eZj42YaIMABNvD27uMM82xg=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:10:01.447485974Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"slow\",\"followers\":null,\"slow\":{\"wait_time_seconds\":20},\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val followerModeString = "{\"metadata\":{\"message_id\":\"y881L-dGe73Mh8y-HZxinAsPGmRmuPM316Dj8fM-qEU=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:09:58.8733187Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"followers\",\"followers\":{\"follow_duration_minutes\":10},\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
         val emoteOnlyString = "{\"metadata\":{\"message_id\":\"b1sMNwsPjyrmJg408vyvkyn7u1fgnMTAODS-LyMM4cg=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-15T02:09:55.631015594Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"09482491-882d-479a-ad54-b45b8cb7c14c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQc73Y5j05SzKCGeDI79dngRIGY2VsbC1i\"},\"created_at\":\"2024-06-15T02:09:51.382733083Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"emoteonly\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":null,\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
@@ -246,96 +233,13 @@ class TwitchEventSubWebSocketTest {
         val timeoutString ="{\"metadata\":{\"message_id\":\"Cth4OcXFrhfVCHk3o0Yr_FxBsW-TzEmXY_8KoMKDyww=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-14T16:14:21.056265756Z\",\"subscription_type\":\"channel.moderate\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"92bdf45e-8427-4c07-98bb-97362a2e5a0c\",\"status\":\"enabled\",\"type\":\"channel.moderate\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQ-1V029d3Q-Owp90na8K3HhIGY2VsbC1i\"},\"created_at\":\"2024-06-14T16:14:04.804257892Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"520593641\",\"moderator_user_login\":\"theplebdev\",\"moderator_user_name\":\"theplebdev\",\"action\":\"timeout\",\"followers\":null,\"slow\":null,\"vip\":null,\"unvip\":null,\"mod\":null,\"unmod\":null,\"ban\":null,\"unban\":null,\"timeout\":{\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"reason\":\"\",\"expires_at\":\"2024-06-14T19:39:37.444980148Z\"},\"untimeout\":null,\"raid\":null,\"unraid\":null,\"delete\":null,\"automod_terms\":null,\"unban_request\":null}}}"
 
         whenAction(
-            getActionFromString(timeoutString),
-            timeoutString
+            modActionParsing.parseActionFromString(subscribersOnlyOffString),
+            subscribersOnlyOffString
         )
 
         Assert.assertEquals(1, 2)
     }
-    fun getActionFromString(stringToParse:String):String?{
 
-        val messageTypeRegex = "\"action\":\"([^\"]*)\"".toRegex()
-        return messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-
-    }
-
-    fun getModeratorUsername(stringToParse:String):String?{
-        val messageTypeRegex = "\"moderator_user_name\":\"([^\"]*)\"".toRegex()
-        val parsedModeratorUserName = messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(parsedModeratorUserName)
-        return parsedModeratorUserName
-        // this also works but I understand it less --> (.*?)
-    }
-
-    fun getUserId(stringToParse: String){
-        val messageTypeRegex = "\"user_id\":\"([^\"]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-
-    }
-    fun getUserName(stringToParse: String){
-        val messageTypeRegex = "\"user_name\":\"([^\"]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-
-    }
-    fun getReason(stringToParse: String){
-        //"reason":"stinky",
-        val messageTypeRegex = "\"reason\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-    }
-    fun getExpiresAt(stringToParse: String){
-
-        val messageTypeRegex = "\"expires_at\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        foundString?.also {
-            convertToReadableDate(it)
-        }
-    }
-    fun getMessageBody(stringToParse: String){
-        //"reason":"stinky",
-        val messageTypeRegex = "\"message_body\":\"([^\"]*)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-    }
-    fun getBlockedTerms(stringToParse: String){
-        val blockedTerm ="\"terms\":[\"fuckering\"],"
-        val messageTypeRegex = "\"terms\":\\[\"([^\"\\]]*)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-    }
-    fun getFollowerTime(stringToParse: String){
-        val followersTime ="\"followers\":{\"follow_duration_minutes\":10},"
-        val messageTypeRegex = "\"follow_duration_minutes\":(\\d+)".toRegex()
-
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-
-    }
-    fun getSlowModeTime(stringToParse: String){
-        //wait_time_seconds
-
-        val messageTypeRegex = "\"wait_time_seconds\":(\\d+)".toRegex()
-        val foundString =messageTypeRegex.find(stringToParse)?.groupValues?.get(1)
-        println(foundString)
-    }
-    fun convertToReadableDate(timestamp:String){
-
-
-        val currentInstant = Instant.now()
-
-        // Convert the given timestamp to an Instant
-        val instant = Instant.parse(timestamp)
-        val secondsSinceEpoch = instant.epochSecond
-        val currentSecondsSinceEpoch = currentInstant.epochSecond
-        val bannedSeconds = secondsSinceEpoch - currentSecondsSinceEpoch
-
-        println("banned for: $bannedSeconds seconds")
-    }
 
 
 
@@ -343,75 +247,83 @@ class TwitchEventSubWebSocketTest {
         when(action){
             "untimeout" ->{
                 //moderator name, user id, username
-                getModeratorUsername(stringToParse)
-                getUserId(stringToParse)
-                getUserName(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getUserId(stringToParse)
+                modActionParsing.getUserName(stringToParse)
             }
             "timeout" ->{
                 println("TIMEOUT ACTION")
-                getModeratorUsername(stringToParse)
-                getUserId(stringToParse)
-                getUserName(stringToParse)
-                getReason(stringToParse)
-                getExpiresAt(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getUserId(stringToParse)
+                modActionParsing.getUserName(stringToParse)
+                modActionParsing.getReason(stringToParse)
+                modActionParsing.getExpiresAt(stringToParse)
 
             }
             "ban"->{
                 println("BAN ACTION")
-                getModeratorUsername(stringToParse)
-                getUserId(stringToParse)
-                getUserName(stringToParse)
-                getReason(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getUserId(stringToParse)
+                modActionParsing.getUserName(stringToParse)
+                modActionParsing.getReason(stringToParse)
             }
             "unban" ->{
                 println("UNBAN ACTION")
-                getModeratorUsername(stringToParse)
-                getUserName(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getUserName(stringToParse)
 
             }
             "delete"->{
                 println("DELETE ACTION")
-                getModeratorUsername(stringToParse)
-                getUserName(stringToParse)
-                getMessageBody(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getUserName(stringToParse)
+                modActionParsing.getMessageBody(stringToParse)
             }
 
             "remove_blocked_term"->{
                 println("REMOVED BLOCKED TERM ACTION")
-                getBlockedTerms(stringToParse)
-                getModeratorUsername(stringToParse)
+                modActionParsing.getBlockedTerms(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
             }
 
             "add_blocked_term"->{
                 println("ADDED BLOCKED TERM ACTION")
-                getBlockedTerms(stringToParse)
-                getModeratorUsername(stringToParse)
+                modActionParsing.getBlockedTerms(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+
+            }
+            "subscribers"->{
+                println("subscribers")
+
+            }
+            "subscribersoff"->{
+                println("subscribersoff")
 
             }
             "emoteonly"->{
-                getModeratorUsername(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
 
             }
             "followers"->{
-                getModeratorUsername(stringToParse)
-                getFollowerTime(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getFollowerTime(stringToParse)
 
             }
             "slow" ->{
-                getModeratorUsername(stringToParse)
-                getSlowModeTime(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
+                modActionParsing.getSlowModeTime(stringToParse)
 
             }
             "slowoff"->{
-                getModeratorUsername(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
 
             }
             "followersoff"->{
-                getModeratorUsername(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
 
             }
             "emoteonlyoff"->{
-                getModeratorUsername(stringToParse)
+                modActionParsing.getModeratorUsername(stringToParse)
 
             }
             else ->{
