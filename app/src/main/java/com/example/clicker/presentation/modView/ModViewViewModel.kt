@@ -62,7 +62,7 @@ data class ListTitleValue(
 )
 
 data class ModViewStatus(
-    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Success(true)
+    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading
 )
 
 /**
@@ -147,7 +147,7 @@ class ModViewViewModel @Inject constructor(
     init{
         monitorForAutoModMessageUpdates()
     }
-    //
+
     fun createNewTwitchEventWebSocket(){
         modActionsList.clear()
         twitchEventSubWebSocket.newWebSocket()
@@ -263,6 +263,9 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun createModerationActionSubscription(){
         viewModelScope.launch(Dispatchers.IO) {
+            _modViewStatus.value = _modViewStatus.value.copy(
+                modActions = WebSocketResponse.Loading
+            )
 
             twitchEventSub.createEventSubSubscription(
                 oAuthToken = _requestIds.value.oAuthToken,
@@ -275,6 +278,9 @@ class ModViewViewModel @Inject constructor(
                 when (response) {
                     is WebSocketResponse.Loading -> {}
                     is WebSocketResponse.Success -> {
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            modActions = WebSocketResponse.Success(true)
+                        )
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
@@ -285,9 +291,14 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            modActions = WebSocketResponse.Failure(Exception("failed to register subscription"))
+                        )
                     }
                     is WebSocketResponse.FailureAuth403 ->{
-
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            modActions = WebSocketResponse.FailureAuth403(Exception("Improper Exception"))
+                        )
                     }
                 }
             }
