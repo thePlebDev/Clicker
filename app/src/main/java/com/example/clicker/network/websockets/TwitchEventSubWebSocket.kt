@@ -88,9 +88,7 @@ class TwitchEventSubWebSocket @Inject constructor(
                         stringToParse =text,
                         emitData ={modActionData ->_modActions.tryEmit(modActionData)}
                     )
-//                    whenAction(
-//                        action,text
-//                    )
+
                 }
                 "automod.message.update" -> {
                     val messageId = parseMessageId(text) ?: ""
@@ -143,6 +141,14 @@ class TwitchEventSubWebSocket @Inject constructor(
         Log.d("TwitchEventSubWebSocket","onFailure()")
         Log.d("TwitchEventSubWebSocket","response --> ${response?.message}")
         Log.d("TwitchEventSubWebSocket","body --> ${response?.body}")
+
+        val data = ModActionData(
+            title ="Connection Error",
+            message="There was an error while trying to connect with Twitch's servers",
+            iconId = R.drawable.error_outline_24,
+            secondaryMessage = "To fix this issue try going back to the home page and click on the stream again"
+        )
+        _modActions.tryEmit(data)
     }
 
      override fun newWebSocket() {
@@ -175,150 +181,6 @@ class TwitchEventSubWebSocket @Inject constructor(
         webSocket?.close(1009, "Manually closed ")
         webSocket = null
     }
-
-    /***************BELOW IS ALL THE PARSING FOR THE channel.moderate***********************/
-//1) get the action(DONE) 2) determine the action 3) parse and send data to UI
-
-
-
-    private fun whenAction(action:String?,stringToParse: String){
-        when(action){
-            "untimeout" ->{
-                //moderator name, user id, username
-                Log.d("TimeoutActions","untimeout")
-                val data = ModActionData(
-                    title = modActionParsing.getUserName(stringToParse),
-                    message="Timeout removed by ${modActionParsing.getModeratorUsername(stringToParse)}",
-                    iconId = R.drawable.baseline_check_24
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "timeout" ->{
-                Log.d("TimeoutActions","text ->$stringToParse")
-                val data = ModActionData(
-                    title = modActionParsing.getUserName(stringToParse) ,
-                    message="Timed out by ${modActionParsing.getModeratorUsername(stringToParse)} for ${modActionParsing.getExpiresAt(stringToParse)} seconds. ${modActionParsing.getReason(stringToParse)}",
-                    iconId = R.drawable.time_out_24
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "ban"->{
-                println("BAN ACTION")
-                val data = ModActionData(
-                    title = modActionParsing.getUserName(stringToParse),
-                    message="Banned by ${modActionParsing.getModeratorUsername(stringToParse)}. ${modActionParsing.getReason(stringToParse)}",
-                    iconId = R.drawable.clear_chat_alt_24
-                )
-                _modActions.tryEmit(data)
-            }
-            "unban" ->{
-                val data = ModActionData(
-                    title = modActionParsing.getUserName(stringToParse),
-                    message="Unbanned  by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.baseline_check_24
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "delete"->{
-                val data = ModActionData(
-                    title = modActionParsing.getUserName(stringToParse),
-                    message="Message deleted by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.delete_outline_24,
-                    secondaryMessage = modActionParsing.getMessageBody(stringToParse)
-                )
-                _modActions.tryEmit(data)
-
-            }
-
-            "remove_blocked_term"->{
-                val data = ModActionData(
-                    title = modActionParsing.getBlockedTerms(stringToParse),
-                    message="Removed as Blocked Term by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.lock_open_24,
-                )
-                _modActions.tryEmit(data)
-            }
-
-            "add_blocked_term"->{
-                val data = ModActionData(
-                    title = modActionParsing.getBlockedTerms(stringToParse),
-                    message="Added as Blocked Term by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.lock_24,
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "emoteonly"->{
-                val data = ModActionData(
-                    title = "Emote-Only Chat",
-                    message="Enabled by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.emote_face_24,
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "followers"->{
-                val data = ModActionData(
-                    title = "Follower-Only Chat",
-                    message="Enabled with ${modActionParsing.getFollowerTime(stringToParse)} min following age, by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.favorite_24,
-                )
-                _modActions.tryEmit(data)
-            }
-            "slow" ->{
-                val data = ModActionData(
-                    title = "Slow Mode",
-                    message="Enabled with ${modActionParsing.getSlowModeTime(stringToParse)}s wait time, by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.baseline_hourglass_empty_24,
-                )
-                _modActions.tryEmit(data)
-
-
-            }
-            "slowoff"->{
-                val data = ModActionData(
-                    title = "Slow Mode Off",
-                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.baseline_hourglass_empty_24,
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "followersoff"->{
-                val data = ModActionData(
-                    title = "Followers-Only Off",
-                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.favorite_24,
-                )
-                _modActions.tryEmit(data)
-
-            }
-            "emoteonlyoff"->{
-                val data = ModActionData(
-                    title = "Emotes-Only Off",
-                    message="Removed by ${modActionParsing.getModeratorUsername(stringToParse)}.",
-                    iconId = R.drawable.emote_face_24,
-                )
-                _modActions.tryEmit(data)
-
-            }
-            else ->{
-
-            }
-
-        }
-    }
-
-
-
-
-
-
-    /***************ABOVE IS ALL THE PARSING FOR THE channel.moderate***********************/
-
 
 } /***END OF TwitchEventSubWebSocket****/
 
