@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import com.example.clicker.R
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,8 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class TwitchEventSubWebSocket @Inject constructor(
-    private val modActionParsing:ModActionParsing
+    private val modActionParsing:ModActionParsing,
+    private val channelSettingsParsing: ChatSettingsParsing
 ): TwitchEventSubscriptionWebSocket, WebSocketListener() {
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket: WebSocket? = null
@@ -96,7 +98,7 @@ class TwitchEventSubWebSocket @Inject constructor(
                     _messageIdForAutoModQueue.tryEmit(messageUpdate)
                 }
                 "channel.chat_settings.update" -> {
-                    val parsedChatSettingsData = parseChatSettingsData(text)
+                    val parsedChatSettingsData = channelSettingsParsing.parseChatSettingsData(text)
                     _updatedChatSettingsData.tryEmit(parsedChatSettingsData)
                 }
             }
@@ -263,55 +265,8 @@ fun parseStatusType(stringToParse:String):String?{
     }
 }
 
-fun parseEmoteModeValue(stringToParse:String):Boolean{
-    val emoteModeRegex ="\"emote_mode\":([^,]+)".toRegex()
-    val emoteModeValue  = emoteModeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    return emoteModeValue == "true"
 
-}
-fun parseSubscriberModeValue(stringToParse:String):Boolean{
-    val subscriberModeRegex ="\"subscriber_mode\":([^,]+)".toRegex()
-    val subscriberModeValue  = subscriberModeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    return subscriberModeValue == "true"
 
-}
-fun parseFollowerModeValue(stringToParse:String):Boolean{
-    val followerModeRegex ="\"follower_mode\":([^,]+)".toRegex()
-    val followerModeValue  = followerModeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    return followerModeValue == "true"
-
-}
-fun parseFollowerModeDurationValue(stringToParse:String):Int?{
-    val followerModeDurationRegex ="\"follower_mode_duration_minutes\":([^,]+)".toRegex()
-    val followerModeDurationValue  = followerModeDurationRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    val returnValue = if(followerModeDurationValue == "null") null else followerModeDurationValue.toInt()
-    return returnValue
-
-}
-
-fun parseSlowModeValue(stringToParse:String):Boolean{
-    val slowModeRegex ="\"slow_mode\":([^,]+)".toRegex()
-    val slowModeValue  = slowModeRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    return slowModeValue == "true"
-}
-fun parseSlowModeDurationValue(stringToParse:String):Int?{
-    val slowModeDurationRegex ="\"slow_mode_wait_time_seconds\":([^,]+)".toRegex()
-    val slowModeDurationValue  = slowModeDurationRegex.find(stringToParse)?.groupValues?.get(1)?.replace("\"","") ?:""
-    val returnValue = if(slowModeDurationValue == "null") null else slowModeDurationValue.toInt()
-    return returnValue
-
-}
-
-fun parseChatSettingsData(stringToParse: String): ChatSettingsData {
-    return ChatSettingsData(
-        slowMode = parseSlowModeValue(stringToParse),
-        emoteMode = parseEmoteModeValue(stringToParse),
-        followerMode = parseFollowerModeValue(stringToParse),
-        subscriberMode = parseSubscriberModeValue(stringToParse),
-        followerModeDuration = parseFollowerModeDurationValue(stringToParse),
-        slowModeWaitTime = parseSlowModeDurationValue(stringToParse)
-    )
-}
 
 
 /**
