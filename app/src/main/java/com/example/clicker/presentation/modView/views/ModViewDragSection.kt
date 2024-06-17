@@ -694,8 +694,14 @@ fun BoxDeleteSection(
 
         ){
             LazyColumn(
+                state=listState,
                 modifier =Modifier.fillMaxSize()
             ){
+                scope.launch {
+                    if(autoscroll){
+                        listState.scrollToItem(autoModMessageList.size)
+                    }
+                }
                 stickyHeader {
                     Text(
                         "AutoMod Queue",
@@ -725,13 +731,20 @@ fun BoxDeleteSection(
                         }
                     )
                 }
-                scope.launch {
-                    if(autoscroll){
-                        listState.scrollToItem(autoModMessageList.size)
+
+
+
+            }
+            if(!autoscroll){
+                ScrollToBottomModView(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom =20.dp),
+                    enableAutoScroll={
+                        scope.launch {
+                            listState.scrollToItem(autoModMessageList.size)
+                            autoscroll = true
+                        }
                     }
-                }
-
-
+                )
             }
 
         }
@@ -1046,6 +1059,18 @@ fun BoxDeleteSection(
 
 
                     }
+                    if(!autoscroll){
+                        ScrollToBottomModView(
+                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom =20.dp),
+                            enableAutoScroll={
+                                scope.launch {
+                                    listState.scrollToItem(modActionsList.size)
+                                    autoscroll = true
+                                }
+                            }
+                        )
+                    }
+
                 }
 
                 is WebSocketResponse.Failure -> {
@@ -1071,6 +1096,29 @@ fun BoxDeleteSection(
         }
 
     }
+
+@Composable
+fun ScrollToBottomModView(
+    enableAutoScroll: () -> Unit,
+    modifier: Modifier
+) {
+
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+                DualIconsButton(
+                    buttonAction = { enableAutoScroll() },
+                    iconImageVector = Icons.Default.ArrowDropDown,
+                    iconDescription = stringResource(R.string.arrow_drop_down_description),
+                    buttonText = stringResource(R.string.scroll_to_bottom)
+
+                )
+        }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
