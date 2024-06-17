@@ -21,7 +21,7 @@ import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.TwitchEventSub
-import com.example.clicker.network.websockets.AutoModQueueMessage
+import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.StreamUIState
 import com.example.clicker.util.Response
@@ -185,7 +185,7 @@ class ModViewViewModel @Inject constructor(
                                 subscriberMode=chatSettingsData.subscriberMode,
                                 emoteMode = chatSettingsData.emoteMode,
                                 ),
-                            //todo: remove the two below-> this is a hotfix and should be reworked 
+                            //todo: remove the two below-> this is a hotfix and should be reworked
                             emoteOnly = chatSettingsData.emoteMode,
                             subscriberOnly = chatSettingsData.subscriberMode,
                         )

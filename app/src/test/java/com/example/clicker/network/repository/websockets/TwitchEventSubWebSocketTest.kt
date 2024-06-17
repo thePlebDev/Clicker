@@ -1,13 +1,14 @@
 package com.example.clicker.network.repository.websockets
 
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.notificationTypeIsNotification
 import com.example.clicker.network.websockets.notificationTypeIsWelcome
-import com.example.clicker.network.websockets.parseAutoModQueueMessage
+
 import com.example.clicker.network.websockets.parseEventSubWelcomeMessage
-import com.example.clicker.network.websockets.parseMessageId
+
 import com.example.clicker.network.websockets.parseStatusType
 import com.example.clicker.network.websockets.parseSubscriptionType
 import org.junit.Assert
@@ -26,6 +27,7 @@ class TwitchEventSubWebSocketTest {
 
     private val modActionParsing = ModActionParsing()
     private val chatSettingsParsing = ChatSettingsParsing()
+    private val autoModMessageParsing: AutoModMessageParsing = AutoModMessageParsing()
 
 
     @Test
@@ -62,7 +64,7 @@ class TwitchEventSubWebSocketTest {
 
 
         /**WHEN*/
-        val autoQueueMessage = parseAutoModQueueMessage(stringToParse)
+        val autoQueueMessage = autoModMessageParsing.parseAutoModQueueMessage(stringToParse)
         println("messageIdSize --> $desiredMessageId")
 
         /**THEN*/
@@ -95,7 +97,7 @@ class TwitchEventSubWebSocketTest {
 
         /**WHEN*/
         val subscriptionType = parseSubscriptionType(stringToParse)
-        val messageId =parseMessageId(stringToParse)
+        val messageId =autoModMessageParsing.parseMessageId(stringToParse)
 
 
         /**THEN*/

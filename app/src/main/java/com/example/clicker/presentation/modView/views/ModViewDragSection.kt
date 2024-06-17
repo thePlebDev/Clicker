@@ -88,7 +88,8 @@ import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrlList
-import com.example.clicker.network.websockets.AutoModQueueMessage
+import com.example.clicker.network.repository.util.AutoModQueueMessage
+
 import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModActionData
