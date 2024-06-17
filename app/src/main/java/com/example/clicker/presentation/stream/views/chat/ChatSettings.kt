@@ -209,6 +209,7 @@ fun EmoteOnlySwitch(
     setEmoteOnly:(Boolean) ->Unit,
     switchEnabled:Boolean
 ){
+    Log.d("EMOTEONLYSWITCH","emoteOnly -->$emoteOnly")
     DropdownMenuItem(
         onClick = {
             setExpanded(false)

@@ -1,11 +1,11 @@
 package com.example.clicker.network.repository.websockets
 
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
+import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.notificationTypeIsNotification
 import com.example.clicker.network.websockets.notificationTypeIsWelcome
 import com.example.clicker.network.websockets.parseAutoModQueueMessage
-import com.example.clicker.network.websockets.parseChatSettingsData
 import com.example.clicker.network.websockets.parseEventSubWelcomeMessage
 import com.example.clicker.network.websockets.parseMessageId
 import com.example.clicker.network.websockets.parseStatusType
@@ -24,7 +24,8 @@ import java.util.TimeZone
 
 class TwitchEventSubWebSocketTest {
 
-    val modActionParsing = ModActionParsing()
+    private val modActionParsing = ModActionParsing()
+    private val chatSettingsParsing = ChatSettingsParsing()
 
 
     @Test
@@ -146,11 +147,13 @@ class TwitchEventSubWebSocketTest {
         val expectedSlowMode = true
         val expectedSlowModeDuration = 44
 
-        val whatToParse ="\"emote_mode\":false,\"follower_mode\":false,\"follower_mode_duration_minutes\":null,\"slow_mode\":false,\"slow_mode_wait_time_seconds\":null,\"subscriber_mode\":false,\""
+
+        val anotherStringToParse ="{\"metadata\":{\"message_id\":\"WnfTJmChxvcgPWHgfottTLgmyoGlM1EfzfAV3_QB3fw=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-06-17T02:07:01.406636207Z\",\"subscription_type\":\"channel.chat_settings.update\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"b64b7a8c-cb46-475d-9077-edfec2f27079\",\"status\":\"enabled\",\"type\":\"channel.chat_settings.update\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQIBY8fv56ShabsomD9WssjhIGY2VsbC1i\"},\"created_at\":\"2024-06-17T02:06:51.693257523Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"emote_mode\":true,\"follower_mode\":false,\"follower_mode_duration_minutes\":null,\"slow_mode\":false,\"slow_mode_wait_time_seconds\":null,\"subscriber_mode\":true,\"unique_chat_mode\":false}}}"
         val stringToParse ="{\"metadata\":{\"message_id\":\"rZ-HByBPf2Mc7NfYSgR5mlsf0jHsNdZ9VKKb313Lbjw=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-04-14T23:53:59.928981523Z\",\"subscription_type\":\"channel.chat_settings.update\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"46440d9c-e754-47be-840a-943c1250a222\",\"status\":\"enabled\",\"type\":\"channel.chat_settings.update\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQvN_TbZDMRr6yuimMnf6ZHRIGY2VsbC1i\"},\"created_at\":\"2024-04-14T23:52:23.445062985Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"emote_mode\":$expectedEmoteMode,\"follower_mode\":$expectedFollowerMode,\"follower_mode_duration_minutes\":$expectedFollowerModeDuration,\"slow_mode\":$expectedSlowMode,\"slow_mode_wait_time_seconds\":$expectedSlowModeDuration,\"subscriber_mode\":$expectedSubscriberMode,\"unique_chat_mode\":false}}}"
         val expectedSubscriptionType ="channel.chat_settings.update"
 
-        val parsedChatSettingsData =parseChatSettingsData(stringToParse)
+        val parsedChatSettingsData =chatSettingsParsing.parseChatSettingsData(stringToParse)
+
 
         /**WHEN*/
         val actualSubscriptionType =parseSubscriptionType(stringToParse)

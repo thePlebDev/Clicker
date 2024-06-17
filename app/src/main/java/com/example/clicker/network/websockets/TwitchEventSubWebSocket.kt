@@ -98,6 +98,7 @@ class TwitchEventSubWebSocket @Inject constructor(
                     _messageIdForAutoModQueue.tryEmit(messageUpdate)
                 }
                 "channel.chat_settings.update" -> {
+                    Log.d("ChatSettingsParsing",text)
                     val parsedChatSettingsData = channelSettingsParsing.parseChatSettingsData(text)
                     _updatedChatSettingsData.tryEmit(parsedChatSettingsData)
                 }

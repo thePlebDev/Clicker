@@ -52,8 +52,10 @@ data class ModViewViewModelUIState(
     val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
     val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
     val autoModQuePedingMessages:Int =0,
-    val emoteOnly:Boolean = false,
-    val subscriberOnly:Boolean = false,
+
+
+    val emoteOnly:Boolean = false, //todo: THESE TWO ARE REALLY MESSING THINGS UP
+    val subscriberOnly:Boolean = false,//todo: THESE TWO ARE REALLY MESSING THINGS UP
 
 )
 data class ListTitleValue(
@@ -128,13 +130,7 @@ class ModViewViewModel @Inject constructor(
     private var _modViewStatus: MutableState<ModViewStatus> = mutableStateOf(ModViewStatus())
     val modViewStatus: State<ModViewStatus> = _modViewStatus
 
-//
-//        val modActionsList = listOf<ModActionData>(
-//        ModActionData("Emotes-Only Chat","Removed by thepleddev", R.drawable.emote_face_24),
-//        ModActionData("Followers-Only Chat","Removed by thepleddev", R.drawable.favorite_24),
-//        ModActionData("Slow Mode","Enabled with 20s wait time, by theplebdev", R.drawable.person_outline_24),
-//        ModActionData("meenermeeny","Message Deleted by by thepleddev:", R.drawable.delete_outline_24,"wtf this is some bull shit"),
-//    )
+
     val modActionsList =mutableStateListOf<ModActionData>()
 
     init{
@@ -188,8 +184,10 @@ class ModViewViewModel @Inject constructor(
                                 followerModeDuration =chatSettingsData.followerModeDuration,
                                 subscriberMode=chatSettingsData.subscriberMode,
                                 emoteMode = chatSettingsData.emoteMode,
-
-                                )
+                                ),
+                            //todo: remove the two below-> this is a hotfix and should be reworked 
+                            emoteOnly = chatSettingsData.emoteMode,
+                            subscriberOnly = chatSettingsData.subscriberMode,
                         )
 
                     }
