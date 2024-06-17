@@ -31,6 +31,7 @@ import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.TwitchStreamImpl
+import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
@@ -191,7 +192,8 @@ object SingletonModule {
     fun providesTwitchEventSubscriptionWebSocket(): TwitchEventSubscriptionWebSocket {
         val modActionParsing:ModActionParsing = ModActionParsing()
          val channelSettingsParsing: ChatSettingsParsing =ChatSettingsParsing()
-        return TwitchEventSubWebSocket(modActionParsing,channelSettingsParsing)
+        val autoModMessageParsing: AutoModMessageParsing = AutoModMessageParsing()
+        return TwitchEventSubWebSocket(modActionParsing,channelSettingsParsing,autoModMessageParsing)
     }
     @Provides
     fun providesTwitchEventSubscriptions(

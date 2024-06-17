@@ -102,6 +102,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -530,6 +532,12 @@ fun LazyGridEmotes(
                         updateTextWithEmote(it.name)
                     }
             )
+//            Icon(
+//                painter = rememberAsyncImagePainter(it.url),
+//                contentDescription = null,
+//                modifier = Modifier.size(42.dp),
+//                tint = Color.Unspecified
+//            )
         }
         /****START OF THE GLOBAL EMOTES*****/
         header {
