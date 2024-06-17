@@ -137,7 +137,6 @@ import kotlin.math.roundToInt
     /**DraggableModViewBox is responsible for containing the entire ModView Feature and showing the user the 3 [DraggingBox]
      * composables
      * */
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun DraggableModViewBox(
         boxOneOffsetY:Float,
@@ -182,6 +181,8 @@ import kotlin.math.roundToInt
 
         modActionStatus: WebSocketResponse<Boolean>,
         modActionsList: List<ModActionData>,
+        autoModMessageList: List<AutoModQueueMessage>,
+        manageAutoModMessage:(String,String)-> Unit,
 
         fullModeActive:Boolean,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
@@ -234,6 +235,8 @@ import kotlin.math.roundToInt
                         },
                         modActionStatus=modActionStatus,
                         modActionsList =modActionsList,
+                        autoModMessageList=autoModMessageList,
+                        manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                     )
 
 
@@ -281,6 +284,8 @@ import kotlin.math.roundToInt
                         },
                         modActionStatus=modActionStatus,
                         modActionsList =modActionsList,
+                        autoModMessageList=autoModMessageList,
+                        manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                     )
 
                 }
@@ -323,6 +328,8 @@ import kotlin.math.roundToInt
                         },
                         modActionStatus=modActionStatus,
                         modActionsList =modActionsList,
+                        autoModMessageList=autoModMessageList,
+                        manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                     )
 
                 }
@@ -351,6 +358,8 @@ fun ChangingBoxTypes(
     fullModeActive:Boolean,
     modActionStatus: WebSocketResponse<Boolean>,
     modActionsList: List<ModActionData>,
+    autoModMessageList: List<AutoModQueueMessage>,
+    manageAutoModMessage:(String,String)-> Unit,
     fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
     smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
 ){
@@ -392,8 +401,8 @@ fun ChangingBoxTypes(
                 AutoModQueueBox(
                     dragging =boxTwoDragging,
                     setDragging={newValue -> setBoxDragging(newValue)},
-                    autoModMessageList = listOf(),
-                    manageAutoModMessage ={messageId, userId,action ->},
+                    autoModMessageList = autoModMessageList,
+                    manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                     connectionError =Response.Success(true),
                     reconnect = {}
                 )
@@ -639,12 +648,44 @@ fun BoxDeleteSection(
         setDragging: (Boolean) -> Unit,
         dragging:Boolean,
         autoModMessageList:List<AutoModQueueMessage>,
-        manageAutoModMessage:(String,String,String)-> Unit,
+        manageAutoModMessage:(String,String)-> Unit,
         connectionError:Response<Boolean>,
         reconnect:()->Unit
 
         ){
         val hapticFeedback = LocalHapticFeedback.current
+        val listState = rememberLazyListState()
+
+        val scope = rememberCoroutineScope()
+        var autoscroll by remember { mutableStateOf(true) }
+        val interactionSource = listState.interactionSource
+
+
+
+        LaunchedEffect(interactionSource) {
+            interactionSource.interactions.collect { interaction ->
+                when (interaction) {
+                    is DragInteraction.Start -> {
+                        autoscroll = false
+                    }
+                    is PressInteraction.Press -> {
+                        autoscroll = false
+                    }
+                }
+            }
+        }
+        val endOfListReached by remember {
+            derivedStateOf {
+                listState.isScrolledToEnd()
+            }
+        }
+        // observer when reached end of list
+        LaunchedEffect(endOfListReached) {
+            // do your stuff
+            if (endOfListReached) {
+                autoscroll = true
+            }
+        }
 
         val opacity = if(dragging) 0.5f else 0f
         Box(modifier = Modifier
@@ -680,9 +721,14 @@ fun BoxDeleteSection(
                     AutoModBoxHorizontalDragBox(
                         autoModMessage=autoModMessage,
                         manageAutoModMessage={
-                                messageId,userId,action->manageAutoModMessage(messageId,userId,action)
+                                messageId,action->manageAutoModMessage(messageId,action)
                         }
                     )
+                }
+                scope.launch {
+                    if(autoscroll){
+                        listState.scrollToItem(autoModMessageList.size)
+                    }
                 }
 
 
@@ -763,7 +809,7 @@ fun BoxDeleteSection(
     @Composable
     fun AutoModBoxHorizontalDragBox(
         autoModMessage: AutoModQueueMessage,
-        manageAutoModMessage:(String,String,String)-> Unit
+        manageAutoModMessage:(String,String)-> Unit
     ){
         Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$autoModMessage")
 
@@ -780,7 +826,6 @@ fun BoxDeleteSection(
             quarterSwipeRightAction = {
                 manageAutoModMessage(
                     autoModMessage.messageId,
-                    autoModMessage.userId,
                     "DENY"
                 )
                 Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
@@ -789,7 +834,6 @@ fun BoxDeleteSection(
                 Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
                 manageAutoModMessage(
                     autoModMessage.messageId,
-                    autoModMessage.userId,
                     "ALLOW"
                 )
             },

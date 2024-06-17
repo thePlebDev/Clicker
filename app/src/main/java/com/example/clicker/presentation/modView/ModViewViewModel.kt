@@ -503,9 +503,14 @@ class ModViewViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * manageAutoModMessage is a function that is used to send a request to Twitch servers and update the held AutoMod message
+     * - You can read more about managing held AutoMod messages, [HERE](https://dev.twitch.tv/docs/api/reference/#manage-held-automod-messages)
+     *
+     * */
     fun manageAutoModMessage(
         msgId:String,
-        userId:String,
         action:String
     ){
         viewModelScope.launch {

@@ -133,9 +133,14 @@ class TwitchEventSub @Inject constructor(
         )
 
         if (response.isSuccessful) {
+            Log.d("manageAutoModMessage","SUCCESS")
             emit(Response.Success(true))
         } else {
 
+            Log.d("manageAutoModMessage","ERROR")
+            Log.d("manageAutoModMessage","ERROR code->${response.code()}")
+            Log.d("manageAutoModMessage","ERROR message->${response.message()}")
+            Log.d("manageAutoModMessage","ERROR body->${response.body()}")
             emit(Response.Failure(Exception("Failed action")))
         }
 

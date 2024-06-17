@@ -72,6 +72,7 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.util.AutoModQueueMessage
 
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModActionData
@@ -297,9 +298,13 @@ fun ModViewComponent(
                     //todo:change back to --> true for testing
                     isMod =streamViewModel.state.value.loggedInUserData?.mod ?: false,
                     inlineContentMap =inlineContentMap,
-                    setDragging = {value -> setDraggingFunc()}
+                    setDragging = {value -> setDraggingFunc()},
                 )
-            }
+            },
+            autoModMessageList = modViewViewModel.autoModMessageList,
+            manageAutoModMessage ={
+                    messageId,action -> modViewViewModel.manageAutoModMessage(messageId,action)
+                                  },
         )
 
     }
@@ -314,8 +319,10 @@ fun ModViewComponent(
 
         modActionStatus: WebSocketResponse<Boolean>,
         modActionsList: List<ModActionData>,
+        autoModMessageList: List<AutoModQueueMessage>,
 
         fullModeActive:Boolean,
+        manageAutoModMessage:(String,String)-> Unit,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
         smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ){
@@ -425,7 +432,9 @@ fun ModViewComponent(
                     smallChat(
                         setDraggingTrue={setDraggingFunc()}
                     )
-                }
+                },
+                autoModMessageList=autoModMessageList,
+                manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
 
 
             )
