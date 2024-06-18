@@ -208,7 +208,12 @@ class ModViewViewModel @Inject constructor(
                         _requestIds.value = _requestIds.value.copy(
                             sessionId = sessionId
                         )
-                        createEventSubSubscription()
+                        createSubscriptionEvents(
+                            moderatorActionSubscription={createModerationActionSubscription()},
+                            autoModMessageUpdateSubscription={createAutoModMessageUpdateSubscriptionEvent()},
+                            autoModMessageHoldSubscription={createAutoModMessageHoldSubscriptionEvent()},
+                            chatSettingsSubscription={createChatSettingsSubscriptionEvent()}
+                        )
                         //then with this session Id we need to make a call to subscribe to our event
 
 
@@ -217,6 +222,27 @@ class ModViewViewModel @Inject constructor(
             }
 
         }
+    }
+
+    /**
+     * - createSubscriptionEvents() is a private function that calls all the methods that are making EventSub subscriptions.
+     * - You can read more about EventSub subscriptions. [HERE](https://dev.twitch.tv/docs/eventsub/)
+     *
+     * @param moderatorActionSubscription full description [HERE][createModerationActionSubscription]
+     * @param autoModMessageUpdateSubscription full description [HERE][createAutoModMessageUpdateSubscriptionEvent]
+     * @param autoModMessageHoldSubscription full description [HERE][createAutoModMessageHoldSubscriptionEvent]
+     * @param chatSettingsSubscription full description [HERE][createChatSettingsSubscriptionEvent]
+     * */
+    private fun createSubscriptionEvents(
+        moderatorActionSubscription:()->Unit,
+        autoModMessageUpdateSubscription:()->Unit,
+        autoModMessageHoldSubscription:()->Unit,
+        chatSettingsSubscription:()->Unit,
+    ){
+        moderatorActionSubscription()
+        autoModMessageUpdateSubscription()
+        autoModMessageHoldSubscription()
+        chatSettingsSubscription()
     }
 
 
@@ -254,6 +280,8 @@ class ModViewViewModel @Inject constructor(
     }
 
 
+
+
     /**
      * - createModerationActionSubscription is a private function that is meant to establish a EventSub subsctiption type of `channel.moderate`. This will send a
      * notification when a moderator performs a moderation action in a channel.
@@ -282,7 +310,6 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
-                        createAnotherSubscriptionEvent()
                     }
 
                     is WebSocketResponse.Failure -> {
@@ -306,15 +333,16 @@ class ModViewViewModel @Inject constructor(
 
 
     /**
-     * To read more about the subscripting events, look [HERE][https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscribing-to-events]
-     * at the docs
+     * - createAutoModMessageHoldSubscriptionEvent is a private function that is meant to establish a EventSub subsctiption type of `automod.message.hold`. This will
+     * send a notification when a moderator performs a moderation action in a channel
+     * - You can read more about this subscription type on Twitch's documentation site, [HERE](https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscribing-to-events)
      * */
-    fun createEventSubSubscription(){
+    private fun createAutoModMessageHoldSubscriptionEvent(){
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
 
-                createModerationActionSubscription()
+
                 _uiState.value = _uiState.value.copy(
                     showSubscriptionEventError = Response.Loading
                 )
@@ -333,7 +361,6 @@ class ModViewViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 showSubscriptionEventError = Response.Success(true)
                             )
-                            createAnotherSubscriptionEvent()
                         }
 
                         is WebSocketResponse.Failure -> {
@@ -351,7 +378,14 @@ class ModViewViewModel @Inject constructor(
             }
         }
     }
-    private fun createAnotherSubscriptionEvent(){
+
+
+    /**
+     * - createAutoModMessageSubscriptionEvent is a private function that  is meant to establish a EventSub subsctiption type of `automod.message.update`.
+     * This will send a notification when a message in the automod queue has its status changed.
+     * - - You can read more about this subscription type on Twitch's documentation site, [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#automodmessageupdate)
+     * */
+    private fun createAutoModMessageUpdateSubscriptionEvent(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){
             twitchEventSub.createEventSubSubscription(
@@ -372,7 +406,7 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
-                        createChatSettingsSubscriptionEvent()
+
                     }
 
                     is WebSocketResponse.Failure -> {
@@ -390,6 +424,11 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
+    /**
+     * - createAutoModMessageHoldSubscriptionEvent is a private function that is meant to establish a EventSub subsctiption type of `channel.chat_settings.update`. This will
+     * send a notification when a moderator updates the chat's settings
+     * - You can read more about this subscription type on Twitch's documentation site, (HERE)[https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchat_settingsupdate]
+     * */
     private fun createChatSettingsSubscriptionEvent(){
 
         viewModelScope.launch {
