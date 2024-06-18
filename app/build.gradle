@@ -103,6 +103,13 @@ dependencies {
     def fragment_version = "1.5.7"
     def work_version = "2.8.1"
 
+    // This dependency is downloaded from the Google’s Maven repository.
+    // So, make sure you also include that repository in your project's build.gradle file.
+    implementation 'com.google.android.play:feature-delivery:2.1.0'
+
+    // For Kotlin users, also add the Kotlin extensions library for Play Feature Delivery:
+    implementation 'com.google.android.play:feature-delivery-ktx:2.1.0'
+
     // Kotlin + coroutines work manager
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
