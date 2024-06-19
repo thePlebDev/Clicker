@@ -68,7 +68,7 @@ data class ListTitleValue(
 
 data class ModViewStatus(
     val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.FailureAuth403(Exception("antoher one"))
+    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading
 )
 
 /**
@@ -367,10 +367,8 @@ class ModViewViewModel @Inject constructor(
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-
-
-                _uiState.value = _uiState.value.copy(
-                    showSubscriptionEventError = Response.Loading
+                _modViewStatus.value = _modViewStatus.value.copy(
+                    autoModMessageStatus = WebSocketResponse.Loading
                 )
                 delay(200)
                 twitchEventSub.createEventSubSubscription(
@@ -387,14 +385,20 @@ class ModViewViewModel @Inject constructor(
                             _uiState.value = _uiState.value.copy(
                                 showSubscriptionEventError = Response.Success(true)
                             )
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                autoModMessageStatus = WebSocketResponse.Success(true)
+                            )
                         }
 
                         is WebSocketResponse.Failure -> {
-                            _uiState.value = _uiState.value.copy(
-                                showSubscriptionEventError = Response.Failure(response.e)
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                autoModMessageStatus = WebSocketResponse.Failure(Exception("Failed to connect"))
                             )
                         }
                         is WebSocketResponse.FailureAuth403 ->{
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                autoModMessageStatus = WebSocketResponse.FailureAuth403(Exception("Token Error"))
+                            )
 
                         }
 
@@ -414,6 +418,10 @@ class ModViewViewModel @Inject constructor(
     private fun createAutoModMessageUpdateSubscriptionEvent(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){
+                _modViewStatus.value = _modViewStatus.value.copy(
+                    autoModMessageStatus = WebSocketResponse.Loading
+                )
+
             twitchEventSub.createEventSubSubscription(
                 oAuthToken =_requestIds.value.oAuthToken,
                 clientId =_requestIds.value.clientId,
@@ -432,16 +440,21 @@ class ModViewViewModel @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Success(true)
                         )
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            autoModMessageStatus = WebSocketResponse.Success(true)
+                        )
 
                     }
 
                     is WebSocketResponse.Failure -> {
-                        Log.d("createAnotherSubscriptionEvent", "response -->FAILED")
-                        _uiState.value = _uiState.value.copy(
-                            showSubscriptionEventError = Response.Failure(response.e)
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            autoModMessageStatus = WebSocketResponse.Failure(Exception("Failed to connect"))
                         )
                     }
                     is WebSocketResponse.FailureAuth403 ->{
+                        _modViewStatus.value = _modViewStatus.value.copy(
+                            autoModMessageStatus = WebSocketResponse.FailureAuth403(Exception("Token Error"))
+                        )
 
                     }
                 }
@@ -451,7 +464,7 @@ class ModViewViewModel @Inject constructor(
     }
 
     /**
-     * - createAutoModMessageHoldSubscriptionEvent is a private function that is meant to establish a EventSub subsctiption type of `channel.chat_settings.update`. This will
+     * - createChatSettingsSubscriptionEvent is a private function that is meant to establish a EventSub subsctiption type of `channel.chat_settings.update`. This will
      * send a notification when a moderator updates the chat's settings
      * - You can read more about this subscription type on Twitch's documentation site, (HERE)[https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchat_settingsupdate]
      * */
