@@ -308,7 +308,8 @@ fun ModViewComponent(
             autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
             changeAutoModQueueChecked ={value ->modViewViewModel.changeAutoModQueueChecked(value)},
             modActionsChecked=modViewViewModel.uiState.value.modActionNotifications,
-            changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)}
+            changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)},
+            autoModStatus = modViewViewModel.modViewStatus.value.autoModMessageStatus
         )
 
     }
@@ -332,6 +333,7 @@ fun ModViewComponent(
 
         modActionsChecked:Boolean,
         changeModActionsChecked:(Boolean)->Unit,
+        autoModStatus: WebSocketResponse<Boolean>,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
         smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ){
@@ -448,6 +450,7 @@ fun ModViewComponent(
                 },
                 autoModMessageList=autoModMessageList,
                 manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                autoModStatus=autoModStatus
 
 
             )

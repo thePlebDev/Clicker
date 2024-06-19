@@ -180,6 +180,7 @@ import kotlin.math.roundToInt
         boxThreeHeight:Dp,
 
         modActionStatus: WebSocketResponse<Boolean>,
+        autoModStatus: WebSocketResponse<Boolean>,
         modActionsList: List<ModActionData>,
         autoModMessageList: List<AutoModQueueMessage>,
         manageAutoModMessage:(String,String)-> Unit,
@@ -237,6 +238,7 @@ import kotlin.math.roundToInt
                         modActionsList =modActionsList,
                         autoModMessageList=autoModMessageList,
                         manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                        autoModStatus=autoModStatus
                     )
 
 
@@ -286,6 +288,7 @@ import kotlin.math.roundToInt
                         modActionsList =modActionsList,
                         autoModMessageList=autoModMessageList,
                         manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                        autoModStatus=autoModStatus
                     )
 
                 }
@@ -330,6 +333,7 @@ import kotlin.math.roundToInt
                         modActionsList =modActionsList,
                         autoModMessageList=autoModMessageList,
                         manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                        autoModStatus=autoModStatus
                     )
 
                 }
@@ -357,6 +361,7 @@ fun ChangingBoxTypes(
     boxThreeDragging:Boolean,
     fullModeActive:Boolean,
     modActionStatus: WebSocketResponse<Boolean>,
+    autoModStatus: WebSocketResponse<Boolean>,
     modActionsList: List<ModActionData>,
     autoModMessageList: List<AutoModQueueMessage>,
     manageAutoModMessage:(String,String)-> Unit,
@@ -404,7 +409,8 @@ fun ChangingBoxTypes(
                     autoModMessageList = autoModMessageList,
                     manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                     connectionError =Response.Success(true),
-                    reconnect = {}
+                    reconnect = {},
+                    autoModStatus=autoModStatus,
                 )
 
             }
@@ -633,8 +639,6 @@ fun BoxDeleteSection(
         }
     }
 
-
-
     /**
      * AutoModQueueBox is the composable function that is used inside of [DraggableBackground] to represent the AutoModQue messages
      * shown to the user
@@ -649,6 +653,7 @@ fun BoxDeleteSection(
         dragging:Boolean,
         autoModMessageList:List<AutoModQueueMessage>,
         manageAutoModMessage:(String,String)-> Unit,
+        autoModStatus: WebSocketResponse<Boolean>,
         connectionError:Response<Boolean>,
         reconnect:()->Unit
 
@@ -693,59 +698,91 @@ fun BoxDeleteSection(
             .background(MaterialTheme.colorScheme.primary)
 
         ){
-            LazyColumn(
-                state=listState,
-                modifier =Modifier.fillMaxSize()
-            ){
-                scope.launch {
-                    if(autoscroll){
-                        listState.scrollToItem(autoModMessageList.size)
-                    }
-                }
-                stickyHeader {
-                    Text(
-                        "AutoMod Queue",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                            .combinedClickable(
-                                onDoubleClick = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    setDragging(true)
-                                },
-                                onClick = {}
-                            )
-                            .padding(horizontal = 10.dp)
+            when(autoModStatus){
+                is WebSocketResponse.Loading->{
+                    LoadingIndicator(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        title = "AutoMod Queue"
                     )
+
                 }
-
-
-
-                items(autoModMessageList){autoModMessage->
-                    AutoModBoxHorizontalDragBox(
-                        autoModMessage=autoModMessage,
-                        manageAutoModMessage={
-                                messageId,action->manageAutoModMessage(messageId,action)
-                        }
-                    )
-                }
-
-
-
-            }
-            if(!autoscroll){
-                ScrollToBottomModView(
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom =20.dp),
-                    enableAutoScroll={
+                is WebSocketResponse.Success->{
+                    LazyColumn(
+                        state=listState,
+                        modifier =Modifier.fillMaxSize()
+                    ){
                         scope.launch {
-                            listState.scrollToItem(autoModMessageList.size)
-                            autoscroll = true
+                            if(autoscroll){
+                                listState.scrollToItem(autoModMessageList.size)
+                            }
                         }
+                        stickyHeader {
+                            Text(
+                                "AutoMod Queue",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                    .combinedClickable(
+                                        onDoubleClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            setDragging(true)
+                                        },
+                                        onClick = {}
+                                    )
+                                    .padding(horizontal = 10.dp)
+                            )
+                        }
+
+
+
+                        items(autoModMessageList){autoModMessage->
+                            AutoModBoxHorizontalDragBox(
+                                autoModMessage=autoModMessage,
+                                manageAutoModMessage={
+                                        messageId,action->manageAutoModMessage(messageId,action)
+                                }
+                            )
+                        }
+
+
+
                     }
-                )
+                    if(!autoscroll){
+                        ScrollToBottomModView(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 20.dp),
+                            enableAutoScroll={
+                                scope.launch {
+                                    listState.scrollToItem(autoModMessageList.size)
+                                    autoscroll = true
+                                }
+                            }
+                        )
+                    }
+                }
+                is WebSocketResponse.Failure->{
+                    FailedClickToTryAgainBox(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        title = "AutoMod Queue"
+                    )
+
+                }
+                is WebSocketResponse.FailureAuth403->{
+                    ErrorMessage403(
+                        hapticFeedback =hapticFeedback,
+                        setDragging={value -> setDragging(value)},
+                        title = "AutoMod Queue"
+                    )
+
+                }
+
             }
+
 
         }
         if(dragging){
@@ -945,11 +982,8 @@ fun BoxDeleteSection(
 
 
     /**
-     * AutoModQueueBox is the composable function that is used inside of [DraggableBackground] to represent the actions that
+     * ModActions is the composable function that is used  to represent the actions that
      * have been taken by moderators in the chat
-     *
-     * @param dragging a Boolean used to determine if the user is dragging this component
-     * @param setDragging a function used to set the value of [dragging]
      * */
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -1009,7 +1043,7 @@ fun BoxDeleteSection(
                     LoadingIndicator(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionsList.size
+                        title = "MOD ACTIONS: ${modActionsList.size}"
                     )
 
                 }
@@ -1061,7 +1095,9 @@ fun BoxDeleteSection(
                     }
                     if(!autoscroll){
                         ScrollToBottomModView(
-                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom =20.dp),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 20.dp),
                             enableAutoScroll={
                                 scope.launch {
                                     listState.scrollToItem(modActionsList.size)
@@ -1078,7 +1114,7 @@ fun BoxDeleteSection(
                     FailedClickToTryAgainBox(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionsList.size
+                        title = "MOD ACTIONS: ${modActionsList.size}"
                     )
 
                 }
@@ -1086,7 +1122,7 @@ fun BoxDeleteSection(
                     ErrorMessage403(
                         hapticFeedback =hapticFeedback,
                         setDragging={value -> setDragging(value)},
-                        modActionListSize = modActionsList.size
+                        title = "MOD ACTIONS: ${modActionsList.size}"
                     )
                 }
             }
@@ -1125,13 +1161,13 @@ fun ScrollToBottomModView(
 fun FailedClickToTryAgainBox(
     hapticFeedback: HapticFeedback,
     setDragging: (Boolean) -> Unit,
-    modActionListSize: Int
+    title:String
 ){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
         Text(
-            "MOD ACTIONS: $modActionListSize ",
+            title,
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
             modifier = Modifier
@@ -1183,13 +1219,14 @@ fun FailedClickToTryAgainBox(
 fun LoadingIndicator(
     hapticFeedback: HapticFeedback,
     setDragging: (Boolean) -> Unit,
-    modActionListSize: Int
+    title: String
 ){
+
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
         Text(
-            "MOD ACTIONS: $modActionListSize ",
+            title,
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
             modifier = Modifier
@@ -1217,13 +1254,13 @@ fun LoadingIndicator(
 fun ErrorMessage403(
     hapticFeedback: HapticFeedback,
     setDragging: (Boolean) -> Unit,
-    modActionListSize: Int
+    title:String,
 ){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
         Text(
-            "MOD ACTIONS: $modActionListSize ",
+            title,
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
             modifier = Modifier
