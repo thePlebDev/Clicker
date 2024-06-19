@@ -305,6 +305,10 @@ fun ModViewComponent(
             manageAutoModMessage ={
                     messageId,action -> modViewViewModel.manageAutoModMessage(messageId,action)
                                   },
+            autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
+            changeAutoModQueueChecked ={value ->modViewViewModel.changeAutoModQueueChecked(value)},
+            modActionsChecked=modViewViewModel.uiState.value.modActionNotifications,
+            changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)}
         )
 
     }
@@ -323,6 +327,11 @@ fun ModViewComponent(
 
         fullModeActive:Boolean,
         manageAutoModMessage:(String,String)-> Unit,
+        autoModQueueChecked:Boolean,
+        changeAutoModQueueChecked:(Boolean)->Unit,
+
+        modActionsChecked:Boolean,
+        changeModActionsChecked:(Boolean)->Unit,
         fullChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit,
         smallChat: @Composable ( setDraggingTrue: () -> Unit)-> Unit
         ){
@@ -374,7 +383,11 @@ fun ModViewComponent(
                 //there is no bottom bar intentionally
             },
             showError = modViewDragStateViewModel.showDrawerError.value,
-            checkIndexAvailability ={index ->modViewDragStateViewModel.checkBoxIndexAvailability(index)}
+            checkIndexAvailability ={index ->modViewDragStateViewModel.checkBoxIndexAvailability(index)},
+            autoModQueueChecked = autoModQueueChecked,
+            changeAutoModQueueChecked ={value ->changeAutoModQueueChecked(value)},
+            modActionsChecked=modActionsChecked,
+            changeModActionsChecked ={value ->changeModActionsChecked(value)}
         ) {contentPadding ->
             Log.d("contentPaddingModView","contentPadding --> ${contentPadding.calculateTopPadding().value}")
 

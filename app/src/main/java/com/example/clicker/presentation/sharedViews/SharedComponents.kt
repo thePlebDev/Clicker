@@ -161,6 +161,11 @@ fun ModViewScaffoldWithDrawer(
     drawerState: DrawerState,
     checkIndexAvailability:(Int)->Unit,
     showError:Boolean,
+    autoModQueueChecked:Boolean,
+    changeAutoModQueueChecked:(Boolean)->Unit,
+
+    modActionsChecked:Boolean,
+    changeModActionsChecked:(Boolean)->Unit,
     content:@Composable (contentPadding: PaddingValues,) -> Unit,
 
     ) {
@@ -174,7 +179,12 @@ fun ModViewScaffoldWithDrawer(
             ModalDrawerSheet {
                 ModViewDrawerContent(
                     checkIndexAvailability={index -> checkIndexAvailability(index)},
-                    showError =showError
+                    showError =showError,
+                    autoModQueueChecked = autoModQueueChecked,
+                    changeAutoModQueueChecked ={value ->changeAutoModQueueChecked(value)},
+                    modActionsChecked=modActionsChecked,
+                    changeModActionsChecked ={value ->changeModActionsChecked(value)}
+
                 )
             }
         },
@@ -215,7 +225,12 @@ fun ModViewScaffoldWithDrawer(
 @Composable
 fun ModViewDrawerContent(
     checkIndexAvailability:(Int)->Unit,
-    showError:Boolean
+    showError:Boolean,
+    autoModQueueChecked:Boolean,
+    changeAutoModQueueChecked:(Boolean)->Unit,
+
+    modActionsChecked:Boolean,
+    changeModActionsChecked:(Boolean)->Unit,
 ){
     Box(modifier = Modifier.fillMaxSize()){
         LazyColumn(
@@ -233,14 +248,18 @@ fun ModViewDrawerContent(
                 ElevatedCardSwitchRow(
                     "AutoMod Queue",
                     checkIndexAvailability={checkIndexAvailability(2)},
-                    painter = painterResource(id =R.drawable.mod_view_24)
+                    painter = painterResource(id =R.drawable.mod_view_24),
+                    checked = autoModQueueChecked,
+                    changeChecked = {value -> changeAutoModQueueChecked(value)}
                 )
             }
             item{
                 ElevatedCardSwitchRow(
                     "Mod actions",
                     checkIndexAvailability={checkIndexAvailability(3)},
-                    painter = painterResource(id =R.drawable.clear_chat_alt_24)
+                    painter = painterResource(id =R.drawable.clear_chat_alt_24),
+                    checked = modActionsChecked,
+                    changeChecked = {value -> changeModActionsChecked(value)}
                 )
 
 
@@ -292,7 +311,9 @@ fun ModViewDrawerContent(
 fun ElevatedCardSwitchRow(
     text:String,
     checkIndexAvailability: () -> Unit,
-    painter: Painter
+    painter: Painter,
+    checked:Boolean,
+    changeChecked:(Boolean) ->Unit,
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -305,7 +326,10 @@ fun ElevatedCardSwitchRow(
             painter = painter
         )
 
-        SwitchWithIcon()
+        SwitchWithIcon(
+            checked = checked,
+            changeChecked ={value -> changeChecked(value)}
+        )
     }
 }
 
@@ -333,9 +357,11 @@ fun ElevatedCardSwitchTextRow(
 
 @Composable
 fun SwitchWithIcon(
+    checked:Boolean,
+    changeChecked:(Boolean) ->Unit,
 
 ) {
-    var checked by remember { mutableStateOf(true) }
+
 
     Column(
         modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
@@ -346,7 +372,7 @@ fun SwitchWithIcon(
         Switch(
             checked = checked,
             onCheckedChange = {
-                checked = it
+                changeChecked(it)
             },
             thumbContent = if (checked) {
                 {
