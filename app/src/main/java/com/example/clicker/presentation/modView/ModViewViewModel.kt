@@ -67,7 +67,8 @@ data class ListTitleValue(
 )
 
 data class ModViewStatus(
-    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading
+    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
+    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.FailureAuth403(Exception("antoher one"))
 )
 
 /**
