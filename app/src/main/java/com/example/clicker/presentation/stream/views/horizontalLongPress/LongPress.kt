@@ -82,6 +82,8 @@ fun HorizontalLongPressView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     loadURL:(String)->Unit,
+    createNewTwitchEventWebSocket:()->Unit,
+    updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
 
 ){
     val clicked = remember { mutableStateOf(true) }
@@ -117,7 +119,9 @@ fun HorizontalLongPressView(
                                         broadcasterId,
                                     )
 
-                                }
+                                },
+                                createNewTwitchEventWebSocket={createNewTwitchEventWebSocket()},
+                                updateClickedStreamInfo ={value -> updateClickedStreamInfo(value)}
 
                                 )
                         }
@@ -160,7 +164,9 @@ fun TestingLazyColumnItem(
     loadURL: (String) -> Unit,
     reconnectWebSocketChat:(String)->Unit,
     getChannelEmotes:(String) ->Unit,
-    listData: NetworkNewUserResponse<List<StreamData>>
+    listData: NetworkNewUserResponse<List<StreamData>>,
+    createNewTwitchEventWebSocket:()->Unit,
+    updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
     ){
     LazyColumn(
         modifier = Modifier
@@ -193,6 +199,16 @@ fun TestingLazyColumnItem(
                                 newUrl ->
                             loadURL(newUrl)
                             getChannelEmotes(streamItem.userId)
+                            updateClickedStreamInfo(
+                                ClickedStreamInfo(
+                                    channelName = streamItem.userLogin,
+                                    streamTitle = streamItem.title,
+                                    category =  streamItem.gameName,
+                                    tags = streamItem.tags,
+                                    adjustedUrl = streamItem.thumbNailUrl
+                                )
+                            )
+                            createNewTwitchEventWebSocket()
                                  },
                         reconnectWebSocketChat ={channelName ->reconnectWebSocketChat(channelName)}
                     )

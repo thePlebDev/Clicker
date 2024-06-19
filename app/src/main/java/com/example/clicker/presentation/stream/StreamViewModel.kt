@@ -207,6 +207,7 @@ class StreamViewModel @Inject constructor(
     val clickedUIState = _clickedUIState
 
     //all the related chat settings code
+    //todo: I think this can get deleted 
     private val _modChatSettingsState = mutableStateOf(ModChatSettings())
     val modChatSettingsState = _modChatSettingsState
 
@@ -216,6 +217,7 @@ class StreamViewModel @Inject constructor(
     fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
         //todo: need to do some adjusting for the thumbnail url
         _clickedStreamInfo.value =clickedStreamInfo
+        _channelName.value = clickedStreamInfo.channelName
     }
     private val _showAutoModSettings = mutableStateOf(false)
     val showAutoModSettings = _showAutoModSettings
