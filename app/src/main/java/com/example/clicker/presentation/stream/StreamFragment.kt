@@ -476,6 +476,7 @@ class StreamFragment : Fragment() {
 
 
         }
+        //todo" THIS IS WHAT SETS THE WEB VIEW
 
         setWebView(
             myWebView = myWebView,
@@ -653,7 +654,9 @@ fun setOrientation(
                 HorizontalLongPressView(
                     homeViewModel,
                     streamViewModel = streamViewModel,
-                    loadURL ={newUrl ->setWebView(webView,newUrl)}
+                    loadURL ={newUrl ->setWebView(webView,newUrl)},
+                    createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                    updateClickedStreamInfo={clickedStreamInfo ->  streamViewModel.updateClickedStreamInfo(clickedStreamInfo)},
                 )
             }
         }

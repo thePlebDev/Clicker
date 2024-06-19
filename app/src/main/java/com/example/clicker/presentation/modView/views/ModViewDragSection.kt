@@ -718,21 +718,9 @@ fun BoxDeleteSection(
                             }
                         }
                         stickyHeader {
-                            Text(
-                                "AutoMod Queue",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                                    .combinedClickable(
-                                        onDoubleClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            setDragging(true)
-                                        },
-                                        onClick = {}
-                                    )
-                                    .padding(horizontal = 10.dp)
+                            AutoModQueueHeader(
+                                setDragging ={value -> setDragging(value)},
+                                hapticFeedback =hapticFeedback
                             )
                         }
 
@@ -799,6 +787,35 @@ fun BoxDeleteSection(
 
 
     }
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AutoModQueueHeader(
+    setDragging: (Boolean) -> Unit,
+    hapticFeedback: HapticFeedback
+){
+    Row(
+        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondary),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Text(
+            "AutoMod Queue",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+        )
+
+    }
+}
+
     @Composable
     fun ConnectionErrorResponse(
         connectionError: Response<Boolean>,
