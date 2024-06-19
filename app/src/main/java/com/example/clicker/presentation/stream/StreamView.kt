@@ -60,7 +60,7 @@ fun StreamView(
     homeViewModel: HomeViewModel,
     hideSoftKeyboard:()->Unit,
     showModView:()->Unit,
-//    hideModView:() ->Unit,
+    modViewIsVisible:Boolean,
 
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
@@ -207,74 +207,77 @@ fun StreamView(
                                          },
                         banReason = streamViewModel.state.value.banReason,
                     )
+                    if(!modViewIsVisible){
+                        ChatUI(
+                            twitchUserChat = twitchUserChat,
+                            showBottomModal={
+                                showClickedUserBottomModal()
+                            },
+                            updateClickedUser = { username, userId, banned, isMod ->
+                                updateClickedUser(
+                                    username,
+                                    userId,
+                                    banned,
+                                    isMod
+                                )
+                            },
+                            showTimeoutDialog={
+                                streamViewModel.openTimeoutDialog.value = true
+                            },
+                            showBanDialog = {streamViewModel.openBanDialog.value = true},
+                            doubleClickMessage={ username->
+                                doubleClickChat(username)
+                            },
 
-                    ChatUI(
-                        twitchUserChat = twitchUserChat,
-                        showBottomModal={
-                            showClickedUserBottomModal()
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        showTimeoutDialog={
-                            streamViewModel.openTimeoutDialog.value = true
-                        },
-                        showBanDialog = {streamViewModel.openBanDialog.value = true},
-                        doubleClickMessage={ username->
-                            doubleClickChat(username)
-                        },
+                            showOuterBottomModalState = {
+                                scope.launch {
 
-                        showOuterBottomModalState = {
-                            scope.launch {
+                                }
+                            },
+                            newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
 
+                            orientationIsVertical =true,
+
+                            isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                            filteredChatList = filteredChat,
+                            clickedAutoCompleteText = { username ->
+                                streamViewModel.autoTextChange(username)
+                            },
+                            showModal = {
+                                showChatSettingsBottomModal()
+                            },
+                            notificationAmount =modViewViewModel.uiState.value.modViewTotalNotifications,
+                            textFieldValue = streamViewModel.textFieldValue,
+                            sendMessageToWebSocket = { string ->
+                                streamViewModel.sendMessage(string)
+                            },
+                            noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                            deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                            forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                            clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                            inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                            hideSoftKeyboard={hideSoftKeyboard()},
+                            emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                            updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                            emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                            deleteEmote={streamViewModel.deleteEmote()},
+                            showModView={
+                                showModView()
+                                modViewViewModel.clearModViewNotifications()
                             }
-                        },
-                        newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-
-                        orientationIsVertical =true,
-
-                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                        filteredChatList = filteredChat,
-                        clickedAutoCompleteText = { username ->
-                            streamViewModel.autoTextChange(username)
-                        },
-                        showModal = {
-                            showChatSettingsBottomModal()
-                        },
-                        notificationAmount =modViewViewModel.uiState.value.modViewTotalNotifications,
-                        textFieldValue = streamViewModel.textFieldValue,
-                        sendMessageToWebSocket = { string ->
-                            streamViewModel.sendMessage(string)
-                        },
-                        noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                        deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
-                        forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                        clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
-                        inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                        hideSoftKeyboard={hideSoftKeyboard()},
-                        emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                        updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                        emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                        deleteEmote={streamViewModel.deleteEmote()},
-                        showModView={
-                            showModView()
-                            modViewViewModel.clearModViewNotifications()
-                        }
-                    )
+                        )
 
 
-                    VerticalOverlayView(
-                        channelName = streamViewModel.clickedStreamInfo.value.channelName,
-                        streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
-                        category = streamViewModel.clickedStreamInfo.value.category,
-                        tags = streamViewModel.clickedStreamInfo.value.tags,
-                        showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
-                    )
+                        VerticalOverlayView(
+                            channelName = streamViewModel.clickedStreamInfo.value.channelName,
+                            streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+                            category = streamViewModel.clickedStreamInfo.value.category,
+                            tags = streamViewModel.clickedStreamInfo.value.tags,
+                            showStreamDetails = autoModViewModel.verticalOverlayIsVisible.collectAsState().value
+                        )
+                    }
+
+
 
                 }
             }

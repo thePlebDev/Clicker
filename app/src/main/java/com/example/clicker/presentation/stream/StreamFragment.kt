@@ -595,7 +595,8 @@ fun setOrientation(
 //                            animator.start()
                         }
 
-                    }
+                    },
+                    modViewIsVisible = modViewDragStateViewModel.showModView.value
                 )
 
             }
