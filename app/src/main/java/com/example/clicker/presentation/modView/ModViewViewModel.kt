@@ -51,7 +51,10 @@ data class ModViewViewModelUIState(
     val enabledChatSettings:Boolean = true,
     val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
     val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
-    val autoModQuePedingMessages:Int =0,
+    val modViewTotalNotifications:Int =0,
+
+    val modActionNotifications:Boolean = true,
+    val autoModMessagesNotifications:Boolean = true,
 
 
     val emoteOnly:Boolean = false, //todo: THESE TWO ARE REALLY MESSING THINGS UP
@@ -161,9 +164,35 @@ class ModViewViewModel @Inject constructor(
             nullableModAction?.also {nonNullableModAction ->
                 Log.d("ModActionsHappending","action ->$nonNullableModAction")
                 modActionsList.add(nonNullableModAction)
+                if(_uiState.value.modActionNotifications){
+                    val updatedMessage=_uiState.value.modViewTotalNotifications +1
+                    _uiState.value =_uiState.value.copy(
+                        modViewTotalNotifications =updatedMessage
+                    )
+                }
+
 
             }
         }
+    }
+
+    fun clearModViewNotifications(){
+
+        _uiState.value =_uiState.value.copy(
+            modViewTotalNotifications =0
+        )
+    }
+
+    fun changeAutoModQueueChecked(value:Boolean){
+        _uiState.value =_uiState.value.copy(
+            autoModMessagesNotifications = value
+        )
+    }
+
+    fun changeModActionsChecked(value:Boolean){
+        _uiState.value =_uiState.value.copy(
+            modActionNotifications = value
+        )
     }
 
     private fun monitorForChatSettingsUpdate(){
@@ -267,10 +296,6 @@ class ModViewViewModel @Inject constructor(
                             autoModMessageList[indexOfItem] = item.copy(
                                 approved = autoModMessage.approved,
                                 swiped = true
-                            )
-                            val updatedMessage=_uiState.value.autoModQuePedingMessages -1
-                            _uiState.value =_uiState.value.copy(
-                                autoModQuePedingMessages =updatedMessage
                             )
                         }
                     }
@@ -476,10 +501,13 @@ class ModViewViewModel @Inject constructor(
                 twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         autoModMessageList.add(autoModMessage)
-                        val updatedMessage=_uiState.value.autoModQuePedingMessages +1
-                        _uiState.value =_uiState.value.copy(
-                            autoModQuePedingMessages =updatedMessage
-                        )
+                        if(_uiState.value.autoModMessagesNotifications){
+                            val updatedMessage=_uiState.value.modViewTotalNotifications +1
+                            _uiState.value =_uiState.value.copy(
+                                modViewTotalNotifications =updatedMessage
+                            )
+                        }
+
                     }
                 }
             }

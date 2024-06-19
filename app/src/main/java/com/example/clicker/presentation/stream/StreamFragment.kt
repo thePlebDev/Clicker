@@ -571,7 +571,6 @@ fun setOrientation(
                     autoModViewModel,
                     modViewViewModel,
                     homeViewModel,
-                    notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages,
                     hideSoftKeyboard ={
                         hideSoftKeyboard()
 

@@ -70,7 +70,6 @@ fun HorizontalChat(
 
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-    val notificationAmount=modViewViewModel.uiState.value.autoModQuePedingMessages
     val filteredChat = streamViewModel.filteredChatList
     val showClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {

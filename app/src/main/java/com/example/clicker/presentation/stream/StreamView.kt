@@ -59,7 +59,6 @@ fun StreamView(
     modViewViewModel: ModViewViewModel,
     homeViewModel: HomeViewModel,
     hideSoftKeyboard:()->Unit,
-    notificationAmount: Int,
     showModView:()->Unit,
 //    hideModView:() ->Unit,
 
@@ -247,7 +246,7 @@ fun StreamView(
                         showModal = {
                             showChatSettingsBottomModal()
                         },
-                        notificationAmount =0,
+                        notificationAmount =modViewViewModel.uiState.value.modViewTotalNotifications,
                         textFieldValue = streamViewModel.textFieldValue,
                         sendMessageToWebSocket = { string ->
                             streamViewModel.sendMessage(string)
@@ -262,7 +261,10 @@ fun StreamView(
                         updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                         emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
                         deleteEmote={streamViewModel.deleteEmote()},
-                        showModView={showModView()}
+                        showModView={
+                            showModView()
+                            modViewViewModel.clearModViewNotifications()
+                        }
                     )
 
 
