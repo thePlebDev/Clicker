@@ -150,8 +150,25 @@ class ModViewViewModel @Inject constructor(
 
     fun createNewTwitchEventWebSocket(){
         modActionsList.clear()
+        Log.d("CREATINGNEWEVENTSUBSOCKET","CREATED")
         twitchEventSubWebSocket.newWebSocket()
     }
+    fun createNewTwitchEventWebSocketHorizontalLongPress(
+        oAuthToken:String,clientId:String,broadcasterId:String,moderatorId:String,
+    ){
+        _requestIds.value = _requestIds.value.copy(
+            oAuthToken = oAuthToken,
+            clientId =clientId,
+            broadcasterId =broadcasterId,
+            moderatorId =moderatorId
+
+        )
+        modActionsList.clear()
+        Log.d("CREATINGNEWEVENTSUBSOCKET","CREATED")
+        twitchEventSubWebSocket.newWebSocket()
+
+    }
+
     init{
         monitorForChatSettingsUpdate()
     }
@@ -318,6 +335,11 @@ class ModViewViewModel @Inject constructor(
             _modViewStatus.value = _modViewStatus.value.copy(
                 modActions = WebSocketResponse.Loading
             )
+            Log.d("createModerationActionSubscriptionTESTING","oAuthToken->${_requestIds.value.oAuthToken}")
+            Log.d("createModerationActionSubscriptionTESTING","clientId->${_requestIds.value.clientId}")
+            Log.d("createModerationActionSubscriptionTESTING","broadcasterId->${_requestIds.value.broadcasterId}")
+            Log.d("createModerationActionSubscriptionTESTING","moderatorId->${_requestIds.value.moderatorId}")
+            Log.d("createModerationActionSubscriptionTESTING","sessionId->${_requestIds.value.sessionId}")
 
             twitchEventSub.createEventSubSubscription(
                 oAuthToken = _requestIds.value.oAuthToken,
@@ -330,6 +352,7 @@ class ModViewViewModel @Inject constructor(
                 when (response) {
                     is WebSocketResponse.Loading -> {}
                     is WebSocketResponse.Success -> {
+                        Log.d("createModerationActionSubscriptionTESTING","Success")
                         _modViewStatus.value = _modViewStatus.value.copy(
                             modActions = WebSocketResponse.Success(true)
                         )
@@ -339,6 +362,7 @@ class ModViewViewModel @Inject constructor(
                     }
 
                     is WebSocketResponse.Failure -> {
+                        Log.d("createModerationActionSubscriptionTESTING","Failure")
                         _uiState.value = _uiState.value.copy(
                             showSubscriptionEventError = Response.Failure(response.e)
                         )
@@ -347,6 +371,7 @@ class ModViewViewModel @Inject constructor(
                         )
                     }
                     is WebSocketResponse.FailureAuth403 ->{
+                        Log.d("createModerationActionSubscriptionTESTING","FailureAuth403")
                         _modViewStatus.value = _modViewStatus.value.copy(
                             modActions = WebSocketResponse.FailureAuth403(Exception("Improper Exception"))
                         )
@@ -540,12 +565,7 @@ class ModViewViewModel @Inject constructor(
             moderatorId =moderatorId
 
         )
-        getBlockedTerms(
-            oAuthToken=oAuthToken,
-            clientId =clientId,
-            broadcasterId=broadcasterId,
-            moderatorId=moderatorId
-        )
+
 
         getChatSettings(
             oAuthToken=oAuthToken,

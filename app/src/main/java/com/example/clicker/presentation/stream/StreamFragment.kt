@@ -649,6 +649,7 @@ fun setOrientation(
     binding.composeViewLongPress?.apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         val webView:WebView = binding.root.findViewById(R.id.webView)
+
         setContent {
             AppTheme{
                 HorizontalLongPressView(
@@ -657,6 +658,23 @@ fun setOrientation(
                     loadURL ={newUrl ->setWebView(webView,newUrl)},
                     createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
                     updateClickedStreamInfo={clickedStreamInfo ->  streamViewModel.updateClickedStreamInfo(clickedStreamInfo)},
+                    updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                        modViewViewModel.updateAutoModTokens(
+                            oAuthToken =oAuthToken,
+                            clientId =clientId,
+                            broadcasterId=broadcasterId,
+                            moderatorId =moderatorId
+                        )
+                    },
+                    updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                        streamViewModel.updateChannelNameAndClientIdAndUserId(
+                            streamerName,
+                            clientId,
+                            broadcasterId,
+                            userId,
+                            login =homeViewModel.validatedUser.value?.login ?:""
+                        )
+                    }
                 )
             }
         }
