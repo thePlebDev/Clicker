@@ -207,7 +207,7 @@ class StreamViewModel @Inject constructor(
     val clickedUIState = _clickedUIState
 
     //all the related chat settings code
-    //todo: I think this can get deleted 
+    //todo: I think this can get deleted
     private val _modChatSettingsState = mutableStateOf(ModChatSettings())
     val modChatSettingsState = _modChatSettingsState
 

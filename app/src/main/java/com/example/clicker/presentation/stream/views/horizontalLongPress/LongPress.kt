@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,10 +85,15 @@ fun HorizontalLongPressView(
     loadURL:(String)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
     updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+    updateModViewSettings:(String,String,String,String,)->Unit,
+    updateStreamerName: (String, String, String, String) -> Unit,
 
 ){
     val clicked = remember { mutableStateOf(true) }
     val text = if (clicked.value) "Live channels" else "Mod channels"
+
+    val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
+    val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
 
 
     SharedComponents
@@ -107,7 +113,16 @@ fun HorizontalLongPressView(
                                 width = homeViewModel.state.value.width,
                                 density =homeViewModel.state.value.screenDensity,
                                 loadURL ={
-                                        newUrl -> loadURL(newUrl)
+                                        newUrl ->
+                                    updateModViewSettings(
+                                        homeViewModel.state.value.oAuthToken,
+                                        streamViewModel.state.value.clientId,
+                                        streamViewModel.state.value.broadcasterId,
+                                        streamViewModel.state.value.userId,
+                                    )
+                                    loadURL(newUrl)
+                                    createNewTwitchEventWebSocket()
+
                                          },
                                 reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},
                                 listData = homeViewModel.state.value.horizontalLongHoldStreamList,
@@ -120,8 +135,14 @@ fun HorizontalLongPressView(
                                     )
 
                                 },
-                                createNewTwitchEventWebSocket={createNewTwitchEventWebSocket()},
-                                updateClickedStreamInfo ={value -> updateClickedStreamInfo(value)}
+                                updateClickedStreamInfo ={value -> updateClickedStreamInfo(value)},
+                                updateStreamerName ={
+                                        streamerName,clientId,broadcasterId,userId ->
+                                    updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                                },
+                                clientId =clientId,
+                                userId = userId,
 
                                 )
                         }
@@ -165,8 +186,10 @@ fun TestingLazyColumnItem(
     reconnectWebSocketChat:(String)->Unit,
     getChannelEmotes:(String) ->Unit,
     listData: NetworkNewUserResponse<List<StreamData>>,
-    createNewTwitchEventWebSocket:()->Unit,
     updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+    clientId: String,
+    userId:String,
+    updateStreamerName: (String, String, String, String) -> Unit,
     ){
     LazyColumn(
         modifier = Modifier
@@ -197,6 +220,12 @@ fun TestingLazyColumnItem(
                         density =density,
                         loadURL ={
                                 newUrl ->
+                            updateStreamerName(
+                                streamItem.userLogin,
+                                clientId,
+                                streamItem.userId,
+                                userId
+                            )
                             loadURL(newUrl)
                             getChannelEmotes(streamItem.userId)
                             updateClickedStreamInfo(
@@ -208,7 +237,6 @@ fun TestingLazyColumnItem(
                                     adjustedUrl = streamItem.thumbNailUrl
                                 )
                             )
-                            createNewTwitchEventWebSocket()
                                  },
                         reconnectWebSocketChat ={channelName ->reconnectWebSocketChat(channelName)}
                     )

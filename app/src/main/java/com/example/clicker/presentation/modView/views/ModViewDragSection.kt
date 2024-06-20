@@ -718,9 +718,21 @@ fun BoxDeleteSection(
                             }
                         }
                         stickyHeader {
-                            AutoModQueueHeader(
-                                setDragging ={value -> setDragging(value)},
-                                hapticFeedback =hapticFeedback
+                            Text(
+                                "AutoMod Queue",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                    .combinedClickable(
+                                        onDoubleClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            setDragging(true)
+                                        },
+                                        onClick = {}
+                                    )
+                                    .padding(horizontal = 10.dp)
                             )
                         }
 
