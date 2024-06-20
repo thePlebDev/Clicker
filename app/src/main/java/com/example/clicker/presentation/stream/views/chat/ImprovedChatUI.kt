@@ -383,14 +383,20 @@ fun EmoteBoard(
             deleteEmote={deleteEmote()},
             scrollToGlobalEmotes={
                 scope.launch {
-                    lazyGridState.scrollToItem(emoteBoardChannelList.list.size+1)
+                    lazyGridState.scrollToItem(emoteBoardChannelList.list.size+2)
                 }
             },
             scrollToChannelEmotes={
                 scope.launch {
+                    lazyGridState.scrollToItem(1)
+                }
+            },
+            scrollToMostFrequentlyUsedEmotes={
+                scope.launch {
                     lazyGridState.scrollToItem(0)
                 }
             }
+
 
         )
     }
@@ -401,7 +407,8 @@ fun EmoteBottomUI(
     closeEmoteBoard:()->Unit,
     deleteEmote:()->Unit,
     scrollToGlobalEmotes:() ->Unit,
-    scrollToChannelEmotes:()->Unit
+    scrollToChannelEmotes:()->Unit,
+    scrollToMostFrequentlyUsedEmotes:()->Unit,
 ){
     val haptic = LocalHapticFeedback.current
     Row(modifier = Modifier
@@ -412,9 +419,6 @@ fun EmoteBottomUI(
         horizontalArrangement = Arrangement.SpaceBetween
     ){
         Log.d("EmoteBottomUIRedererd", "RENDERED")
-
-//        val imeHeightPx = with(LocalDensity.current) { insets.getBottom() }
-//        var imeHeightDp by remember { mutableStateOf(0.dp) }
 
         Row(verticalAlignment = Alignment.CenterVertically,){
             Icon(
@@ -427,15 +431,16 @@ fun EmoteBottomUI(
                 painter = painterResource(id =R.drawable.keyboard_arrow_down_24),
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
-//
-//            Icon(modifier= Modifier
-//                .size(25.dp)
-//                .clickable {
-//                    Log.d("EmoteBottomUI", "RECENT")
-//                },
-//                tint = MaterialTheme.colorScheme.onPrimary,
-//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-//            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI", "RECENT")
+                    scrollToMostFrequentlyUsedEmotes()
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
@@ -486,6 +491,7 @@ fun LazyGridEmotes(
     updateTextWithEmote:(String) ->Unit,
     lazyGridState: LazyGridState
 ){
+    val listOfMostRecentEmote = listOf<String>()
 
     LazyVerticalGrid(
         state = lazyGridState,
@@ -498,6 +504,38 @@ fun LazyGridEmotes(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        /*****************************START OF THE Most Recent EMOTES*******************************/
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Frequently Used Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(10.dp))
+            }
+
+        }
+        items(listOfMostRecentEmote){
+
+        }
+
+
+
+
+
+
+        /*****************************START OF THE Channel EMOTES*******************************/
         header {
             Column(modifier= Modifier
                 .fillMaxWidth()
@@ -539,7 +577,7 @@ fun LazyGridEmotes(
 //                tint = Color.Unspecified
 //            )
         }
-        /****START OF THE GLOBAL EMOTES*****/
+        /*****************************START OF THE GLOBAL EMOTES*******************************/
         header {
             Column(modifier= Modifier
                 .fillMaxWidth()
