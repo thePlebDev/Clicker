@@ -152,6 +152,8 @@ fun ChatUI(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
     showModView:()->Unit,
@@ -259,13 +261,13 @@ fun ChatUI(
         emoteBoardGlobalList =emoteBoardGlobalList,
         updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
         emoteBoardChannelList=emoteBoardChannelList,
+        emoteBoardMostFrequentList=emoteBoardMostFrequentList,
         closeEmoteBoard = {
             emoteKeyBoardHeight.value = 0.dp
             iconClicked = false
         },
-        deleteEmote={deleteEmote()}
-
-
+        deleteEmote={deleteEmote()},
+        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)}
         )
 }
 
@@ -281,6 +283,8 @@ fun ChatUIBox(
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit
@@ -312,12 +316,13 @@ fun ChatUIBox(
 
                         EmoteBoard(
                             modifier = Modifier.zIndex(8f),
-                            emoteKeyBoardHeight,
                             emoteBoardGlobalList,
+                            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
                             updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
                             emoteBoardChannelList=emoteBoardChannelList,
                             closeEmoteBoard={closeEmoteBoard()},
-                            deleteEmote={deleteEmote()}
+                            deleteEmote={deleteEmote()},
+                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
                         )
 
                 }
@@ -356,9 +361,10 @@ fun LazyGridScope.header(
 @Composable
 fun EmoteBoard(
     modifier:Modifier,
-    emoteKeyBoardHeight:Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit
@@ -371,11 +377,12 @@ fun EmoteBoard(
         modifier = modifier
     ) {
         LazyGridEmotes(
-            emoteKeyBoardHeight=emoteKeyBoardHeight,
             emoteBoardGlobalList=emoteBoardGlobalList,
             emoteBoardChannelList=emoteBoardChannelList,
+            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-            lazyGridState =lazyGridState
+            lazyGridState =lazyGridState,
+            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
 
         )
         EmoteBottomUI(
@@ -485,13 +492,15 @@ fun EmoteBottomUI(
 
 @Composable
 fun LazyGridEmotes(
-    emoteKeyBoardHeight:Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+
     updateTextWithEmote:(String) ->Unit,
     lazyGridState: LazyGridState
 ){
-    val listOfMostRecentEmote = listOf<String>()
+
 
     LazyVerticalGrid(
         state = lazyGridState,
@@ -526,9 +535,20 @@ fun LazyGridEmotes(
             }
 
         }
-        items(listOfMostRecentEmote){
-
+        items(emoteBoardMostFrequentList){
+            AsyncImage(
+                model = it.url,
+                contentDescription = it.name,
+                modifier = Modifier
+                    .width(65.dp)
+                    .height(65.dp)
+                    .padding(5.dp)
+                    .clickable {
+                        updateTextWithEmote(it.name)
+                    }
+            )
         }
+
 
 
 
@@ -568,6 +588,7 @@ fun LazyGridEmotes(
                     .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
+                        updateMostFrequentEmoteList(it)
                     }
             )
 //            Icon(
@@ -610,6 +631,7 @@ fun LazyGridEmotes(
                     .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
+                        updateMostFrequentEmoteList(it)
                     }
             )
         }

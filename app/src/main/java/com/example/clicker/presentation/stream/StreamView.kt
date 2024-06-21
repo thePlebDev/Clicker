@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
@@ -100,6 +101,11 @@ fun StreamView(
     val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
         streamViewModel.sendDoubleTapEmote(it)
     } }
+
+    val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
+        streamViewModel.updateMostFrequentEmoteList(it)
+    } }
+
     val updateClickedUser:(String,String,Boolean,Boolean)->Unit = remember(streamViewModel) { { username, userId, banned, isMod ->
         streamViewModel.updateClickedChat(
             username,
@@ -260,11 +266,13 @@ fun StreamView(
                             emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
                             updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                             emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                            emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
                             deleteEmote={streamViewModel.deleteEmote()},
                             showModView={
                                 showModView()
                                 modViewViewModel.clearModViewNotifications()
-                            }
+                            },
+                            updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)}
                         )
 
 

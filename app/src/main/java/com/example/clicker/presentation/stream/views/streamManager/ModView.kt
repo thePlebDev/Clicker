@@ -72,6 +72,7 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -132,6 +133,9 @@ fun ModViewComponent(
     } }
     val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
         streamViewModel.sendDoubleTapEmote(it)
+    } }
+    val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
+        streamViewModel.updateMostFrequentEmoteList(it)
     } }
 
     val fullModeActive = modViewDragStateViewModel.fullModeActive.value
@@ -264,7 +268,9 @@ fun ModViewComponent(
                         setDragging = {
                             Log.d("doubleClickingThings","CLICKED")
                             setDraggingFunc()
-                        }
+                        },
+                        emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
+                        updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
                     )
                 }
 

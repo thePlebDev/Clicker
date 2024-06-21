@@ -41,6 +41,7 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
@@ -189,6 +190,14 @@ class StreamViewModel @Inject constructor(
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
 
+    /**
+     * A list representing all the most recent clicked emotes
+     * */
+    val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
+
+    fun updateMostFrequentEmoteList(clickedItem:EmoteNameUrl){
+        mostFrequentEmoteList.add(clickedItem)
+    }
     /**
      * A list representing all the chats users have sent
      * */
