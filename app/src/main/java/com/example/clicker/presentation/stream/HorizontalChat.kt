@@ -95,7 +95,7 @@ fun HorizontalChat(
         )
     } }
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
-        streamViewModel.updateMostFrequentEmoteList(it)
+        streamViewModel.updateMostFrequentEmoteListTesting(it)
     } }
 
 
@@ -239,7 +239,7 @@ fun HorizontalChat(
                 emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
                 deleteEmote={streamViewModel.deleteEmote()},
                 showModView = {},
-                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
+                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
                 updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
             )
 

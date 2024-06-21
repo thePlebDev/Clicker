@@ -47,7 +47,7 @@ fun FullChatModView(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
-    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    emoteBoardMostFrequentList:  EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,

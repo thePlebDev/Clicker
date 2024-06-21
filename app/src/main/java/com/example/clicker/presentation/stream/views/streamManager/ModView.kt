@@ -135,7 +135,7 @@ fun ModViewComponent(
         streamViewModel.sendDoubleTapEmote(it)
     } }
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
-        streamViewModel.updateMostFrequentEmoteList(it)
+        streamViewModel.updateMostFrequentEmoteListTesting(it)
     } }
 
     val fullModeActive = modViewDragStateViewModel.fullModeActive.value
@@ -269,7 +269,7 @@ fun ModViewComponent(
                             Log.d("doubleClickingThings","CLICKED")
                             setDraggingFunc()
                         },
-                        emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
+                        emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
                         updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
                     )
                 }
