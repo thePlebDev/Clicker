@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -152,7 +153,7 @@ fun ChatUI(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
-    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
@@ -283,7 +284,7 @@ fun ChatUIBox(
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
-    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
@@ -303,9 +304,9 @@ fun ChatUIBox(
         Box(modifier = Modifier.fillMaxSize()){
             scrollToBottom(
                 modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 80.dp)
-                .zIndex(5f)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp)
+                    .zIndex(5f)
             )
             Column(Modifier.fillMaxSize()) {
 
@@ -363,7 +364,7 @@ fun EmoteBoard(
     modifier:Modifier,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
-    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
@@ -377,12 +378,13 @@ fun EmoteBoard(
         modifier = modifier
     ) {
         LazyGridEmotes(
+            lazyGridState =lazyGridState,
             emoteBoardGlobalList=emoteBoardGlobalList,
             emoteBoardChannelList=emoteBoardChannelList,
             emoteBoardMostFrequentList=emoteBoardMostFrequentList,
+
             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-            lazyGridState =lazyGridState,
-            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
+            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
 
         )
         EmoteBottomUI(
@@ -390,12 +392,12 @@ fun EmoteBoard(
             deleteEmote={deleteEmote()},
             scrollToGlobalEmotes={
                 scope.launch {
-                    lazyGridState.scrollToItem(emoteBoardChannelList.list.size+2)
+                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
                 }
             },
             scrollToChannelEmotes={
                 scope.launch {
-                    lazyGridState.scrollToItem(1)
+                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
                 }
             },
             scrollToMostFrequentlyUsedEmotes={
@@ -490,28 +492,32 @@ fun EmoteBottomUI(
     }
 }
 
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
-    emoteBoardMostFrequentList: List<EmoteNameUrl>,
-    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
 
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
+
     lazyGridState: LazyGridState
 ){
 
 
+Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
     LazyVerticalGrid(
         state = lazyGridState,
-        columns = GridCells.Adaptive(minSize = 65.dp),
+        columns = GridCells.Adaptive(minSize = 40.dp),
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(200.dp)
             .background(MaterialTheme.colorScheme.primary),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
         header {
@@ -523,26 +529,26 @@ fun LazyGridEmotes(
                 Text(
                     "Frequently Used Emotes",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
                 ) // or any composable for your single row
-                Spacer(modifier  = Modifier.padding(5.dp))
+                Spacer(modifier  = Modifier.padding(2.dp))
                 Divider(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier  = Modifier.padding(10.dp))
+                Spacer(modifier  = Modifier.padding(5.dp))
             }
 
         }
-        items(emoteBoardMostFrequentList){
+        items(emoteBoardMostFrequentList.list){
             AsyncImage(
                 model = it.url,
                 contentDescription = it.name,
                 modifier = Modifier
-                    .width(65.dp)
-                    .height(65.dp)
-                    .padding(5.dp)
+                    .width(40.dp)
+                    .height(40.dp)
+                    .padding(3.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
                     }
@@ -565,15 +571,15 @@ fun LazyGridEmotes(
                 Text(
                     "Channel Emotes",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
                 ) // or any composable for your single row
-                Spacer(modifier  = Modifier.padding(5.dp))
+                Spacer(modifier  = Modifier.padding(2.dp))
                 Divider(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier  = Modifier.padding(10.dp))
+                Spacer(modifier  = Modifier.padding(5.dp))
             }
 
         }
@@ -583,9 +589,9 @@ fun LazyGridEmotes(
                 model = it.url,
                 contentDescription = stringResource(R.string.moderator_badge_icon_description),
                 modifier = Modifier
-                    .width(65.dp)
-                    .height(65.dp)
-                    .padding(5.dp)
+                    .width(40.dp)
+                    .height(40.dp)
+                    .padding(3.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
                         updateMostFrequentEmoteList(it)
@@ -608,15 +614,15 @@ fun LazyGridEmotes(
                 Text(
                     "Global Emotes",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
                 ) // or any composable for your single row
-                Spacer(modifier  = Modifier.padding(5.dp))
+                Spacer(modifier  = Modifier.padding(2.dp))
                 Divider(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier  = Modifier.padding(10.dp))
+                Spacer(modifier  = Modifier.padding(5.dp))
             }
 
         }
@@ -626,17 +632,17 @@ fun LazyGridEmotes(
                 model = it.url,
                 contentDescription = stringResource(R.string.moderator_badge_icon_description),
                 modifier = Modifier
-                    .width(65.dp)
-                    .height(65.dp)
-                    .padding(5.dp)
+                    .width(40.dp)
+                    .height(40.dp)
+                    .padding(3.dp)
                     .clickable {
-                        updateTextWithEmote(it.name)
+                       updateTextWithEmote(it.name)
                         updateMostFrequentEmoteList(it)
                     }
             )
         }
     }
-}
+} /********END OF LazyGridEmotes**********/
 
 
 @Stable

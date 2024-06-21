@@ -103,7 +103,11 @@ fun StreamView(
     } }
 
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
-        streamViewModel.updateMostFrequentEmoteList(it)
+        streamViewModel.updateMostFrequentEmoteListTesting(it)
+    } }
+
+    val updateTextWithEmote:(String)->Unit =remember(streamViewModel) { {
+        streamViewModel.addEmoteToText(it)
     } }
 
     val updateClickedUser:(String,String,Boolean,Boolean)->Unit = remember(streamViewModel) { { username, userId, banned, isMod ->
@@ -264,9 +268,10 @@ fun StreamView(
                             inlineContentMap = streamViewModel.inlineTextContentTest.value,
                             hideSoftKeyboard={hideSoftKeyboard()},
                             emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                            updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                            //todo: this is what I need to change
+                            updateTextWithEmote = {newValue -> updateTextWithEmote(newValue)},
                             emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                            emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
+                            emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
                             deleteEmote={streamViewModel.deleteEmote()},
                             showModView={
                                 showModView()
