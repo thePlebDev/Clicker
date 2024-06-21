@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
@@ -92,6 +93,9 @@ fun HorizontalChat(
             banned,
             isMod
         )
+    } }
+    val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
+        streamViewModel.updateMostFrequentEmoteList(it)
     } }
 
 
@@ -234,7 +238,9 @@ fun HorizontalChat(
                 updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
                 emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
                 deleteEmote={streamViewModel.deleteEmote()},
-                showModView = {}
+                showModView = {},
+                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteList,
+                updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
             )
 
 

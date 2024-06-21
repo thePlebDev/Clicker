@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import kotlinx.coroutines.delay
@@ -46,10 +47,12 @@ fun FullChatModView(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: List<EmoteNameUrl>,
+    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
     showModView:()->Unit,
-    fullMode: Boolean ,
+    fullMode: Boolean,
     setDragging: () -> Unit
 ){
     val lazyColumnListState = rememberLazyListState()
@@ -161,7 +164,9 @@ fun FullChatModView(
             emoteKeyBoardHeight.value = 0.dp
             iconClicked = false
         },
-        deleteEmote={deleteEmote()}
+        deleteEmote={deleteEmote()},
+        emoteBoardMostFrequentList= emoteBoardMostFrequentList,
+        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)}
 
 
     )
