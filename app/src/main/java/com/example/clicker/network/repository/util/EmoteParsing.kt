@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.EmoteNameUrlEmoteType
 
 class EmoteParsing {
 
@@ -29,7 +30,32 @@ class EmoteParsing {
         ) {
             AsyncImage(
                 model = url,
-                contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                contentDescription = "${emoteValue.name} emote",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
+            )
+        }
+
+        innerInlineContentMap[emoteValue.name] = value
+
+    }
+
+    fun createMapValueForComposeChatChannelEmotes(
+        emoteValue: EmoteNameUrlEmoteType,
+        innerInlineContentMap: MutableMap<String, InlineTextContent>
+    ){
+        val url = emoteValue.url
+        val value = InlineTextContent(
+            Placeholder(
+                width = 35.sp,
+                height = 35.sp,
+                placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+            )
+        ) {
+            AsyncImage(
+                model = url,
+                contentDescription = "${emoteValue.name} emote",
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(2.dp)

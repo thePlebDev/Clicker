@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import kotlinx.coroutines.delay
@@ -46,7 +47,7 @@ fun FullChatModView(
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
-    emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList:  EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,

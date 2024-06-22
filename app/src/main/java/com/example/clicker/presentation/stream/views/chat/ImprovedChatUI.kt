@@ -110,7 +110,9 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
+import com.example.clicker.network.repository.EmoteTypes
 import com.example.clicker.network.websockets.EmoteInText
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.MessageType
@@ -152,7 +154,7 @@ fun ChatUI(
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
-    emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
@@ -283,7 +285,7 @@ fun ChatUIBox(
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
-    emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
@@ -363,7 +365,7 @@ fun LazyGridScope.header(
 fun EmoteBoard(
     modifier:Modifier,
     emoteBoardGlobalList: EmoteNameUrlList,
-    emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
@@ -497,7 +499,7 @@ fun EmoteBottomUI(
 @Composable
 fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
-    emoteBoardChannelList: EmoteNameUrlList,
+    emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
 
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
@@ -585,18 +587,50 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
         }
 
         items(emoteBoardChannelList.list){
-            AsyncImage(
-                model = it.url,
-                contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                modifier = Modifier
-                    .width(40.dp)
-                    .height(40.dp)
-                    .padding(3.dp)
-                    .clickable {
-                        updateTextWithEmote(it.name)
-                        updateMostFrequentEmoteList(it)
-                    }
-            )
+            if(it.emoteType == EmoteTypes.SUBS){
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(40.dp)
+                ){
+                    AsyncImage(
+                        model = it.url,
+                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(40.dp)
+                            .padding(3.dp)
+                    )
+                    Spacer(modifier = Modifier
+                        .height(40.dp)
+                        .width(40.dp)
+                        .background(Color.Black.copy(0.4f)))
+                    Icon(
+                        painter = painterResource(id =R.drawable.lock_24),
+                        contentDescription = "Emote locked. Subscribe to access",
+                        modifier = Modifier.width(18.dp).height(18.dp).align(Alignment.BottomEnd).padding(3.dp),
+                        tint = Color.White
+                    )
+
+                }
+
+            }else{
+                AsyncImage(
+                    model = it.url,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(40.dp)
+                        .padding(3.dp)
+                        .clickable {
+                            updateTextWithEmote(it.name)
+                            updateMostFrequentEmoteList(
+                                EmoteNameUrl(it.name, it.url)
+                            )
+                        }
+                )
+            }
+
 //            Icon(
 //                painter = rememberAsyncImagePainter(it.url),
 //                contentDescription = null,
@@ -628,6 +662,9 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
         }
 
         items(emoteBoardGlobalList.list){
+            Log.d("GlobalEmotesLoaded","name ->${it.name}")
+            Log.d("GlobalEmotesLoaded","url ->${it.url}")
+            Log.d("GlobalEmotesLoaded","-------------")
             AsyncImage(
                 model = it.url,
                 contentDescription = stringResource(R.string.moderator_badge_icon_description),
@@ -636,7 +673,7 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
                     .height(40.dp)
                     .padding(3.dp)
                     .clickable {
-                       updateTextWithEmote(it.name)
+                        updateTextWithEmote(it.name)
                         updateMostFrequentEmoteList(it)
                     }
             )
