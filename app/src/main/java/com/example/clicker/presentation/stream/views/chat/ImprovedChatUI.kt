@@ -44,6 +44,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -361,6 +363,7 @@ fun LazyGridScope.header(
     item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EmoteBoard(
     modifier:Modifier,
@@ -376,42 +379,98 @@ fun EmoteBoard(
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     //modifier =Modifier.weight(1f)
-    Column(
-        modifier = modifier
-    ) {
-        LazyGridEmotes(
-            lazyGridState =lazyGridState,
-            emoteBoardGlobalList=emoteBoardGlobalList,
-            emoteBoardChannelList=emoteBoardChannelList,
-            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
+    val pagerState = rememberPagerState(pageCount = {
+        2
+    })
+    HorizontalPager(state = pagerState) { page ->
+        // Our page content
+        when(page){
+            0 ->{
+                Column(
+                    modifier = modifier
+                ) {
+                    LazyGridEmotes(
+                        lazyGridState =lazyGridState,
+                        emoteBoardGlobalList=emoteBoardGlobalList,
+                        emoteBoardChannelList=emoteBoardChannelList,
+                        emoteBoardMostFrequentList=emoteBoardMostFrequentList,
 
-            updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                        updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
+                        updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
 
-        )
-        EmoteBottomUI(
-            closeEmoteBoard={closeEmoteBoard()},
-            deleteEmote={deleteEmote()},
-            scrollToGlobalEmotes={
-                scope.launch {
-                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                        )
+                    EmoteBottomUI(
+                        closeEmoteBoard={closeEmoteBoard()},
+                        deleteEmote={deleteEmote()},
+                        scrollToGlobalEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                            }
+                        },
+                        scrollToChannelEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
+                            }
+                        },
+                        scrollToMostFrequentlyUsedEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem(0)
+                            }
+                        }
+
+
+                    )
                 }
-            },
-            scrollToChannelEmotes={
-                scope.launch {
-                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
-                }
-            },
-            scrollToMostFrequentlyUsedEmotes={
-                scope.launch {
-                    lazyGridState.scrollToItem(0)
-                }
+
             }
+            1->{
+                Column(
+                    modifier = modifier
+                ) {
+                    SecondaryEmoteBoard()
+                    EmoteBottomUI(
+                        closeEmoteBoard={closeEmoteBoard()},
+                        deleteEmote={deleteEmote()},
+                        scrollToGlobalEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                            }
+                        },
+                        scrollToChannelEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
+                            }
+                        },
+                        scrollToMostFrequentlyUsedEmotes={
+                            scope.launch {
+                                lazyGridState.scrollToItem(0)
+                            }
+                        }
 
 
-        )
+                    )
+                }
+
+
+            }
+        }
+
     }
+}
+@Composable
+fun SecondaryEmoteBoard(){
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 60.dp),
+        modifier= Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp)
+            .height(200.dp)
+            .background(MaterialTheme.colorScheme.secondary),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
 
+    }
 }
 @Composable
 fun EmoteBottomUI(
@@ -512,14 +571,14 @@ fun LazyGridEmotes(
 Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
     LazyVerticalGrid(
         state = lazyGridState,
-        columns = GridCells.Adaptive(minSize = 40.dp),
+        columns = GridCells.Adaptive(minSize = 60.dp),
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(200.dp)
             .background(MaterialTheme.colorScheme.primary),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
         header {
@@ -548,9 +607,9 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
                 model = it.url,
                 contentDescription = it.name,
                 modifier = Modifier
-                    .width(40.dp)
-                    .height(40.dp)
-                    .padding(3.dp)
+                    .width(60.dp)
+                    .height(60.dp)
+                    .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
                     }
@@ -590,20 +649,20 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
             if(it.emoteType == EmoteTypes.SUBS){
                 Box(
                     modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
+                        .width(60.dp)
+                        .height(60.dp)
                 ){
                     AsyncImage(
                         model = it.url,
                         contentDescription = stringResource(R.string.moderator_badge_icon_description),
                         modifier = Modifier
-                            .width(40.dp)
-                            .height(40.dp)
-                            .padding(3.dp)
+                            .width(60.dp)
+                            .height(60.dp)
+                            .padding(5.dp)
                     )
                     Spacer(modifier = Modifier
-                        .height(40.dp)
-                        .width(40.dp)
+                        .height(60.dp)
+                        .width(60.dp)
                         .background(Color.Black.copy(0.4f)))
                     Icon(
                         painter = painterResource(id =R.drawable.lock_24),
@@ -619,9 +678,9 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
                     model = it.url,
                     contentDescription = stringResource(R.string.moderator_badge_icon_description),
                     modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
-                        .padding(3.dp)
+                        .width(60.dp)
+                        .height(60.dp)
+                        .padding(5.dp)
                         .clickable {
                             updateTextWithEmote(it.name)
                             updateMostFrequentEmoteList(
@@ -662,16 +721,16 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
         }
 
         items(emoteBoardGlobalList.list){
-            Log.d("GlobalEmotesLoaded","name ->${it.name}")
-            Log.d("GlobalEmotesLoaded","url ->${it.url}")
-            Log.d("GlobalEmotesLoaded","-------------")
+//            Log.d("GlobalEmotesLoaded","name ->${it.name}")
+//            Log.d("GlobalEmotesLoaded","url ->${it.url}")
+//            Log.d("GlobalEmotesLoaded","-------------")
             AsyncImage(
                 model = it.url,
                 contentDescription = stringResource(R.string.moderator_badge_icon_description),
                 modifier = Modifier
-                    .width(40.dp)
-                    .height(40.dp)
-                    .padding(3.dp)
+                    .width(60.dp)
+                    .height(60.dp)
+                    .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
                         updateMostFrequentEmoteList(it)
