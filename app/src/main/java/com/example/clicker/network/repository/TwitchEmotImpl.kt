@@ -139,8 +139,8 @@ class TwitchEmoteImpl @Inject constructor(
     private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
 
-    private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
-    override val emoteBoardChannelList:State<EmoteNameUrlList> = _emoteBoardChannelList
+    private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlEmoteTypeList>(EmoteNameUrlEmoteTypeList())
+    override val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList> = _emoteBoardChannelList
 
       override fun getGlobalEmotes(
         oAuthToken: String,
@@ -244,16 +244,22 @@ class TwitchEmoteImpl @Inject constructor(
         )
         if(response.isSuccessful){
             val data = response.body()?.data
-            Log.d("getChannelEmotesId","emote_type -->${data?.get(0)?.emote_type}")
+
 
             val parsedEmoteData = data?.map {// getting data from the request
                 val emoteType = if(it.emote_type =="subscriptions") EmoteTypes.SUBS else EmoteTypes.FOLLOWERS
-                EmoteNameUrl(it.name,it.images.url_1x)
+                Log.d("getChannelEmotesId","emote_type -->$emoteType")
+                EmoteNameUrlEmoteType(it.name,it.images.url_1x,emoteType)
             }
+            val followerEmotes =parsedEmoteData?.filter { it.emoteType == EmoteTypes.FOLLOWERS}?: listOf()
+            val subscriberEmotes = parsedEmoteData?.filter { it.emoteType == EmoteTypes.SUBS} ?: listOf()
+            val sortedEmoteData = followerEmotes + subscriberEmotes
+
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
-            channelEmoteParsing(
-                parsedEmoteData,
+
+            newChannelEmoteParsing(
+                sortedEmoteData,
                 innerInlineContentMap,
                 copyGlobalEmoteMap={innerMap ->
                     _emoteList.value.map.forEach{
@@ -261,7 +267,7 @@ class TwitchEmoteImpl @Inject constructor(
                     }
                 },
                 convertResponseDataToGlobalEmoteMap={emoteValue,innerMap ->
-                    createMapValue(
+                    createChannelEmoteMapValue(
                         emoteValue,
                         innerMap
                     )
@@ -325,6 +331,25 @@ class TwitchEmoteImpl @Inject constructor(
         }
     }
 
+    private fun newChannelEmoteParsing(
+        parsedEmoteData: List<EmoteNameUrlEmoteType>?,
+        innerInlineContentMap: MutableMap<String, InlineTextContent>,
+        convertResponseDataToGlobalEmoteMap:(emoteValue: EmoteNameUrlEmoteType, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
+        copyGlobalEmoteMap:(innerInlineContentMap: MutableMap<String, InlineTextContent>)->Unit,
+        updateGlobalEmoteMap:(innerMap: MutableMap<String, InlineTextContent>)->Unit,
+        updateChannelEmoteBoard:(channelEmoteList:List<EmoteNameUrlEmoteType>)->Unit
+    ){
+        if(parsedEmoteData !== null){
+            copyGlobalEmoteMap(innerInlineContentMap)
+            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
+                convertResponseDataToGlobalEmoteMap(emoteValue,innerInlineContentMap)
+            }
+            updateGlobalEmoteMap(innerInlineContentMap)
+            updateChannelEmoteBoard(parsedEmoteData)
+
+        }
+    }
+
     /**
      * createMapValue is a private function that creates the a [InlineTextContent] object and adds it to the
      * [innerInlineContentMap] parameter
@@ -336,7 +361,19 @@ class TwitchEmoteImpl @Inject constructor(
         emoteValue: EmoteNameUrl,
         innerInlineContentMap: MutableMap<String, InlineTextContent>
     ){
+        //todo: I need to create a version of this that has the EmoteNameUrlEmoteType specifically for channel emotes
         emoteParsing.createMapValueForComposeChat(
+            emoteValue,
+            innerInlineContentMap
+        )
+
+    }
+
+    private fun createChannelEmoteMapValue(
+        emoteValue: EmoteNameUrlEmoteType,
+        innerInlineContentMap: MutableMap<String, InlineTextContent>
+    ){
+        emoteParsing.createMapValueForComposeChatChannelEmotes(
             emoteValue,
             innerInlineContentMap
         )
@@ -387,4 +424,9 @@ data class EmoteNameUrlList(
 @Immutable
 data class EmoteListMap(
     val map:Map<String, InlineTextContent>
+)
+
+@Immutable
+data class EmoteNameUrlEmoteTypeList(
+    val list:List<EmoteNameUrlEmoteType> = listOf()
 )
