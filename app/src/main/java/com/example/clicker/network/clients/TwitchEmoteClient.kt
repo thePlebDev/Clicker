@@ -65,7 +65,8 @@ data class ChannelEmote(
     val images: ChannelImages,
     val format: List<String>,
     val scale: List<String>,
-    val theme_mode: List<String>
+    val theme_mode: List<String>,
+    val emote_type:String
 )
 
 data class ChannelImages(
@@ -73,3 +74,4 @@ data class ChannelImages(
     val url_2x: String,
     val url_4x: String
 )
+

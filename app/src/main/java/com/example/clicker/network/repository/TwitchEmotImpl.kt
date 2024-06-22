@@ -244,8 +244,10 @@ class TwitchEmoteImpl @Inject constructor(
         )
         if(response.isSuccessful){
             val data = response.body()?.data
+            Log.d("getChannelEmotesId","emote_type -->${data?.get(0)?.emote_type}")
 
             val parsedEmoteData = data?.map {// getting data from the request
+                val emoteType = if(it.emote_type =="subscriptions") EmoteTypes.SUBS else EmoteTypes.FOLLOWERS
                 EmoteNameUrl(it.name,it.images.url_1x)
             }
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
@@ -353,8 +355,29 @@ class TwitchEmoteImpl @Inject constructor(
  * */
 data class EmoteNameUrl(
     val name:String,
-    val url:String
+    val url:String,
 )
+
+/**
+ * EmoteNameEmoteType represents a single Twitch Emote from the Twitch servers, when calling get channel emotes
+ * - you can read more about getting channel emotes, [HERE](https://dev.twitch.tv/docs/api/reference/#get-channel-emotes)
+ *
+ * @param name the name of the Twitch emote
+ * @param url the url that is hosted on the twitch servers and is what we use to load the image,
+ * @param emoteType a [EmoteTypes] used to represent the type of emote that it is
+ * */
+data class EmoteNameUrlEmoteType(
+    val name:String,
+    val url:String,
+    val emoteType:EmoteTypes
+)
+
+/**
+ * EmoteTypes represents the two types of emotes, subscribers and followers
+ * */
+enum class EmoteTypes {
+    SUBS, FOLLOWERS,
+}
 
 @Immutable
 data class EmoteNameUrlList(
