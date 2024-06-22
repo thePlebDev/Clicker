@@ -79,8 +79,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -94,9 +96,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -378,84 +382,123 @@ fun EmoteBoard(
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
+    val secondaryColor =MaterialTheme.colorScheme.secondary
+
     //modifier =Modifier.weight(1f)
     val pagerState = rememberPagerState(pageCount = {
         2
     })
-    HorizontalPager(state = pagerState) { page ->
-        // Our page content
-        when(page){
-            0 ->{
-                Column(
-                    modifier = modifier
-                ) {
-                    LazyGridEmotes(
-                        lazyGridState =lazyGridState,
-                        emoteBoardGlobalList=emoteBoardGlobalList,
-                        emoteBoardChannelList=emoteBoardChannelList,
-                        emoteBoardMostFrequentList=emoteBoardMostFrequentList,
+    val underlineModifier = Modifier.drawBehind {
+        val strokeWidthPx = 1.dp.toPx()
+        val verticalOffset = size.height - 2.sp.toPx()
+        drawLine(
+            color = secondaryColor,
+            strokeWidth = strokeWidthPx,
+            start = Offset(0f, verticalOffset),
+            end = Offset(size.width, verticalOffset)
+        )
+    }
+    Column(){
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.dp)
+            .background(MaterialTheme.colorScheme.primary)){
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(
+                "Twitch",color = MaterialTheme.colorScheme.onPrimary,
+                modifier = if(pagerState.currentPage == 0) underlineModifier else Modifier.clickable {
+                    scope.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                                                                                                     },
+            )
+            Spacer(modifier = Modifier.width(25.dp))
+            Text("BetterTTV"
+                ,color = MaterialTheme.colorScheme.onPrimary,
+                modifier = if(pagerState.currentPage == 1) underlineModifier else Modifier.clickable {
+                    scope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                },
+            )
 
-                        updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-                        updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+        }
+        HorizontalPager(state = pagerState) { page ->
+            // Our page content
+            when(page){
+                0 ->{
+                    Column(
+                        modifier = modifier
+                    ) {
+                        LazyGridEmotes(
+                            lazyGridState =lazyGridState,
+                            emoteBoardGlobalList=emoteBoardGlobalList,
+                            emoteBoardChannelList=emoteBoardChannelList,
+                            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
+
+                            updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
+                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+
+                            )
+                        EmoteBottomUI(
+                            closeEmoteBoard={closeEmoteBoard()},
+                            deleteEmote={deleteEmote()},
+                            scrollToGlobalEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                                }
+                            },
+                            scrollToChannelEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
+                                }
+                            },
+                            scrollToMostFrequentlyUsedEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem(0)
+                                }
+                            }
+
 
                         )
-                    EmoteBottomUI(
-                        closeEmoteBoard={closeEmoteBoard()},
-                        deleteEmote={deleteEmote()},
-                        scrollToGlobalEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
-                            }
-                        },
-                        scrollToChannelEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
-                            }
-                        },
-                        scrollToMostFrequentlyUsedEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem(0)
-                            }
-                        }
+                    }
 
-
-                    )
                 }
-
-            }
-            1->{
-                Column(
-                    modifier = modifier
-                ) {
-                    SecondaryEmoteBoard()
-                    EmoteBottomUI(
-                        closeEmoteBoard={closeEmoteBoard()},
-                        deleteEmote={deleteEmote()},
-                        scrollToGlobalEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                1->{
+                    Column(
+                        modifier = modifier
+                    ) {
+                        SecondaryEmoteBoard()
+                        EmoteBottomUI(
+                            closeEmoteBoard={closeEmoteBoard()},
+                            deleteEmote={deleteEmote()},
+                            scrollToGlobalEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                                }
+                            },
+                            scrollToChannelEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
+                                }
+                            },
+                            scrollToMostFrequentlyUsedEmotes={
+                                scope.launch {
+                                    lazyGridState.scrollToItem(0)
+                                }
                             }
-                        },
-                        scrollToChannelEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
-                            }
-                        },
-                        scrollToMostFrequentlyUsedEmotes={
-                            scope.launch {
-                                lazyGridState.scrollToItem(0)
-                            }
-                        }
 
 
-                    )
+                        )
+                    }
+
+
                 }
-
-
             }
-        }
 
+        }/****END OF THE HORIZONTAL PAGER****/
     }
+
 }
 @Composable
 fun SecondaryEmoteBoard(){
@@ -464,7 +507,7 @@ fun SecondaryEmoteBoard(){
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
-            .height(200.dp)
+            .height(250.dp)
             .background(MaterialTheme.colorScheme.secondary),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -575,7 +618,7 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
-            .height(200.dp)
+            .height(250.dp)
             .background(MaterialTheme.colorScheme.primary),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -667,7 +710,11 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
                     Icon(
                         painter = painterResource(id =R.drawable.lock_24),
                         contentDescription = "Emote locked. Subscribe to access",
-                        modifier = Modifier.width(18.dp).height(18.dp).align(Alignment.BottomEnd).padding(3.dp),
+                        modifier = Modifier
+                            .width(18.dp)
+                            .height(18.dp)
+                            .align(Alignment.BottomEnd)
+                            .padding(3.dp),
                         tint = Color.White
                     )
 
