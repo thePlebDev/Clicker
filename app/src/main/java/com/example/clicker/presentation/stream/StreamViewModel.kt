@@ -41,6 +41,7 @@ import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.TwitchEmoteImpl
@@ -167,10 +168,19 @@ class StreamViewModel @Inject constructor(
     private val autoCompleteChat: AutoCompleteChat,
     private val networkMonitoring: NetworkMonitoring,
     private val twitchEmoteImpl: TwitchEmoteRepo,
+    private val betterTTVEmotesImpl: BetterTTVEmotesImpl,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+
+            betterTTVEmotesImpl.getGlobalEmotes().collect{
+
+            }
+        }
+    }
 
 
 
