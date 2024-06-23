@@ -508,7 +508,7 @@ fun SecondaryEmoteBoard(){
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(250.dp)
-            .background(MaterialTheme.colorScheme.secondary),
+            .background(MaterialTheme.colorScheme.primary),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {

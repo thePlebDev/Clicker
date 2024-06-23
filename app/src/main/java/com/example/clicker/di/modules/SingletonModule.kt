@@ -4,10 +4,12 @@ import android.content.Context
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.BetterTTVEmoteClient
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
+import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchEmoteRepo
@@ -20,11 +22,13 @@ import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.interceptors.LiveNetworkMonitor
+import com.example.clicker.network.interceptors.LoggingInterceptor
 import com.example.clicker.network.interceptors.NetworkMonitor
 import com.example.clicker.network.interceptors.NetworkMonitorInterceptor
 import com.example.clicker.network.interceptors.RetryInterceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Interceptor
 import com.example.clicker.network.interceptors.responseCodeInterceptors.ResponseChecker
+import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.DebugRetrofitResponse
 import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
@@ -66,6 +70,25 @@ object SingletonModule {
     ): NetworkMonitoring {
         return NetworkMonitoring(appContext)
     }
+
+    /***************I NEED TO ADD A LOGGING INTERCEPTOR*****************************/
+    @Singleton //scope binding
+    @Provides
+    fun providesBetterTTVClient(): BetterTTVEmoteClient {
+//        val loggingInterceptor = OkHttpClient.Builder()
+//            .addInterceptor(LoggingInterceptor())
+//            .build()
+        return Retrofit.Builder()
+            .baseUrl("https://api.betterttv.net/3/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(BetterTTVEmoteClient::class.java)
+
+    }
+    @Provides
+    fun providesBetterTTVEmotes(betterTTVEmotesImpl: BetterTTVEmotesImpl): BetterTTVEmotes {
+        return betterTTVEmotesImpl
+    }
+
 
     @Singleton //scope binding
     @Provides
