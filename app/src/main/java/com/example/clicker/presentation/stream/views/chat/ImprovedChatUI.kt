@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views.chat
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -53,6 +54,7 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -88,6 +90,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -108,6 +111,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
@@ -132,6 +136,11 @@ import com.example.clicker.presentation.stream.views.streamManager.util.remember
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import com.example.clicker.network.clients.IndivBetterTTVEmote
+import com.example.clicker.util.Response
 
 
 @Composable
@@ -162,6 +171,7 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
+    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
@@ -276,7 +286,8 @@ fun ChatUI(
             iconClicked = false
         },
         deleteEmote={deleteEmote()},
-        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)}
+        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
+        globalBetterTTVResponse=globalBetterTTVResponse
         )
 }
 
@@ -293,6 +304,7 @@ fun ChatUIBox(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
+    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
@@ -331,7 +343,8 @@ fun ChatUIBox(
                             emoteBoardChannelList=emoteBoardChannelList,
                             closeEmoteBoard={closeEmoteBoard()},
                             deleteEmote={deleteEmote()},
-                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
+                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                            globalBetterTTVResponse =globalBetterTTVResponse
                         )
 
                 }
@@ -375,6 +388,7 @@ fun EmoteBoard(
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit
@@ -468,7 +482,9 @@ fun EmoteBoard(
                     Column(
                         modifier = modifier
                     ) {
-                        SecondaryEmoteBoard()
+                        BetterTTVEmoteBoard(
+                            globalBetterTTVResponse = globalBetterTTVResponse
+                        )
                         EmoteBottomUI(
                             closeEmoteBoard={closeEmoteBoard()},
                             deleteEmote={deleteEmote()},
@@ -501,7 +517,11 @@ fun EmoteBoard(
 
 }
 @Composable
-fun SecondaryEmoteBoard(){
+fun BetterTTVEmoteBoard(
+    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
+
+){
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 60.dp),
         modifier= Modifier
@@ -512,8 +532,103 @@ fun SecondaryEmoteBoard(){
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
+        /*****************************START OF THE Most Recent EMOTES*******************************/
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Global Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(2.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(5.dp))
+            }
+
+        }
+        when(globalBetterTTVResponse){
+            is Response.Loading ->{
+                header{
+                    Box(modifier = Modifier.fillMaxWidth()){
+                        CircularProgressIndicator(modifier =Modifier.align(Alignment.Center))
+                    }
+                }
+            }
+            is Response.Success ->{
+
+                items(globalBetterTTVResponse.data){
+//                    AsyncImage(
+//                        model =  "https://cdn.betterttv.net/emote/${it.id}/1x",
+//                        contentDescription = "${it.code} emote",
+//                        modifier = Modifier
+//                            .width(60.dp)
+//                            .height(60.dp)
+//                            .padding(5.dp)
+//                            .clickable {
+//
+//                            }
+//                    )
+                    GifLoadingAnimation(
+                        url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                        contentDescription = "${it.code} emote",
+                    )
+                }
+
+            }
+            is Response.Failure ->{
+                header{
+                    Box(modifier = Modifier.fillMaxWidth()){
+                        Button(
+                            onClick ={},
+                            modifier =Modifier.align(Alignment.Center)
+                        ) {
+                            Text("Reload emotes",color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+
 
     }
+}
+
+@Composable
+fun GifLoadingAnimation(
+    url:String,
+    contentDescription:String,
+
+){
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            if (Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
+
+    AsyncImage(
+        model =  url,
+        contentDescription = contentDescription,
+        imageLoader = imageLoader,
+        modifier = Modifier
+            .size(60.dp)
+            .padding(5.dp)
+            .clickable {
+                // handle click
+            }
+    )
 }
 @Composable
 fun EmoteBottomUI(

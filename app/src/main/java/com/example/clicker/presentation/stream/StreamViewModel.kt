@@ -33,6 +33,7 @@ import com.example.clicker.R
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
+import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
@@ -173,14 +174,7 @@ class StreamViewModel @Inject constructor(
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {
-    init {
-        viewModelScope.launch {
 
-            betterTTVEmotesImpl.getGlobalEmotes().collect{
-
-            }
-        }
-    }
 
 
 
@@ -197,9 +191,15 @@ class StreamViewModel @Inject constructor(
     val emoteBoardData: State<EmoteBoardData> = _emoteBoardData
 
 
+    /********THIS IS ALL THE EMOTE RELATED CALLS*********/
     val inlineTextContentTest = twitchEmoteImpl.emoteList
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
+
+
+    private val _globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = mutableStateOf(Response.Loading)
+    val globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = _globalBetterTTVEmotes
+
 
     /**
      * A list representing all the most recent clicked emotes
@@ -260,6 +260,27 @@ class StreamViewModel @Inject constructor(
         _clickedStreamInfo.value = _clickedStreamInfo.value.copy(
             streamTitle = newStreamTitle
         )
+    }
+
+    //todo: THIS IS THE CODE FOR THE etterTTVEmotesImpl.getGlobalEmotes()
+    fun getBetterTTVGlobalEmotes(){
+        viewModelScope.launch(Dispatchers.IO) {
+            betterTTVEmotesImpl.getGlobalEmotes().collect{response ->
+                Log.d("getBetterTTVGlobalEmotesResponse","response ->${response}")
+                when(response){
+                    is Response.Loading ->{
+                        _globalBetterTTVEmotes.value = Response.Loading
+                    }
+                    is Response.Success ->{
+                        _globalBetterTTVEmotes.value = response
+                    }
+                    is Response.Failure ->{
+                        _globalBetterTTVEmotes.value = Response.Failure(Exception("Failed"))
+                    }
+                }
+
+            }
+        }
     }
 
 

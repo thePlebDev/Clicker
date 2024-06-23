@@ -10,12 +10,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
+import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -54,7 +56,8 @@ fun FullChatModView(
     deleteEmote:()->Unit,
     showModView:()->Unit,
     fullMode: Boolean,
-    setDragging: () -> Unit
+    setDragging: () -> Unit,
+    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -167,7 +170,8 @@ fun FullChatModView(
         },
         deleteEmote={deleteEmote()},
         emoteBoardMostFrequentList= emoteBoardMostFrequentList,
-        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)}
+        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
+        globalBetterTTVResponse = globalBetterTTVResponse
 
 
     )

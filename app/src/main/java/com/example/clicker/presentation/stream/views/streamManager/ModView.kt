@@ -270,7 +270,8 @@ fun ModViewComponent(
                             setDraggingFunc()
                         },
                         emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                        updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)}
+                        updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                        globalBetterTTVResponse= streamViewModel.globalBetterTTVEmotes.value
                     )
                 }
 

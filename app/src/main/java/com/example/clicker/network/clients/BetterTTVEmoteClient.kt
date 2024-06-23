@@ -16,8 +16,6 @@ interface BetterTTVEmoteClient {
 }
 
 
-
-
 data class IndivBetterTTVEmote(
     val id: String,
     val code: String,
@@ -25,8 +23,4 @@ data class IndivBetterTTVEmote(
     val animated: Boolean,
     val userId: String,
     val modifier: Boolean
-)
-
-data class BetterTTVEmoteList(
-    val emotes: List<IndivBetterTTVEmote>
 )

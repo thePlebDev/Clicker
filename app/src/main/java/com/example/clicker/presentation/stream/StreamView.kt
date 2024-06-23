@@ -277,7 +277,8 @@ fun StreamView(
                                 showModView()
                                 modViewViewModel.clearModViewNotifications()
                             },
-                            updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)}
+                            updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
+                            globalBetterTTVResponse = streamViewModel.globalBetterTTVEmotes.value
                         )
 
 

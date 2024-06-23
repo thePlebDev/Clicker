@@ -22,10 +22,10 @@ class BetterTTVEmotesImpl @Inject constructor(
         Log.d("getGlobalBetterTTVEmotes", "LOADING")
         val response = betterTTVClient.getGlobalEmotes()
         if (response.isSuccessful) {
-           // Log.d("getGlobalBetterTTVEmotes", "SUCCESS ->${response.message()}")
-            val data = response.body()
+
+            val data = response.body() ?: listOf()
             Log.d("getGlobalBetterTTVEmotes", "DATA ->${data}")
-            emit(Response.Success(true))
+            emit(Response.Success(data))
         } else {
             Log.d("getGlobalBetterTTVEmotes", "message ->${response.message()}")
             Log.d("getGlobalBetterTTVEmotes", "code ->${response.code()}")
