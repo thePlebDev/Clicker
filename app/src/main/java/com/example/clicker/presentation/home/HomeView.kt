@@ -66,6 +66,7 @@ fun ValidationView(
                          },
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+            streamViewModel.getBetterTTVGlobalEmotes()
             streamViewModel.updateChannelNameAndClientIdAndUserId(
                 streamerName,
                 clientId,
