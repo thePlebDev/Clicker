@@ -1,6 +1,7 @@
 package com.example.clicker.network.domain
 
 import androidx.compose.runtime.State
+import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
@@ -61,4 +62,8 @@ interface TwitchEmoteRepo {
         clientId: String,
         broadcasterId:String
     ): Flow<Response<Boolean>>
+
+
+
+    suspend fun getBetterTTVGlobalEmotes(): Flow<Response<List<IndivBetterTTVEmote>>>
 }

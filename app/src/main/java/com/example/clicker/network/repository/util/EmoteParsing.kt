@@ -41,6 +41,12 @@ class EmoteParsing {
 
     }
 
+    /**
+     * createMapValueForComposeChatChannelEmotes takes values from [emoteValue] and maps them to [innerInlineContentMap]
+     *
+     * @param emoteValue a [EmoteNameUrlEmoteType] object that is used to represent a emote collected from the server
+     * @param innerInlineContentMap a [MutableMap] object that is used to hold values for the chat UI
+     * */
     fun createMapValueForComposeChatChannelEmotes(
         emoteValue: EmoteNameUrlEmoteType,
         innerInlineContentMap: MutableMap<String, InlineTextContent>

@@ -17,7 +17,7 @@ class BetterTTVEmotesImpl @Inject constructor(
 
 
 
-    override suspend fun getGlobalEmotes()= flow{
+    override suspend fun getBetterTTVGlobalEmotes()= flow{
         emit(Response.Loading)
         Log.d("getGlobalBetterTTVEmotes", "LOADING")
         val response = betterTTVClient.getGlobalEmotes()
