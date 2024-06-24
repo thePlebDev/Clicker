@@ -191,11 +191,10 @@ class StreamViewModel @Inject constructor(
     val emoteBoardData: State<EmoteBoardData> = _emoteBoardData
 
 
-    /********THIS IS ALL THE EMOTE RELATED CALLS*********/
+    /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
     val inlineTextContentTest = twitchEmoteImpl.emoteList
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
-
 
     private val _globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = mutableStateOf(Response.Loading)
     val globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = _globalBetterTTVEmotes
@@ -265,8 +264,8 @@ class StreamViewModel @Inject constructor(
     //todo: THIS IS THE CODE FOR THE etterTTVEmotesImpl.getGlobalEmotes()
     fun getBetterTTVGlobalEmotes(){
         viewModelScope.launch(Dispatchers.IO) {
-            betterTTVEmotesImpl.getGlobalEmotes().collect{response ->
-                Log.d("getBetterTTVGlobalEmotesResponse","response ->${response}")
+            twitchEmoteImpl.getBetterTTVGlobalEmotes().collect{response ->
+
                 when(response){
                     is Response.Loading ->{
                         _globalBetterTTVEmotes.value = Response.Loading

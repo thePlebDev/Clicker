@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface BetterTTVEmotes {
 
-    suspend fun getGlobalEmotes(): Flow<Response<List<IndivBetterTTVEmote>>>
+    suspend fun getBetterTTVGlobalEmotes(): Flow<Response<List<IndivBetterTTVEmote>>>
 }

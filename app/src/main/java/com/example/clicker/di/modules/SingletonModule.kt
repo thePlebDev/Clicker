@@ -175,9 +175,10 @@ object SingletonModule {
     @Singleton
     @Provides
     fun providesTwitchEmoteRepo(
-       twitchEmoteClient: TwitchEmoteClient
+       twitchEmoteClient: TwitchEmoteClient,
+       betterTTVClient: BetterTTVEmoteClient,
     ): TwitchEmoteRepo {
-        return TwitchEmoteImpl(twitchEmoteClient)
+        return TwitchEmoteImpl(twitchEmoteClient,betterTTVClient)
     }
 
     @Singleton
