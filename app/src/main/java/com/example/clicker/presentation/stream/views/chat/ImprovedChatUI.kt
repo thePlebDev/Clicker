@@ -48,6 +48,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -483,7 +484,8 @@ fun EmoteBoard(
                         modifier = modifier
                     ) {
                         BetterTTVEmoteBoard(
-                            globalBetterTTVResponse = globalBetterTTVResponse
+                            globalBetterTTVResponse = globalBetterTTVResponse,
+                            updateTextWithEmote={value ->updateTextWithEmote(value)}
                         )
                         EmoteBottomUI(
                             closeEmoteBoard={closeEmoteBoard()},
@@ -519,6 +521,7 @@ fun EmoteBoard(
 @Composable
 fun BetterTTVEmoteBoard(
     globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
+    updateTextWithEmote: (String) -> Unit
 
 ){
 
@@ -579,6 +582,8 @@ fun BetterTTVEmoteBoard(
                     GifLoadingAnimation(
                         url ="https://cdn.betterttv.net/emote/${it.id}/1x",
                         contentDescription = "${it.code} emote",
+                        emoteName =it.code,
+                        updateTextWithEmote ={value ->updateTextWithEmote(value)}
                     )
                 }
 
@@ -605,6 +610,8 @@ fun BetterTTVEmoteBoard(
 fun GifLoadingAnimation(
     url:String,
     contentDescription:String,
+    emoteName:String,
+    updateTextWithEmote: (String) -> Unit
 
 ){
     val context = LocalContext.current
@@ -626,7 +633,7 @@ fun GifLoadingAnimation(
             .size(60.dp)
             .padding(5.dp)
             .clickable {
-                // handle click
+                updateTextWithEmote(emoteName)
             }
     )
 }
@@ -1657,7 +1664,6 @@ fun ShowIconBasedOnTextLength(
 
 /**
  * A styled [TextField] to allow the user to enter chat messages
- *
  * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
  * @param textFieldValue The value that the user it currently typing in
  * @param newFilterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
@@ -1691,6 +1697,7 @@ fun StylizedTextField(
         setIconClicked(false)
         showKeyBoard()
     }
+    //todo: Show the icons inside of here
 
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
@@ -1929,7 +1936,8 @@ fun TextWithChatBadges(
 
 /**
  *
- * ChatBadges is the composable that is responsible for showing the chat badges(mod or sub) beside the users username
+ * ChatBadges is the composable that is responsible for showing the chat badges(mod or sub) beside the users username.
+ * Also, it shows all of the normal chat messages(with their emotes)
  *
  * @param username a String representing the user that is currently sending chats
  * @param message  a String representing the message sent by this user

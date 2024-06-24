@@ -145,7 +145,7 @@ fun FullChatModView(
                             emoteKeyBoardHeight.value = 0.dp
                         },
                         iconClicked=iconClicked,
-                        setIconClicked = {newValue -> iconClicked = newValue}
+                        setIconClicked = {newValue -> iconClicked = newValue},
                     )
                 },
                 showIconBasedOnTextLength ={
