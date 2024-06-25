@@ -449,7 +449,7 @@ fun EmoteBoard(
                             lazyGridState =lazyGridState,
                             emoteBoardGlobalList=emoteBoardGlobalList,
                             emoteBoardChannelList=emoteBoardChannelList,
-                            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
+                            emoteBoardMostFrequentList= emoteBoardMostFrequentList,//EmoteNameUrlList(),
 
                             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
                             updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
@@ -730,14 +730,22 @@ fun LazyGridEmotes(
     updateTextWithEmote:(String) ->Unit,
 
     lazyGridState: LazyGridState
-){
+) {
+    val list = emoteBoardMostFrequentList.list
+    //Log.d("LazyGridEmotesJumpingProb","${lazyGridState.layoutInfo.}")
+    //I should be able to get the state from the lazyGridState
+    //and say, don't animate
+    val interactionSource = lazyGridState.interactionSource
+    val itemOnScreen = lazyGridState.firstVisibleItemIndex
+    Log.d("LazyGridEmotesSourceState","itemOnScreen --> ${itemOnScreen}")
 
 
-Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
+
+    Log.d("LoadingGridEmoteBoard", "EMOTERECOMP")
     LazyVerticalGrid(
         state = lazyGridState,
         columns = GridCells.Adaptive(minSize = 60.dp),
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(250.dp)
@@ -747,38 +755,44 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
         header {
-            Column(modifier= Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 5.dp)
             ) {
-                Spacer(modifier  = Modifier.padding(5.dp))
+                Spacer(modifier = Modifier.padding(5.dp))
                 Text(
                     "Frequently Used Emotes",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize
                 ) // or any composable for your single row
-                Spacer(modifier  = Modifier.padding(2.dp))
+                Spacer(modifier = Modifier.padding(2.dp))
                 Divider(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier  = Modifier.padding(5.dp))
+                Spacer(modifier = Modifier.padding(5.dp))
             }
 
         }
-        items(emoteBoardMostFrequentList.list){
-            AsyncImage(
-                model = it.url,
-                contentDescription = it.name,
-                modifier = Modifier
-                    .width(60.dp)
-                    .height(60.dp)
-                    .padding(5.dp)
-                    .clickable {
-                        updateTextWithEmote(it.name)
-                    }
-            )
+        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
+        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
+            items(
+                list,
+            ) {
+                AsyncImage(
+                    model = it.url,
+                    contentDescription = it.name,
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(60.dp)
+                        .padding(5.dp)
+                        .clickable {
+                            //updateTextWithEmote(it.name)
+                        }
+                )
+            }
         }
 
 
@@ -819,7 +833,7 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
                 ){
                     AsyncImage(
                         model = it.url,
-                        contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                        contentDescription = it.name,
                         modifier = Modifier
                             .width(60.dp)
                             .height(60.dp)
@@ -845,7 +859,7 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
             }else{
                 AsyncImage(
                     model = it.url,
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    contentDescription = it.name,
                     modifier = Modifier
                         .width(60.dp)
                         .height(60.dp)
@@ -895,7 +909,7 @@ Log.d("LoadingGridEmoteBoard","EMOTERECOMP")
 //            Log.d("GlobalEmotesLoaded","-------------")
             AsyncImage(
                 model = it.url,
-                contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                contentDescription = it.name,
                 modifier = Modifier
                     .width(60.dp)
                     .height(60.dp)

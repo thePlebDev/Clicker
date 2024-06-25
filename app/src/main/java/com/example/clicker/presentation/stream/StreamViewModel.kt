@@ -213,11 +213,16 @@ class StreamViewModel @Inject constructor(
     }
     fun updateMostFrequentEmoteListTesting(clickedItem:EmoteNameUrl){
         val oldList = mostFrequentEmoteListTesting.value.list
+        if(oldList.size ==12){
 
-        val newList = oldList + listOf(clickedItem)
-        mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
-            list =newList
-        )
+        }else{
+            val newList = oldList + listOf(clickedItem)
+            mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
+                list =newList
+            )
+        }
+
+
     }
     /**
      * A list representing all the chats users have sent
