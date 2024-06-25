@@ -446,3 +446,25 @@ data class EmoteListMap(
 data class EmoteNameUrlEmoteTypeList(
     val list:List<EmoteNameUrlEmoteType> = listOf()
 )
+
+/**
+ * EmoteNameUrlNumberList
+ * */
+@Immutable
+data class EmoteNameUrlNumberList(
+    val list:List<EmoteNameUrlNumber> = listOf()
+)
+
+/**
+ * EmoteNameUrlNumber represents a single Twitch Emote from the Twitch servers and the number of times it was clicked.
+ * This data class is used soley for the purpose of the most frequently clicked emotes
+ *
+ * @param name the name of the Twitch emote
+ * @param url the url that is hosted on the twitch servers and is what we use to load the image
+ * @param timesClicked the number of times this emote was clicked inside of the Twitch emote board
+ * */
+data class EmoteNameUrlNumber(
+    val name:String,
+    val url:String,
+    val timesClicked:Int
+)

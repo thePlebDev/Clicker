@@ -141,6 +141,7 @@ import kotlin.math.roundToInt
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.clients.IndivBetterTTVEmote
+import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.util.Response
 
 
@@ -171,7 +172,7 @@ fun ChatUI(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
@@ -304,7 +305,7 @@ fun ChatUIBox(
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
@@ -387,7 +388,7 @@ fun EmoteBoard(
     modifier:Modifier,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
     updateTextWithEmote:(String) ->Unit,
@@ -724,20 +725,15 @@ fun EmoteBottomUI(
 fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlList,
+    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
 
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
 
     lazyGridState: LazyGridState
 ) {
-    val list = emoteBoardMostFrequentList.list
-    //Log.d("LazyGridEmotesJumpingProb","${lazyGridState.layoutInfo.}")
-    //I should be able to get the state from the lazyGridState
-    //and say, don't animate
-    val interactionSource = lazyGridState.interactionSource
-    val itemOnScreen = lazyGridState.firstVisibleItemIndex
-    Log.d("LazyGridEmotesSourceState","itemOnScreen --> ${itemOnScreen}")
+
+
 
 
 
@@ -779,7 +775,7 @@ fun LazyGridEmotes(
         //todo: I THINK THIS IS THE PROBLEM OF JUMPING
         if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
             items(
-                list,
+                emoteBoardMostFrequentList.list,
             ) {
                 AsyncImage(
                     model = it.url,
@@ -794,10 +790,6 @@ fun LazyGridEmotes(
                 )
             }
         }
-
-
-
-
 
 
 
