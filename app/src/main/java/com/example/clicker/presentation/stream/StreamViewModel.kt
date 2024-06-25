@@ -45,6 +45,8 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
+import com.example.clicker.network.repository.EmoteNameUrlNumber
+import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
@@ -205,23 +207,36 @@ class StreamViewModel @Inject constructor(
      * */
     //todo: mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
-    val mostFrequentEmoteListTesting = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
+    val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlNumberList())
 
 
     fun updateMostFrequentEmoteList(clickedItem:EmoteNameUrl){
         mostFrequentEmoteList.add(clickedItem)
     }
     fun updateMostFrequentEmoteListTesting(clickedItem:EmoteNameUrl){
-        val oldList = mostFrequentEmoteListTesting.value.list
+        val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
+        val newClickedItem = EmoteNameUrlNumber(clickedItem.name,clickedItem.url,1)
         if(oldList.size ==12){
 
         }else{
-            val newList = oldList + listOf(clickedItem)
-            mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
-                list =newList
-            )
-        }
+            val foundItem =oldList.find { it.name == clickedItem.name }
+            if(foundItem!= null){
+                val foundIndex = oldList.indexOf(foundItem)
+                val timesClicked =foundItem.timesClicked +1
+                oldList[foundIndex] =EmoteNameUrlNumber(clickedItem.name,clickedItem.url,timesClicked)
+                mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
+                    list =oldList
+                )
+            }else{
+                val newList = oldList + listOf(newClickedItem)
+                mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
+                    list =newList
+                )
+            }
 
+        }
+        Log.d("updateMostFrequentEmoteListTestingUpdate","list->${mostFrequentEmoteListTesting.value.list}")
+        Log.d("updateMostFrequentEmoteListTestingUpdate","newUpdate->${mostFrequentEmoteListTesting.value.list[0].timesClicked}")
 
     }
     /**
