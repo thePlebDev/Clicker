@@ -61,6 +61,7 @@ fun FullChatModView(
     setDragging: () -> Unit,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    sharedBetterTTVResponse: IndivBetterTTVEmoteList,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -175,7 +176,8 @@ fun FullChatModView(
         emoteBoardMostFrequentList= emoteBoardMostFrequentList,
         updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
         globalBetterTTVEmotes= globalBetterTTVEmotes,
-        channelBetterTTVResponse=channelBetterTTVResponse
+        channelBetterTTVResponse=channelBetterTTVResponse,
+        sharedBetterTTVResponse=sharedBetterTTVResponse
 
 
     )

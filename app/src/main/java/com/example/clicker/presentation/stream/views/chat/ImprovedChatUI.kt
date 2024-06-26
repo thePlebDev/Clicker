@@ -176,6 +176,7 @@ fun ChatUI(
     emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
@@ -292,7 +293,8 @@ fun ChatUI(
         deleteEmote={deleteEmote()},
         updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
         globalBetterTTVEmotes=globalBetterTTVEmotes,
-        channelBetterTTVResponse=channelBetterTTVResponse
+        channelBetterTTVResponse=channelBetterTTVResponse,
+        sharedBetterTTVResponse=sharedBetterTTVResponse
         )
 }
 
@@ -311,6 +313,7 @@ fun ChatUIBox(
     emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
@@ -351,7 +354,8 @@ fun ChatUIBox(
                             deleteEmote={deleteEmote()},
                             updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes =globalBetterTTVEmotes,
-                            channelBetterTTVResponse=channelBetterTTVResponse
+                            channelBetterTTVResponse=channelBetterTTVResponse,
+                            sharedBetterTTVResponse=sharedBetterTTVResponse
                         )
 
                 }
@@ -397,6 +401,7 @@ fun EmoteBoard(
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit
@@ -493,7 +498,8 @@ fun EmoteBoard(
                         BetterTTVEmoteBoard(
                             globalBetterTTVResponse = globalBetterTTVEmotes,
                          //   updateTextWithEmote={value ->updateTextWithEmote(value)},
-                            channelBetterTTVResponse = channelBetterTTVResponse
+                            channelBetterTTVResponse = channelBetterTTVResponse,
+                            sharedBetterTTVResponse=sharedBetterTTVResponse
                         )
                         EmoteBottomUI(
                             closeEmoteBoard={closeEmoteBoard()},
@@ -530,6 +536,8 @@ fun EmoteBoard(
 fun BetterTTVEmoteBoard(
     globalBetterTTVResponse: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    sharedBetterTTVResponse: IndivBetterTTVEmoteList,
+
     //updateTextWithEmote: (String) -> Unit
 
 ){
@@ -581,7 +589,39 @@ fun BetterTTVEmoteBoard(
                     )
                 }
 
+        /*****************************START OF THE SHARED CHANNEL EMOTES*******************************/
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Shared Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(2.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(5.dp))
+            }
 
+        }
+
+        items(sharedBetterTTVResponse.list){
+            GifLoadingAnimation(
+                url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                contentDescription = "${it.code} emote",
+                emoteName =it.code,
+                updateTextWithEmote ={value ->
+                    //  updateTextWithEmote(value)
+                }
+            )
+        }
 
 
 

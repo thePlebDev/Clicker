@@ -153,9 +153,13 @@ class TwitchEmoteImpl @Inject constructor(
     private val _channelBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
     override val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _channelBetterTTVEmotes
 
+    private val _sharedBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
+    override val sharedBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _sharedBetterTTVEmotes
 
 
-      override fun getGlobalEmotes(
+
+
+    override fun getGlobalEmotes(
         oAuthToken: String,
         clientId: String,
     ): Flow<Response<Boolean>> = flow {
@@ -424,8 +428,8 @@ class TwitchEmoteImpl @Inject constructor(
             val channelEmotes = response.body()?.channelEmotes
             Log.d("getBetterTTVChannelEmotes", "sharedEmotes ->$sharedEmotes")
             Log.d("getBetterTTVChannelEmotes", "channelEmotes ->$channelEmotes")
-            response.body()?.channelEmotes?.also{listOfChannelEmotes ->
-                val parsedData =listOfChannelEmotes.map {channelEmote ->
+            channelEmotes?.also{listOfChannelEmotes ->
+                val parsedChannelEmotes =listOfChannelEmotes.map {channelEmote ->
                     IndivBetterTTVEmote(
                         id =channelEmote.id,
                         code=channelEmote.code,
@@ -435,9 +439,25 @@ class TwitchEmoteImpl @Inject constructor(
                         modifier = false
                     )
                 }
-                Log.d("getBetterTTVChannelEmotes", "parsedData ->$parsedData")
+                Log.d("getBetterTTVChannelEmotes", "parsedData ->$parsedChannelEmotes")
                 _channelBetterTTVEmotes.value = _channelBetterTTVEmotes.value.copy(
-                    list = parsedData
+                    list = parsedChannelEmotes
+                )
+            }
+
+            sharedEmotes?.also{listOfChannelEmotes ->
+                val parsedSharedEmotes =listOfChannelEmotes.map {channelEmote ->
+                    IndivBetterTTVEmote(
+                        id =channelEmote.id,
+                        code=channelEmote.code,
+                        imageType=channelEmote.imageType,
+                        animated = channelEmote.animated,
+                        userId = channelEmote.id,
+                        modifier = false
+                    )
+                }
+                _sharedBetterTTVEmotes.value = _sharedBetterTTVEmotes.value.copy(
+                    list = parsedSharedEmotes
                 )
             }
             Log.d("getBetterTTVChannelEmotes", "DONE")
