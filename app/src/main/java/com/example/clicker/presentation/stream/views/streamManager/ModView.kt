@@ -272,7 +272,8 @@ fun ModViewComponent(
                         emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
                         updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
                         globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
-                        channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value
+                        channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
+                        sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value
                     )
                 }
 

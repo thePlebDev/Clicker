@@ -207,6 +207,7 @@ class StreamViewModel @Inject constructor(
 
     val globalBetterTTVEmotes=twitchEmoteImpl.globalBetterTTVEmotes
     val channelBetterTTVEmote = twitchEmoteImpl.channelBetterTTVEmotes
+    val sharedChannelBetterTTVEmote = twitchEmoteImpl.sharedBetterTTVEmotes
 
 
     /**
