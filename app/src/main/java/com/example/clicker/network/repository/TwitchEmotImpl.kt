@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.BetterTTVChannelEmotes
 import com.example.clicker.network.clients.BetterTTVEmoteClient
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.clients.TwitchEmoteClient
@@ -145,6 +146,14 @@ class TwitchEmoteImpl @Inject constructor(
 
     private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlEmoteTypeList>(EmoteNameUrlEmoteTypeList())
     override val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList> = _emoteBoardChannelList
+
+    /**Below are the parameters for the global emotes*/
+    private val _globalBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
+    override val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _globalBetterTTVEmotes
+    private val _channelBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
+    override val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _channelBetterTTVEmotes
+
+
 
       override fun getGlobalEmotes(
         oAuthToken: String,
@@ -382,8 +391,10 @@ class TwitchEmoteImpl @Inject constructor(
                 createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
             }
             _emoteList.value = emoteList.value.copy(
-
                 map = _emoteList.value.map + innerInlineContentMap
+            )
+            _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
+                list = data
             )
 
 
@@ -394,6 +405,53 @@ class TwitchEmoteImpl @Inject constructor(
             Log.d("getGlobalBetterTTVEmotes", "FAILED ->${response.body()}")
             emit(Response.Failure(Exception("Failed to get emote")))
         }
+    }.catch { cause ->
+        Log.d("getChannelEmotes","EXCEPTION error message ->${cause.message}")
+        Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
+        emit(Response.Failure(Exception("Unable to get emotes")))
+    }
+
+    override suspend fun getBetterTTVChannelEmotes(broadCasterId:String)= flow {
+        emit(Response.Loading)
+        Log.d("getBetterTTVChannelEmotes", "LOADING")
+        val response = betterTTVClient.getChannelEmotes(broadCasterId)
+
+        if(response.isSuccessful){
+            Log.d("getBetterTTVChannelEmotes", "SUCCESS")
+           emit(Response.Success(BetterTTVChannelEmotes()))
+
+            val sharedEmotes = response.body()?.sharedEmotes
+            val channelEmotes = response.body()?.channelEmotes
+            Log.d("getBetterTTVChannelEmotes", "sharedEmotes ->$sharedEmotes")
+            Log.d("getBetterTTVChannelEmotes", "channelEmotes ->$channelEmotes")
+            response.body()?.channelEmotes?.also{listOfChannelEmotes ->
+                val parsedData =listOfChannelEmotes.map {channelEmote ->
+                    IndivBetterTTVEmote(
+                        id =channelEmote.id,
+                        code=channelEmote.code,
+                        imageType=channelEmote.imageType,
+                        animated = channelEmote.animated,
+                        userId = channelEmote.userId,
+                        modifier = false
+                    )
+                }
+                Log.d("getBetterTTVChannelEmotes", "parsedData ->$parsedData")
+                _channelBetterTTVEmotes.value = _channelBetterTTVEmotes.value.copy(
+                    list = parsedData
+                )
+            }
+            Log.d("getBetterTTVChannelEmotes", "DONE")
+
+        }else{
+            Log.d("getBetterTTVChannelEmotes", "FAILED")
+            Log.d("getBetterTTVChannelEmotes", "code ->${response.code()}")
+            Log.d("getBetterTTVChannelEmotes", "message ->${response.message()}")
+
+        }
+    }.catch { cause ->
+        Log.d("getChannelEmotes","EXCEPTION error message ->${cause.message}")
+        Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
+        emit(Response.Failure(Exception("Unable to get emotes")))
     }
 
 }
@@ -453,6 +511,14 @@ data class EmoteNameUrlEmoteTypeList(
 @Immutable
 data class EmoteNameUrlNumberList(
     val list:List<EmoteNameUrlNumber> = listOf()
+)
+
+/**
+ * class to show the list of individual channel emotes of BetterTTV
+ * */
+@Immutable
+data class IndivBetterTTVEmoteList(
+    val list: List<IndivBetterTTVEmote> = listOf()
 )
 
 /**
