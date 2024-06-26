@@ -1,5 +1,7 @@
 package com.example.clicker.util
 
+import javax.annotation.concurrent.Immutable
+
 /**
  * Represents a network response
  *
@@ -10,6 +12,7 @@ package com.example.clicker.util
  *
  * @param T the value returned from the network request
  */
+
 sealed class Response<out T> {
 
     object Loading : Response<Nothing>()

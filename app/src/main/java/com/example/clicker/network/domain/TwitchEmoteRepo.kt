@@ -1,11 +1,13 @@
 package com.example.clicker.network.domain
 
 import androidx.compose.runtime.State
+import com.example.clicker.network.clients.BetterTTVChannelEmotes
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
+import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
@@ -21,6 +23,11 @@ import kotlinx.coroutines.flow.Flow
  * @property emoteBoardChannelList a [State] object containing a map of all the channel emotes.These are the channel emotes that the
  * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
  *
+ * @property globalBetterTTVEmotes a [State] object containing a [IndivBetterTTVEmoteList] object that represents all the global BetterTTV emotes. You can
+ * read more about the BetterTTV global emote, [HERE](https://betterttv.com/developers/api#global-emotes)
+ * @property channelBetterTTVEmotes a [State] object containing a [IndivBetterTTVEmoteList] object that represents all the channel specific BetterTTV emotes.
+ * You can read more about the BetterTTV channel emotes, [HERE](https://betterttv.com/developers/api#user)
+ *
  * @property getGlobalEmotes()
  * @property getChannelEmotes()
  *
@@ -33,6 +40,8 @@ interface TwitchEmoteRepo {
 
     val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList>
 
+    val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList>
+    val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList>
 
     /**
      * getGlobalEmotes a function used to make a request to the Twitch servers to access the global emotes
@@ -66,4 +75,46 @@ interface TwitchEmoteRepo {
 
 
     suspend fun getBetterTTVGlobalEmotes(): Flow<Response<List<IndivBetterTTVEmote>>>
+
+    suspend fun getBetterTTVChannelEmotes(broadCasterId:String): Flow<Response<BetterTTVChannelEmotes>>
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

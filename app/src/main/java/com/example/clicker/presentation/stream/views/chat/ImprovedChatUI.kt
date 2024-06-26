@@ -142,6 +142,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
+import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.util.Response
 
 
@@ -173,7 +174,8 @@ fun ChatUI(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlNumberList,
-    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
+    globalBetterTTVEmotes: IndivBetterTTVEmoteList,
+    channelBetterTTVResponse: IndivBetterTTVEmoteList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
@@ -289,7 +291,8 @@ fun ChatUI(
         },
         deleteEmote={deleteEmote()},
         updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
-        globalBetterTTVResponse=globalBetterTTVResponse
+        globalBetterTTVEmotes=globalBetterTTVEmotes,
+        channelBetterTTVResponse=channelBetterTTVResponse
         )
 }
 
@@ -306,7 +309,8 @@ fun ChatUIBox(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlNumberList,
-    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
+    globalBetterTTVEmotes: IndivBetterTTVEmoteList,
+    channelBetterTTVResponse: IndivBetterTTVEmoteList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
@@ -346,7 +350,8 @@ fun ChatUIBox(
                             closeEmoteBoard={closeEmoteBoard()},
                             deleteEmote={deleteEmote()},
                             updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
-                            globalBetterTTVResponse =globalBetterTTVResponse
+                            globalBetterTTVEmotes =globalBetterTTVEmotes,
+                            channelBetterTTVResponse=channelBetterTTVResponse
                         )
 
                 }
@@ -390,7 +395,8 @@ fun EmoteBoard(
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlNumberList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
-    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
+    globalBetterTTVEmotes: IndivBetterTTVEmoteList,
+    channelBetterTTVResponse: IndivBetterTTVEmoteList,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit
@@ -485,8 +491,9 @@ fun EmoteBoard(
                         modifier = modifier
                     ) {
                         BetterTTVEmoteBoard(
-                            globalBetterTTVResponse = globalBetterTTVResponse,
-                            updateTextWithEmote={value ->updateTextWithEmote(value)}
+                            globalBetterTTVResponse = globalBetterTTVEmotes,
+                         //   updateTextWithEmote={value ->updateTextWithEmote(value)},
+                            channelBetterTTVResponse = channelBetterTTVResponse
                         )
                         EmoteBottomUI(
                             closeEmoteBoard={closeEmoteBoard()},
@@ -521,10 +528,13 @@ fun EmoteBoard(
 }
 @Composable
 fun BetterTTVEmoteBoard(
-    globalBetterTTVResponse: Response<List<IndivBetterTTVEmote>>,
-    updateTextWithEmote: (String) -> Unit
+    globalBetterTTVResponse: IndivBetterTTVEmoteList,
+    channelBetterTTVResponse: IndivBetterTTVEmoteList,
+    //updateTextWithEmote: (String) -> Unit
 
 ){
+    Log.d("BetterTTVEmoteBoardRELOAD","RELOAD")
+
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 60.dp),
@@ -536,7 +546,48 @@ fun BetterTTVEmoteBoard(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        /*****************************START OF THE Most Recent EMOTES*******************************/
+        /*****************************START OF THE CHANNEL EMOTES*******************************/
+        //todo: adding the channelUI
+        header {
+            Column(modifier= Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier  = Modifier.padding(5.dp))
+                Text(
+                    "Channel Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier  = Modifier.padding(2.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier  = Modifier.padding(5.dp))
+            }
+
+        }
+
+                items(channelBetterTTVResponse.list){
+                    GifLoadingAnimation(
+                        url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                        contentDescription = "${it.code} emote",
+                        emoteName =it.code,
+                        updateTextWithEmote ={value ->
+                          //  updateTextWithEmote(value)
+                        }
+                    )
+                }
+
+
+
+
+
+
+
+        /*****************************START OF THE GLOBAL EMOTES*******************************/
         header {
             Column(modifier= Modifier
                 .fillMaxWidth()
@@ -558,54 +609,27 @@ fun BetterTTVEmoteBoard(
             }
 
         }
-        when(globalBetterTTVResponse){
-            is Response.Loading ->{
-                header{
-                    Box(modifier = Modifier.fillMaxWidth()){
-                        CircularProgressIndicator(modifier =Modifier.align(Alignment.Center))
-                    }
-                }
-            }
-            is Response.Success ->{
 
-                items(globalBetterTTVResponse.data){
-//                    AsyncImage(
-//                        model =  "https://cdn.betterttv.net/emote/${it.id}/1x",
-//                        contentDescription = "${it.code} emote",
-//                        modifier = Modifier
-//                            .width(60.dp)
-//                            .height(60.dp)
-//                            .padding(5.dp)
-//                            .clickable {
-//
-//                            }
-//                    )
+
+                items(globalBetterTTVResponse.list){
                     GifLoadingAnimation(
                         url ="https://cdn.betterttv.net/emote/${it.id}/1x",
                         contentDescription = "${it.code} emote",
                         emoteName =it.code,
-                        updateTextWithEmote ={value ->updateTextWithEmote(value)}
+                        updateTextWithEmote ={value ->
+                            //updateTextWithEmote(value)
+                        }
                     )
                 }
 
-            }
-            is Response.Failure ->{
-                header{
-                    Box(modifier = Modifier.fillMaxWidth()){
-                        Button(
-                            onClick ={},
-                            modifier =Modifier.align(Alignment.Center)
-                        ) {
-                            Text("Reload emotes",color = Color.White)
-                        }
-                    }
-                }
-            }
-        }
+
+
+
 
 
     }
 }
+
 
 @Composable
 fun GifLoadingAnimation(

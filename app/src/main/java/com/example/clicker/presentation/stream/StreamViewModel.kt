@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
@@ -162,6 +163,7 @@ data class ClickedStreamInfo(
     val adjustedUrl:String=""
 )
 
+
 @HiltViewModel
 class StreamViewModel @Inject constructor(
     private val webSocket: TwitchSocket,
@@ -199,7 +201,12 @@ class StreamViewModel @Inject constructor(
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
 
     private val _globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = mutableStateOf(Response.Loading)
-    val globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = _globalBetterTTVEmotes
+
+
+
+
+    val globalBetterTTVEmotes=twitchEmoteImpl.globalBetterTTVEmotes
+    val channelBetterTTVEmote = twitchEmoteImpl.channelBetterTTVEmotes
 
 
     /**
@@ -297,6 +304,15 @@ class StreamViewModel @Inject constructor(
                         _globalBetterTTVEmotes.value = Response.Failure(Exception("Failed"))
                     }
                 }
+
+            }
+        }
+    }
+    fun getBetterTTVChannelEmotes(broadcasterId: String){
+        Log.d("getBetterTTVChannelEmotes", "broadcasterId ->$broadcasterId")
+        viewModelScope.launch(Dispatchers.IO) {
+            twitchEmoteImpl.getBetterTTVChannelEmotes(broadcasterId).collect{response ->
+
 
             }
         }
