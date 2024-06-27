@@ -465,7 +465,9 @@ fun EmoteBoard(
                             emoteBoardMostFrequentList= emoteBoardMostFrequentList,//EmoteNameUrlList(),
 
                             updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                            updateMostFrequentEmoteList={value ->
+                             //   updateMostFrequentEmoteList(value)
+                                                        },
 
                             )
                         EmoteBottomUI(
@@ -473,19 +475,19 @@ fun EmoteBoard(
                             deleteEmote={deleteEmote()},
                             scrollToGlobalEmotes={
                                 scope.launch {
-                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+1))
                                 }
                             },
                             scrollToChannelEmotes={
                                 scope.launch {
-                                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
-                                }
-                            },
-                            scrollToMostFrequentlyUsedEmotes={
-                                scope.launch {
                                     lazyGridState.scrollToItem(0)
                                 }
-                            }
+                            },
+//                            scrollToMostFrequentlyUsedEmotes={
+//                                scope.launch {
+//                                    lazyGridState.scrollToItem(0)
+//                                }
+//                            }
 
 
                         )
@@ -508,7 +510,7 @@ fun EmoteBoard(
                             deleteEmote={deleteEmote()},
                             scrollToGlobalEmotes={
                                 scope.launch {
-//                       
+//
                                     betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+2 +emoteBoardMostFrequentList.list.size+sharedBetterTTVResponse.list.size)
                                 }
                             },
@@ -517,11 +519,11 @@ fun EmoteBoard(
                                     betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size )
                                 }
                             },
-                            scrollToMostFrequentlyUsedEmotes={
-                                scope.launch {
-                                    betterTTVLazyGridState.scrollToItem(0)
-                                }
-                            },
+//                            scrollToMostFrequentlyUsedEmotes={
+//                                scope.launch {
+//                                    betterTTVLazyGridState.scrollToItem(0)
+//                                }
+//                            },
                             scrollToSharedChannelEmotes = {
                                 scope.launch {
                                     betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size)
@@ -719,7 +721,7 @@ fun EmoteBottomUI(
     deleteEmote:()->Unit,
     scrollToGlobalEmotes:() ->Unit,
     scrollToChannelEmotes:()->Unit,
-    scrollToMostFrequentlyUsedEmotes:()->Unit,
+    //scrollToMostFrequentlyUsedEmotes:()->Unit,
 ){
     val haptic = LocalHapticFeedback.current
     Row(modifier = Modifier
@@ -743,15 +745,15 @@ fun EmoteBottomUI(
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
 
-            Icon(modifier= Modifier
-                .size(25.dp)
-                .clickable {
-                    Log.d("EmoteBottomUI", "RECENT")
-                    scrollToMostFrequentlyUsedEmotes()
-                },
-                tint = MaterialTheme.colorScheme.onPrimary,
-                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-            Spacer(modifier = Modifier.width(10.dp))
+//            Icon(modifier= Modifier
+//                .size(25.dp)
+//                .clickable {
+//                    Log.d("EmoteBottomUI", "RECENT")
+//                    scrollToMostFrequentlyUsedEmotes()
+//                },
+//                tint = MaterialTheme.colorScheme.onPrimary,
+//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+//            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
@@ -800,7 +802,7 @@ fun BetterTTVEmoteBottomUI(
     deleteEmote:()->Unit,
     scrollToGlobalEmotes:() ->Unit,
     scrollToChannelEmotes:()->Unit,
-    scrollToMostFrequentlyUsedEmotes:()->Unit,
+//    scrollToMostFrequentlyUsedEmotes:()->Unit,
     scrollToSharedChannelEmotes:()->Unit,
 ){
     val haptic = LocalHapticFeedback.current
@@ -825,15 +827,15 @@ fun BetterTTVEmoteBottomUI(
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
 
-            Icon(modifier= Modifier
-                .size(25.dp)
-                .clickable {
-                    Log.d("EmoteBottomUI", "RECENT")
-                    scrollToMostFrequentlyUsedEmotes()
-                },
-                tint = MaterialTheme.colorScheme.onPrimary,
-                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-            Spacer(modifier = Modifier.width(10.dp))
+//            Icon(modifier= Modifier
+//                .size(25.dp)
+//                .clickable {
+//                    Log.d("EmoteBottomUI", "RECENT")
+//                    scrollToMostFrequentlyUsedEmotes()
+//                },
+//                tint = MaterialTheme.colorScheme.onPrimary,
+//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+//            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
@@ -917,46 +919,46 @@ fun LazyGridEmotes(
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
-        header {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp)
-            ) {
-                Spacer(modifier = Modifier.padding(5.dp))
-                Text(
-                    "Frequently Used Emotes",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                ) // or any composable for your single row
-                Spacer(modifier = Modifier.padding(2.dp))
-                Divider(
-                    thickness = 2.dp,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.padding(5.dp))
-            }
-
-        }
-        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
-        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
-            items(
-                emoteBoardMostFrequentList.list,
-            ) {
-                AsyncImage(
-                    model = it.url,
-                    contentDescription = it.name,
-                    modifier = Modifier
-                        .width(60.dp)
-                        .height(60.dp)
-                        .padding(5.dp)
-                        .clickable {
-                            //updateTextWithEmote(it.name)
-                        }
-                )
-            }
-        }
+//        header {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 5.dp)
+//            ) {
+//                Spacer(modifier = Modifier.padding(5.dp))
+//                Text(
+//                    "Frequently Used Emotes",
+//                    color = MaterialTheme.colorScheme.onPrimary,
+//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+//                ) // or any composable for your single row
+//                Spacer(modifier = Modifier.padding(2.dp))
+//                Divider(
+//                    thickness = 2.dp,
+//                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+//                    modifier = Modifier.fillMaxWidth()
+//                )
+//                Spacer(modifier = Modifier.padding(5.dp))
+//            }
+//
+//        }
+//        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
+//        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
+//            items(
+//                emoteBoardMostFrequentList.list,
+//            ) {
+//                AsyncImage(
+//                    model = it.url,
+//                    contentDescription = it.name,
+//                    modifier = Modifier
+//                        .width(60.dp)
+//                        .height(60.dp)
+//                        .padding(5.dp)
+//                        .clickable {
+//                            //updateTextWithEmote(it.name)
+//                        }
+//                )
+//            }
+//        }
 
 
 
