@@ -408,6 +408,7 @@ fun EmoteBoard(
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
+    val betterTTVLazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     val secondaryColor =MaterialTheme.colorScheme.secondary
 
@@ -499,26 +500,34 @@ fun EmoteBoard(
                             globalBetterTTVResponse = globalBetterTTVEmotes,
                          //   updateTextWithEmote={value ->updateTextWithEmote(value)},
                             channelBetterTTVResponse = channelBetterTTVResponse,
-                            sharedBetterTTVResponse=sharedBetterTTVResponse
+                            sharedBetterTTVResponse=sharedBetterTTVResponse,
+                            betterTTVLazyGridState=betterTTVLazyGridState
                         )
-                        EmoteBottomUI(
+                        BetterTTVEmoteBottomUI(
                             closeEmoteBoard={closeEmoteBoard()},
                             deleteEmote={deleteEmote()},
                             scrollToGlobalEmotes={
                                 scope.launch {
-                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+2 +emoteBoardMostFrequentList.list.size))
+//                       
+                                    betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+2 +emoteBoardMostFrequentList.list.size+sharedBetterTTVResponse.list.size)
                                 }
                             },
                             scrollToChannelEmotes={
                                 scope.launch {
-                                    lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
+                                    betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size )
                                 }
                             },
                             scrollToMostFrequentlyUsedEmotes={
                                 scope.launch {
-                                    lazyGridState.scrollToItem(0)
+                                    betterTTVLazyGridState.scrollToItem(0)
+                                }
+                            },
+                            scrollToSharedChannelEmotes = {
+                                scope.launch {
+                                    betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size)
                                 }
                             }
+
 
 
                         )
@@ -537,6 +546,7 @@ fun BetterTTVEmoteBoard(
     globalBetterTTVResponse: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
+    betterTTVLazyGridState: LazyGridState
 
     //updateTextWithEmote: (String) -> Unit
 
@@ -545,6 +555,7 @@ fun BetterTTVEmoteBoard(
 
 
     LazyVerticalGrid(
+        state =betterTTVLazyGridState,
         columns = GridCells.Adaptive(minSize = 60.dp),
         modifier= Modifier
             .fillMaxWidth()
@@ -750,6 +761,98 @@ fun EmoteBottomUI(
                 },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.channel_emotes_24), contentDescription = "click to scroll to channel emotes")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    scrollToGlobalEmotes()
+                    Log.d("EmoteBottomUI", "GLOBAL")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.world_emotes_24), contentDescription = "click to scroll to gloabl emotes")
+
+
+        }
+        Box(modifier= Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color.DarkGray)
+            .clickable {
+                deleteEmote()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+            .padding(vertical = 5.dp, horizontal = 10.dp)
+
+        ){
+            Icon(modifier= Modifier.size(25.dp),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.baseline_backspace_24), contentDescription = "click to delete emote"
+            )
+        }
+
+
+    }
+}
+
+@Composable
+fun BetterTTVEmoteBottomUI(
+    closeEmoteBoard:()->Unit,
+    deleteEmote:()->Unit,
+    scrollToGlobalEmotes:() ->Unit,
+    scrollToChannelEmotes:()->Unit,
+    scrollToMostFrequentlyUsedEmotes:()->Unit,
+    scrollToSharedChannelEmotes:()->Unit,
+){
+    val haptic = LocalHapticFeedback.current
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 5.dp, horizontal = 10.dp)
+        .background(MaterialTheme.colorScheme.primary),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        Log.d("EmoteBottomUIRedererd", "RENDERED")
+
+        Row(verticalAlignment = Alignment.CenterVertically,){
+            Icon(
+                modifier= Modifier
+                    .size(30.dp)
+                    .clickable {
+                        closeEmoteBoard()
+                    },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.keyboard_arrow_down_24),
+                contentDescription = "click to close keyboard emote")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI", "RECENT")
+                    scrollToMostFrequentlyUsedEmotes()
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    scrollToChannelEmotes()
+                    Log.d("EmoteBottomUI", "CHANNEL")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.channel_emotes_24), contentDescription = "click to scroll to channel emotes")
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    scrollToSharedChannelEmotes()
+                    Log.d("EmoteBottomUI", "SHARED")
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.shared_24), contentDescription = "click to scroll to shared emotes")
             Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
