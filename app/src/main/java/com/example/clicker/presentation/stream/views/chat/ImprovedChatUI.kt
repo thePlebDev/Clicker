@@ -1886,6 +1886,7 @@ fun StylizedTextField(
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 singleLine = false,
+                maxLines = 5,
                 value = textFieldValue.value,
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
