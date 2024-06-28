@@ -133,6 +133,7 @@ fun HorizontalLongPressView(
                                         streamViewModel.state.value.clientId,
                                         broadcasterId,
                                     )
+                                    streamViewModel.getBetterTTVChannelEmotes(broadcasterId)
 
                                 },
                                 updateClickedStreamInfo ={value -> updateClickedStreamInfo(value)},
