@@ -86,6 +86,10 @@ data class EmoteBoardData(
     val height:Int,
     val showBoard:Boolean
 )
+data class ClickedUserNameChats(
+    val dateSent:String,
+    val message:String
+)
 
 
 
@@ -347,6 +351,7 @@ class StreamViewModel @Inject constructor(
 
 
     val clickedUsernameChats = mutableStateListOf<String>()
+    val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
 
     private val allChatters = mutableStateListOf<String>()
 
@@ -618,11 +623,21 @@ class StreamViewModel @Inject constructor(
 
 
         clickedUsernameChats.clear()
-        val messages = listChats.filter {
-            it.displayName == clickedUsername }
-            .map { if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
+        clickedUsernameChatsWithDateSent.clear()
+        val messages = listChats.filter { it.displayName == clickedUsername }
+            .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
+
+        val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
+        val clickedUserMessages = clickedUserChats.map {
+            ClickedUserNameChats(
+                message =it.userType?:"",
+                dateSent = it.dateSend
+            )
+        }
+
 
         clickedUsernameChats.addAll(messages)
+        clickedUsernameChatsWithDateSent.addAll(clickedUserMessages)
         _clickedUIState.value = _clickedUIState.value.copy(
             clickedUsername = clickedUsername,
             clickedUserId = clickedUserId,

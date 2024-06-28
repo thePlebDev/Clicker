@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
+import com.example.clicker.presentation.stream.ClickedUserNameChats
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 
@@ -64,6 +65,7 @@ object BottomModal{
     @Composable
     fun BottomModalBuilder(
         clickedUsernameChats: List<String>,
+        clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
         clickedUsername: String,
         bottomModalState: ModalBottomSheetState,
         textFieldValue: MutableState<TextFieldValue>,
@@ -78,11 +80,12 @@ object BottomModal{
         shouldMonitorUser:Boolean,
 
 
-    ){
+        ){
 
 
         ImprovedBottomModal(
             clickedUsernameChats=clickedUsernameChats,
+            clickedUsernameChatsWithDate=clickedUsernameChatsWithDate,
             clickedUsernameBanner ={
                 BottomModalParts.ContentBanner(
                     clickedUsername = clickedUsername,
@@ -111,6 +114,7 @@ object BottomModal{
     @Composable
     fun ImprovedBottomModal(
         clickedUsernameChats: List<String>,
+        clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
         clickedUsernameBanner: @Composable () -> Unit,
         clickedUserBottomBanner: @Composable () -> Unit,
     ){
@@ -123,7 +127,10 @@ object BottomModal{
             clickedUserBottomBanner()
             Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
 
-            BottomModalParts.ClickedUserMessages(clickedUsernameChats)
+            BottomModalParts.ClickedUserMessages(
+                clickedUsernameChats,
+                clickedUsernameChatsWithDate
+            )
 
         }
     }
@@ -137,7 +144,8 @@ object BottomModal{
          * */
         @Composable
         fun ClickedUserMessages(
-            clickedUsernameChats: List<String>
+            clickedUsernameChats: List<String>,
+            clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
         ){
             LazyColumn(
                 modifier = Modifier
@@ -150,22 +158,24 @@ object BottomModal{
                         shape = RoundedCornerShape(8.dp)
                     )
             ) {
-                items(clickedUsernameChats) {message->
+                items(clickedUsernameChatsWithDate) {message->
 
                     Text(
 
                         buildAnnotatedString {
                             withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-                                append("Message: ")
+                                append("${message.dateSent} ")
                             }
 
 
                             withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                                append(message)
+                                append(message.message)
                             }
 
                         },
-                        modifier = Modifier.fillMaxWidth().padding(5.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
                     )
 
 

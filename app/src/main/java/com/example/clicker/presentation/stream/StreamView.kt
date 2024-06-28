@@ -187,6 +187,7 @@ fun StreamView(
                             openBanDialog = { streamViewModel.openBanDialog.value = true },
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                             updateShouldMonitorUser = {},
+                            clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent
                             )
                     }
                 ){

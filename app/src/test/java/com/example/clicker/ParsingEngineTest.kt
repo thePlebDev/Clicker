@@ -10,6 +10,9 @@ import com.example.clicker.presentation.stream.util.TokenType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import org.junit.Assert
 import org.junit.Test
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ParsingEngineTest {
     val underTest: ParsingEngine = ParsingEngine()
@@ -263,6 +266,32 @@ class ParsingEngineTest {
 
         /**THEN*/
         Assert.assertEquals(tokenList.size, 4)
+
+    }
+
+    @Test
+    fun time_sent_message_parsing(){
+        /**GIVEN*/
+        //I need to do grouping with the number section
+        // I want to parse this: tmi-sent-ts=1719589873830
+
+        val stringToParse ="@badge-info=;badges=;client-nonce=efd1f2c7dd34c841a0ef8e8969770994;color=#17CB17;display-name=0MZ95;emotes=;first-msg=0;flags=;id=3069bd61-c282-415d-b6d9-fb9a4020401b;mod=0;returning-chatter=0;room-id=43683025;subscriber=0;tmi-sent-ts=1719589873830;turbo=0;user-id=113005421;user-type= :0mz95!0mz95@0mz95.tmi.twitch.tv PRIVMSG #ohnepixel :HEAVY LOAD"
+        val pattern = "tmi-sent-ts=([0-9]+)"
+        val isMatch = Regex(pattern).find(stringToParse)?.groupValues?.get(1)
+
+        Regex(pattern).find(stringToParse)?.groupValues?.get(1)?.toLong()?.also {
+            val date = Date(it)
+            val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            val formattedDate = format.format(date)
+            println(formattedDate)
+
+        }
+
+        /**WHEN*/
+
+
+        /**THEN*/
+        Assert.assertEquals(3, 4)
 
     }
 

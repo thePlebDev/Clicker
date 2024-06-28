@@ -8,10 +8,13 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import javax.inject.Inject
 import okhttp3.WebSocket
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 data class EmoteInText(
     val emoteUrl:String,
@@ -272,6 +275,7 @@ class ParsingEngine @Inject constructor() {
 
         Log.d("privateMessageParsing","string --> $text")
 
+
         val matchResults = pattern.findAll(text)
         val privateMsgResult = privateMsgPattern.find(text)
 
@@ -284,6 +288,30 @@ class ParsingEngine @Inject constructor() {
         }
         val messageTokenScanner = MessageScanner(privateMsg)
         messageTokenScanner.startScanningTokens()
+        /******TIME STAMP DATA******/
+        val timestampMillis =parsedData["tmi-sent"]
+
+        val patternForTimeSent = "tmi-sent-ts=([0-9]+)"
+        var dateSent ="No date found"
+        Regex(patternForTimeSent).find(text)?.groupValues?.get(1)?.toLong()?.also {
+            val date = Date(it)
+            val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            val formattedDate = format.format(date)
+            dateSent = formattedDate
+
+        }
+
+      //  Log.d("PRIVATEMSSGDATE","dateParsedOut --> $dateParsedOut")
+//            ?.toLong()?.also {
+//            val date = Date(it)
+//            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+//            val formattedDate = format.format(date)
+////            Log.d("PRIVATEMSSGDATE","formattedDate --> $formattedDate")
+//
+//        }
+
+
+
 
 
         return TwitchUserData(
@@ -305,7 +333,8 @@ class ParsingEngine @Inject constructor() {
             userType = privateMsg,
             userId = parsedData["user-id"],
             messageType = MessageType.USER,
-            messageList = messageTokenScanner.tokenList
+            messageList = messageTokenScanner.tokenList,
+            dateSend = dateSent
         )
     }
 

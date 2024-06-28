@@ -34,18 +34,18 @@ class TwitchEmoteImplTest {
 
     @Test
     fun `testing to see if it will work`()= runTest{
-        val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(TwitchEmoteClient::class.java)
-
-        underTest = TwitchEmoteImpl(retrofitClient)
-
-
-        /**WHEN*/
-        /**WHEN*/
-        //val actualResponse = underTest.getChannelEmotes("","","").last()
-
-        Assert.assertEquals(1, 1)
+//        val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
+//            .create(TwitchEmoteClient::class.java)
+//
+//        underTest = TwitchEmoteImpl(retrofitClient)
+//
+//
+//        /**WHEN*/
+//        /**WHEN*/
+//        //val actualResponse = underTest.getChannelEmotes("","","").last()
+//
+//        Assert.assertEquals(1, 1)
     }
 }

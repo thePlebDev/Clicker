@@ -81,7 +81,8 @@ data class TwitchUserData(
     val bannedDuration: Int? = null,
     val systemMessage: String? = null,
     val isMonitored:Boolean = false,
-    val messageList:List<MessageToken> = listOf()
+    val messageList:List<MessageToken> = listOf(),
+    val dateSend:String =""
 )
 
 /**
