@@ -428,6 +428,25 @@ class TwitchEmoteImpl @Inject constructor(
             val channelEmotes = response.body()?.channelEmotes
             Log.d("getBetterTTVChannelEmotes", "sharedEmotes ->$sharedEmotes")
             Log.d("getBetterTTVChannelEmotes", "channelEmotes ->$channelEmotes")
+
+            /******BELOW IS HOW THE THINGS ARE GOING*********/
+            //todo: So I need to create a  List<EmoteNameUrlEmoteType>
+//            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
+//            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
+//                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
+//            }
+//            _emoteList.value = emoteList.value.copy(
+//                map = _emoteList.value.map + innerInlineContentMap
+//            )
+//            _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
+//                list = data
+//            )
+
+
+            /**************/
+            //"https://cdn.betterttv.net/emote/${it.id}/1x"
+            val sharedAndChannelList = mutableListOf<EmoteNameUrlEmoteType>()
+
             channelEmotes?.also{listOfChannelEmotes ->
                 val parsedChannelEmotes =listOfChannelEmotes.map {channelEmote ->
                     IndivBetterTTVEmote(
@@ -443,6 +462,15 @@ class TwitchEmoteImpl @Inject constructor(
                 _channelBetterTTVEmotes.value = _channelBetterTTVEmotes.value.copy(
                     list = parsedChannelEmotes
                 )
+                listOfChannelEmotes.forEach{
+                    sharedAndChannelList.add(
+                        EmoteNameUrlEmoteType(
+                            name = it.code,
+                            url = "https://cdn.betterttv.net/emote/${it.id}/1x",
+                            emoteType = EmoteTypes.FOLLOWERS
+                        )
+                    )
+                }
             }
 
             sharedEmotes?.also{listOfChannelEmotes ->
@@ -459,7 +487,23 @@ class TwitchEmoteImpl @Inject constructor(
                 _sharedBetterTTVEmotes.value = _sharedBetterTTVEmotes.value.copy(
                     list = parsedSharedEmotes
                 )
+                listOfChannelEmotes.forEach{
+                    sharedAndChannelList.add(
+                        EmoteNameUrlEmoteType(
+                            name = it.code,
+                            url = "https://cdn.betterttv.net/emote/${it.id}/1x",
+                            emoteType = EmoteTypes.FOLLOWERS
+                        )
+                    )
+                }
             }
+            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
+            sharedAndChannelList.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
+                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
+            }
+            _emoteList.value = emoteList.value.copy(
+                map = _emoteList.value.map + innerInlineContentMap
+            )
             Log.d("getBetterTTVChannelEmotes", "DONE")
 
         }else{
