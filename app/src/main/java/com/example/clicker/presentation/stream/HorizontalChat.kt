@@ -155,6 +155,7 @@ fun HorizontalChat(
                     updateShouldMonitorUser = {
                         // streamViewModel.updateShouldMonitorUser()
                     },
+                    clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent
 
                     )
             }
