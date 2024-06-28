@@ -43,6 +43,7 @@ interface TwitchEmoteRepo {
     val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList>
 
     val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList>
+
     val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList>
     val sharedBetterTTVEmotes: State<IndivBetterTTVEmoteList>
 

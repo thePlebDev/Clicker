@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -455,34 +456,43 @@ fun EmoteBoard(
             // Our page content
             when(page){
                 0 ->{
-                    Column(
-                        modifier = modifier
-                    ) {
-                        LazyGridEmotes(
-                            lazyGridState =lazyGridState,
-                            emoteBoardGlobalList=emoteBoardGlobalList,
-                            emoteBoardChannelList=emoteBoardChannelList,
-                            emoteBoardMostFrequentList= emoteBoardMostFrequentList,//EmoteNameUrlList(),
 
-                            updateTextWithEmote={emoteValue ->updateTextWithEmote(emoteValue)},
-                            updateMostFrequentEmoteList={value ->
-                             //   updateMostFrequentEmoteList(value)
-                                                        },
+                        Column(
+                            modifier = modifier
+                        ) {
+                            Box() {
+                                LazyGridEmotes(
+                                    lazyGridState = lazyGridState,
+                                    emoteBoardGlobalList = emoteBoardGlobalList,
+                                    emoteBoardChannelList = emoteBoardChannelList,
+                                    emoteBoardMostFrequentList = emoteBoardMostFrequentList,//EmoteNameUrlList(),
 
-                            )
-                        EmoteBottomUI(
-                            closeEmoteBoard={closeEmoteBoard()},
-                            deleteEmote={deleteEmote()},
-                            scrollToGlobalEmotes={
-                                scope.launch {
-                                    lazyGridState.scrollToItem((emoteBoardChannelList.list.size+1))
-                                }
-                            },
-                            scrollToChannelEmotes={
-                                scope.launch {
-                                    lazyGridState.scrollToItem(0)
-                                }
-                            },
+                                    updateTextWithEmote = { emoteValue ->
+                                        updateTextWithEmote(
+                                            emoteValue
+                                        )
+                                    },
+                                    updateMostFrequentEmoteList = { value ->
+                                        //   updateMostFrequentEmoteList(value)
+                                    },
+                                    modifier = Modifier.padding(bottom = 50.dp)
+
+                                )
+                                EmoteBottomUI(
+                                    closeEmoteBoard = { closeEmoteBoard() },
+                                    deleteEmote = { deleteEmote() },
+                                    scrollToGlobalEmotes = {
+                                        scope.launch {
+                                            lazyGridState.scrollToItem((emoteBoardChannelList.list.size + 1))
+                                        }
+                                    },
+                                    scrollToChannelEmotes = {
+                                        scope.launch {
+                                            lazyGridState.scrollToItem(0)
+                                        }
+                                    },
+                                    modifier = Modifier.align(Alignment.BottomCenter)
+
 //                            scrollToMostFrequentlyUsedEmotes={
 //                                scope.launch {
 //                                    lazyGridState.scrollToItem(0)
@@ -490,49 +500,55 @@ fun EmoteBoard(
 //                            }
 
 
-                        )
-                    }
+                                )
+                            }
+                        }
+
 
                 }
                 1->{
                     Column(
                         modifier = modifier
                     ) {
-                        BetterTTVEmoteBoard(
-                            globalBetterTTVResponse = globalBetterTTVEmotes,
-                         //   updateTextWithEmote={value ->updateTextWithEmote(value)},
-                            channelBetterTTVResponse = channelBetterTTVResponse,
-                            sharedBetterTTVResponse=sharedBetterTTVResponse,
-                            betterTTVLazyGridState=betterTTVLazyGridState
-                        )
-                        BetterTTVEmoteBottomUI(
-                            closeEmoteBoard={closeEmoteBoard()},
-                            deleteEmote={deleteEmote()},
-                            scrollToGlobalEmotes={
-                                scope.launch {
+                        Box(){
+                            BetterTTVEmoteBoard(
+                                globalBetterTTVResponse = globalBetterTTVEmotes,
+                                updateTextWithEmote={value ->updateTextWithEmote(value)},
+                                channelBetterTTVResponse = channelBetterTTVResponse,
+                                sharedBetterTTVResponse=sharedBetterTTVResponse,
+                                betterTTVLazyGridState=betterTTVLazyGridState,
+                                modifier = Modifier.padding(bottom = 50.dp)
+                            )
+                            BetterTTVEmoteBottomUI(
+                                closeEmoteBoard={closeEmoteBoard()},
+                                deleteEmote={deleteEmote()},
+                                scrollToGlobalEmotes={
+                                    scope.launch {
 //
-                                    betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+2 +emoteBoardMostFrequentList.list.size+sharedBetterTTVResponse.list.size)
-                                }
-                            },
-                            scrollToChannelEmotes={
-                                scope.launch {
-                                    betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size )
-                                }
-                            },
+                                        betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+2 +emoteBoardMostFrequentList.list.size+sharedBetterTTVResponse.list.size)
+                                    }
+                                },
+                                scrollToChannelEmotes={
+                                    scope.launch {
+                                        betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size )
+                                    }
+                                },
 //                            scrollToMostFrequentlyUsedEmotes={
 //                                scope.launch {
 //                                    betterTTVLazyGridState.scrollToItem(0)
 //                                }
 //                            },
-                            scrollToSharedChannelEmotes = {
-                                scope.launch {
-                                    betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size)
-                                }
-                            }
+                                scrollToSharedChannelEmotes = {
+                                    scope.launch {
+                                        betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size)
+                                    }
+                                },
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                                )
+
+                        }
 
 
-
-                        )
                     }
 
 
@@ -548,9 +564,9 @@ fun BetterTTVEmoteBoard(
     globalBetterTTVResponse: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
-    betterTTVLazyGridState: LazyGridState
-
-    //updateTextWithEmote: (String) -> Unit
+    betterTTVLazyGridState: LazyGridState,
+    updateTextWithEmote: (String) -> Unit,
+    modifier:Modifier
 
 ){
     Log.d("BetterTTVEmoteBoardRELOAD","RELOAD")
@@ -559,7 +575,7 @@ fun BetterTTVEmoteBoard(
     LazyVerticalGrid(
         state =betterTTVLazyGridState,
         columns = GridCells.Adaptive(minSize = 60.dp),
-        modifier= Modifier
+        modifier= modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(250.dp)
@@ -597,7 +613,7 @@ fun BetterTTVEmoteBoard(
                         contentDescription = "${it.code} emote",
                         emoteName =it.code,
                         updateTextWithEmote ={value ->
-                          //  updateTextWithEmote(value)
+                            updateTextWithEmote(value)
                         }
                     )
                 }
@@ -631,7 +647,7 @@ fun BetterTTVEmoteBoard(
                 contentDescription = "${it.code} emote",
                 emoteName =it.code,
                 updateTextWithEmote ={value ->
-                    //  updateTextWithEmote(value)
+                      updateTextWithEmote(value)
                 }
             )
         }
@@ -670,7 +686,7 @@ fun BetterTTVEmoteBoard(
                         contentDescription = "${it.code} emote",
                         emoteName =it.code,
                         updateTextWithEmote ={value ->
-                            //updateTextWithEmote(value)
+                            updateTextWithEmote(value)
                         }
                     )
                 }
@@ -721,10 +737,11 @@ fun EmoteBottomUI(
     deleteEmote:()->Unit,
     scrollToGlobalEmotes:() ->Unit,
     scrollToChannelEmotes:()->Unit,
+    modifier:Modifier,
     //scrollToMostFrequentlyUsedEmotes:()->Unit,
 ){
     val haptic = LocalHapticFeedback.current
-    Row(modifier = Modifier
+    Row(modifier = modifier
         .fillMaxWidth()
         .padding(vertical = 5.dp, horizontal = 10.dp)
         .background(MaterialTheme.colorScheme.primary),
@@ -804,9 +821,10 @@ fun BetterTTVEmoteBottomUI(
     scrollToChannelEmotes:()->Unit,
 //    scrollToMostFrequentlyUsedEmotes:()->Unit,
     scrollToSharedChannelEmotes:()->Unit,
+    modifier:Modifier,
 ){
     val haptic = LocalHapticFeedback.current
-    Row(modifier = Modifier
+    Row(modifier = modifier
         .fillMaxWidth()
         .padding(vertical = 5.dp, horizontal = 10.dp)
         .background(MaterialTheme.colorScheme.primary),
@@ -899,7 +917,8 @@ fun LazyGridEmotes(
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
 
-    lazyGridState: LazyGridState
+    lazyGridState: LazyGridState,
+    modifier:Modifier,
 ) {
 
 
@@ -910,7 +929,7 @@ fun LazyGridEmotes(
     LazyVerticalGrid(
         state = lazyGridState,
         columns = GridCells.Adaptive(minSize = 60.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 5.dp)
             .height(250.dp)
