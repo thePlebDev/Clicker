@@ -1462,7 +1462,6 @@ fun ClickableCard(
 
 
     ) {
-        Spacer(modifier =Modifier.height(5.dp))
         Box(
             modifier = Modifier
                 .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
@@ -1476,7 +1475,7 @@ fun ClickableCard(
                 TextWithChatBadges(
                     twitchUser = twitchUser,
                     color = color,
-                    fontSize = fontSize,
+                    fontSize = 13.sp,
                     inlineContentMap=inlineContentMap
 
                 )
@@ -1488,7 +1487,6 @@ fun ClickableCard(
 
         }
 
-        Spacer(modifier =Modifier.height(5.dp))
 
     }
 
