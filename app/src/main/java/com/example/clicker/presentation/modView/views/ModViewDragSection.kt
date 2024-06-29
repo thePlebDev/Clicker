@@ -387,6 +387,7 @@ fun ChangingBoxTypes(
             ){
                 if(fullModeActive){
                     fullChat(setDraggingTrue={setDraggingTrue()})
+
                 }else{
                     smallChat(setDraggingTrue={setDraggingTrue()})
 

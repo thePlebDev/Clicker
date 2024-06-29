@@ -1,15 +1,29 @@
 package com.example.clicker.presentation.home
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDrawerState
 //import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,12 +40,15 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
+import com.example.clicker.presentation.modView.views.DraggableModViewBox
+import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.streamManager.ModViewScaffold
+import com.example.clicker.util.WebSocketResponse
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -133,16 +150,14 @@ fun ValidationView(
     )
 
 
-}
 
-//ModViewScaffold(
-//closeStreamInfo={},
-//modViewDragStateViewModel =modViewDragStateViewModel,
-//clickedUserChats = listOf(""),
-//clickedUserIsMod = true,
-//loggedInUserIsMod = true,
-//clickedUserData =  ClickedUIState("","",false,false,false)
-//)
+
+
+
+
+}/******END OF THE VALIDATION VIEW********/
+
+
 
 
 fun Modifier.disableClickAndRipple(): Modifier = composed {
@@ -153,6 +168,7 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
         onClick = { }
     )
 }
+
 
 
 

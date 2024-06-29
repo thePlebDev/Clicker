@@ -136,30 +136,43 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
             )
         }
     }
+    fun modViewIsFull(
+        boxOneIndex: Int,
+        boxTwoIndex:Int,
+        boxThreeIndex:Int
+    ):Boolean{
+        return boxOneIndex != 0 && boxTwoIndex != 0 && boxThreeIndex != 0
+    }
 
     fun checkBoxIndexAvailability(newBoxIndex:Int){
         val boxOneIndex = _boxTypeIndex.value.boxOneIndex
         val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
         val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
 
-        if(boxOneIndex != 0 && boxTwoIndex != 0 && boxThreeIndex != 0){
+
+        if(modViewIsFull(boxOneIndex,boxTwoIndex,boxThreeIndex)){
             _showDrawerError.value = true
             viewModelScope.launch {
                 delay(1000)
                 _showDrawerError.value = false
             }
-        }else{
-            if(_fullModeActive.value){
+        }
+        else{
+            if(_fullModeActive.value){//this only runs if there was a full mode and it has been deleted
+                Log.d("checkBoxIndexAvailabilityIndex","FULL MODE ACTIVE!!")
                 resetBodySizes()
             }
             if(boxOneIndex == 0){
+                Log.d("checkBoxIndexAvailabilityIndex","BOX ONE EMPTY")
                 checkTripleIndexBoxOne(newBoxIndex)
             }
             else if(boxTwoIndex == 0){
+                Log.d("checkBoxIndexAvailabilityIndex","BOX TWO EMPTY")
                 checkTripleIndexBoxTwo(newBoxIndex)
 
             }
             else if(boxThreeIndex == 0){
+                Log.d("checkBoxIndexAvailabilityIndex","BOX THREE EMPTY")
                 checkTripleIndexBoxThree(newBoxIndex)
 
             }
@@ -200,43 +213,46 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     }
 
     private fun checkTripleIndexBoxOne(newBoxIndex: Int){
+        // stateList.tryEmit(listOf(boxOne,itemInPositionOne,itemInPositionThree))
+
+        /********THIS FUNCTION RUNNING MEANS THAT BOX ONE IS EMPTY**********/
 //        private val boxOne = "BOXONE"
 //        private val boxTwo = "BOXTWO"
 //        private val boxThree= "BOXTHREE"
         val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
         val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
-        val boxOneIndex = _boxTypeIndex.value.boxOneIndex
-
         if(boxTwoIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
             Log.d("checkTripleIndexBoxOne","FULL MODE ")
             _fullModeActive.value = true
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxOneIndex = newBoxIndex)
             setBottomBoxLarge()
 
-
-        }else{
+        }
+        else{
             Log.d("checkTripleIndexBoxOne","NORMAL")
 
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxOneIndex = newBoxIndex)
+
         }
 
     }
     private fun checkTripleIndexBoxTwo(newBoxIndex: Int){
+        /********THIS FUNCTION RUNNING MEANS THAT BOX TWO IS EMPTY**********/
 //        private val boxOne = "BOXONE"
 //        private val boxTwo = "BOXTWO"
 //        private val boxThree= "BOXTHREE"
         val boxOneIndex = _boxTypeIndex.value.boxOneIndex
         val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
-        val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
-
         if(boxOneIndex == newBoxIndex && boxThreeIndex == newBoxIndex) {
             _fullModeActive.value = true
             Log.d("checkTripleIndexBoxOne","FULL MODE ")
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxTwoIndex = newBoxIndex)
             setBottomBoxLarge()
 
-        }else{
+        }
 
+
+        else{
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxTwoIndex = newBoxIndex)
         }
 
@@ -244,13 +260,13 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
     //todo: find who has the same index and where is it on the array
 
     fun checkTripleIndexBoxThree(newBoxIndex: Int){
+        /********THIS FUNCTION RUNNING MEANS THAT BOX THREE IS EMPTY**********/
 
 //        private val boxOne = "BOXONE"
 //        private val boxTwo = "BOXTWO"
 //        private val boxThree= "BOXTHREE"
         val boxTwoIndex = _boxTypeIndex.value.boxTwoIndex
         val boxOneIndex = _boxTypeIndex.value.boxOneIndex
-        val boxThreeIndex = _boxTypeIndex.value.boxThreeIndex
 
         if(boxTwoIndex == newBoxIndex && boxOneIndex == newBoxIndex) {
             _fullModeActive.value = true
@@ -258,11 +274,25 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
             _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
             setBottomBoxLarge()
 
-        }else{
-            Log.d("checkTripleIndexBoxOne","NORMAL")
-            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
         }
 
+
+        else{
+            Log.d("checkTripleIndexBoxOne","NORMAL")
+            _boxTypeIndex.value = _boxTypeIndex.value.copy(boxThreeIndex = newBoxIndex)
+
+        }
+
+    }
+    fun settingBoxIndexes(){
+        setBoxOneOffset(0f)
+        setBoxTwoOffset(animateToOnDragStop)
+        setBoxThreeOffset(animateToOnDragStop *2)
+        _isDragging.value = _isDragging.value.copy(
+            boxOneDragging = false,
+            boxTwoDragging = false,
+            boxThreeDragging = false,
+        )
     }
 
     private fun setBottomBoxLarge(){
@@ -545,6 +575,7 @@ class ModViewDragStateViewModel @Inject constructor(): ViewModel(){
             }
 
         }
+
 
 
     /*******************THIS IS THE BEGINNING OF THE stateList EVENT BUS************************************************/
