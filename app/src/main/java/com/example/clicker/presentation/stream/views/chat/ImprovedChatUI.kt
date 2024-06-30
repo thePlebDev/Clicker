@@ -182,6 +182,7 @@ fun ChatUI(
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
     showModView:()->Unit,
+    userIsSub:Boolean,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -295,7 +296,8 @@ fun ChatUI(
         updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
         globalBetterTTVEmotes=globalBetterTTVEmotes,
         channelBetterTTVResponse=channelBetterTTVResponse,
-        sharedBetterTTVResponse=sharedBetterTTVResponse
+        sharedBetterTTVResponse=sharedBetterTTVResponse,
+        userIsSub=userIsSub
         )
 }
 
@@ -318,7 +320,8 @@ fun ChatUIBox(
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
-    deleteEmote:()->Unit
+    deleteEmote:()->Unit,
+    userIsSub:Boolean,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -356,7 +359,8 @@ fun ChatUIBox(
                             updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes =globalBetterTTVEmotes,
                             channelBetterTTVResponse=channelBetterTTVResponse,
-                            sharedBetterTTVResponse=sharedBetterTTVResponse
+                            sharedBetterTTVResponse=sharedBetterTTVResponse,
+                            userIsSub=userIsSub
                         )
 
                 }
@@ -405,7 +409,8 @@ fun EmoteBoard(
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
-    deleteEmote:()->Unit
+    deleteEmote:()->Unit,
+    userIsSub:Boolean,
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
@@ -475,7 +480,8 @@ fun EmoteBoard(
                                     updateMostFrequentEmoteList = { value ->
                                         //   updateMostFrequentEmoteList(value)
                                     },
-                                    modifier = Modifier.padding(bottom = 50.dp)
+                                    modifier = Modifier.padding(bottom = 50.dp),
+                                    userIsSub=userIsSub
 
                                 )
                                 EmoteBottomUI(
@@ -918,6 +924,7 @@ fun LazyGridEmotes(
     updateTextWithEmote:(String) ->Unit,
 
     lazyGridState: LazyGridState,
+    userIsSub:Boolean,
     modifier:Modifier,
 ) {
 
@@ -1005,7 +1012,7 @@ fun LazyGridEmotes(
         }
 
         items(emoteBoardChannelList.list){
-            if(it.emoteType == EmoteTypes.SUBS){
+            if(it.emoteType == EmoteTypes.SUBS && !userIsSub){
                 Box(
                     modifier = Modifier
                         .width(60.dp)

@@ -281,7 +281,8 @@ fun StreamView(
                             updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
                             channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
-                            sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value
+                            sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
+                            userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
                         )
 
 
