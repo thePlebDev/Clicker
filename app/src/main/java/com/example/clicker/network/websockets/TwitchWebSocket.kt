@@ -237,6 +237,7 @@ class TwitchWebSocket @Inject constructor(
 
         if (text.contains(" USERSTATE ")) {
             val parsedTwitchInUserData = twitchParsingEngine.userStateParsing(text)
+            Log.d("USERSTATEPARSING","TEXT->${parsedTwitchInUserData.sub}")
 
             _loggedInUserUiState.tryEmit(
                 parsedTwitchInUserData
