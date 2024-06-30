@@ -45,8 +45,9 @@ class TwitchEmoteImpl @Inject constructor(
     private val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     private val feelsGood = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
     private val feelsGoodId ="SeemsGood"
-    private val modId = "modIcon"
-    private val subId = "subIcon"
+    //moderator subscriber
+    private val modId = "moderator"
+    private val subId = "subscriber"
     private val monitorId ="monitorIcon"
 
     /** - inlineContentMap represents the inlineConent for the sub,mod and SeemsGood icons.
@@ -518,8 +519,47 @@ class TwitchEmoteImpl @Inject constructor(
         emit(Response.Failure(Exception("Unable to get emotes")))
     }
 
-}
+    override suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String)= flow{
+        emit(Response.Loading)
+        val response = twitchEmoteClient.getGlobalChatBadges(
+            authorization = "Bearer $oAuthToken",
+            clientId = clientId
+        )
+        if(response.isSuccessful){
+            val data = response.body()?.data
 
+
+            val parsedEmoteData = data?.map{
+                EmoteNameUrlEmoteType(
+                    name = it.set_id,
+                    url = it.versions[0].image_url_1x,
+                    emoteType = EmoteTypes.FOLLOWERS
+                )
+            }?: listOf()
+
+            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
+            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
+                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
+            }
+            _emoteList.value = emoteList.value.copy(
+                map = _emoteList.value.map + innerInlineContentMap
+            )
+            emit(Response.Success(true))
+            Log.d("getGlobalChatBadges", "SUCCESS")
+            Log.d("getGlobalChatBadges", "data ->${data}")
+        }else{
+            emit(Response.Success(false))
+            Log.d("getGlobalChatBadges", "FAILED")
+            Log.d("getGlobalChatBadges", "code ->${response.code()}")
+            Log.d("getGlobalChatBadges", "message ->${response.message()}")
+        }
+    }.catch { cause ->
+        Log.d("getGlobalChatBadges","EXCEPTION error message ->${cause.message}")
+        Log.d("getGlobalChatBadges","EXCEPTION error cause ->${cause.cause}")
+        emit(Response.Failure(Exception("Unable to get emotes")))
+    }
+
+}
 
 
 /**

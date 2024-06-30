@@ -109,6 +109,10 @@ fun ValidationView(
                 streamViewModel.state.value.clientId,
                 streamViewModel.state.value.broadcasterId,
             )
+            streamViewModel.getGlobalChatBadges(
+                oAuthToken =homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+            )
             streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
 
         },

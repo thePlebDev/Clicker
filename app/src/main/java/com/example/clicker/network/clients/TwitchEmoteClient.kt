@@ -28,8 +28,37 @@ interface TwitchEmoteClient {
         @Header("Client-Id") clientId: String,
         @Query("broadcaster_id") broadcasterId: String
     ): Response<ChannelEmoteResponse>
+
+    /**
+     * getGlobalChatBadges is a function meant to get the all the global chat badges that Twitch has available. You can read more about
+     * getting global chat badges [HERE](https://dev.twitch.tv/docs/api/reference/#get-global-chat-badges)
+     * */
+    @GET("chat/badges/global")
+    suspend fun getGlobalChatBadges(
+        @Header("Authorization") authorization: String,
+        @Header("Client-Id") clientId: String,
+    ):Response<GlobalChatBadgesData>
 }
 
+data class GlobalChatBadgesData(
+    val data: List<GlobalBadgesSet>
+)
+
+data class GlobalBadgesSet(
+    val set_id: String,
+    val versions: List<GlobalBadgesVersion>
+)
+
+data class GlobalBadgesVersion(
+    val id: String,
+    val image_url_1x: String,
+    val image_url_2x: String,
+    val image_url_4x: String,
+    val title: String,
+    val description: String,
+    val click_action: String,
+    val click_url: String
+)
 
 
 
