@@ -54,8 +54,8 @@ class EmoteParsing {
         val url = emoteValue.url
         val value = InlineTextContent(
             Placeholder(
-                width = 35.sp,
-                height = 35.sp,
+                width = 25.sp,
+                height = 25.sp,
                 placeholderVerticalAlign = PlaceholderVerticalAlign.Center
             )
         ) {

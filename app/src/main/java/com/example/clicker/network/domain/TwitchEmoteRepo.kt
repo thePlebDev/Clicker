@@ -82,6 +82,10 @@ interface TwitchEmoteRepo {
 
     suspend fun getBetterTTVChannelEmotes(broadCasterId:String): Flow<Response<BetterTTVChannelEmotes>>
 
+
+    /*****BELOW ARE THE METHODS THAT ARE USED TO GET THE CHAT BADGES****/
+    suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String): Flow<Response<Boolean>>
+
 }
 
 

@@ -318,10 +318,10 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             twitchEmoteImpl.getBetterTTVChannelEmotes(broadcasterId).collect{response ->
 
-
             }
         }
     }
+
 
 
     /**
@@ -449,6 +449,20 @@ class StreamViewModel @Inject constructor(
 
             }
         }
+    }
+
+    fun getGlobalChatBadges(
+        oAuthToken: String,
+        clientId: String,
+    ){
+        viewModelScope.launch(Dispatchers.IO) {
+            twitchEmoteImpl.getGlobalChatBadges(
+                oAuthToken,clientId
+            ).collect{
+
+            }
+        }
+
     }
 
     /***/

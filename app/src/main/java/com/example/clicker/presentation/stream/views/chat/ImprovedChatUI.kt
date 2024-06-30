@@ -2120,7 +2120,8 @@ fun TextWithChatBadges(
             color = color,
             textSize = fontSize,
             messageList=twitchUser.messageList,
-            inlineContentMap =inlineContentMap
+            inlineContentMap =inlineContentMap,
+            badgeList = twitchUser.badges
 
         )
 
@@ -2149,29 +2150,25 @@ fun ChatBadges(
     color: Color,
     textSize: TextUnit,
     messageList:List<MessageToken>,
+    badgeList:List<String>,
     inlineContentMap: EmoteListMap
 ) {
 
     Log.d("ChatBadgesMessageList","$messageList")
-    //for not these values can stay here hard coded. Until I implement more Icon
-//            val color = MaterialTheme.colorScheme.secondary
-//            val textSize = MaterialTheme.typography.headlineSmall.fontSize
 
-    val modId = "modIcon"
-    val subId = "subIcon"
-    val monitorId ="monitorIcon"
+    //moderator subscriber
+    Log.d("LoggingBadges","list -> $badgeList")
+
     val text = buildAnnotatedString {
-        // Append a placeholder string "[icon]" and attach an annotation "inlineContent" on it.
-        if(isMonitored){
-            appendInlineContent(monitorId, "[monitorIcon]")
+
+        for(item in badgeList){
+            if(inlineContentMap.map.containsKey(item)){
+                withStyle(style = SpanStyle(fontSize = 10.sp)) {
+                    appendInlineContent(item, item)
+                }
+            }
         }
 
-        if (isMod) {
-            appendInlineContent(modId, "[icon]")
-        }
-        if (isSub) {
-            appendInlineContent(subId, "[subicon]")
-        }
         withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
             append("$username ")
         }
@@ -2190,15 +2187,18 @@ fun ChatBadges(
     }
 
 
+    Row(){
+        Text(
+            text = text,
+            inlineContent = inlineContentMap.map,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            color = color,
+            fontSize = textSize
+        )
+    }
 
-    Text(
-        text = text,
-        inlineContent = inlineContentMap.map,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp),
-        color = color,
-        fontSize = textSize
-    )
+
 }
 

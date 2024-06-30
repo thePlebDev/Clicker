@@ -59,7 +59,7 @@ data class LoggedInUserData(
 @Immutable
 data class TwitchUserData(
     val badgeInfo: String?,
-    val badges: String?,
+    val badges:List<String>,
     val clientNonce: String?,
     val color: String?,
     val displayName: String?,

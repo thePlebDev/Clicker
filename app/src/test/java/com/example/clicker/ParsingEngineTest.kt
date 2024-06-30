@@ -295,6 +295,81 @@ class ParsingEngineTest {
 
     }
 
+    @Test
+    fun badges_parsing(){
+        /**GIVEN*/
+        val multipleBadges ="badges=subscriber/6,premium/1,raging-wolf-helm/1,bits/1000,superultracombo-2023/1,twitch-recap-2023/1"
+        val expectedBadges= listOf("subscriber","premium")
+        val emptyBadges = "badges="
+        val stringToParse ="@badge-info=subscriber/6;$multipleBadges;client-nonce=bd27eaaa0530a4adb04cbd731387a619;color=#1ABEA4;display-name=TheAgux1006;emotes=;first-msg=0;flags=;id=d627e983-3b2b-4aba-a8d5-9f872683675b;mod=0;reply-parent-display-name=palti14;reply-parent-msg-body=tiene\\sun\\sfinal\\so\\smas?;reply-parent-msg-id=c3573af4-5c14-4a09-b29e-a7f6d35c36df;reply-parent-user-id=136171373;reply-parent-user-login=palti14;reply-thread-parent-display-name=palti14;reply-thread-parent-msg-id=c3573af4-5c14-4a09-b29e-a7f6d35c36df;reply-thread-parent-user-id=136171373;reply-thread-parent-user-login=palti14;returning-chatter=0;room-id=90075649;subscriber=1;tmi-sent-ts=1719704198380;turbo=0;user-id=169291653;user-type= :theagux1006!theagux1006@theagux1006.tmi.twitch.tv PRIVMSG #illojuan :@palti14 4 formas distintas de llegar al mismo final, como para rejugarlo un par de veces que lo merece"
+
+       /**WHEN*/
+        val regex = Regex("badges=([^;]+)")
+        val matchResult = regex.find(stringToParse)
+        val badgesParsed = matchResult?.groupValues?.get(1) ?:""
+
+        val replaceRegex = "/[0-9-]+".toRegex()
+        val result = parseBadges(stringToParse)
+
+//
+        println(result)
+
+        /**THEN*/
+        Assert.assertEquals(1, 2)
+    }
+
+    fun parseBadges(stringToParse:String):List<String>{
+        val regex = Regex("badges=([^;]+)")
+        val matchResult = regex.find(stringToParse)
+        val badgesParsed = matchResult?.groupValues?.get(1) ?:""
+
+        val replaceRegex = "/[0-9-]+".toRegex()
+        return badgesParsed.replace(replaceRegex, " ").split(",")
+    }
+
+
+    @Test
+    fun badge_info_parsing(){
+        /**GIVEN*/
+        //below are edge cases
+        val expectedToParse = "@badge-info=predictions/No,subscriber/33"
+        val onlySubscriber = "@badge-info=subscriber/33"
+        val nonSubscriber = "@badge-info=predictions/No"
+        val noBadgeInfo="@badge-info=" // thsi is taken care of
+        //above are edge cases
+
+        val stringToParse ="$expectedToParse;badges=predictions/pink-2,subscriber/24,twitch-recap-2023/1;client-nonce=e5b7bb1aa69af4cd710adf059f818ed5;color=#00FF7F;display-name=thekennydv;emotes=;first-msg=0;flags=;id=0378852a-3306-4721-ae38-bb81fc522876;mod=0;returning-chatter=0;room-id=121059319;subscriber=1;tmi-sent-ts=1719713103276;turbo=0;user-id=88015965;user-type= :thekennydv!thekennydv@thekennydv.tmi.twitch.tv PRIVMSG #moonmoon :BLOW BIG M pepoYELL"
+
+
+        println(parseBadgeInfo(stringToParse))
+
+// Determine subscriber status
+
+        /**THEN*/
+        Assert.assertEquals(1, 2)
+
+
+    }
+
+}
+// this function works, manualy test it when I wake up
+fun parseBadgeInfo(stringToParse: String):String {
+    val regex = Regex("@badge-info=([^;]+)")
+    val matchResult = regex.find(stringToParse)
+    val parsedResult = matchResult?.groupValues?.get(1)
+
+
+
+     return if(parsedResult == null){
+        "Not a subscriber"
+    }else{
+        val another = if(Regex("subscriber/([^;]+)").find(parsedResult)?.groupValues?.get(1) != null){
+            "Subbed for ${Regex("subscriber/([^;]+)").find(parsedResult)?.groupValues?.get(1)} months"
+        }else{
+            "Not a subscriber"
+        }
+        another
+    }
 }
 
 

@@ -111,7 +111,7 @@ class ParsingEngine @Inject constructor() {
         globalId += 1
         return TwitchUserData(
             badgeInfo = null,
-            badges = null,
+            badges = listOf(),
             clientNonce = null,
             color = "#000000",
             displayName = null,
@@ -262,6 +262,15 @@ class ParsingEngine @Inject constructor() {
             .build()
     }
 
+    fun parseBadges(stringToParse:String):List<String>{
+        val regex = Regex("badges=([^;]+)")
+        val matchResult = regex.find(stringToParse)
+        val badgesParsed = matchResult?.groupValues?.get(1) ?:""
+
+        val replaceRegex = "/[0-9-]+".toRegex()
+        return badgesParsed.replace(replaceRegex, "").split(",")
+    }
+
   //  var textChatCount = 0
     /**
      * Parses the websocket data sent from twitch. Should run when a PRIVMSG command is sent
@@ -300,6 +309,7 @@ class ParsingEngine @Inject constructor() {
             dateSent = formattedDate
 
         }
+        val parsedBadgesList = parseBadges(text)
 
       //  Log.d("PRIVATEMSSGDATE","dateParsedOut --> $dateParsedOut")
 //            ?.toLong()?.also {
@@ -316,7 +326,7 @@ class ParsingEngine @Inject constructor() {
 
         return TwitchUserData(
             badgeInfo = parsedData["badge-info"],
-            badges = parsedData["badges"],
+            badges = parsedBadgesList,
             clientNonce = parsedData["client-nonce"],
             color = parsedData["color"] ?: "#FF6650a4",
             displayName = parsedData["display-name"],

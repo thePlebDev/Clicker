@@ -11,7 +11,7 @@ class TwitchUserDataObjectMother private constructor() {
 
         private var twitchUserData: TwitchUserData = TwitchUserData(
             badgeInfo = null,
-            badges = null,
+            badges = listOf(),
             clientNonce = null,
             color = "#000000",
             displayName = null,
@@ -46,7 +46,7 @@ class TwitchUserDataObjectMother private constructor() {
                 messageList = messageTokenList
             )
         }
-        fun addBadges(badges: String) = apply {
+        fun addBadges(badges: List<String>) = apply {
             twitchUserData = twitchUserData.copy(
                 badges = badges
             )

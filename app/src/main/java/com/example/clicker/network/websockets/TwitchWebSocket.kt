@@ -100,7 +100,7 @@ class TwitchWebSocket @Inject constructor(
 
     private val initialValue = TwitchUserData(
         badgeInfo = "subscriber/77",
-        badges = "subscriber/36,sub-gifter/50",
+        badges = listOf(),
         clientNonce = "d7a543c7dc514886b439d55826eeeb5b",
         color = "FF0000",
         displayName = "verifying data",
