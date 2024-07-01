@@ -270,6 +270,24 @@ class ParsingEngine @Inject constructor() {
         val replaceRegex = "/[0-9-]+".toRegex()
         return badgesParsed.replace(replaceRegex, "").split(",")
     }
+    fun parseBadgeInfo(stringToParse: String):String {
+        val regex = Regex("@badge-info=([^;]+)")
+        val matchResult = regex.find(stringToParse)
+        val parsedResult = matchResult?.groupValues?.get(1)
+
+
+
+        return if(parsedResult == null){
+            "Not a subscriber"
+        }else{
+            val another = if(Regex("subscriber/([^;]+)").find(parsedResult)?.groupValues?.get(1) != null){
+                "Subbed for ${Regex("subscriber/([^;]+)").find(parsedResult)?.groupValues?.get(1)} months"
+            }else{
+                "Not a subscriber"
+            }
+            another
+        }
+    }
 
   //  var textChatCount = 0
     /**
@@ -319,13 +337,10 @@ class ParsingEngine @Inject constructor() {
 ////            Log.d("PRIVATEMSSGDATE","formattedDate --> $formattedDate")
 //
 //        }
-
-
-
-
+        val badgeInfo =parseBadgeInfo(text)
 
         return TwitchUserData(
-            badgeInfo = parsedData["badge-info"],
+            badgeInfo = badgeInfo,
             badges = parsedBadgesList,
             clientNonce = parsedData["client-nonce"],
             color = parsedData["color"] ?: "#FF6650a4",

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -45,8 +46,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
+import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.stream.ClickedUserNameChats
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
@@ -107,7 +110,7 @@ object BottomModal{
                     updateShouldMonitorUser = {updateShouldMonitorUser()},
                     shouldMonitorUser = shouldMonitorUser
                 )
-            }
+            },
 
         )
     }
@@ -118,6 +121,8 @@ object BottomModal{
         clickedUsernameBanner: @Composable () -> Unit,
         clickedUserBottomBanner: @Composable () -> Unit,
     ){
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
