@@ -160,7 +160,7 @@ fun ModViewComponent(
                 openBanDialog = { streamViewModel.openBanDialog.value = true },
                 shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                 updateShouldMonitorUser = {},
-                clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent
+                clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
             )
         }
 
