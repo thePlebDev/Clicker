@@ -35,6 +35,7 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.AuthenticationViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -67,6 +68,7 @@ class HomeFragment : Fragment() {
     private val modViewViewModel: ModViewViewModel by activityViewModels()
     private val logoutViewModel: LogoutViewModel by activityViewModels()
     private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
+    private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +153,8 @@ class HomeFragment : Fragment() {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
                             },
                             logoutViewModel=logoutViewModel,
-                            modViewDragStateViewModel=modViewDragStateViewModel
+                            modViewDragStateViewModel=modViewDragStateViewModel,
+                            modVersionThreeViewModel =modVersionThreeViewModel
 
                         )
                     }
