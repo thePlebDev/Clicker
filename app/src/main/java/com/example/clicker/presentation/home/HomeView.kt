@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.modChannels.modVersionThree.BoxNumber
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThree
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -155,6 +156,7 @@ fun ValidationView(
 //        hapticFeedBackError={hapticFeedBackError()}
 //
 //    )
+    val stateList = modVersionThreeViewModel.publicStateList.collectAsState()
     ModVersionThree(
         boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
         setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
@@ -163,7 +165,11 @@ fun ValidationView(
         boxOneIndex=modVersionThreeViewModel.boxOneIndex,
         boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
         setBoxOneDragging = {newValue -> modVersionThreeViewModel.setBoxOneDragging(newValue)},
-        /*************** BOX TWO PARAMETERS***********************************/
+        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
+        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
+        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+
+        /*************** BOX TWO PARAMETERS***************************************************************/
         boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
         setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
         boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
@@ -171,8 +177,11 @@ fun ValidationView(
         boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
         boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
         setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
+        setBoxTwoIndex ={newValue -> modVersionThreeViewModel.syncBoxTwoIndex(newValue)},
+        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
+        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
 
-        /*************** BOX THREE PARAMETERS***********************************/
+        /*************** BOX THREE PARAMETERS*****************************************************************/
         boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
         setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
         boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
@@ -180,6 +189,12 @@ fun ValidationView(
         boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
         boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
         setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
+        setBoxThreeIndex ={newValue -> modVersionThreeViewModel.syncBoxThreeIndex(newValue)},
+        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
+        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+
+        /*************** GENERICS PARAMETERS*****************************************************************/
+        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)}
 
     )
 
