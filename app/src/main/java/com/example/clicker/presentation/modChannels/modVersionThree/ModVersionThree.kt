@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -98,6 +99,7 @@ fun ModVersionThree(
 
     /***************** GENERIC PARAMTERS *****************************************/
     updateIndex:(Int)->Unit,
+    showError: Boolean
 
 
 
@@ -115,31 +117,11 @@ fun ModVersionThree(
 
         drawerContent = {
             ModalDrawerSheet {
-               Column(modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp)) {
-                   ClickableCard(
-                       color=Color.Red,
-                       changeIndex={
-                           Log.d("CLickingTheCard","RED")
-                           updateIndex(1)
-                           //todo: so It needs to look for the index with 0 and change it to 1
-                       }
-                   )
-                   ClickableCard(
-                       color=Color.Blue,
-                       changeIndex={
-                           Log.d("CLickingTheCard","BLUE")
-                           updateIndex(2)
-                       }
-                   )
-                   ClickableCard(
-                       color=Color.Green,
-                       changeIndex={
-                           Log.d("CLickingTheCard","GREEN")
-                           updateIndex(3)
-                       }
-                   )
-
-               }
+               //todo: place here
+                NavigationDrawerCard(
+                    updateIndex = {newValue -> updateIndex(newValue)},
+                    showError=showError
+                )
             }
 
 
@@ -370,6 +352,16 @@ fun ContentDragBox(
     contentIndex:Int
 ){
     when(contentIndex){
+        99->{
+            //this is meant to help with the doubles and triples
+            //The UI is the same as an empty box. However, it can not be overriden and will count as if there is
+            //an actual item inside of the place
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)) {
+
+            }
+        }
         0 ->{
             Column(modifier = Modifier
                 .fillMaxSize()
@@ -397,6 +389,45 @@ fun ContentDragBox(
                 .background(Color.Green)) {
 
             }
+        }
+    }
+
+}
+
+@Composable
+fun NavigationDrawerCard(
+    updateIndex:(Int) -> Unit,
+    showError:Boolean,
+){
+    Column(modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp)) {
+        ClickableCard(
+            color=Color.Red,
+            changeIndex={
+                Log.d("CLickingTheCard","RED")
+                updateIndex(1)
+                //todo: so It needs to look for the index with 0 and change it to 1
+            }
+        )
+        ClickableCard(
+            color=Color.Blue,
+            changeIndex={
+                Log.d("CLickingTheCard","BLUE")
+                updateIndex(2)
+            }
+        )
+        ClickableCard(
+            color=Color.Green,
+            changeIndex={
+                Log.d("CLickingTheCard","GREEN")
+                updateIndex(3)
+            }
+        )
+
+        Row(modifier = Modifier.fillMaxWidth()){
+            if(showError){
+                Text("NO OPEN SPACE", fontSize = 30.sp,color = Color.Red)
+            }
+
         }
     }
 

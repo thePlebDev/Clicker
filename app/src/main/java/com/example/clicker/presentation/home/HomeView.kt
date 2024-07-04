@@ -194,7 +194,8 @@ fun ValidationView(
         boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
 
         /*************** GENERICS PARAMETERS*****************************************************************/
-        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)}
+        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
+        showError =modVersionThreeViewModel.showPlacementError.value
 
     )
 
