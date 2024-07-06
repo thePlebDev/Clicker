@@ -164,7 +164,11 @@ fun ValidationView(
         boxOneSection = modVersionThreeViewModel.boxOneSection,
         boxOneIndex=modVersionThreeViewModel.boxOneIndex,
         boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
-        setBoxOneDragging = {newValue -> modVersionThreeViewModel.setBoxOneDragging(newValue)},
+        setBoxOneDragging = {
+                newValue ->
+            Log.d("LoggingTheDragging","ONE")
+            modVersionThreeViewModel.setBoxOneDragging(newValue)
+                            },
         setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
         deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
         boxOneHeight = modVersionThreeViewModel.boxOneHeight,
@@ -177,7 +181,10 @@ fun ValidationView(
         boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
         boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
         setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
-        setBoxTwoIndex ={newValue -> modVersionThreeViewModel.syncBoxTwoIndex(newValue)},
+        setBoxTwoIndex ={newValue ->
+            Log.d("LoggingTheDragging","TWO")
+            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
+                        },
         deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
         boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
 
@@ -189,7 +196,10 @@ fun ValidationView(
         boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
         boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
         setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
-        setBoxThreeIndex ={newValue -> modVersionThreeViewModel.syncBoxThreeIndex(newValue)},
+        setBoxThreeIndex ={newValue ->
+            Log.d("LoggingTheDragging","THREE")
+            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
+                          },
         deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
         boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
 
