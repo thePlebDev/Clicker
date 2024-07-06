@@ -723,14 +723,32 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 //todo: THE SAME THING AS ABOVE TO CHECK THE BOX VALUES OF 99
 
                 if(boxThreeSection != Sections.ONE){
-                    boxOneSection = Sections.THREE
-                    val newTop =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,true)
-                    val newCenter =stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.ONE)
-                    val newBottom =stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
 
-                    val newList =listOf(newTop,newCenter,newBottom)
-                    Log.d("StateListUpdate","sectionOneEnter ->$newList")
-                    stateList.tryEmit(newList)
+                    val boxTwo= stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
+                    val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
+                    boxOneSection = Sections.THREE
+                    if(boxTwo.index == 99){
+
+                        val newTop =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,true)
+                        val newCenter =stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.TWO)
+                        val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.ONE)
+                        stateList.tryEmit(listOf(newTop,newCenter,newBottom))
+
+                    }
+                    if(boxOne.index == 99){
+                        val newTop =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,true)
+                        val newCenter =stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.ONE)
+                        val newBottom =stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
+
+                        val newList =listOf(newTop,newCenter,newBottom)
+                        Log.d("StateListUpdate","sectionOneEnter ->$newList")
+                        stateList.tryEmit(newList)
+                    }
+
+
+
+
+
                 }
                 boxThreeSection = Sections.ONE
             }
