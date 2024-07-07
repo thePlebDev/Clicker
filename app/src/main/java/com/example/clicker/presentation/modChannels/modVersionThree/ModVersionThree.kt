@@ -358,7 +358,7 @@ fun ContentDragBox(
             //an actual item inside of the place
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)) {
+            ) {
 
             }
         }
