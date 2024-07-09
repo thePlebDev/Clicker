@@ -108,6 +108,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             boxOneHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
             val doubleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
+            val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
             if(doubleSize){
                 Log.d("syncBoxOneIndexChecking","Double")
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = 0)
@@ -127,6 +128,16 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
 
             }
+            else if(tripleSize){
+                Log.d("syncBoxOneIndexChecking","triple")
+                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(tripleSize = false,index = 0)
+                boxOneIndex = 0
+                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy( index = 0)
+                boxTwoIndex = 0
+                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(index = 0)
+                boxThreeIndex = 0
+                stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
+            }
             else{
                 Log.d("syncBoxOneIndexChecking","NonDouble")
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = 0)
@@ -136,7 +147,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             }
 
 
-        }else{
+        }
+       else{
             val top = stateList.value.find {it.position == Positions.TOP}!!.let {item ->
                 if(item.boxNumber == BoxNumber.ONE){
                     item.copy(index = newValue)
@@ -167,8 +179,13 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     var boxOneDragState = DraggableState { delta ->
         val boxOneIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
-        val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
-        if(boxOneIsDoubleSize){
+        val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
+
+        if(tripleSize){
+            //todo:Adding the special dragging
+            boxOneTripleSizeDragging()
+        }
+        else if(boxOneIsDoubleSize){
             Log.d("BOXoNEDOUBLEDRAGGING","DOUBLEDRAG!!!!")
             boxOneDoubleSizeDragging(delta)
 
@@ -178,6 +195,21 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
         boxOneOffsetY += delta
+    }
+
+    fun boxOneTripleSizeDragging(){
+
+        if(boxOneOffsetY >= (0.6*700f) ){
+            Log.d("boxTwoTripleSizeDragging","DELETING")
+            if(!deleteBoxOne){
+                deleteBoxOne = true
+            }
+        }else{
+            Log.d("boxTwoTripleSizeDragging"," not DELETING")
+            if(deleteBoxOne){
+                deleteBoxOne = false
+            }
+        }
     }
 
     fun boxOneDoubleSizeDragging(
@@ -344,6 +376,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     fun boxOneTripleSync(){
         //when this function runs we know this. Box One is in double mode
+        Log.d("boxOneTripleSync","triple sync happened")
 
         //todo: we need to do 5 things:
         //1) increase the boxOneHeight
@@ -482,12 +515,14 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val boxTwoIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
         val boxTwoIsTripleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
         if(boxTwoIsTripleSize){
+            Log.d("BoxTwoDragging","TRIPLE")
             boxTwoTripleSizeDragging()
         }
         else if(boxTwoIsDoubleSize){
+            Log.d("BoxTwoDragging","DOUBLE")
             boxTwoDoubleSizeDragging(delta)
         }else{
-            Log.d("boxSizeDoublingLogs","NOT DOUBLE")
+            Log.d("BoxTwoDragging","SINGLE")
 
             boxTwoSingleSizeDragging(delta)
         }
@@ -534,17 +569,21 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
                     val newCenter  =ModArrayData(700f,2,Positions.CENTER,BoxNumber.TWO,true,true,false)
                     if(boxThree.index == 99){
+                        Log.d("BOXTWODRAGGINGBOTTOM","Three.index == 99")
                         val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.ONE)
                         val centerAgain = newCenter
                         val newBottom = stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.THREE)
 
                         stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
                     }else if(boxOne.index ==99){
+                        Log.d("BOXTWODRAGGINGBOTTOM","One.index == 99")
                         val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.THREE)
                         val centerAgain = newCenter
                         val newBottom = stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.ONE)
                         stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
                     }
+                    //todo: I guess we have to implement a version of the non-99 values
+
 
                 }
             }
@@ -902,7 +941,6 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                         //todo: this should not be bottom. I need to check to see if one or two is 99 and make it the center, the other becomes the
                         val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
 
-
                         if(boxTwo.index == 99){
                             Log.d("boxThreeStateSizeDoublingLogs","boxTwo 99")
                             val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.ONE)
@@ -917,9 +955,6 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                             val newBottom = stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.ONE)
                             stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
                         }
-
-
-
                     }
                 }
                 boxThreeSection = Sections.TWO
@@ -1127,14 +1162,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     fun setIndex(newValue:Int){
 
         if(boxOneIndex ==0){
+            Log.d("BoxTwoTriple","1->0")
 
-            if(checkBoxTwoForTriple()){
-
-
+            if(checkBoxTwoForTriple(newValue)){
                 boxTwoTripleSync()
-
             }
-            else if(checkBoxThreeForTriple()){
+            else if(checkBoxThreeForTriple(newValue)){
                 //todo: make the a function called boxThreeTripleSync()
                 // it will do the exact same things as boxTwoTripleSync() but just the box3 version of it
 
@@ -1149,11 +1182,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         }
         //todo: triple checks
         else if(boxTwoIndex ==0){
-            if(checkBoxThreeForTriple()){
+            Log.d("BoxTwoTriple","2->0")
+            if(checkBoxThreeForTriple(newValue)){
                 boxThreeTripleSync()
 
             }
-            else if(checkBoxOneForTriple()){
+            else if(checkBoxOneForTriple(newValue)){
                 Log.d("BoxOneTriple","TRIPLE!!!!!!!")
                 //todo: make the a function called boxOneTripleSync()
                 // it will do the exact same things as boxTwoTripleSync() but just the boxOne version of it
@@ -1171,11 +1205,14 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         }
         //todo: triple checks
         else if(boxThreeIndex == 0){
-            if(checkBoxOneForTriple()){
-                syncBoxThreeIndex(newValue)
+            Log.d("BoxTwoTriple","3->0")
+            if(checkBoxOneForTriple(newValue)){
+                Log.d("BoxTwoTriple","THIS FUNCTION IS RUNNING ")
+                boxOneTripleSync()
             }
-            else if(checkBoxTwoForTriple() ){
-                syncBoxThreeIndex(newValue)
+            else if(checkBoxTwoForTriple(newValue) ){
+
+                boxTwoTripleSync()
             }else{
                 Log.d("stateListIndexLogging","boxThree should be 0 -> ${stateList.value}")
 //            boxThreeIndex = newValue
@@ -1194,6 +1231,28 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         }
     }
 
+    fun checkBoxOneForTriple(newIndex:Int):Boolean{
+        val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
+        val boxOneIsDouble = boxOne.doubleSize
+        val index = boxOne.index
+        Log.d("checkingForTriple","ONE  triple -> $boxOneIsDouble")
+        return boxOneIsDouble && index == newIndex
+    }
+    fun checkBoxTwoForTriple(newIndex:Int):Boolean{
+        val boxTwo =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
+        val boxTwoIsDouble = boxTwo.doubleSize
+        val index = boxTwo.index
+        Log.d("checkingForTriple","TWO  triple -> $boxTwoIsDouble")
+        return boxTwoIsDouble && newIndex == index
+    }
+    fun checkBoxThreeForTriple(newIndex:Int):Boolean{
+        val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
+        val boxThreeIsDouble = boxThree.doubleSize
+        val index = boxThree.index
+        Log.d("checkingForTriple","THREE  triple -> $boxThreeIsDouble")
+        return boxThreeIsDouble && index == newIndex
+    }
+
     // here is the height for a normal individual box:
     //Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
     //the value that is matched to the new index should be first
@@ -1201,6 +1260,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //todo: make this work
         //this function guarantees that boxOne is a index of 0
         if(boxTwoIndex == newValue){ // this definitely works
+            //this is the the area that is causing me problems
             // - when this conditional is run, we know 2 things 100%
             //1) boxOne index is 0
             //2) boxTwo index is equal to newValue
@@ -1208,8 +1268,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
             val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
             //todo: these two need to be set to a new index of 99
-            val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 0)
-            syncBoxOneIndex(99)
+            val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
+            boxOneIndex =99
             boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
             Log.d("loggindBoxTwoHeight","boxTwoHeight ->${boxTwoHeight.value}")
             val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM)
@@ -1238,21 +1298,6 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             //get box Three and one, set them as new Top and new center and set box Three 0 and increase the height of boxOne to double
         }
 
-    }
-    fun checkBoxOneForTriple():Boolean{
-        val boxOneIsDouble = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
-        Log.d("checkingForTriple","ONE  triple -> $boxOneIsDouble")
-         return boxOneIsDouble
-    }
-    fun checkBoxTwoForTriple():Boolean{
-        val boxTwoIsDouble = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
-        Log.d("checkingForTriple","TWO  triple -> $boxTwoIsDouble")
-        return boxTwoIsDouble
-    }
-    fun checkBoxThreeForTriple():Boolean{
-        val boxThreeIsDouble = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
-        Log.d("checkingForTriple","THREE  triple -> $boxThreeIsDouble")
-        return boxThreeIsDouble
     }
 
 
