@@ -167,90 +167,10 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     var boxOneDragState = DraggableState { delta ->
         val boxOneIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
+        val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
         if(boxOneIsDoubleSize){
-            //todo: I need top, I need bottom and I need delete
-
-
-            /********* ENTERING SECTION THREE (DELETING)************/
-            if(boxOneOffsetY >= (0.6*(700f*2))){
-                Log.d("boxSizeDoublingLogs","DELETE")
-                if(!deleteBoxOne){
-                    deleteBoxOne = true
-                }
-
-                //todo: add the deletion and fix when the box stops its index is set behind the black box
-
-            }
-
-            /********* ENTERING SECTION TWO(BOTTOM) ************/
-            else if(boxOneOffsetY >= (0.6*(700f)) && boxOneOffsetY<=(0.6*(700f*2))){
-                Log.d("boxSizeDoublingLogs","BOTTOM")
-                //todo: check the delta
-                if(deleteBoxOne){
-                    deleteBoxOne = false
-                }
-                if(boxOneSection!=Sections.TWO){
-
-                    if(0<=delta) { //true means dragging down when entering section 2
-                        Log.d("BOXONEDOUBLEDRAGESTATE","sectionTwoEnter")
-                       //todo: we need to do the index 99 checks for Tow and Three
-                        val boxTwo= stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
-                        val newCenter  =ModArrayData(700f,boxOneIndex,Positions.CENTER,BoxNumber.ONE,true,true,false)
-                        //todo: this should not be bottom. I need to check to see if one or two is 99 and make it the center, the other becomes the
-                        val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
-
-                        if(boxTwo.index == 99){
-                            Log.d("BOXONEDOUBLEDRAGESTATE","2->99")
-
-                            val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.THREE)
-                            val centerAgain = newCenter
-                            val newBottom =stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
-                            stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
-
-                        }else if(boxThree.index == 99){
-                            Log.d("BOXONEDOUBLEDRAGESTATE","3 ->99")
-                            Log.d("BOXONEDOUBLEDRAGESTATE","beforeUpdate ->${stateList.value}")
-                            val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.TWO)
-                            val centerAgain = newCenter
-                            val newBottom =stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.THREE)
-                            stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
-                            Log.d("BOXONEDOUBLEDRAGESTATE","AFTERUpdate ->${stateList.value}")
-                        }
-
-
-
-                    }
-                }
-                boxOneSection = Sections.TWO
-
-            }
-            /**ENTERING SECTION ONE(TOP)*/
-            // todo: the doubles index checks like what is done above.
-            else if(boxOneOffsetY <= (0.6*(700f))){
-                Log.d("boxSizeDoublingLogs","TOP")
-                if(boxOneSection != Sections.ONE){
-                    val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
-                    val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
-
-                    val newTop =ModArrayData(700f,boxOneIndex,Positions.TOP,BoxNumber.ONE,true,true,false)
-                    if(boxTwo.index == 99){
-                        val newCenter = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.TWO)
-                        val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.THREE)
-                        stateList.tryEmit(listOf(newTop,newCenter,newBottom))
-                    }
-                    else if (boxThree.index == 99){
-                        val newCenter = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.THREE)
-                        val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
-                        stateList.tryEmit(listOf(newTop,newCenter,newBottom))
-                    }
-
-
-                }
-                boxOneSection = Sections.ONE
-
-
-
-            }
+            Log.d("BOXoNEDOUBLEDRAGGING","DOUBLEDRAG!!!!")
+            boxOneDoubleSizeDragging(delta)
 
         }else{
             boxOneSingleSizeDragging(delta)
@@ -258,6 +178,93 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
         boxOneOffsetY += delta
+    }
+
+    fun boxOneDoubleSizeDragging(
+        delta: Float
+    ){
+
+
+        /********* ENTERING SECTION THREE (DELETING)************/
+        if(boxOneOffsetY >= (0.6*(700f*2))){
+            Log.d("boxSizeDoublingLogs","DELETE")
+            if(!deleteBoxOne){
+                deleteBoxOne = true
+            }
+
+            //todo: add the deletion and fix when the box stops its index is set behind the black box
+
+        }
+
+        /********* ENTERING SECTION TWO(BOTTOM) ************/
+        else if(boxOneOffsetY >= (0.6*(700f)) && boxOneOffsetY<=(0.6*(700f*2))){
+            Log.d("boxSizeDoublingLogs","BOTTOM")
+            //todo: check the delta
+            if(deleteBoxOne){
+                deleteBoxOne = false
+            }
+            if(boxOneSection!=Sections.TWO){
+
+                if(0<=delta) { //true means dragging down when entering section 2
+                    Log.d("BOXONEDOUBLEDRAGESTATE","sectionTwoEnter")
+                    //todo: we need to do the index 99 checks for Tow and Three
+                    val boxTwo= stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
+                    val newCenter  =ModArrayData(700f,boxOneIndex,Positions.CENTER,BoxNumber.ONE,true,true,false)
+                    //todo: this should not be bottom. I need to check to see if one or two is 99 and make it the center, the other becomes the
+                    val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
+
+                    if(boxTwo.index == 99){
+                        Log.d("BOXONEDOUBLEDRAGESTATE","2->99")
+
+                        val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.THREE)
+                        val centerAgain = newCenter
+                        val newBottom =stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
+                        stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
+
+                    }else if(boxThree.index == 99){
+                        Log.d("BOXONEDOUBLEDRAGESTATE","3 ->99")
+                        Log.d("BOXONEDOUBLEDRAGESTATE","beforeUpdate ->${stateList.value}")
+                        val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.TWO)
+                        val centerAgain = newCenter
+                        val newBottom =stateList.value.find { it.position ==Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.THREE)
+                        stateList.tryEmit(listOf(newTop,centerAgain,newBottom))
+                        Log.d("BOXONEDOUBLEDRAGESTATE","AFTERUpdate ->${stateList.value}")
+                    }
+
+
+
+                }
+            }
+            boxOneSection = Sections.TWO
+
+        }
+        /**ENTERING SECTION ONE(TOP)*/
+        // todo: the doubles index checks like what is done above.
+        else if(boxOneOffsetY <= (0.6*(700f))){
+            Log.d("boxSizeDoublingLogs","TOP")
+            if(boxOneSection != Sections.ONE){
+                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
+                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
+
+                val newTop =ModArrayData(700f,boxOneIndex,Positions.TOP,BoxNumber.ONE,true,true,false)
+                if(boxTwo.index == 99){
+                    val newCenter = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.TWO)
+                    val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.THREE)
+                    stateList.tryEmit(listOf(newTop,newCenter,newBottom))
+                }
+                else if (boxThree.index == 99){
+                    val newCenter = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.THREE)
+                    val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
+                    stateList.tryEmit(listOf(newTop,newCenter,newBottom))
+                }
+
+
+            }
+            boxOneSection = Sections.ONE
+
+
+
+        }
     }
 
     fun boxOneSingleSizeDragging(
@@ -335,6 +342,24 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         }
     }
 
+    fun boxOneTripleSync(){
+        //when this function runs we know this. Box One is in double mode
+
+        //todo: we need to do 5 things:
+        //1) increase the boxOneHeight
+        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp
+        //2) set boxOne double to false and boxOne triple to true
+        val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, tripleSize = true)
+        //3) set the boxTwo and the boxThree index to 99
+        val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(index = 99)
+        boxTwoIndex =99
+        val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(index = 99)
+        boxThreeIndex =99
+        //4 emit the new state to stateList
+        stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
+        //5) do special movement on boxOneOffset for when boxOneTriple is set to true
+
+    }
 
 
 
@@ -699,6 +724,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         // 5) do special movement on boxTwoOffset for when boxTwoTriple is set to true
 
     }
+
 
     /****************************************BOX THREE RELATED STATE**********************************************************/
 
@@ -1131,7 +1157,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 Log.d("BoxOneTriple","TRIPLE!!!!!!!")
                 //todo: make the a function called boxOneTripleSync()
                 // it will do the exact same things as boxTwoTripleSync() but just the boxOne version of it
-                syncBoxTwoIndex(newValue)
+                //remove the green, add the red, remove the blue and add another red
+                boxOneTripleSync()
+                //syncBoxTwoIndex(newValue)
             }
             else{
                 Log.d("stateListIndexLogging","boxTwo should be 0 -> ${stateList.value}")
