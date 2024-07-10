@@ -172,7 +172,10 @@ fun ModVersionThree(
                     }
                 },
                 onDoubleClick = {
-                    setBoxOneDragging(true)
+                    if(boxOneIndex != 99){
+                        setBoxOneDragging(true)
+                    }
+
                 }
             ) {
                 ContentDragBox(boxOneIndex)
@@ -209,7 +212,10 @@ fun ModVersionThree(
                     }
                 },
                 onDoubleClick = {
-                    setBoxTwoDragging(true)
+                    if(boxTwoIndex != 99){
+                        setBoxTwoDragging(true)
+                    }
+
                 }
             ) {
                 ContentDragBox(boxTwoIndex)
@@ -242,7 +248,10 @@ fun ModVersionThree(
                     }
                 },
                 onDoubleClick = {
-                    setBoxThreeDragging(true)
+                    if(boxThreeIndex!= 99){
+                        setBoxThreeDragging(true)
+                    }
+
                 }
             ) {
                 ContentDragBox(boxThreeIndex)
