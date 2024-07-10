@@ -112,7 +112,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
             if(doubleSize){
                 Log.d("syncBoxOneIndexChecking","Double")
-                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = 0)
+                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = newValue)
                 val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                 //this is for boxOneIndex
@@ -156,7 +156,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             }
             else{
                 Log.d("syncBoxOneIndexChecking","NonDouble")
-                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = 0)
+                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, index = newValue)
                 val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
@@ -428,7 +428,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     //todo: OK I THINK THIS IS FINALIZED NOW AND IT WORKS
 
     fun syncBoxTwoIndex(newValue:Int){
-        Log.d("SyncingINdex","TWO && index -> $newValue\"")
+        Log.d("SyncingINdex","TWO && index -> $newValue")
         boxTwoIndex = newValue
         deleteBoxTwo = false
         if(newValue ==0){ //THis means that we are going to delete box two
@@ -439,7 +439,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
             if(doubleSize){
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
-                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false, index = 0)
+                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false, index = newValue)
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
 
                 val checkBoxOneIndex = boxOne.index
@@ -474,7 +474,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             }
             else{
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
-                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false, index = 0)
+                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false, index = newValue)
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
             }
@@ -484,7 +484,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         else{
             //this code is operating under the idea of if the
             val top = stateList.value.find {it.boxNumber == BoxNumber.ONE}!!
-            val center = stateList.value.find {it.boxNumber == BoxNumber.TWO}!!
+            val center = stateList.value.find {it.boxNumber == BoxNumber.TWO}!!.copy(index = newValue)
             val bottom = stateList.value.find {it.boxNumber == BoxNumber.THREE}!!
 
             stateList.tryEmit(listOf(top,center,bottom))
@@ -554,7 +554,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 if(0<=delta) { //true means dragging down when entering section 2
                     val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                     val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
-                    val newCenter  =ModArrayData(700f,2,Positions.CENTER,BoxNumber.TWO,true,true,false)
+                    val newCenter  =ModArrayData(700f,boxTwoIndex,Positions.CENTER,BoxNumber.TWO,true,true,false)
                     if(boxThree.index == 99){
                         Log.d("BOXTWODRAGGINGBOTTOM","Three.index == 99")
                         val newTop = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.TOP, boxNumber = BoxNumber.ONE)
@@ -583,7 +583,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
-                val newTop =ModArrayData(700f,2,Positions.TOP,BoxNumber.TWO,true,true,false)
+                val newTop =ModArrayData(700f,boxTwoIndex,Positions.TOP,BoxNumber.TWO,true,true,false)
 
                 if(boxThree.index == 99){
                     val newCenter = stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.THREE)
@@ -640,7 +640,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             else if(boxTwoOffsetY <= (0.6*(700f))){
                 Log.d("SingleMovingWhenDouble","TOP")
                if(boxTwoSection !=Sections.ONE){
-                   val newTop  =ModArrayData(700f,2,Positions.TOP,BoxNumber.TWO,true,false,false)
+                   val newTop  =ModArrayData(700f,boxTwoIndex,Positions.TOP,BoxNumber.TWO,true,false,false)
                    val newCenter=  stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false, position = Positions.CENTER)
                    val newBottom =  stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM)
 
@@ -672,7 +672,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
                 val newCenter = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER)
                 val doubleSize = stateList.value.find{it.boxNumber == BoxNumber.TWO}!!.doubleSize
-                val newBottom  =ModArrayData(700f,2,Positions.BOTTOM,BoxNumber.TWO,true,doubleSize,false)
+                val newBottom  =ModArrayData(700f,boxTwoIndex,Positions.BOTTOM,BoxNumber.TWO,true,doubleSize,false)
 
                 val newList = listOf(top,newCenter,newBottom)
                 stateList.tryEmit(newList)
@@ -689,7 +689,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     Log.d("boxTwoDragStateLOGGING","SECTION 2 UP")
                     val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
                     val doubleSize = stateList.value.find{it.boxNumber == BoxNumber.TWO}!!.doubleSize
-                    val newCenter  =ModArrayData(700f,2,Positions.CENTER,BoxNumber.TWO,true,doubleSize,false)
+                    val newCenter  =ModArrayData(700f,boxTwoIndex,Positions.CENTER,BoxNumber.TWO,true,doubleSize,false)
                     val newBottom = stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM)
                     val newList = listOf(top,newCenter,newBottom)
                     stateList.tryEmit(newList)
@@ -698,7 +698,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     Log.d("boxTwoDragStateLOGGING","SECTION 2 DOWN")
                     val newTop = stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.TOP)
                     val doubleSize = stateList.value.find{it.boxNumber == BoxNumber.TWO}!!.doubleSize
-                    val newCenter  =ModArrayData(700f,2,Positions.CENTER,BoxNumber.TWO,true,doubleSize,false)
+                    val newCenter  =ModArrayData(700f,boxTwoIndex,Positions.CENTER,BoxNumber.TWO,true,doubleSize,false)
                     val bottom = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false)
                     val newList = listOf(newTop,newCenter,bottom)
                     stateList.tryEmit(newList)
@@ -714,7 +714,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         /********* ENTERING SECTION ONE ************/
         else if(boxTwoOffsetY <= (0.6*(700f))){
             if(boxTwoSection!=Sections.ONE){
-                val newTop  =ModArrayData(700f,2,Positions.TOP,BoxNumber.TWO,true,false,false)
+                val newTop  =ModArrayData(700f,boxTwoIndex,Positions.TOP,BoxNumber.TWO,true,false,false)
                 val newCenter = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false, position = Positions.CENTER)
                 val bottom = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false)
 
@@ -794,12 +794,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             val doubleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.tripleSize
             if (doubleSize) {
-                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
-                    .copy(doubleSize = false)
-                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
-                    .copy(doubleSize = false)
-                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
-                    .copy(doubleSize = false, index = 0)
+                val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false)
+                val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false)
+                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(doubleSize = false, index = newValue)
 
 
                 //todo:
@@ -841,7 +838,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             else {
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
                 val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
-                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(doubleSize = false, index = 0)
+                val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(doubleSize = false, index = newValue)
                 stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
             }
         }
@@ -923,7 +920,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                         //
 
                         val boxTwo= stateList.value.find { it.boxNumber == BoxNumber.TWO }!!
-                        val newCenter  =ModArrayData(700f,3,Positions.CENTER,BoxNumber.THREE,true,true,false)
+                        val newCenter  =ModArrayData(700f,boxThreeIndex,Positions.CENTER,BoxNumber.THREE,true,true,false)
                         //todo: this should not be bottom. I need to check to see if one or two is 99 and make it the center, the other becomes the
                         val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
 
@@ -960,14 +957,14 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     boxOneSection = Sections.THREE
                     if(boxTwo.index == 99){
 
-                        val newTop =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,true,false)
+                        val newTop =ModArrayData(700f,boxThreeIndex,Positions.TOP,BoxNumber.THREE,true,true,false)
                         val newCenter =stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.TWO)
                         val newBottom = stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.ONE)
                         stateList.tryEmit(listOf(newTop,newCenter,newBottom))
 
                     }
                     if(boxOne.index == 99){
-                        val newTop =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,true,false)
+                        val newTop =ModArrayData(700f,boxThreeIndex,Positions.TOP,BoxNumber.THREE,true,true,false)
                         val newCenter =stateList.value.find { it.position ==Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER, boxNumber = BoxNumber.ONE)
                         val newBottom =stateList.value.find { it.position ==Positions.TOP }!!.copy(dragging = false, position = Positions.BOTTOM, boxNumber = BoxNumber.TWO)
 
@@ -1057,7 +1054,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     Log.d("boxThreeDragStateLogging","SECTION 3")
                     val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
                     val newCenter = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER)
-                    val newBottom  =ModArrayData(700f,3,Positions.BOTTOM,BoxNumber.THREE,true,false,false)
+                    val newBottom  =ModArrayData(700f,boxThreeIndex,Positions.BOTTOM,BoxNumber.THREE,true,false,false)
 
                     val newList = listOf(top,newCenter,newBottom)
                     stateList.tryEmit(newList)
@@ -1075,7 +1072,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     if(0>=delta) { //true means dragging up when entering section 2
                         Log.d("boxThreeDragStateLogging","SECTION 2 UP")
                         val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
-                        val newCenter  =ModArrayData(700f,3,Positions.CENTER,BoxNumber.THREE,true,false,false)
+                        val newCenter  =ModArrayData(700f,boxThreeIndex,Positions.CENTER,BoxNumber.THREE,true,false,false)
                         val newBottom = stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.BOTTOM)
                         val newList = listOf(top,newCenter,newBottom)
                         stateList.tryEmit(newList)
@@ -1083,7 +1080,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     }else { //means the user is dragging down when entering section 2
                         Log.d("boxThreeDragStateLogging","SECTION 2 DOWN")
                         val newTop = stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.TOP)
-                        val newCenter  =ModArrayData(700f,3,Positions.CENTER,BoxNumber.THREE,true,false,false)
+                        val newCenter  =ModArrayData(700f,boxThreeIndex,Positions.CENTER,BoxNumber.THREE,true,false,false)
                         val bottom = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false)
                         val newList = listOf(newTop,newCenter,bottom)
                         stateList.tryEmit(newList)
@@ -1100,7 +1097,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
                 if(boxThreeSection != Sections.ONE){
                     Log.d("boxThreeDragStateLogging","SECTION 1")
-                    val newTop  =ModArrayData(700f,3,Positions.TOP,BoxNumber.THREE,true,false,false)
+                    val newTop  =ModArrayData(700f,boxThreeIndex,Positions.TOP,BoxNumber.THREE,true,false,false)
                     val newCenter = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false, position = Positions.CENTER)
                     val bottom = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false)
 
@@ -1154,6 +1151,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             Log.d("BoxTwoTriple","1->0")
 
             if(checkBoxTwoForTriple(newValue)){
+                //this is the one that is causing the weird UI length bug
                 boxTwoTripleSync()
             }
             else if(checkBoxThreeForTriple(newValue)){
@@ -1193,7 +1191,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 // it will do the exact same things as boxTwoTripleSync() but just the boxOne version of it
                 //remove the green, add the red, remove the blue and add another red
                 boxOneTripleSync()
-                //syncBoxTwoIndex(newValue)
+
             }
             else{
 
@@ -1273,6 +1271,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val boxTwoIsDouble = boxTwo.doubleSize
         val index = boxTwo.index
         Log.d("checkingForTriple","TWO  triple -> $boxTwoIsDouble")
+        Log.d("checkingForTriple","boxTwo index from stateList -> $index")
+        Log.d("checkingForTriple","actual BoxTwo index  -> $boxTwoIndex")
+        Log.d("checkingForTriple","newIndex -> $newIndex")
         return boxTwoIsDouble && newIndex == index
     }
     fun checkBoxThreeForTriple(newIndex:Int):Boolean{
@@ -1295,6 +1296,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         return boxThreeIndex == newValue
     }
     fun syncBoxTwoDouble(){
+        Log.d("SyncingDoubles"," syncBoxTwoDouble()")
         //when this function runs, we know that boxTwoIndex == newValue
         val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
         val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
@@ -1309,6 +1311,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     }
 
     fun syncBoxThreeDouble(){
+        Log.d("SyncingDoubles"," syncBoxThreeDouble()")
 
 
         val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
@@ -1321,6 +1324,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     }
     fun syncBoxOneDouble(){
+        Log.d("SyncingDoubles"," syncBoxOneDouble()")
         //todo: this is the level that we need it as, [boxOne,boxTwo,boxThree]
         val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
         val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
@@ -1332,7 +1336,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         setBoxOneDragging(true)
     }
     fun syncBoxThreeNBoxTwoForDoubles(){
-        Log.d("checkForBoxTwoDoubles","box3Index == newValue")
+        Log.d("SyncingDoubles"," syncBoxThreeNBoxTwoForDoubles()")
 
         //todo: this is the level that we need [boxThree,boxTwo,boxOne]
         val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
@@ -1346,6 +1350,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         setBoxThreeDragging(true)
     }
     fun syncBoxOneNBoxThreeForDoubles(){
+        Log.d("SyncingDoubles"," syncBoxOneNBoxThreeForDoubles()")
         //1) boxThreeIndex is 0
         //2) boxOneIndex == newValue
         val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
@@ -1359,6 +1364,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         setBoxOneDragging(true)
     }
     fun syncBoxTwoNBoxThreeForDoubles(){
+        Log.d("SyncingDoubles"," syncBoxTwoNBoxThreeForDoubles()")
         //1) boxThreeIndex is 0
         //2) boxTwoIndex == newValue
 
