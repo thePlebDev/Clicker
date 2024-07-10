@@ -99,7 +99,9 @@ fun ModVersionThree(
 
     /***************** GENERIC PARAMTERS *****************************************/
     updateIndex:(Int)->Unit,
-    showError: Boolean
+    showError: Boolean,
+    sectionTwoHeight:Float,
+    sectionThreeHeight:Float,
 
 
 
@@ -163,11 +165,11 @@ fun ModVersionThree(
                         }
 
                         Sections.TWO -> {
-                            setBoxOneOffset(700f)
+                            setBoxOneOffset(sectionTwoHeight)
                         }
 
                         Sections.THREE -> {
-                            setBoxOneOffset(700f * 2)
+                            setBoxOneOffset(sectionThreeHeight)
                         }
                     }
                 },
@@ -202,11 +204,11 @@ fun ModVersionThree(
                         }
 
                         Sections.TWO -> {
-                            setBoxTwoOffset(700f)
+                            setBoxTwoOffset(sectionTwoHeight)
                         }
 
                         Sections.THREE -> {
-                            setBoxTwoOffset(700f * 2)
+                            setBoxTwoOffset(sectionThreeHeight)
                         }
 
                     }
@@ -239,11 +241,11 @@ fun ModVersionThree(
                         }
 
                         Sections.TWO -> {
-                            setBoxThreeOffset(700f)
+                            setBoxThreeOffset(sectionTwoHeight)
                         }
 
                         Sections.THREE -> {
-                            setBoxThreeOffset(700f * 2)
+                            setBoxThreeOffset(sectionThreeHeight)
                         }
                     }
                 },
