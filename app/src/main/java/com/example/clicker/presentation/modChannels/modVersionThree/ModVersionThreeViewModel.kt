@@ -99,6 +99,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
      * */
     fun syncBoxOneIndex(newValue:Int){// called to make sure the index stays synced with statelist
        //I was wrong, we do need to worry about [top,center,bottom]
+        Log.d("SyncingINdex","ONE && index -> $newValue")
         boxOneIndex = newValue
         deleteBoxOne = false
 
@@ -118,14 +119,29 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val checkBoxTwoIndex = boxTwo.index
                 val checkBoxThreeIndex = boxThree.index
                 if(checkBoxTwoIndex == 99){
-                    syncBoxTwoIndex(0)
+                    Log.d("SyncingINdexBoxOne","boxTwoDouble")
+                    //todo: I NEED TO IMPLEMENT MORE checks for if
+                    boxTwoIndex =0
+                    val newBoxOne = boxOne
+                    val newBoxTwo = boxTwo.copy(index = 0)
+                    val newBoxThree = boxThree
+                    stateList.tryEmit(listOf(newBoxOne,newBoxTwo,newBoxThree))
+
                 }
-                if(checkBoxThreeIndex == 99){
-                    syncBoxThreeIndex(0)
+                else if(checkBoxThreeIndex == 99){
+                    Log.d("SyncingINdexBoxOne","boxThreeDouble")
+                    boxThreeIndex =0
+                    val newBoxOne = boxOne
+                    val newBoxTwo = boxTwo
+                    val newBoxThree = boxThree.copy(index = 0)
+                    stateList.tryEmit(listOf(newBoxOne,newBoxTwo,newBoxThree))
+                }
+                else{
+                    stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
                 }
 
 
-                stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
+
 
             }
             else if(tripleSize){
@@ -426,6 +442,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     //todo: OK I THINK THIS IS FINALIZED NOW AND IT WORKS
 
     fun syncBoxTwoIndex(newValue:Int){
+        Log.d("SyncingINdex","TWO && index -> $newValue\"")
         boxTwoIndex = newValue
         deleteBoxTwo = false
         if(newValue ==0){ //THis means that we are going to delete box two
@@ -443,7 +460,6 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val checkBoxThreeIndex = boxThree.index
                 if(checkBoxThreeIndex == 99){
                     Log.d("syncBoxTwoIndexLogs","checkBoxThreeIndex == 99")
-
 
                     boxThreeIndex =0
                    val newBoxThree = boxThree.copy(index = 0)
@@ -620,11 +636,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         }
     }
+
     fun boxTwoSingleSizeDragging(
         delta:Float
     ){
         //todo:add the checks to determine if there is any doubles
-        val boxOneIsDouble = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
+        val boxOneIsDouble = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize //this is causing a crash
         val boxThreeIsDouble = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
        if(boxOneIsDouble|| boxThreeIsDouble){
            //here we only need to check when its deleting and the top section and the bottom section
@@ -638,6 +655,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
            }
            else if(boxTwoOffsetY >= (0.6*(700f*2))){
                Log.d("SingleMovingWhenDouble","BOTTOM")
+               if(deleteBoxTwo){
+                   deleteBoxTwo = false
+               }
                if(boxTwoSection !=Sections.THREE){
                    val newTop =  stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.TOP)
                    val newCenter =  stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER)
@@ -794,6 +814,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     }
 
     fun syncBoxThreeIndex(newValue:Int){
+        Log.d("SyncingINdex","THREE && index -> $newValue")
+
 
         boxThreeIndex = newValue
         deleteBoxThree = false
@@ -811,18 +833,33 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     .copy(doubleSize = false)
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
                     .copy(doubleSize = false, index = 0)
-                Log.d("LogThreeDelete","$boxOne , $boxTwo , $boxThree")
+
 
                 //todo:
                 val checkBoxOneIndex = boxOne.index
                 val checkBoxTwoIndex = boxTwo.index
                 if(checkBoxTwoIndex == 99){
-                    syncBoxTwoIndex(0)
+                    Log.d("LogThreeDelete","2 --> 99")
+                    boxTwoIndex = 0
+                    val newBoxOne = boxOne
+                    val newBoxTwo = boxTwo.copy(index = 0)
+                    val newBoxThree = boxThree
+                    stateList.tryEmit(listOf(newBoxOne, newBoxTwo, newBoxThree))
+
                 }
-                if(checkBoxOneIndex == 99){
-                    syncBoxOneIndex(0)
+                else if(checkBoxOneIndex == 99){
+                    Log.d("LogThreeDelete","1 --> 99")
+                    boxOneIndex = 0
+                    val newBoxOne = boxOne.copy(index = 0)
+                    val newBoxTwo = boxTwo
+                    val newBoxThree = boxThree
+                    stateList.tryEmit(listOf(newBoxOne, newBoxTwo, newBoxThree))
+
                 }
-                stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
+                else{
+                    stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
+                }
+
 
             }
             else if(tripleSize){
@@ -841,30 +878,33 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
             }
         }
+        else{
 
             //ADD ABOVE HERE
-        val top = stateList.value.find {it.position == Positions.TOP}!!.let {item ->
-            if(item.boxNumber == BoxNumber.THREE){
-                item.copy(index = newValue)
-            }else{
-                item
+            val top = stateList.value.find {it.position == Positions.TOP}!!.let {item ->
+                if(item.boxNumber == BoxNumber.THREE){
+                    item.copy(index = newValue)
+                }else{
+                    item
+                }
             }
-        }
-        val center = stateList.value.find {it.position == Positions.CENTER}!!.let {item ->
-            if(item.boxNumber == BoxNumber.THREE){
-                item.copy(index = newValue)
-            }else{
-                item
+            val center = stateList.value.find {it.position == Positions.CENTER}!!.let {item ->
+                if(item.boxNumber == BoxNumber.THREE){
+                    item.copy(index = newValue)
+                }else{
+                    item
+                }
             }
-        }
-        val bottom = stateList.value.find {it.position == Positions.BOTTOM}!!.let {item ->
-            if(item.boxNumber == BoxNumber.THREE){
-                item.copy(index = newValue)
-            }else{
-                item
+            val bottom = stateList.value.find {it.position == Positions.BOTTOM}!!.let {item ->
+                if(item.boxNumber == BoxNumber.THREE){
+                    item.copy(index = newValue)
+                }else{
+                    item
+                }
             }
+            stateList.tryEmit(listOf(top,center,bottom))
         }
-        stateList.tryEmit(listOf(top,center,bottom))
+
     }
 
 
@@ -927,6 +967,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 if(deleteBoxThree){
                     deleteBoxThree = false
                 }
+
                 if(boxThreeSection!=Sections.TWO){
                     Log.d("boxThreeStateSizeDoublingLogs","BOTTOM")
                     Log.d("boxThreeStateSizeDoublingLogs","boxOne index ->$boxOneIndex")
@@ -1020,6 +1061,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             }
             /********* ENTERING SECTION 3 (BOTTOM) ************/
             else if(boxThreeOffsetY >= (0.6*(700f*2))){
+                if(deleteBoxThree){
+                    deleteBoxThree = false
+                }
                 if(boxThreeSection != Sections.THREE){
                     Log.d("Box3SingleMovingWhenDouble","BOTTOM")
                     val newTop =  stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.TOP)
@@ -1175,8 +1219,19 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
             }
             else{
-                syncBoxOneIndex(newValue)// make sure the index stays synced with statelist
-                checkForBoxOneDoubles(newValue)
+
+                Log.d("BoxOneIndexTesting","triggered")
+               // check the doubles
+                if(checkingBoxTwoIndexForDoubles(newValue)){
+                    syncBoxTwoDouble()
+                }
+                else if(checkingBoxThreeIndexForDoubles(newValue)){
+                    syncBoxThreeDouble()
+                }
+                else{
+                    syncBoxOneIndex(newValue)
+                }
+
             }
 
         }
@@ -1196,10 +1251,24 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 //syncBoxTwoIndex(newValue)
             }
             else{
-                Log.d("stateListIndexLogging","boxTwo should be 0 -> ${stateList.value}")
-//            boxTwoIndex = newValue
-                syncBoxTwoIndex(newValue)// make sure the index stays synced with statelist
-                checkForBoxTwoDoubles(newValue)
+
+
+                if(checkingBoxOneIndexForDoubles(newValue)){
+                    Log.d("stateListIndexLogging","ONE DOUBLE")
+                    syncBoxOneDouble()
+                }
+                else if(checkingBoxThreeIndexForDoubles(newValue)){
+                    Log.d("stateListIndexLogging","THREE DOUBLE")
+                    //when this function runs we know 2 things:
+                    //1) boxTwo == 0
+                    //2) boxThree == newValue
+                    syncBoxThreeNBoxTwoForDoubles()
+
+                }
+                else{
+                    syncBoxTwoIndex(newValue)// make sure the index stays synced with statelist
+                }
+
             }
 
         }
@@ -1214,10 +1283,26 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
                 boxTwoTripleSync()
             }else{
-                Log.d("stateListIndexLogging","boxThree should be 0 -> ${stateList.value}")
+                Log.d("stateListIndexLogging","boxThree DOUBLE CHECK")
 //            boxThreeIndex = newValue
-                syncBoxThreeIndex(newValue) // make sure the index stays synced with statelist
-                checkForBoxThreeDoubles(newValue)
+                //todo: get rid of this double check
+
+                if(checkingBoxOneIndexForDoubles(newValue)){
+                    Log.d("stateListIndexLogging","ONE DOUBLE")
+                    // when this function runs we know 2 things:
+                    // 1) boxOne == newValue
+                    //2) boxThree == 0
+                    syncBoxOneNBoxThreeForDoubles()
+
+                }
+                else if(checkingBoxTwoIndexForDoubles(newValue)){
+                    Log.d("stateListIndexLogging","TWO DOUBLE")
+                    syncBoxTwoNBoxThreeForDoubles()
+                }
+                else{
+                    syncBoxThreeIndex(newValue)
+                }
+
             }
 
         }
@@ -1253,138 +1338,99 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         return boxThreeIsDouble && index == newIndex
     }
 
-    // here is the height for a normal individual box:
-    //Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
-    //the value that is matched to the new index should be first
-    fun checkForBoxOneDoubles(newValue:Int){
-        //todo: make this work
-        //this function guarantees that boxOne is a index of 0
-        if(boxTwoIndex == newValue){ // this definitely works
-            //this is the the area that is causing me problems
-            // - when this conditional is run, we know 2 things 100%
-            //1) boxOne index is 0
-            //2) boxTwo index is equal to newValue
-            Log.d("checkingForBoxOneDoublesAgain","boxTwoIndex == ${boxTwoIndex == newValue}")
 
-            val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            //todo: these two need to be set to a new index of 99
-            val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
-            boxOneIndex =99
-            boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            Log.d("loggindBoxTwoHeight","boxTwoHeight ->${boxTwoHeight.value}")
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM)
-            Log.d("checkingForBoxOneDoublesAgain","list ->${listOf(top,center,bottom)}")
+    /********************************START OF THE NEW DOUBLE CHECKS***************************************************************/
+    fun checkingBoxOneIndexForDoubles(newValue:Int):Boolean{
+        return boxOneIndex == newValue
+    }
+    fun checkingBoxTwoIndexForDoubles(newValue:Int):Boolean{
+        return boxTwoIndex == newValue
+    }
+    fun checkingBoxThreeIndexForDoubles(newValue:Int):Boolean{
+        return boxThreeIndex == newValue
+    }
+    fun syncBoxTwoDouble(){
+        //when this function runs, we know that boxTwoIndex == newValue
+        val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM)
+        boxOneIndex =99
+        boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        Log.d("loggindBoxTwoHeight","boxTwoHeight ->${boxTwoHeight.value}")
+        Log.d("checkingForBoxOneDoublesAgain","list ->${listOf(top,center,bottom)}")
 
-            stateList.tryEmit(listOf(top,center,bottom))
-            //setBoxTwo to 0 and increse the height of BoxOne
-            //get box two and one, set them as new Top and new center and set box two 0 and increase the height of boxOne to double
-
-        }
-        //todo: this is what I am working on
-        else if(boxThreeIndex == newValue){
-            //todo: MAKE THIS MORE GENERIC AND WORK WITH checkForBoxTwoDoubles() VERSION
-            //todo: So I need to walk through what happens inside of this function
-            //- When this conditional is run, we know 2 things 100%
-            //1) boxOne is 0
-            //2) boxThree index is equal to newValue
-            Log.d("checkingForBoxOneDoublesAgain","boxThreeIndex == ${boxTwoIndex == newValue}")
-
-            val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            syncBoxOneIndex(99)
-            boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER)
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM)
-            stateList.tryEmit(listOf(top,center,bottom))
-            //get box Three and one, set them as new Top and new center and set box Three 0 and increase the height of boxOne to double
-        }
+        stateList.tryEmit(listOf(top,center,bottom))
 
     }
 
-
-    fun checkForBoxTwoDoubles(newValue:Int){
-        //todo: so we need to check one and 3
-        //update: to keep things consistent, I need to make the boxOneIndex as the top item
-        if(boxOneIndex == newValue){
-            Log.d("checkForBoxTwoDoubles","boxOneIndex == newValue")
-            //todo: adding the boxone double dragging stuff
-
-            //when this conditional runs, we know two things
-            //1) boxTwoIndex is 0
-            //2) boxOneIndex == newValue
-            //todo: this is the level that we need it as, [boxOne,boxTwo,boxThree]
-            val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            syncBoxTwoIndex(99)
-            boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false)
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
+    fun syncBoxThreeDouble(){
 
 
+        val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM)
+        boxOneIndex = 99
+        boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
 
-            stateList.tryEmit(listOf(top,center,bottom))
-            setBoxOneDragging(true)
-
-
-        }
-        //update: to keep things consistent, I need to make the boxThreeIndex as the top item
-        else if(boxThreeIndex == newValue){
-            Log.d("checkForBoxTwoDoubles","box3Index == newValue")
-            //added with the green
-            //when this conditional runs, we know two things
-            //1) boxTwoIndex is 0
-            //2) boxThreeIndex == newValue
-            //todo: this is the level that we need [boxThree,boxTwo,boxOne]
-            val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            syncBoxTwoIndex(99)
-            boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false)
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
-            boxOneSection = Sections.THREE
-            Log.d("checkForBoxTwoDoubles","BoxOneIndex ->$boxOneIndex")
-            Log.d("checkForBoxTwoDoubles","BoxOneSection->$boxOneSection")
-            Log.d("checkForBoxTwoDoubles","actual BoxOne -> $bottom")
-            stateList.tryEmit(listOf(top,center,bottom))
-            setBoxThreeDragging(true)
-
-
-        }
-
-
-        }
-    //The value that is matched to newValue should be at the top
-    fun checkForBoxThreeDoubles(newValue:Int){
-
-        if(boxOneIndex ==newValue){
-            //when this conditional runs, we know two things
-            //1) boxThreeIndex is 0
-            //2) boxOneIndex == newValue
-            Log.d("checkForBoxThreeDoubles","ONE DOUBLE")
-            val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            // to avoid another stateList update, I am manually syncing the index for box 3
-            val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
-            boxThreeIndex = 99
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
-
-            stateList.tryEmit(listOf(top,center,bottom))
-            setBoxOneDragging(true)
-
-        }
-        else if(boxTwoIndex == newValue){
-            //1) boxThreeIndex is 0
-            //2) boxTwoIndex == newValue
-            Log.d("checkForBoxThreeDoubles","TWO DOUBLE")
-            val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
-            boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
-            // to avoid another stateList update, I am manually syncing the index for box 3
-            val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
-            boxThreeIndex = 99
-            val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
-            stateList.tryEmit(listOf(top,center,bottom))
-            setBoxTwoDragging(true)
-
-        }
+        stateList.tryEmit(listOf(top,center,bottom))
 
     }
+    fun syncBoxOneDouble(){
+        //todo: this is the level that we need it as, [boxOne,boxTwo,boxThree]
+        val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
+
+        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxTwoIndex = 99
+        stateList.tryEmit(listOf(top,center,bottom))
+        setBoxOneDragging(true)
+    }
+    fun syncBoxThreeNBoxTwoForDoubles(){
+        Log.d("checkForBoxTwoDoubles","box3Index == newValue")
+
+        //todo: this is the level that we need [boxThree,boxTwo,boxOne]
+        val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
+        boxTwoIndex = 99
+        boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+
+
+        stateList.tryEmit(listOf(top,center,bottom))
+        setBoxThreeDragging(true)
+    }
+    fun syncBoxOneNBoxThreeForDoubles(){
+        //1) boxThreeIndex is 0
+        //2) boxOneIndex == newValue
+        val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
+
+        boxThreeIndex = 99
+        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+
+        stateList.tryEmit(listOf(top,center,bottom))
+        setBoxOneDragging(true)
+    }
+    fun syncBoxTwoNBoxThreeForDoubles(){
+        //1) boxThreeIndex is 0
+        //2) boxTwoIndex == newValue
+
+        val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
+        val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
+        boxThreeIndex = 99
+        boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        // to avoid another stateList update, I am manually syncing the index for box 3
+
+        stateList.tryEmit(listOf(top,center,bottom))
+        setBoxTwoDragging(true)
+    }
+
+
+    /*************************************END OF THE NEW DOUBLE CHECKS*******************************************************************/
+
 
 
     fun checkBoxOneState(item: ModArrayData){

@@ -373,6 +373,9 @@ fun ContentDragBox(
             Column(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Red)) {
+                Box(modifier = Modifier.fillMaxSize()){
+                    Text("Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                }
 
             }
         }
@@ -380,14 +383,18 @@ fun ContentDragBox(
             Column(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Blue)) {
-
+                Box(modifier = Modifier.fillMaxSize()){
+                    Text("AutoMod Queue", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                }
             }
         }
         3 ->{
             Column(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Green)) {
-
+                Box(modifier = Modifier.fillMaxSize()){
+                    Text("Mod Actions", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.Black)
+                }
             }
         }
     }
