@@ -77,139 +77,139 @@ fun ValidationView(
     val oAuthToken = homeViewModel.state.value.oAuthToken
 
 
-//
-//
-//    HomeViewImplementation(
-//        bottomModalState =bottomModalState,
-//        loginWithTwitch ={
+
+
+    HomeViewImplementation(
+        bottomModalState =bottomModalState,
+        loginWithTwitch ={
+            logoutViewModel.setLoggedOutStatus("TRUE")
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
+                         },
+        onNavigate = {id -> onNavigate(id) },
+        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+            streamViewModel.getBetterTTVGlobalEmotes()
+            streamViewModel.updateChannelNameAndClientIdAndUserId(
+                streamerName,
+                clientId,
+                broadcasterId,
+                userId,
+                login =homeViewModel.validatedUser.value?.login ?:""
+            )
+            autoModViewModel.updateAutoModCredentials(
+                oAuthToken = homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+                moderatorId = streamViewModel.state.value.userId,
+                broadcasterId = streamViewModel.state.value.broadcasterId,
+            )
+            updateModViewSettings(
+                homeViewModel.state.value.oAuthToken,
+                streamViewModel.state.value.clientId,
+                streamViewModel.state.value.broadcasterId,
+                streamViewModel.state.value.userId,
+            )
+            createNewTwitchEventWebSocket()
+            streamViewModel.getChannelEmotes(
+                homeViewModel.state.value.oAuthToken,
+                streamViewModel.state.value.clientId,
+                streamViewModel.state.value.broadcasterId,
+            )
+            streamViewModel.getGlobalChatBadges(
+                oAuthToken =homeViewModel.state.value.oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+            )
+            streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+
+        },
+        updateClickedStreamInfo={
+            //todo: THIS IS WHAT I NEED TO UPDATE
+                clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
+                                },
+        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+        clientId = clientId ?: "",
+        userId = userId ?: "",
+        height = homeViewModel.state.value.aspectHeight,
+        width = homeViewModel.state.value.width,
+        logout = {
+
+            logoutViewModel.setNavigateHome(false)
 //            logoutViewModel.setLoggedOutStatus("TRUE")
-//            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-//                         },
-//        onNavigate = {id -> onNavigate(id) },
-//        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-//            streamViewModel.getBetterTTVGlobalEmotes()
-//            streamViewModel.updateChannelNameAndClientIdAndUserId(
-//                streamerName,
-//                clientId,
-//                broadcasterId,
-//                userId,
-//                login =homeViewModel.validatedUser.value?.login ?:""
-//            )
-//            autoModViewModel.updateAutoModCredentials(
-//                oAuthToken = homeViewModel.state.value.oAuthToken,
-//                clientId = streamViewModel.state.value.clientId,
-//                moderatorId = streamViewModel.state.value.userId,
-//                broadcasterId = streamViewModel.state.value.broadcasterId,
-//            )
-//            updateModViewSettings(
-//                homeViewModel.state.value.oAuthToken,
-//                streamViewModel.state.value.clientId,
-//                streamViewModel.state.value.broadcasterId,
-//                streamViewModel.state.value.userId,
-//            )
-//            createNewTwitchEventWebSocket()
-//            streamViewModel.getChannelEmotes(
-//                homeViewModel.state.value.oAuthToken,
-//                streamViewModel.state.value.clientId,
-//                streamViewModel.state.value.broadcasterId,
-//            )
-//            streamViewModel.getGlobalChatBadges(
-//                oAuthToken =homeViewModel.state.value.oAuthToken,
-//                clientId = streamViewModel.state.value.clientId,
-//            )
-//            streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
-//
-//        },
-//        updateClickedStreamInfo={
-//            //todo: THIS IS WHAT I NEED TO UPDATE
-//                clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
-//                                },
-//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-//        clientId = clientId ?: "",
-//        userId = userId ?: "",
-//        height = homeViewModel.state.value.aspectHeight,
-//        width = homeViewModel.state.value.width,
-//        logout = {
-//
-//            logoutViewModel.setNavigateHome(false)
-////            logoutViewModel.setLoggedOutStatus("TRUE")
-//            logoutViewModel.logout(
-//                clientId = clientId?:"",
-//                oAuthToken = oAuthToken
-//            )
-//            homeViewModel.hideLogoutDialog()
-//            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-//
-//        },
-//        userIsAuthenticated =userIsAuthenticated,
-//        screenDensity = homeViewModel.state.value.screenDensity,
-//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-//        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
-//        networkMessageColor=Color.Red,
-//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-//        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
-//        hapticFeedBackError={hapticFeedBackError()}
-//
-//    )
-    val stateList = modVersionThreeViewModel.publicStateList.collectAsState()
-    ModVersionThree(
-        boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
-        setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
-        boxOneDragState = modVersionThreeViewModel.boxOneDragState,
-        boxOneSection = modVersionThreeViewModel.boxOneSection,
-        boxOneIndex=modVersionThreeViewModel.boxOneIndex,
-        boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
-        setBoxOneDragging = {
-                newValue ->
-            Log.d("LoggingTheDragging","ONE")
-            modVersionThreeViewModel.setBoxOneDragging(newValue)
-                            },
-        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
-        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
-        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+            logoutViewModel.logout(
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
+            )
+            homeViewModel.hideLogoutDialog()
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
 
-        /*************** BOX TWO PARAMETERS***************************************************************/
-        boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
-        setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
-        boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
-        boxTwoSection= modVersionThreeViewModel.boxTwoSection,
-        boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
-        boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
-        setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
-        setBoxTwoIndex ={newValue ->
-            Log.d("LoggingTheDragging","TWO")
-            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
-                        },
-        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
-        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
-
-        /*************** BOX THREE PARAMETERS*****************************************************************/
-        boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
-        setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
-        boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
-        boxThreeSection= modVersionThreeViewModel.boxThreeSection,
-        boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
-        boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
-        setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
-        setBoxThreeIndex ={newValue ->
-            Log.d("LoggingTheDragging","THREE")
-            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
-                          },
-        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
-        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
-
-        /*************** GENERICS PARAMETERS*****************************************************************/
-        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
-        showError =modVersionThreeViewModel.showPlacementError.value,
-        sectionTwoHeight = modVersionThreeViewModel.section2height,
-        sectionThreeHeight=modVersionThreeViewModel.section3Height
+        },
+        userIsAuthenticated =userIsAuthenticated,
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshGetLiveStreams()},
+        networkMessageColor=Color.Red,
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
+        hapticFeedBackError={hapticFeedBackError()}
 
     )
+
+//    ModVersionThree(
+//        boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
+//        setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
+//        boxOneDragState = modVersionThreeViewModel.boxOneDragState,
+//        boxOneSection = modVersionThreeViewModel.boxOneSection,
+//        boxOneIndex=modVersionThreeViewModel.boxOneIndex,
+//        boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
+//        setBoxOneDragging = {
+//                newValue ->
+//            Log.d("LoggingTheDragging","ONE")
+//            modVersionThreeViewModel.setBoxOneDragging(newValue)
+//                            },
+//        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
+//        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
+//        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+//
+//        /*************** BOX TWO PARAMETERS***************************************************************/
+//        boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
+//        setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
+//        boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
+//        boxTwoSection= modVersionThreeViewModel.boxTwoSection,
+//        boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
+//        boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
+//        setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
+//        setBoxTwoIndex ={newValue ->
+//            Log.d("LoggingTheDragging","TWO")
+//            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
+//                        },
+//        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
+//        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
+//
+//        /*************** BOX THREE PARAMETERS*****************************************************************/
+//        boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
+//        setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
+//        boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
+//        boxThreeSection= modVersionThreeViewModel.boxThreeSection,
+//        boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
+//        boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
+//        setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
+//        setBoxThreeIndex ={newValue ->
+//            Log.d("LoggingTheDragging","THREE")
+//            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
+//                          },
+//        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
+//        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+//
+//        /*************** GENERICS PARAMETERS*****************************************************************/
+//        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
+//        showError =modVersionThreeViewModel.showPlacementError.value,
+//        sectionTwoHeight = modVersionThreeViewModel.section2height,
+//        sectionThreeHeight=modVersionThreeViewModel.section3Height
+//
+//    )
 
 
 
