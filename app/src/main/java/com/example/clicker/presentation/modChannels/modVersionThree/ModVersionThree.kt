@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CardDefaults
@@ -32,6 +35,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -44,15 +49,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Yellow
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -192,10 +201,14 @@ fun ModVersionThree(
 
         drawerContent = {
             ModalDrawerSheet {
-               //todo: place here
-                NavigationDrawerCard(
-                    updateIndex = {newValue -> updateIndex(newValue)},
-                    showError=showError
+
+                ModViewDrawerContent(
+                    checkIndexAvailability ={newValue ->updateIndex(newValue)},
+                    showError = showError,
+                    autoModQueueChecked = true,
+                    modActionsChecked =true,
+                    changeAutoModQueueChecked={newValue ->},
+                    changeModActionsChecked={newValue ->}
                 )
             }
 
@@ -487,64 +500,276 @@ fun ContentDragBox(
 
 }
 
-@Composable
-fun NavigationDrawerCard(
-    updateIndex:(Int) -> Unit,
-    showError:Boolean,
-){
-    Column(modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp)) {
-        ClickableCard(
-            color=Color.Red,
-            changeIndex={
-                Log.d("CLickingTheCard","RED")
-                updateIndex(1)
-                //todo: so It needs to look for the index with 0 and change it to 1
-            }
-        )
-        ClickableCard(
-            color=Color.Blue,
-            changeIndex={
-                Log.d("CLickingTheCard","BLUE")
-                updateIndex(2)
-            }
-        )
-        ClickableCard(
-            color=Color.Green,
-            changeIndex={
-                Log.d("CLickingTheCard","GREEN")
-                updateIndex(3)
-            }
-        )
 
-        Row(modifier = Modifier.fillMaxWidth()){
-            if(showError){
-                Text("NO OPEN SPACE", fontSize = 30.sp,color = Color.Red)
+
+/***********************************BELOW IS ALL THE SCAFFOLD DRAWER CONTENT**************************************************************/
+
+
+@Composable
+fun ModViewDrawerContent(
+    checkIndexAvailability:(Int)->Unit,
+    showError:Boolean,
+    autoModQueueChecked:Boolean,
+    changeAutoModQueueChecked:(Boolean)->Unit,
+
+    modActionsChecked:Boolean,
+    changeModActionsChecked:(Boolean)->Unit,
+){
+    Box(modifier = Modifier.fillMaxSize()){
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 10.dp)
+        ) {
+            item {
+                ElevatedCardSwitchTextRow(
+                    "Chat",
+                    checkIndexAvailability={checkIndexAvailability(1)},
+                    painter = painterResource(id = R.drawable.keyboard_24),
+                )
+
             }
+            item{
+                ElevatedCardSwitchRow(
+                    "AutoMod Queue",
+                    checkIndexAvailability={checkIndexAvailability(2)},
+                    painter = painterResource(id = R.drawable.mod_view_24),
+                    checked = autoModQueueChecked,
+                    changeChecked = {value -> changeAutoModQueueChecked(value)}
+                )
+            }
+            item{
+                ElevatedCardSwitchRow(
+                    "Mod actions",
+                    checkIndexAvailability={checkIndexAvailability(3)},
+                    painter = painterResource(id = R.drawable.clear_chat_alt_24),
+                    checked = modActionsChecked,
+                    changeChecked = {value -> changeModActionsChecked(value)}
+                )
+
+
+            }
+
+//            item{
+//                ElevatedCardExample(
+//                    Color.Yellow,
+//                    "Un-ban requests",
+//                    checkIndexAvailability={checkIndexAvailability(4)}
+//                )
+//            }
+//
+//            item{
+//                ElevatedCardExample(
+//                    Color.LightGray,
+//                    "Discord",
+//                    checkIndexAvailability={checkIndexAvailability(5)}
+//                )
+//            }
+//
+//            item{
+//                ElevatedCardExample(
+//                    Color.Cyan,
+//                    "Moderators",
+//                    checkIndexAvailability={checkIndexAvailability(6)}
+//                )
+//            }
 
         }
+
+        if(showError){
+            Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                ErrorMessage(
+                    modifier = Modifier,
+                    message="Error! No space to place "
+                )
+                Spacer(modifier =Modifier.height(10.dp))
+            }
+        }
+
     }
 
 }
 
 @Composable
-fun ClickableCard(
-    color: Color,
-    changeIndex:()->Unit
+fun ElevatedCardSwitchRow(
+    text:String,
+    checkIndexAvailability: () -> Unit,
+    painter: Painter,
+    checked:Boolean,
+    changeChecked:(Boolean) ->Unit,
 ){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        ElevatedCardWithIcon(
+            text,
+            checkIndexAvailability={checkIndexAvailability()},
+            painter = painter
+        )
+
+        SwitchWithIcon(
+            checked = checked,
+            changeChecked ={value -> changeChecked(value)}
+        )
+    }
+}
+
+@Composable
+fun ElevatedCardSwitchTextRow(
+    text:String,
+    checkIndexAvailability: () -> Unit,
+    painter: Painter
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        ElevatedCardWithIcon(
+            text,
+            checkIndexAvailability={checkIndexAvailability()},
+            painter = painter,
+
+            )
+
+        TextColumn(text="Notifications")
+    }
+}
+
+@Composable
+fun SwitchWithIcon(
+    checked:Boolean,
+    changeChecked:(Boolean) ->Unit,
+
+    ) {
+
+
+    Column(
+        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                changeChecked(it)
+            },
+            thumbContent = if (checked) {
+                {
+                    androidx.compose.material.Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                        tint = Color.White
+                    )
+                }
+            } else {
+                null
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
+    }
+
+}
+
+@Composable
+fun TextColumn(
+    text:String
+) {
+
+
+    Column(
+        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 20.sp
+        )
+    }
+
+}
+
+@Composable
+fun ElevatedCardWithIcon(
+    type:String,
+    checkIndexAvailability:()->Unit,
+    painter: Painter
+) {
     Column() {
-        Spacer(modifier =Modifier.height(10.dp))
+        Spacer(modifier =Modifier.height(15.dp))
         ElevatedCard(
+            colors = CardDefaults.cardColors(containerColor = Color.DarkGray),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 6.dp
             ),
-            colors = CardDefaults.cardColors(containerColor = color),
             modifier = Modifier
-                .size(width = 240.dp, height = 130.dp).clickable { changeIndex() }
+                .size(width = 200.dp, height = 80.dp)
+                .clickable { checkIndexAvailability() }
         ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ){
+                Text(
+                    text = type,
+                    color = Color.White,
+                    modifier = Modifier,
+                    fontSize = 20.sp
+                )
+                androidx.compose.material.Icon(
+                    painter = painter,
+                    contentDescription = "",
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+
+            }
+
 
         }
-        Spacer(modifier =Modifier.height(10.dp))
-
+        Spacer(modifier =Modifier.height(15.dp))
     }
 
+}
+@Composable
+fun ErrorMessage(
+    modifier: Modifier,
+    message:String,
+){
+
+    Row(
+        modifier = modifier
+            .clip(
+                RoundedCornerShape(20.dp)
+            )
+            .background(Color.Red)
+            .padding(vertical = 5.dp, horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+
+
+        ) {
+        androidx.compose.material.Icon(
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            contentDescription = "modderz logo",
+            modifier = Modifier.size(25.dp),
+            tint = Color.White
+        )
+
+        Text(
+            text = message,
+            color = Color.White,
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center,
+        )
+
+    }
 }

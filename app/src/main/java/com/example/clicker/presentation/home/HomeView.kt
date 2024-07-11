@@ -157,60 +157,6 @@ fun ValidationView(
 
     )
 
-//    ModVersionThree(
-//        boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
-//        setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
-//        boxOneDragState = modVersionThreeViewModel.boxOneDragState,
-//        boxOneSection = modVersionThreeViewModel.boxOneSection,
-//        boxOneIndex=modVersionThreeViewModel.boxOneIndex,
-//        boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
-//        setBoxOneDragging = {
-//                newValue ->
-//            Log.d("LoggingTheDragging","ONE")
-//            modVersionThreeViewModel.setBoxOneDragging(newValue)
-//                            },
-//        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
-//        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
-//        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
-//
-//        /*************** BOX TWO PARAMETERS***************************************************************/
-//        boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
-//        setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
-//        boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
-//        boxTwoSection= modVersionThreeViewModel.boxTwoSection,
-//        boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
-//        boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
-//        setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
-//        setBoxTwoIndex ={newValue ->
-//            Log.d("LoggingTheDragging","TWO")
-//            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
-//                        },
-//        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
-//        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
-//
-//        /*************** BOX THREE PARAMETERS*****************************************************************/
-//        boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
-//        setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
-//        boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
-//        boxThreeSection= modVersionThreeViewModel.boxThreeSection,
-//        boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
-//        boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
-//        setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
-//        setBoxThreeIndex ={newValue ->
-//            Log.d("LoggingTheDragging","THREE")
-//            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
-//                          },
-//        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
-//        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
-//
-//        /*************** GENERICS PARAMETERS*****************************************************************/
-//        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
-//        showError =modVersionThreeViewModel.showPlacementError.value,
-//        sectionTwoHeight = modVersionThreeViewModel.section2height,
-//        sectionThreeHeight=modVersionThreeViewModel.section3Height
-//
-//    )
-
 
 
 
