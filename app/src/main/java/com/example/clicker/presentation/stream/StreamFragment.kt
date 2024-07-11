@@ -619,9 +619,7 @@ fun setOrientation(
                 HorizontalOverlayView(
                     streamViewModel
                 )
-
             }
-
         }
     }
     binding.nestedDraggableComposeView?.apply {
