@@ -136,7 +136,8 @@ fun ModViewComponentVersionThree(
         showError =modVersionThreeViewModel.showPlacementError.value,
         sectionTwoHeight = modVersionThreeViewModel.section2height,
         sectionThreeHeight=modVersionThreeViewModel.section3Height,
-        closeModView = {closeModView()}
+        closeModView = {closeModView()},
+        fullChat = modVersionThreeViewModel.fullChat.value
 
     )
 }
@@ -183,7 +184,8 @@ fun ModVersionThree(
     showError: Boolean,
     sectionTwoHeight:Float,
     sectionThreeHeight:Float,
-    closeModView: () -> Unit
+    closeModView: () -> Unit,
+    fullChat:Boolean
 
 
 
@@ -267,7 +269,10 @@ fun ModVersionThree(
 
                 }
             ) {
-                ContentDragBox(boxOneIndex)
+                ContentDragBox(
+                    boxOneIndex,
+                    fullChat =fullChat
+                )
 
             }
 
@@ -307,7 +312,10 @@ fun ModVersionThree(
 
                 }
             ) {
-                ContentDragBox(boxTwoIndex)
+                ContentDragBox(
+                    boxTwoIndex,
+                    fullChat =fullChat
+                )
 
             }
             /**************************BOX THREE **************************/
@@ -343,7 +351,10 @@ fun ModVersionThree(
 
                 }
             ) {
-                ContentDragBox(boxThreeIndex)
+                ContentDragBox(
+                    boxThreeIndex,
+                    fullChat =fullChat
+                )
 
             }
             Box(
@@ -448,7 +459,8 @@ fun CustomTopBar(
 
 @Composable
 fun ContentDragBox(
-    contentIndex:Int
+    contentIndex:Int,
+    fullChat:Boolean,
 ){
     when(contentIndex){
         99->{
@@ -473,7 +485,12 @@ fun ContentDragBox(
                 .fillMaxSize()
                 .background(Color.Red)) {
                 Box(modifier = Modifier.fillMaxSize()){
-                    Text("Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                    if(fullChat){
+                        Text("Large Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                    }else{
+                        Text("Small Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                    }
+
                 }
 
             }
