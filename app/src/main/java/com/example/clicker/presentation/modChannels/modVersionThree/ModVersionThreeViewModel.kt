@@ -68,6 +68,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     val section2height =(Resources.getSystem().displayMetrics.heightPixels / 3.17).toFloat()
     val section3Height =((Resources.getSystem().displayMetrics.heightPixels / 3.17)*2).toFloat()
 
+    private val _fullChat = mutableStateOf(false)
+    val fullChat:State<Boolean> = _fullChat
+
 
     init{
 
@@ -118,6 +121,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         deleteBoxOne = false
 
         if(newValue ==0){ //THis means that we are going to delete box two
+            _fullChat.value = false
 
 
             boxOneHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
@@ -446,6 +450,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxTwoIndex = newValue
         deleteBoxTwo = false
         if(newValue ==0){ //THis means that we are going to delete box two
+            _fullChat.value = false
 
             boxTwoHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
@@ -802,6 +807,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         deleteBoxThree = false
         //todo: NOW I NEED TO ADD THE EXTRA 0 CHECKS
         if(newValue ==0) { //THis means that we are going to delete box two
+            _fullChat.value = false
 
             boxThreeHeight = (Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
@@ -1311,8 +1317,15 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     }
     fun syncBoxTwoDouble(){
         Log.d("SyncingDoubles"," syncBoxTwoDouble()")
+        Log.d("FullChatLogging","")
         //when this function runs, we know that boxTwoIndex == newValue
         val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true, height = ((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxTwoDouble() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
+
         val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM)
         boxOneIndex =99
@@ -1329,6 +1342,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
         val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxThreeDouble() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
         val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM)
         boxOneIndex = 99
@@ -1341,6 +1359,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         Log.d("SyncingDoubles"," syncBoxOneDouble()")
         //todo: this is the level that we need it as, [boxOne,boxTwo,boxThree]
         val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true,height=((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxOneDouble() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
         val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
 
@@ -1354,6 +1377,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         //todo: this is the level that we need [boxThree,boxTwo,boxOne]
         val top = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxThreeNBoxTwoForDoubles() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
         val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
         boxTwoIndex = 99
@@ -1368,6 +1396,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //1) boxThreeIndex is 0
         //2) boxOneIndex == newValue
         val top = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true,height=((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxOneNBoxThreeForDoubles() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
         val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
 
@@ -1383,6 +1416,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //2) boxTwoIndex == newValue
 
         val top = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.TOP, doubleSize = true,)
+        val topIndex = top.index
+        Log.d("FullChatLogging","syncBoxTwoNBoxThreeForDoubles() fullchat --> ${topIndex == 1}")
+        if(topIndex == 1){
+            _fullChat.value = true
+        }
         val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
         boxThreeIndex = 99
