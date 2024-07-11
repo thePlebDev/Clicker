@@ -26,9 +26,12 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -50,6 +53,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
+import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
@@ -73,6 +78,7 @@ class StreamFragment : Fragment() {
     private val autoModViewModel:AutoModViewModel by activityViewModels()
     private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
     private val modViewViewModel:ModViewViewModel by activityViewModels()
+    private val modVersionThreeViewModel:ModVersionThreeViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -437,7 +443,8 @@ class StreamFragment : Fragment() {
             showSoftKeyboard = {
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(binding.root, InputMethodManager.RESULT_SHOWN);
-            }
+            },
+            modVersionThreeViewModel =modVersionThreeViewModel
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView) //this is the horizontal view
@@ -556,6 +563,7 @@ fun setOrientation(
     modViewDragStateViewModel: ModViewDragStateViewModel,
     modViewViewModel: ModViewViewModel,
     orientationIsLandscape:Boolean,
+    modVersionThreeViewModel:ModVersionThreeViewModel,
     hideSoftKeyboard:() ->Unit,
     showSoftKeyboard:()->Unit,
 ): FrameLayout {
@@ -619,11 +627,11 @@ fun setOrientation(
     binding.nestedDraggableComposeView?.apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
+            Log.d("CheckingTheModViewShowingStuff","show -->${modViewDragStateViewModel.showModView.value}")
             if(modViewDragStateViewModel.showModView.value){
                 AppTheme{
-                    //todo: fill this in
-                    ModViewComponent(
-                        modViewDragStateViewModel=modViewDragStateViewModel,
+
+                    ModViewComponentVersionThree(
                         closeModView ={
                             modViewDragStateViewModel.setShowModView(false)
 //                            val streamManagerUI: View = binding.root.findViewById(R.id.nested_draggable_compose_view)
@@ -637,8 +645,26 @@ fun setOrientation(
                         hideSoftKeyboard ={
                             hideSoftKeyboard()
                         },
-
+                        modVersionThreeViewModel =modVersionThreeViewModel,
+                        modViewDragStateViewModel=modViewDragStateViewModel,
                     )
+//                    ModViewComponent(
+//                        modViewDragStateViewModel=modViewDragStateViewModel,
+//                        closeModView ={
+//                            modViewDragStateViewModel.setShowModView(false)
+//                            val streamManagerUI: View = binding.root.findViewById(R.id.nested_draggable_compose_view)
+//                            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+//                            streamManagerUI.translationY = height
+//                        },
+//                        inlineContentMap=streamViewModel.inlineTextContentTest.value,
+//                        twitchUserChat=streamViewModel.listChats.toList(),
+//                        modViewViewModel=modViewViewModel,
+//                        streamViewModel = streamViewModel,
+//                        hideSoftKeyboard ={
+//                            hideSoftKeyboard()
+//                        },
+//
+//                    )
 
                 }
             }

@@ -53,12 +53,84 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.presentation.modView.ModViewDragStateViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.stream.StreamViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 enum class Sections {
     ONE, TWO, THREE
 }
 
+//todo: this need to go inside of the Fragment, where the old modView is
+@Composable
+fun ModViewComponentVersionThree(
+    closeModView:()->Unit,
+    modViewDragStateViewModel: ModViewDragStateViewModel,
+    inlineContentMap: EmoteListMap,
+    twitchUserChat: List<TwitchUserData>,
+    streamViewModel: StreamViewModel,
+    modViewViewModel: ModViewViewModel,
+    hideSoftKeyboard:()->Unit,
+    modVersionThreeViewModel:ModVersionThreeViewModel
+){
+    ModVersionThree(
+        boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
+        setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
+        boxOneDragState = modVersionThreeViewModel.boxOneDragState,
+        boxOneSection = modVersionThreeViewModel.boxOneSection,
+        boxOneIndex=modVersionThreeViewModel.boxOneIndex,
+        boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
+        setBoxOneDragging = {
+                newValue ->
+            Log.d("LoggingTheDragging","ONE")
+            modVersionThreeViewModel.setBoxOneDragging(newValue)
+        },
+        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
+        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
+        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+
+        /*************** BOX TWO PARAMETERS***************************************************************/
+        boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
+        setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
+        boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
+        boxTwoSection= modVersionThreeViewModel.boxTwoSection,
+        boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
+        boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
+        setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
+        setBoxTwoIndex ={newValue ->
+            Log.d("LoggingTheDragging","TWO")
+            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
+        },
+        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
+        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
+
+        /*************** BOX THREE PARAMETERS*****************************************************************/
+        boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
+        setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
+        boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
+        boxThreeSection= modVersionThreeViewModel.boxThreeSection,
+        boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
+        boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
+        setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
+        setBoxThreeIndex ={newValue ->
+            Log.d("LoggingTheDragging","THREE")
+            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
+        },
+        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
+        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+
+        /*************** GENERICS PARAMETERS*****************************************************************/
+        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
+        showError =modVersionThreeViewModel.showPlacementError.value,
+        sectionTwoHeight = modVersionThreeViewModel.section2height,
+        sectionThreeHeight=modVersionThreeViewModel.section3Height,
+        closeModView = {closeModView()}
+
+    )
+}
 
 @Composable
 fun ModVersionThree(
@@ -102,6 +174,7 @@ fun ModVersionThree(
     showError: Boolean,
     sectionTwoHeight:Float,
     sectionThreeHeight:Float,
+    closeModView: () -> Unit
 
 
 
@@ -135,7 +208,8 @@ fun ModVersionThree(
             CustomTopBar(
                 showDrawerFunc = {
                     scope.launch { drawerState.open() }
-                }
+                },
+                closeModView ={closeModView()}
             )
         },
         bottomBar = {},
@@ -319,7 +393,8 @@ fun DragBox(
 
 @Composable
 fun CustomTopBar(
-    showDrawerFunc:()->Unit
+    showDrawerFunc:()->Unit,
+    closeModView:()->Unit
 ){
     Row(modifier = Modifier
         .fillMaxWidth()
@@ -332,7 +407,7 @@ fun CustomTopBar(
         ){
             Icon(
                 imageVector = Icons.Default.Menu,
-                contentDescription = "close mod view",
+                contentDescription = "Show the Mod options",
                 modifier = Modifier
                     .clickable {
                         showDrawerFunc()
@@ -348,7 +423,7 @@ fun CustomTopBar(
             contentDescription = "close mod view",
             modifier = Modifier
                 .clickable {
-
+                    closeModView()
                 }
                 .size(35.dp),
             tint = MaterialTheme.colorScheme.onPrimary

@@ -167,10 +167,7 @@ fun ModViewComponent(
     ){
         ModViewScaffold(
             modViewDragStateViewModel=modViewDragStateViewModel,
-            closeModView ={
-                closeModView()
-            },
-
+            closeModView ={ closeModView() },
             fullModeActive=fullModeActive,
             fullChat = {setDraggingFunc->
                 //todo: I need to implement a ModalBottomSheetLayout with the chat settings
@@ -328,6 +325,7 @@ fun ModViewComponent(
 }
 
 
+// Todo: this is what I am going to try and replace
     @Composable
     fun ModViewScaffold(
         closeModView:()->Unit,
