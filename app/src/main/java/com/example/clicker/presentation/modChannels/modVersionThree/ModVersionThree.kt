@@ -8,8 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +25,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -40,6 +47,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +62,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -67,6 +79,10 @@ import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.chat.DualIconsButton
+import com.example.clicker.presentation.stream.views.chat.FullChatModView
+import com.example.clicker.presentation.stream.views.chat.ImprovedChatUI
+import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 enum class Sections {
@@ -137,7 +153,125 @@ fun ModViewComponentVersionThree(
         sectionTwoHeight = modVersionThreeViewModel.section2height,
         sectionThreeHeight=modVersionThreeViewModel.section3Height,
         closeModView = {closeModView()},
-        fullChat = modVersionThreeViewModel.fullChat.value
+        fullChatMode = modVersionThreeViewModel.fullChat.value,
+        smallChat = {setDragging->
+            SmallChat(
+                twitchUserChat = twitchUserChat,
+                showBottomModal = {
+//                    scope.launch {
+//                        clickedChatterUserState.show()
+//                    }
+                },
+                updateClickedUser = { username, userId, banned, isMod ->
+//                    updateClickedUser(
+//                        username,
+//                        userId,
+//                        banned,
+//                        isMod
+//                    )
+                },
+                showTimeoutDialog = {
+                    streamViewModel.openTimeoutDialog.value = true
+                },
+                showBanDialog = { streamViewModel.openBanDialog.value = true },
+                doubleClickMessage = { username ->
+                    //doubleClickChat(username)
+                },
+                deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
+                //todo:change back to --> true for testing
+                isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                inlineContentMap = inlineContentMap,
+                setDragging = { value ->
+                    Log.d("DOUBLECLICKDRAGGING","click from the outside")
+                    setDragging()
+                              },
+            )
+        },
+        fullChat={setDragging->
+            FullChatModView(
+                twitchUserChat = twitchUserChat,
+                showBottomModal={
+//                    scope.launch {
+//                        clickedChatterUserState.show()
+//                    }
+                },
+                updateClickedUser = { username, userId, banned, isMod ->
+//                    updateClickedUser(
+//                        username,
+//                        userId,
+//                        banned,
+//                        isMod
+//                    )
+                },
+                showTimeoutDialog={
+                    streamViewModel.openTimeoutDialog.value = true
+                },
+                showBanDialog = {streamViewModel.openBanDialog.value = true},
+                doubleClickMessage={ username->
+                   // doubleClickChat(username)
+
+                },
+
+                showOuterBottomModalState = {
+                    Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
+                    //seems fine that it is empy
+//                    scope.launch {
+//
+//                    }
+                },
+                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+
+                orientationIsVertical =true,
+
+                //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                isMod = true,
+                filteredChatList = streamViewModel.filteredChatList,
+                clickedAutoCompleteText = { username ->
+                    streamViewModel.autoTextChange(username)
+                },
+                showModal = {
+                    //todo: This is what is clicked when I want to launch the bottom modal
+//                    scope.launch {
+//                        chatSettingModal.show()
+//                    }
+                },
+                notificationAmount =0,
+                textFieldValue = streamViewModel.textFieldValue,
+                sendMessageToWebSocket = { string ->
+                    streamViewModel.sendMessage(string)
+                },
+                noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                hideSoftKeyboard={
+                    hideSoftKeyboard()
+
+                },
+                emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                deleteEmote={streamViewModel.deleteEmote()},
+                showModView={
+                    closeModView()
+                },
+                fullMode = modVersionThreeViewModel.fullChat.value,
+                setDragging = {
+                    Log.d("doubleClickingThings","CLICKED")
+                    setDragging()
+                },
+                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
+                updateMostFrequentEmoteList={value ->
+                   // updateMostFrequentEmoteList(value)
+                                            },
+                globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
+                channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
+                sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
+                userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
+            )
+
+        }
 
     )
 }
@@ -185,7 +319,9 @@ fun ModVersionThree(
     sectionTwoHeight:Float,
     sectionThreeHeight:Float,
     closeModView: () -> Unit,
-    fullChat:Boolean
+    fullChatMode:Boolean,
+    smallChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
+    fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit
 
 
 
@@ -271,8 +407,29 @@ fun ModVersionThree(
             ) {
                 ContentDragBox(
                     boxOneIndex,
-                    fullChat =fullChat
+                    fullChatMode =fullChatMode,
+                    smallChat={
+                        smallChat(
+                            setDraggingTrue={
+                                Log.d("DOUBLECLICKDRAGGING","THIS BEING SHOWN MEANS THAT IT IS WORKING")
+                                setBoxOneDragging(true)
+                            }
+                        )
+                    },
+                    fullChat={
+                        fullChat(
+                            setDraggingTrue={
+                                Log.d("DOUBLECLICKDRAGGING","Full chat boxOne working")
+                                setBoxOneDragging(true)
+                            }
+                        )
+                    }
                 )
+                if(boxOneDragging){
+                    DetectDoubleClickSpacer(
+                        setDragging={ setBoxOneDragging(false)}
+                    )
+                }
 
             }
 
@@ -314,8 +471,24 @@ fun ModVersionThree(
             ) {
                 ContentDragBox(
                     boxTwoIndex,
-                    fullChat =fullChat
+                    fullChatMode =fullChatMode,
+                    smallChat={
+                        smallChat(
+                            setDraggingTrue={setBoxTwoDragging(true)}
+                        )
+                              },
+                    fullChat={
+                        fullChat(
+                            setDraggingTrue={
+                                Log.d("DOUBLECLICKDRAGGING","Full chat boxTwo working")
+                                setBoxTwoDragging(true)
+                            }
+                        )
+                    }
+
                 )
+
+
 
             }
             /**************************BOX THREE **************************/
@@ -353,8 +526,24 @@ fun ModVersionThree(
             ) {
                 ContentDragBox(
                     boxThreeIndex,
-                    fullChat =fullChat
+                    fullChatMode =fullChatMode,
+                    smallChat={
+                        smallChat(
+                            setDraggingTrue={setBoxThreeDragging(true)}
+                        )
+                    },
+                    fullChat={
+                        fullChat(
+                            setDraggingTrue={
+                                Log.d("DOUBLECLICKDRAGGING","Full chat boxThree working")
+                                setBoxThreeDragging(true)
+                            }
+                        )
+                    }
+
                 )
+
+
 
             }
             Box(
@@ -409,6 +598,7 @@ fun DragBox(
 
                 )
 
+
     ){
         content()
 
@@ -460,7 +650,9 @@ fun CustomTopBar(
 @Composable
 fun ContentDragBox(
     contentIndex:Int,
-    fullChat:Boolean,
+    fullChatMode:Boolean, //change this to fullchatMode
+    smallChat: @Composable ()-> Unit,
+    fullChat: @Composable ()-> Unit,
 ){
     when(contentIndex){
         99->{
@@ -483,13 +675,14 @@ fun ContentDragBox(
         1 ->{
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Red)) {
+                .background(MaterialTheme.colorScheme.primary)) {
                 Box(modifier = Modifier.fillMaxSize()){
-                    if(fullChat){
-                        Text("Large Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                    if(fullChatMode){
+                        fullChat()
                     }else{
-                        Text("Small Chat", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                        smallChat()
                     }
+
 
                 }
 
@@ -787,6 +980,255 @@ fun ErrorMessage(
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
         )
+
+    }
+}
+/******************************************/
+@Composable
+fun DetectDoubleClickSpacer(
+    setDragging:(Boolean) ->Unit,
+
+    ){
+    Spacer(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        //I think I detect the long press here and then have the drag up top
+                        setDragging(false)
+                    }
+                ) {
+
+                }
+            }
+    )
+}
+/*********************************** SMALL CHAT COMPOSABLES ****************************************/
+
+@Composable
+fun SmallChat(
+    twitchUserChat: List<TwitchUserData>,
+    showBottomModal:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
+    doubleClickMessage:(String)->Unit,
+    deleteChatMessage:(String)->Unit,
+    isMod: Boolean,
+    inlineContentMap: EmoteListMap,
+    setDragging: (Boolean) -> Unit,
+
+    ){
+    val lazyColumnListState = rememberLazyListState()
+    var autoscroll by remember { mutableStateOf(true) }
+    SmallChatUIBox(
+        chatUI = { modifier ->
+            SmallChatUILazyColumn(
+                lazyColumnListState=lazyColumnListState,
+                twitchUserChat=twitchUserChat,
+                autoscroll=autoscroll,
+                showBottomModal={showBottomModal()},
+                showTimeoutDialog={showTimeoutDialog()},
+                showBanDialog={showBanDialog()},
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                },
+                doubleClickMessage={username ->doubleClickMessage(username)},
+                modifier=modifier,
+                deleteChatMessage={messageId ->deleteChatMessage(messageId)},
+                isMod = isMod,
+                inlineContentMap=inlineContentMap,
+                setDragging = {value -> setDragging(value)},
+
+                )
+        },
+        scrollToBottom = { modifier ->
+            SmallChatScrollToBottom(
+                scrollingPaused =!autoscroll,
+                enableAutoScroll = { autoscroll = true },
+                modifier = modifier
+            )
+        },
+        determineScrollState = {
+            SmallChatDetermineScrollState(
+                lazyColumnListState = lazyColumnListState,
+                setAutoScrollFalse = { autoscroll = false },
+                setAutoScrollTrue = { autoscroll = true },
+            )
+        }
+    )
+}
+
+
+
+@Composable
+fun SmallChatScrollToBottom(
+    scrollingPaused: Boolean,
+    enableAutoScroll: () -> Unit,
+    modifier: Modifier
+) {
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (scrollingPaused) {
+            DualIconsButton(
+                buttonAction = { enableAutoScroll() },
+                iconImageVector = Icons.Default.ArrowDropDown,
+                iconDescription = stringResource(R.string.arrow_drop_down_description),
+                buttonText = stringResource(R.string.scroll_to_bottom)
+
+            )
+        }
+    }
+
+}
+
+@Composable
+fun SmallChatUIBox(
+    chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
+    determineScrollState: @Composable () -> Unit,
+    scrollToBottom: @Composable (modifier:Modifier) -> Unit,
+){
+    val chatUIScope = remember(){ ImprovedChatUI() }
+    Box(modifier = Modifier.fillMaxSize()){
+        determineScrollState()
+        with(chatUIScope){
+            chatUI(modifier = Modifier.fillMaxSize())
+        }
+        scrollToBottom(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp)
+                .zIndex(5f)
+        )
+
+
+    }
+
+}
+
+@Composable
+fun SmallChatDetermineScrollState(
+    lazyColumnListState: LazyListState,
+    setAutoScrollFalse:()->Unit,
+    setAutoScrollTrue:()->Unit,
+){
+    val interactionSource = lazyColumnListState.interactionSource
+    val endOfListReached by remember {
+        derivedStateOf {
+            lazyColumnListState.isScrolledToEnd()
+        }
+    }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    setAutoScrollFalse()
+                }
+                is PressInteraction.Press -> {
+                    setAutoScrollFalse()
+                }
+            }
+        }
+    }
+
+    // observer when reached end of list
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if (endOfListReached) {
+            setAutoScrollTrue()
+        }
+    }
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SmallChatUILazyColumn(
+    lazyColumnListState: LazyListState,
+    twitchUserChat: List<TwitchUserData>,
+    autoscroll:Boolean,
+    showBottomModal:()->Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    doubleClickMessage:(String)->Unit,
+    deleteChatMessage:(String)->Unit,
+    modifier: Modifier,
+    isMod: Boolean,
+    inlineContentMap: EmoteListMap,
+    setDragging: (Boolean) -> Unit,
+){
+    val coroutineScope = rememberCoroutineScope()
+    val chatUIScope = remember(){ ImprovedChatUI() }
+    val hapticFeedback = LocalHapticFeedback.current
+    LazyColumn(
+        modifier =modifier,
+        state = lazyColumnListState
+    ){
+        coroutineScope.launch {
+            if (autoscroll) {
+                lazyColumnListState.scrollToItem(twitchUserChat.size)
+            }
+        }
+        stickyHeader {
+            Text(
+                "Chat",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                    .combinedClickable(
+                        onDoubleClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            setDragging(true)
+                        },
+                        onClick = {}
+                    )
+                    .padding(horizontal = 10.dp)
+            )
+        }
+        with(chatUIScope){
+            items(
+                twitchUserChat,
+            ) {indivChatMessage ->
+
+                ChatMessages(
+                    indivChatMessage,
+                    showBottomModal={showBottomModal()},
+                    updateClickedUser = {  username, userId,isBanned,isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            isBanned,
+                            isMod
+                        )
+                    },
+                    showTimeoutDialog ={showTimeoutDialog()},
+                    showBanDialog={showBanDialog()},
+                    doubleClickMessage={username ->doubleClickMessage(username)},
+                    deleteChatMessage={messageId->deleteChatMessage(messageId)},
+                    isMod = isMod,
+                    inlineContentMap=inlineContentMap
+
+                )
+
+            }
+        }
 
     }
 }
