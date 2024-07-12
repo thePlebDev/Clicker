@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Yellow
@@ -116,6 +117,8 @@ fun ModViewComponentVersionThree(
         setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
         deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
         boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+        boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
+        setBoxOneDoubleTap = {newValue -> modVersionThreeViewModel.setBoxOneDoubleTap(newValue)},
 
         /*************** BOX TWO PARAMETERS***************************************************************/
         boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
@@ -131,6 +134,8 @@ fun ModViewComponentVersionThree(
         },
         deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
         boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
+        boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
+        setBoxTwoDoubleTap = {newValue -> modVersionThreeViewModel.setBoxTwoDoubleTap(newValue)},
 
         /*************** BOX THREE PARAMETERS*****************************************************************/
         boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
@@ -146,6 +151,9 @@ fun ModViewComponentVersionThree(
         },
         deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
         boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+        boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
+        setBoxThreeDoubleTap = {newValue -> modVersionThreeViewModel.setBoxThreeDoubleTap(newValue)},
+
 
         /*************** GENERICS PARAMETERS*****************************************************************/
         updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
@@ -154,6 +162,8 @@ fun ModViewComponentVersionThree(
         sectionThreeHeight=modVersionThreeViewModel.section3Height,
         closeModView = {closeModView()},
         fullChatMode = modVersionThreeViewModel.fullChat.value,
+        deleteOffset = modVersionThreeViewModel.deleteOffset,
+
         smallChat = {setDragging->
             SmallChat(
                 twitchUserChat = twitchUserChat,
@@ -288,6 +298,8 @@ fun ModVersionThree(
     setBoxOneIndex:(Int)->Unit,
     deleteBoxOne:Boolean,
     boxOneHeight:Dp,
+    boxOneDoubleTap:Boolean,
+    setBoxOneDoubleTap: (Boolean) -> Unit,
 
 /*************** BOX TWO PARAMETERS***********************************/
     boxTwoOffsetY: Float,
@@ -300,6 +312,8 @@ fun ModVersionThree(
     setBoxTwoIndex:(Int)->Unit,
     deleteBoxTwo:Boolean,
     boxTwoHeight:Dp,
+    boxTwoDoubleTap:Boolean,
+    setBoxTwoDoubleTap: (Boolean) -> Unit,
 
     /*************** BOX THREE PARAMETERS***********************************/
     boxThreeOffsetY: Float,
@@ -312,14 +326,17 @@ fun ModVersionThree(
     setBoxThreeIndex:(Int)->Unit,
     deleteBoxThree:Boolean,
     boxThreeHeight:Dp,
+    boxThreeDoubleTap:Boolean,
+    setBoxThreeDoubleTap: (Boolean) -> Unit,
 
-    /***************** GENERIC PARAMTERS *****************************************/
+    /***************** GENERIC PARAMETERS *****************************************/
     updateIndex:(Int)->Unit,
     showError: Boolean,
     sectionTwoHeight:Float,
     sectionThreeHeight:Float,
     closeModView: () -> Unit,
     fullChatMode:Boolean,
+    deleteOffset: Float,
     smallChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
     fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit
 
@@ -381,6 +398,7 @@ fun ModVersionThree(
                 onDragStoppedFuc = {
                     Log.d("BoxOneOffsetLogging", "section -->${boxOneSection}")
                     setBoxOneDragging(false)
+                    setBoxOneDoubleTap(false)
                     if (deleteBoxOne) {
                         setBoxOneIndex(0)
                     }
@@ -413,6 +431,7 @@ fun ModVersionThree(
                             setDraggingTrue={
                                 Log.d("DOUBLECLICKDRAGGING","THIS BEING SHOWN MEANS THAT IT IS WORKING")
                                 setBoxOneDragging(true)
+                                setBoxOneDoubleTap(true)
                             }
                         )
                     },
@@ -421,13 +440,14 @@ fun ModVersionThree(
                             setDraggingTrue={
                                 Log.d("DOUBLECLICKDRAGGING","Full chat boxOne working")
                                 setBoxOneDragging(true)
+                                setBoxOneDoubleTap(true)
                             }
                         )
                     }
                 )
-                if(boxOneDragging){
+                if(boxOneDoubleTap){
                     DetectDoubleClickSpacer(
-                        setDragging={ setBoxOneDragging(false)}
+                        setDragging={ setBoxOneDoubleTap(false)}
                     )
                 }
 
@@ -442,6 +462,7 @@ fun ModVersionThree(
                 modifier = Modifier.zIndex(if (boxTwoDragging) 2f else 1f),
                 onDragStoppedFuc = {
                     setBoxTwoDragging(false)
+                    setBoxTwoDoubleTap(false)
                     if (deleteBoxTwo) {
                         setBoxTwoIndex(0)
                     }
@@ -462,9 +483,12 @@ fun ModVersionThree(
 
                     }
                 },
+                //todo: I should remove these when I get the UI for all the sections implemented
                 onDoubleClick = {
                     if(boxTwoIndex != 99){
                         setBoxTwoDragging(true)
+                        setBoxTwoDoubleTap(true)
+                        Log.d("DOUBLETAPPING","2")
                     }
 
                 }
@@ -474,7 +498,10 @@ fun ModVersionThree(
                     fullChatMode =fullChatMode,
                     smallChat={
                         smallChat(
-                            setDraggingTrue={setBoxTwoDragging(true)}
+                            setDraggingTrue={
+                                setBoxTwoDragging(true)
+                                setBoxTwoDoubleTap(true)
+                            }
                         )
                               },
                     fullChat={
@@ -482,11 +509,17 @@ fun ModVersionThree(
                             setDraggingTrue={
                                 Log.d("DOUBLECLICKDRAGGING","Full chat boxTwo working")
                                 setBoxTwoDragging(true)
+                                setBoxTwoDoubleTap(true)
                             }
                         )
                     }
 
                 )
+                if(boxTwoDoubleTap){
+                    DetectDoubleClickSpacer(
+                        setDragging={ setBoxTwoDoubleTap(false)}
+                    )
+                }
 
 
 
@@ -499,6 +532,7 @@ fun ModVersionThree(
                 modifier = Modifier.zIndex(if (boxThreeDragging) 2f else 1f),
                 onDragStoppedFuc = {
                     setBoxThreeDragging(false)
+                    setBoxThreeDoubleTap(false)
                     if (deleteBoxThree) {
                         setBoxThreeIndex(0)
                     }
@@ -517,9 +551,12 @@ fun ModVersionThree(
                         }
                     }
                 },
+                //todo: I should remove these when I get the UI for all the sections implemented
                 onDoubleClick = {
                     if(boxThreeIndex!= 99){
                         setBoxThreeDragging(true)
+                        setBoxThreeDoubleTap(true)
+                        Log.d("DOUBLETAPPING","3")
                     }
 
                 }
@@ -529,7 +566,10 @@ fun ModVersionThree(
                     fullChatMode =fullChatMode,
                     smallChat={
                         smallChat(
-                            setDraggingTrue={setBoxThreeDragging(true)}
+                            setDraggingTrue={
+                                setBoxThreeDragging(true)
+                                setBoxThreeDoubleTap(true)
+                            }
                         )
                     },
                     fullChat={
@@ -537,25 +577,31 @@ fun ModVersionThree(
                             setDraggingTrue={
                                 Log.d("DOUBLECLICKDRAGGING","Full chat boxThree working")
                                 setBoxThreeDragging(true)
+                                setBoxThreeDoubleTap(true)
                             }
                         )
                     }
 
+
                 )
+                if(boxThreeDoubleTap){
+                    DetectDoubleClickSpacer(
+                        setDragging={ setBoxThreeDoubleTap(false)}
+                    )
+                }
 
 
 
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (deleteBoxOne || deleteBoxTwo || deleteBoxThree) 20.dp else 10.dp)
-                    .background(if (deleteBoxOne || deleteBoxTwo || deleteBoxThree) Color.Red else Color.Magenta)
-                    .align(Alignment.BottomCenter)
-                    .zIndex(9f)
-            ) {
 
-            }
+
+            // todo: I need to change boxThreeDragging, boxTwoDragging and boxOneDragging
+
+            BoxDeleteSection(
+                boxThreeDoubleTap, boxTwoDoubleTap, boxOneDoubleTap,
+                deleteBoxThree,deleteBoxTwo,deleteBoxOne,
+                Modifier.align(Alignment.BottomCenter)
+            )
 
 
         }
@@ -991,7 +1037,7 @@ fun DetectDoubleClickSpacer(
     ){
     Spacer(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize().zIndex(7f)
             .background(Color.Black.copy(alpha = 0.5f))
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -1226,6 +1272,52 @@ fun SmallChatUILazyColumn(
                     inlineContentMap=inlineContentMap
 
                 )
+
+            }
+        }
+
+    }
+}
+/*********************************** DELETE BOX SECTION ************************************************/
+
+@Composable
+fun BoxDeleteSection(
+    boxThreeDragging:Boolean,
+    boxTwoDragging:Boolean,
+    boxOneDragging:Boolean,
+
+    deleteBoxOne:Boolean,
+    deleteBoxTwo:Boolean,
+    deleteBoxThree: Boolean,
+
+    modifier: Modifier
+
+){
+    val colorStops = arrayOf(
+        0.0f to Color.Red.copy(0.0f),
+        0.2f to Color.Red.copy(0.2f),
+        0.4f to Color.Red.copy(0.4f),
+        0.6f to Color.Red.copy(0.6f),
+        1f to Color.Red
+    )
+
+    if(boxThreeDragging  || boxTwoDragging || boxOneDragging){
+        if(deleteBoxOne||  deleteBoxTwo || deleteBoxThree){
+            Row(modifier = modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(Brush.verticalGradient(colorStops = colorStops))
+                .zIndex(10f)
+            ){
+
+            }
+        }else{
+            Row(modifier = modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .background(Brush.verticalGradient(colorStops = colorStops))
+                .zIndex(10f)
+            ){
 
             }
         }
