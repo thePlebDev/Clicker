@@ -34,6 +34,16 @@ data class BoxDragging(
     val boxThreeDragging: Boolean,
 )
 
+//todo: set up the data class called double tap. make it work. Then change its name to BoxDragging and
+//switch the original BoxDragging data class to z-index themed name
+data class DoubleTap(
+    val boxOneDoubleTap: Boolean,
+    val boxTwoDoubleTap: Boolean,
+    val boxThreeDoubleTap: Boolean,
+)
+
+
+
 
 //ok, so we have an array of this and when one drag state crosses a threshold, a value will be emitted with this data
 // it will be a hot flow and we move the boxes based on this data
@@ -57,19 +67,25 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         ModArrayData((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp,3,Positions.BOTTOM,BoxNumber.THREE,false,false,false),
     )
     )
-    val publicStateList: StateFlow<List<ModArrayData>> = stateList
-    //todo: I think I can delete this but not 1000%
+    //Todo: this should get changed over to z-index
     private val _boxesDragging = mutableStateOf(BoxDragging(false,false,false))
     val boxesDragging: State<BoxDragging> = _boxesDragging
+
+    //todo: this should get changed to the boxesDragging
+    private val _doubleTap = mutableStateOf(DoubleTap(false,false,false))
+    val doubleTap: State<DoubleTap> = _doubleTap
 
     private val _showPlacementError = mutableStateOf(false)
     val showPlacementError: State<Boolean> = _showPlacementError
 
     val section2height =(Resources.getSystem().displayMetrics.heightPixels / 3.17).toFloat()
     val section3Height =((Resources.getSystem().displayMetrics.heightPixels / 3.17)*2).toFloat()
+    val deleteOffset = section3Height +100
 
     private val _fullChat = mutableStateOf(false)
     val fullChat:State<Boolean> = _fullChat
+
+
 
 
     init{
@@ -108,6 +124,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 boxOneDragging = newValue,
             )
         }
+
+    }
+    fun setBoxOneDoubleTap(newValue:Boolean){
+        _doubleTap.value = _doubleTap.value.copy(
+            boxOneDoubleTap = newValue
+        )
 
     }
 
@@ -323,7 +345,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     fun boxOneSingleSizeDragging(
         delta:Float
     ){
-        if(boxOneOffsetY >=(section3Height +100)){
+        if(boxOneOffsetY >=( deleteOffset)){
             Log.d("DeletingDRAGSTATE","DELETE")
 
             if(!deleteBoxOne){
@@ -449,6 +471,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 boxTwoDragging = newValue,
             )
         }
+    }
+    fun setBoxTwoDoubleTap(newValue:Boolean){
+        _doubleTap.value = _doubleTap.value.copy(
+            boxTwoDoubleTap = newValue
+        )
+
     }
 
     //todo: OK I THINK THIS IS FINALIZED NOW AND IT WORKS
@@ -645,7 +673,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
        if(boxOneIsDouble|| boxThreeIsDouble){
            //here we only need to check when its deleting and the top section and the bottom section
            /********* DELETING ************/
-           if(boxTwoOffsetY >= (section3Height + 100)){
+           if(boxTwoOffsetY >= (deleteOffset)){
                Log.d("SingleMovingWhenDouble","DELETE")
                if(!deleteBoxTwo){
                    deleteBoxTwo = true
@@ -686,7 +714,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
            }
 
        } //end of the is double check
-       else  if(boxTwoOffsetY >=(section3Height + 100)){
+       else  if(boxTwoOffsetY >=(deleteOffset)){
             Log.d("DeletingDRAGSTATE","DELETE")
 
             if(!deleteBoxTwo){
@@ -809,6 +837,12 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 boxTwoDragging = newValue,
             )
         }
+
+    }
+    fun setBoxThreeDoubleTap(newValue:Boolean){
+        _doubleTap.value = _doubleTap.value.copy(
+            boxThreeDoubleTap = newValue
+        )
 
     }
 
@@ -1032,7 +1066,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             Log.d("boxThreeDoubleSizeDragging","One --> $boxOneIsDouble")
             Log.d("boxThreeDoubleSizeDragging","Two --> $boxTwoIsDouble")
             /********* DELETING ************/
-            if(boxThreeOffsetY >= (section3Height +100)){
+            if(boxThreeOffsetY >= ( deleteOffset)){
                 Log.d("Box3SingleMovingWhenDouble","DELETE")
                 if(!deleteBoxThree){
                     deleteBoxThree = true
@@ -1076,7 +1110,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         } //end of the double checks
         else{
-            if(boxThreeOffsetY >=section3Height +100){
+            if(boxThreeOffsetY >= deleteOffset){
                 Log.d("boxThreeDragStateLogging","DELETE")
                 if(!deleteBoxThree){
                     deleteBoxThree = true
