@@ -121,7 +121,6 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         deleteBoxOne = false
 
         if(newValue ==0){ //THis means that we are going to delete box two
-            _fullChat.value = false
 
 
             boxOneHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
@@ -157,9 +156,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 else{
                     stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
                 }
-
-
-
+                _fullChat.value = false
 
             }
             else if(tripleSize){
@@ -171,6 +168,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(index = 0,height=(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp)
                 boxThreeIndex = 0
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
+                _fullChat.value = false
             }
             else{
                 Log.d("syncBoxOneIndexChecking","NonDouble")
@@ -195,25 +193,28 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     }
 
     var boxOneDragState = DraggableState { delta ->
-        if(boxOneIndex != 99 && boxOneIndex !=0){
-            val boxOneIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
-            val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
+        if(_boxesDragging.value.boxOneDragging){ //ensures that the user has to double tap before dragging
+            if(boxOneIndex != 99 && boxOneIndex !=0){
+                val boxOneIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
+                val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
 
-            if(tripleSize){
-                //todo:Adding the special dragging
-                boxOneTripleSizeDragging()
+                if(tripleSize){
+                    //todo:Adding the special dragging
+                    boxOneTripleSizeDragging()
+                }
+                else if(boxOneIsDoubleSize){
+                    Log.d("BOXoNEDOUBLEDRAGGING","DOUBLEDRAG!!!!")
+                    boxOneDoubleSizeDragging(delta)
+
+                }else{
+                    boxOneSingleSizeDragging(delta)
+                }
+
+
+                boxOneOffsetY += delta
             }
-            else if(boxOneIsDoubleSize){
-                Log.d("BOXoNEDOUBLEDRAGGING","DOUBLEDRAG!!!!")
-                boxOneDoubleSizeDragging(delta)
-
-            }else{
-                boxOneSingleSizeDragging(delta)
-            }
-
-
-            boxOneOffsetY += delta
         }
+
 
     }
 
@@ -408,9 +409,16 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxTwoIndex =99
         val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(index = 99)
         boxThreeIndex =99
+
+
+
         //4 emit the new state to stateList
         stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
         //5) do special movement on boxOneOffset for when boxOneTriple is set to true
+        //todo:
+        //I think I need to update the section to section one and he offset to 0f
+        boxOneSection = Sections.ONE
+        setBoxOneOffset(0f)
 
     }
 
@@ -450,7 +458,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxTwoIndex = newValue
         deleteBoxTwo = false
         if(newValue ==0){ //THis means that we are going to delete box two
-            _fullChat.value = false
+
 
             boxTwoHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
@@ -480,6 +488,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     stateList.tryEmit(listOf(newBoxOne,boxTwo,boxThree))
                     setBoxThreeDragging(true)
                 }
+                _fullChat.value = false
 
             }
             else if(tripleSize){
@@ -490,6 +499,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(index = 0)
                 boxThreeIndex = 0
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
+                _fullChat.value = false
             }
             else{
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
@@ -515,25 +525,28 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     //TODO: IMPLEMENT DELETION and have it reset everything
     // I should have a separate index instaed of 0. It should be 99 or something. Still makes it black but can't be added to
     var boxTwoDragState = DraggableState { delta ->
-        if(boxTwoIndex != 99 && boxTwoIndex != 0){
-            val boxTwoIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
-            val boxTwoIsTripleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
-            if(boxTwoIsTripleSize){
-                Log.d("BoxTwoDragging","TRIPLE")
-                boxTwoTripleSizeDragging()
+//        if(_boxesDragging.value.boxTwoDragging){
+            if(boxTwoIndex != 99 && boxTwoIndex != 0){
+                val boxTwoIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
+                val boxTwoIsTripleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
+                if(boxTwoIsTripleSize){
+                    Log.d("BoxTwoDragging","TRIPLE")
+                    boxTwoTripleSizeDragging()
+                }
+                else if(boxTwoIsDoubleSize){
+                    Log.d("BoxTwoDragging","DOUBLE")
+                    boxTwoDoubleSizeDragging(delta)
+                }else{
+                    Log.d("BoxTwoDragging","SINGLE")
+
+                    boxTwoSingleSizeDragging(delta)
+                }
+
+
+                boxTwoOffsetY += delta
             }
-            else if(boxTwoIsDoubleSize){
-                Log.d("BoxTwoDragging","DOUBLE")
-                boxTwoDoubleSizeDragging(delta)
-            }else{
-                Log.d("BoxTwoDragging","SINGLE")
+//        }
 
-                boxTwoSingleSizeDragging(delta)
-            }
-
-
-            boxTwoOffsetY += delta
-        }
 
 
     }
@@ -807,7 +820,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         deleteBoxThree = false
         //todo: NOW I NEED TO ADD THE EXTRA 0 CHECKS
         if(newValue ==0) { //THis means that we are going to delete box two
-            _fullChat.value = false
+
 
             boxThreeHeight = (Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
@@ -843,6 +856,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 else{
                     stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
                 }
+                _fullChat.value = false
 
 
             }
@@ -854,6 +868,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(index = 0)
                 boxThreeIndex = 0
                 stateList.tryEmit(listOf(boxOne,boxTwo,boxThree))
+                _fullChat.value = false
             }
             else {
                 val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!
@@ -861,7 +876,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(doubleSize = false, index = newValue)
                 stateList.tryEmit(listOf(boxOne, boxTwo, boxThree))
             }
-        }
+        } //this is the end of the index == 0 conditional
         else{
             val top =stateList.value.find {it.boxNumber == BoxNumber.THREE}!!.copy(index = newValue)
             val center =stateList.value.find {it.boxNumber == BoxNumber.TWO}!!
@@ -875,23 +890,25 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
     var boxThreeDragState = DraggableState { delta ->
-        //Log.d("boxThreeDragStateLogging","MOVING!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        if(boxThreeIndex != 99  && boxThreeIndex != 0){ //todo: this need to be done with all of the drag states
-            val boxThreeIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
-            val boxThreeIsTripleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.tripleSize
-            if(boxThreeIsTripleSize){
-                Log.d("boxThreeStateSizeDoublingLogs","TRIPLE MOVING")
-                boxThreeTripleSizeDragging()
-            }
-            else if(boxThreeIsDoubleSize){
-                boxThreeDoubleSizeDragging(delta)
+//        if(_boxesDragging.value.boxThreeDragging){ //ensures that the user has to double click before the
+            if(boxThreeIndex != 99  && boxThreeIndex != 0){ //todo: this need to be done with all of the drag states
+                val boxThreeIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
+                val boxThreeIsTripleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.tripleSize
+                if(boxThreeIsTripleSize){
+                    Log.d("boxThreeStateSizeDoublingLogs","TRIPLE MOVING")
+                    boxThreeTripleSizeDragging()
+                }
+                else if(boxThreeIsDoubleSize){
+                    boxThreeDoubleSizeDragging(delta)
 
-            }else{
-                Log.d("boxThreeStateSizeDoublingLogs","NOT DOUBLE")
-                boxThreeSingleSizeDragging(delta)
+                }else{
+                    Log.d("boxThreeStateSizeDoublingLogs","NOT DOUBLE")
+                    boxThreeSingleSizeDragging(delta)
+                }
+                boxThreeOffsetY += delta
             }
-            boxThreeOffsetY += delta
-        }
+        //}
+
 
     }
     fun boxThreeTripleSizeDragging(){
@@ -1166,6 +1183,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     //This is called when a user clicks an item on the navigation side modal
     fun setIndex(newValue:Int){
+        Log.d("SETTINGTHEINDEXAGAIN","CLICK")
 
         if(boxOneIndex ==0){
             Log.d("BoxTwoTriple","1->0")
