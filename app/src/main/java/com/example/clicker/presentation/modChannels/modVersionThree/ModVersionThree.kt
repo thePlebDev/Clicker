@@ -29,6 +29,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
@@ -37,15 +41,19 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -80,6 +88,7 @@ import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.chat.DualIconsButton
 import com.example.clicker.presentation.stream.views.chat.FullChatModView
 import com.example.clicker.presentation.stream.views.chat.ImprovedChatUI
@@ -91,6 +100,7 @@ enum class Sections {
 }
 
 //todo: this need to go inside of the Fragment, where the old modView is
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ModViewComponentVersionThree(
     closeModView:()->Unit,
@@ -102,188 +112,228 @@ fun ModViewComponentVersionThree(
     hideSoftKeyboard:()->Unit,
     modVersionThreeViewModel:ModVersionThreeViewModel
 ){
-    ModVersionThree(
-        boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
-        setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
-        boxOneDragState = modVersionThreeViewModel.boxOneDragState,
-        boxOneSection = modVersionThreeViewModel.boxOneSection,
-        boxOneIndex=modVersionThreeViewModel.boxOneIndex,
-        boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
-        setBoxOneDragging = {
-                newValue ->
-            Log.d("LoggingTheDragging","ONE")
-            modVersionThreeViewModel.setBoxOneDragging(newValue)
-        },
-        setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
-        deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
-        boxOneHeight = modVersionThreeViewModel.boxOneHeight,
-        boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
-        setBoxOneDoubleTap = {newValue -> modVersionThreeViewModel.setBoxOneDoubleTap(newValue)},
+    val clickedChatterUserState = androidx.compose.material.rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    val updateClickedUser:(String,String,Boolean,Boolean)->Unit = remember(streamViewModel) { { username, userId, banned, isMod ->
+        streamViewModel.updateClickedChat(
+            username,
+            userId,
+            banned,
+            isMod
+        )
+    } }
+    val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
+        streamViewModel.sendDoubleTapEmote(it)
+    } }
 
-        /*************** BOX TWO PARAMETERS***************************************************************/
-        boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
-        setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
-        boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
-        boxTwoSection= modVersionThreeViewModel.boxTwoSection,
-        boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
-        boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
-        setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
-        setBoxTwoIndex ={newValue ->
-            Log.d("LoggingTheDragging","TWO")
-            modVersionThreeViewModel.syncBoxTwoIndex(newValue)
-        },
-        deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
-        boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
-        boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
-        setBoxTwoDoubleTap = {newValue -> modVersionThreeViewModel.setBoxTwoDoubleTap(newValue)},
-
-        /*************** BOX THREE PARAMETERS*****************************************************************/
-        boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
-        setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
-        boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
-        boxThreeSection= modVersionThreeViewModel.boxThreeSection,
-        boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
-        boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
-        setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
-        setBoxThreeIndex ={newValue ->
-            Log.d("LoggingTheDragging","THREE")
-            modVersionThreeViewModel.syncBoxThreeIndex(newValue)
-        },
-        deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
-        boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
-        boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
-        setBoxThreeDoubleTap = {newValue -> modVersionThreeViewModel.setBoxThreeDoubleTap(newValue)},
-
-
-        /*************** GENERICS PARAMETERS*****************************************************************/
-        updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
-        showError =modVersionThreeViewModel.showPlacementError.value,
-        sectionTwoHeight = modVersionThreeViewModel.section2height,
-        sectionThreeHeight=modVersionThreeViewModel.section3Height,
-        closeModView = {closeModView()},
-        fullChatMode = modVersionThreeViewModel.fullChat.value,
-        deleteOffset = modVersionThreeViewModel.deleteOffset,
-
-        smallChat = {setDragging->
-            SmallChat(
-                twitchUserChat = twitchUserChat,
-                showBottomModal = {
-//                    scope.launch {
-//                        clickedChatterUserState.show()
-//                    }
+    ModalBottomSheetLayout(
+        sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+        sheetState = clickedChatterUserState,
+        sheetContent = {
+            BottomModal.BottomModalBuilder(
+                clickedUsernameChats = streamViewModel.clickedUsernameChats,
+                clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                bottomModalState = clickedChatterUserState,
+                textFieldValue = streamViewModel.textFieldValue,
+                closeBottomModal = {},
+                banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                unbanUser = {
+                    //  streamViewModel.unBanUser()
                 },
-                updateClickedUser = { username, userId, banned, isMod ->
-//                    updateClickedUser(
-//                        username,
-//                        userId,
-//                        banned,
-//                        isMod
-//                    )
-                },
-                showTimeoutDialog = {
-                    streamViewModel.openTimeoutDialog.value = true
-                },
-                showBanDialog = { streamViewModel.openBanDialog.value = true },
-                doubleClickMessage = { username ->
-                    //doubleClickChat(username)
-                },
-                deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
-                //todo:change back to --> true for testing
-                isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                inlineContentMap = inlineContentMap,
-                setDragging = { value ->
-                    Log.d("DOUBLECLICKDRAGGING","click from the outside")
-                    setDragging()
-                              },
+                //todo: turn this back into --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                isMod = true,
+                openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+                openBanDialog = { streamViewModel.openBanDialog.value = true },
+                shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
+                updateShouldMonitorUser = {},
+                clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
             )
-        },
-        fullChat={setDragging->
-            FullChatModView(
-                twitchUserChat = twitchUserChat,
-                showBottomModal={
-//                    scope.launch {
-//                        clickedChatterUserState.show()
-//                    }
-                },
-                updateClickedUser = { username, userId, banned, isMod ->
-//                    updateClickedUser(
-//                        username,
-//                        userId,
-//                        banned,
-//                        isMod
-//                    )
-                },
-                showTimeoutDialog={
-                    streamViewModel.openTimeoutDialog.value = true
-                },
-                showBanDialog = {streamViewModel.openBanDialog.value = true},
-                doubleClickMessage={ username->
-                   // doubleClickChat(username)
+        }
+    ){
+        ModVersionThree(
+            boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
+            setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
+            boxOneDragState = modVersionThreeViewModel.boxOneDragState,
+            boxOneSection = modVersionThreeViewModel.boxOneSection,
+            boxOneIndex=modVersionThreeViewModel.boxOneIndex,
+            boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
+            setBoxOneDragging = {
+                    newValue ->
+                Log.d("LoggingTheDragging","ONE")
+                modVersionThreeViewModel.setBoxOneDragging(newValue)
+            },
+            setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
+            deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
+            boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+            boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
+            setBoxOneDoubleTap = {newValue -> modVersionThreeViewModel.setBoxOneDoubleTap(newValue)},
 
-                },
+            /*************** BOX TWO PARAMETERS***************************************************************/
+            boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
+            setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
+            boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
+            boxTwoSection= modVersionThreeViewModel.boxTwoSection,
+            boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
+            boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
+            setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
+            setBoxTwoIndex ={newValue ->
+                Log.d("LoggingTheDragging","TWO")
+                modVersionThreeViewModel.syncBoxTwoIndex(newValue)
+            },
+            deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
+            boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
+            boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
+            setBoxTwoDoubleTap = {newValue -> modVersionThreeViewModel.setBoxTwoDoubleTap(newValue)},
 
-                showOuterBottomModalState = {
-                    Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
-                    //seems fine that it is empy
+            /*************** BOX THREE PARAMETERS*****************************************************************/
+            boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
+            setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
+            boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
+            boxThreeSection= modVersionThreeViewModel.boxThreeSection,
+            boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
+            boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
+            setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
+            setBoxThreeIndex ={newValue ->
+                Log.d("LoggingTheDragging","THREE")
+                modVersionThreeViewModel.syncBoxThreeIndex(newValue)
+            },
+            deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
+            boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+            boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
+            setBoxThreeDoubleTap = {newValue -> modVersionThreeViewModel.setBoxThreeDoubleTap(newValue)},
+
+
+            /*************** GENERICS PARAMETERS*****************************************************************/
+            updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
+            showError =modVersionThreeViewModel.showPlacementError.value,
+            sectionTwoHeight = modVersionThreeViewModel.section2height,
+            sectionThreeHeight=modVersionThreeViewModel.section3Height,
+            closeModView = {closeModView()},
+            fullChatMode = modVersionThreeViewModel.fullChat.value,
+            deleteOffset = modVersionThreeViewModel.deleteOffset,
+
+            smallChat = {setDragging->
+                SmallChat(
+                    twitchUserChat = twitchUserChat,
+                    showBottomModal = {
+                        scope.launch { clickedChatterUserState.show() }
+                    },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        banned,
+                        isMod
+                    )
+                    },
+                    showTimeoutDialog = {
+                        streamViewModel.openTimeoutDialog.value = true
+                    },
+                    showBanDialog = { streamViewModel.openBanDialog.value = true },
+                    doubleClickMessage = { username ->
+                        doubleClickChat(username)
+                    },
+                    deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
+                    //todo:change back to --> true for testing
+                    isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                    inlineContentMap = inlineContentMap,
+                    setDragging = { value ->
+                        Log.d("DOUBLECLICKDRAGGING","click from the outside")
+                        setDragging()
+                    },
+                )
+            },
+            fullChat={setDragging->
+                FullChatModView(
+                    twitchUserChat = twitchUserChat,
+                    showBottomModal={
+                        scope.launch { clickedChatterUserState.show() }
+                    },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        banned,
+                        isMod
+                    )
+                    },
+                    showTimeoutDialog={
+                        streamViewModel.openTimeoutDialog.value = true
+                    },
+                    showBanDialog = {streamViewModel.openBanDialog.value = true},
+                    doubleClickMessage={ username->
+                         doubleClickChat(username)
+
+                    },
+
+                    showOuterBottomModalState = {
+                        Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
+                        //seems fine that it is empy
 //                    scope.launch {
 //
 //                    }
-                },
-                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+                    },
+                    newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
 
-                orientationIsVertical =true,
+                    orientationIsVertical =true,
 
-                //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
-                isMod = true,
-                filteredChatList = streamViewModel.filteredChatList,
-                clickedAutoCompleteText = { username ->
-                    streamViewModel.autoTextChange(username)
-                },
-                showModal = {
-                    //todo: This is what is clicked when I want to launch the bottom modal
+                    //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                    isMod = true,
+                    filteredChatList = streamViewModel.filteredChatList,
+                    clickedAutoCompleteText = { username ->
+                        streamViewModel.autoTextChange(username)
+                    },
+                    showModal = {
+                        //todo: This is what is clicked when I want to launch the bottom modal
 //                    scope.launch {
 //                        chatSettingModal.show()
 //                    }
-                },
-                notificationAmount =0,
-                textFieldValue = streamViewModel.textFieldValue,
-                sendMessageToWebSocket = { string ->
-                    streamViewModel.sendMessage(string)
-                },
-                noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
-                forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
-                inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                hideSoftKeyboard={
-                    hideSoftKeyboard()
+                    },
+                    notificationAmount =0,
+                    textFieldValue = streamViewModel.textFieldValue,
+                    sendMessageToWebSocket = { string ->
+                        streamViewModel.sendMessage(string)
+                    },
+                    noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                    deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                    forwardSlashCommands = streamViewModel.forwardSlashCommands,
+                    clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                    inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                    hideSoftKeyboard={
+                        hideSoftKeyboard()
 
-                },
-                emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                deleteEmote={streamViewModel.deleteEmote()},
-                showModView={
-                    closeModView()
-                },
-                fullMode = modVersionThreeViewModel.fullChat.value,
-                setDragging = {
-                    Log.d("doubleClickingThings","CLICKED")
-                    setDragging()
-                },
-                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                updateMostFrequentEmoteList={value ->
-                   // updateMostFrequentEmoteList(value)
-                                            },
-                globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
-                channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
-                sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
-                userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
-            )
+                    },
+                    emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                    updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
+                    emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
+                    deleteEmote={streamViewModel.deleteEmote()},
+                    showModView={
+                        closeModView()
+                    },
+                    fullMode = modVersionThreeViewModel.fullChat.value,
+                    setDragging = {
+                        Log.d("doubleClickingThings","CLICKED")
+                        setDragging()
+                    },
+                    emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
+                    updateMostFrequentEmoteList={value ->
+                        // updateMostFrequentEmoteList(value)
+                    },
+                    globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
+                    channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
+                    sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
+                    userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
+                )
 
-        }
+            }
 
-    )
+        )
+    }
+
+
 }
 
 @Composable
@@ -416,12 +466,12 @@ fun ModVersionThree(
                         }
                     }
                 },
-                onDoubleClick = {
-                    if(boxOneIndex != 99){
-                        setBoxOneDragging(true)
-                    }
-
-                }
+//                onDoubleClick = {
+//                    if(boxOneIndex != 99){
+//                        setBoxOneDragging(true)
+//                    }
+//
+//                }
             ) {
                 ContentDragBox(
                     boxOneIndex,
@@ -484,14 +534,14 @@ fun ModVersionThree(
                     }
                 },
                 //todo: I should remove these when I get the UI for all the sections implemented
-                onDoubleClick = {
-                    if(boxTwoIndex != 99){
-                        setBoxTwoDragging(true)
-                        setBoxTwoDoubleTap(true)
-                        Log.d("DOUBLETAPPING","2")
-                    }
-
-                }
+//                onDoubleClick = {
+//                    if(boxTwoIndex != 99){
+//                        setBoxTwoDragging(true)
+//                        setBoxTwoDoubleTap(true)
+//                        Log.d("DOUBLETAPPING","2")
+//                    }
+//
+//                }
             ) {
                 ContentDragBox(
                     boxTwoIndex,
@@ -552,14 +602,14 @@ fun ModVersionThree(
                     }
                 },
                 //todo: I should remove these when I get the UI for all the sections implemented
-                onDoubleClick = {
-                    if(boxThreeIndex!= 99){
-                        setBoxThreeDragging(true)
-                        setBoxThreeDoubleTap(true)
-                        Log.d("DOUBLETAPPING","3")
-                    }
-
-                }
+//                onDoubleClick = {
+//                    if(boxThreeIndex!= 99){
+//                        setBoxThreeDragging(true)
+//                        setBoxThreeDoubleTap(true)
+//                        Log.d("DOUBLETAPPING","3")
+//                    }
+//
+//                }
             ) {
                 ContentDragBox(
                     boxThreeIndex,
@@ -621,7 +671,6 @@ fun DragBox(
     dragState: DraggableState,
     modifier: Modifier,
     onDragStoppedFuc:()->Unit,
-    onDoubleClick:()->Unit,
     content: @Composable () -> Unit
 ){
     Box(
@@ -636,13 +685,6 @@ fun DragBox(
                     onDragStoppedFuc()
                 }
             )
-            .combinedClickable(
-                onClick = { },
-                onDoubleClick = {
-                    onDoubleClick()
-                },
-
-                )
 
 
     ){
@@ -901,7 +943,10 @@ fun SwitchWithIcon(
 
 
     Column(
-        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .padding(top = 13.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -941,7 +986,10 @@ fun TextColumn(
 
 
     Column(
-        modifier = Modifier.fillMaxWidth().height(90.dp).padding(top=13.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .padding(top = 13.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -1037,7 +1085,8 @@ fun DetectDoubleClickSpacer(
     ){
     Spacer(
         modifier = Modifier
-            .fillMaxSize().zIndex(7f)
+            .fillMaxSize()
+            .zIndex(7f)
             .background(Color.Black.copy(alpha = 0.5f))
             .pointerInput(Unit) {
                 detectTapGestures(
