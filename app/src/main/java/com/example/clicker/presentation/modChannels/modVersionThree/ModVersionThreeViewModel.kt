@@ -67,6 +67,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         ModArrayData((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp,3,Positions.BOTTOM,BoxNumber.THREE,false,false,false),
     )
     )
+
+
     //Todo: this should get changed over to z-index
     private val _boxesDragging = mutableStateOf(BoxDragging(false,false,false))
     val boxesDragging: State<BoxDragging> = _boxesDragging
