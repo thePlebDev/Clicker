@@ -641,6 +641,7 @@ class StreamViewModel @Inject constructor(
         val messages = listChats.filter { it.displayName == clickedUsername }
             .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
+        
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
         val clickedUserMessages = clickedUserChats.map {
             ClickedUserNameChats(
@@ -851,10 +852,20 @@ class StreamViewModel @Inject constructor(
                 Log.d("twitchUserMessage", " messageType --> ${twitchUserMessage.messageType}")
                 Log.d("twitchUserMessage", " twitchUserMessage --> ${twitchUserMessage}")
                 Log.d("twitchUserMessage", "-----------------------------------------------------")
+                Log.d("twitchUserMessageTesting", "displayName ->${twitchUserMessage.displayName}")
+                Log.d("twitchUserMessageTesting", "clickedUsername ->${_clickedUIState.value.clickedUsername}")
+                Log.d("twitchUserMessageTesting", "equal ->${twitchUserMessage.displayName == _clickedUIState.value.clickedUsername}")
 
                 if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
                     clickedUsernameChats.add(twitchUserMessage.userType!!)
+                    clickedUsernameChatsWithDateSent.add(
+                        ClickedUserNameChats(
+                            message =twitchUserMessage.userType?:"",
+                            dateSent = twitchUserMessage.dateSend
+                        )
+                    )
+
                 }
                 if(monitoredUsers.contains(twitchUserMessage.displayName)){
                     //twitchUserMessage.isMonitored = true
