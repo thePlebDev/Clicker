@@ -89,12 +89,15 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.DualIconsButton
 import com.example.clicker.presentation.stream.views.chat.FullChatModView
 import com.example.clicker.presentation.stream.views.chat.ImprovedChatUI
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import com.example.clicker.presentation.modView.followerModeList
+import com.example.clicker.presentation.modView.slowModeList
 enum class Sections {
     ONE, TWO, THREE
 }
@@ -112,7 +115,11 @@ fun ModViewComponentVersionThree(
     hideSoftKeyboard:()->Unit,
     modVersionThreeViewModel:ModVersionThreeViewModel
 ){
-    val clickedChatterUserState = androidx.compose.material.rememberModalBottomSheetState(
+    val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val chatSettingsModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
@@ -130,13 +137,38 @@ fun ModViewComponentVersionThree(
     } }
 
     ModalBottomSheetLayout(
+        sheetState = chatSettingsModalState,
+        sheetContent ={
+            ChatSettingsColumn(
+                advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
+                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
+
+                chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                followerModeList= followerModeList,
+                selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+                changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+                slowModeList= slowModeList,
+                selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+                changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+                emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+                setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+                subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
+                setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+            )
+        }
+    ) {
+
+
+
+    ModalBottomSheetLayout(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
-        sheetState = clickedChatterUserState,
+        sheetState = clickedChatterModalState,
         sheetContent = {
             BottomModal.BottomModalBuilder(
                 clickedUsernameChats = streamViewModel.clickedUsernameChats,
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                bottomModalState = clickedChatterUserState,
+                bottomModalState = clickedChatterModalState,
                 textFieldValue = streamViewModel.textFieldValue,
                 closeBottomModal = {},
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
@@ -152,82 +184,89 @@ fun ModViewComponentVersionThree(
                 clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
             )
         }
-    ){
+    ) {
         ModVersionThree(
             boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
-            setBoxOneOffset = {newValue ->modVersionThreeViewModel.setBoxOneOffset(newValue)},
+            setBoxOneOffset = { newValue -> modVersionThreeViewModel.setBoxOneOffset(newValue) },
             boxOneDragState = modVersionThreeViewModel.boxOneDragState,
             boxOneSection = modVersionThreeViewModel.boxOneSection,
-            boxOneIndex=modVersionThreeViewModel.boxOneIndex,
+            boxOneIndex = modVersionThreeViewModel.boxOneIndex,
             boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
-            setBoxOneDragging = {
-                    newValue ->
-                Log.d("LoggingTheDragging","ONE")
+            setBoxOneDragging = { newValue ->
+                Log.d("LoggingTheDragging", "ONE")
                 modVersionThreeViewModel.setBoxOneDragging(newValue)
             },
-            setBoxOneIndex ={newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue)},
-            deleteBoxOne= modVersionThreeViewModel.deleteBoxOne,
+            setBoxOneIndex = { newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue) },
+            deleteBoxOne = modVersionThreeViewModel.deleteBoxOne,
             boxOneHeight = modVersionThreeViewModel.boxOneHeight,
             boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
-            setBoxOneDoubleTap = {newValue -> modVersionThreeViewModel.setBoxOneDoubleTap(newValue)},
+            setBoxOneDoubleTap = { newValue -> modVersionThreeViewModel.setBoxOneDoubleTap(newValue) },
 
             /*************** BOX TWO PARAMETERS***************************************************************/
-            boxTwoOffsetY=modVersionThreeViewModel.boxTwoOffsetY,
-            setBoxTwoOffset= {newValue ->modVersionThreeViewModel.setBoxTwoOffset(newValue)},
-            boxTwoDragState= modVersionThreeViewModel.boxTwoDragState,
-            boxTwoSection= modVersionThreeViewModel.boxTwoSection,
-            boxTwoIndex= modVersionThreeViewModel.boxTwoIndex,
+            boxTwoOffsetY = modVersionThreeViewModel.boxTwoOffsetY,
+            setBoxTwoOffset = { newValue -> modVersionThreeViewModel.setBoxTwoOffset(newValue) },
+            boxTwoDragState = modVersionThreeViewModel.boxTwoDragState,
+            boxTwoSection = modVersionThreeViewModel.boxTwoSection,
+            boxTwoIndex = modVersionThreeViewModel.boxTwoIndex,
             boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
-            setBoxTwoDragging = {newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue)},
-            setBoxTwoIndex ={newValue ->
-                Log.d("LoggingTheDragging","TWO")
+            setBoxTwoDragging = { newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue) },
+            setBoxTwoIndex = { newValue ->
+                Log.d("LoggingTheDragging", "TWO")
                 modVersionThreeViewModel.syncBoxTwoIndex(newValue)
             },
-            deleteBoxTwo= modVersionThreeViewModel.deleteBoxTwo,
+            deleteBoxTwo = modVersionThreeViewModel.deleteBoxTwo,
             boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
             boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
-            setBoxTwoDoubleTap = {newValue -> modVersionThreeViewModel.setBoxTwoDoubleTap(newValue)},
+            setBoxTwoDoubleTap = { newValue -> modVersionThreeViewModel.setBoxTwoDoubleTap(newValue) },
 
             /*************** BOX THREE PARAMETERS*****************************************************************/
-            boxThreeOffsetY=modVersionThreeViewModel.boxThreeOffsetY,
-            setBoxThreeOffset= {newValue ->modVersionThreeViewModel.setBoxThreeOffset(newValue)},
-            boxThreeDragState= modVersionThreeViewModel.boxThreeDragState,
-            boxThreeSection= modVersionThreeViewModel.boxThreeSection,
-            boxThreeIndex= modVersionThreeViewModel.boxThreeIndex,
+            boxThreeOffsetY = modVersionThreeViewModel.boxThreeOffsetY,
+            setBoxThreeOffset = { newValue -> modVersionThreeViewModel.setBoxThreeOffset(newValue) },
+            boxThreeDragState = modVersionThreeViewModel.boxThreeDragState,
+            boxThreeSection = modVersionThreeViewModel.boxThreeSection,
+            boxThreeIndex = modVersionThreeViewModel.boxThreeIndex,
             boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
-            setBoxThreeDragging = {newValue -> modVersionThreeViewModel.setBoxThreeDragging(newValue)},
-            setBoxThreeIndex ={newValue ->
-                Log.d("LoggingTheDragging","THREE")
+            setBoxThreeDragging = { newValue ->
+                modVersionThreeViewModel.setBoxThreeDragging(
+                    newValue
+                )
+            },
+            setBoxThreeIndex = { newValue ->
+                Log.d("LoggingTheDragging", "THREE")
                 modVersionThreeViewModel.syncBoxThreeIndex(newValue)
             },
-            deleteBoxThree= modVersionThreeViewModel.deleteBoxThree,
+            deleteBoxThree = modVersionThreeViewModel.deleteBoxThree,
             boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
             boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
-            setBoxThreeDoubleTap = {newValue -> modVersionThreeViewModel.setBoxThreeDoubleTap(newValue)},
+            setBoxThreeDoubleTap = { newValue ->
+                modVersionThreeViewModel.setBoxThreeDoubleTap(
+                    newValue
+                )
+            },
 
 
             /*************** GENERICS PARAMETERS*****************************************************************/
-            updateIndex={newValue -> modVersionThreeViewModel.setIndex(newValue)},
-            showError =modVersionThreeViewModel.showPlacementError.value,
+            updateIndex = { newValue -> modVersionThreeViewModel.setIndex(newValue) },
+            showError = modVersionThreeViewModel.showPlacementError.value,
             sectionTwoHeight = modVersionThreeViewModel.section2height,
-            sectionThreeHeight=modVersionThreeViewModel.section3Height,
-            closeModView = {closeModView()},
+            sectionThreeHeight = modVersionThreeViewModel.section3Height,
+            closeModView = { closeModView() },
             fullChatMode = modVersionThreeViewModel.fullChat.value,
             deleteOffset = modVersionThreeViewModel.deleteOffset,
 
-            smallChat = {setDragging->
+            smallChat = { setDragging ->
                 SmallChat(
                     twitchUserChat = twitchUserChat,
                     showBottomModal = {
-                        scope.launch { clickedChatterUserState.show() }
+                        scope.launch { clickedChatterModalState.show() }
                     },
                     updateClickedUser = { username, userId, banned, isMod ->
-                    updateClickedUser(
-                        username,
-                        userId,
-                        banned,
-                        isMod
-                    )
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
                     },
                     showTimeoutDialog = {
                         streamViewModel.openTimeoutDialog.value = true
@@ -241,44 +280,44 @@ fun ModViewComponentVersionThree(
                     isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                     inlineContentMap = inlineContentMap,
                     setDragging = { value ->
-                        Log.d("DOUBLECLICKDRAGGING","click from the outside")
+                        Log.d("DOUBLECLICKDRAGGING", "click from the outside")
                         setDragging()
                     },
                 )
             },
-            fullChat={setDragging->
+            fullChat = { setDragging ->
                 FullChatModView(
                     twitchUserChat = twitchUserChat,
-                    showBottomModal={
-                        scope.launch { clickedChatterUserState.show() }
+                    showBottomModal = {
+                        scope.launch { clickedChatterModalState.show() }
                     },
                     updateClickedUser = { username, userId, banned, isMod ->
-                    updateClickedUser(
-                        username,
-                        userId,
-                        banned,
-                        isMod
-                    )
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
                     },
-                    showTimeoutDialog={
+                    showTimeoutDialog = {
                         streamViewModel.openTimeoutDialog.value = true
                     },
-                    showBanDialog = {streamViewModel.openBanDialog.value = true},
-                    doubleClickMessage={ username->
-                         doubleClickChat(username)
+                    showBanDialog = { streamViewModel.openBanDialog.value = true },
+                    doubleClickMessage = { username ->
+                        doubleClickChat(username)
 
                     },
 
                     showOuterBottomModalState = {
-                        Log.d("BottomModalClicked","showOuterBottomModalState Clicked")
+                        Log.d("BottomModalClicked", "showOuterBottomModalState Clicked")
                         //seems fine that it is empy
 //                    scope.launch {
 //
 //                    }
                     },
-                    newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+                    newFilterMethod = { newTextValue -> streamViewModel.newParsingAgain(newTextValue) },
 
-                    orientationIsVertical =true,
+                    orientationIsVertical = true,
 
                     //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
                     isMod = true,
@@ -288,49 +327,55 @@ fun ModViewComponentVersionThree(
                     },
                     showModal = {
                         //todo: This is what is clicked when I want to launch the bottom modal
-//                    scope.launch {
-//                        chatSettingModal.show()
-//                    }
+                        scope.launch {
+                            chatSettingsModalState.show()
+                            // clickedChatterModalState.show()
+                        }
                     },
-                    notificationAmount =0,
+                    notificationAmount = 0,
                     textFieldValue = streamViewModel.textFieldValue,
                     sendMessageToWebSocket = { string ->
                         streamViewModel.sendMessage(string)
                     },
                     noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                    deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
+                    deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
                     forwardSlashCommands = streamViewModel.forwardSlashCommands,
-                    clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                    clickedCommandAutoCompleteText = { clickedValue ->
+                        streamViewModel.clickedCommandAutoCompleteText(
+                            clickedValue
+                        )
+                    },
                     inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                    hideSoftKeyboard={
+                    hideSoftKeyboard = {
                         hideSoftKeyboard()
 
                     },
                     emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                    updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                    emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                    deleteEmote={streamViewModel.deleteEmote()},
-                    showModView={
+                    updateTextWithEmote = { newValue -> streamViewModel.addEmoteToText(newValue) },
+                    emoteBoardChannelList = streamViewModel.channelEmoteUrlList.value,
+                    deleteEmote = { streamViewModel.deleteEmote() },
+                    showModView = {
                         closeModView()
                     },
                     fullMode = modVersionThreeViewModel.fullChat.value,
                     setDragging = {
-                        Log.d("doubleClickingThings","CLICKED")
+                        Log.d("doubleClickingThings", "CLICKED")
                         setDragging()
                     },
-                    emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                    updateMostFrequentEmoteList={value ->
+                    emoteBoardMostFrequentList = streamViewModel.mostFrequentEmoteListTesting.value,
+                    updateMostFrequentEmoteList = { value ->
                         // updateMostFrequentEmoteList(value)
                     },
-                    globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
+                    globalBetterTTVEmotes = streamViewModel.globalBetterTTVEmotes.value,
                     channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
-                    sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
+                    sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
                     userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
                 )
 
             }
 
         )
+    }
     }
 
 
