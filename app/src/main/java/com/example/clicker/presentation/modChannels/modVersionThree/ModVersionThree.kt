@@ -119,6 +119,7 @@ fun ModViewComponentVersionThree(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    val clickedUsernameChatsWithDateSent = streamViewModel.clickedUsernameChatsWithDateSent.toList()
     val chatSettingsModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
@@ -159,14 +160,12 @@ fun ModViewComponentVersionThree(
         }
     ) {
 
-
-
     ModalBottomSheetLayout(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
         sheetState = clickedChatterModalState,
         sheetContent = {
             BottomModal.BottomModalBuilder(
-                clickedUsernameChats = streamViewModel.clickedUsernameChats,
+                clickedUsernameChats = streamViewModel.clickedUsernameChats.toList(),
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                 bottomModalState = clickedChatterModalState,
                 textFieldValue = streamViewModel.textFieldValue,
@@ -181,7 +180,7 @@ fun ModViewComponentVersionThree(
                 openBanDialog = { streamViewModel.openBanDialog.value = true },
                 shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                 updateShouldMonitorUser = {},
-                clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
+                clickedUsernameChatsWithDate = clickedUsernameChatsWithDateSent,
             )
         }
     ) {
