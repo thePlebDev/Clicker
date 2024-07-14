@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.authentication.views
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -30,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.disableClickAndRipple
-
+import androidx.compose.foundation.Image
 
 
 @Composable
@@ -82,6 +88,72 @@ fun ModderzTagLine(
             Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
         }else{
             Text(text ="You must verify the link before you can login with Twitch",color = Color.White, fontSize = 30.sp)
+            VisualDescriptionOfAddingLinks()
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun VisualDescriptionOfAddingLinks(){
+    val pagerState = rememberPagerState(pageCount = {
+        3
+    })
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.height(200.dp).fillMaxWidth()
+    ) { page ->
+
+        // Our page content
+        when(page){
+            0 ->{
+                Box(modifier = Modifier.fillMaxSize()){
+                    Image(
+                        painter = painterResource(id = R.mipmap.verify_links_start_arrow),
+                        contentDescription = "toggle open supported links ",
+                        modifier = Modifier.height(200.dp).width(300.dp).align(Alignment.Center)
+                    )
+                }
+            }
+            1->{
+                Box(modifier = Modifier.fillMaxSize()){
+                    Image(
+                        painter = painterResource(id = R.mipmap.verify_links_second_arrow),
+                        contentDescription = "click add links",
+                        modifier = Modifier.height(200.dp).width(300.dp).align(Alignment.Center)
+                    )
+                }
+            }
+            2 ->{
+                Box(modifier = Modifier.fillMaxSize()){
+                    Image(
+                        painter = painterResource(id = R.mipmap.verify_links_last_arrow),
+                        contentDescription = "confirm add links",
+                        modifier = Modifier.height(200.dp).width(300.dp).align(Alignment.Center)
+                    )
+                }
+            }
+        }
+
+
+
+    }
+    Row(
+        Modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(pagerState.pageCount) { iteration ->
+            val color = if (pagerState.currentPage == iteration) Color.DarkGray else Color.White
+            Box(
+                modifier = Modifier
+                    .padding(2.dp)
+                    .clip(CircleShape)
+                    .background(color)
+                    .size(12.dp)
+            )
         }
     }
 }
