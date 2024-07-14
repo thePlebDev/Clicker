@@ -641,7 +641,7 @@ class StreamViewModel @Inject constructor(
         val messages = listChats.filter { it.displayName == clickedUsername }
             .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
-        
+
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
         val clickedUserMessages = clickedUserChats.map {
             ClickedUserNameChats(
