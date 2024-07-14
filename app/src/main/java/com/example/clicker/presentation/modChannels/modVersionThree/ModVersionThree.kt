@@ -85,6 +85,7 @@ import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
@@ -99,11 +100,14 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
+import com.example.clicker.presentation.modView.views.AutoModBoxHorizontalDragBox
+import com.example.clicker.presentation.modView.views.ConnectionErrorResponse
 import com.example.clicker.presentation.modView.views.ErrorMessage403
 import com.example.clicker.presentation.modView.views.FailedClickToTryAgainBox
 import com.example.clicker.presentation.modView.views.LoadingIndicator
 import com.example.clicker.presentation.modView.views.ModActionNotificationMessage
 import com.example.clicker.presentation.modView.views.ScrollToBottomModView
+import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 
 enum class Sections {
@@ -382,6 +386,11 @@ fun ModViewComponentVersionThree(
             },
             modActionsList = modViewViewModel.modActionsList,
             modActionStatus = modViewViewModel.modViewStatus.value.modActions,
+            autoModMessageList = modViewViewModel.autoModMessageList,
+            autoModStatus = modViewViewModel.modViewStatus.value.autoModMessageStatus,
+            manageAutoModMessage ={
+                    messageId,action -> modViewViewModel.manageAutoModMessage(messageId,action)
+            },
 
         )
     }
@@ -443,8 +452,13 @@ fun ModVersionThree(
     deleteOffset: Float,
     smallChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
     fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
+
     modActionStatus: WebSocketResponse<Boolean>,
     modActionsList: List<ModActionData>,
+    autoModMessageList:List<AutoModQueueMessage>,
+    autoModStatus: WebSocketResponse<Boolean>,
+    manageAutoModMessage:(String,String)-> Unit,
+
 
 
 
@@ -553,9 +567,26 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             dragging =boxThreeDragging,
-                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            setDragging={newValue ->
+                                setBoxOneDoubleTap(newValue)
+                                setBoxOneDragging(true)
+                                        },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList
+                        )
+                    },
+                    autoModQueue = {
+                        NewAutoModQueueBox(
+                            dragging =boxTwoDragging,
+                            setDragging={newValue ->
+                                setBoxOneDoubleTap(newValue)
+                                setBoxOneDragging(true)
+                                        },
+                            autoModMessageList = autoModMessageList,
+                            manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                            connectionError =Response.Success(true),
+                            reconnect = {},
+                            autoModStatus=autoModStatus,
                         )
                     }
                 )
@@ -597,15 +628,7 @@ fun ModVersionThree(
 
                     }
                 },
-                //todo: I should remove these when I get the UI for all the sections implemented
-//                onDoubleClick = {
-//                    if(boxTwoIndex != 99){
-//                        setBoxTwoDragging(true)
-//                        setBoxTwoDoubleTap(true)
-//                        Log.d("DOUBLETAPPING","2")
-//                    }
-//
-//                }
+
             ) {
                 ContentDragBox(
                     boxTwoIndex,
@@ -630,9 +653,26 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             dragging =boxThreeDragging,
-                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            setDragging={newValue ->
+                                setBoxTwoDoubleTap(newValue)
+                                setBoxTwoDragging(true)
+                                        },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList
+                        )
+                    },
+                    autoModQueue = {
+                        NewAutoModQueueBox(
+                            dragging =boxTwoDragging,
+                            setDragging={newValue ->
+                                setBoxTwoDoubleTap(newValue)
+                                setBoxTwoDragging(true)
+                                        },
+                            autoModMessageList = autoModMessageList,
+                            manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                            connectionError =Response.Success(true),
+                            reconnect = {},
+                            autoModStatus=autoModStatus,
                         )
                     }
 
@@ -674,14 +714,7 @@ fun ModVersionThree(
                     }
                 },
                 //todo: I should remove these when I get the UI for all the sections implemented
-//                onDoubleClick = {
-//                    if(boxThreeIndex!= 99){
-//                        setBoxThreeDragging(true)
-//                        setBoxThreeDoubleTap(true)
-//                        Log.d("DOUBLETAPPING","3")
-//                    }
-//
-//                }
+
             ) {
                 ContentDragBox(
                     boxThreeIndex,
@@ -706,9 +739,26 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             dragging =boxThreeDragging,
-                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            setDragging={newValue ->
+                                setBoxThreeDoubleTap(newValue)
+                                setBoxThreeDoubleTap(true)
+                                        },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList
+                        )
+                    },
+                    autoModQueue = {
+                        NewAutoModQueueBox(
+                            dragging =boxTwoDragging,
+                            setDragging={newValue ->
+                                setBoxThreeDoubleTap(newValue)
+                                setBoxThreeDoubleTap(true)
+                                        },
+                            autoModMessageList = autoModMessageList,
+                            manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
+                            connectionError =Response.Success(true),
+                            reconnect = {},
+                            autoModStatus=autoModStatus,
                         )
                     }
 
@@ -822,8 +872,25 @@ fun ContentDragBox(
     smallChat: @Composable ()-> Unit,
     fullChat: @Composable ()-> Unit,
     modActions:@Composable () ->Unit,
+    autoModQueue:@Composable () -> Unit,
 ){
     when(contentIndex){
+        1 ->{
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)) {
+                Box(modifier = Modifier.fillMaxSize()){
+                    if(fullChatMode){
+                        fullChat()
+                    }else{
+                        smallChat()
+                    }
+
+
+                }
+
+            }
+        }
         99->{
             //this is meant to help with the doubles and triples
             //The UI is the same as an empty box. However, it can not be overriden and will count as if there is
@@ -841,28 +908,12 @@ fun ContentDragBox(
 
             }
         }
-        1 ->{
+        2 ->{
             Column(modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)) {
                 Box(modifier = Modifier.fillMaxSize()){
-                    if(fullChatMode){
-                        fullChat()
-                    }else{
-                        smallChat()
-                    }
-
-
-                }
-
-            }
-        }
-        2 ->{
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue)) {
-                Box(modifier = Modifier.fillMaxSize()){
-                    Text("AutoMod Queue", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.White)
+                    autoModQueue()
                 }
             }
         }
@@ -1605,5 +1656,167 @@ fun NewModActions(
 
 
     }
+
+}
+
+/************************ AutoModQueueBox ****************************************************************/
+/**
+ * AutoModQueueBox is the composable function that is used inside of [DraggableBackground] to represent the AutoModQue messages
+ * shown to the user
+ *
+ * @param dragging a Boolean used to determine if the user is dragging this component
+ * @param setDragging a function used to set the value of [dragging]
+ * */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NewAutoModQueueBox(
+    setDragging: (Boolean) -> Unit,
+    dragging:Boolean,
+    autoModMessageList:List<AutoModQueueMessage>,
+    manageAutoModMessage:(String,String)-> Unit,
+    autoModStatus: WebSocketResponse<Boolean>,
+    connectionError: Response<Boolean>,
+    reconnect:()->Unit
+
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    val listState = rememberLazyListState()
+
+    val scope = rememberCoroutineScope()
+    var autoscroll by remember { mutableStateOf(true) }
+    val interactionSource = listState.interactionSource
+
+
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    autoscroll = false
+                }
+                is PressInteraction.Press -> {
+                    autoscroll = false
+                }
+            }
+        }
+    }
+    val endOfListReached by remember {
+        derivedStateOf {
+            listState.isScrolledToEnd()
+        }
+    }
+    // observer when reached end of list
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if (endOfListReached) {
+            autoscroll = true
+        }
+    }
+
+    val opacity = if(dragging) 0.5f else 0f
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)
+
+    ){
+        when(autoModStatus){
+            is WebSocketResponse.Loading->{
+                LoadingIndicator(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "AutoMod Queue"
+                )
+
+            }
+            is WebSocketResponse.Success->{
+                LazyColumn(
+                    state=listState,
+                    modifier =Modifier.fillMaxSize()
+                ){
+                    scope.launch {
+                        if(autoscroll){
+                            listState.scrollToItem(autoModMessageList.size)
+                        }
+                    }
+                    stickyHeader {
+                        Text(
+                            "AutoMod Queue",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                .combinedClickable(
+                                    onDoubleClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        setDragging(true)
+                                    },
+                                    onClick = {}
+                                )
+                                .padding(horizontal = 10.dp)
+                        )
+                    }
+
+
+
+                    items(autoModMessageList){autoModMessage->
+                        AutoModBoxHorizontalDragBox(
+                            autoModMessage=autoModMessage,
+                            manageAutoModMessage={
+                                    messageId,action->manageAutoModMessage(messageId,action)
+                            }
+                        )
+                    }
+
+
+
+                }
+                if(!autoscroll){
+                    ScrollToBottomModView(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 20.dp),
+                        enableAutoScroll={
+                            scope.launch {
+                                listState.scrollToItem(autoModMessageList.size)
+                                autoscroll = true
+                            }
+                        }
+                    )
+                }
+            }
+            is WebSocketResponse.Failure->{
+                FailedClickToTryAgainBox(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "AutoMod Queue"
+                )
+
+            }
+            is WebSocketResponse.FailureAuth403->{
+                ErrorMessage403(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "AutoMod Queue"
+                )
+
+            }
+
+        }
+
+
+    }
+    if(dragging){
+        com.example.clicker.presentation.stream.views.streamManager.DetectDoubleClickSpacer(
+            opacity,
+            setDragging = { newValue -> setDragging(newValue) },
+            hapticFeedback = { hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress) }
+        )
+    }
+    ConnectionErrorResponse(
+        connectionError,
+        reconnect ={reconnect()}
+    )
+
 
 }
