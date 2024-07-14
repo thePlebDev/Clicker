@@ -85,6 +85,7 @@ import androidx.compose.ui.zIndex
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -98,6 +99,13 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
+import com.example.clicker.presentation.modView.views.ErrorMessage403
+import com.example.clicker.presentation.modView.views.FailedClickToTryAgainBox
+import com.example.clicker.presentation.modView.views.LoadingIndicator
+import com.example.clicker.presentation.modView.views.ModActionNotificationMessage
+import com.example.clicker.presentation.modView.views.ScrollToBottomModView
+import com.example.clicker.util.WebSocketResponse
+
 enum class Sections {
     ONE, TWO, THREE
 }
@@ -371,7 +379,9 @@ fun ModViewComponentVersionThree(
                     userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
                 )
 
-            }
+            },
+            modActionsList = modViewViewModel.modActionsList,
+            modActionStatus = modViewViewModel.modViewStatus.value.modActions,
 
         )
     }
@@ -432,7 +442,9 @@ fun ModVersionThree(
     fullChatMode:Boolean,
     deleteOffset: Float,
     smallChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
-    fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit
+    fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
+    modActionStatus: WebSocketResponse<Boolean>,
+    modActionsList: List<ModActionData>,
 
 
 
@@ -537,6 +549,14 @@ fun ModVersionThree(
                                 setBoxOneDoubleTap(true)
                             }
                         )
+                    },
+                    modActions={
+                        NewModActions(
+                            dragging =boxThreeDragging,
+                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            modActionStatus =modActionStatus,
+                            modActionsList=modActionsList
+                        )
                     }
                 )
                 if(boxOneDoubleTap){
@@ -606,6 +626,14 @@ fun ModVersionThree(
                                 setBoxTwoDoubleTap(true)
                             }
                         )
+                    },
+                    modActions={
+                        NewModActions(
+                            dragging =boxThreeDragging,
+                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            modActionStatus =modActionStatus,
+                            modActionsList=modActionsList
+                        )
                     }
 
                 )
@@ -673,6 +701,14 @@ fun ModVersionThree(
                                 setBoxThreeDragging(true)
                                 setBoxThreeDoubleTap(true)
                             }
+                        )
+                    },
+                    modActions={
+                        NewModActions(
+                            dragging =boxThreeDragging,
+                            setDragging={newValue -> setBoxThreeDoubleTap(newValue)},
+                            modActionStatus =modActionStatus,
+                            modActionsList=modActionsList
                         )
                     }
 
@@ -785,6 +821,7 @@ fun ContentDragBox(
     fullChatMode:Boolean, //change this to fullchatMode
     smallChat: @Composable ()-> Unit,
     fullChat: @Composable ()-> Unit,
+    modActions:@Composable () ->Unit,
 ){
     when(contentIndex){
         99->{
@@ -832,9 +869,9 @@ fun ContentDragBox(
         3 ->{
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Green)) {
+                .background(MaterialTheme.colorScheme.primary)) {
                 Box(modifier = Modifier.fillMaxSize()){
-                    Text("Mod Actions", fontSize = 30.sp,modifier = Modifier.align(Alignment.Center),color = Color.Black)
+                    modActions()
                 }
             }
         }
@@ -1416,4 +1453,157 @@ fun BoxDeleteSection(
         }
 
     }
+}
+
+/****************************** MOD ACTION COMPOSABLE*********************************************************/
+/**
+ * ModActions is the composable function that is used  to represent the actions that
+ * have been taken by moderators in the chat
+ * */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NewModActions(
+    dragging:Boolean,
+    setDragging:(Boolean)->Unit,
+    modActionStatus: WebSocketResponse<Boolean>,
+    modActionsList: List<ModActionData>
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    //todo: GET THIS LIST FROM THE WEBSOCKET
+
+
+    val listState = rememberLazyListState()
+    val opacity = if(dragging) 0.5f else 0f
+
+    val scope = rememberCoroutineScope()
+    var autoscroll by remember { mutableStateOf(true) }
+    val interactionSource = listState.interactionSource
+
+
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    autoscroll = false
+                }
+                is PressInteraction.Press -> {
+                    autoscroll = false
+                }
+            }
+        }
+    }
+
+    val endOfListReached by remember {
+        derivedStateOf {
+            listState.isScrolledToEnd()
+        }
+    }
+    // observer when reached end of list
+    LaunchedEffect(endOfListReached) {
+        // do your stuff
+        if (endOfListReached) {
+            autoscroll = true
+        }
+    }
+
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+    ) {
+
+        when(modActionStatus){
+            is WebSocketResponse.Loading -> {
+
+                LoadingIndicator(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "MOD ACTIONS: ${modActionsList.size}"
+                )
+
+            }
+            is WebSocketResponse.Success -> {
+                // this should be the individual moderation actions
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(vertical = 5.dp)
+
+                ) {
+                    stickyHeader {
+                        Text(
+                            "MOD ACTIONS: ${modActionsList.size} ",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                                .combinedClickable(
+                                    onDoubleClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        setDragging(true)
+                                    },
+                                    onClick = {}
+                                )
+                                .padding(horizontal = 10.dp)
+                        )
+                    }
+                    items(modActionsList){modAction->
+                        ModActionNotificationMessage(
+                            title=modAction.title,
+                            message=modAction.message,
+                            icon = painterResource(id =modAction.iconId),
+                            secondaryErrorMessage = modAction.secondaryMessage
+                        )
+                    }
+
+                    scope.launch {
+                        if(autoscroll){
+                            listState.scrollToItem(modActionsList.size)
+                        }
+                    }
+
+
+                }
+                if(!autoscroll){
+                    ScrollToBottomModView(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 20.dp),
+                        enableAutoScroll={
+                            scope.launch {
+                                listState.scrollToItem(modActionsList.size)
+                                autoscroll = true
+                            }
+                        }
+                    )
+                }
+
+            }
+
+            is WebSocketResponse.Failure -> {
+                //should be a button to retry
+                FailedClickToTryAgainBox(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "MOD ACTIONS: ${modActionsList.size}"
+                )
+
+            }
+            is WebSocketResponse.FailureAuth403 ->{
+                ErrorMessage403(
+                    hapticFeedback =hapticFeedback,
+                    setDragging={value -> setDragging(value)},
+                    title = "MOD ACTIONS: ${modActionsList.size}"
+                )
+            }
+        }
+
+
+
+    }
+
 }
