@@ -835,6 +835,10 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
         setBoxTwoZIndex(true)
 
+
+        boxTwoSection = Sections.ONE
+        setBoxTwoOffset(0f)
+
         // 5) do special movement on boxTwoOffset for when boxTwoTriple is set to true
 
     }
@@ -1240,6 +1244,10 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
         //5) do special movement on boxThreeOffset for when boxThreeTriple is set to true
         setBoxThreeZIndex(true)
+
+
+        boxThreeSection = Sections.ONE
+        setBoxThreeOffset(0f)
 
     }
     /********************************************  END OF BOX 3 STATE   ******************************************************/
