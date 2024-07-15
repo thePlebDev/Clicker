@@ -28,10 +28,10 @@ enum class BoxNumber{
     ONE,TWO,THREE
 }
 
-data class BoxDragging(
-    val boxOneDragging: Boolean,
-    val boxTwoDragging: Boolean,
-    val boxThreeDragging: Boolean,
+data class BoxZIndexs(
+    val boxOneIndex: Boolean,
+    val boxTwoIndex: Boolean,
+    val boxThreeIndex: Boolean,
 )
 
 //todo: set up the data class called double tap. make it work. Then change its name to BoxDragging and
@@ -70,8 +70,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
     //Todo: this should get changed over to z-index
-    private val _boxesDragging = mutableStateOf(BoxDragging(false,false,false))
-    val boxesDragging: State<BoxDragging> = _boxesDragging
+    private val _boxesZIndex = mutableStateOf(BoxZIndexs(false,false,false))
+    val boxesZIndex: State<BoxZIndexs> = _boxesZIndex
 
     //todo: this should get changed to the boxesDragging
     private val _doubleTap = mutableStateOf(DoubleTap(false,false,false))
@@ -111,27 +111,37 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     fun setBoxOneOffset(newValue:Float){
         boxOneOffsetY = newValue
     }
-    fun setBoxOneDragging(newValue: Boolean){
+    fun setBoxOneZIndex(newValue: Boolean){
         Log.d("TheBoxDraggingset","ONE")
         val boxOneDouble = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
         if(newValue || boxOneDouble){
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxOneDragging = true,
-                boxTwoDragging = false,
-                boxThreeDragging = false,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxOneIndex = true,
+                boxTwoIndex  = false,
+                boxThreeIndex = false,
             )
         }
         else{
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxOneDragging = newValue,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxOneIndex = newValue
             )
         }
 
     }
     fun setBoxOneDoubleTap(newValue:Boolean){
-        _doubleTap.value = _doubleTap.value.copy(
-            boxOneDoubleTap = newValue
-        )
+        if(newValue){
+            _doubleTap.value = _doubleTap.value.copy(
+                boxOneDoubleTap = newValue,
+                boxTwoDoubleTap = false,
+                boxThreeDoubleTap = false,
+            )
+
+        }else{
+            _doubleTap.value = _doubleTap.value.copy(
+                boxOneDoubleTap = newValue
+            )
+
+        }
 
     }
 
@@ -217,7 +227,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     }
 
     var boxOneDragState = DraggableState { delta ->
-        if(_boxesDragging.value.boxOneDragging){ //ensures that the user has to double tap before dragging
+        Log.d("DRAGSTATETESTING","1 delta--> $delta")
+//        if(_boxesDragging.value.boxOneDragging){ //ensures that the user has to double tap before dragging
             if(boxOneIndex != 99 && boxOneIndex !=0){
                 val boxOneIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
                 val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
@@ -237,8 +248,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
                 boxOneOffsetY += delta
             }
-        }
-
+//        }
 
     }
 
@@ -443,6 +453,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //I think I need to update the section to section one and he offset to 0f
         boxOneSection = Sections.ONE
         setBoxOneOffset(0f)
+        setBoxOneZIndex(true)
 
     }
 
@@ -457,27 +468,40 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     fun setBoxTwoOffset(newValue:Float){
         boxTwoOffsetY = newValue
     }
-    fun setBoxTwoDragging(newValue: Boolean){
+    fun setBoxTwoZIndex(newValue: Boolean){
         Log.d("TheBoxDraggingset","TWO")
 
         val boxTwoIsInDoubleState = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
         if(boxTwoIsInDoubleState || newValue){
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxOneDragging = false,
-                boxTwoDragging = true,
-                boxThreeDragging = false,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxOneIndex = false,
+                boxTwoIndex = true,
+                boxThreeIndex= false,
             )
 
         }else{
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxTwoDragging = newValue,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxTwoIndex = newValue,
             )
         }
     }
     fun setBoxTwoDoubleTap(newValue:Boolean){
-        _doubleTap.value = _doubleTap.value.copy(
-            boxTwoDoubleTap = newValue
-        )
+
+        if(newValue){
+            _doubleTap.value = _doubleTap.value.copy(
+                boxOneDoubleTap = false,
+                boxTwoDoubleTap = newValue,
+                boxThreeDoubleTap = false,
+            )
+
+        }else{
+            _doubleTap.value = _doubleTap.value.copy(
+                boxTwoDoubleTap = newValue
+            )
+
+        }
+
+
 
     }
 
@@ -507,7 +531,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     boxThreeIndex =0
                    val newBoxThree = boxThree.copy(index = 0)
                     stateList.tryEmit(listOf(boxOne,boxTwo,newBoxThree))
-                    setBoxOneDragging(true)
+                    setBoxOneZIndex(true)
 
                 }
                 if(checkBoxOneIndex == 99){
@@ -516,7 +540,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     boxOneIndex =0
                     val newBoxOne = boxOne.copy(index = 0)
                     stateList.tryEmit(listOf(newBoxOne,boxTwo,boxThree))
-                    setBoxThreeDragging(true)
+                    setBoxThreeZIndex(true)
                 }
                 _fullChat.value = false
 
@@ -555,6 +579,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     //TODO: IMPLEMENT DELETION and have it reset everything
     // I should have a separate index instaed of 0. It should be 99 or something. Still makes it black but can't be added to
     var boxTwoDragState = DraggableState { delta ->
+        Log.d("DRAGSTATETESTING","2 delta--> $delta")
 //        if(_boxesDragging.value.boxTwoDragging){
             if(boxTwoIndex != 99 && boxTwoIndex != 0){
                 val boxTwoIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
@@ -808,6 +833,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         // 4) emit the new state to stateList
         stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
+        setBoxTwoZIndex(true)
 
         // 5) do special movement on boxTwoOffset for when boxTwoTriple is set to true
 
@@ -824,27 +850,38 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     fun setBoxThreeOffset(newValue:Float){
         boxThreeOffsetY = newValue
     }
-    fun setBoxThreeDragging(newValue: Boolean){
+    fun setBoxThreeZIndex(newValue: Boolean){
         Log.d("TheBoxDraggingset","THREE")
         val boxThreeIsInDoubleState = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
         if(boxThreeIsInDoubleState || newValue){
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxOneDragging = false,
-                boxTwoDragging = false,
-                boxThreeDragging = true,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxOneIndex = false,
+                boxTwoIndex= false,
+                boxThreeIndex = true,
             )
 
         }else{
-            _boxesDragging.value = _boxesDragging.value.copy(
-                boxTwoDragging = newValue,
+            _boxesZIndex.value = _boxesZIndex.value.copy(
+                boxTwoIndex = newValue,
             )
         }
 
     }
     fun setBoxThreeDoubleTap(newValue:Boolean){
-        _doubleTap.value = _doubleTap.value.copy(
-            boxThreeDoubleTap = newValue
-        )
+
+        if(newValue){
+            _doubleTap.value = _doubleTap.value.copy(
+                boxOneDoubleTap = false,
+                boxTwoDoubleTap = false,
+                boxThreeDoubleTap = newValue,
+            )
+
+        }else{
+            _doubleTap.value = _doubleTap.value.copy(
+                boxThreeDoubleTap = newValue
+            )
+
+        }
 
     }
 
@@ -926,6 +963,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
     var boxThreeDragState = DraggableState { delta ->
+
+        Log.d("DRAGSTATETESTING"," 3 delta--> $delta")
+        Log.d("DRAGSTATETESTING"," 3 zIndexes--> ${_boxesZIndex.value}")
 //        if(_boxesDragging.value.boxThreeDragging){ //ensures that the user has to double click before the
             if(boxThreeIndex != 99  && boxThreeIndex != 0){ //todo: this need to be done with all of the drag states
                 val boxThreeIsDoubleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
@@ -1199,6 +1239,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //4) emit new state to stateList
         stateList.tryEmit(listOf(boxTwo,boxOne,boxThree))
         //5) do special movement on boxThreeOffset for when boxThreeTriple is set to true
+        setBoxThreeZIndex(true)
 
     }
     /********************************************  END OF BOX 3 STATE   ******************************************************/
@@ -1219,7 +1260,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     //This is called when a user clicks an item on the navigation side modal
     fun setIndex(newValue:Int){
-        Log.d("SETTINGTHEINDEXAGAIN","CLICK")
+        Log.d("SETTINGTHEINDEXAGAIN","newValue --> $newValue")
 
         if(boxOneIndex ==0){
             Log.d("BoxTwoTriple","1->0")
@@ -1386,6 +1427,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
         Log.d("loggindBoxTwoHeight","boxTwoHeight ->${boxTwoHeight.value}")
         Log.d("checkingForBoxOneDoublesAgain","list ->${listOf(top,center,bottom)}")
+        setBoxTwoZIndex(true)
 
         stateList.tryEmit(listOf(top,center,bottom))
 
@@ -1405,6 +1447,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM)
         boxOneIndex = 99
         boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        setBoxThreeZIndex(true)
 
         stateList.tryEmit(listOf(top,center,bottom))
 
@@ -1424,7 +1467,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
         boxTwoIndex = 99
         stateList.tryEmit(listOf(top,center,bottom))
-        setBoxOneDragging(true)
+        setBoxOneZIndex(true)
     }
     fun syncBoxThreeNBoxTwoForDoubles(){
         Log.d("SyncingDoubles"," syncBoxThreeNBoxTwoForDoubles()")
@@ -1443,7 +1486,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
         stateList.tryEmit(listOf(top,center,bottom))
-        setBoxThreeDragging(true)
+        setBoxThreeZIndex(true)
     }
     fun syncBoxOneNBoxThreeForDoubles(){
         Log.d("SyncingDoubles"," syncBoxOneNBoxThreeForDoubles()")
@@ -1462,7 +1505,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
 
         stateList.tryEmit(listOf(top,center,bottom))
-        setBoxOneDragging(true)
+        setBoxOneZIndex(true)
     }
     fun syncBoxTwoNBoxThreeForDoubles(){
         Log.d("SyncingDoubles"," syncBoxTwoNBoxThreeForDoubles()")
@@ -1482,7 +1525,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         // to avoid another stateList update, I am manually syncing the index for box 3
 
         stateList.tryEmit(listOf(top,center,bottom))
-        setBoxTwoDragging(true)
+        setBoxTwoZIndex(true)
     }
 
 
