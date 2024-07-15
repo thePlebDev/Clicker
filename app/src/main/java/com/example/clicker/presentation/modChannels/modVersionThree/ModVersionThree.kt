@@ -202,10 +202,10 @@ fun ModViewComponentVersionThree(
             boxOneDragState = modVersionThreeViewModel.boxOneDragState,
             boxOneSection = modVersionThreeViewModel.boxOneSection,
             boxOneIndex = modVersionThreeViewModel.boxOneIndex,
-            boxOneDragging = modVersionThreeViewModel.boxesDragging.value.boxOneDragging,
+            boxOneDragging = modVersionThreeViewModel.boxesZIndex.value.boxOneIndex,
             setBoxOneDragging = { newValue ->
                 Log.d("LoggingTheDragging", "ONE")
-                modVersionThreeViewModel.setBoxOneDragging(newValue)
+                modVersionThreeViewModel.setBoxOneZIndex(newValue)
             },
             setBoxOneIndex = { newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue) },
             deleteBoxOne = modVersionThreeViewModel.deleteBoxOne,
@@ -219,8 +219,8 @@ fun ModViewComponentVersionThree(
             boxTwoDragState = modVersionThreeViewModel.boxTwoDragState,
             boxTwoSection = modVersionThreeViewModel.boxTwoSection,
             boxTwoIndex = modVersionThreeViewModel.boxTwoIndex,
-            boxTwoDragging = modVersionThreeViewModel.boxesDragging.value.boxTwoDragging,
-            setBoxTwoDragging = { newValue -> modVersionThreeViewModel.setBoxTwoDragging(newValue) },
+            boxTwoDragging = modVersionThreeViewModel.boxesZIndex.value.boxTwoIndex,
+            setBoxTwoDragging = { newValue -> modVersionThreeViewModel.setBoxTwoZIndex(newValue) },
             setBoxTwoIndex = { newValue ->
                 Log.d("LoggingTheDragging", "TWO")
                 modVersionThreeViewModel.syncBoxTwoIndex(newValue)
@@ -236,9 +236,9 @@ fun ModViewComponentVersionThree(
             boxThreeDragState = modVersionThreeViewModel.boxThreeDragState,
             boxThreeSection = modVersionThreeViewModel.boxThreeSection,
             boxThreeIndex = modVersionThreeViewModel.boxThreeIndex,
-            boxThreeDragging = modVersionThreeViewModel.boxesDragging.value.boxThreeDragging,
+            boxThreeDragging = modVersionThreeViewModel.boxesZIndex.value.boxThreeIndex,
             setBoxThreeDragging = { newValue ->
-                modVersionThreeViewModel.setBoxThreeDragging(
+                modVersionThreeViewModel.setBoxThreeZIndex(
                     newValue
                 )
             },
@@ -536,12 +536,7 @@ fun ModVersionThree(
                         }
                     }
                 },
-//                onDoubleClick = {
-//                    if(boxOneIndex != 99){
-//                        setBoxOneDragging(true)
-//                    }
-//
-//                }
+
             ) {
                 ContentDragBox(
                     boxOneIndex,
