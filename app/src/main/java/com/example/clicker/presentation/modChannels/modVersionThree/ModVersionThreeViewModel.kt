@@ -1268,6 +1268,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     //This is called when a user clicks an item on the navigation side modal
     fun setIndex(newValue:Int){
+
         Log.d("SETTINGTHEINDEXAGAIN","newValue --> $newValue")
 
         if(boxOneIndex ==0){
@@ -1286,15 +1287,18 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             }
             else{
 
-                Log.d("BoxOneIndexTesting","triggered")
+
                // check the doubles
                 if(checkingBoxTwoIndexForDoubles(newValue)){
+                    Log.d("BoxOneIndexTesting","syncBoxTwoDouble()")
                     syncBoxTwoDouble()
                 }
                 else if(checkingBoxThreeIndexForDoubles(newValue)){
+                    Log.d("BoxOneIndexTesting","syncBoxThreeDouble()")
                     syncBoxThreeDouble()
                 }
                 else{
+                    Log.d("BoxOneIndexTesting","syncBoxThreeDouble()")
                     syncBoxOneIndex(newValue)
                 }
 
@@ -1320,11 +1324,11 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
 
                 if(checkingBoxOneIndexForDoubles(newValue)){
-                    Log.d("stateListIndexLogging","ONE DOUBLE")
+                    Log.d("BoxOneIndexTesting","syncBoxOneDouble()")
                     syncBoxOneDouble()
                 }
                 else if(checkingBoxThreeIndexForDoubles(newValue)){
-                    Log.d("stateListIndexLogging","THREE DOUBLE")
+                    Log.d("BoxOneIndexTesting","syncBoxThreeNBoxTwoForDoubles()")
                     //when this function runs we know 2 things:
                     //1) boxTwo == 0
                     //2) boxThree == newValue
@@ -1355,6 +1359,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
                 if(checkingBoxOneIndexForDoubles(newValue)){
                     Log.d("stateListIndexLogging","ONE DOUBLE")
+                    Log.d("BoxOneIndexTesting","syncBoxOneNBoxThreeForDoubles()")
                     // when this function runs we know 2 things:
                     // 1) boxOne == newValue
                     //2) boxThree == 0
@@ -1363,6 +1368,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 }
                 else if(checkingBoxTwoIndexForDoubles(newValue)){
                     Log.d("stateListIndexLogging","TWO DOUBLE")
+                    Log.d("BoxOneIndexTesting","syncBoxTwoNBoxThreeForDoubles()")
                     syncBoxTwoNBoxThreeForDoubles()
                 }
                 else{
