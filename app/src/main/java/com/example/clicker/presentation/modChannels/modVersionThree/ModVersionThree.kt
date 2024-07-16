@@ -391,6 +391,10 @@ fun ModViewComponentVersionThree(
             manageAutoModMessage ={
                     messageId,action -> modViewViewModel.manageAutoModMessage(messageId,action)
             },
+            changeAutoModQueueChecked ={value ->modViewViewModel.changeAutoModQueueChecked(value)},
+            changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)},
+            autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
+            modActionsChecked=modViewViewModel.uiState.value.modActionNotifications,
 
         )
     }
@@ -459,6 +463,11 @@ fun ModVersionThree(
     autoModStatus: WebSocketResponse<Boolean>,
     manageAutoModMessage:(String,String)-> Unit,
 
+    changeAutoModQueueChecked: (Boolean) -> Unit,
+    changeModActionsChecked: (Boolean) -> Unit,
+    modActionsChecked: Boolean,
+    autoModQueueChecked: Boolean
+
 
 
 
@@ -480,10 +489,10 @@ fun ModVersionThree(
                 ModViewDrawerContent(
                     checkIndexAvailability ={newValue ->updateIndex(newValue)},
                     showError = showError,
-                    autoModQueueChecked = true,
-                    modActionsChecked =true,
-                    changeAutoModQueueChecked={newValue ->},
-                    changeModActionsChecked={newValue ->}
+                    autoModQueueChecked = autoModQueueChecked,
+                    modActionsChecked =modActionsChecked,
+                    changeAutoModQueueChecked={newValue ->changeAutoModQueueChecked(newValue)},
+                    changeModActionsChecked={newValue ->changeModActionsChecked(newValue)}
                 )
             }
 
@@ -561,7 +570,6 @@ fun ModVersionThree(
                     },
                     modActions={
                         NewModActions(
-                            dragging =boxThreeDragging,
                             setDragging={newValue ->
                                 setBoxOneDoubleTap(newValue)
                                 setBoxOneDragging(true)
@@ -572,7 +580,6 @@ fun ModVersionThree(
                     },
                     autoModQueue = {
                         NewAutoModQueueBox(
-                            dragging =boxTwoDragging,
                             setDragging={newValue ->
                                 setBoxOneDoubleTap(newValue)
                                 setBoxOneDragging(true)
@@ -647,7 +654,6 @@ fun ModVersionThree(
                     },
                     modActions={
                         NewModActions(
-                            dragging =boxThreeDragging,
                             setDragging={newValue ->
                                 setBoxTwoDoubleTap(newValue)
                                 setBoxTwoDragging(true)
@@ -658,7 +664,6 @@ fun ModVersionThree(
                     },
                     autoModQueue = {
                         NewAutoModQueueBox(
-                            dragging =boxTwoDragging,
                             setDragging={newValue ->
                                 setBoxTwoDoubleTap(newValue)
                                 setBoxTwoDragging(true)
@@ -733,7 +738,6 @@ fun ModVersionThree(
                     },
                     modActions={
                         NewModActions(
-                            dragging =boxThreeDragging,
                             setDragging={newValue ->
                                 setBoxThreeDoubleTap(newValue)
                                 setBoxThreeDoubleTap(true)
@@ -744,7 +748,6 @@ fun ModVersionThree(
                     },
                     autoModQueue = {
                         NewAutoModQueueBox(
-                            dragging =boxTwoDragging,
                             setDragging={newValue ->
                                 setBoxThreeDoubleTap(newValue)
                                 setBoxThreeDoubleTap(true)
@@ -1509,7 +1512,6 @@ fun BoxDeleteSection(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NewModActions(
-    dragging:Boolean,
     setDragging:(Boolean)->Unit,
     modActionStatus: WebSocketResponse<Boolean>,
     modActionsList: List<ModActionData>
@@ -1519,7 +1521,6 @@ fun NewModActions(
 
 
     val listState = rememberLazyListState()
-    val opacity = if(dragging) 0.5f else 0f
 
     val scope = rememberCoroutineScope()
     var autoscroll by remember { mutableStateOf(true) }
@@ -1666,7 +1667,6 @@ fun NewModActions(
 @Composable
 fun NewAutoModQueueBox(
     setDragging: (Boolean) -> Unit,
-    dragging:Boolean,
     autoModMessageList:List<AutoModQueueMessage>,
     manageAutoModMessage:(String,String)-> Unit,
     autoModStatus: WebSocketResponse<Boolean>,
@@ -1708,7 +1708,6 @@ fun NewAutoModQueueBox(
         }
     }
 
-    val opacity = if(dragging) 0.5f else 0f
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)
@@ -1800,13 +1799,6 @@ fun NewAutoModQueueBox(
         }
 
 
-    }
-    if(dragging){
-        com.example.clicker.presentation.stream.views.streamManager.DetectDoubleClickSpacer(
-            opacity,
-            setDragging = { newValue -> setDragging(newValue) },
-            hapticFeedback = { hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress) }
-        )
     }
     ConnectionErrorResponse(
         connectionError,
