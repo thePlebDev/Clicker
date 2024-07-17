@@ -33,6 +33,7 @@ class TwitchEventSub @Inject constructor(
         type:String,
     ):Flow<WebSocketResponse<Boolean>> = flow {
         emit(WebSocketResponse.Loading)
+        Log.d("createEventSubSubscription","type ->$type")
 
         val body = EvenSubSubscription(
             type = type,
@@ -55,6 +56,10 @@ class TwitchEventSub @Inject constructor(
             emit(WebSocketResponse.Success(true))
         } else {
             if(response.code() == 403){
+                Log.d("createEventSubSubscription","403")
+                Log.d("createEventSubSubscription", response.message())
+                Log.d("createEventSubSubscription", "body -> ${response.body() }")
+
                 emit(WebSocketResponse.FailureAuth403(Exception("Token error")))
 
             }else{
