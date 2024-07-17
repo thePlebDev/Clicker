@@ -71,6 +71,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -294,6 +295,8 @@ fun ModViewComponentVersionThree(
                         Log.d("DOUBLECLICKDRAGGING", "click from the outside")
                         setDragging()
                     },
+                    doubleClickAndDrag= modVersionThreeViewModel.doubleClickAndDrag.value,
+                    setDoubleClickAndDragFalse={modVersionThreeViewModel.updateDoubleClickAndDrag(false)}
                 )
             },
             fullChat = { setDragging ->
@@ -395,6 +398,8 @@ fun ModViewComponentVersionThree(
             changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)},
             autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
             modActionsChecked=modViewViewModel.uiState.value.modActionNotifications,
+            doubleClickAndDrag= modVersionThreeViewModel.doubleClickAndDrag.value,
+            setDoubleClickAndDragFalse={modVersionThreeViewModel.updateDoubleClickAndDrag(false)}
 
         )
     }
@@ -466,7 +471,10 @@ fun ModVersionThree(
     changeAutoModQueueChecked: (Boolean) -> Unit,
     changeModActionsChecked: (Boolean) -> Unit,
     modActionsChecked: Boolean,
-    autoModQueueChecked: Boolean
+    autoModQueueChecked: Boolean,
+
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
 
 
 
@@ -575,7 +583,9 @@ fun ModVersionThree(
                                 setBoxOneDragging(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList
+                            modActionsList=modActionsList,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     },
                     autoModQueue = {
@@ -589,6 +599,8 @@ fun ModVersionThree(
                             connectionError =Response.Success(true),
                             reconnect = {},
                             autoModStatus=autoModStatus,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     }
                 )
@@ -659,7 +671,9 @@ fun ModVersionThree(
                                 setBoxTwoDragging(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList
+                            modActionsList=modActionsList,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     },
                     autoModQueue = {
@@ -673,6 +687,8 @@ fun ModVersionThree(
                             connectionError =Response.Success(true),
                             reconnect = {},
                             autoModStatus=autoModStatus,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     }
 
@@ -743,7 +759,9 @@ fun ModVersionThree(
                                 setBoxThreeDoubleTap(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList
+                            modActionsList=modActionsList,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     },
                     autoModQueue = {
@@ -757,6 +775,8 @@ fun ModVersionThree(
                             connectionError =Response.Success(true),
                             reconnect = {},
                             autoModStatus=autoModStatus,
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     }
 
@@ -1244,6 +1264,8 @@ fun SmallChat(
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
     setDragging: (Boolean) -> Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
 
     ){
     val lazyColumnListState = rememberLazyListState()
@@ -1271,6 +1293,8 @@ fun SmallChat(
                 isMod = isMod,
                 inlineContentMap=inlineContentMap,
                 setDragging = {value -> setDragging(value)},
+                doubleClickAndDrag=doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
 
                 )
         },
@@ -1396,6 +1420,8 @@ fun SmallChatUILazyColumn(
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
     setDragging: (Boolean) -> Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
 ){
     val coroutineScope = rememberCoroutineScope()
     val chatUIScope = remember(){ ImprovedChatUI() }
@@ -1410,22 +1436,12 @@ fun SmallChatUILazyColumn(
             }
         }
         stickyHeader {
-            Text(
-                "Chat",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                    .combinedClickable(
-                        onDoubleClick = {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            setDragging(true)
-                        },
-                        onClick = {}
-                    )
-                    .padding(horizontal = 10.dp)
+            ChatHeader(
+                setDragging ={newValue -> setDragging(newValue)},
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
+
         }
         with(chatUIScope){
             items(
@@ -1453,6 +1469,49 @@ fun SmallChatUILazyColumn(
                 )
 
             }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChatHeader(
+    setDragging: (Boolean) -> Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
+
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .combinedClickable(
+                onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    setDragging(true)
+                    setDoubleClickAndDragFalse()
+                },
+                onClick = {}
+            )
+            .padding(horizontal = 10.dp),
+        horizontalArrangement =Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
+    ){
+        Text(
+            "Chat",
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+        )
+        if(doubleClickAndDrag){
+            Text(
+                "Double click and drag",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                )
         }
 
     }
@@ -1514,7 +1573,9 @@ fun BoxDeleteSection(
 fun NewModActions(
     setDragging:(Boolean)->Unit,
     modActionStatus: WebSocketResponse<Boolean>,
-    modActionsList: List<ModActionData>
+    modActionsList: List<ModActionData>,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
 ){
     val hapticFeedback = LocalHapticFeedback.current
     //todo: GET THIS LIST FROM THE WEBSOCKET
@@ -1581,21 +1642,12 @@ fun NewModActions(
 
                 ) {
                     stickyHeader {
-                        Text(
-                            "MOD ACTIONS: ${modActionsList.size} ",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                                .combinedClickable(
-                                    onDoubleClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        setDragging(true)
-                                    },
-                                    onClick = {}
-                                )
-                                .padding(horizontal = 10.dp)
+                        ModActionsHeader(
+                            headerText ="MOD ACTIONS: ${modActionsList.size} ",
+                            setDragging ={newValue ->setDragging(newValue)},
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+
                         )
                     }
                     items(modActionsList){modAction->
@@ -1640,16 +1692,66 @@ fun NewModActions(
                 )
 
             }
-            is WebSocketResponse.FailureAuth403 ->{
-                ErrorMessage403(
-                    hapticFeedback =hapticFeedback,
-                    setDragging={value -> setDragging(value)},
-                    title = "MOD ACTIONS: ${modActionsList.size}"
+            is WebSocketResponse.FailureAuth403 -> {
+                NewErrorMessage403(
+                    setDragging = { value -> setDragging(value) },
+                    title = "MOD ACTIONS: ${modActionsList.size}",
+                    doubleClickAndDrag =doubleClickAndDrag,
+                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                 )
+
+
             }
+
+
+
         }
 
 
+
+    }
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ModActionsHeader(
+    setDragging:(Boolean)->Unit,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean,
+    headerText:String,
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .combinedClickable(
+                onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    setDragging(true)
+                    setDoubleClickAndDragFalse()
+                },
+                onClick = {}
+            )
+            .padding(horizontal = 10.dp),
+        horizontalArrangement =Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
+    ){
+        Text(
+            headerText,
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+        )
+        if(doubleClickAndDrag){
+            Text(
+                "Double click and drag",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                )
+        }
 
     }
 
@@ -1671,7 +1773,9 @@ fun NewAutoModQueueBox(
     manageAutoModMessage:(String,String)-> Unit,
     autoModStatus: WebSocketResponse<Boolean>,
     connectionError: Response<Boolean>,
-    reconnect:()->Unit
+    reconnect:()->Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
 
 ){
     val hapticFeedback = LocalHapticFeedback.current
@@ -1733,21 +1837,11 @@ fun NewAutoModQueueBox(
                         }
                     }
                     stickyHeader {
-                        Text(
-                            "AutoMod Queue",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
-                                .combinedClickable(
-                                    onDoubleClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        setDragging(true)
-                                    },
-                                    onClick = {}
-                                )
-                                .padding(horizontal = 10.dp)
+
+                        AutoModHeader(
+                            setDragging ={newValue -> setDragging(newValue)},
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                         )
                     }
 
@@ -1788,10 +1882,12 @@ fun NewAutoModQueueBox(
 
             }
             is WebSocketResponse.FailureAuth403->{
-                ErrorMessage403(
-                    hapticFeedback =hapticFeedback,
-                    setDragging={value -> setDragging(value)},
-                    title = "AutoMod Queue"
+
+                NewErrorMessage403(
+                    setDragging = { value -> setDragging(value) },
+                    title = "AutoMod Queue",
+                    doubleClickAndDrag =doubleClickAndDrag,
+                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                 )
 
             }
@@ -1804,6 +1900,121 @@ fun NewAutoModQueueBox(
         connectionError,
         reconnect ={reconnect()}
     )
+
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AutoModHeader(
+    setDragging: (Boolean) -> Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
+){
+
+    val hapticFeedback = LocalHapticFeedback.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .combinedClickable(
+                onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    setDragging(true)
+                    setDoubleClickAndDragFalse()
+                },
+                onClick = {}
+            )
+            .padding(horizontal = 10.dp),
+        horizontalArrangement =Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
+    ){
+        Text(
+            "AutoMod Queue",
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+        )
+        if(doubleClickAndDrag){
+            Text(
+                "Double click and drag",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                )
+        }
+
+    }
+
+}
+/********************************** Response messages **********************************************/
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NewErrorMessage403(
+    setDragging: (Boolean) -> Unit,
+    title:String,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary)
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                        setDoubleClickAndDragFalse()
+                    },
+                    onClick = {}
+                )
+                .align(Alignment.TopCenter)
+                .padding(horizontal = 10.dp),
+            horizontalArrangement =Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+
+        ){
+            Text(
+                title,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+
+                )
+            if(doubleClickAndDrag){
+                Text(
+                    "Double click and drag",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                    )
+            }
+
+        }
+
+        NewIconTextRow(
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+    }
+}
+
+@Composable
+fun NewIconTextRow(
+    modifier:Modifier
+) {
+
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+        Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+        Text(
+            text = "Token error! Please login again to be issued a new token from Twitch",
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
 
 
 }

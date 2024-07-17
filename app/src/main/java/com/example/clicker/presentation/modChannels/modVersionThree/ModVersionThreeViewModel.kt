@@ -88,6 +88,10 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     val fullChat:State<Boolean> = _fullChat
 
 
+    private val _doubleClickAndDrag = mutableStateOf(true)
+    val doubleClickAndDrag: State<Boolean> = _doubleClickAndDrag
+
+
 
 
     init{
@@ -98,6 +102,9 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         Log.d("TheIndivHeight","height of indiv box NON-DP--> $nonDPHeight")
         Log.d("TheIndivHeight","section2height--> $section2height")
         Log.d("TheIndivHeight","section3Height--> $section3Height")
+    }
+    fun updateDoubleClickAndDrag(newValue:Boolean){
+        _doubleClickAndDrag.value = newValue
     }
 
     /****************************************BOX ONE RELATED STATE*********************************************************/
