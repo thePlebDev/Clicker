@@ -391,34 +391,6 @@ fun ChatUIBox(
 
 }
 
-@Composable
-fun SlashCommandBlock(
-    modifier:Modifier
-){
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .offset(y = (-80).dp)
-        .background(MaterialTheme.colorScheme.primary)
-        .padding(horizontal = 10.dp)
-        .zIndex(6f)){
-        Text("/ban [username] [reason]",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-        Text("Permanently ban a user form chat",
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-            fontSize = 13.sp,
-            lineHeight = 15.sp
-        )
-        Spacer(modifier =Modifier.height(10.dp))
-        Text("/unban [username]",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-        Text(
-            "Remove a timeout or a permanent ban on a user.",
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-            fontSize = 13.sp,
-            lineHeight = 15.sp
-        )
-
-    }
-
-}
 fun LazyGridScope.header(
     content: @Composable LazyGridItemScope.() -> Unit
 ) {
@@ -1736,7 +1708,9 @@ fun ForwardSlash(
                 )
                Text(
                     command.subtitle,
-                    color = MaterialTheme.colorScheme.onPrimary
+                   color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                   fontSize = 13.sp,
+                   lineHeight = 15.sp
                 )
             }
         }
