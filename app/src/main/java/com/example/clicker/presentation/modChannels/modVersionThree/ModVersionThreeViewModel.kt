@@ -112,7 +112,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     var boxOneSection by mutableStateOf(Sections.ONE)
     var boxOneIndex by mutableIntStateOf(1)
     var deleteBoxOne by mutableStateOf(false)
-    var boxOneHeight by mutableStateOf((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp)
+    //*1.9
+    var boxOneHeight by mutableStateOf(((Resources.getSystem().displayMetrics.heightPixels / 8.4)).dp)
 
 
     fun setBoxOneOffset(newValue:Float){
@@ -442,6 +443,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         //todo: we need to do 5 things:
         //1) increase the boxOneHeight
+        //todo: for doubles and triples we need to increase the height by 2
         boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp
         //2) set boxOne double to false and boxOne triple to true
         val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, tripleSize = true,height=((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp)

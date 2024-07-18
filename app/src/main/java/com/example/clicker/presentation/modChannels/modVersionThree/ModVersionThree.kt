@@ -110,6 +110,7 @@ import com.example.clicker.presentation.modView.views.ModActionNotificationMessa
 import com.example.clicker.presentation.modView.views.ScrollToBottomModView
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
+import androidx.window.layout.WindowMetrics
 
 enum class Sections {
     ONE, TWO, THREE
@@ -128,6 +129,7 @@ fun ModViewComponentVersionThree(
     hideSoftKeyboard:()->Unit,
     modVersionThreeViewModel:ModVersionThreeViewModel
 ){
+
     val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
@@ -188,7 +190,7 @@ fun ModViewComponentVersionThree(
                     //  streamViewModel.unBanUser()
                 },
                 //todo: turn this back into --> streamViewModel.state.value.loggedInUserData?.mod ?: false
-                isMod = true,
+                isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                 openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
                 openBanDialog = { streamViewModel.openBanDialog.value = true },
                 shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
