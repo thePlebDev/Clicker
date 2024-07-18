@@ -102,6 +102,15 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         Log.d("TheIndivHeight","height of indiv box NON-DP--> $nonDPHeight")
         Log.d("TheIndivHeight","section2height--> $section2height")
         Log.d("TheIndivHeight","section3Height--> $section3Height")
+
+        val displayMetrics = Resources.getSystem().displayMetrics
+        val heightPixels = displayMetrics.heightPixels
+        val density = displayMetrics.density
+        Log.d("TheIndivHeight","------------------------------------------------------------------")
+
+        Log.d("TheIndivHeight","heightPixels -> ${heightPixels }")
+        Log.d("TheIndivHeight","density -> ${((heightPixels / density)/3.2).dp}")
+        Log.d("TheIndivHeight","boxOneHeight -> ${((Resources.getSystem().displayMetrics.heightPixels / 8.4)).dp }")
     }
     fun updateDoubleClickAndDrag(newValue:Boolean){
         _doubleClickAndDrag.value = newValue
@@ -112,8 +121,18 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     var boxOneSection by mutableStateOf(Sections.ONE)
     var boxOneIndex by mutableIntStateOf(1)
     var deleteBoxOne by mutableStateOf(false)
+
+    //testing things below:
+    val displayMetrics = Resources.getSystem().displayMetrics
+    val heightPixels = displayMetrics.heightPixels //exact physical pixel amount(different on certain devices)
+    val density = displayMetrics.density //density multiplier
+    val pixelDensityIndependentHeight =heightPixels / density
     //*1.9
-    var boxOneHeight by mutableStateOf(((Resources.getSystem().displayMetrics.heightPixels / 8.4)).dp)
+    // (Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
+    //((heightPixels / density)/3.2).dp
+    var boxOneHeight by mutableStateOf(((heightPixels / density)/3.2).dp)
+    val height = Resources.getSystem().displayMetrics.density
+
 
 
     fun setBoxOneOffset(newValue:Float){
@@ -165,7 +184,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         if(newValue ==0){ //THis means that we are going to delete box two
 
 
-            boxOneHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
+            boxOneHeight =  ((heightPixels / density)/3.2).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
             val doubleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.doubleSize
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.tripleSize
@@ -444,7 +463,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         //todo: we need to do 5 things:
         //1) increase the boxOneHeight
         //todo: for doubles and triples we need to increase the height by 2
-        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp
+        boxOneHeight =(  ((heightPixels / density)/3.2)*3).dp
         //2) set boxOne double to false and boxOne triple to true
         val boxOne = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(doubleSize = false, tripleSize = true,height=((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp)
         //3) set the boxTwo and the boxThree index to 99
@@ -473,7 +492,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     var boxTwoSection by mutableStateOf(Sections.TWO)
     var boxTwoIndex by mutableStateOf(2)
     var deleteBoxTwo by mutableStateOf(false)
-    var boxTwoHeight by mutableStateOf((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp)
+    var boxTwoHeight by mutableStateOf(((heightPixels / density)/3.2).dp)
     fun setBoxTwoOffset(newValue:Float){
         boxTwoOffsetY = newValue
     }
@@ -523,7 +542,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         if(newValue ==0){ //THis means that we are going to delete box two
 
 
-            boxTwoHeight =(Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
+            boxTwoHeight =  ((heightPixels / density)/3.2).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
             val doubleSize =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.doubleSize
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.tripleSize
@@ -829,7 +848,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         //todo: we need to do 5 things:
         // 1) increase the boxTwoheight
-        boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp
+        boxTwoHeight =(  ((heightPixels / density)/3.2)*3).dp
         // 2) set boxTwo double to false and boxTwo triple to true
         val boxTwo = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(doubleSize = false, tripleSize = true, height = ((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp)
 
@@ -859,7 +878,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     var boxThreeSection by mutableStateOf(Sections.THREE)
     var boxThreeIndex by mutableStateOf(3)
     var deleteBoxThree by mutableStateOf(false)
-    var boxThreeHeight by mutableStateOf((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp)
+    var boxThreeHeight by mutableStateOf(((heightPixels / density)/3.2).dp)
     fun setBoxThreeOffset(newValue:Float){
         boxThreeOffsetY = newValue
     }
@@ -908,7 +927,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         if(newValue ==0) { //THis means that we are going to delete box two
 
 
-            boxThreeHeight = (Resources.getSystem().displayMetrics.heightPixels / 8.4).dp
+            boxThreeHeight = ((heightPixels / density)/3.2).dp
             //todo: before this goes up I need an error UI that tells me I can not add things
             val doubleSize = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.doubleSize
             val tripleSize =stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.tripleSize
@@ -1241,7 +1260,8 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         // when this function runs, we know this. Box three is in double mode
         //todo: we need to do 5 things:
         //1) increase the boxThreeHeight
-        boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*3).dp
+
+        boxThreeHeight =( ((heightPixels / density)/3.2)*3).dp
         //2) set boxThree double to false and boxThree triple to true
         val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(doubleSize = false, tripleSize = true)
         //3) set boxOne and boxTwoIndex to 99
@@ -1447,7 +1467,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM)
         boxOneIndex =99
-        boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxTwoHeight =(((heightPixels / density)/3.2)*2).dp
         Log.d("loggindBoxTwoHeight","boxTwoHeight ->${boxTwoHeight.value}")
         Log.d("checkingForBoxOneDoublesAgain","list ->${listOf(top,center,bottom)}")
         setBoxTwoZIndex(true)
@@ -1469,7 +1489,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val center = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.CENTER, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM)
         boxOneIndex = 99
-        boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxThreeHeight =( ((heightPixels / density)/3.2)*2).dp
         setBoxThreeZIndex(true)
 
         stateList.tryEmit(listOf(top,center,bottom))
@@ -1487,7 +1507,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
 
-        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxOneHeight =(((heightPixels / density)/3.2)*2).dp
         boxTwoIndex = 99
         stateList.tryEmit(listOf(top,center,bottom))
         setBoxOneZIndex(true)
@@ -1505,7 +1525,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val center = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
         boxTwoIndex = 99
-        boxThreeHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxThreeHeight =( ((heightPixels / density)/3.2)*2).dp
 
 
         stateList.tryEmit(listOf(top,center,bottom))
@@ -1525,7 +1545,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.TWO }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
 
         boxThreeIndex = 99
-        boxOneHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxOneHeight =(  ((heightPixels / density)/3.2)*2).dp
 
         stateList.tryEmit(listOf(top,center,bottom))
         setBoxOneZIndex(true)
@@ -1544,7 +1564,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         val center = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!.copy(dragging = false, position = Positions.CENTER, doubleSize = false, index = 99)
         val bottom = stateList.value.find { it.boxNumber == BoxNumber.ONE }!!.copy(dragging = false, position = Positions.BOTTOM, doubleSize = false)
         boxThreeIndex = 99
-        boxTwoHeight =((Resources.getSystem().displayMetrics.heightPixels / 8.4)*2).dp
+        boxTwoHeight =(((heightPixels / density)/3.2)*2).dp
         // to avoid another stateList update, I am manually syncing the index for box 3
 
         stateList.tryEmit(listOf(top,center,bottom))
