@@ -114,6 +114,13 @@ fun ModChannelView(
                     streamViewModel.state.value.clientId,
                     streamViewModel.state.value.broadcasterId,
                 )
+                //todo: I think this is where I need to make the call
+                Log.d("CLickingtestingTHingy","AGAIN CLICKED")
+                streamViewModel.getGlobalChatBadges(
+                    oAuthToken =homeViewModel.state.value.oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                )
+                streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
                                  },
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={
