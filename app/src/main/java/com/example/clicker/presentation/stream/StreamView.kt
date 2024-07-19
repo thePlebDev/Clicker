@@ -45,6 +45,7 @@ import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
+import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
@@ -118,8 +119,7 @@ fun StreamView(
             isMod
         )
     } }
-//    val showTimeOutDialog = remember{ mutableStateOf(false) }
-//    val showBanDialog = remember{ mutableStateOf(false) }
+    val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
 //
@@ -188,10 +188,16 @@ fun StreamView(
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                             updateShouldMonitorUser = {},
                             clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
+                            openWarnDialog={showWarnDialog.value = true}
                             )
                     }
                 ){
                     //this is where the chatUI goes
+                    if(showWarnDialog.value){
+                        WarningDialog(
+                            onDismissRequest={showWarnDialog.value = false}
+                        )
+                    }
 
 
                     //todo:this is the dialogs
