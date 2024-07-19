@@ -35,6 +35,8 @@ import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.network.clients.IndivBetterTTVEmote
+import com.example.clicker.network.clients.WarnData
+import com.example.clicker.network.clients.WarnUserBody
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
@@ -1187,7 +1189,32 @@ class StreamViewModel @Inject constructor(
         }
 
     }
+/******************************WARNING USER**********************************************************/
+fun warnUser()=viewModelScope.launch(Dispatchers.IO){
+    val warnUserBody = WarnUserBody(
+        data = WarnData(
+            user_id = _clickedUIState.value.clickedUserId,
+            reason = "Stinky"
+        )
+    )
+    Log.d("warnUserFunc","oAuthToken ->${_uiState.value.oAuthToken}")
+    Log.d("warnUserFunc","clientId ->${_uiState.value.clientId}")
+    Log.d("warnUserFunc","userId ->${_uiState.value.userId}")
+    Log.d("warnUserFunc","broadcasterId ->${_uiState.value.broadcasterId}")
+    Log.d("warnUserFunc","warnUserBody ->${warnUserBody.data}")
 
+    twitchRepoImpl.warnUser(
+        oAuthToken = _uiState.value.oAuthToken,
+        clientId = _uiState.value.clientId,
+        moderatorId = _uiState.value.userId,
+        broadcasterId = _uiState.value.broadcasterId,
+        body=warnUserBody
+    ).collect{response ->
+
+
+    }
+
+}
 
 
     fun timeoutUser() = viewModelScope.launch {

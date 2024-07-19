@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.ChannelInformation
 import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.clients.WarnUserBody
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
@@ -11,6 +12,7 @@ import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.util.Response
+import com.example.clicker.util.WebSocketResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -155,6 +157,41 @@ class TwitchStreamImpl @Inject constructor(
 
         // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
         handleException(cause)
+    }
+
+    override suspend fun warnUser(
+        oAuthToken: String,
+        clientId: String,
+        moderatorId: String,
+        broadcasterId: String,
+        body: WarnUserBody
+    ): Flow<Response<Boolean>> =flow{
+        emit(Response.Loading)
+        val response = twitchClient.warnUser(
+            authorizationToken = "Bearer $oAuthToken",
+            clientId = clientId,
+            broadcasterId = broadcasterId,
+            moderatorId = moderatorId,
+            body = body
+        )
+        if(response.isSuccessful){
+            Log.d("warnUserResponse","SUCCESS")
+            val data = response.body()?.data?.get(0)
+            Log.d("warnUserResponse","response -> $data")
+            emit(Response.Success(true))
+        }else{
+            Log.d("warnUserResponse","FAILED")
+            emit(Response.Failure(Exception("There was a problem")))
+            Log.d("warnUserResponse","code ->${response.code()}")
+            Log.d("warnUserResponse","code ->${response.message()}")
+
+        }
+
+    }.catch {cause ->
+        Log.d("warnUserResponse","EXCEPTION")
+        Log.d("warnUserResponse","message ->${cause.message}")
+        Log.d("warnUserResponse","cause ->${cause.cause}")
+        emit(Response.Failure(Exception("Error caught")))
     }
 
     override suspend fun getAutoModSettings(

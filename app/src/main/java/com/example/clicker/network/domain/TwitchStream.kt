@@ -2,6 +2,8 @@ package com.example.clicker.network.domain
 
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.ChannelInformation
+import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.clients.WarnUserBody
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.ChatSettings
@@ -108,6 +110,19 @@ interface TwitchStream {
         userId: String
 
     ): Flow<Response<Boolean>>
+
+
+    suspend fun warnUser(
+        oAuthToken: String,
+        clientId: String,
+        moderatorId: String,
+        broadcasterId: String,
+        body: WarnUserBody
+
+    ): Flow<Response<Boolean>>
+
+
+
 
     /**
      * - getAutoModSettings represents a GET method. a function meant to get the AutoMod settings of the currently viewed stream

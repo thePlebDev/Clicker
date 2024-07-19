@@ -136,7 +136,8 @@ fun ImprovedBanDialog(
 }
 @Composable
 fun WarningDialog(
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    warnUser:()->Unit,
 ){
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
@@ -179,7 +180,7 @@ fun WarningDialog(
                 WarningDialogConfirmCancelButtonRow(
                     cancelText="Cancel",
                     confirmText="Warn",
-                    confirmAction={onDismissRequest()},
+                    confirmAction={warnUser()},
                     onDismissRequest={onDismissRequest()},
 
                 )

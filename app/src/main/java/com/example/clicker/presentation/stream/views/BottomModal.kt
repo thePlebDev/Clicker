@@ -264,7 +264,7 @@ object BottomModal{
             updateShouldMonitorUser:()->Unit
         ){
             Log.d("ContentBottomModerator","isMod --> $isMod")
-            val testing = true
+
 
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End){
                 Row(
@@ -272,7 +272,7 @@ object BottomModal{
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (testing) {
+                    if (true) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
                             WarnButton(
                                 openWarnDialog={openWarnDialog()}
