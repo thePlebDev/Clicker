@@ -260,6 +260,7 @@ object BottomModal{
             updateShouldMonitorUser:()->Unit
         ){
             Log.d("ContentBottomModerator","isMod --> $isMod")
+            val testing = true
 
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End){
                 Row(
@@ -267,17 +268,12 @@ object BottomModal{
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (isMod) {
+                    if (testing) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
-                            Button(
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                                onClick = {
-                                   openTimeoutDialog()
-                                },
-                                modifier = Modifier.padding(end = 20.dp)
-                            ) {
-                                Text(stringResource(R.string.timeout),color = MaterialTheme.colorScheme.onSecondary)
-                            }
+                            WarnButton()
+                            TimeoutButton(
+                                openTimeoutDialog={openTimeoutDialog()}
+                            )
                             BanUnBanButtons(
                                 banned = banned,
                                 closeBottomModal={
@@ -301,6 +297,34 @@ object BottomModal{
     }
 
 }// end of BottomModal
+
+@Composable
+fun WarnButton(){
+    Button(
+        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+        onClick = {
+           // openTimeoutDialog()
+        },
+        modifier = Modifier.padding(end = 20.dp)
+    ) {
+        Text("Warn",color = MaterialTheme.colorScheme.onSecondary)
+    }
+}
+
+@Composable
+fun TimeoutButton(
+    openTimeoutDialog:()->Unit,
+){
+    Button(
+        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+        onClick = {
+            openTimeoutDialog()
+        },
+        modifier = Modifier.padding(end = 20.dp)
+    ) {
+        Text(stringResource(R.string.timeout),color = MaterialTheme.colorScheme.onSecondary)
+    }
+}
 
 @Composable
 fun BanUnBanButtons(
