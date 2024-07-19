@@ -82,6 +82,8 @@ object BottomModal{
         updateShouldMonitorUser: () -> Unit,
         shouldMonitorUser:Boolean,
 
+        openWarnDialog:()->Unit,
+
 
         ){
 
@@ -108,7 +110,8 @@ object BottomModal{
                     },
                     openBanDialog ={openBanDialog()},
                     updateShouldMonitorUser = {updateShouldMonitorUser()},
-                    shouldMonitorUser = shouldMonitorUser
+                    shouldMonitorUser = shouldMonitorUser,
+                    openWarnDialog={openWarnDialog()}
                 )
             },
 
@@ -255,7 +258,8 @@ object BottomModal{
             closeBottomModal: () -> Unit,
             unbanUser: () -> Unit,
             openTimeoutDialog:() -> Unit,
-           openBanDialog:() -> Unit,
+            openBanDialog:() -> Unit,
+            openWarnDialog:()->Unit,
             shouldMonitorUser:Boolean,
             updateShouldMonitorUser:()->Unit
         ){
@@ -270,7 +274,9 @@ object BottomModal{
                 ) {
                     if (testing) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
-                            WarnButton()
+                            WarnButton(
+                                openWarnDialog={openWarnDialog()}
+                            )
                             TimeoutButton(
                                 openTimeoutDialog={openTimeoutDialog()}
                             )
@@ -299,11 +305,13 @@ object BottomModal{
 }// end of BottomModal
 
 @Composable
-fun WarnButton(){
+fun WarnButton(
+    openWarnDialog:()->Unit,
+){
     Button(
         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
         onClick = {
-           // openTimeoutDialog()
+          openWarnDialog()
         },
         modifier = Modifier.padding(end = 20.dp)
     ) {

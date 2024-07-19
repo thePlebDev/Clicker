@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +26,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -129,6 +133,123 @@ fun ImprovedBanDialog(
 
         )
 
+}
+@Composable
+fun WarningDialog(
+    onDismissRequest: () -> Unit
+){
+    val primary = MaterialTheme.colorScheme.primary
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val secondary= MaterialTheme.colorScheme.secondary
+    var text by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            backgroundColor = primary,
+            border = BorderStroke(2.dp, secondary)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .background(primary)
+            ) {
+                WarningDialogHeaderRow(
+                    "username",
+                    "Warn :"
+                )
+                WarningSubHeader(
+                    "username must acknowledge the warning before chatting in this channel again"
+                )
+                OutlinedTextField(
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary,
+                        focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary,
+                        unfocusedIndicatorColor = onPrimary,
+                        unfocusedLabelColor = onPrimary,
+                    ),
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(stringResource(R.string.reason), color = onPrimary) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                WarningDialogConfirmCancelButtonRow(
+                    cancelText="Cancel",
+                    confirmText="Warn",
+                    confirmAction={onDismissRequest()},
+                    onDismissRequest={onDismissRequest()},
+
+                )
+
+            }
+        }
+    }
+
+}
+@Composable
+fun WarningDialogHeaderRow(
+    username:String,
+    headerText:String,
+){
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val largeFontSize = MaterialTheme.typography.headlineLarge.fontSize
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        Text(headerText, fontSize = largeFontSize,color = onPrimary)
+        Text(username, fontSize = largeFontSize,color = onPrimary)
+    }
+}
+@Composable
+fun WarningSubHeader(
+    subTitleText:String
+){
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val smallFontSize = MaterialTheme.typography.headlineSmall.fontSize
+
+    Divider(color = secondary, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+    Spacer(modifier =Modifier.height(5.dp))
+    Text(subTitleText,color = onPrimary.copy(0.8f), fontSize = smallFontSize)
+    Spacer(modifier =Modifier.height(5.dp))
+}
+
+@Composable
+fun WarningDialogConfirmCancelButtonRow(
+    onDismissRequest: () -> Unit,
+    confirmAction: () -> Unit,
+    cancelText:String,
+    confirmText:String
+
+){
+    val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+
+    val buttonScope = remember(){ ButtonScope(fontSize) }
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        with(buttonScope){
+            this.Button(
+                text =cancelText,
+                onClick = { onDismissRequest()},
+
+                )
+            Spacer(modifier =Modifier.width(15.dp))
+            this.Button(
+                text =confirmText,
+                onClick = {
+                    onDismissRequest()
+                    confirmAction()
+                },
+
+                )
+        }
+
+
+    }
 }
 
 /**
