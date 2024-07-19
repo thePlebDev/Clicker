@@ -195,7 +195,8 @@ fun StreamView(
                     //this is where the chatUI goes
                     if(showWarnDialog.value){
                         WarningDialog(
-                            onDismissRequest={showWarnDialog.value = false}
+                            onDismissRequest={showWarnDialog.value = false},
+                            warnUser={streamViewModel.warnUser()}
                         )
                     }
 

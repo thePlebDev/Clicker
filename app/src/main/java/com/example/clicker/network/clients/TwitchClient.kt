@@ -134,6 +134,23 @@ interface TwitchClient {
 
 
     /**
+     *  I NEED TO ADD DOCUMENTATION
+     **/
+    @Headers("Content-Type: application/json")
+    @POST("moderation/warnings")
+    suspend fun warnUser(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorId: String,
+        @Body body: WarnUserBody
+    ):Response<WarnUserResponse>
+
+    //todo: These need to be changed out when I get the functions working
+
+
+
+    /**
      * - getAutoModSettings represents a GET method. a function meant to get the AutoMod settings of the currently viewed stream
      *
      * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
@@ -371,5 +388,23 @@ data class UserUpdateItem(
     val created_at: String,
     val transport: Transport,
     val cost: Int
+)
+
+
+data class WarnUserBody(
+    val data: WarnData
+)
+data class WarnData(
+    val user_id: String,
+    val reason: String
+)
+data class WarnUserResponse(
+    val data: List<WarnUserResponseData>
+)
+data class WarnUserResponseData(
+    val broadcaster_id: String,
+    val user_id: String,
+    val moderator_id: String,
+    val reason: String
 )
 
