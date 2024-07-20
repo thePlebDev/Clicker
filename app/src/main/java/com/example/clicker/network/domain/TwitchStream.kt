@@ -111,7 +111,17 @@ interface TwitchStream {
 
     ): Flow<Response<Boolean>>
 
-
+    /**
+     * - warnUser represents a POST method. a function meant to implement Twitch's new warn feature
+     * - read more about the warn feature, [HERE](https://dev.twitch.tv/docs/api/reference/#warn-chat-user)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param body a [WarnUserBody] object that is used to hold the user_id of the user being warned and the reason they are
+     * being warned
+     * */
     suspend fun warnUser(
         oAuthToken: String,
         clientId: String,

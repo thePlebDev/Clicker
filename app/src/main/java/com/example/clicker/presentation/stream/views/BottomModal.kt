@@ -272,7 +272,7 @@ object BottomModal{
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (true) {
+                    if (isMod) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
                             WarnButton(
                                 openWarnDialog={openWarnDialog()}
