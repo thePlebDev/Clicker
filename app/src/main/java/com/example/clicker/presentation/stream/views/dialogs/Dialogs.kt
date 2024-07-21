@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views.dialogs
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,6 +83,11 @@ fun ImprovedBanDialog(
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary =MaterialTheme.colorScheme.onPrimary
     val onSecondary = MaterialTheme.colorScheme.onSecondary
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+
     DialogBuilder(
         dialogHeaderContent = {
             DialogHeaderRow(
@@ -102,19 +108,22 @@ fun ImprovedBanDialog(
             )
         },
         dialogTextFieldContent = {
-            OutlinedTextField(
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = onPrimary,
-                    focusedLabelColor = onPrimary,
-                    focusedIndicatorColor = onPrimary,
-                    unfocusedIndicatorColor = onPrimary,
-                    unfocusedLabelColor = onPrimary,
-                ),
-                value = banReason,
-                onValueChange = { changeBanReason(it) },
-                label = { Text(stringResource(R.string.reason), color = onPrimary) },
-                modifier = Modifier.fillMaxWidth()
-            )
+            CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+                OutlinedTextField(
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = onPrimary,
+                        focusedLabelColor = onPrimary,
+                        focusedIndicatorColor = onPrimary,
+                        unfocusedIndicatorColor = onPrimary,
+                        unfocusedLabelColor = onPrimary,
+                    ),
+                    value = banReason,
+                    onValueChange = { changeBanReason(it) },
+                    label = { Text(stringResource(R.string.reason), color = onPrimary) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
         },
         dialogConfirmCancelContent = {
            DialogConfirmCancelButtonRow(
@@ -140,14 +149,21 @@ fun WarningDialog(
     warnUser:()->Unit,
     clickedUsername:String,
     waringText:String,
-    changeWaringText:(String)->Unit
+    changeWaringText:(String)->Unit,
 ){
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
     val secondary= MaterialTheme.colorScheme.secondary
-    var text by remember { mutableStateOf("") }
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+    val errorColor = remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = { onDismissRequest() }) {
+    Dialog(onDismissRequest = {
+
+
+    }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -167,23 +183,37 @@ fun WarningDialog(
                 WarningSubHeader(
                     "$clickedUsername must acknowledge the warning before chatting in this channel again"
                 )
-                OutlinedTextField(
-                    colors = TextFieldDefaults.textFieldColors(
-                        textColor = onPrimary,
-                        focusedLabelColor = onPrimary,
-                        focusedIndicatorColor = onPrimary,
-                        unfocusedIndicatorColor = onPrimary,
-                        unfocusedLabelColor = onPrimary,
-                    ),
-                    value = waringText,
-                    onValueChange = { changeWaringText(it) },
-                    label = { Text(stringResource(R.string.reason), color = onPrimary) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+                CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+                    OutlinedTextField(
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = onPrimary,
+                            focusedLabelColor = onPrimary,
+                            focusedIndicatorColor = if(errorColor.value) Color.Red else onPrimary, //this is the outLine
+                            unfocusedIndicatorColor = if(errorColor.value) Color.Red else onPrimary,
+                            unfocusedLabelColor = onPrimary,
+
+                        ),
+                        value = waringText,
+                        onValueChange = { changeWaringText(it) },
+                        label = { Text(stringResource(R.string.reason), color = onPrimary) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 WarningDialogConfirmCancelButtonRow(
                     cancelText="Cancel",
                     confirmText="Warn",
-                    confirmAction={warnUser()},
+                    confirmAction={
+                        if(waringText.isEmpty() || waringText.length >= 499){
+                            errorColor.value = true
+                        }else{
+                            errorColor.value = false
+                            warnUser()
+                            onDismissRequest()
+                        }
+
+                                  },
                     onDismissRequest={onDismissRequest()},
 
                 )
@@ -245,7 +275,6 @@ fun WarningDialogConfirmCancelButtonRow(
             this.Button(
                 text =confirmText,
                 onClick = {
-                    onDismissRequest()
                     confirmAction()
                 },
 

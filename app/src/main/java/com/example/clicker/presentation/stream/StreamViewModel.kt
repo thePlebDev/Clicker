@@ -343,6 +343,7 @@ class StreamViewModel @Inject constructor(
 
 
     val openWarningDialog =mutableStateOf(false)
+    val warningTextIsEmpty =mutableStateOf(false)
     val warningText = mutableStateOf("")
     fun changeWarningText(newValue:String){
         warningText.value = newValue
@@ -350,6 +351,9 @@ class StreamViewModel @Inject constructor(
     fun changeOpenWarningDialog(newValue:Boolean){
         openWarningDialog.value = newValue
     }
+
+
+
 
 
 
@@ -1201,28 +1205,46 @@ class StreamViewModel @Inject constructor(
     }
 /******************************WARNING USER**********************************************************/
 fun warnUser()=viewModelScope.launch(Dispatchers.IO){
-    val warnUserBody = WarnUserBody(
-        data = WarnData(
-            user_id = _clickedUIState.value.clickedUserId,
-            reason = warningText.value
+
+        Log.d("WarningTextExpty","FALSE")
+        warningTextIsEmpty.value = false
+        val warnUserBody = WarnUserBody(
+            data = WarnData(
+                user_id = _clickedUIState.value.clickedUserId,
+                reason = warningText.value
+            )
         )
-    )
-    Log.d("warnUserFunc","oAuthToken ->${_uiState.value.oAuthToken}")
-    Log.d("warnUserFunc","clientId ->${_uiState.value.clientId}")
-    Log.d("warnUserFunc","userId ->${_uiState.value.userId}")
-    Log.d("warnUserFunc","broadcasterId ->${_uiState.value.broadcasterId}")
-    Log.d("warnUserFunc","warnUserBody ->${warnUserBody.data}")
+        Log.d("warnUserFunc","oAuthToken ->${_uiState.value.oAuthToken}")
+        Log.d("warnUserFunc","clientId ->${_uiState.value.clientId}")
+        Log.d("warnUserFunc","userId ->${_uiState.value.userId}")
+        Log.d("warnUserFunc","broadcasterId ->${_uiState.value.broadcasterId}")
+        Log.d("warnUserFunc","warnUserBody ->${warnUserBody.data}")
 
-    twitchRepoImpl.warnUser(
-        oAuthToken = _uiState.value.oAuthToken,
-        clientId = _uiState.value.clientId,
-        moderatorId = _uiState.value.userId,
-        broadcasterId = _uiState.value.broadcasterId,
-        body=warnUserBody
-    ).collect{response ->
+        twitchRepoImpl.warnUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            body=warnUserBody
+        ).collect{response ->
+            when(response){
+                is Response.Loading->{}
+                is Response.Success->{
+                    val successMessage = TwitchUserDataObjectMother
+                        .addMessageType(MessageType.ANNOUNCEMENT)
+                        .addUserType("${_clickedUIState.value.clickedUsername} has been warned")
+                        .addSystemMessage("${_clickedUIState.value.clickedUsername} has been warned")
+                        .build()
+                    listChats.add(successMessage)
 
+                }
+                is Response.Failure->{
+
+                }
+            }
 
     }
+
 
 }
 
