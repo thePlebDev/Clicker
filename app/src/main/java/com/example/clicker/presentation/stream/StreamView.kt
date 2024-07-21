@@ -200,8 +200,7 @@ fun StreamView(
                             warnUser={streamViewModel.warnUser()},
                             clickedUsername=streamViewModel.clickedUIState.value.clickedUsername,
                             waringText=streamViewModel.warningText.value,
-                            changeWaringText={newValue->streamViewModel.changeWarningText(newValue)}
-
+                            changeWaringText={newValue->streamViewModel.changeWarningText(newValue)},
 
                         )
                     }
