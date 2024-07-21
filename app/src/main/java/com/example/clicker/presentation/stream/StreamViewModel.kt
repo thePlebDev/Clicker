@@ -342,6 +342,16 @@ class StreamViewModel @Inject constructor(
     val openBanDialog = mutableStateOf(false)
 
 
+    val openWarningDialog =mutableStateOf(false)
+    val warningText = mutableStateOf("")
+    fun changeWarningText(newValue:String){
+        warningText.value = newValue
+    }
+    fun changeOpenWarningDialog(newValue:Boolean){
+        openWarningDialog.value = newValue
+    }
+
+
 
     /**
      * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
@@ -1194,7 +1204,7 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
     val warnUserBody = WarnUserBody(
         data = WarnData(
             user_id = _clickedUIState.value.clickedUserId,
-            reason = "Stinky"
+            reason = warningText.value
         )
     )
     Log.d("warnUserFunc","oAuthToken ->${_uiState.value.oAuthToken}")

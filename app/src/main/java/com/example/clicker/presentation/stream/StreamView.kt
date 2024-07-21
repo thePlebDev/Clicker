@@ -188,15 +188,21 @@ fun StreamView(
                             shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                             updateShouldMonitorUser = {},
                             clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
-                            openWarnDialog={showWarnDialog.value = true}
+                            openWarnDialog={streamViewModel.changeOpenWarningDialog(true)}
                             )
                     }
                 ){
+
                     //this is where the chatUI goes
-                    if(showWarnDialog.value){
+                    if(streamViewModel.openWarningDialog.value){
                         WarningDialog(
-                            onDismissRequest={showWarnDialog.value = false},
-                            warnUser={streamViewModel.warnUser()}
+                            onDismissRequest={streamViewModel.changeOpenWarningDialog(false)},
+                            warnUser={streamViewModel.warnUser()},
+                            clickedUsername=streamViewModel.clickedUIState.value.clickedUsername,
+                            waringText=streamViewModel.warningText.value,
+                            changeWaringText={newValue->streamViewModel.changeWarningText(newValue)}
+
+
                         )
                     }
 
