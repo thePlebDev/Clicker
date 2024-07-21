@@ -138,6 +138,9 @@ fun ImprovedBanDialog(
 fun WarningDialog(
     onDismissRequest: () -> Unit,
     warnUser:()->Unit,
+    clickedUsername:String,
+    waringText:String,
+    changeWaringText:(String)->Unit
 ){
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
@@ -158,11 +161,11 @@ fun WarningDialog(
                     .background(primary)
             ) {
                 WarningDialogHeaderRow(
-                    "username",
+                    clickedUsername,
                     "Warn :"
                 )
                 WarningSubHeader(
-                    "username must acknowledge the warning before chatting in this channel again"
+                    "$clickedUsername must acknowledge the warning before chatting in this channel again"
                 )
                 OutlinedTextField(
                     colors = TextFieldDefaults.textFieldColors(
@@ -172,8 +175,8 @@ fun WarningDialog(
                         unfocusedIndicatorColor = onPrimary,
                         unfocusedLabelColor = onPrimary,
                     ),
-                    value = text,
-                    onValueChange = { text = it },
+                    value = waringText,
+                    onValueChange = { changeWaringText(it) },
                     label = { Text(stringResource(R.string.reason), color = onPrimary) },
                     modifier = Modifier.fillMaxWidth()
                 )
