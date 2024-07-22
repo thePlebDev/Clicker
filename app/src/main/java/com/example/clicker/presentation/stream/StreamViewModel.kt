@@ -1047,7 +1047,8 @@ class StreamViewModel @Inject constructor(
                 sendToWebSocket = {message ->
                     webSocket.sendMessage(message)
                 },
-                messageTokenList=messageTokenList
+                messageTokenList=messageTokenList,
+                warnUser = {userId,reason,username ->warnUserSlashCommand(userId,reason,username)}
 
             )
 
@@ -1222,7 +1223,6 @@ class StreamViewModel @Inject constructor(
 fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 
         Log.d("WarningTextExpty","FALSE")
-        warningTextIsEmpty.value = false
         val warnUserBody = WarnUserBody(
             data = WarnData(
                 user_id = _clickedUIState.value.clickedUserId,
@@ -1262,6 +1262,43 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 
 
 }
+    private fun warnUserSlashCommand(
+        userId:String,reason: String,username:String
+    ) = viewModelScope.launch(Dispatchers.IO){
+        val warnUserBody = WarnUserBody(
+            data = WarnData(
+                user_id = userId,
+                reason = reason
+            )
+        )
+
+        twitchRepoImpl.warnUser(
+            oAuthToken = _uiState.value.oAuthToken,
+            clientId = _uiState.value.clientId,
+            moderatorId = _uiState.value.userId,
+            broadcasterId = _uiState.value.broadcasterId,
+            body=warnUserBody
+        ).collect{response ->
+            when(response){
+                is Response.Loading->{}
+                is Response.Success->{
+                    val successMessage = TwitchUserDataObjectMother
+                        .addMessageType(MessageType.ANNOUNCEMENT)
+                        .addUserType("${username} has been warned")
+                        .addSystemMessage("${username} has been warned")
+                        .build()
+                    listChats.add(successMessage)
+
+                }
+                is Response.Failure->{
+
+                }
+            }
+
+        }
+
+    }
+
 
 
     fun timeoutUser() = viewModelScope.launch {

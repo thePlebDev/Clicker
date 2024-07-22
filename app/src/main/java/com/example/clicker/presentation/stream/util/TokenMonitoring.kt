@@ -23,7 +23,8 @@ class TokenMonitoring @Inject constructor(){
         unbanUserSlashTest:(String)->Unit,
         addToMonitorUser:(String) ->Unit,
         removeFromMonitorUser:(String) ->Unit,
-        messageTokenList: List<MessageToken>
+        messageTokenList: List<MessageToken>,
+        warnUser:(String,String,String) ->Unit,
 
     ){
          Log.d("monitoringTokens", "username ->${tokenCommand.username}")
@@ -220,8 +221,14 @@ class TokenMonitoring @Inject constructor(){
                             addMessageToListChats(message)
                         }else{
                             //todo: this is where we run the actual request
-                            Log.d("TextCommandTestingWarn","userId --> ${userId}")
-                            Log.d("TextCommandTestingWarn","reason --> ${tokenCommand.reason}")
+//
+//                            Log.d("TextCommandTestingWarn","userId --> ${userId}")
+//                            Log.d("TextCommandTestingWarn","reason --> ${tokenCommand.reason}")
+                            if(tokenCommand.reason.isEmpty()){
+                                warnUser(userId,"Warning",tokenCommand.username)
+                            }else{
+                                warnUser(userId,tokenCommand.reason,tokenCommand.username)
+                            }
                         }
                     }else{
                         val message = TwitchUserDataObjectMother
