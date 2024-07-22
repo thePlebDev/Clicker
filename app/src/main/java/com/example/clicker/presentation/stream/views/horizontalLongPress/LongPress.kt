@@ -140,6 +140,8 @@ fun HorizontalLongPressView(
                                 updateStreamerName ={
                                         streamerName,clientId,broadcasterId,userId ->
                                     updateStreamerName(streamerName,clientId,broadcasterId,userId)
+                                    Log.d("horizontalNavigation","CLICKING")
+                                    streamViewModel.clearAllChatters()
 
                                 },
                                 clientId =clientId,
