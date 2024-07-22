@@ -6,6 +6,7 @@ import com.example.clicker.network.clients.ChannelInformation
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.WarnUserBody
 import com.example.clicker.network.domain.TwitchStream
+import com.example.clicker.network.interceptors.responseCodeInterceptors.Authentication401Exception
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
 import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
@@ -191,7 +192,13 @@ class TwitchStreamImpl @Inject constructor(
         Log.d("warnUserResponse","EXCEPTION")
         Log.d("warnUserResponse","message ->${cause.message}")
         Log.d("warnUserResponse","cause ->${cause.cause}")
-        emit(Response.Failure(Exception("Error caught")))
+        Log.d("warnUserResponse","cause ->${cause.javaClass}")
+        if(cause is Authentication401Exception){
+            emit(Response.Success(false))
+        }else{
+            emit(Response.Failure(Exception("Error caught")))
+        }
+
     }
 
     override suspend fun getAutoModSettings(

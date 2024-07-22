@@ -1245,12 +1245,21 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
             when(response){
                 is Response.Loading->{}
                 is Response.Success->{
-                    val successMessage = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.ANNOUNCEMENT)
-                        .addUserType("${_clickedUIState.value.clickedUsername} has been warned")
-                        .addSystemMessage("${_clickedUIState.value.clickedUsername} has been warned")
-                        .build()
-                    listChats.add(successMessage)
+                    if(response.data){
+                        val successMessage = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.ANNOUNCEMENT)
+                            .addUserType("${_clickedUIState.value.clickedUsername} has been warned")
+                            .addSystemMessage("${_clickedUIState.value.clickedUsername} has been warned")
+                            .build()
+                        listChats.add(successMessage)
+                    }else{
+                        val successMessage = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.NOTICE)
+                            .addUserType("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .addSystemMessage("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .build()
+                        listChats.add(successMessage)
+                    }
 
                 }
                 is Response.Failure->{
@@ -1282,12 +1291,22 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
             when(response){
                 is Response.Loading->{}
                 is Response.Success->{
-                    val successMessage = TwitchUserDataObjectMother
-                        .addMessageType(MessageType.ANNOUNCEMENT)
-                        .addUserType("${username} has been warned")
-                        .addSystemMessage("${username} has been warned")
-                        .build()
-                    listChats.add(successMessage)
+                    if(response.data){
+                        val successMessage = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.ANNOUNCEMENT)
+                            .addUserType("${username} has been warned")
+                            .addSystemMessage("${username} has been warned")
+                            .build()
+                        listChats.add(successMessage)
+                    }else{
+                        val successMessage = TwitchUserDataObjectMother
+                            .addMessageType(MessageType.NOTICE)
+                            .addUserType("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .addSystemMessage("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .build()
+                        listChats.add(successMessage)
+                    }
+
 
                 }
                 is Response.Failure->{
