@@ -23,6 +23,7 @@ class TextParsing @Inject constructor() {
     private val listOfCommands = listOf(
         ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
         ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
+        ForwardSlashCommands(title="/warn [username] [reason]", subtitle = "issue a warning to a user that they must acknowledge before chatting again",clickedValue="warn")
 //        ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a user's messages (only visible to you)",clickedValue="monitor"),
 //        ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a user's messages",clickedValue="unmonitor")
     )
@@ -67,6 +68,10 @@ class TextParsing @Inject constructor() {
         )
         filteredChatList.clear()
 
+    }
+
+    fun clearFilteredChatterList(){
+        filteredChatList.clear()
     }
 
     fun updateTextField(emoteText:String){
@@ -126,6 +131,7 @@ class TextParsing @Inject constructor() {
         filteredChatList.clear()
         slashCommandIndex =0
     }
+
 
     //
     fun parsingMethod(

@@ -118,6 +118,7 @@ fun ValidationView(
                 clientId = streamViewModel.state.value.clientId,
             )
             streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+            streamViewModel.clearAllChatters()
 
         },
         updateClickedStreamInfo={
