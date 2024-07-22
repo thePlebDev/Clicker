@@ -196,7 +196,7 @@ fun ModViewComponentVersionThree(
                 shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
                 updateShouldMonitorUser = {},
                 clickedUsernameChatsWithDate = clickedUsernameChatsWithDateSent,
-                openWarnDialog = {}
+                openWarnDialog={streamViewModel.changeOpenWarningDialog(true)}
             )
         }
     ) {

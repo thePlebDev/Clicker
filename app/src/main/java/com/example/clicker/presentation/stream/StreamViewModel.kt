@@ -1263,6 +1263,12 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 
                 }
                 is Response.Failure->{
+                    val failedMessage = TwitchUserDataObjectMother
+                        .addMessageType(MessageType.NOTICE)
+                        .addUserType("Warn command failed. Please try again ")
+                        .addSystemMessage("Warn command failed. Please try again ")
+                        .build()
+                    listChats.add(failedMessage)
 
                 }
             }
@@ -1301,8 +1307,8 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
                     }else{
                         val successMessage = TwitchUserDataObjectMother
                             .addMessageType(MessageType.NOTICE)
-                            .addUserType("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
-                            .addSystemMessage("Warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .addUserType("/warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
+                            .addSystemMessage("/warn command failed due to authentication error. Please login again to be issued a token with proper authentication ")
                             .build()
                         listChats.add(successMessage)
                     }
@@ -1310,7 +1316,12 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 
                 }
                 is Response.Failure->{
-
+                    val failedMessage = TwitchUserDataObjectMother
+                        .addMessageType(MessageType.NOTICE)
+                        .addUserType("/warn command failed. Please try again ")
+                        .addSystemMessage("/warn command failed. Please try again ")
+                        .build()
+                    listChats.add(failedMessage)
                 }
             }
 

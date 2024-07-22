@@ -33,6 +33,7 @@ import com.example.clicker.presentation.stream.views.BottomModal
 
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
 import kotlinx.coroutines.launch
@@ -97,6 +98,11 @@ fun HorizontalChat(
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
         streamViewModel.updateMostFrequentEmoteListTesting(it)
     } }
+    val hideClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
+        scope.launch {
+            bottomModalState.hide()
+        }
+    } }
 
 
     //todo: Also need to refactor the dialogs
@@ -156,12 +162,28 @@ fun HorizontalChat(
                         // streamViewModel.updateShouldMonitorUser()
                     },
                     clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
-                    openWarnDialog = {}
+                    openWarnDialog={streamViewModel.changeOpenWarningDialog(true)},
 
 
                     )
             }
         ){
+
+            if(streamViewModel.openWarningDialog.value){
+                WarningDialog(
+                    onDismissRequest={
+                        streamViewModel.changeOpenWarningDialog(false)
+                                     },
+                    warnUser={
+                        streamViewModel.warnUser()
+                        hideClickedUserBottomModal()
+                             },
+                    clickedUsername=streamViewModel.clickedUIState.value.clickedUsername,
+                    waringText=streamViewModel.warningText.value,
+                    changeWaringText={newValue->streamViewModel.changeWarningText(newValue)},
+
+                    )
+            }
             //this is where the chatUI goes
 
 
