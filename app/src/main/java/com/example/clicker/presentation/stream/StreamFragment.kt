@@ -646,23 +646,7 @@ fun setOrientation(
                         modVersionThreeViewModel =modVersionThreeViewModel,
                         modViewDragStateViewModel=modViewDragStateViewModel,
                     )
-//                    ModViewComponent(
-//                        modViewDragStateViewModel=modViewDragStateViewModel,
-//                        closeModView ={
-//                            modViewDragStateViewModel.setShowModView(false)
-//                            val streamManagerUI: View = binding.root.findViewById(R.id.nested_draggable_compose_view)
-//                            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-//                            streamManagerUI.translationY = height
-//                        },
-//                        inlineContentMap=streamViewModel.inlineTextContentTest.value,
-//                        twitchUserChat=streamViewModel.listChats.toList(),
-//                        modViewViewModel=modViewViewModel,
-//                        streamViewModel = streamViewModel,
-//                        hideSoftKeyboard ={
-//                            hideSoftKeyboard()
-//                        },
-//
-//                    )
+
 
                 }
             }

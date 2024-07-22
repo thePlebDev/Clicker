@@ -93,6 +93,11 @@ fun StreamView(
             bottomModalState.show()
         }
     } }
+    val hideClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
+        scope.launch {
+            bottomModalState.hide()
+        }
+    } }
     val showChatSettingsBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
             outerBottomModalState.show()
@@ -197,7 +202,10 @@ fun StreamView(
                     if(streamViewModel.openWarningDialog.value){
                         WarningDialog(
                             onDismissRequest={streamViewModel.changeOpenWarningDialog(false)},
-                            warnUser={streamViewModel.warnUser()},
+                            warnUser={
+                                streamViewModel.warnUser()
+                                hideClickedUserBottomModal()
+                                     },
                             clickedUsername=streamViewModel.clickedUIState.value.clickedUsername,
                             waringText=streamViewModel.warningText.value,
                             changeWaringText={newValue->streamViewModel.changeWarningText(newValue)},
