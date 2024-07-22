@@ -121,6 +121,7 @@ fun ModChannelView(
                     clientId = streamViewModel.state.value.clientId,
                 )
                 streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+                streamViewModel.clearAllChatters()
                                  },
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={

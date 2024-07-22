@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.util
 
+import android.util.Log
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
@@ -31,6 +32,30 @@ class TokenCommandTest {
 
         /**THEN*/
         Assert.assertEquals(expectedReturnType.javaClass, commandTest.javaClass)
+
+    }
+    @Test
+    fun checkForSlashCommands_hasWarnTokenType(){
+        /**GIVEN*/
+        val command = "/warn"
+
+        val username = "Bobberson"
+        val reason = "weird"
+        val banToken =Token(TokenType.WARN,command)
+        val usernameToken =Token(TokenType.USERNAME,username)
+        val textToken =Token(TokenType.TEXT,reason)
+        val tokenList = listOf(banToken,usernameToken,textToken)
+        val expectedReturnType =TextCommands.Warn(username, reason)
+
+        /**WHEN*/
+        val commandTest =underTest.checkForSlashCommands(tokenList)
+        println("reason -->"+commandTest.reason)
+        println("username -->"+commandTest.username)
+        println("javaClass -->"+commandTest.javaClass)
+
+
+        /**THEN*/
+        Assert.assertEquals(expectedReturnType, expectedReturnType)
 
     }
 

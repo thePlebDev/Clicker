@@ -364,6 +364,10 @@ class StreamViewModel @Inject constructor(
     var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
     val forwardSlashCommands = textParsing.forwardSlashCommands
 
+    fun clearFilteredChatterList(){
+        textParsing.clearFilteredChatterList()
+    }
+
 
 
     val clickedUsernameChats = mutableStateListOf<String>()
@@ -641,6 +645,10 @@ class StreamViewModel @Inject constructor(
             allChatters.add(username)
         }
     }
+    fun clearAllChatters(){
+        allChatters.clear()
+    }
+
     //CHAT METHOD
     fun updateClickedChat(
         clickedUsername: String,
@@ -981,11 +989,13 @@ class StreamViewModel @Inject constructor(
 
         scanner.scanTokens()
         val tokenList = scanner.tokenList
-        Log.d("TokenTextCommand","tokenList ->${tokenList}")
+       // Log.d("TokenTextCommand","tokenList ->${tokenList}")
         val messageTokenList = tokenList.map { MessageToken(PrivateMessageType.MESSAGE, messageValue = it.lexeme) }
+        // todo: I need to test this
        val textCommands = tokenCommand.checkForSlashCommands(tokenList)
 
         Log.d("TokenTextCommand","text command username ->${textCommands.username}")
+        Log.d("TokenTextCommand","type ->${textCommands.javaClass}")
 
 
         monitorToken(
@@ -1004,6 +1014,10 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     * This is the function that is responsible for running the commands of the slash commands
+     *
+     * */
     private fun monitorToken(
         tokenCommand: TextCommands,
         chatMessage:String,
@@ -1012,6 +1026,7 @@ class StreamViewModel @Inject constructor(
         messageTokenList: List<MessageToken>
 
     ){
+
             tokenMonitoring.runMonitorToken(
                 tokenCommand = tokenCommand,
                 chatMessage = chatMessage,isMod = isMod,
@@ -1401,6 +1416,12 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
                                 banReason = "",
                                 undoBanResponse = false
                             )
+                            val unBanSuccessMessage =TwitchUserDataObjectMother.addColor("#FFBB86FC")
+                                .addDisplayName("Room update")
+                                .addUserType("Ban successful")
+                                .addMessageType(MessageType.NOTICE)
+                                .build()
+                            listChats.add(unBanSuccessMessage)
                         }
                         is Response.Failure -> {
                             Log.d("BANUSERRESPONSE", "FAILED")
