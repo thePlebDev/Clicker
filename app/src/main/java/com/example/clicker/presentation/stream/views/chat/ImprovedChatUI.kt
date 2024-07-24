@@ -1201,9 +1201,12 @@ class ImprovedChatUI(){
             items(
                 twitchUserChat,
             ) {indivChatMessage ->
+                Log.d("CLickingCardCheck", "${indivChatMessage.userType}")
                 ChatMessages(
                     indivChatMessage,
-                    showBottomModal={showBottomModal()},
+                    showBottomModal={
+                        showBottomModal()
+                                    },
                     updateClickedUser = {  username, userId,isBanned,isMod ->
                         updateClickedUser(
                             username,
@@ -1212,11 +1215,19 @@ class ImprovedChatUI(){
                             isMod
                         )
                     },
-                    showTimeoutDialog ={showTimeoutDialog()},
-                    showBanDialog={showBanDialog()},
-                    doubleClickMessage={username ->doubleClickMessage(username)},
-                    deleteChatMessage={messageId->deleteChatMessage(messageId)},
-                    isMod = isMod,
+                    showTimeoutDialog ={
+                        showTimeoutDialog()
+                                       },
+                    showBanDialog={
+                        showBanDialog()
+                                  },
+                    doubleClickMessage={username ->
+                        doubleClickMessage(username)
+                                       },
+                    deleteChatMessage={messageId->
+                        deleteChatMessage(messageId)
+                                      },
+                    isMod = false,
                     inlineContentMap=inlineContentMap
 
                 )
@@ -1225,6 +1236,7 @@ class ImprovedChatUI(){
         }
     }
 
+    //so this does only recomp once
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun ChatMessages(
@@ -1246,6 +1258,7 @@ class ImprovedChatUI(){
             color.value = MaterialTheme.colorScheme.primary
         }
 
+
         with(chatScope) {
 
             when (twitchChatMessage.messageType) {
@@ -1263,7 +1276,6 @@ class ImprovedChatUI(){
                                 ClickableCard(
                                     twitchUser =twitchChatMessage,
                                     color = color.value,
-                                    fontSize = messageFontSize,
                                     showBottomModal={showBottomModal()},
                                     updateClickedUser = {  username, userId,isBanned,isMod ->
                                         updateClickedUser(
@@ -1311,10 +1323,10 @@ class ImprovedChatUI(){
                             twoSwipeOnly= false
                         )
                     }else{
+
                         ClickableCard(
                             twitchUser =twitchChatMessage,
                             color = color.value,
-                            fontSize = messageFontSize,
                             showBottomModal={showBottomModal()},
                             updateClickedUser = {  username, userId,isBanned,isMod ->
                                 updateClickedUser(
@@ -1441,7 +1453,6 @@ fun ClickableCard(
     color: Color,
     offset: Float,
     showBottomModal:()->Unit,
-    fontSize: TextUnit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     doubleClickMessage:(String)->Unit,
     inlineContentMap: EmoteListMap
@@ -1449,6 +1460,8 @@ fun ClickableCard(
 
     ){
     val showIcon = remember { mutableStateOf(false) }
+    //this log is how I can check for unnecessary recomps
+    Log.d("CLickingCardCheck", "${twitchUser.userType}")
 
     Column(
         modifier = Modifier.combinedClickable(
