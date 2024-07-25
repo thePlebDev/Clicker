@@ -1,4 +1,5 @@
 buildscript {
+
     repositories {
         google() // Required for the Android Gradle plugin
         // other repositories if needed
@@ -8,6 +9,7 @@ buildscript {
         // other dependencies if needed
     }
 }
+
 
 plugins {
     id 'com.android.application'
@@ -29,6 +31,32 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    ext.initScriptRun = false
+
+    afterEvaluate {
+        if (!ext.initScriptRun) {
+
+                println("----************--------RUNNING CONDITIONAL SCRIPT-------************-----------")
+                kotlinOptions {
+                    if (project.findProperty("composeCompilerReports") == "true") {
+                        freeCompilerArgs += [
+                                "-P",
+                                "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+                                        project.buildDir.absolutePath + "/compose_metrics"
+                        ]
+                        freeCompilerArgs += [
+                                "-P",
+                                "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+                                        project.buildDir.absolutePath + "/compose_metrics"
+                        ]
+                    }
+                }
+
+            ext.initScriptRun = true
+        }
+    }
+
 
 
     defaultConfig {
