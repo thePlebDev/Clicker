@@ -2,23 +2,40 @@
 plugins {
     id 'com.android.application' version '8.0.1' apply false
     id 'com.android.library' version '8.0.1' apply false
+
     id 'org.jetbrains.kotlin.android' version '1.7.20' apply false
     id 'com.google.dagger.hilt.android' version '2.44' apply false
     id 'com.android.test' version '8.0.1' apply false
+//    id 'org.jetbrains.kotlin.kapt' version '1.8.10' apply false
 
 
 }
-subprojects {
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            // Trigger this with:
-            // ./gradlew assembleRelease -PenableMultiModuleComposeReports=true --rerun-tasks
-            if (project.findProperty("enableMultiModuleComposeReports") == "true") {
-                freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + rootProject.buildDir.absolutePath + "/compose_metrics/"]
-                freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + rootProject.buildDir.absolutePath + "/compose_metrics/"]
-            }
-        }
-    }
-}
+
+//subprojects {
+//    ext.initScriptRun = false
+//    println("------------RUNNING subprojects TASK------------------")
+//    println(project.buildDir.absolutePath + "/compose_compiler")
+//
+//    if (!ext.initScriptRun) {
+//
+//        println("------------RUNNING CONDITIONAL------------------")
+//
+//        if (project.findProperty("composeCompilerReports") == "true") {
+//
+//            freeCompilerArgs += [
+//                    "-P",
+//                    "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+//                            project.buildDir.absolutePath + "/compose_compiler"
+//            ]
+//            freeCompilerArgs += [
+//                    "-P",
+//                    "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+//                            project.buildDir.absolutePath + "/compose_compiler"
+//            ]
+//        }
+//    }
+//
+//}
+
 
 

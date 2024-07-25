@@ -1,0 +1,38 @@
+
+// Define a global flag in the init script
+ext.initScriptRun = false
+
+// Hook into the projectsEvaluated phase to apply configurations after all projects are evaluated
+//gradle.projectsEvaluated {
+//    if (!ext.initScriptRun) {
+//        ext.initScriptRun = true
+//
+//        // Iterate over all projects
+//        gradle.rootProject.allprojects { project ->
+//            if (project.name == 'app') {
+//                project.plugins.withId('org.jetbrains.kotlin.jvm') {
+//                    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach { task ->
+//                        if (project.findProperty("composeCompilerReports") == "true") {
+//                            task.kotlinOptions {
+//                                freeCompilerArgs += [
+//                                        "-P",
+//                                        "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+//                                                project.buildDir.absolutePath + "/compose_metrics"
+//                                ]
+//                                freeCompilerArgs += [
+//                                        "-P",
+//                                        "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+//                                                project.buildDir.absolutePath + "/compose_metrics"
+//                                ]
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//gradlew assembleRelease --init-script .\app\src\main\java\com\example\clicker\composeMetricsInitScript.gradle -PcomposeCompilerReports=true
+
+
+
