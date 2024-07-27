@@ -28,10 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    sealed interface ActivityState {
-        data object LOADING : ActivityState
-        data object LOADED : ActivityState
-    }
+
 
 
     override fun onResume() {
@@ -56,38 +53,8 @@ class MainActivity : AppCompatActivity() {
         window.setBackgroundDrawable(bitmapDrawable)
         setContentView(R.layout.activity_main)
 
-        var activityState by remember {
-            mutableStateOf(ActivityState.LOADING as ActivityState)
-        }
-        fullyDrawnReporter.addOnReportDrawnListener {
-            activityState = ActivityState.LOADED
-        }
-        ReportFullyDrawnTheme {
-            when(activityState) {
-                is ActivityState.LOADING -> {
-                    // Display the loading UI.
-                }
-                is ActivityState.LOADED -> {
-                    // Display the full UI.
-                }
-            }
-        }
-        SideEffect {
-            lifecycleScope.launch(Dispatchers.IO) {
-                fullyDrawnReporter.addReporter()
+        //reportFullyDrawn()
 
-                // Perform the background operation.
-
-                fullyDrawnReporter.removeReporter()
-            }
-            lifecycleScope.launch(Dispatchers.IO) {
-                fullyDrawnReporter.addReporter()
-
-                // Perform the background operation.
-
-                fullyDrawnReporter.removeReporter()
-            }
-        }
 
 
     }
