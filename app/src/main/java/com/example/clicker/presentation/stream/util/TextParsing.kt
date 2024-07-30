@@ -2,9 +2,13 @@ package com.example.clicker.presentation.stream.util
 
 import android.util.Log
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getTextBeforeSelection
@@ -17,6 +21,17 @@ data class ForwardSlashCommands(
     val title:String,
     val subtitle:String,
     val clickedValue:String,
+)
+
+/**
+ * ForwardSlashCommandsImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
+ *  always marking the List as unstable.
+ *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
+ *
+ * */
+@Immutable
+data class ForwardSlashCommandsImmutableCollection(
+    val snacks: List<ForwardSlashCommands>
 )
 
 class TextParsing @Inject constructor() {
@@ -36,8 +51,38 @@ class TextParsing @Inject constructor() {
         )
     )
     var filteredChatList = mutableStateListOf<String>()
+
     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
     val forwardSlashCommands = _forwardSlashCommands
+
+    /********** New forward slash command to make it immutable *************/
+    // Immutable state holder
+    private var _forwardSlashCommandsImmutableCollection by mutableStateOf(
+        ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
+    )
+
+    // Publicly exposed immutable state as State
+    val forwardSlashCommandsState: State<ForwardSlashCommandsImmutableCollection>
+        get() = mutableStateOf(_forwardSlashCommandsImmutableCollection)
+
+    // Update the collection whenever the mutable list changes
+    fun addForwardSlashCommand(command: ForwardSlashCommands) {
+        _forwardSlashCommands.add(command)
+        _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
+    }
+    fun addAllForwardSlashCommand( commands:List<ForwardSlashCommands>){
+        _forwardSlashCommands.addAll(commands)
+        _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
+
+    }
+
+    fun clearForwardSlashCommand() {
+        _forwardSlashCommands.clear()
+        _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(listOf())
+    }
+
+
+    /**********New forward slash command to make it immutable  above*************/
 
     var parsingIndex:Int =0
     var startParsing:Boolean = false
@@ -147,17 +192,20 @@ class TextParsing @Inject constructor() {
                 Log.d("newParsingAgain",currentCharacter.toString())
                 slashCommandState = true
                 slashCommandIndex =textFieldValue.selection.start
-                _forwardSlashCommands.addAll(listOfCommands)
+                //_forwardSlashCommands.addAll(listOfCommands)
+                addAllForwardSlashCommand(listOfCommands)
             }
             if(currentCharacter.toString() == " "){
                 Log.d("newParsingAgainThing","currentCharacter.toString() == blank space")
-                _forwardSlashCommands.clear()
+               // _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 slashCommandState = false
                 slashCommandIndex =0
             }
             if(currentCharacter.toString() == "" && slashCommandState){
                 Log.d("newParsingAgainThing","end currentCharacter and slashCommandState true")
-                _forwardSlashCommands.clear()
+               // _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 slashCommandState = false
                 slashCommandIndex =0
             }
@@ -169,7 +217,8 @@ class TextParsing @Inject constructor() {
             if(currentCharacter.toString()==""){
                 Log.d("newParsingAgainThing","end currentCharacter")
                 endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
+               // _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 slashCommandState = false
                 slashCommandIndex =0
             }
@@ -178,7 +227,8 @@ class TextParsing @Inject constructor() {
             if(textFieldValue.selection.start < parsingIndex && startParsing){
                 Log.d("newParsingAgainThing","textFieldValue.selection.start < parsingIndex && startParsing")
                 endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
+               // _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 slashCommandState = false
 
             }
@@ -186,7 +236,8 @@ class TextParsing @Inject constructor() {
             if (currentCharacter.toString() == " " && startParsing){
                 Log.d("newParsingAgainThing","currentCharacter.toString() == blankspace && startParsing")
                 endParsingNClearFilteredChatList()
-                _forwardSlashCommands.clear()
+               // _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 slashCommandState = false
 
             }
@@ -196,7 +247,8 @@ class TextParsing @Inject constructor() {
             }
 
             if(currentCharacter.toString() == "@"){
-                _forwardSlashCommands.clear()
+              //  _forwardSlashCommands.clear()
+                clearForwardSlashCommand()
                 showFilteredChatListNStartParsing(textFieldValue,allChatters)
             }
 

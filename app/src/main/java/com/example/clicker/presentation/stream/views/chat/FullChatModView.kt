@@ -19,6 +19,7 @@ import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
+import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,7 +63,8 @@ fun FullChatModView(
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
-    userIsSub:Boolean
+    userIsSub:Boolean,
+    forwardSlashes: ForwardSlashCommandsImmutableCollection
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -179,7 +181,8 @@ fun FullChatModView(
         globalBetterTTVEmotes= globalBetterTTVEmotes,
         channelBetterTTVResponse=channelBetterTTVResponse,
         sharedBetterTTVResponse=sharedBetterTTVResponse,
-        userIsSub = userIsSub
+        userIsSub = userIsSub,
+        forwardSlashes = forwardSlashes
 
 
     )
