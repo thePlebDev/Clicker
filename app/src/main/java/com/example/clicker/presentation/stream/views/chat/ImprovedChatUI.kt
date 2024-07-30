@@ -145,9 +145,13 @@ import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 import com.example.clicker.util.Response
 
-
+/**
+ * - restartable
+ * - NOT skippable
+ * */
 @Composable
 fun ChatUI(
     twitchUserChat: List<TwitchUserData>,
@@ -184,6 +188,7 @@ fun ChatUI(
     deleteEmote:()->Unit,
     showModView:()->Unit,
     userIsSub:Boolean,
+    forwardSlashes:ForwardSlashCommandsImmutableCollection
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -298,10 +303,15 @@ fun ChatUI(
         globalBetterTTVEmotes=globalBetterTTVEmotes,
         channelBetterTTVResponse=channelBetterTTVResponse,
         sharedBetterTTVResponse=sharedBetterTTVResponse,
-        userIsSub=userIsSub
+        userIsSub=userIsSub,
+        forwardSlashes=forwardSlashes
         )
 }
 
+/**
+ * - restartable
+ * - NOT skippable
+ * */
 @Composable
 fun ChatUIBox(
     determineScrollState: @Composable ImprovedChatUI.() -> Unit,
@@ -323,6 +333,7 @@ fun ChatUIBox(
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit,
     userIsSub:Boolean,
+    forwardSlashes: ForwardSlashCommandsImmutableCollection,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -383,7 +394,8 @@ fun ChatUIBox(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 60.dp),
-                forwardSlashCommandList = forwardSlashCommands,
+                //forwardSlashCommandList = forwardSlashCommands,
+                forwardSlashes =forwardSlashes,
                 clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
             )
         }
@@ -397,6 +409,10 @@ fun LazyGridScope.header(
     item(span = { GridItemSpan(this.maxLineSpan) }, content = content)
 }
 
+/**
+ * - restartable
+ * - skippable
+ * */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EmoteBoard(
@@ -566,6 +582,10 @@ fun EmoteBoard(
     }
 
 }
+/**
+ * - restartable
+ * - skippable
+ * */
 @Composable
 fun BetterTTVEmoteBoard(
     globalBetterTTVResponse: IndivBetterTTVEmoteList,
@@ -707,6 +727,10 @@ fun BetterTTVEmoteBoard(
 }
 
 
+/**
+ * - restartable
+ * - skippable
+ * */
 @Composable
 fun GifLoadingAnimation(
     url:String,
@@ -738,6 +762,11 @@ fun GifLoadingAnimation(
             }
     )
 }
+
+/**
+ * - restartable
+ * - skippable
+ * */
 @Composable
 fun EmoteBottomUI(
     closeEmoteBoard:()->Unit,
@@ -820,6 +849,10 @@ fun EmoteBottomUI(
     }
 }
 
+/**
+ * - restartable
+ * - skippable
+ * */
 @Composable
 fun BetterTTVEmoteBottomUI(
     closeEmoteBoard:()->Unit,
@@ -914,6 +947,10 @@ fun BetterTTVEmoteBottomUI(
 }
 
 
+/**
+ * - restartable
+ * - skippable
+ * */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun LazyGridEmotes(
@@ -1114,6 +1151,11 @@ fun LazyGridEmotes(
 
 @Stable
 class ImprovedChatUI(){
+
+    /**
+     * - restartable
+     * - skippable
+     * */
     @Composable
     fun DetermineScrollState(
         lazyColumnListState: LazyListState,
@@ -1151,6 +1193,9 @@ class ImprovedChatUI(){
     }
 
 
+    /**
+     * - restartable
+     * */
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun ChatUILazyColumn(
@@ -1236,6 +1281,10 @@ class ImprovedChatUI(){
         }
     }
 
+    /**
+     * - restartable
+     * - skippable
+     * */
     //so this does only recomp once
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -1401,6 +1450,10 @@ class ImprovedChatUI(){
     }
 
 
+    /**
+     * - restartable
+     * - skippable
+     * */
     @Composable
     fun ScrollToBottom(
         scrollingPaused: Boolean,
@@ -1434,6 +1487,10 @@ class ImprovedChatUI(){
 }
 
 
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * ClickableCard is the composable that implements the functionality that allows the user to click on a chat message
  * and have the bottom modal pop up
@@ -1512,6 +1569,10 @@ fun ClickableCard(
     }
 
 }
+/**
+ * - restartable
+ * - skippable
+ * */
 @Composable
 fun DoubleClickSeemsGoodIcon(){
 
@@ -1532,6 +1593,11 @@ fun DoubleClickSeemsGoodIcon(){
     }
 
 }
+
+/**
+ * - restartable
+ * - skippable
+ * */
 
 /**
  * HorizontalDragDetectionBox is a [Box] that will detect the user's drag movement and will move [itemBeingDragged] accordingly. Also, depending
@@ -1668,6 +1734,10 @@ fun HorizontalDragDetectionBox(
 }
 
 /**
+ * - restartable
+ * - skippable
+ * */
+/**
  * This is the entire chat textfield with the filtered row above it
  * */
 @Composable
@@ -1693,11 +1763,14 @@ fun EnterChatColumn(
     }
 }
 
-
+//fix this with wrapper
+/**
+ * - restartable
+ * */
 @Composable
 fun ForwardSlash(
     modifier:Modifier,
-    forwardSlashCommandList: List<ForwardSlashCommands>,
+    forwardSlashes: ForwardSlashCommandsImmutableCollection,
     clickedCommandAutoCompleteText:(String)->Unit,
 ){
 
@@ -1707,7 +1780,7 @@ fun ForwardSlash(
             .background(MaterialTheme.colorScheme.primary),
         reverseLayout = true
     ){
-        items(forwardSlashCommandList){command ->
+        items(forwardSlashes.snacks){command ->
             Column(modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 5.dp)
                 .clickable {
@@ -1736,6 +1809,10 @@ fun ForwardSlash(
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 
 
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * - Contains 0 extra parts
  * A [Button] meant to display a message surrounded by two icons.
@@ -1773,7 +1850,10 @@ fun DualIconsButton(
     }
 }
 
-
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * This composable represents a clickable username shown to the user. When the [username] is clicked it will
  * automatically be added to the users text that they are typing
@@ -1807,6 +1887,10 @@ fun ClickedAutoText(
 
 }
 
+//- fix this
+/**
+ * - restartable
+ * */
 /**
  * A [LazyRow] used to represent all the usernames of every chatter in chat. This will be triggered to be shown
  * when a user enters the ***@*** character. This composable is also made up of the [TextChatParts.ClickedAutoText]
@@ -1835,6 +1919,10 @@ fun FilteredMentionLazyRow(
 }
 
 
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * A Composable that will show an Icon based on the length of [textFieldValue]. If the length is greater than 0 then
  * the [ArrowForward] will be shown. If the length is less then or equal to 0 then the [MoreVert] will be shown
@@ -1876,7 +1964,10 @@ fun ShowIconBasedOnTextLength(
     }
 }
 
-
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * A styled [TextField] to allow the user to enter chat messages
  * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
@@ -1995,7 +2086,10 @@ fun StylizedTextField(
 
 
 
-
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  * A composable meant to show a moderator Icon based on the status of [modStatus]
  *
@@ -2078,6 +2172,10 @@ fun ShowModStatus(
 }
 
 /**
+ * - restartable
+ * - skippable
+ * */
+/**
  * CheckIfUserDeleted is the composable that will be used to determine if there should be extra information shown
  * depending if the user's message has been deleted or not
  *
@@ -2094,6 +2192,11 @@ fun CheckIfUserDeleted(twitchUser: TwitchUserData){
         )
     }
 }
+
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  *
  * CheckIfUserIsBanned is the composable that will be used to determine if there should be extra information shown
@@ -2114,6 +2217,11 @@ fun CheckIfUserIsBanned(twitchUser: TwitchUserData){
     }
 }
 
+
+/**
+ * - restartable
+ * - skippable
+ * */
 /**
  *
  * TextWithChatBadges is really just a wrapper class around [ChatBadges] to allow us to use it a little more cleanly
@@ -2152,6 +2260,10 @@ fun TextWithChatBadges(
     } // end of the row
 }
 
+//fix this
+/**
+ * - restartable
+ * */
 /**
  *
  * ChatBadges is the composable that is responsible for showing the chat badges(mod or sub) beside the users username.

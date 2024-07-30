@@ -269,7 +269,8 @@ fun HorizontalChat(
                 globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
                 channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                 sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
-                userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false
+                userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
+                forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value
             )
 
 

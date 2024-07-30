@@ -363,6 +363,7 @@ class StreamViewModel @Inject constructor(
      * */
     var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
     val forwardSlashCommands = textParsing.forwardSlashCommands
+    val forwardSlashCommandImmutable = textParsing.forwardSlashCommandsState
 
     fun clearFilteredChatterList(){
         textParsing.clearFilteredChatterList()
