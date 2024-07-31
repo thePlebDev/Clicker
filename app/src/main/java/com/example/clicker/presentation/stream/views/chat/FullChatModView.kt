@@ -47,7 +47,6 @@ fun FullChatModView(
     notificationAmount:Int,
     noChat:Boolean,
     deleteChatMessage:(String)->Unit,
-    forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
@@ -165,7 +164,6 @@ fun FullChatModView(
             )
         },
         noChat=noChat,
-        forwardSlashCommands =forwardSlashCommands,
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
         emoteBoardGlobalList =emoteBoardGlobalList,
