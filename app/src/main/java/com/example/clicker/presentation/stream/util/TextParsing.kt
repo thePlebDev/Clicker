@@ -53,7 +53,6 @@ class TextParsing @Inject constructor() {
     var filteredChatList = mutableStateListOf<String>()
 
     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
-    val forwardSlashCommands = _forwardSlashCommands
 
     /********** New forward slash command to make it immutable *************/
     // Immutable state holder

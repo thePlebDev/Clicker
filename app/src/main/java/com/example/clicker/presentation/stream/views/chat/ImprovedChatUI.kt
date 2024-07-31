@@ -173,7 +173,6 @@ fun ChatUI(
     notificationAmount:Int,
     noChat:Boolean,
     deleteChatMessage:(String)->Unit,
-    forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
@@ -287,7 +286,6 @@ fun ChatUI(
             )
         },
         noChat=noChat,
-        forwardSlashCommands =forwardSlashCommands,
         clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)},
         emoteKeyBoardHeight =emoteKeyBoardHeight.value,
         emoteBoardGlobalList =emoteBoardGlobalList,
@@ -319,7 +317,6 @@ fun ChatUIBox(
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     noChat:Boolean,
-    forwardSlashCommands: List<ForwardSlashCommands>,
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
@@ -394,7 +391,6 @@ fun ChatUIBox(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 60.dp),
-                //forwardSlashCommandList = forwardSlashCommands,
                 forwardSlashes =forwardSlashes,
                 clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
             )
@@ -1763,9 +1759,9 @@ fun EnterChatColumn(
     }
 }
 
-//fix this with wrapper
 /**
  * - restartable
+ * - skippable
  * */
 @Composable
 fun ForwardSlash(

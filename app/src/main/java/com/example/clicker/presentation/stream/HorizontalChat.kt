@@ -253,7 +253,6 @@ fun HorizontalChat(
                 },
                 noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                 deleteChatMessage = {messageId ->streamViewModel.deleteChatMessage(messageId)},
-                forwardSlashCommands = streamViewModel.forwardSlashCommands,
                 clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
                 inlineContentMap = streamViewModel.inlineTextContentTest.value,
                 hideSoftKeyboard ={
