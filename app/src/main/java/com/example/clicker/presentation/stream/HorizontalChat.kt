@@ -35,7 +35,7 @@ import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
-import com.example.clicker.presentation.stream.views.streamManager.StreamManagerUI
+
 import kotlinx.coroutines.launch
 
 
