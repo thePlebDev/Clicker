@@ -59,8 +59,6 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
-import com.example.clicker.presentation.stream.views.streamManager.ModViewComponent
-import com.example.clicker.presentation.stream.views.streamManager.ModViewScaffold
 import com.example.clicker.ui.theme.AppTheme
 
 

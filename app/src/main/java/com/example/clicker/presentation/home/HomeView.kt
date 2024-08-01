@@ -39,18 +39,15 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.modChannels.modVersionThree.BoxNumber
-import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThree
+
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
-import com.example.clicker.presentation.modView.views.DraggableModViewBox
-import com.example.clicker.presentation.sharedViews.ModViewScaffoldWithDrawer
+
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
-import com.example.clicker.presentation.stream.ClickedUIState
 import com.example.clicker.presentation.stream.StreamViewModel
-import com.example.clicker.presentation.stream.views.streamManager.ModViewScaffold
+
 import com.example.clicker.util.WebSocketResponse
 
 @OptIn(ExperimentalMaterialApi::class)
