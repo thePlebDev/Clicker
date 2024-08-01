@@ -1280,28 +1280,28 @@ fun SmallChat(
     SmallChatUIBox(
         chatUI = { modifier ->
             SmallChatUILazyColumn(
-//                lazyColumnListState=lazyColumnListState,
+                lazyColumnListState=lazyColumnListState,
                 twitchUserChat=twitchUserChat,
-//                autoscroll=autoscroll,
-//                showBottomModal={showBottomModal()},
-//                showTimeoutDialog={showTimeoutDialog()},
-//                showBanDialog={showBanDialog()},
-//                updateClickedUser = {  username, userId,isBanned,isMod ->
-//                    updateClickedUser(
-//                        username,
-//                        userId,
-//                        isBanned,
-//                        isMod
-//                    )
-//                },
-//                doubleClickMessage={username ->doubleClickMessage(username)},
+                autoscroll=autoscroll,
+                showBottomModal={showBottomModal()},
+                showTimeoutDialog={showTimeoutDialog()},
+                showBanDialog={showBanDialog()},
+                updateClickedUser = {  username, userId,isBanned,isMod ->
+                    updateClickedUser(
+                        username,
+                        userId,
+                        isBanned,
+                        isMod
+                    )
+                },
+                doubleClickMessage={username ->doubleClickMessage(username)},
                 modifier=modifier,
-//                deleteChatMessage={messageId ->deleteChatMessage(messageId)},
-//                isMod = isMod,
+                deleteChatMessage={messageId ->deleteChatMessage(messageId)},
+                isMod = isMod,
                 inlineContentMap=inlineContentMap,
-//                setDragging = {value -> setDragging(value)},
+                setDragging = {value -> setDragging(value)},
                 doubleClickAndDrag=doubleClickAndDrag,
-//                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
 
                 )
         },
@@ -1414,42 +1414,42 @@ fun SmallChatDetermineScrollState(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallChatUILazyColumn(
-//    lazyColumnListState: LazyListState,
+    lazyColumnListState: LazyListState,
     twitchUserChat: List<TwitchUserData>,
-//    autoscroll:Boolean,
-//    showBottomModal:()->Unit,
-//    showTimeoutDialog:()->Unit,
-//    showBanDialog:()->Unit,
-//    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
-//    doubleClickMessage:(String)->Unit,
-//    deleteChatMessage:(String)->Unit,
+    autoscroll:Boolean,
+    showBottomModal:()->Unit,
+    showTimeoutDialog:()->Unit,
+    showBanDialog:()->Unit,
+    updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
+    doubleClickMessage:(String)->Unit,
+    deleteChatMessage:(String)->Unit,
     modifier: Modifier,
-//    isMod: Boolean,
+    isMod: Boolean,
     inlineContentMap: EmoteListMap,
-//    setDragging: (Boolean) -> Unit,
+    setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
-//    setDoubleClickAndDragFalse:()->Unit
+    setDoubleClickAndDragFalse:()->Unit
 ){
     val coroutineScope = rememberCoroutineScope()
     val chatUIScope = remember(){ ImprovedChatUI() }
     val hapticFeedback = LocalHapticFeedback.current
     LazyColumn(
         modifier =modifier,
-//        state = lazyColumnListState
+        state = lazyColumnListState
     ){
         coroutineScope.launch {
-//            if (autoscroll) {
-//                lazyColumnListState.scrollToItem(twitchUserChat.size)
-//            }
+            if (autoscroll) {
+                lazyColumnListState.scrollToItem(twitchUserChat.size)
+            }
         }
         stickyHeader {
             ChatHeader(
                 setDragging ={newValue ->
-                    //setDragging(newValue)
+                    setDragging(newValue)
                              },
                 doubleClickAndDrag =doubleClickAndDrag,
                 setDoubleClickAndDragFalse={
-                   // setDoubleClickAndDragFalse()
+                    setDoubleClickAndDragFalse()
                 }
             )
 
@@ -1466,24 +1466,24 @@ fun SmallChatUILazyColumn(
 //                        showBottomModal()
                                     },
                     updateClickedUser = {  username, userId,isBanned,isMod ->
-//                        updateClickedUser(
-//                            username,
-//                            userId,
-//                            isBanned,
-//                            isMod
-//                        )
+                        updateClickedUser(
+                            username,
+                            userId,
+                            isBanned,
+                            isMod
+                        )
                     },
                     showTimeoutDialog ={
-                        //showTimeoutDialog()
+                        showTimeoutDialog()
                                        },
                     showBanDialog={
-                        //showBanDialog()
+                        showBanDialog()
                                   },
                     doubleClickMessage={username ->
-                        //doubleClickMessage(username)
+                        doubleClickMessage(username)
                                        },
                     deleteChatMessage={messageId->
-                        //deleteChatMessage(messageId)
+                        deleteChatMessage(messageId)
                                       },
                     isMod = false,
                     inlineContentMap=inlineContentMap
