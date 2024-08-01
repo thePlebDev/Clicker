@@ -61,7 +61,7 @@ fun ValidationView(
     updateModViewSettings:(String,String,String,String,)->Unit,
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
-    modViewDragStateViewModel: ModViewDragStateViewModel,
+
     modVersionThreeViewModel: ModVersionThreeViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)

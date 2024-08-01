@@ -67,7 +67,6 @@ class HomeFragment : Fragment() {
     private val autoModViewModel: AutoModViewModel by activityViewModels()
     private val modViewViewModel: ModViewViewModel by activityViewModels()
     private val logoutViewModel: LogoutViewModel by activityViewModels()
-    private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
     private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -153,7 +152,6 @@ class HomeFragment : Fragment() {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
                             },
                             logoutViewModel=logoutViewModel,
-                            modViewDragStateViewModel=modViewDragStateViewModel,
                             modVersionThreeViewModel =modVersionThreeViewModel
 
                         )
