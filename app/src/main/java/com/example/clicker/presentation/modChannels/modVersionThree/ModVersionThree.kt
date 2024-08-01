@@ -2,6 +2,7 @@ package com.example.clicker.presentation.modChannels.modVersionThree
 
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,17 +19,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -38,8 +43,11 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -77,7 +85,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -101,16 +112,9 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
-import com.example.clicker.presentation.modView.views.AutoModBoxHorizontalDragBox
-import com.example.clicker.presentation.modView.views.ConnectionErrorResponse
-import com.example.clicker.presentation.modView.views.ErrorMessage403
-import com.example.clicker.presentation.modView.views.FailedClickToTryAgainBox
-import com.example.clicker.presentation.modView.views.LoadingIndicator
-import com.example.clicker.presentation.modView.views.ModActionNotificationMessage
-import com.example.clicker.presentation.modView.views.ScrollToBottomModView
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
-import androidx.window.layout.WindowMetrics
+import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
 
 enum class Sections {
     ONE, TWO, THREE
@@ -2035,4 +2039,344 @@ fun NewIconTextRow(
     }
 
 
+}
+
+@Composable
+fun AutoModBoxHorizontalDragBox(
+    autoModMessage: AutoModQueueMessage,
+    manageAutoModMessage:(String,String)-> Unit
+){
+    Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$autoModMessage")
+
+    HorizontalDragDetectionBox(
+        itemBeingDragged ={offset ->
+            AutoModItemRow(
+                autoModMessage.username,
+                autoModMessage.fullText,
+                offset = offset,
+                approved =autoModMessage.approved,
+                messageCategory = autoModMessage.category
+            )
+        },
+        quarterSwipeRightAction = {
+            manageAutoModMessage(
+                autoModMessage.messageId,
+                "DENY"
+            )
+            Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
+        },
+        quarterSwipeLeftAction = {
+            Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
+            manageAutoModMessage(
+                autoModMessage.messageId,
+                "ALLOW"
+            )
+        },
+        twoSwipeOnly = true,
+        quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
+        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
+        swipeEnabled = !autoModMessage.swiped,
+    )
+}
+
+/**
+ * AutoModItemRow is the composable function that is used inside of [AutoModQueueBox] to represent the individual AutoModQue messages
+ * shown to the user
+ *
+ * @param username the username of the user
+ * @param message the message that is under review
+ * @param offset a float used to offset this composable and animate the dragging effect
+ * */
+@Composable
+fun AutoModItemRow(
+    username:String,
+    message: String,
+    offset: Float,
+    messageCategory: String,
+    approved:Boolean?,
+){
+
+    val annotatedMessageText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = Color.White)) {
+            append("$username: ")
+        }
+        withStyle(style = SpanStyle(color = Color.White, background = Color.Red.copy(alpha = 0.6f))) {
+            append(" $message ")
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
+            .background(MaterialTheme.colorScheme.primary)
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+
+            ){
+            AutoModItemRowTesting(messageCategory)
+            AutoModItemPendingText(approved)
+
+        }
+        Text(annotatedMessageText)
+        Spacer(modifier =Modifier.height(5.dp))
+        Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+        Spacer(modifier =Modifier.height(5.dp))
+
+    }
+}
+@Composable
+fun AutoModItemPendingText(
+    approved:Boolean?,
+){
+    when(approved){
+        null ->{
+            Text("Pending approval", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+        }
+        true ->{
+            Row(){
+                Icon(painter = painterResource(id =R.drawable.baseline_check_24), contentDescription = "",tint = Color.Green)
+                Text("Approved")
+            }
+        }
+        false ->{
+            Row(){
+                Text("Denied")
+                Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "",tint = Color.Red)
+            }
+        }
+    }
+
+
+}
+@Composable
+fun AutoModItemRowTesting(
+    category:String,
+){
+    Row(){
+        Spacer(modifier =Modifier.height(5.dp))
+        Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
+        Text(category)
+        Spacer(modifier =Modifier.height(20.dp))
+    }
+
+}
+
+
+
+
+@Composable
+fun ModActionNotificationMessage(
+    title:String,
+    message:String,
+    icon:Painter,
+    secondaryErrorMessage:String? = null
+
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)) {
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(painter = icon, modifier = Modifier.size(25.dp), contentDescription = "message deleted",tint=MaterialTheme.colorScheme.onPrimary)
+                Text(text ="  $title", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,modifier = Modifier.padding(bottom=5.dp))
+            }
+            Text(text =message, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            if(secondaryErrorMessage!= null){
+                Text(text =secondaryErrorMessage, color = Color.Red.copy(alpha = 0.7f), fontSize = MaterialTheme.typography.headlineSmall.fontSize,)
+            }
+            Spacer(modifier = Modifier.height(5.dp))
+
+        }
+        Spacer(modifier = Modifier
+            .height(2.dp)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.onPrimary.copy(0.5f)))
+
+    }
+}
+
+
+@Composable
+fun ConnectionErrorResponse(
+    connectionError: Response<Boolean>,
+    reconnect:()->Unit
+){
+    when(connectionError){
+        is Response.Loading ->{
+            SubscriptionConnectionLoading()
+        }
+        is Response.Success ->{}
+        is Response.Failure ->{
+            ConnectionError(
+                message = "AutoMod connection error",
+                reconnect ={reconnect()}
+            )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LoadingIndicator(
+    hapticFeedback: HapticFeedback,
+    setDragging: (Boolean) -> Unit,
+    title: String
+){
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Text(
+            title,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+                .align(Alignment.TopCenter)
+        )
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun FailedClickToTryAgainBox(
+    hapticFeedback: HapticFeedback,
+    setDragging: (Boolean) -> Unit,
+    title:String
+){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Text(
+            title,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                    },
+                    onClick = {}
+                )
+                .padding(horizontal = 10.dp)
+                .align(Alignment.TopCenter)
+        )
+
+        ElevatedButton(
+            onClick = {  },
+            modifier = Modifier.align(Alignment.Center),
+            border = BorderStroke(1.dp,Color.Red),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+                Spacer(modifier = Modifier.width(15.dp))
+                Text(
+                    text = "Try again",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+                Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
+            }
+        }
+
+
+
+
+    }
+}
+
+@Composable
+fun ScrollToBottomModView(
+    enableAutoScroll: () -> Unit,
+    modifier: Modifier
+) {
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        DualIconsButton(
+            buttonAction = { enableAutoScroll() },
+            iconImageVector = Icons.Default.ArrowDropDown,
+            iconDescription = stringResource(R.string.arrow_drop_down_description),
+            buttonText = stringResource(R.string.scroll_to_bottom)
+
+        )
+    }
+}
+
+
+
+@Composable
+fun SubscriptionConnectionLoading(){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black.copy(alpha = 0.7f))){
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    }
+}
+
+
+@Composable
+fun ConnectionError(
+    message:String,
+    reconnect:()->Unit
+){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black.copy(alpha = 0.7f))){
+        Column(
+            modifier= Modifier.align(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Text(message,color = Color.Red, fontSize = 25.sp)
+            Button(
+                onClick ={
+                    reconnect()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                Text("Re-connect", color = MaterialTheme.colorScheme.onSecondary)
+            }
+        }
+
+
+    }
 }

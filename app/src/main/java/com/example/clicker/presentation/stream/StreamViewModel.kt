@@ -494,6 +494,7 @@ class StreamViewModel @Inject constructor(
         broadcasterId: String
     ){
         Log.d("getGlobalEmotes","oAuthToken-->${oAuthToken}")
+        Log.d("largeChatLoading","getGlobalEmotes")
         //todo: this needs to become a get channel specific emotes
         viewModelScope.launch {
             withContext(Dispatchers.IO){
