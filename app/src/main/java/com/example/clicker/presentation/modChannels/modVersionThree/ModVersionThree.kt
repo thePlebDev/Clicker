@@ -338,7 +338,6 @@ fun ModViewComponentVersionThree(
 
                     //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
                     isMod = true,
-                    filteredChatList = streamViewModel.filteredChatList,
                     clickedAutoCompleteText = { username ->
                         streamViewModel.autoTextChange(username)
                     },
@@ -386,7 +385,8 @@ fun ModViewComponentVersionThree(
                     channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                     sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
                     userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
-                    forwardSlashes=streamViewModel.forwardSlashCommandImmutable.value
+                    forwardSlashes=streamViewModel.forwardSlashCommandImmutable.value,
+                    filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
                 )
 
             },

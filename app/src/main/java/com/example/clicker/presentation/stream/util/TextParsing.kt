@@ -34,6 +34,19 @@ data class ForwardSlashCommandsImmutableCollection(
     val snacks: List<ForwardSlashCommands>
 )
 
+/**
+ * FilteredChatListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
+ *  always marking the List as unstable.
+ *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
+ *
+ * */
+@Immutable
+data class FilteredChatListImmutableCollection(
+    val chatList: List<String>
+)
+
+
+
 class TextParsing @Inject constructor() {
     private val listOfCommands = listOf(
         ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
@@ -53,6 +66,38 @@ class TextParsing @Inject constructor() {
     var filteredChatList = mutableStateListOf<String>()
 
     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
+    /********Immutable _filteredChatListImmutableCollection*************/
+    // Immutable state holder
+    private var _filteredChatListImmutableCollection by mutableStateOf(
+        FilteredChatListImmutableCollection(filteredChatList)
+    )
+
+    // Publicly exposed immutable state as State
+    val filteredChatListImmutable: State<FilteredChatListImmutableCollection>
+        get() = mutableStateOf(_filteredChatListImmutableCollection)
+
+    private fun addAllFilteredChatList(commands:List<String>){
+        filteredChatList.addAll(commands)
+        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(filteredChatList)
+
+    }
+    private fun filterChatListUsername(
+        usernameRegex: Regex
+    ){
+        filteredChatList.removeIf{
+            !it.contains(usernameRegex)
+        }
+        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(filteredChatList)
+    }
+
+    private fun clearFilteredChatterListImmutable() {
+        filteredChatList.clear()
+        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(listOf())
+    }
+
+
+
+    /********END --> Immutable _filteredChatListImmutableCollection*************/
 
     /********** New forward slash command to make it immutable *************/
     // Immutable state holder
@@ -69,13 +114,13 @@ class TextParsing @Inject constructor() {
         _forwardSlashCommands.add(command)
         _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
     }
-    fun addAllForwardSlashCommand( commands:List<ForwardSlashCommands>){
+    private fun addAllForwardSlashCommand(commands:List<ForwardSlashCommands>){
         _forwardSlashCommands.addAll(commands)
         _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
 
     }
 
-    fun clearForwardSlashCommand() {
+    private fun clearForwardSlashCommand() {
         _forwardSlashCommands.clear()
         _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(listOf())
     }
@@ -110,12 +155,14 @@ class TextParsing @Inject constructor() {
             text = replacedString,
             selection = TextRange(replacedString.length)
         )
-        filteredChatList.clear()
+      //  filteredChatList.clear()
+        clearFilteredChatterList()
 
     }
 
     fun clearFilteredChatterList(){
-        filteredChatList.clear()
+      //  filteredChatList.clear()
+        clearFilteredChatterListImmutable()
     }
 
     fun updateTextField(emoteText:String){
@@ -172,7 +219,8 @@ class TextParsing @Inject constructor() {
             selection = TextRange(replacedString.length)
         )
         _forwardSlashCommands.clear()
-        filteredChatList.clear()
+       // filteredChatList.clear()
+        clearFilteredChatterList()
         slashCommandIndex =0
     }
 
@@ -271,8 +319,10 @@ class TextParsing @Inject constructor() {
         allChatters:List<String>
     ){
         Log.d("newParsingAgain","-----------BEGIN PARSING----------")
-        filteredChatList.clear()
-        filteredChatList.addAll(allChatters)
+      //  filteredChatList.clear()
+        clearFilteredChatterList()
+        addAllFilteredChatList(allChatters)
+       // filteredChatList.addAll(allChatters)
         parsingIndex =textFieldValue.selection.start
         startParsing = true
     }
@@ -287,9 +337,10 @@ class TextParsing @Inject constructor() {
         val username =textFieldValue.text.subSequence(parsingIndex,textFieldValue.selection.end)
 
         val usernameRegex = Regex("^$username",RegexOption.IGNORE_CASE)
-        filteredChatList.removeIf{
-            !it.contains(usernameRegex)
-        }
+        filterChatListUsername(usernameRegex)
+//        filteredChatList.removeIf{
+//            !it.contains(usernameRegex)
+//        }
 
     }
     /**BELOW IS THE COMMAND LIST!!!!!*/
@@ -309,7 +360,8 @@ class TextParsing @Inject constructor() {
      * set [startParsing] to false
      * */
     private fun endParsingNClearFilteredChatList(){
-        filteredChatList.clear()
+       // filteredChatList.clear()
+        clearFilteredChatterList()
         startParsing = false
     }
     /**

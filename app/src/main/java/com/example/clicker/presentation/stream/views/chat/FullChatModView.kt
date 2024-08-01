@@ -18,6 +18,7 @@ import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 import com.example.clicker.util.Response
@@ -35,7 +36,6 @@ fun FullChatModView(
     showBanDialog:()->Unit,
     doubleClickMessage:(String)->Unit,
     //below is what is needed for the chat UI
-    filteredChatList: List<String>,
     textFieldValue: MutableState<TextFieldValue>,
     clickedAutoCompleteText: (String) -> Unit,
     isMod: Boolean,
@@ -63,7 +63,8 @@ fun FullChatModView(
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     userIsSub:Boolean,
-    forwardSlashes: ForwardSlashCommandsImmutableCollection
+    forwardSlashes: ForwardSlashCommandsImmutableCollection,
+    filteredChatListImmutable: FilteredChatListImmutableCollection,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -118,12 +119,12 @@ fun FullChatModView(
                 modifier = modifier,
                 filteredRow = {
                     FilteredMentionLazyRow(
-                        filteredChatList = filteredChatList,
                         clickedAutoCompleteText = { username ->
                             clickedAutoCompleteText(
                                 username
                             )
-                        }
+                        },
+                        filteredChatListImmutable=filteredChatListImmutable
                     )
                 },
                 showModStatus = {
