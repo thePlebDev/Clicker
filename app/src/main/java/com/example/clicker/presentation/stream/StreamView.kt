@@ -69,7 +69,6 @@ fun StreamView(
 //    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
 //    val chatSettingData = streamViewModel.state.value.chatSettings
 //    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-    val filteredChat = streamViewModel.filteredChatList
     val clickedUsernameChats = streamViewModel.clickedUsernameChats
     val scope = rememberCoroutineScope()
 //    var showAdvancedChatSettings by remember { mutableStateOf(true) }
@@ -270,7 +269,6 @@ fun StreamView(
                             orientationIsVertical =true,
 
                             isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                            filteredChatList = filteredChat,
                             clickedAutoCompleteText = { username ->
                                 streamViewModel.autoTextChange(username)
                             },
@@ -302,7 +300,8 @@ fun StreamView(
                             channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                             sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
                             userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
-                            forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value
+                            forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
+                            filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
                         )
 
 

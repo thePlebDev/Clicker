@@ -145,6 +145,7 @@ import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 import com.example.clicker.util.Response
 
@@ -160,8 +161,9 @@ fun ChatUI(
     showTimeoutDialog:()->Unit,
     showBanDialog:()->Unit,
     doubleClickMessage:(String)->Unit,
+
+
     //below is what is needed for the chat UI
-    filteredChatList: List<String>,
     textFieldValue: MutableState<TextFieldValue>,
     clickedAutoCompleteText: (String) -> Unit,
     isMod: Boolean,
@@ -187,7 +189,8 @@ fun ChatUI(
     deleteEmote:()->Unit,
     showModView:()->Unit,
     userIsSub:Boolean,
-    forwardSlashes:ForwardSlashCommandsImmutableCollection
+    forwardSlashes:ForwardSlashCommandsImmutableCollection,
+    filteredChatListImmutable: FilteredChatListImmutableCollection,
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -240,7 +243,7 @@ fun ChatUI(
                 modifier = modifier,
                 filteredRow = {
                     FilteredMentionLazyRow(
-                        filteredChatList = filteredChatList,
+                        filteredChatListImmutable=filteredChatListImmutable,
                         clickedAutoCompleteText = { username ->
                             clickedAutoCompleteText(
                                 username
@@ -1883,25 +1886,26 @@ fun ClickedAutoText(
 
 }
 
-//- fix this
+
 /**
  * - restartable
+ * - skipable
  * */
 /**
  * A [LazyRow] used to represent all the usernames of every chatter in chat. This will be triggered to be shown
  * when a user enters the ***@*** character. This composable is also made up of the [TextChatParts.ClickedAutoText]
  * composable
  *
- * @param filteredChatList a list of Strings meant to represent all of the users in chat
+ * @param filteredChatListImmutable a [FilteredChatListImmutableCollection] object used to make this composable function restartable and skippeable
  * @param clickedAutoCompleteText a function passed to [TextChatParts.ClickedAutoText] that enables autocomplete on click
  * */
 @Composable
 fun FilteredMentionLazyRow(
-    filteredChatList: List<String>,
+    filteredChatListImmutable: FilteredChatListImmutableCollection,
     clickedAutoCompleteText: (String) -> Unit,
 ){
     LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
-        items(filteredChatList) {
+        items(filteredChatListImmutable.chatList) {
 
             ClickedAutoText(
                 clickedAutoCompleteText ={

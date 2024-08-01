@@ -72,7 +72,6 @@ fun HorizontalChat(
 
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-    val filteredChat = streamViewModel.filteredChatList
     val showClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
             bottomModalState.show()
@@ -239,7 +238,6 @@ fun HorizontalChat(
                 orientationIsVertical =false,
 
                 isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                filteredChatList = filteredChat,
                 clickedAutoCompleteText = { username ->
                     streamViewModel.autoTextChange(username)
                 },
@@ -269,7 +267,8 @@ fun HorizontalChat(
                 channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                 sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
                 userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
-                forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value
+                forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
+                filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
             )
 
 
