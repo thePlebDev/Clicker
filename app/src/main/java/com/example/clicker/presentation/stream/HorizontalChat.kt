@@ -228,11 +228,6 @@ fun HorizontalChat(
                     doubleClickChat(username)
                 },
 
-                showOuterBottomModalState = {
-                    scope.launch {
-
-                    }
-                },
                 newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
 
                 orientationIsVertical =false,

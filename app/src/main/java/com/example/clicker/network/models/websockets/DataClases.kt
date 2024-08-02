@@ -56,6 +56,7 @@ data class LoggedInUserData(
  * @property systemMessage representing a message sent by the Twitch irc server
  * @constructor Creates the state representing a chatting user.
  */
+//todo: make messageList and badgeList immutable
 @Immutable
 data class TwitchUserData(
     val badgeInfo: String?,
