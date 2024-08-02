@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -227,6 +228,7 @@ class StreamViewModel @Inject constructor(
     fun updateMostFrequentEmoteList(clickedItem:EmoteNameUrl){
         mostFrequentEmoteList.add(clickedItem)
     }
+    @SuppressLint("LongLogTag")
     fun updateMostFrequentEmoteListTesting(clickedItem:EmoteNameUrl){
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
         val newClickedItem = EmoteNameUrlNumber(clickedItem.name,clickedItem.url,1)

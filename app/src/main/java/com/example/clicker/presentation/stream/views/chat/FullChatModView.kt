@@ -130,7 +130,6 @@ fun FullChatModView(
                 showModStatus = {
                     ShowModStatus(
                         modStatus =isMod,
-                        showOuterBottomModalState={showOuterBottomModalState()},
                         orientationIsVertical =orientationIsVertical,
                         notificationAmount=notificationAmount,
                         showModView={showModView()}

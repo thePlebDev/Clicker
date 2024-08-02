@@ -121,17 +121,22 @@ enum class Sections {
 }
 
 //todo: this need to go inside of the Fragment, where the old modView is
+
+/**
+ * - restartable
+ *
+ * */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ModViewComponentVersionThree(
     closeModView:()->Unit,
-    modViewDragStateViewModel: ModViewDragStateViewModel,
+    modViewDragStateViewModel: ModViewDragStateViewModel,// unstable
     inlineContentMap: EmoteListMap,
-    twitchUserChat: List<TwitchUserData>,
-    streamViewModel: StreamViewModel,
-    modViewViewModel: ModViewViewModel,
+    twitchUserChat: List<TwitchUserData>, // unstable this is the only one I am going to fix
+    streamViewModel: StreamViewModel,// unstable
+    modViewViewModel: ModViewViewModel,// unstable
     hideSoftKeyboard:()->Unit,
-    modVersionThreeViewModel:ModVersionThreeViewModel
+    modVersionThreeViewModel:ModVersionThreeViewModel// unstable
 ){
 
     val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
@@ -415,11 +420,14 @@ fun ModViewComponentVersionThree(
 
 }
 
+/**
+ * - restartable
+ * */
 @Composable
 fun ModVersionThree(
     boxOneOffsetY: Float,
     setBoxOneOffset:(Float) ->Unit,
-    boxOneDragState: DraggableState,
+    boxOneDragState: DraggableState, //unstable
     boxOneSection: Sections,
     boxOneIndex:Int,
     boxOneDragging: Boolean,
@@ -433,7 +441,7 @@ fun ModVersionThree(
 /*************** BOX TWO PARAMETERS***********************************/
     boxTwoOffsetY: Float,
     setBoxTwoOffset:(Float) ->Unit,
-    boxTwoDragState: DraggableState,
+    boxTwoDragState: DraggableState,//unstable
     boxTwoSection: Sections,
     boxTwoIndex:Int,
     boxTwoDragging: Boolean,
@@ -447,7 +455,7 @@ fun ModVersionThree(
     /*************** BOX THREE PARAMETERS***********************************/
     boxThreeOffsetY: Float,
     setBoxThreeOffset:(Float) ->Unit,
-    boxThreeDragState: DraggableState,
+    boxThreeDragState: DraggableState, //unstable
     boxThreeSection: Sections,
     boxThreeIndex:Int,
     boxThreeDragging: Boolean,
@@ -470,8 +478,8 @@ fun ModVersionThree(
     fullChat: @Composable (setDraggingTrue: () -> Unit) -> Unit,
 
     modActionStatus: WebSocketResponse<Boolean>,
-    modActionsList: List<ModActionData>,
-    autoModMessageList:List<AutoModQueueMessage>,
+    modActionsList: List<ModActionData>, //unstable
+    autoModMessageList:List<AutoModQueueMessage>, //unstable
     autoModStatus: WebSocketResponse<Boolean>,
     manageAutoModMessage:(String,String)-> Unit,
 
@@ -1259,9 +1267,13 @@ fun DetectDoubleClickSpacer(
 }
 /*********************************** SMALL CHAT COMPOSABLES ****************************************/
 
+/**
+ * - restartable
+ *
+ * */
 @Composable
 fun SmallChat(
-    twitchUserChat: List<TwitchUserData>,
+    twitchUserChat: List<TwitchUserData>, // this is unstable
     showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     showTimeoutDialog:()->Unit,
@@ -1323,7 +1335,10 @@ fun SmallChat(
 }
 
 
-
+/**
+ * -restartable
+ * - skippable
+ * */
 @Composable
 fun SmallChatScrollToBottom(
     scrollingPaused: Boolean,
@@ -1350,7 +1365,11 @@ fun SmallChatScrollToBottom(
     }
 
 }
-
+/**
+ * - restartable
+ * - skippable
+ *
+ * */
 @Composable
 fun SmallChatUIBox(
     chatUI: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
@@ -1375,6 +1394,10 @@ fun SmallChatUIBox(
 
 }
 
+/**
+ * - restartable
+ * - skippeable
+ * */
 @Composable
 fun SmallChatDetermineScrollState(
     lazyColumnListState: LazyListState,
@@ -1411,11 +1434,14 @@ fun SmallChatDetermineScrollState(
 
 }
 
+/**
+ * - restartable
+ * */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallChatUILazyColumn(
     lazyColumnListState: LazyListState,
-    twitchUserChat: List<TwitchUserData>,
+    twitchUserChat: List<TwitchUserData>, //unstable, todo: change to stable
     autoscroll:Boolean,
     showBottomModal:()->Unit,
     showTimeoutDialog:()->Unit,

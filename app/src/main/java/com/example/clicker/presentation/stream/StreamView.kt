@@ -259,11 +259,6 @@ fun StreamView(
                                 doubleClickChat(username)
                             },
 
-                            showOuterBottomModalState = {
-                                scope.launch {
-
-                                }
-                            },
                             newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
 
                             orientationIsVertical =true,

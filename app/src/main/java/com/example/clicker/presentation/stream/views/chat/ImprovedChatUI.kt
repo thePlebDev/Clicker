@@ -145,7 +145,6 @@ fun ChatUI(
     isMod: Boolean,
     sendMessageToWebSocket: (String) -> Unit,
     showModal: () -> Unit,
-    showOuterBottomModalState:() ->Unit,
     newFilterMethod:(TextFieldValue) ->Unit,
     orientationIsVertical:Boolean,
     notificationAmount:Int,
@@ -230,7 +229,6 @@ fun ChatUI(
                 showModStatus = {
                     ShowModStatus(
                         modStatus =isMod,
-                        showOuterBottomModalState={showOuterBottomModalState()},
                         orientationIsVertical =orientationIsVertical,
                         notificationAmount=notificationAmount,
                         showModView={showModView()}
@@ -2075,7 +2073,6 @@ fun StylizedTextField(
 @Composable
 fun ShowModStatus(
     modStatus: Boolean?,
-    showOuterBottomModalState: () ->Unit,
     orientationIsVertical:Boolean,
     notificationAmount:Int,
     showModView:()->Unit,
@@ -2118,8 +2115,10 @@ fun ShowModStatus(
                 AsyncImage(
                     modifier = Modifier
                         .clickable {
+                            Log.d("ClickingTheModStatus","orientationIsVertical ->$orientationIsVertical")
                             if (orientationIsVertical){
-                                showOuterBottomModalState()
+                                Log.d("ClickingTheModStatus","orientationIsVertical ->$orientationIsVertical")
+                                showModView()
                             }
 
                         },
@@ -2236,7 +2235,6 @@ fun TextWithChatBadges(
     } // end of the row
 }
 
-//fix this
 /**
  * - restartable
  * */
@@ -2266,7 +2264,7 @@ fun ChatBadges(
     inlineContentMap: EmoteListMap
 ) {
 
-    Log.d("ChatBadgesMessageList","$messageList")
+    Log.d("ChatBadgesusername","username->$messageList")
 
     //moderator subscriber
     Log.d("LoggingBadges","list -> $badgeList")
