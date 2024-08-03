@@ -26,6 +26,7 @@ sealed class Response<out T> {
     ) : Response<Nothing>()
 }
 
+@Immutable
 sealed class WebSocketResponse<out T> {
 
     object Loading : WebSocketResponse<Nothing>()
