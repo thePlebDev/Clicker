@@ -1,6 +1,7 @@
 package com.example.clicker.network.repository.util
 
 import com.example.clicker.network.websockets.parseStatusType
+import javax.annotation.concurrent.Immutable
 
 class AutoModMessageParsing {
     fun parseMessageId(stringToParse:String):String?{
@@ -80,14 +81,15 @@ class AutoModMessageParsing {
  * @param messageId represents the unique ID of the user's flagged message
  * @param userId represents the unique ID of the user sending the message
  * */
+@Immutable
 data class AutoModQueueMessage(
     val username:String ="",
     val fullText:String ="",
     val category: String = "",
     val messageId:String,
     val userId:String,
-    var approved:Boolean? = null,
-    var swiped:Boolean = false,
+    val approved:Boolean? = null, // changing this to val
+    val swiped:Boolean = false, // changing this to  val
 )
 
 data class AutoModMessageUpdate(

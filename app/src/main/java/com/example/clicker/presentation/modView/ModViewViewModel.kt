@@ -4,10 +4,13 @@ import android.content.res.Resources
 import android.os.MessageQueue
 import android.util.Log
 import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -24,6 +27,7 @@ import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.StreamUIState
+import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -115,6 +119,16 @@ val slowModeList =listOf(
     ListTitleValue("60s",60 )
 )
 
+/**
+ * AutoModMessageListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
+ *  always marking the List as unstable.
+ *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
+ *
+ * */
+@Immutable
+data class AutoModMessageListImmutableCollection(
+    val autoModList: List<AutoModQueueMessage>
+)
 
 
 @HiltViewModel
@@ -124,8 +138,29 @@ class ModViewViewModel @Inject constructor(
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
-    //this is all the messages for the AutoModQueue
+
+
+
+
+    /*****autoModMessageList START*****/
     val  autoModMessageList = mutableStateListOf<AutoModQueueMessage>()
+    // Immutable state holder
+    private var _autoModMessageListImmutableCollection by mutableStateOf(
+        AutoModMessageListImmutableCollection(autoModMessageList)
+    )
+
+    // Publicly exposed immutable state as State
+    val autoModMessageListImmutable: State<AutoModMessageListImmutableCollection>
+        get() = mutableStateOf(_autoModMessageListImmutableCollection)
+
+    private fun addAllAutoModMessageList(commands:List<AutoModQueueMessage>){
+        autoModMessageList.addAll(commands)
+        _autoModMessageListImmutableCollection = AutoModMessageListImmutableCollection(autoModMessageList)
+
+    }
+
+
+    /*****autoModMessageList END*****/
     private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
     val uiState: State<ModViewViewModelUIState> = _uiState
 
@@ -316,6 +351,7 @@ class ModViewViewModel @Inject constructor(
                                 swiped = true
                             )
                         }
+                        addAllAutoModMessageList(autoModMessageList.toList())
                     }
                 }
             }
@@ -540,6 +576,7 @@ class ModViewViewModel @Inject constructor(
                 twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         autoModMessageList.add(autoModMessage)
+                        addAllAutoModMessageList(autoModMessageList)
                         if(_uiState.value.autoModMessagesNotifications){
                             val updatedMessage=_uiState.value.modViewTotalNotifications +1
                             _uiState.value =_uiState.value.copy(
@@ -640,6 +677,7 @@ class ModViewViewModel @Inject constructor(
                                 approved = true,
                                 swiped = true
                             )
+                            addAllAutoModMessageList(autoModMessageList)
 
 
                         }
@@ -648,6 +686,7 @@ class ModViewViewModel @Inject constructor(
                                 approved = false,
                                 swiped = true
                             )
+                            addAllAutoModMessageList(autoModMessageList)
                         }
 
                     }
@@ -656,6 +695,7 @@ class ModViewViewModel @Inject constructor(
                         autoModMessageList[indexOfItem] = item.copy(
                             swiped = false
                         )
+                        addAllAutoModMessageList(autoModMessageList)
                     }
                 }
             }

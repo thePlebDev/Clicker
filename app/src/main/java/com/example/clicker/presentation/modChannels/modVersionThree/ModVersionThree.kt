@@ -98,6 +98,7 @@ import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
+import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
@@ -194,6 +195,11 @@ fun ModViewComponentVersionThree(
     val setDoubleClickAndDragFalse:()->Unit = remember(modVersionThreeViewModel) { {
 
         modVersionThreeViewModel.updateDoubleClickAndDrag(false)
+    } }
+
+    val manageAutoModMessage:(messageId:String,action:String)->Unit = remember(modVersionThreeViewModel) { {messageId,action->
+        modViewViewModel.manageAutoModMessage(messageId,action)
+
     } }
 
     ModalBottomSheetLayout(
@@ -442,7 +448,7 @@ fun ModViewComponentVersionThree(
             autoModMessageList = modViewViewModel.autoModMessageList,
             autoModStatus = modViewViewModel.modViewStatus.value.autoModMessageStatus,
             manageAutoModMessage ={
-                    messageId,action -> modViewViewModel.manageAutoModMessage(messageId,action)
+                    messageId,action -> manageAutoModMessage(messageId,action)
             },
             changeAutoModQueueChecked ={value ->modViewViewModel.changeAutoModQueueChecked(value)},
             changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)},
@@ -451,7 +457,8 @@ fun ModViewComponentVersionThree(
             doubleClickAndDrag= modVersionThreeViewModel.doubleClickAndDrag.value,
             setDoubleClickAndDragFalse={
                 setDoubleClickAndDragFalse()
-            }
+            },
+            autoModMessageListImmutableCollection=modViewViewModel.autoModMessageListImmutable.value
 
         )
     }
@@ -529,7 +536,8 @@ fun ModVersionThree(
     autoModQueueChecked: Boolean,
 
     doubleClickAndDrag:Boolean,
-    setDoubleClickAndDragFalse:()->Unit
+    setDoubleClickAndDragFalse:()->Unit,
+    autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
 
 
 
@@ -634,8 +642,8 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             setDragging={newValue ->
-//                                setBoxOneDoubleTap(newValue)
-//                                setBoxOneDragging(true)
+                                setBoxOneDoubleTap(newValue)
+                                setBoxOneDragging(true)
                                         },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList,
@@ -649,7 +657,7 @@ fun ModVersionThree(
                                 setBoxOneDoubleTap(newValue)
                                 setBoxOneDragging(true)
                                         },
-                           // autoModMessageList = autoModMessageList,
+                          //  autoModMessageList = autoModMessageList,
                             manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                             connectionError =Response.Success(true),
                             reconnect = {},
@@ -657,7 +665,8 @@ fun ModVersionThree(
                             doubleClickAndDrag =doubleClickAndDrag,
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
-                            }
+                            },
+                            autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     }
                 )
@@ -724,8 +733,8 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             setDragging={newValue ->
-//                                setBoxTwoDoubleTap(newValue)
-//                                setBoxTwoDragging(true)
+                                setBoxTwoDoubleTap(newValue)
+                                setBoxTwoDragging(true)
                                         },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList,
@@ -739,7 +748,7 @@ fun ModVersionThree(
                                 setBoxTwoDoubleTap(newValue)
                                 setBoxTwoDragging(true)
                                         },
-                           // autoModMessageList = autoModMessageList,
+                          // autoModMessageList = autoModMessageList,
                             manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                             connectionError =Response.Success(true),
                             reconnect = {},
@@ -747,7 +756,8 @@ fun ModVersionThree(
                             doubleClickAndDrag =doubleClickAndDrag,
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
-                            }
+                            },
+                            autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     }
 
@@ -814,8 +824,8 @@ fun ModVersionThree(
                     modActions={
                         NewModActions(
                             setDragging={newValue ->
-//                                setBoxThreeDoubleTap(newValue)
-//                                setBoxThreeDoubleTap(true)
+                                setBoxThreeDoubleTap(newValue)
+                                setBoxThreeDoubleTap(true)
                                         },
                             modActionStatus =modActionStatus,
                             modActionsList=modActionsList,
@@ -829,15 +839,16 @@ fun ModVersionThree(
                                 setBoxThreeDoubleTap(newValue)
                                 setBoxThreeDoubleTap(true)
                                         },
-                           // autoModMessageList = autoModMessageList,
+                          //  autoModMessageList = autoModMessageList,
                             manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                             connectionError =Response.Success(true),
                             reconnect = {},
                             autoModStatus=autoModStatus,
                             doubleClickAndDrag =doubleClickAndDrag,
                             setDoubleClickAndDragFalse={
-                              //  setDoubleClickAndDragFalse() //todo: this is causing a recomp
-                            }
+                                setDoubleClickAndDragFalse() //todo: this is causing a recomp
+                            },
+                            autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     }
 
@@ -1671,7 +1682,6 @@ fun NewModActions(
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit
 ){
-    val hapticFeedback = LocalHapticFeedback.current
     //todo: GET THIS LIST FROM THE WEBSOCKET
 
 
@@ -1780,7 +1790,6 @@ fun NewModActions(
             is WebSocketResponse.Failure -> {
                 //should be a button to retry
                 FailedClickToTryAgainBox(
-                    hapticFeedback =hapticFeedback,
                     setDragging={value -> setDragging(value)},
                     title = "MOD ACTIONS: ${modActionsList.size}"
                 )
@@ -1863,7 +1872,7 @@ fun ModActionsHeader(
 @Composable
 fun NewAutoModQueueBox(
     setDragging: (Boolean) -> Unit,
-    //autoModMessageList:List<AutoModQueueMessage>,
+    autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     manageAutoModMessage:(String,String)-> Unit,
     autoModStatus: WebSocketResponse<Boolean>,
     connectionError: Response<Boolean>,
@@ -1872,7 +1881,7 @@ fun NewAutoModQueueBox(
     setDoubleClickAndDragFalse:()->Unit
 
 ){
-    val hapticFeedback = LocalHapticFeedback.current
+
     val listState = rememberLazyListState()
 
     val scope = rememberCoroutineScope()
@@ -1916,9 +1925,7 @@ fun NewAutoModQueueBox(
 
         when(autoModStatus){
             is WebSocketResponse.Loading->{
-                Text("Another One")
                 LoadingIndicator(
-                   // hapticFeedback =hapticFeedback,
                     setDragging={value -> setDragging(value)},
                     title = "AutoMod Queue"
                 )
@@ -1930,9 +1937,9 @@ fun NewAutoModQueueBox(
                     modifier =Modifier.fillMaxSize()
                 ){
                     scope.launch {
-//                        if(autoscroll){
-//                            listState.scrollToItem(autoModMessageList.size)
-//                        }
+                        if(autoscroll){
+                            listState.scrollToItem(autoModMessageListImmutableCollection.autoModList.size)
+                        }
                     }
                     stickyHeader {
 
@@ -1945,35 +1952,39 @@ fun NewAutoModQueueBox(
 
 
 
-//                    items(autoModMessageList){autoModMessage->
-//                        AutoModBoxHorizontalDragBox(
-//                            autoModMessage=autoModMessage,
-//                            manageAutoModMessage={
-//                                    messageId,action->manageAutoModMessage(messageId,action)
-//                            }
-//                        )
-//                    }
+                    items(autoModMessageListImmutableCollection.autoModList){autoModMessage->
+                        AutoModBoxHorizontalDragBox(
+                            manageAutoModMessage={
+                                    messageId,action->manageAutoModMessage(messageId,action)
+                            },
+                            username = autoModMessage.username,
+                            fullText = autoModMessage.fullText,
+                            approved = autoModMessage.approved,
+                            messageCategory = autoModMessage.category,
+                            messageId = autoModMessage.messageId,
+                            swiped = autoModMessage.swiped
+                        )
+                    }
 
 
 
                 }
-                if(!autoscroll){
-                    ScrollToBottomModView(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 20.dp),
-                        enableAutoScroll={
+//                if(!autoscroll){
+//                    ScrollToBottomModView(
+//                        modifier = Modifier
+//                            .align(Alignment.BottomCenter)
+//                            .padding(bottom = 20.dp),
+//                        enableAutoScroll={
 //                            scope.launch {
-//                                listState.scrollToItem(autoModMessageList.size)
+//                                listState.scrollToItem(autoModMessageListImmutableCollection.autoModList.size)
 //                                autoscroll = true
 //                            }
-                       }
-                    )
-                }
+//                       }
+//                    )
+//                }
             }
             is WebSocketResponse.Failure->{
                 FailedClickToTryAgainBox(
-                    hapticFeedback =hapticFeedback,
                     setDragging={value -> setDragging(value)},
                     title = "AutoMod Queue"
                 )
@@ -1990,7 +2001,6 @@ fun NewAutoModQueueBox(
 
             }
 
-            else -> {}
         }
 
 
@@ -2120,24 +2130,31 @@ fun NewIconTextRow(
 
 @Composable
 fun AutoModBoxHorizontalDragBox(
-    autoModMessage: AutoModQueueMessage,
-    manageAutoModMessage:(String,String)-> Unit
+    manageAutoModMessage:(String,String)-> Unit,
+    username:String,
+    fullText:String,
+    approved:Boolean?,
+    messageCategory:String,
+    messageId:String,
+    swiped:Boolean
+
+
 ){
-    Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$autoModMessage")
+    Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$swiped")
 
     HorizontalDragDetectionBox(
         itemBeingDragged ={offset ->
             AutoModItemRow(
-                autoModMessage.username,
-                autoModMessage.fullText,
+                username,
+                fullText,
                 offset = offset,
-                approved =autoModMessage.approved,
-                messageCategory = autoModMessage.category
+                approved =approved,
+                messageCategory = messageCategory
             )
         },
         quarterSwipeRightAction = {
             manageAutoModMessage(
-                autoModMessage.messageId,
+                messageId,
                 "DENY"
             )
             Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
@@ -2145,14 +2162,14 @@ fun AutoModBoxHorizontalDragBox(
         quarterSwipeLeftAction = {
             Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
             manageAutoModMessage(
-                autoModMessage.messageId,
+                messageId,
                 "ALLOW"
             )
         },
         twoSwipeOnly = true,
         quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
         quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
-        swipeEnabled = !autoModMessage.swiped,
+        swipeEnabled = !swiped,
     )
 }
 
@@ -2305,11 +2322,10 @@ fun ConnectionErrorResponse(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LoadingIndicator(
-   // hapticFeedback: HapticFeedback,
     setDragging: (Boolean) -> Unit,
     title: String
 ){
-
+    val hapticFeedback = LocalHapticFeedback.current
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
@@ -2322,7 +2338,7 @@ fun LoadingIndicator(
                 .background(MaterialTheme.colorScheme.secondary) //todo: this is what I want to change
                 .combinedClickable(
                     onDoubleClick = {
-                       // hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         setDragging(true)
                     },
                     onClick = {}
@@ -2340,10 +2356,10 @@ fun LoadingIndicator(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FailedClickToTryAgainBox(
-    hapticFeedback: HapticFeedback,
     setDragging: (Boolean) -> Unit,
     title:String
 ){
+    val hapticFeedback = LocalHapticFeedback.current
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)){
