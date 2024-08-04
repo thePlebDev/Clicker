@@ -100,6 +100,7 @@ import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
 import com.example.clicker.presentation.modView.ModActionData
+import com.example.clicker.presentation.modView.ModActionListImmutableCollection
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -458,7 +459,8 @@ fun ModViewComponentVersionThree(
             setDoubleClickAndDragFalse={
                 setDoubleClickAndDragFalse()
             },
-            autoModMessageListImmutableCollection=modViewViewModel.autoModMessageListImmutable.value
+            autoModMessageListImmutableCollection=modViewViewModel.autoModMessageListImmutable.value,
+            modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value
 
         )
     }
@@ -537,7 +539,10 @@ fun ModVersionThree(
 
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit,
+
+    //immutable Lists
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
+    modActionListImmutableCollection: ModActionListImmutableCollection,
 
 
 
@@ -646,9 +651,9 @@ fun ModVersionThree(
                                 setBoxOneDragging(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList,
                             doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                            modActionListImmutableCollection=modActionListImmutableCollection
                         )
                     },
                     autoModQueue = {
@@ -657,7 +662,6 @@ fun ModVersionThree(
                                 setBoxOneDoubleTap(newValue)
                                 setBoxOneDragging(true)
                                         },
-                          //  autoModMessageList = autoModMessageList,
                             manageAutoModMessage ={messageId,action ->manageAutoModMessage(messageId,action)},
                             connectionError =Response.Success(true),
                             reconnect = {},
@@ -737,9 +741,9 @@ fun ModVersionThree(
                                 setBoxTwoDragging(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList,
                             doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                            modActionListImmutableCollection=modActionListImmutableCollection
                         )
                     },
                     autoModQueue = {
@@ -828,9 +832,9 @@ fun ModVersionThree(
                                 setBoxThreeDoubleTap(true)
                                         },
                             modActionStatus =modActionStatus,
-                            modActionsList=modActionsList,
                             doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                            modActionListImmutableCollection=modActionListImmutableCollection
                         )
                     },
                     autoModQueue = {
@@ -1678,11 +1682,12 @@ fun BoxDeleteSection(
 fun NewModActions(
     setDragging:(Boolean)->Unit,
     modActionStatus: WebSocketResponse<Boolean>,
-    modActionsList: List<ModActionData>,
+    modActionListImmutableCollection: ModActionListImmutableCollection,
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit
 ){
     //todo: GET THIS LIST FROM THE WEBSOCKET
+    Log.d("NewModActionsRecomping","Recomp")
 
 
     val listState = rememberLazyListState()
@@ -1728,9 +1733,8 @@ fun NewModActions(
             is WebSocketResponse.Loading -> {
 
                 LoadingIndicator(
-                   // hapticFeedback =hapticFeedback,
                     setDragging={value -> setDragging(value)},
-                    title = "MOD ACTIONS: ${modActionsList.size}"
+                    title = "MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size}"
                 )
 
             }
@@ -1747,14 +1751,14 @@ fun NewModActions(
                 ) {
                     stickyHeader {
                         ModActionsHeader(
-                            headerText ="MOD ACTIONS: ${modActionsList.size} ",
+                            headerText ="MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size} ",
                             setDragging ={newValue ->setDragging(newValue)},
                             doubleClickAndDrag =doubleClickAndDrag,
                             setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
 
                         )
                     }
-                    items(modActionsList){modAction->
+                    items(modActionListImmutableCollection.modActionList){modAction->
                         ModActionNotificationMessage(
                             title=modAction.title,
                             message=modAction.message,
@@ -1765,7 +1769,7 @@ fun NewModActions(
 
                     scope.launch {
                         if(autoscroll){
-                            listState.scrollToItem(modActionsList.size)
+                            listState.scrollToItem(modActionListImmutableCollection.modActionList.size)
                         }
                     }
 
@@ -1778,7 +1782,7 @@ fun NewModActions(
                             .padding(bottom = 20.dp),
                         enableAutoScroll={
                             scope.launch {
-                                listState.scrollToItem(modActionsList.size)
+                                listState.scrollToItem(modActionListImmutableCollection.modActionList.size)
                                 autoscroll = true
                             }
                         }
@@ -1791,14 +1795,14 @@ fun NewModActions(
                 //should be a button to retry
                 FailedClickToTryAgainBox(
                     setDragging={value -> setDragging(value)},
-                    title = "MOD ACTIONS: ${modActionsList.size}"
+                    title = "MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size}"
                 )
 
             }
             is WebSocketResponse.FailureAuth403 -> {
                 NewErrorMessage403(
                     setDragging = { value -> setDragging(value) },
-                    title = "MOD ACTIONS: ${modActionsList.size}",
+                    title = "MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size}",
                     doubleClickAndDrag =doubleClickAndDrag,
                     setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
                 )

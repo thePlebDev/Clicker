@@ -121,13 +121,25 @@ val slowModeList =listOf(
 
 /**
  * AutoModMessageListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
- *  always marking the List as unstable.
+ *  always marking  List as unstable.
  *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
  *
  * */
 @Immutable
 data class AutoModMessageListImmutableCollection(
     val autoModList: List<AutoModQueueMessage>
+)
+
+/**
+ * ModActionListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
+ *  always marking List as unstable.
+ *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
+ *
+ * @param modActionList a list of [ModActionData] objects.
+ * */
+@Immutable
+data class ModActionListImmutableCollection(
+    val modActionList: List<ModActionData>
 )
 
 
@@ -170,7 +182,27 @@ class ModViewViewModel @Inject constructor(
     val modViewStatus: State<ModViewStatus> = _modViewStatus
 
 
+    /**modActionsList START*/
     val modActionsList =mutableStateListOf<ModActionData>()
+    // Immutable state holder
+    private var _modActionListImmutableCollection by mutableStateOf(
+        ModActionListImmutableCollection(modActionsList)
+    )
+
+    // Publicly exposed immutable state as State
+    val modActionListImmutable: State<ModActionListImmutableCollection>
+        get() = mutableStateOf(_modActionListImmutableCollection)
+
+    //Now I need to implement the methods
+    private fun addAllModActionList(actionList:List<ModActionData>){
+        modActionsList.addAll(actionList)
+        _modActionListImmutableCollection = ModActionListImmutableCollection(modActionsList)
+    }
+    private fun clearModActionList(){
+        modActionsList.clear()
+        _modActionListImmutableCollection = ModActionListImmutableCollection(modActionsList)
+    }
+    /**modActionsList END*/
 
     init{
         monitorForSessionId()
@@ -184,7 +216,8 @@ class ModViewViewModel @Inject constructor(
     }
 
     fun createNewTwitchEventWebSocket(){
-        modActionsList.clear()
+       // modActionsList.clear()
+        clearModActionList()
         Log.d("CREATINGNEWEVENTSUBSOCKET","CREATED")
         twitchEventSubWebSocket.newWebSocket()
     }
@@ -198,7 +231,8 @@ class ModViewViewModel @Inject constructor(
             moderatorId =moderatorId
 
         )
-        modActionsList.clear()
+      //  modActionsList.clear()
+        clearModActionList()
         Log.d("CREATINGNEWEVENTSUBSOCKET","CREATED")
         twitchEventSubWebSocket.newWebSocket()
 
@@ -216,7 +250,8 @@ class ModViewViewModel @Inject constructor(
         twitchEventSubWebSocket.modActions.collect{nullableModAction ->
             nullableModAction?.also {nonNullableModAction ->
                 Log.d("ModActionsHappending","action ->$nonNullableModAction")
-                modActionsList.add(nonNullableModAction)
+               // modActionsList.add(nonNullableModAction)
+                addAllModActionList(listOf(nonNullableModAction))
                 if(_uiState.value.modActionNotifications){
                     val updatedMessage=_uiState.value.modViewTotalNotifications +1
                     _uiState.value =_uiState.value.copy(
