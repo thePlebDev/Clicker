@@ -33,6 +33,11 @@ class TwitchEventSub @Inject constructor(
         type:String,
     ):Flow<WebSocketResponse<Boolean>> = flow {
         emit(WebSocketResponse.Loading)
+        Log.d("createEventSubSubscription","oAuthToken ->$oAuthToken")
+        Log.d("createEventSubSubscription","clientId ->$clientId")
+        Log.d("createEventSubSubscription","broadcasterId ->$broadcasterId")
+        Log.d("createEventSubSubscription","moderatorId ->$moderatorId")
+        Log.d("createEventSubSubscription","sessionId ->$sessionId")
         Log.d("createEventSubSubscription","type ->$type")
 
         val body = EvenSubSubscription(
