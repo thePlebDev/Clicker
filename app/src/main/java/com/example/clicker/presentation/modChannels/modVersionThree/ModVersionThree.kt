@@ -1926,53 +1926,60 @@ fun NewAutoModQueueBox(
         .background(MaterialTheme.colorScheme.primary)
 
     ){
-
-        when(autoModStatus){
-            is WebSocketResponse.Loading->{
-                LoadingIndicator(
-                    setDragging={value -> setDragging(value)},
-                    title = "AutoMod Queue"
-                )
-
-            }
-            is WebSocketResponse.Success->{
-                LazyColumn(
-                    state=listState,
-                    modifier =Modifier.fillMaxSize()
-                ){
-                    scope.launch {
-                        if(autoscroll){
-                            listState.scrollToItem(autoModMessageListImmutableCollection.autoModList.size)
-                        }
-                    }
-                    stickyHeader {
-
-                        AutoModHeader(
-                            setDragging ={newValue -> setDragging(newValue)},
-                            doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
-                        )
-                    }
-
-
-
-                    items(autoModMessageListImmutableCollection.autoModList){autoModMessage->
-                        AutoModBoxHorizontalDragBox(
-                            manageAutoModMessage={
-                                    messageId,action->manageAutoModMessage(messageId,action)
-                            },
-                            username = autoModMessage.username,
-                            fullText = autoModMessage.fullText,
-                            approved = autoModMessage.approved,
-                            messageCategory = autoModMessage.category,
-                            messageId = autoModMessage.messageId,
-                            swiped = autoModMessage.swiped
-                        )
-                    }
-
-
-
-                }
+        NewErrorBroken(
+            setDragging = { value -> setDragging(value) },
+            title = "AutoMod Queue",
+            doubleClickAndDrag =doubleClickAndDrag,
+            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+        )
+//
+//
+//        when(autoModStatus){
+//            is WebSocketResponse.Loading->{
+//                LoadingIndicator(
+//                    setDragging={value -> setDragging(value)},
+//                    title = "AutoMod Queue"
+//                )
+//
+//            }
+//            is WebSocketResponse.Success->{
+//                LazyColumn(
+//                    state=listState,
+//                    modifier =Modifier.fillMaxSize()
+//                ){
+//                    scope.launch {
+//                        if(autoscroll){
+//                            listState.scrollToItem(autoModMessageListImmutableCollection.autoModList.size)
+//                        }
+//                    }
+//                    stickyHeader {
+//
+//                        AutoModHeader(
+//                            setDragging ={newValue -> setDragging(newValue)},
+//                            doubleClickAndDrag =doubleClickAndDrag,
+//                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+//                        )
+//                    }
+//
+//
+//
+//                    items(autoModMessageListImmutableCollection.autoModList){autoModMessage->
+//                        AutoModBoxHorizontalDragBox(
+//                            manageAutoModMessage={
+//                                    messageId,action->manageAutoModMessage(messageId,action)
+//                            },
+//                            username = autoModMessage.username,
+//                            fullText = autoModMessage.fullText,
+//                            approved = autoModMessage.approved,
+//                            messageCategory = autoModMessage.category,
+//                            messageId = autoModMessage.messageId,
+//                            swiped = autoModMessage.swiped
+//                        )
+//                    }
+//
+//
+//
+//                }
 //                if(!autoscroll){
 //                    ScrollToBottomModView(
 //                        modifier = Modifier
@@ -1987,32 +1994,32 @@ fun NewAutoModQueueBox(
 //                    )
 //                }
             }
-            is WebSocketResponse.Failure->{
-                FailedClickToTryAgainBox(
-                    setDragging={value -> setDragging(value)},
-                    title = "AutoMod Queue"
-                )
+//            is WebSocketResponse.Failure->{
+//                FailedClickToTryAgainBox(
+//                    setDragging={value -> setDragging(value)},
+//                    title = "AutoMod Queue"
+//                )
+//
+//            }
+//            is WebSocketResponse.FailureAuth403->{
+//
+//                NewErrorMessage403(
+//                    setDragging = { value -> setDragging(value) },
+//                    title = "AutoMod Queue",
+//                    doubleClickAndDrag =doubleClickAndDrag,
+//                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+//                )
+//
+//            }
+//
+//        }
 
-            }
-            is WebSocketResponse.FailureAuth403->{
 
-                NewErrorMessage403(
-                    setDragging = { value -> setDragging(value) },
-                    title = "AutoMod Queue",
-                    doubleClickAndDrag =doubleClickAndDrag,
-                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
-                )
-
-            }
-
-        }
-
-
-        }
-    ConnectionErrorResponse(
-        connectionError,
-        reconnect ={reconnect()}
-    )
+//        }
+//    ConnectionErrorResponse(
+//        connectionError,
+//        reconnect ={reconnect()}
+//    )
 
 
 }
@@ -2117,13 +2124,84 @@ fun NewErrorMessage403(
 
 @Composable
 fun NewIconTextRow(
-    modifier:Modifier
+    modifier:Modifier,
 ) {
 
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
         Icon(painter = painterResource(id =R.drawable.error_outline_24), contentDescription = "error",tint=Color.Red)
         Text(
             text = "Token error! Please login again to be issued a new token from Twitch",
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NewErrorBroken(
+    setDragging: (Boolean) -> Unit,
+    title:String,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary)
+                .combinedClickable(
+                    onDoubleClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        setDragging(true)
+                        setDoubleClickAndDragFalse()
+                    },
+                    onClick = {}
+                )
+                .align(Alignment.TopCenter)
+                .padding(horizontal = 10.dp),
+            horizontalArrangement =Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+
+        ){
+            Text(
+                title,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+
+                )
+            if(doubleClickAndDrag){
+                Text(
+                    "Double click and drag",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                    )
+            }
+
+        }
+
+        NewIconTextRowBroken(
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+    }
+}
+
+@Composable
+fun NewIconTextRowBroken(
+    modifier:Modifier,
+) {
+
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+        Icon(painter = painterResource(id =R.drawable.lock_24), contentDescription = "error",tint=MaterialTheme.colorScheme.secondary)
+        Text(
+            text = "Feature not implemented! Will be available next update. ",
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onPrimary
         )
