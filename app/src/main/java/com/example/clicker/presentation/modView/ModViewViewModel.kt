@@ -151,6 +151,9 @@ class ModViewViewModel @Inject constructor(
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
 
+    init{
+        Log.d("AutoModMessageHoldType","LOADING")
+    }
 
 
 
@@ -466,7 +469,7 @@ class ModViewViewModel @Inject constructor(
                 _modViewStatus.value = _modViewStatus.value.copy(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
-                delay(200)
+
                 twitchEventSub.createEventSubSubscription(
                     oAuthToken = _requestIds.value.oAuthToken,
                     clientId = _requestIds.value.clientId,
@@ -611,7 +614,8 @@ class ModViewViewModel @Inject constructor(
                 twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         autoModMessageList.add(autoModMessage)
-                        addAllAutoModMessageList(autoModMessageList)
+                        Log.d("monitorForAutoModMessagesNew","autoModMessage ->${autoModMessage}")
+                        addAllAutoModMessageList(autoModMessageList.toList())
                         if(_uiState.value.autoModMessagesNotifications){
                             val updatedMessage=_uiState.value.modViewTotalNotifications +1
                             _uiState.value =_uiState.value.copy(
