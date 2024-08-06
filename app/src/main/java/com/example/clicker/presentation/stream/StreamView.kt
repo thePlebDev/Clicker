@@ -123,6 +123,12 @@ fun StreamView(
             isMod
         )
     } }
+
+
+    val clearModViewNotifications:()->Unit = remember(modViewViewModel) { {
+        modViewViewModel.clearModViewNotifications()
+    } }
+
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -288,7 +294,7 @@ fun StreamView(
                             deleteEmote={streamViewModel.deleteEmote()},
                             showModView={
                                 showModView()
-                                modViewViewModel.clearModViewNotifications()
+                                clearModViewNotifications()
                             },
                             updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,

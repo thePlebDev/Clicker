@@ -231,7 +231,9 @@ fun ChatUI(
                         modStatus =isMod,
                         orientationIsVertical =orientationIsVertical,
                         notificationAmount=notificationAmount,
-                        showModView={showModView()}
+                        showModView={
+                            showModView()
+                        }
                     )
                 },
                 stylizedTextField ={boxModifier ->
@@ -2079,6 +2081,7 @@ fun ShowModStatus(
 ){
     val scope = rememberCoroutineScope()
     Log.d("isModCheck","isMod --> $modStatus")
+    Log.d("ShowModStatusRecomp","RECOMP")
 
     if(BuildConfig.BUILD_TYPE== "debug"){
         Box(){
