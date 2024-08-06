@@ -101,12 +101,7 @@ class TwitchEventSub @Inject constructor(
     ): Flow<Response<Boolean>>  = flow{
         emit(Response.Loading)
 
-        val body = EvenSubSubscription(
-            type = type,
-            version="1",
-            condition = Condition(broadcaster_user_id =broadcasterId,moderator_user_id = moderatorId ),
-            transport = Transport(session_id = sessionId)
-        )
+
         val body2 = EvenSubSubscriptionUserId(
             type = type,
             version="1",

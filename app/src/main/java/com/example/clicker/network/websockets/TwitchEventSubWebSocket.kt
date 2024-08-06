@@ -80,7 +80,7 @@ class TwitchEventSubWebSocket @Inject constructor(
         if(notificationTypeIsNotification(text)){
 
             val subscriptionType = parseSubscriptionType(text)
-            Log.d("EventWebsocketMessage", "subscriptionType ->$subscriptionType")
+            Log.d("SubscriptionTypeEventWebSocket", "subscriptionType ->$subscriptionType")
 
             //todo: These could probably be stored in maps
             when (subscriptionType) {
