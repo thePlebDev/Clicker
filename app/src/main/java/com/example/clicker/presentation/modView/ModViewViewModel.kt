@@ -329,10 +329,18 @@ class ModViewViewModel @Inject constructor(
                             sessionId = sessionId
                         )
                         createSubscriptionEvents(
-                            moderatorActionSubscription={createModerationActionSubscription()},
-                            autoModMessageUpdateSubscription={createAutoModMessageUpdateSubscriptionEvent()},
-                            autoModMessageHoldSubscription={createAutoModMessageHoldSubscriptionEvent()},
-                            chatSettingsSubscription={createChatSettingsSubscriptionEvent()}
+                            moderatorActionSubscription={
+                               createModerationActionSubscription()
+                                                        },
+                            autoModMessageUpdateSubscription={
+                                createAutoModMessageUpdateSubscriptionEvent() // This is registering but not updating the UI
+                                                             },
+                            autoModMessageHoldSubscription={
+                                createAutoModMessageHoldSubscriptionEvent()  // This is registering but not updating the UI
+                                                           },
+                            chatSettingsSubscription={
+                                createChatSettingsSubscriptionEvent()
+                            }
                         )
                         //then with this session Id we need to make a call to subscribe to our event
 
@@ -464,6 +472,7 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun createAutoModMessageHoldSubscriptionEvent(){
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
+        Log.d("CheckingSessionsEvents","createAutoModMessageHoldSubscriptionEvent()   oAuthToken--> ${_requestIds.value.oAuthToken}")
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 _modViewStatus.value = _modViewStatus.value.copy(
@@ -515,6 +524,7 @@ class ModViewViewModel @Inject constructor(
      * - - You can read more about this subscription type on Twitch's documentation site, [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#automodmessageupdate)
      * */
     private fun createAutoModMessageUpdateSubscriptionEvent(){
+        Log.d("CheckingSessionsEvents","createAutoModMessageUpdateSubscriptionEvent sessionId -->${_requestIds.value.moderatorId}")
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 _modViewStatus.value = _modViewStatus.value.copy(
@@ -568,6 +578,7 @@ class ModViewViewModel @Inject constructor(
      * - You can read more about this subscription type on Twitch's documentation site, (HERE)[https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchat_settingsupdate]
      * */
     private fun createChatSettingsSubscriptionEvent(){
+        Log.d("CheckingSessionsEvents","createChatSettingsSubscriptionEvent()   oAuthToken--> ${_requestIds.value.oAuthToken}")
 
         viewModelScope.launch {
             withContext(Dispatchers.IO){
