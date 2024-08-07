@@ -89,6 +89,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -122,6 +123,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.TextFieldValueImmutable
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 
@@ -166,6 +168,9 @@ fun ChatUI(
     userIsSub:Boolean,
     forwardSlashes:ForwardSlashCommandsImmutableCollection,
     filteredChatListImmutable: FilteredChatListImmutableCollection,
+
+    actualTextFieldValue:TextFieldValue,
+    changeActualTextFieldValue:(String,TextRange)->Unit
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -239,20 +244,30 @@ fun ChatUI(
                 stylizedTextField ={boxModifier ->
                     StylizedTextField(
                         modifier = boxModifier,
-                        textFieldValue = textFieldValue,
-                        newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
+                       // textFieldValue = textFieldValue,
+                        newFilterMethod = {
+                                newTextValue ->
+                            newFilterMethod(newTextValue)
+                                          },
                         showEmoteBoard = {
                             hideSoftKeyboard()
-                            scope.launch {
-                                delay(100)
+//                            scope.launch { //todo: this is what is causing the recomp and needs to be removed
+//                                delay(100)
                                 emoteKeyBoardHeight.value = 350.dp
-                            }
+                           // }
                         },
                         showKeyBoard = {
                                 emoteKeyBoardHeight.value = 0.dp
                         },
                         iconClicked=iconClicked,
-                        setIconClicked = {newValue -> iconClicked = newValue}
+                        setIconClicked = {newValue -> iconClicked = newValue},
+
+                        actualTextFieldValue =actualTextFieldValue,
+                        changeActualTextFieldValue={text,textRange ->
+                            changeActualTextFieldValue(text,textRange)
+                                                   },
+
+
                         )
                 },
                 showIconBasedOnTextLength ={
@@ -1955,14 +1970,18 @@ fun ShowIconBasedOnTextLength(
 @Composable
 fun StylizedTextField(
     modifier: Modifier,
-    textFieldValue: MutableState<TextFieldValue>,
+    //textFieldValue: MutableState<TextFieldValue>,
     newFilterMethod:(TextFieldValue) ->Unit,
     showKeyBoard:()->Unit,
     showEmoteBoard:() ->Unit,
     iconClicked:Boolean,
     setIconClicked:(Boolean)->Unit,
+
+    actualTextFieldValue:TextFieldValue,
+    changeActualTextFieldValue:(String,TextRange)->Unit
 ){
     //todo: NOW I NEED TO MAKE THE EMOTE BOARD AND KEYBOARD SHOW AT ALL
+    Log.d("StylizedTextFieldRecomp","RECOMP")
 
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -1987,6 +2006,8 @@ fun StylizedTextField(
         Box(
             modifier =modifier.padding(top =5.dp)
         ){
+
+
             TextField(
                 interactionSource = source,
                 modifier = Modifier
@@ -1994,14 +2015,13 @@ fun StylizedTextField(
                     .focusRequester(focusRequester),
                 singleLine = false,
                 maxLines = 5,
-                value = textFieldValue.value,
+                value = actualTextFieldValue,
+
                 shape = RoundedCornerShape(8.dp),
                 onValueChange = { newText ->
-                    newFilterMethod(newText)
-                    textFieldValue.value = TextFieldValue(
-                        text = newText.text,
-                        selection = newText.selection
-                    )
+                   newFilterMethod(newText)
+
+                    changeActualTextFieldValue(newText.text,newText.selection)
 
                 },
                 colors = TextFieldDefaults.textFieldColors(

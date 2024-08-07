@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.clicker.network.clients.IndivBetterTTVEmote
@@ -18,6 +19,7 @@ import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.TextFieldValueImmutable
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
@@ -65,6 +67,9 @@ fun FullChatModView(
     userIsSub:Boolean,
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
     filteredChatListImmutable: FilteredChatListImmutableCollection,
+    actualTextFieldValue:TextFieldValue,
+    changeActualTextFieldValue:(String, TextRange)->Unit,
+
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -138,20 +143,23 @@ fun FullChatModView(
                 stylizedTextField ={boxModifier ->
                     StylizedTextField(
                         modifier = boxModifier,
-                        textFieldValue = textFieldValue,
+                       // textFieldValue = textFieldValue,
                         newFilterMethod = {newTextValue ->newFilterMethod(newTextValue)},
                         showEmoteBoard = {
                             hideSoftKeyboard()
-                            scope.launch {
-                                delay(100)
+//                            scope.launch { //todo: this is what causes a recomposition
+//                                delay(100)
                                 emoteKeyBoardHeight.value = 350.dp
-                            }
+//                            }
                         },
                         showKeyBoard = {
                             emoteKeyBoardHeight.value = 0.dp
                         },
                         iconClicked=iconClicked,
                         setIconClicked = {newValue -> iconClicked = newValue},
+                        actualTextFieldValue =actualTextFieldValue,
+                        changeActualTextFieldValue={text,textRange ->changeActualTextFieldValue(text,textRange)},
+
                     )
                 },
                 showIconBasedOnTextLength ={

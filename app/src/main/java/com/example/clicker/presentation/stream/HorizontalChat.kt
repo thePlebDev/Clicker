@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.sp
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
@@ -101,6 +102,10 @@ fun HorizontalChat(
         scope.launch {
             bottomModalState.hide()
         }
+    } }
+
+    val changeActualTextFieldValue:(String, TextRange) -> Unit = remember(streamViewModel) { { text, textRange ->
+        streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
 
@@ -263,7 +268,12 @@ fun HorizontalChat(
                 sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
                 userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
                 forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
-                filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
+                filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
+                actualTextFieldValue = streamViewModel.textFieldValue.value,
+                changeActualTextFieldValue={text,textRange->
+                    changeActualTextFieldValue(text, textRange)
+                },
+
             )
 
 

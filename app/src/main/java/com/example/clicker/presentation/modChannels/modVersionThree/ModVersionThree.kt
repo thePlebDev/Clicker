@@ -86,6 +86,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -201,6 +202,10 @@ fun ModViewComponentVersionThree(
     val manageAutoModMessage:(messageId:String,action:String)->Unit = remember(modVersionThreeViewModel) { {messageId,action->
         modViewViewModel.manageAutoModMessage(messageId,action)
 
+    } }
+
+    val changeActualTextFieldValue:(String, TextRange) -> Unit = remember(streamViewModel) { { text, textRange ->
+        streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
     ModalBottomSheetLayout(
@@ -440,7 +445,12 @@ fun ModViewComponentVersionThree(
                     sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
                     userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
                     forwardSlashes=streamViewModel.forwardSlashCommandImmutable.value,
-                    filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
+                    filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
+                    actualTextFieldValue = streamViewModel.textFieldValue.value,
+                    changeActualTextFieldValue={text,textRange->
+                        changeActualTextFieldValue(text, textRange)
+                    },
+
                 )
 
             },
