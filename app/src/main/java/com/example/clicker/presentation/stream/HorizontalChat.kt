@@ -108,6 +108,10 @@ fun HorizontalChat(
         streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
+    val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
+        streamViewModel.sendMessage(message)
+    } }
+
 
     //todo: Also need to refactor the dialogs
 
@@ -246,8 +250,9 @@ fun HorizontalChat(
                 },
                 notificationAmount =0,
                 textFieldValue = streamViewModel.textFieldValue,
-                sendMessageToWebSocket = { string ->
-                    streamViewModel.sendMessage(string)
+                sendMessageToWebSocket = { message ->
+                    sendMessageToWebSocket(message)
+
                 },
                 noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                 deleteChatMessage = {messageId ->streamViewModel.deleteChatMessage(messageId)},

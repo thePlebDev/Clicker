@@ -208,6 +208,10 @@ fun ModViewComponentVersionThree(
         streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
+    val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
+        streamViewModel.sendMessage(message)
+    } }
+
     ModalBottomSheetLayout(
         sheetState = chatSettingsModalState,
         sheetContent ={
@@ -409,8 +413,8 @@ fun ModViewComponentVersionThree(
                     },
                     notificationAmount = 0,
                     textFieldValue = streamViewModel.textFieldValue,
-                    sendMessageToWebSocket = { string ->
-                        streamViewModel.sendMessage(string)
+                    sendMessageToWebSocket = { message ->
+                        sendMessageToWebSocket(message)
                     },
                     noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                     deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
