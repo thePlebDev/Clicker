@@ -32,6 +32,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteNameUrl
@@ -124,9 +125,18 @@ fun StreamView(
         )
     } }
 
+    val newFilterMethod:(TextFieldValue) -> Unit = remember(streamViewModel) { { newTextValue ->
+        streamViewModel.newParsingAgain(newTextValue)
+    } }
+
 
     val clearModViewNotifications:()->Unit = remember(modViewViewModel) { {
         modViewViewModel.clearModViewNotifications()
+    } }
+
+
+    val changeActualTextFieldValue:(String,TextRange) -> Unit = remember(streamViewModel) { { text,textRange ->
+        streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
     val showWarnDialog = remember{ mutableStateOf(false) }
@@ -265,7 +275,9 @@ fun StreamView(
                                 doubleClickChat(username)
                             },
 
-                            newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
+                            newFilterMethod={newTextValue ->
+                                newFilterMethod(newTextValue)
+                                            },
 
                             orientationIsVertical =true,
 
@@ -302,7 +314,15 @@ fun StreamView(
                             sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
                             userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
                             forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
-                            filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value
+                            filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
+                            actualTextFieldValue = streamViewModel.textFieldValue.value,
+                            changeActualTextFieldValue={text,textRange->
+
+                                changeActualTextFieldValue(text,textRange)
+                            },
+
+
+
                         )
 
 

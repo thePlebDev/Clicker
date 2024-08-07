@@ -94,6 +94,11 @@ data class ClickedUserNameChats(
     val message:String
 )
 
+@Immutable
+data class TextFieldValueImmutable(
+    val textFieldValue: TextFieldValue
+)
+
 
 
 /**
@@ -340,6 +345,7 @@ class StreamViewModel @Inject constructor(
      * */
     //todo:I THINK I COULD MOVE THIS TO ANOTHER---(DONE)
     val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
+
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
 
@@ -353,7 +359,23 @@ class StreamViewModel @Inject constructor(
     fun changeOpenWarningDialog(newValue:Boolean){
         openWarningDialog.value = newValue
     }
+    /***
+     * the immutable TextFieldValue
+     */
+    val textFieldValueImmutable:MutableState<TextFieldValueImmutable> = mutableStateOf(TextFieldValueImmutable(textParsing.textFieldValue.value))
 
+
+
+    fun changeActualTextFieldValue(
+        text:String,
+        textRange:TextRange
+    ){
+        textFieldValue.value = TextFieldValue(
+            text = text,
+            selection = textRange
+        )
+
+    }
 
 
 
