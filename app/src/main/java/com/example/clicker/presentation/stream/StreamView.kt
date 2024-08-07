@@ -139,6 +139,10 @@ fun StreamView(
         streamViewModel.changeActualTextFieldValue(text, textRange)
     } }
 
+    val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
+        streamViewModel.sendMessage(message)
+    } }
+
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -290,8 +294,8 @@ fun StreamView(
                             },
                             notificationAmount =modViewViewModel.uiState.value.modViewTotalNotifications,
                             textFieldValue = streamViewModel.textFieldValue,
-                            sendMessageToWebSocket = { string ->
-                                streamViewModel.sendMessage(string)
+                            sendMessageToWebSocket = { message ->
+                                sendMessageToWebSocket(message)
                             },
                             noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                             deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},

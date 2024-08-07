@@ -273,8 +273,12 @@ fun ChatUI(
                 showIconBasedOnTextLength ={
                     ShowIconBasedOnTextLength(
                         textFieldValue =textFieldValue,
-                        chat = {item -> sendMessageToWebSocket(item)},
-                        showModal ={showModal()},
+                        chat = {item ->
+                            sendMessageToWebSocket(item)
+                               },
+                        showModal ={
+                            showModal()
+                                   },
                     )
                 },
             )
@@ -1929,6 +1933,7 @@ fun ShowIconBasedOnTextLength(
     chat: (String) -> Unit,
     showModal: () -> Unit,
 ){
+    Log.d("ShowIconBasedOnTextLengthRecomp","RECOMP")
 
     if (textFieldValue.value.text.isNotEmpty()) {
         androidx.compose.material.Icon(
