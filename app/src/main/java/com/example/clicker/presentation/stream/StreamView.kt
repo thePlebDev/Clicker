@@ -212,6 +212,10 @@ fun StreamView(
         streamViewModel.changeOpenWarningDialog(true)
     } }
 
+    val clickedCommandAutoCompleteText:(String) -> Unit = remember(streamViewModel) { {clickedValue->
+        streamViewModel.clickedCommandAutoCompleteText(clickedValue)
+    } }
+
 
 
 
@@ -368,7 +372,11 @@ fun StreamView(
                             },
                             noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
                             deleteChatMessage={messageId ->streamViewModel.deleteChatMessage(messageId)},
-                            clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
+                            clickedCommandAutoCompleteText={
+                                    clickedValue ->
+                                clickedCommandAutoCompleteText(clickedValue)
+
+                                                           },
                             inlineContentMap = streamViewModel.inlineTextContentTest.value,
                             hideSoftKeyboard={hideSoftKeyboard()},
                             emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
