@@ -390,7 +390,9 @@ fun ChatUIBox(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 60.dp),
                 forwardSlashes =forwardSlashes,
-                clickedCommandAutoCompleteText={clickedValue -> clickedCommandAutoCompleteText(clickedValue)}
+                clickedCommandAutoCompleteText={clickedValue ->
+                    clickedCommandAutoCompleteText(clickedValue)
+                }
             )
         }
     }
@@ -1767,6 +1769,7 @@ fun ForwardSlash(
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
     clickedCommandAutoCompleteText:(String)->Unit,
 ){
+    Log.d("ForwardSlashRecomp","recomp")
 
     LazyColumn(
         modifier = modifier
