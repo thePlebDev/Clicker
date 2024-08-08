@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
@@ -145,6 +146,28 @@ fun StreamView(
         streamViewModel.sendMessage(message)
     } }
 
+    val updateAdvancedChatSettings:(AdvancedChatSettings) -> Unit = remember(streamViewModel) { { newValue ->
+        streamViewModel.updateAdvancedChatSettings(newValue)
+    } }
+
+    val setNoChatMode:(Boolean) -> Unit = remember(streamViewModel) { { newValue ->
+        streamViewModel.setNoChatMode(newValue)
+    } }
+
+    val changeSelectedFollowersModeItem:(ListTitleValue) -> Unit = remember(modViewViewModel) { { newValue ->
+        modViewViewModel.changeSelectedFollowersModeItem(newValue)
+    } }
+
+    val changeSelectedSlowModeItem:(ListTitleValue) -> Unit = remember(modViewViewModel) { { newValue ->
+        modViewViewModel.changeSelectedSlowModeItem(newValue)
+    } }
+
+    val updateEmoteOnly:(Boolean) -> Unit = remember(modViewViewModel) { { newValue ->
+        modViewViewModel.updateEmoteOnly(newValue)
+    } }
+    val updateSubscriberOnly:(Boolean) -> Unit = remember(modViewViewModel) { { newValue ->
+        modViewViewModel.updateSubscriberOnly(newValue)
+    } }
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -174,34 +197,19 @@ fun StreamView(
                 sheetContent ={
                     ChatSettingsColumn(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                        changeAdvancedChatSettings = {newValue ->
-                            streamViewModel.updateAdvancedChatSettings(newValue)
-                                                     },
-                        changeNoChatMode = {newValue ->
-                            streamViewModel.setNoChatMode(newValue)
-                                           },
-
+                        changeAdvancedChatSettings = {newValue -> updateAdvancedChatSettings(newValue) },
+                        changeNoChatMode = {newValue -> setNoChatMode(newValue) },
                         chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-
                         followerModeListImmutable = followerModeListImmutable,
                         slowModeListImmutable=slowModeListImmutable,
-
                         selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                        changeSelectedFollowersModeItem ={newValue ->
-                            modViewViewModel.changeSelectedFollowersModeItem(newValue)
-                                                         },
+                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue) },
                         selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                        changeSelectedSlowModeItem ={newValue ->
-                            modViewViewModel.changeSelectedSlowModeItem(newValue)
-                                                    },
+                        changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue) },
                         emoteOnly = modViewViewModel.uiState.value.emoteOnly,
-                        setEmoteOnly = {newValue ->
-                            modViewViewModel.updateEmoteOnly(newValue)
-                                       },
+                        setEmoteOnly = {newValue -> updateEmoteOnly(newValue) },
                         subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
-                        setSubscriberOnly={newValue ->
-                            modViewViewModel.updateSubscriberOnly(newValue)
-                                          },
+                        setSubscriberOnly={newValue -> updateSubscriberOnly(newValue) },
                     )
                 }
             ) {
