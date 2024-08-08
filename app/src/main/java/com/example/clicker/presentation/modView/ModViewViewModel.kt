@@ -105,10 +105,16 @@ ListTitleValue("1 day",1440),
     ListTitleValue("3 months",129600 )
 
 )
+@Immutable
+data class ImmutableModeList(
+    val modeList:List<ListTitleValue>
+)
+val followerModeListImmutable = ImmutableModeList(followerModeList)
+
+
 //1 week 10080
 //1 month 43200
 //3 months 129600
-
 val slowModeList =listOf(
     ListTitleValue("Off",null),
     ListTitleValue("3s",3),
@@ -118,6 +124,7 @@ val slowModeList =listOf(
     ListTitleValue("30s",30),
     ListTitleValue("60s",60 )
 )
+val slowModeListImmutable = ImmutableModeList(slowModeList)
 
 /**
  * AutoModMessageListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
+import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.stream.AdvancedChatSettings
 
@@ -78,11 +79,19 @@ fun ChatSettingsColumn(
      changeNoChatMode:(Boolean)->Unit,
 
 
-     followerModeList: List<ListTitleValue>,
+//     followerModeList: List<ListTitleValue>, //unstable
+     followerModeListImmutable: ImmutableModeList,
+
+//     slowModeList: List<ListTitleValue>, //unstable
+     slowModeListImmutable: ImmutableModeList,
+
+
+
+
+
      selectedFollowersModeItem: ListTitleValue,
      changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
 
-     slowModeList: List<ListTitleValue>,
      selectedSlowModeItem: ListTitleValue,
      changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
      chatSettingsEnabled:Boolean,
@@ -126,6 +135,8 @@ fun ChatSettingsColumn(
             slowModeList=slowModeList,
             selectedSlowModeItem=selectedSlowModeItem,
             changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue)},
+            titleListImmutable = slowModeListImmutable
+
         )
 
         FollowersOnlyCheck(
@@ -133,7 +144,8 @@ fun ChatSettingsColumn(
             setExpanded ={newValue -> },
             followersOnlyList=followerModeList,
             selectedFollowersModeItem=selectedFollowersModeItem,
-            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)}
+            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+            titleListImmutable = followerModeListImmutable
         )
         //todo: these are the modal items the pop up
 
@@ -291,6 +303,7 @@ fun SlowModeCheck(
     selectedSlowModeItem:ListTitleValue,
     changeSelectedSlowModeItem:(ListTitleValue)->Unit,
     slowModeList: List<ListTitleValue>,
+    titleListImmutable: ImmutableModeList,
 ){
 
     DropdownMenuItem(
@@ -313,7 +326,8 @@ fun SlowModeCheck(
                     titleList =slowModeList,
                     selectedItem = selectedSlowModeItem,
                     changeSelectedItem = {selectedValue ->changeSelectedSlowModeItem(selectedValue) },
-                    chatSettingsEnabled=chatSettingsEnabled
+                    chatSettingsEnabled=chatSettingsEnabled,
+                    titleListImmutable =titleListImmutable
                 )
             }
         }
@@ -325,6 +339,7 @@ fun FollowersOnlyCheck(
     setExpanded: (Boolean) -> Unit,
     chatSettingsEnabled:Boolean,
     followersOnlyList: List<ListTitleValue>,
+    titleListImmutable: ImmutableModeList,
     selectedFollowersModeItem:ListTitleValue,
     changeSelectedFollowersModeItem:(ListTitleValue)->Unit,
 ){
@@ -348,7 +363,8 @@ fun FollowersOnlyCheck(
                     titleList =followersOnlyList,
                     selectedItem = selectedFollowersModeItem,
                     changeSelectedItem = {selectedItem ->changeSelectedFollowersModeItem(selectedItem)},
-                    chatSettingsEnabled =chatSettingsEnabled
+                    chatSettingsEnabled =chatSettingsEnabled,
+                    titleListImmutable=titleListImmutable
                 )
             }
         }
@@ -358,6 +374,7 @@ fun FollowersOnlyCheck(
 @Composable
 fun EmbeddedDropDownMenu(
     titleList: List<ListTitleValue>, //this is the list shown to the user
+    titleListImmutable: ImmutableModeList,
     selectedItem:ListTitleValue,
     changeSelectedItem:(ListTitleValue)->Unit,
     chatSettingsEnabled:Boolean
@@ -404,7 +421,7 @@ fun EmbeddedDropDownMenu(
                     Color.DarkGray
                 )
         ){
-            for (item in titleList){
+            for (item in titleListImmutable.modeList){
                 TextMenuItem(
                     setExpanded={newValue -> expanded=newValue},
                     title = item.title,

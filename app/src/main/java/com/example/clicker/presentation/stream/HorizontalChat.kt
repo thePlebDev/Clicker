@@ -27,7 +27,9 @@ import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
+import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.modView.slowModeList
+import com.example.clicker.presentation.modView.slowModeListImmutable
 
 
 import com.example.clicker.presentation.stream.views.BottomModal
@@ -123,10 +125,14 @@ fun HorizontalChat(
                 changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
                 changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
                 chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
-                followerModeList= followerModeList,
+
+                followerModeListImmutable = followerModeListImmutable,
+                slowModeListImmutable= slowModeListImmutable,
+
                 selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-                slowModeList= slowModeList,
+                changeSelectedFollowersModeItem ={newValue ->
+                    modViewViewModel.changeSelectedFollowersModeItem(newValue)},
+
                 selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
                 changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
                 emoteOnly = modViewViewModel.uiState.value.emoteOnly,

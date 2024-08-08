@@ -40,6 +40,8 @@ import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
+import com.example.clicker.presentation.modView.slowModeListImmutable
+import com.example.clicker.presentation.modView.followerModeListImmutable
 
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
@@ -172,20 +174,34 @@ fun StreamView(
                 sheetContent ={
                     ChatSettingsColumn(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                        changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
-                        changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
+                        changeAdvancedChatSettings = {newValue ->
+                            streamViewModel.updateAdvancedChatSettings(newValue)
+                                                     },
+                        changeNoChatMode = {newValue ->
+                            streamViewModel.setNoChatMode(newValue)
+                                           },
 
                         chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                        followerModeList= followerModeList,
+
+                        followerModeListImmutable = followerModeListImmutable,
+                        slowModeListImmutable=slowModeListImmutable,
+
                         selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                        changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-                        slowModeList= slowModeList,
+                        changeSelectedFollowersModeItem ={newValue ->
+                            modViewViewModel.changeSelectedFollowersModeItem(newValue)
+                                                         },
                         selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                        changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
+                        changeSelectedSlowModeItem ={newValue ->
+                            modViewViewModel.changeSelectedSlowModeItem(newValue)
+                                                    },
                         emoteOnly = modViewViewModel.uiState.value.emoteOnly,
-                        setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
+                        setEmoteOnly = {newValue ->
+                            modViewViewModel.updateEmoteOnly(newValue)
+                                       },
                         subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
-                        setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+                        setSubscriberOnly={newValue ->
+                            modViewViewModel.updateSubscriberOnly(newValue)
+                                          },
                     )
                 }
             ) {

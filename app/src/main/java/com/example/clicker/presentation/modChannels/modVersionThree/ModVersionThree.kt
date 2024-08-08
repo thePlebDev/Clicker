@@ -115,6 +115,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
+import com.example.clicker.presentation.modView.slowModeListImmutable
+import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
@@ -221,10 +223,13 @@ fun ModViewComponentVersionThree(
                 changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
 
                 chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                followerModeList= followerModeList,
+
+                followerModeListImmutable = followerModeListImmutable,
+                slowModeListImmutable=slowModeListImmutable,
+
                 selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
                 changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-                slowModeList= slowModeList,
+
                 selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
                 changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
                 emoteOnly = modViewViewModel.uiState.value.emoteOnly,
