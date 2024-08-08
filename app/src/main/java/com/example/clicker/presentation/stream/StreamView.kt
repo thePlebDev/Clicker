@@ -215,6 +215,9 @@ fun StreamView(
     val clickedCommandAutoCompleteText:(String) -> Unit = remember(streamViewModel) { {clickedValue->
         streamViewModel.clickedCommandAutoCompleteText(clickedValue)
     } }
+    val deleteEmote:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.deleteEmote()
+    } }
 
 
 
@@ -384,7 +387,9 @@ fun StreamView(
                             updateTextWithEmote = {newValue -> updateTextWithEmote(newValue)},
                             emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
                             emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                            deleteEmote={streamViewModel.deleteEmote()},
+                            deleteEmote={
+                                deleteEmote() // this needs to be changed
+                                        },
                             showModView={
                                 showModView()
                                 clearModViewNotifications()

@@ -360,11 +360,19 @@ fun ChatUIBox(
                             modifier = Modifier.zIndex(8f),
                             emoteBoardGlobalList,
                             emoteBoardMostFrequentList=emoteBoardMostFrequentList,
-                            updateTextWithEmote={newValue ->updateTextWithEmote(newValue)},
+                            updateTextWithEmote={newValue ->
+                                updateTextWithEmote(newValue)
+                                                },
                             emoteBoardChannelList=emoteBoardChannelList,
-                            closeEmoteBoard={closeEmoteBoard()},
-                            deleteEmote={deleteEmote()},
-                            updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                            closeEmoteBoard={
+                                closeEmoteBoard()
+                                            },
+                            deleteEmote={
+                                deleteEmote()
+                                        },
+                            updateMostFrequentEmoteList={value ->
+                                updateMostFrequentEmoteList(value)
+                                                        },
                             globalBetterTTVEmotes =globalBetterTTVEmotes,
                             channelBetterTTVResponse=channelBetterTTVResponse,
                             sharedBetterTTVResponse=sharedBetterTTVResponse,
