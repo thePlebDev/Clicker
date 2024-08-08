@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -57,6 +58,10 @@ import kotlinx.coroutines.launch
 
 
 
+@Immutable
+data class BottomModalStateImmutable @OptIn(ExperimentalMaterialApi::class) constructor(
+    val bottomModalState: ModalBottomSheetState
+)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StreamView(
@@ -73,7 +78,6 @@ fun StreamView(
 //    val drawerState = rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
 //    val chatSettingData = streamViewModel.state.value.chatSettings
 //    val modStatus = streamViewModel.state.value.loggedInUserData?.mod
-    val clickedUsernameChats = streamViewModel.clickedUsernameChats
     val scope = rememberCoroutineScope()
 //    var showAdvancedChatSettings by remember { mutableStateOf(true) }
 //
@@ -85,6 +89,7 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var bottomModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(bottomModalState)) }
 
 //    var oneClickActionsChecked by remember { mutableStateOf(true) }
 //
@@ -196,6 +201,17 @@ fun StreamView(
         streamViewModel.setOpenBanDialogFalse()
     } }
 
+    val setOpenBanDialogTrue:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenBanDialogTrue()
+    } }
+    val setOpenTimeoutDialogTrue:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenTimeoutDialogTrue()
+    } }
+
+    val changeOpenWarningDialog:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.changeOpenWarningDialog(true)
+    } }
+
 
 
 
@@ -250,25 +266,30 @@ fun StreamView(
 
                 ModalBottomSheetLayout(
                     sheetBackgroundColor = MaterialTheme.colorScheme.primary,
-                    sheetState = bottomModalState,
+                    sheetState = bottomModalStateImmutable.bottomModalState,
                     sheetContent = {
                         BottomModalBuilder(
-                            clickedUsernameChats = clickedUsernameChats,
+
                             clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                            bottomModalState = bottomModalState,
                             textFieldValue = streamViewModel.textFieldValue,
-                            closeBottomModal = {},
+                            closeBottomModal = {
+                                hideClickedUserBottomModal()
+                            },
                             banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                             unbanUser = {
-                                //  streamViewModel.unBanUser()
+                                streamViewModel.unBanUser()
                             },
                             isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                            openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
-                            openBanDialog = { streamViewModel.openBanDialog.value = true },
-                            shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
-                            updateShouldMonitorUser = {},
-                            clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
-                            openWarnDialog={streamViewModel.changeOpenWarningDialog(true)}
+                            openTimeoutDialog = {
+                               setOpenTimeoutDialogTrue()
+                                                },
+                            openBanDialog = {
+                                setOpenBanDialogTrue()
+                                            },
+                            clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                            openWarnDialog={
+                                changeOpenWarningDialog()
+                            }
                             )
                     }
                 ){

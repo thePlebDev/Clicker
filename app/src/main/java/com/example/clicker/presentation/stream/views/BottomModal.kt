@@ -50,7 +50,9 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.presentation.stream.ClickedUserNameChats
+import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 
@@ -67,40 +69,36 @@ object BottomModal{
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun BottomModalBuilder(
-        clickedUsernameChats: List<String>,
-        clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
+        clickedUsernameChatsDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
         clickedUsername: String,
-        bottomModalState: ModalBottomSheetState,
-        textFieldValue: MutableState<TextFieldValue>,
-
+       textFieldValue: MutableState<TextFieldValue>,
         closeBottomModal: () -> Unit,
         banned: Boolean,
         isMod: Boolean,
         unbanUser: () -> Unit,
         openTimeoutDialog: () -> Unit,
         openBanDialog: () -> Unit,
-        updateShouldMonitorUser: () -> Unit,
-        shouldMonitorUser:Boolean,
-
+//
         openWarnDialog:()->Unit,
 
 
         ){
+        Log.d("BottomModalBuilderRecomp","Recomp")
 
 
         ImprovedBottomModal(
-            clickedUsernameChats=clickedUsernameChats,
-            clickedUsernameChatsWithDate=clickedUsernameChatsWithDate,
+            clickedUsernameChatsWithDateSentImmutable=clickedUsernameChatsDateSentImmutable,
             clickedUsernameBanner ={
                 BottomModalParts.ContentBanner(
                     clickedUsername = clickedUsername,
-                    bottomModalState = bottomModalState,
-                    textFieldValue = textFieldValue
+                    textFieldValue = textFieldValue,
+                    hideModal = {closeBottomModal()}
 
                 )
             },
             clickedUserBottomBanner ={
                 BottomModalParts.ContentBottomPart(
+
                     banned =banned,
                     isMod =isMod,
                     closeBottomModal ={closeBottomModal()},
@@ -109,21 +107,22 @@ object BottomModal{
                         openTimeoutDialog()
                     },
                     openBanDialog ={openBanDialog()},
-                    updateShouldMonitorUser = {updateShouldMonitorUser()},
-                    shouldMonitorUser = shouldMonitorUser,
-                    openWarnDialog={openWarnDialog()}
+
+                    openWarnDialog={openWarnDialog()},
+
                 )
             },
+
 
         )
     }
     @Composable
     fun ImprovedBottomModal(
-        clickedUsernameChats: List<String>,
-        clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
+        clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
         clickedUsernameBanner: @Composable () -> Unit,
         clickedUserBottomBanner: @Composable () -> Unit,
     ){
+        Log.d("ImprovedBottomModal","Recomp")
 
 
         Column(
@@ -135,10 +134,9 @@ object BottomModal{
             clickedUserBottomBanner()
             Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
 
-            BottomModalParts.ClickedUserMessages(
-                clickedUsernameChats,
-                clickedUsernameChatsWithDate
-            )
+//            BottomModalParts.ClickedUserMessages(
+//                clickedUsernameChatsWithDateSentImmutable
+//            )
 
         }
     }
@@ -152,8 +150,7 @@ object BottomModal{
          * */
         @Composable
         fun ClickedUserMessages(
-            clickedUsernameChats: List<String>,
-            clickedUsernameChatsWithDate:List<ClickedUserNameChats>,
+            clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
         ){
             LazyColumn(
                 modifier = Modifier
@@ -166,7 +163,7 @@ object BottomModal{
                         shape = RoundedCornerShape(8.dp)
                     )
             ) {
-                items(clickedUsernameChatsWithDate) {message->
+                items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
 
                     Text(
 
@@ -203,8 +200,9 @@ object BottomModal{
         @Composable
         fun ContentBanner(
             clickedUsername: String,
-            bottomModalState: ModalBottomSheetState,
             textFieldValue: MutableState<TextFieldValue>,
+            hideModal:()->Unit,
+
         ){
             val scope = rememberCoroutineScope()
             Row(
@@ -227,13 +225,13 @@ object BottomModal{
                 Button(
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                     onClick = {
-                        scope.launch {
+
                             textFieldValue.value = TextFieldValue(
                                 text = textFieldValue.value.text + "@$clickedUsername ",
                                 selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
                             )
-                            bottomModalState.hide()
-                        }
+
+                        hideModal()
                     }) {
                     Text(stringResource(R.string.reply),color = MaterialTheme.colorScheme.onSecondary)
                 }
@@ -260,8 +258,6 @@ object BottomModal{
             openTimeoutDialog:() -> Unit,
             openBanDialog:() -> Unit,
             openWarnDialog:()->Unit,
-            shouldMonitorUser:Boolean,
-            updateShouldMonitorUser:()->Unit
         ){
             Log.d("ContentBottomModerator","isMod --> $isMod")
 

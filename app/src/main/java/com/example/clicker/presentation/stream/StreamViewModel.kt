@@ -11,9 +11,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -97,6 +99,10 @@ data class ClickedUserNameChats(
 @Immutable
 data class TextFieldValueImmutable(
     val textFieldValue: TextFieldValue
+)
+@Immutable
+data class ClickedUsernameChatsWithDateSentImmutable(
+    val clickedChats:List<ClickedUserNameChats>
 )
 
 
@@ -352,9 +358,16 @@ class StreamViewModel @Inject constructor(
     fun setOpenTimeoutDialogFalse(){
         openTimeoutDialog.value = false
     }
+    fun setOpenTimeoutDialogTrue(){
+        openTimeoutDialog.value = true
+    }
     fun setOpenBanDialogFalse(){
         openBanDialog.value = false
     }
+    fun setOpenBanDialogTrue(){
+        openBanDialog.value = true
+    }
+
 
 
     val openWarningDialog =mutableStateOf(false)
@@ -403,8 +416,34 @@ class StreamViewModel @Inject constructor(
 
 
 
-    val clickedUsernameChats = mutableStateListOf<String>()
+
     val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
+    /**
+     * I need to make the immutable version of clickedUsernameChatsWithDateSent
+     * */
+    // this is the immutable clickedUsernameChatsWithDateSentImmutable
+    // Immutable state holder
+    private var _clickedUsernameChatsDateSentImmutable by mutableStateOf(
+        ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
+    )
+
+    // Publicly exposed immutable state as State
+    val clickedUsernameChatsDateSentImmutable: State<ClickedUsernameChatsWithDateSentImmutable>
+        get() = mutableStateOf(_clickedUsernameChatsDateSentImmutable)
+
+    private fun addAllClickedUsernameChatsDateSent(clickedChats:List<ClickedUserNameChats>){
+        clickedUsernameChatsWithDateSent.addAll(clickedChats)
+        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
+
+    }
+    private fun clearClickedUsernameChatsDateSent(){
+        clickedUsernameChatsWithDateSent.clear()
+        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(listOf())
+
+    }
+
+
+    /*** END OF THE MUTABLE LIST OF ClickedUsernameChatsWithDateSentImmutable ***/
 
     private val allChatters = mutableStateListOf<String>()
 
@@ -694,8 +733,9 @@ class StreamViewModel @Inject constructor(
         Log.d("updateClickedChat","clickedUsername ->${clickedUsername}")
 
 
-        clickedUsernameChats.clear()
-        clickedUsernameChatsWithDateSent.clear()
+
+       // clickedUsernameChatsWithDateSent.clear()
+        clearClickedUsernameChatsDateSent()
         val messages = listChats.filter { it.displayName == clickedUsername }
             .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
@@ -709,8 +749,9 @@ class StreamViewModel @Inject constructor(
         }
 
 
-        clickedUsernameChats.addAll(messages)
-        clickedUsernameChatsWithDateSent.addAll(clickedUserMessages)
+
+        //clickedUsernameChatsWithDateSent.addAll(clickedUserMessages)
+        addAllClickedUsernameChatsDateSent(clickedUserMessages)
         _clickedUIState.value = _clickedUIState.value.copy(
             clickedUsername = clickedUsername,
             clickedUserId = clickedUserId,
@@ -916,11 +957,19 @@ class StreamViewModel @Inject constructor(
 
                 if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
-                    clickedUsernameChats.add(twitchUserMessage.userType!!)
-                    clickedUsernameChatsWithDateSent.add(
-                        ClickedUserNameChats(
-                            message =twitchUserMessage.userType?:"",
-                            dateSent = twitchUserMessage.dateSend
+
+//                    clickedUsernameChatsWithDateSent.add(
+//                        ClickedUserNameChats(
+//                            message =twitchUserMessage.userType?:"",
+//                            dateSent = twitchUserMessage.dateSend
+//                        )
+//                    )
+                    addAllClickedUsernameChatsDateSent(
+                        listOf(
+                            ClickedUserNameChats(
+                                message =twitchUserMessage.userType?:"",
+                                dateSent = twitchUserMessage.dateSend
+                            )
                         )
                     )
 
