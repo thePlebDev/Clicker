@@ -349,6 +349,13 @@ class StreamViewModel @Inject constructor(
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
 
+    fun setOpenTimeoutDialogFalse(){
+        openTimeoutDialog.value = false
+    }
+    fun setOpenBanDialogFalse(){
+        openBanDialog.value = false
+    }
+
 
     val openWarningDialog =mutableStateOf(false)
     val warningTextIsEmpty =mutableStateOf(false)

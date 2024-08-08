@@ -78,11 +78,8 @@ fun ChatSettingsColumn(
      changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
      changeNoChatMode:(Boolean)->Unit,
 
-
-//     followerModeList: List<ListTitleValue>, //unstable
      followerModeListImmutable: ImmutableModeList,
 
-//     slowModeList: List<ListTitleValue>, //unstable
      slowModeListImmutable: ImmutableModeList,
 
 

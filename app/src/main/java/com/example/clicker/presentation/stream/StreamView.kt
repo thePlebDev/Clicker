@@ -168,6 +168,38 @@ fun StreamView(
     val updateSubscriberOnly:(Boolean) -> Unit = remember(modViewViewModel) { { newValue ->
         modViewViewModel.updateSubscriberOnly(newValue)
     } }
+
+
+    val timeoutUser:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.timeoutUser()
+    } }
+
+    val setOpenTimeoutDialogFalse:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenTimeoutDialogFalse()
+    } }
+
+    val changeTimeoutDuration:(Int) -> Unit = remember(streamViewModel) { {duration ->
+        streamViewModel.changeTimeoutDuration(duration)
+    } }
+
+    val changeTimeoutReason:(String) -> Unit = remember(streamViewModel) { {reason ->
+        streamViewModel.changeTimeoutReason(reason)
+    } }
+    val changeBanReason:(String) -> Unit = remember(streamViewModel) { {reason ->
+        streamViewModel.changeBanReason(reason)
+    } }
+
+    val banUser:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.banUser()
+    } }
+    val setOpenBanDialogFalse:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenBanDialogFalse()
+    } }
+
+
+
+
+
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -261,24 +293,16 @@ fun StreamView(
                     TimeoutBanDialogs(
                         showTimeOutDialog =streamViewModel.openTimeoutDialog.value,
                         username = streamViewModel.clickedUIState.value.clickedUsername,
-                        timeoutUser={
-                            streamViewModel.timeoutUser()
-                        },
+                        timeoutUser={ timeoutUser() },
                         timeoutDuration=streamViewModel.state.value.timeoutDuration,
-                        closeTimeoutDialog = {
-                            streamViewModel.openTimeoutDialog.value = false
-                                             },
-                        changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
+                        closeTimeoutDialog = { setOpenTimeoutDialogFalse() },
+                        changeTimeoutDuration={newDuration -> changeTimeoutDuration(newDuration) },
                         timeoutReason=streamViewModel.state.value.timeoutReason,
-                        changeTimeoutReason = {reason ->streamViewModel.changeTimeoutReason(reason)},
+                        changeTimeoutReason = {reason -> changeTimeoutReason(reason) },
                         showBanDialog =streamViewModel.openBanDialog.value,
-                        changeBanReason = {newReason -> streamViewModel.changeBanReason(newReason)},
-                        banUser  ={
-                            streamViewModel.banUser()
-                        },
-                        closeBanDialog = {
-                            streamViewModel.openBanDialog.value = false
-                                         },
+                        changeBanReason = {newReason -> changeBanReason(newReason) },
+                        banUser  ={ banUser() },
+                        closeBanDialog = { setOpenBanDialogFalse() },
                         banReason = streamViewModel.state.value.banReason,
                     )
                     if(!modViewIsVisible){
@@ -395,6 +419,7 @@ fun TimeoutBanDialogs(
     changeBanReason:(String)->Unit,
     banUser:()->Unit,
 ){
+    Log.d("TimeoutBanDialogsRecomp","RECOMP")
     if(showTimeOutDialog){
 
         ImprovedTimeoutDialog(
