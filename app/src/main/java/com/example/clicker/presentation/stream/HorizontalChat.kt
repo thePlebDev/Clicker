@@ -56,7 +56,7 @@ fun HorizontalChat(
     var autoscroll by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val clickedUsername = streamViewModel.clickedUIState.value.clickedUsername
-    val recentChatMessagesByClickedUsername = streamViewModel.clickedUsernameChats
+
     val textFieldValue = streamViewModel.textFieldValue
     var showAdvancedChatSettings by remember { mutableStateOf(true) }
 
@@ -66,12 +66,15 @@ fun HorizontalChat(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var bottomModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(bottomModalState)) }
+
+
     val outerBottomModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
 
-    val clickedUsernameChats = streamViewModel.clickedUsernameChats
+
 
     val chatSettingData = streamViewModel.state.value.chatSettings
     val modStatus = streamViewModel.state.value.loggedInUserData?.mod
@@ -150,33 +153,27 @@ fun HorizontalChat(
             sheetState = bottomModalState,
             sheetContent = {
                 BottomModal.BottomModalBuilder(
-                    clickedUsernameChats = clickedUsernameChats,
                     clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                    bottomModalState = bottomModalState,
+
                     textFieldValue = streamViewModel.textFieldValue,
                     closeBottomModal = {
 
                     },
                     banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                     unbanUser = {
-                        //  streamViewModel.unBanUser()
+                          streamViewModel.unBanUser()
                     },
                     isMod = true,
                     openTimeoutDialog = {
-                        //  streamViewModel.openTimeoutDialog.value = true
+                          streamViewModel.openTimeoutDialog.value = true
                         streamViewModel.openTimeoutDialog.value = true
                     },
 
                     openBanDialog = {
-
                         streamViewModel.openBanDialog.value = true
                                     },
-                    shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
-                    updateShouldMonitorUser = {
-                        // streamViewModel.updateShouldMonitorUser()
-                    },
-                    clickedUsernameChatsWithDate = streamViewModel.clickedUsernameChatsWithDateSent,
                     openWarnDialog={streamViewModel.changeOpenWarningDialog(true)},
+                    clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
 
 
                     )

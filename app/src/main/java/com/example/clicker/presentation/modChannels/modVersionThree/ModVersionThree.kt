@@ -117,6 +117,7 @@ import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
+import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
@@ -148,6 +149,8 @@ fun ModViewComponentVersionThree(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var clickedChatterModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(clickedChatterModalState)) }
+
     val clickedUsernameChatsWithDateSent = streamViewModel.clickedUsernameChatsWithDateSent.toList()
     val chatSettingsModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -245,23 +248,19 @@ fun ModViewComponentVersionThree(
         sheetState = clickedChatterModalState,
         sheetContent = {
             BottomModal.BottomModalBuilder(
-                clickedUsernameChats = streamViewModel.clickedUsernameChats.toList(),
+
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                bottomModalState = clickedChatterModalState,
                 textFieldValue = streamViewModel.textFieldValue,
                 closeBottomModal = {},
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                 unbanUser = {
-                    //  streamViewModel.unBanUser()
+                      streamViewModel.unBanUser()
                 },
-                //todo: turn this back into --> streamViewModel.state.value.loggedInUserData?.mod ?: false
                 isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                 openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
                 openBanDialog = { streamViewModel.openBanDialog.value = true },
-                shouldMonitorUser = streamViewModel.shouldMonitorUser.value,
-                updateShouldMonitorUser = {},
-                clickedUsernameChatsWithDate = clickedUsernameChatsWithDateSent,
-                openWarnDialog={streamViewModel.changeOpenWarningDialog(true)}
+                openWarnDialog={streamViewModel.changeOpenWarningDialog(true)},
+                clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
             )
         }
     ) {
