@@ -216,6 +216,19 @@ fun ModViewComponentVersionThree(
     val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
         streamViewModel.sendMessage(message)
     } }
+    val setIndex:(Int)->Unit = remember(modVersionThreeViewModel) { { newValue ->
+
+        modVersionThreeViewModel.setIndex(newValue)
+    } }
+
+    val changeAutoModQueueChecked:(Boolean)->Unit = remember(modVersionThreeViewModel) { {newValue->
+        modViewViewModel.changeAutoModQueueChecked(newValue)
+
+    } }
+    val changeModActionsChecked:(Boolean)->Unit = remember(modVersionThreeViewModel) { {newValue->
+        modViewViewModel.changeModActionsChecked(newValue)
+
+    } }
 
     ModalBottomSheetLayout(
         sheetState = chatSettingsModalState,
@@ -326,7 +339,9 @@ fun ModViewComponentVersionThree(
 
 
             /*************** GENERICS PARAMETERS*****************************************************************/
-            updateIndex = { newValue -> modVersionThreeViewModel.setIndex(newValue) },
+            updateIndex = { newValue ->
+                setIndex(newValue) //todo: wrap this in a remember function
+                          },
             showError = modVersionThreeViewModel.showPlacementError.value,
             sectionTwoHeight = modVersionThreeViewModel.section2height,
             sectionThreeHeight = modVersionThreeViewModel.section3Height,
@@ -469,8 +484,12 @@ fun ModViewComponentVersionThree(
             manageAutoModMessage ={
                     messageId,action -> manageAutoModMessage(messageId,action)
             },
-            changeAutoModQueueChecked ={value ->modViewViewModel.changeAutoModQueueChecked(value)},
-            changeModActionsChecked ={value ->modViewViewModel.changeModActionsChecked(value)},
+            changeAutoModQueueChecked ={value ->
+                changeAutoModQueueChecked(value)    //todo: wrap this in a remember function
+                                       },
+            changeModActionsChecked ={value ->
+                changeModActionsChecked(value) //todo: wrap this in a remember function
+                                     },
             autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
             modActionsChecked=modViewViewModel.uiState.value.modActionNotifications,
             doubleClickAndDrag= modVersionThreeViewModel.doubleClickAndDrag.value,
@@ -581,12 +600,18 @@ fun ModVersionThree(
             ModalDrawerSheet {
 
                 ModViewDrawerContent(
-                    checkIndexAvailability ={newValue ->updateIndex(newValue)},
+                    checkIndexAvailability ={newValue ->
+                        updateIndex(newValue)
+                                            },
                     showError = showError,
                     autoModQueueChecked = autoModQueueChecked,
                     modActionsChecked =modActionsChecked,
-                    changeAutoModQueueChecked={newValue ->changeAutoModQueueChecked(newValue)},
-                    changeModActionsChecked={newValue ->changeModActionsChecked(newValue)}
+                    changeAutoModQueueChecked={newValue ->
+                        changeAutoModQueueChecked(newValue)
+                                              },
+                    changeModActionsChecked={newValue ->
+                        changeModActionsChecked(newValue)
+                    }
                 )
             }
 
@@ -1057,6 +1082,7 @@ fun ModViewDrawerContent(
     modActionsChecked:Boolean,
     changeModActionsChecked:(Boolean)->Unit,
 ){
+    Log.d("ModViewDrawerContentRecomp","Recomp")
     Box(modifier = Modifier.fillMaxSize()){
         LazyColumn(
             modifier = Modifier.padding(horizontal = 10.dp)
@@ -1424,6 +1450,7 @@ fun SmallChatScrollToBottom(
     enableAutoScroll: () -> Unit,
     modifier: Modifier
 ) {
+    Log.d("SmallChatScrollToBottomRecomp","RECOMP")
 
     Row(
         modifier = modifier
@@ -1483,6 +1510,7 @@ fun SmallChatDetermineScrollState(
     setAutoScrollFalse:()->Unit,
     setAutoScrollTrue:()->Unit,
 ){
+    Log.d("SmallChatDetermineScrollStateRecomp","Recomp")
     val interactionSource = lazyColumnListState.interactionSource
     val endOfListReached by remember {
         derivedStateOf {
