@@ -59,6 +59,49 @@ import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDial
 
 import kotlinx.coroutines.launch
 
+@Composable
+fun TestingNewBottomModal(
+    clickedUsernameChatsDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+    clickedUsername: String,
+    textFieldValue: MutableState<TextFieldValue>,
+    closeBottomModal: () -> Unit,
+    banned: Boolean,
+    isMod: Boolean,
+    unbanUser: () -> Unit,
+    openTimeoutDialog: () -> Unit,
+    openBanDialog: () -> Unit,
+//
+    openWarnDialog:()->Unit,
+){
+    Log.d("TestingNewBottomModalRecomp","RECOMP")
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ) {
+        TestingNewContentBanner(
+            clickedUsername = clickedUsername,
+            textFieldValue = textFieldValue,
+            hideModal = {closeBottomModal()}
+        )
+        TestingNewContentBottomPart(
+            banned =banned,
+            isMod =isMod,
+            closeBottomModal ={closeBottomModal()},
+            unbanUser ={unbanUser()},
+            openTimeoutDialog={
+                openTimeoutDialog()
+            },
+            openBanDialog ={openBanDialog()},
+
+            openWarnDialog={openWarnDialog()},
+        )
+        TestingNewClickedUserMessages(
+            clickedUsernameChatsWithDateSentImmutable =clickedUsernameChatsDateSentImmutable
+        )
+
+    }
+}
 /**
  * BottomModal contains all the composables responsible for creating the entire experience when a user clicks on a
  * individual chat message.
@@ -134,9 +177,9 @@ object BottomModal{
             clickedUserBottomBanner()
             Text(stringResource(R.string.recent_messages),color = MaterialTheme.colorScheme.onPrimary,modifier = Modifier.padding(bottom=5.dp))
 
-//            BottomModalParts.ClickedUserMessages(
-//                clickedUsernameChatsWithDateSentImmutable
-//            )
+            BottomModalParts.ClickedUserMessages(
+                clickedUsernameChatsWithDateSentImmutable
+            )
 
         }
     }
@@ -356,7 +399,135 @@ fun BanUnBanButtons(
         }
     }
 }
+/*********NEW MODAL ITEMS THAT ARE NOT IN THE COMPANION OBJECT*************/
+@Composable
+fun TestingNewContentBanner(
+    clickedUsername: String,
+    textFieldValue: MutableState<TextFieldValue>,
+    hideModal:()->Unit,
 
+    ){
+    val scope = rememberCoroutineScope()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = stringResource(R.string.user_icon_description),
+                modifier = Modifier
+                    .clickable { }
+                    .size(35.dp),
+                tint = MaterialTheme.colorScheme.secondary
+            )
+            Text(clickedUsername, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        }
+
+        Button(
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+            onClick = {
+
+                textFieldValue.value = TextFieldValue(
+                    text = textFieldValue.value.text + "@$clickedUsername ",
+                    selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
+                )
+
+                hideModal()
+            }) {
+            Text(stringResource(R.string.reply),color = MaterialTheme.colorScheme.onSecondary)
+        }
+    }
+}
+
+@Composable
+fun TestingNewContentBottomPart(
+    banned: Boolean,
+    isMod: Boolean,
+    closeBottomModal: () -> Unit,
+    unbanUser: () -> Unit,
+    openTimeoutDialog:() -> Unit,
+    openBanDialog:() -> Unit,
+    openWarnDialog:()->Unit,
+){
+    Log.d("ContentBottomModerator","isMod --> $isMod")
+
+
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (isMod) {
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.End) {
+                    WarnButton(
+                        openWarnDialog={openWarnDialog()}
+                    )
+                    TimeoutButton(
+                        openTimeoutDialog={openTimeoutDialog()}
+                    )
+                    BanUnBanButtons(
+                        banned = banned,
+                        closeBottomModal={
+                            closeBottomModal()
+                        },
+                        openBanDialog={
+                            openBanDialog()
+                        },
+                        unbanUser = {
+                            unbanUser()
+                        }
+                    )
+                }
+            }
+        }
+
+
+    }/**End of the column**/
+
+}
+
+@Composable
+fun TestingNewClickedUserMessages(
+    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+){
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+//            .height(100.dp)
+            .background(MaterialTheme.colorScheme.primary)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(8.dp)
+            )
+    ) {
+        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+
+            Text(
+
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+                        append("${message.dateSent} ")
+                    }
+
+
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append(message.message)
+                    }
+
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+            )
+
+
+        }
+    }
+}
 
 
 

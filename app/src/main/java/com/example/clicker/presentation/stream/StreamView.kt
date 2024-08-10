@@ -46,6 +46,7 @@ import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 
 import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
+import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
@@ -218,6 +219,9 @@ fun StreamView(
     val deleteEmote:() -> Unit = remember(streamViewModel) { {
         streamViewModel.deleteEmote()
     } }
+    val unBanUser:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.unBanUser()
+    } }
 
 
 
@@ -275,27 +279,27 @@ fun StreamView(
                     sheetBackgroundColor = MaterialTheme.colorScheme.primary,
                     sheetState = bottomModalStateImmutable.bottomModalState,
                     sheetContent = {
-                        BottomModalBuilder(
+                        TestingNewBottomModal(
 
                             clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                             textFieldValue = streamViewModel.textFieldValue,
                             closeBottomModal = {
-                                hideClickedUserBottomModal()
+                             hideClickedUserBottomModal()
                             },
                             banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                             unbanUser = {
-                                streamViewModel.unBanUser()
+                                unBanUser()
                             },
                             isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                             openTimeoutDialog = {
-                               setOpenTimeoutDialogTrue()
+                            setOpenTimeoutDialogTrue()
                                                 },
                             openBanDialog = {
                                 setOpenBanDialogTrue()
                                             },
                             clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
                             openWarnDialog={
-                                changeOpenWarningDialog()
+                               changeOpenWarningDialog()
                             }
                             )
                     }
