@@ -802,15 +802,15 @@ fun EmoteBottomUI(
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
 
-//            Icon(modifier= Modifier
-//                .size(25.dp)
-//                .clickable {
-//                    Log.d("EmoteBottomUI", "RECENT")
-//                    scrollToMostFrequentlyUsedEmotes()
-//                },
-//                tint = MaterialTheme.colorScheme.onPrimary,
-//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-//            Spacer(modifier = Modifier.width(10.dp))
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI", "RECENT")
+                   // scrollToMostFrequentlyUsedEmotes()
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
@@ -987,46 +987,46 @@ fun LazyGridEmotes(
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
-//        header {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 5.dp)
-//            ) {
-//                Spacer(modifier = Modifier.padding(5.dp))
-//                Text(
-//                    "Frequently Used Emotes",
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
-//                ) // or any composable for your single row
-//                Spacer(modifier = Modifier.padding(2.dp))
-//                Divider(
-//                    thickness = 2.dp,
-//                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//                Spacer(modifier = Modifier.padding(5.dp))
-//            }
-//
-//        }
+        header {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    "Frequently Used Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier = Modifier.padding(2.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
+            }
+
+        }
 //        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
-//        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
-//            items(
-//                emoteBoardMostFrequentList.list,
-//            ) {
-//                AsyncImage(
-//                    model = it.url,
-//                    contentDescription = it.name,
-//                    modifier = Modifier
-//                        .width(60.dp)
-//                        .height(60.dp)
-//                        .padding(5.dp)
-//                        .clickable {
-//                            //updateTextWithEmote(it.name)
-//                        }
-//                )
-//            }
-//        }
+        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
+            items(
+                emoteBoardMostFrequentList.list,
+            ) {
+                AsyncImage(
+                    model = it.url,
+                    contentDescription = it.name,
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(60.dp)
+                        .padding(5.dp)
+                        .clickable {
+                            //updateTextWithEmote(it.name)
+                        }
+                )
+            }
+        }
 
 
 
