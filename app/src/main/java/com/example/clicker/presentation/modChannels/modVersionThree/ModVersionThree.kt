@@ -1874,6 +1874,7 @@ fun ModActionsHeader(
     doubleClickAndDrag:Boolean,
     headerText:String,
 ){
+    Log.d("ModActionsHeaderRecomp","RECOMP")
     val hapticFeedback = LocalHapticFeedback.current
     Row(
         modifier = Modifier
