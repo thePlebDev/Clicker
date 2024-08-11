@@ -63,8 +63,11 @@ import androidx.compose.material.FractionalThreshold
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -338,6 +341,7 @@ fun PullToRefreshIndicator(
     val refreshingOffsetPx = with(LocalDensity.current) { refreshingOffset.toPx() }
     val indicatorHeight = 48.dp
     val indicatorHeightPx = with(LocalDensity.current) { indicatorHeight.toPx() }
+    val haptic = LocalHapticFeedback.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -384,6 +388,36 @@ fun PullToRefreshIndicator(
                 colorFilter = ColorFilter.tint(textStyle.color)
             )
         }
+        /******HAPTIC FEEDBACK INDICATOR*********/
+
+        var hasTriggered by remember { mutableStateOf(false) }
+
+        val thresholdCrossed by remember {
+            derivedStateOf {
+                state.isPullInProgress && state.contentOffset >= refreshTriggerPx
+            }
+        }
+
+        if(state.isRefreshing){
+            hasTriggered = false
+        }
+        if(!state.isRefreshing){
+            hasTriggered = false
+        }
+
+        // Using LaunchedEffect to trigger the action only once
+        LaunchedEffect(thresholdCrossed) {
+            if (thresholdCrossed && !hasTriggered) {
+                hasTriggered = true
+
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+            }
+        }
+
+
+
+        /******HAPTIC FEEDBACK INDICATOR*********/
 
         BasicText(
             text = when {
