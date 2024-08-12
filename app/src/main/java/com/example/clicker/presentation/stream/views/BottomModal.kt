@@ -55,6 +55,7 @@ import com.example.clicker.presentation.stream.ClickedUserNameChats
 import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
+import kotlinx.coroutines.delay
 
 
 import kotlinx.coroutines.launch
@@ -414,16 +415,8 @@ fun TestingNewContentBanner(
 
     ){
 
-    val text = buildAnnotatedString {
-
-        for (item in clickedUserBadgeList) {
-            if (inlineContentMap.map.containsKey(item)) {
-                withStyle(style = SpanStyle(fontSize = 10.sp)) {
-                    appendInlineContent(item, item)
-                }
-            }
-        }
-    }
+    var clickedBadgeName by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     Column() {
         Row(
@@ -461,15 +454,48 @@ fun TestingNewContentBanner(
                 Text(stringResource(R.string.reply), color = MaterialTheme.colorScheme.onSecondary)
             }
         }
-        androidx.compose.material3.Text(
-            text = text,
-            inlineContent = inlineContentMap.map,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
+        Text(clickedBadgeName,
             color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = MaterialTheme.typography.headlineLarge.fontSize
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            modifier = Modifier.padding(horizontal =5.dp)
         )
+        Row(){
+            for(item in clickedUserBadgeList){
+                val text = buildAnnotatedString {
+                    if (inlineContentMap.map.containsKey(item)) {
+                        withStyle(style = SpanStyle(fontSize = 10.sp)) {
+                            appendInlineContent(item, item)
+                        }
+                    }
+                }
+                androidx.compose.material3.Text(
+                    text = text,
+                    inlineContent = inlineContentMap.map,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .clickable {
+                            clickedBadgeName = text.text
+                            scope.launch {
+                                delay(2000)
+                                clickedBadgeName =""
+                            }
+                        }
+                    ,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+
+            }
+        }
+
+
+//        androidx.compose.material3.Text(
+//            text = text,
+//            inlineContent = inlineContentMap.map,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(5.dp),
+//            color = MaterialTheme.colorScheme.onPrimary,
+//        )
 
     }
 }
