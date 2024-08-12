@@ -105,6 +105,11 @@ data class ClickedUsernameChatsWithDateSentImmutable(
     val clickedChats:List<ClickedUserNameChats>
 )
 
+@Immutable
+data class ClickedUserBadgesImmutable(
+    val clickedBadges:List<String>
+)
+
 
 
 /**
@@ -418,7 +423,22 @@ class StreamViewModel @Inject constructor(
 
 
     val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
-    val clickedUserBadges =mutableStateListOf<String>()
+    val clickedUserBadges =mutableStateListOf<String>() //this needs to be make stable
+    private var _clickedUserBadgesImmutable by mutableStateOf(
+        ClickedUserBadgesImmutable(clickedUserBadges)
+    )
+
+    // Publicly exposed immutable state as State
+    val clickedUserBadgesImmutable: State<ClickedUserBadgesImmutable>
+        get() = mutableStateOf(_clickedUserBadgesImmutable)
+    private fun addAllClickedUserBadgesImmutable(clickedBadges:List<String>){
+        clickedUserBadges.addAll(clickedBadges)
+        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(clickedUserBadges)
+    }
+    private fun clearAllClickedUserBadgesImmutable(){
+        clickedUserBadges.clear()
+        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(listOf())
+    }
     /**
      * I need to make the immutable version of clickedUsernameChatsWithDateSent
      * */
@@ -737,7 +757,8 @@ class StreamViewModel @Inject constructor(
 
        // clickedUsernameChatsWithDateSent.clear()
         clearClickedUsernameChatsDateSent()
-        clickedUserBadges.clear()
+       // clickedUserBadges.clear()
+        clearAllClickedUserBadgesImmutable()
         val messages = listChats.filter { it.displayName == clickedUsername }
             .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
@@ -750,7 +771,8 @@ class StreamViewModel @Inject constructor(
             )
         }
         val badges = clickedUserChats.first().badges
-        clickedUserBadges.addAll(badges)
+       // clickedUserBadges.addAll(badges)
+        addAllClickedUserBadgesImmutable(badges)
 
 
 
