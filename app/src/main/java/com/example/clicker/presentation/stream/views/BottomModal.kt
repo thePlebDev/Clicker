@@ -51,6 +51,7 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
+import com.example.clicker.presentation.stream.ClickedUserBadgesImmutable
 import com.example.clicker.presentation.stream.ClickedUserNameChats
 import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
@@ -73,7 +74,7 @@ fun TestingNewBottomModal(
     openBanDialog: () -> Unit,
 //
     openWarnDialog:()->Unit,
-    clickedUserBadgeList:List<String>,
+    clickedUserBadgeList:ClickedUserBadgesImmutable,
     inlineContentMap: EmoteListMap
 ){
     Log.d("TestingNewBottomModalRecomp","RECOMP")
@@ -410,7 +411,7 @@ fun TestingNewContentBanner(
     clickedUsername: String,
     textFieldValue: MutableState<TextFieldValue>,
     hideModal:()->Unit,
-    clickedUserBadgeList:List<String>,
+    clickedUserBadgeList: ClickedUserBadgesImmutable,
     inlineContentMap: EmoteListMap
 
     ){
@@ -454,13 +455,16 @@ fun TestingNewContentBanner(
                 Text(stringResource(R.string.reply), color = MaterialTheme.colorScheme.onSecondary)
             }
         }
-        Text(clickedBadgeName,
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-            modifier = Modifier.padding(horizontal =5.dp)
-        )
+        if(!clickedBadgeName.isEmpty()){
+            Text(clickedBadgeName,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                modifier = Modifier.padding(horizontal =5.dp)
+            )
+        }
+
         Row(){
-            for(item in clickedUserBadgeList){
+            for(item in clickedUserBadgeList.clickedBadges){
                 val text = buildAnnotatedString {
                     if (inlineContentMap.map.containsKey(item)) {
                         withStyle(style = SpanStyle(fontSize = 10.sp)) {
@@ -488,14 +492,6 @@ fun TestingNewContentBanner(
         }
 
 
-//        androidx.compose.material3.Text(
-//            text = text,
-//            inlineContent = inlineContentMap.map,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(5.dp),
-//            color = MaterialTheme.colorScheme.onPrimary,
-//        )
 
     }
 }

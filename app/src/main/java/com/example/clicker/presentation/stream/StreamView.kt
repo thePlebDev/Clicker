@@ -302,7 +302,7 @@ fun StreamView(
                                changeOpenWarningDialog()
                             },
                             inlineContentMap=streamViewModel.inlineTextContentTest.value,
-                            clickedUserBadgeList =streamViewModel.clickedUserBadges
+                            clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value
 
                             )
                     }
