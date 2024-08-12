@@ -418,6 +418,7 @@ class StreamViewModel @Inject constructor(
 
 
     val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
+    val clickedUserBadges =mutableStateListOf<String>()
     /**
      * I need to make the immutable version of clickedUsernameChatsWithDateSent
      * */
@@ -736,6 +737,7 @@ class StreamViewModel @Inject constructor(
 
        // clickedUsernameChatsWithDateSent.clear()
         clearClickedUsernameChatsDateSent()
+        clickedUserBadges.clear()
         val messages = listChats.filter { it.displayName == clickedUsername }
             .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
@@ -747,6 +749,9 @@ class StreamViewModel @Inject constructor(
                 dateSent = it.dateSend
             )
         }
+        val badges = clickedUserChats.first().badges
+        clickedUserBadges.addAll(badges)
+
 
 
 

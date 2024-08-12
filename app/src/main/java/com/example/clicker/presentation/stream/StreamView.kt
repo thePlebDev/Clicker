@@ -300,7 +300,10 @@ fun StreamView(
                             clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
                             openWarnDialog={
                                changeOpenWarningDialog()
-                            }
+                            },
+                            inlineContentMap=streamViewModel.inlineTextContentTest.value,
+                            clickedUserBadgeList =streamViewModel.clickedUserBadges
+
                             )
                     }
                 ){

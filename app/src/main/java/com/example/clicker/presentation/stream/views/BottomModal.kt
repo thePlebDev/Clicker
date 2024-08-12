@@ -72,6 +72,8 @@ fun TestingNewBottomModal(
     openBanDialog: () -> Unit,
 //
     openWarnDialog:()->Unit,
+    clickedUserBadgeList:List<String>,
+    inlineContentMap: EmoteListMap
 ){
     Log.d("TestingNewBottomModalRecomp","RECOMP")
     Column(
@@ -82,7 +84,9 @@ fun TestingNewBottomModal(
         TestingNewContentBanner(
             clickedUsername = clickedUsername,
             textFieldValue = textFieldValue,
-            hideModal = {closeBottomModal()}
+            hideModal = {closeBottomModal()},
+            clickedUserBadgeList=clickedUserBadgeList,
+            inlineContentMap=inlineContentMap
         )
         TestingNewContentBottomPart(
             banned =banned,
@@ -405,39 +409,68 @@ fun TestingNewContentBanner(
     clickedUsername: String,
     textFieldValue: MutableState<TextFieldValue>,
     hideModal:()->Unit,
+    clickedUserBadgeList:List<String>,
+    inlineContentMap: EmoteListMap
 
     ){
-    val scope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = stringResource(R.string.user_icon_description),
-                modifier = Modifier
-                    .clickable { }
-                    .size(35.dp),
-                tint = MaterialTheme.colorScheme.secondary
-            )
-            Text(clickedUsername, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+
+    val text = buildAnnotatedString {
+
+        for (item in clickedUserBadgeList) {
+            if (inlineContentMap.map.containsKey(item)) {
+                withStyle(style = SpanStyle(fontSize = 10.sp)) {
+                    appendInlineContent(item, item)
+                }
+            }
         }
+    }
 
-        Button(
-            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-            onClick = {
-
-                textFieldValue.value = TextFieldValue(
-                    text = textFieldValue.value.text + "@$clickedUsername ",
-                    selection = TextRange(textFieldValue.value.selection.start+"@$clickedUsername ".length)
+    Column() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = stringResource(R.string.user_icon_description),
+                    modifier = Modifier
+                        .clickable { }
+                        .size(35.dp),
+                    tint = MaterialTheme.colorScheme.secondary
                 )
+                Text(
+                    clickedUsername,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                )
+            }
 
-                hideModal()
-            }) {
-            Text(stringResource(R.string.reply),color = MaterialTheme.colorScheme.onSecondary)
+            Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+
+                    textFieldValue.value = TextFieldValue(
+                        text = textFieldValue.value.text + "@$clickedUsername ",
+                        selection = TextRange(textFieldValue.value.selection.start + "@$clickedUsername ".length)
+                    )
+
+                    hideModal()
+                }) {
+                Text(stringResource(R.string.reply), color = MaterialTheme.colorScheme.onSecondary)
+            }
         }
+        androidx.compose.material3.Text(
+            text = text,
+            inlineContent = inlineContentMap.map,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineLarge.fontSize
+        )
+
     }
 }
 
