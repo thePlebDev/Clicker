@@ -118,6 +118,7 @@ import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
+import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
@@ -715,6 +716,19 @@ fun ModVersionThree(
                             },
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
+                    },
+                    unbanRequests={
+                        UnbanRequests(
+                            setDragging={newValue ->
+                                setBoxOneDoubleTap(newValue)
+                                setBoxOneDragging(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse()
+                            },
+                        )
+
                     }
                 )
                 if(boxOneDoubleTap){
@@ -806,6 +820,19 @@ fun ModVersionThree(
                             },
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
+                    },
+                    unbanRequests={
+                        UnbanRequests(
+                            setDragging={newValue ->
+                                setBoxTwoDoubleTap(newValue)
+                                setBoxTwoDragging(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse()
+                            },
+                        )
+
                     }
 
                 )
@@ -896,6 +923,18 @@ fun ModVersionThree(
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
                             },
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
+                        )
+                    },
+                    unbanRequests={
+                        UnbanRequests(
+                            setDragging={newValue ->
+                                setBoxThreeDoubleTap(newValue)
+                                setBoxThreeDoubleTap(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse() //todo: this is causing a recomp
+                            },
                         )
                     }
 
@@ -1010,6 +1049,7 @@ fun ContentDragBox(
     fullChat: @Composable ()-> Unit,
     modActions:@Composable () ->Unit,
     autoModQueue:@Composable () -> Unit,
+    unbanRequests:@Composable () -> Unit,
 ){
     when(contentIndex){
         1 ->{
@@ -1063,6 +1103,17 @@ fun ContentDragBox(
                 }
             }
         }
+        4 ->{
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)) {
+                Box(modifier = Modifier.fillMaxSize()){
+                    unbanRequests()
+                }
+            }
+
+        }
+
     }
 
 }
@@ -1114,6 +1165,17 @@ fun ModViewDrawerContent(
                 )
 
 
+            }
+            item{
+                ElevatedCardSwitchRow(
+                    "Unban requests",
+                    checkIndexAvailability={checkIndexAvailability(4)},
+                    painter = painterResource(id = R.drawable.time_out_24),
+                    checked = modActionsChecked,
+                    changeChecked = {value ->
+                        //changeModActionsChecked(value) todo: this needs to be its own switch function
+                    }
+                )
             }
 
 //            item{
@@ -1910,6 +1972,146 @@ fun ModActionsHeader(
     }
 
 }
+/************************ Unban requests ****************************************************************/
+
+
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun UnbanRequests(
+    setDragging:(Boolean)->Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit
+){
+    Log.d("UnbanRequestsRecomp","RECOMP")
+    val listState = rememberLazyListState()
+    Box(modifier = Modifier.fillMaxSize()){
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(vertical = 5.dp)
+
+        ) {
+            stickyHeader {
+                UnBanRequestHeader(
+                    headerText ="Unban requests",
+                    setDragging ={newValue ->setDragging(newValue)},
+                    doubleClickAndDrag =doubleClickAndDrag,
+                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                )
+            }
+            item{
+
+                IndivUnbanRequest()
+            }
+
+
+        }
+    }
+}
+@Composable
+fun IndivUnbanRequest(){
+    Column() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
+                Text("meanermeeny", fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+            }
+            Text("Pending", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+
+        }
+        Spacer(modifier =Modifier.height(5.dp))
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                    append("Created at:  ")
+                }
+                withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                    append("2024-08-12 22:15:45 UTC")
+                }
+            }
+        )
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                    append("Request message:  ")
+                }
+                withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
+                    append("please unban me!! its been too long!")
+                }
+            }
+        )
+
+        MessageDivider()
+
+    }
+
+}
+
+@Composable
+fun MessageDivider(){
+    Spacer(modifier =Modifier.height(5.dp))
+    Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+    Spacer(modifier =Modifier.height(5.dp))
+}
+
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun UnBanRequestHeader(
+    setDragging:(Boolean)->Unit,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean,
+    headerText:String,
+){
+    Log.d("ModActionsHeaderRecomp","RECOMP")
+    val hapticFeedback = LocalHapticFeedback.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .combinedClickable(
+                onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    setDragging(true)
+                    setDoubleClickAndDragFalse()
+                },
+                onClick = {}
+            )
+            .padding(horizontal = 10.dp),
+        horizontalArrangement =Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
+    ){
+        Text(
+            headerText,
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+        )
+        if(doubleClickAndDrag){
+            Text(
+                "Double click and drag",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                )
+        }
+
+    }
+
+}
+
+
+
+
 
 /************************ AutoModQueueBox ****************************************************************/
 /**
@@ -1973,6 +2175,7 @@ fun NewAutoModQueueBox(
         .background(MaterialTheme.colorScheme.primary)
 
     ){
+//
         NewErrorBroken(
             setDragging = { value -> setDragging(value) },
             title = "AutoMod Queue",
@@ -2356,7 +2559,7 @@ fun AutoModItemPendingText(
 ){
     when(approved){
         null ->{
-            Text("Pending approval", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+            Text("Pending", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
         }
         true ->{
             Row(){

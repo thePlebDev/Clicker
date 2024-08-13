@@ -876,7 +876,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
     var boxThreeOffsetY by mutableStateOf(section3Height)
     var boxThreeSection by mutableStateOf(Sections.THREE)
-    var boxThreeIndex by mutableStateOf(3)
+    var boxThreeIndex by mutableStateOf(4)
     var deleteBoxThree by mutableStateOf(false)
     var boxThreeHeight by mutableStateOf(((heightPixels / density)/3.2).dp)
     fun setBoxThreeOffset(newValue:Float){

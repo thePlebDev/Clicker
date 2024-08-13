@@ -1212,6 +1212,7 @@ class StreamViewModel @Inject constructor(
         broadcasterId: String
     ) = viewModelScope.launch {
 
+
         withContext(Dispatchers.IO + CoroutineName("GetChatSettings")) {
             tokenDataStore.getOAuthToken().collect { oAuthToken ->
 
@@ -1219,6 +1220,10 @@ class StreamViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         oAuthToken = oAuthToken
                     )
+
+                    Log.d("getChatSettingsteSTING","broadcasterId ->$broadcasterId")
+                    Log.d("getChatSettingsteSTING","oAuthToken ->$oAuthToken")
+                    Log.d("getChatSettingsteSTING","moderatorId ->${_uiState.value.userId}")
                     twitchRepoImpl.getChatSettings("Bearer $oAuthToken", clientId, broadcasterId).collect { response ->
                         when (response) {
                             is Response.Loading -> {
@@ -1289,6 +1294,9 @@ class StreamViewModel @Inject constructor(
     private fun updateDateChatSettings(
         chatSettingsData: ChatSettingsData,
     ) = viewModelScope.launch{
+        Log.d("updateDateChatSettingsTesting","broadcasterId ->${_uiState.value.broadcasterId}")
+        Log.d("updateDateChatSettingsTesting","moderatorId ->${_uiState.value.userId}")
+        Log.d("updateDateChatSettingsTesting","oAuthToken ->${_uiState.value.oAuthToken}")
 
 
         withContext(ioDispatcher + CoroutineName("updateDateChatSettings")) {
