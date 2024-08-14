@@ -551,7 +551,6 @@ fun TestingNewClickedUserMessages(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-//            .height(100.dp)
             .background(MaterialTheme.colorScheme.primary)
             .border(
                 width = 1.dp,

@@ -9,6 +9,7 @@ import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
+import com.example.clicker.network.clients.TwitchModClient
 import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
@@ -149,6 +150,20 @@ object SingletonModule {
             .addConverterFactory(GsonConverterFactory.create())
             .client(monitorClient)
             .build().create(TwitchHomeClient::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providesTwitchModClient(): TwitchModClient {
+//        val monitorClient = OkHttpClient.Builder()
+//            .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
+//            .addInterceptor(Authentication401Interceptor(ResponseChecker()))
+//            .build()
+        return Retrofit.Builder()
+            .baseUrl("https://api.twitch.tv/helix/")
+            .addConverterFactory(GsonConverterFactory.create())
+            //.client(monitorClient)
+            .build().create(TwitchModClient::class.java)
     }
 
     @Singleton
