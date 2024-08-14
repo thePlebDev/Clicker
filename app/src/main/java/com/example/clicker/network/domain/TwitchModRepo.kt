@@ -1,6 +1,7 @@
 package com.example.clicker.network.domain
 
 import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -18,5 +19,5 @@ interface TwitchModRepo {
         authorizationToken: String,
         clientId: String,
         userId: String
-    ): Flow<Response<Boolean>>
+    ): Flow<Response<ClickedUnbanRequestInfo>>
 }
