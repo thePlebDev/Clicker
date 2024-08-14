@@ -119,6 +119,7 @@ import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.presentation.stream.util.TextCommands
+import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
@@ -261,20 +262,22 @@ fun ModViewComponentVersionThree(
         sheetBackgroundColor = MaterialTheme.colorScheme.primary,
         sheetState = clickedChatterModalState,
         sheetContent = {
-            BottomModal.BottomModalBuilder(
 
+            TestingNewBottomModal(
                 clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
                 textFieldValue = streamViewModel.textFieldValue,
                 closeBottomModal = {},
                 banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                 unbanUser = {
-                      streamViewModel.unBanUser()
+                    streamViewModel.unBanUser()
                 },
                 isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                 openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
                 openBanDialog = { streamViewModel.openBanDialog.value = true },
                 openWarnDialog={streamViewModel.changeOpenWarningDialog(true)},
                 clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                inlineContentMap=streamViewModel.inlineTextContentTest.value,
+                clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value
             )
         }
     ) {
@@ -1658,7 +1661,7 @@ fun SmallChatUILazyColumn(
                 ChatMessages(
                     indivChatMessage,
                     showBottomModal={
-//                        showBottomModal()
+                        showBottomModal()
                                     },
                     updateClickedUser = {  username, userId,isBanned,isMod ->
                         updateClickedUser(
