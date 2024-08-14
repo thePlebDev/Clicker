@@ -16,6 +16,7 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
+import com.example.clicker.network.domain.TwitchModRepo
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.repository.TwitchRepoImpl
@@ -35,6 +36,7 @@ import com.example.clicker.network.repository.NetworkMonitorImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.repository.TwitchEventSub
+import com.example.clicker.network.repository.TwitchModRepoImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
 import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
@@ -155,14 +157,10 @@ object SingletonModule {
     @Singleton
     @Provides
     fun providesTwitchModClient(): TwitchModClient {
-//        val monitorClient = OkHttpClient.Builder()
-//            .addInterceptor(NetworkMonitorInterceptor(liveNetworkMonitor))
-//            .addInterceptor(Authentication401Interceptor(ResponseChecker()))
-//            .build()
+
         return Retrofit.Builder()
             .baseUrl("https://api.twitch.tv/helix/")
             .addConverterFactory(GsonConverterFactory.create())
-            //.client(monitorClient)
             .build().create(TwitchModClient::class.java)
     }
 
@@ -240,4 +238,15 @@ object SingletonModule {
     ): TwitchEventSubscriptions{
         return TwitchEventSub(twitchClient)
     }
+
+    @Provides
+    fun providesTwitchModRepo(
+        twitchModClient: TwitchModClient
+    ): TwitchModRepo {
+        return TwitchModRepoImpl(twitchModClient)
+    }
+
+
+
+
 }

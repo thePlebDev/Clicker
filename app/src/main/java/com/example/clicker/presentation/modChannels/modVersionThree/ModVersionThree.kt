@@ -96,12 +96,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
-import com.example.clicker.presentation.modView.ClickedUnbanRequestInfo
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -238,15 +238,24 @@ fun ModViewComponentVersionThree(
         modViewViewModel.changeModActionsChecked(newValue)
 
     } }
+    val getUserInformation:(String)->Unit = remember(modVersionThreeViewModel) { {userId->
+        modViewViewModel.getUserInformation(userId)
+
+    } }
     ModalBottomSheetLayout(
         sheetState = clickedUnbanRequestModalState,
         sheetContent ={
-            when(modViewViewModel.clickedUnbanRequestInfo.value){
+            when(val response =modViewViewModel.clickedUnbanRequestInfo.value){
                 is Response.Loading ->{
                     ClickedIndivUnbanRequestModalLoading()
                 }
                 is Response.Success ->{
-                    ClickedIndivUnbanRequestModalSuccess()
+                    ClickedIndivUnbanRequestModalSuccess(
+                        profileImageURL = response.data.profileImageURL,
+                        displayName = response.data.displayName,
+                        description = response.data.profileDescription,
+                        createdAt = response.data.profileCreatedAt
+                    )
                 }
                 is Response.Failure ->{
                     ClickedIndivUnbanRequestModalFailed()
@@ -549,8 +558,9 @@ fun ModViewComponentVersionThree(
                     }
 
                 },
-                getUserInformation ={
-                    //todo: I STILL NEED TO AD THE FUNCTION CALL HERE
+                getUserInformation ={userId -> userId
+                   getUserInformation(userId)
+
                 }
 
             )
@@ -2183,6 +2193,20 @@ fun ClickedIndivUnbanRequestModalLoading(){
         Row(){
             Text(
                 buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Account creation:  ")
+                    }
+
+                }
+            )
+            CircularProgressIndicator(
+                modifier = Modifier.size(25.dp)
+            )
+
+        }
+        Row(){
+            Text(
+                buildAnnotatedString {
                     withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
                         append("Description:  ")
                     }
@@ -2207,7 +2231,14 @@ fun ClickedIndivUnbanRequestModalLoading(){
     }
 }
 @Composable
-fun ClickedIndivUnbanRequestModalSuccess(){
+fun ClickedIndivUnbanRequestModalSuccess(
+    profileImageURL:String,
+    displayName:String,
+    description:String,
+    createdAt:String,
+
+){
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .background(MaterialTheme.colorScheme.primary)
@@ -2217,19 +2248,17 @@ fun ClickedIndivUnbanRequestModalSuccess(){
             verticalAlignment = Alignment.CenterVertically
         ){
             //this needs to be a loading icon
-
-            Icon(
-                painter = painterResource(id =R.drawable.person_outline_24),
-                contentDescription = "person outline",
-                tint = MaterialTheme.colorScheme.onPrimary,
+            AsyncImage(
+                model = profileImageURL,
+                contentDescription = "icon for user",
                 modifier = Modifier.size(40.dp)
             )
             Column(
                 modifier = Modifier.padding(horizontal = 10.dp)
             ){
 
-                Text("meanermeeny",color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                Text("badnge list",color = MaterialTheme.colorScheme.onPrimary)
+                Text(displayName,color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+//                Text("badnge list",color = MaterialTheme.colorScheme.onPrimary)
             }
         }
         Spacer(modifier =Modifier.height(5.dp))
@@ -2250,11 +2279,24 @@ fun ClickedIndivUnbanRequestModalSuccess(){
         Row(){
             Text(
                 buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Account creation:  ")
+                    }
+                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append(createdAt)
+                    }
+                }
+            )
+
+        }
+        Row(){
+            Text(
+                buildAnnotatedString {
                     withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
                         append("Description:  ")
                     }
                     withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append("Supporting third-party developers building Twitch integrations from chatbots to game integrations.")
+                        append(description)
                     }
                 }
             )
@@ -2347,6 +2389,23 @@ fun ClickedIndivUnbanRequestModalFailed(){
                 modifier = Modifier.size(35.dp),
                 tint = Color.Red
             )
+        }
+        Row(){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Account creation:  ")
+                    }
+
+                }
+            )
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_close_24),
+                contentDescription ="request failed",
+                modifier = Modifier.size(35.dp),
+                tint = Color.Red
+            )
+
         }
         Row(
             verticalAlignment = Alignment.CenterVertically

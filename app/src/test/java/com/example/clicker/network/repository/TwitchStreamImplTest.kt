@@ -962,6 +962,22 @@ class TwitchStreamImplTest {
         /**THEN*/
         Assert.assertEquals(expectedResponse.toString(), actualResponse.toString())
     }
+    @Test
+    fun `parsing date text`(){
+        //what I want to parse 2023-08-28T18:34:29Z
+        //GIVEN
+        val givenString = "2023-08-28T18:34:29Z"
+        val expectedString = "2023-08-28 18:34:29 UTC"
+
+        //WHEN
+        val parsedString =givenString.replace("T"," ").replace("Z"," UTC")
+
+
+        //THEN
+
+        Assert.assertEquals(expectedString, parsedString)
+
+    }
 
 
 }

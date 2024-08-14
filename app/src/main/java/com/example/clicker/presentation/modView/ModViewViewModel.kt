@@ -20,9 +20,11 @@ import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
+import com.example.clicker.network.domain.TwitchModRepo
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
@@ -149,24 +151,45 @@ data class ModActionListImmutableCollection(
     val modActionList: List<ModActionData>
 )
 
-data class ClickedUnbanRequestInfo(
-    val profileImageURL:String,
-    val profileDescription:String,
-    val profileCreatedAt:String,
-)
+
 @HiltViewModel
 class ModViewViewModel @Inject constructor(
     private val twitchEventSubWebSocket: TwitchEventSubscriptionWebSocket,
-    private val twitchEventSub: TwitchEventSubscriptions
+    private val twitchEventSub: TwitchEventSubscriptions,
+    private val twitchModRepo: TwitchModRepo
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
-    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","")))
+    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","")))
     val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
 
 
     init{
         Log.d("AutoModMessageHoldType","LOADING")
+    }
+
+    fun getUserInformation(userId:String)=viewModelScope.launch(Dispatchers.IO){
+        _clickedUnbanRequestInfo.value = Response.Loading
+        twitchModRepo.getUserInformation(
+            authorizationToken=_requestIds.value.oAuthToken,
+            clientId =_requestIds.value.clientId ,
+            userId = userId
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    //this is fine being empty. The first line of the function takes care of it
+                }
+                is Response.Success ->{
+
+                    _clickedUnbanRequestInfo.value = Response.Success(response.data)
+                }
+                is Response.Failure ->{
+                    _clickedUnbanRequestInfo.value = Response.Failure(Exception("antoher one"))
+                }
+            }
+
+        }
+
     }
 
 
