@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
@@ -100,6 +101,7 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
+import com.example.clicker.presentation.modView.ClickedUnbanRequestInfo
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -118,6 +120,7 @@ import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
+import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
@@ -238,7 +241,19 @@ fun ModViewComponentVersionThree(
     ModalBottomSheetLayout(
         sheetState = clickedUnbanRequestModalState,
         sheetContent ={
-            ClickedIndivUnbanRequest()
+            when(modViewViewModel.clickedUnbanRequestInfo.value){
+                is Response.Loading ->{
+                    ClickedIndivUnbanRequestModalLoading()
+                }
+                is Response.Success ->{
+                    ClickedIndivUnbanRequestModalSuccess()
+                }
+                is Response.Failure ->{
+                    ClickedIndivUnbanRequestModalFailed()
+
+                }
+            }
+
         }
     ){
 
@@ -533,6 +548,9 @@ fun ModViewComponentVersionThree(
                         clickedUnbanRequestModalState.show()
                     }
 
+                },
+                getUserInformation ={
+                    //todo: I STILL NEED TO AD THE FUNCTION CALL HERE
                 }
 
             )
@@ -617,7 +635,8 @@ fun ModVersionThree(
     //immutable Lists
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
-    showUnbanRequestBottomModal: () -> Unit
+    showUnbanRequestBottomModal: () -> Unit,
+    getUserInformation:(String)->Unit,
 
 
 
@@ -764,7 +783,8 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
                             },
-                            showUnbanRequestBottomModal={showUnbanRequestBottomModal()}
+                            showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
+                            getUserInformation={userId -> getUserInformation(userId)}
                         )
 
                     }
@@ -870,6 +890,7 @@ fun ModVersionThree(
                                 setDoubleClickAndDragFalse()
                             },
                             showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
+                            getUserInformation={userId -> getUserInformation(userId)}
                         )
 
                     }
@@ -974,7 +995,8 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
                             },
-                            showUnbanRequestBottomModal
+                            showUnbanRequestBottomModal ={showUnbanRequestBottomModal()},
+                            getUserInformation={userId -> getUserInformation(userId)}
                         )
                     }
 
@@ -2023,7 +2045,8 @@ fun UnbanRequests(
     setDragging:(Boolean)->Unit,
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit,
-    showUnbanRequestBottomModal: () -> Unit
+    showUnbanRequestBottomModal: () -> Unit,
+    getUserInformation:(String)->Unit,
 ){
     Log.d("UnbanRequestsRecomp","RECOMP")
     val listState = rememberLazyListState()
@@ -2047,7 +2070,8 @@ fun UnbanRequests(
             item{
 
                 IndivUnbanRequest(
-                    showUnbanRequestBottomModal={showUnbanRequestBottomModal()}
+                    showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
+                    getUserInformation={userId ->getUserInformation(userId)}
                 )
             }
 
@@ -2057,10 +2081,12 @@ fun UnbanRequests(
 }
 @Composable
 fun IndivUnbanRequest(
-    showUnbanRequestBottomModal: () -> Unit
+    showUnbanRequestBottomModal: () -> Unit,
+    getUserInformation:(String)->Unit,
 ){
     Column(
         modifier = Modifier.clickable {
+            getUserInformation("949335660")
             showUnbanRequestBottomModal()
         }
     ) {
@@ -2112,14 +2138,18 @@ fun MessageDivider(){
     Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
     Spacer(modifier =Modifier.height(5.dp))
 }
-
 @Composable
-fun ClickedIndivUnbanRequest(){
-    Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp)){
+fun ClickedIndivUnbanRequestModalLoading(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.primary)
+        .padding(horizontal = 5.dp)){
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ){
+            //this needs to be a loading icon
+
             Icon(
                 painter = painterResource(id =R.drawable.person_outline_24),
                 contentDescription = "person outline",
@@ -2129,33 +2159,290 @@ fun ClickedIndivUnbanRequest(){
             Column(
                 modifier = Modifier.padding(horizontal = 10.dp)
             ){
+                CircularProgressIndicator(
+                    modifier = Modifier.size(25.dp)
+                )
+
+            }
+        }
+        Spacer(modifier =Modifier.height(5.dp))
+
+        Row(){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Subscriber:  ")
+                    }
+
+                }
+            )
+            CircularProgressIndicator(
+                modifier = Modifier.size(25.dp)
+            )
+        }
+        Row(){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Description:  ")
+                    }
+
+                }
+            )
+            CircularProgressIndicator(
+                modifier = Modifier.size(25.dp)
+            )
+        }
+
+        Spacer(modifier =Modifier.height(5.dp))
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                    append("Messages during this session:  ")
+                }
+            }
+        )
+        UnbanRequestSessionMessages()
+
+    }
+}
+@Composable
+fun ClickedIndivUnbanRequestModalSuccess(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.primary)
+        .padding(horizontal = 5.dp)){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            //this needs to be a loading icon
+
+            Icon(
+                painter = painterResource(id =R.drawable.person_outline_24),
+                contentDescription = "person outline",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(40.dp)
+            )
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp)
+            ){
+
                 Text("meanermeeny",color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                 Text("badnge list",color = MaterialTheme.colorScheme.onPrimary)
             }
         }
         Spacer(modifier =Modifier.height(5.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Subscriber:  ")
+
+        Row(){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Subscriber:  ")
+                    }
+                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append("False")
+                    }
                 }
-                withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append("False")
+            )
+
+        }
+        Row(){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Description:  ")
+                    }
+                    withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append("Supporting third-party developers building Twitch integrations from chatbots to game integrations.")
+                    }
                 }
+            )
+
+        }
+        Spacer(modifier =Modifier.height(5.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    // openWarnDialog()
+                },
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("DENY",color = MaterialTheme.colorScheme.onSecondary)
             }
-        )
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    // openWarnDialog()
+                },
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("APPROVE",color = MaterialTheme.colorScheme.onSecondary)
+            }
+        }
+
+        Spacer(modifier =Modifier.height(5.dp))
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Description:  ")
-                }
-                withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append("Supporting third-party developers building Twitch integrations from chatbots to game integrations.")
+                    append("Messages during this session:  ")
                 }
             }
         )
+        UnbanRequestSessionMessages()
 
 
+    }
+}
+@Composable
+fun ClickedIndivUnbanRequestModalFailed(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.primary)
+        .padding(horizontal = 5.dp)){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            //this needs to be a loading icon
+
+            Icon(
+                painter = painterResource(id =R.drawable.person_outline_24),
+                contentDescription = "person outline",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(40.dp)
+            )
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp)
+            ){
+                Icon(
+                    painter = painterResource(id =R.drawable.baseline_close_24),
+                    contentDescription ="request failed",
+                    modifier = Modifier.size(35.dp),
+                    tint = Color.Red
+                )
+
+            }
+        }
+        Spacer(modifier =Modifier.height(5.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Subscriber:  ")
+                    }
+
+                }
+            )
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_close_24),
+                contentDescription ="request failed",
+                modifier = Modifier.size(35.dp),
+                tint = Color.Red
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Description:  ")
+                    }
+
+                }
+            )
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_close_24),
+                contentDescription ="request failed",
+                modifier = Modifier.size(35.dp),
+                tint = Color.Red
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ){
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    // openWarnDialog()
+                },
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("Retry request",color = MaterialTheme.colorScheme.onSecondary)
+            }
+        }
+
+        Spacer(modifier =Modifier.height(5.dp))
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                    append("Messages during this session:  ")
+                }
+            }
+        )
+        UnbanRequestSessionMessages()
+
+
+
+    }
+
+}
+@Composable
+fun UnbanRequestSessionMessages(
+//    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+){
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(8.dp)
+            )
+    ) {
+//        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+//
+//            androidx.compose.material.Text(
+//
+//                buildAnnotatedString {
+//                    withStyle(
+//                        style = SpanStyle(
+//                            color = MaterialTheme.colorScheme.secondary,
+//                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
+//                        )
+//                    ) {
+//                        append("${message.dateSent} ")
+//                    }
+//
+//
+//                    withStyle(
+//                        style = SpanStyle(
+//                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+//                            color = MaterialTheme.colorScheme.onPrimary
+//                        )
+//                    ) {
+//                        append(message.message)
+//                    }
+//
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(5.dp)
+//            )
+//
+//
+//        }
     }
 }
 

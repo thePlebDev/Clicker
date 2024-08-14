@@ -149,13 +149,20 @@ data class ModActionListImmutableCollection(
     val modActionList: List<ModActionData>
 )
 
-
+data class ClickedUnbanRequestInfo(
+    val profileImageURL:String,
+    val profileDescription:String,
+    val profileCreatedAt:String,
+)
 @HiltViewModel
 class ModViewViewModel @Inject constructor(
     private val twitchEventSubWebSocket: TwitchEventSubscriptionWebSocket,
     private val twitchEventSub: TwitchEventSubscriptions
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
+
+    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","")))
+    val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
 
 
     init{
