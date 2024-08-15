@@ -193,7 +193,6 @@ class ModViewViewModel @Inject constructor(
     }
 
 
-
     /*****autoModMessageList START*****/
     val  autoModMessageList = mutableStateListOf<AutoModQueueMessage>()
     // Immutable state holder
