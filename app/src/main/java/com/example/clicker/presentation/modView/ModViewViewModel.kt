@@ -21,6 +21,7 @@ import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.domain.TwitchModRepo
+import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -191,6 +192,37 @@ class ModViewViewModel @Inject constructor(
         }
 
     }
+
+    fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
+        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
+        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
+        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
+        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
+        twitchModRepo.getUnbanRequests(
+            authorizationToken=_requestIds.value.oAuthToken,
+            clientId =_requestIds.value.clientId ,
+            moderatorID = _requestIds.value.moderatorId,
+            broadcasterId = "520593641",
+            status = UnbanStatusFilter.PENDING
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+
+                }
+                is Response.Success ->{
+                    Log.d("getUnbanRequestsFunc","response data ->${response.data[0]}")
+                }
+                is Response.Failure->{
+
+                }
+            }
+
+        }
+
+
+    }
+
+
 
 
     /*****autoModMessageList START*****/

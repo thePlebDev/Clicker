@@ -2,8 +2,10 @@ package com.example.clicker.network.repository
 
 import android.util.Log
 import com.example.clicker.network.clients.TwitchModClient
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.clients.UserSubscriptionData
 import com.example.clicker.network.domain.TwitchModRepo
+import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -95,6 +97,38 @@ class TwitchModRepoImpl @Inject constructor(
             Log.d("getUserSubscriptionStatus", "code ->${response.code()}")
             emit(Response.Failure(Exception("Error! Please try again")))
         }
+    }
+
+    override suspend fun getUnbanRequests(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorID: String,
+        status: UnbanStatusFilter
+    ): Flow<Response<List<UnbanRequestItem>>> = flow {
+        emit(Response.Loading)
+        val response = twitchModClient.getUnbanRequests(
+            authorizationToken = "Bearer $authorizationToken",
+            clientId = clientId,
+            moderatorID = moderatorID,
+            broadcasterId=broadcasterId,
+            status = status.toString()
+        )
+        if (response.isSuccessful){
+            Log.d("getUnbanRequestsResponse","SUCCESS")
+            val data = response.body()?.data ?: listOf()
+            emit(Response.Success(data))
+
+        }else{
+            Log.d("getUnbanRequestsResponse","FAILED")
+            Log.d("getUnbanRequestsResponse","message ->${response.message()}")
+            Log.d("getUnbanRequestsResponse","body ->${response.body()}")
+            Log.d("getUnbanRequestsResponse","code ->${response.code()}")
+            emit(Response.Failure(Exception("Error! Please try again")))
+        }
+    }.catch {
+        Log.d("getUnbanRequestsResponse","EXCEPTION")
+        emit(Response.Failure(Exception("Error! Please try again")))
     }
 }
 

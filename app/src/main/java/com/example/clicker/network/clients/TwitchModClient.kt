@@ -13,7 +13,7 @@ import retrofit2.http.Query
 interface TwitchModClient {
 
     /**
-     * - updateChatSettings represents a PATCH method. a function meant to update the currently viewed chat settings
+     * - updateChatSettings represents a GET method. a function meant to update the currently viewed chat settings
      *
      * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
      * @param clientId a String used to represent the clientId(unique identifier) of this application
@@ -28,7 +28,7 @@ interface TwitchModClient {
     ): Response<UserDataResponse>
 
     /**
-     * - updateChatSettings represents a PATCH method. a function meant to update the currently viewed chat settings
+     * - updateChatSettings represents a GET method. a function meant to update the currently viewed chat settings
      *
      * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
      * @param clientId a String used to represent the clientId(unique identifier) of this application
@@ -41,6 +41,29 @@ interface TwitchModClient {
         @Query("broadcaster_id") broadcasterId: String,
         @Query("user_id") userId: String,
         ): Response<UserSubscription>
+
+    /**
+     * - getUnbanRequests represents a GET method. a function meant to get a broadcasters unban request
+     * - [Official documentation on getting unban requests](https://dev.twitch.tv/docs/api/reference/#get-unban-requests)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the broadcaster the user is watching
+     * @param moderatorID a String used to represent the unique identifier of the user making the request
+     * @param status a String used to represent the filter of what requests we want
+     * */
+    @GET("moderation/unban_requests")
+    suspend fun getUnbanRequests(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorID: String,
+        @Query("status") status: String,
+    ): Response<UnbanRequestData>
+
+
+
+
 }
 
 data class UserDataResponse(
@@ -72,3 +95,27 @@ data class UserSubscriptionData(
     val is_gift: Boolean,
     val tier: String
 )
+
+data class UnbanRequestData(
+    val data: List<UnbanRequestItem>
+)
+
+
+data class UnbanRequestItem(
+    val id: String,
+    val broadcaster_name: String,
+    val broadcaster_login: String,
+    val broadcaster_id: String,
+    val moderator_id: String,
+    val moderator_login: String,
+    val moderator_name: String,
+    val user_id: String,
+    val user_login: String,
+    val user_name: String,
+    val text: String,
+    val status: String,
+    val created_at: String,
+    val resolved_at: String?,
+    val resolution_text: String?
+)
+
