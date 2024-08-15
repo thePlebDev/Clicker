@@ -2,6 +2,7 @@ package com.example.clicker.network.repository
 
 import android.util.Log
 import com.example.clicker.network.clients.TwitchModClient
+import com.example.clicker.network.clients.UserSubscriptionData
 import com.example.clicker.network.domain.TwitchModRepo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
@@ -60,6 +61,40 @@ class TwitchModRepoImpl @Inject constructor(
         }
     }.catch {
         emit(Response.Failure(Exception("Error! Please try again")))
+    }
+
+    override suspend fun getUserSubscriptionStatus(
+        authorizationToken: String,
+        clientId: String,
+        userId: String,
+        broadcasterId: String
+    ): Flow<Response<UserSubscriptionData>> = flow{
+        emit(Response.Loading)
+        val response = twitchModClient.checkUserSubscriptionStatus(
+            authorizationToken = "Bearer $authorizationToken",
+            clientId = clientId,
+            userId = userId,
+            broadcasterId=broadcasterId
+        )
+        if (response.isSuccessful) {
+            val body = response.body()?.data ?: listOf()
+            Log.d("getUserSubscriptionStatus", "SUCCESS ->${response.message()}")
+
+            emit(Response.Success(
+                UserSubscriptionData(
+                    broadcaster_id = body[0].broadcaster_id,
+                    broadcaster_name = body[0].broadcaster_name,
+                    broadcaster_login = body[0].broadcaster_login,
+                    is_gift =body[0].is_gift,
+                    tier = body[0].tier
+                )
+            ))
+        } else {
+            Log.d("getUserSubscriptionStatus", "FAILED ->${response.body()}")
+            Log.d("getUserSubscriptionStatus", "message ->${response.message()}")
+            Log.d("getUserSubscriptionStatus", "code ->${response.code()}")
+            emit(Response.Failure(Exception("Error! Please try again")))
+        }
     }
 }
 

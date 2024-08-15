@@ -2176,20 +2176,6 @@ fun ClickedIndivUnbanRequestModalLoading(){
             }
         }
         Spacer(modifier =Modifier.height(5.dp))
-
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Subscriber:  ")
-                    }
-
-                }
-            )
-            CircularProgressIndicator(
-                modifier = Modifier.size(25.dp)
-            )
-        }
         Row(){
             Text(
                 buildAnnotatedString {
@@ -2262,20 +2248,6 @@ fun ClickedIndivUnbanRequestModalSuccess(
             }
         }
         Spacer(modifier =Modifier.height(5.dp))
-
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Subscriber:  ")
-                    }
-                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append("False")
-                    }
-                }
-            )
-
-        }
         Row(){
             Text(
                 buildAnnotatedString {
@@ -2372,24 +2344,6 @@ fun ClickedIndivUnbanRequestModalFailed(){
         }
         Spacer(modifier =Modifier.height(5.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Subscriber:  ")
-                    }
-
-                }
-            )
-            Icon(
-                painter = painterResource(id =R.drawable.baseline_close_24),
-                contentDescription ="request failed",
-                modifier = Modifier.size(35.dp),
-                tint = Color.Red
-            )
-        }
         Row(){
             Text(
                 buildAnnotatedString {
