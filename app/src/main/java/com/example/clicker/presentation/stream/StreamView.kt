@@ -222,6 +222,9 @@ fun StreamView(
     val unBanUser:() -> Unit = remember(streamViewModel) { {
         streamViewModel.unBanUser()
     } }
+    val getUnbanRequests:() -> Unit = remember(modViewViewModel) { {
+        modViewViewModel.getUnbanRequests()
+    } }
 
 
 
@@ -400,7 +403,7 @@ fun StreamView(
                             showModView={
                                 showModView()
                                 clearModViewNotifications()
-                                modViewViewModel.getUnbanRequests()
+                               getUnbanRequests()
                             },
                             updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
