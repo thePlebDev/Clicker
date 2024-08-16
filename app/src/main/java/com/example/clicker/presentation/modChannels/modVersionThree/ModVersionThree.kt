@@ -98,6 +98,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
@@ -242,6 +243,21 @@ fun ModViewComponentVersionThree(
         modViewViewModel.getUserInformation(userId)
 
     } }
+
+    val showUnbanRequestsBottomModal:()->Unit = remember() { {
+        scope.launch {
+            clickedUnbanRequestModalState.show()
+        }
+
+    } }
+
+    val retryGetUnbanRequest:()->Unit = remember(modVersionThreeViewModel) { {
+        modViewViewModel.retryGetUnbanRequest()
+
+    } }
+
+
+
     ModalBottomSheetLayout(
         sheetState = clickedUnbanRequestModalState,
         sheetContent ={
@@ -553,14 +569,16 @@ fun ModViewComponentVersionThree(
                 autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                 modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
                 showUnbanRequestBottomModal={
-                    scope.launch {
-                        clickedUnbanRequestModalState.show()
-                    }
+                    showUnbanRequestsBottomModal()
 
                 },
                 getUserInformation ={userId -> userId
                    getUserInformation(userId)
 
+                },
+                getUnbanRequestResponse= modViewViewModel.getUnbanRequestResponse.value,
+                retryGetUnbanRequest={
+                   retryGetUnbanRequest()//todo:this needs to get wrapped
                 }
 
             )
@@ -647,6 +665,8 @@ fun ModVersionThree(
     modActionListImmutableCollection: ModActionListImmutableCollection,
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
+    getUnbanRequestResponse:Response<List<UnbanRequestItem>>,
+    retryGetUnbanRequest:() ->Unit,
 
 
 
@@ -794,7 +814,9 @@ fun ModVersionThree(
                                 setDoubleClickAndDragFalse()
                             },
                             showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                            getUserInformation={userId -> getUserInformation(userId)}
+                            getUserInformation={userId -> getUserInformation(userId)},
+                            getUnbanRequestResponse=getUnbanRequestResponse,
+                            retryGetUnbanRequest={retryGetUnbanRequest()}
                         )
 
                     }
@@ -900,7 +922,9 @@ fun ModVersionThree(
                                 setDoubleClickAndDragFalse()
                             },
                             showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                            getUserInformation={userId -> getUserInformation(userId)}
+                            getUserInformation={userId -> getUserInformation(userId)},
+                            getUnbanRequestResponse=getUnbanRequestResponse,
+                            retryGetUnbanRequest={retryGetUnbanRequest()}
                         )
 
                     }
@@ -1005,8 +1029,14 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
                             },
-                            showUnbanRequestBottomModal ={showUnbanRequestBottomModal()},
-                            getUserInformation={userId -> getUserInformation(userId)}
+                            showUnbanRequestBottomModal ={
+                                showUnbanRequestBottomModal()
+                                                         },
+                            getUserInformation={userId ->
+                               getUserInformation(userId)
+                                               },
+                            getUnbanRequestResponse=getUnbanRequestResponse,
+                            retryGetUnbanRequest={retryGetUnbanRequest()}
                         )
                     }
 
@@ -2057,46 +2087,190 @@ fun UnbanRequests(
     setDoubleClickAndDragFalse:()->Unit,
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
+    retryGetUnbanRequest:() ->Unit,
+    getUnbanRequestResponse:Response<List<UnbanRequestItem>>
 ){
+    //todo: Need to add a fake list to make a request
     Log.d("UnbanRequestsRecomp","RECOMP")
-    val listState = rememberLazyListState()
     Box(modifier = Modifier.fillMaxSize()){
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(vertical = 5.dp)
+        when(val data =getUnbanRequestResponse){
+            is Response.Loading ->{
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(vertical = 5.dp)
 
-        ) {
-            stickyHeader {
-                UnBanRequestHeader(
-                    headerText ="Unban requests",
+                ) {
+                    stickyHeader {
+                        UnBanRequestHeader(
+                            headerText ="Unban requests",
+                            setDragging ={newValue ->setDragging(newValue)},
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                        )
+                    }
+                }
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            is Response.Success ->{
+
+                UnbanRequestLazyColumn(
                     setDragging ={newValue ->setDragging(newValue)},
                     doubleClickAndDrag =doubleClickAndDrag,
-                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
-                )
-            }
-            item{
-
-                IndivUnbanRequest(
+                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
                     showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                    getUserInformation={userId ->getUserInformation(userId)}
+                    getUserInformation={userId ->getUserInformation(userId)},
+                    unbanRequestList = data.data
                 )
+
             }
+            is Response.Failure ->{
 
+                UnbanRequestFailedFailedResponse(
+                    modifier = Modifier.align(Alignment.Center),
+                    setDragging ={newValue ->setDragging(newValue)},
+                    doubleClickAndDrag =doubleClickAndDrag,
+                    setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                    retryGetUnbanRequest={retryGetUnbanRequest()}
+                )
 
+            }
+        }
+
+    }
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun UnbanRequestFailedFailedResponse(
+    modifier: Modifier,
+    setDragging:(Boolean)->Unit,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean,
+    retryGetUnbanRequest:() ->Unit,
+
+){
+    val listState = rememberLazyListState()
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(vertical = 5.dp)
+
+    ) {
+        stickyHeader {
+            UnBanRequestHeader(
+                headerText ="Unban requests",
+                setDragging ={newValue ->setDragging(newValue)},
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+            )
         }
     }
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Row(){
+            Icon(
+                painter = painterResource(id =R.drawable.error_outline_24),
+                contentDescription ="error has occurred",
+                tint = Color.Red
+            )
+            Text(
+                "Failed to make request ",
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
+
+        Button(
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            onClick = {
+                retryGetUnbanRequest()
+            },
+            shape = RoundedCornerShape(4.dp)
+        ) {
+            Text("Retry request",color = MaterialTheme.colorScheme.onSecondary)
+        }
+
+    }
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun UnbanRequestLazyColumn(
+    setDragging:(Boolean)->Unit,
+    doubleClickAndDrag:Boolean,
+    setDoubleClickAndDragFalse:()->Unit,
+    showUnbanRequestBottomModal: () -> Unit,
+    getUserInformation:(String)->Unit,
+    unbanRequestList:List<UnbanRequestItem>
+){
+    val listState = rememberLazyListState()
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(vertical = 5.dp)
+
+    ) {
+        stickyHeader {
+            UnBanRequestHeader(
+                headerText ="Unban requests",
+                setDragging ={newValue ->setDragging(newValue)},
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+            )
+        }
+
+        items(unbanRequestList){unbanRequest->
+
+            IndivUnbanRequest(
+                userId = unbanRequest.user_id,
+                username =unbanRequest.user_name,
+                status = unbanRequest.status,
+                createdAt = unbanRequest.created_at.replace("T"," ").replace("Z"," UTC"),
+                unbanMessage = unbanRequest.text,
+                showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
+                getUserInformation={userId ->getUserInformation(userId)}
+            )
+        }
+
+
+    }
+    if(unbanRequestList.isEmpty()){
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ){
+            Text(
+                "No pending unban requests found ",
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.align(Alignment.Center)
+
+            )
+        }
+    }
+
 }
 @Composable
 fun IndivUnbanRequest(
+    userId:String,
+    username: String,
+    status:String,
+    createdAt:String,
+    unbanMessage:String,
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
 ){
+
     Column(
         modifier = Modifier.clickable {
-            getUserInformation("949335660")
+            getUserInformation(userId)
             showUnbanRequestBottomModal()
         }
     ) {
@@ -2107,9 +2281,9 @@ fun IndivUnbanRequest(
         ){
             Row(verticalAlignment = Alignment.CenterVertically){
                 Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
-                Text("meanermeeny", fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+                Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
             }
-            Text("Pending", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+            Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
 
         }
 
@@ -2120,7 +2294,7 @@ fun IndivUnbanRequest(
                     append("Created at:  ")
                 }
                 withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append("2024-08-12 22:15:45 UTC")
+                    append(createdAt)
                 }
             }
         )
@@ -2130,7 +2304,7 @@ fun IndivUnbanRequest(
                     append("Request message:  ")
                 }
                 withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append("please unban me!! its been too long!")
+                    append(unbanMessage)
                 }
             }
         )

@@ -18,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.domain.TwitchModRepo
@@ -164,6 +165,9 @@ class ModViewViewModel @Inject constructor(
     private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","")))
     val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
 
+    private val _getUnbanRequestResponse: MutableState<Response<List<UnbanRequestItem>>> = mutableStateOf(Response.Failure(Exception("Failed")))
+    val getUnbanRequestResponse: State<Response<List<UnbanRequestItem>>> = _getUnbanRequestResponse
+
 
     init{
         Log.d("AutoModMessageHoldType","LOADING")
@@ -193,7 +197,11 @@ class ModViewViewModel @Inject constructor(
 
     }
 
+    fun retryGetUnbanRequest(){
+        getUnbanRequests()
+    }
     fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
+        _getUnbanRequestResponse.value = Response.Loading
         Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
         Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
         Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
@@ -202,17 +210,16 @@ class ModViewViewModel @Inject constructor(
             authorizationToken=_requestIds.value.oAuthToken,
             clientId =_requestIds.value.clientId ,
             moderatorID = _requestIds.value.moderatorId,
-            broadcasterId = "520593641",
+            broadcasterId = _requestIds.value.broadcasterId,
             status = UnbanStatusFilter.PENDING
         ).collect{response ->
             when(response){
-                is Response.Loading ->{
-
-                }
+                is Response.Loading ->{}
                 is Response.Success ->{
-                    Log.d("getUnbanRequestsFunc","response data ->${response.data[0]}")
+                    _getUnbanRequestResponse.value = response
                 }
                 is Response.Failure->{
+                    _getUnbanRequestResponse.value = Response.Failure(Exception("FAILED"))
 
                 }
             }
