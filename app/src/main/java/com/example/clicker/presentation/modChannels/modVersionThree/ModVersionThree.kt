@@ -2,8 +2,11 @@ package com.example.clicker.presentation.modChannels.modVersionThree
 
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -83,6 +86,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -127,6 +131,7 @@ import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import kotlin.math.absoluteValue
 
 enum class Sections {
     ONE, TWO, THREE
@@ -2227,34 +2232,46 @@ fun UnbanRequestLazyColumn(
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
         }
-
-        items(unbanRequestList){unbanRequest->
-
+        item{
             IndivUnbanRequest(
-                userId = unbanRequest.user_id,
-                username =unbanRequest.user_name,
-                status = unbanRequest.status,
-                createdAt = unbanRequest.created_at.replace("T"," ").replace("Z"," UTC"),
-                unbanMessage = unbanRequest.text,
+                userId = "222",
+                username ="Bob",
+                status = "pending",
+                createdAt = "2029-08-08",
+                unbanMessage = "Please unban me",
                 showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
                 getUserInformation={userId ->getUserInformation(userId)}
             )
         }
 
+//
+//        items(unbanRequestList){unbanRequest->
+//
+//            IndivUnbanRequest(
+//                userId = unbanRequest.user_id,
+//                username =unbanRequest.user_name,
+//                status = unbanRequest.status,
+//                createdAt = unbanRequest.created_at.replace("T"," ").replace("Z"," UTC"),
+//                unbanMessage = unbanRequest.text,
+//                showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
+//                getUserInformation={userId ->getUserInformation(userId)}
+//            )
+//        }
+
 
     }
-    if(unbanRequestList.isEmpty()){
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ){
-            Text(
-                "No pending unban requests found ",
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.align(Alignment.Center)
-
-            )
-        }
-    }
+//    if(unbanRequestList.isEmpty()){
+//        Box(
+//            modifier = Modifier.fillMaxSize()
+//        ){
+//            Text(
+//                "No pending unban requests found ",
+//                color = MaterialTheme.colorScheme.onPrimary,
+//                modifier = Modifier.align(Alignment.Center)
+//
+//            )
+//        }
+//    }
 
 }
 @Composable
@@ -2267,51 +2284,60 @@ fun IndivUnbanRequest(
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
 ){
+    //todo: this is where I need to use the swipe to delete
 
-    Column(
-        modifier = Modifier.clickable {
-            getUserInformation(userId)
-            showUnbanRequestBottomModal()
+    Box(
+        modifier = Modifier
+
+    ){
+        Column(
+            modifier = Modifier
+                .clickable {
+                    getUserInformation(userId)
+                    showUnbanRequestBottomModal()
+                }
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Row(verticalAlignment = Alignment.CenterVertically){
+                    Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
+                    Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+                }
+                Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+
+            }
+
+            Spacer(modifier =Modifier.height(5.dp))
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Created at:  ")
+                    }
+                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append(createdAt)
+                    }
+                }
+            )
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
+                        append("Request message:  ")
+                    }
+                    withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
+                        append(unbanMessage)
+                    }
+                }
+            )
+
+            MessageDivider()
+
         }
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Row(verticalAlignment = Alignment.CenterVertically){
-                Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
-                Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
-            }
-            Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
-
-        }
-
-        Spacer(modifier =Modifier.height(5.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Created at:  ")
-                }
-                withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append(createdAt)
-                }
-            }
-        )
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Request message:  ")
-                }
-                withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                    append(unbanMessage)
-                }
-            }
-        )
-
-        MessageDivider()
-
     }
+
 
 }
 
