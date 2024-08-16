@@ -1729,9 +1729,7 @@ fun HorizontalDragDetectionBox(
                 .padding(start = 10.dp)
         )
 
-
         itemBeingDragged(offset)
-
     }
 
 
