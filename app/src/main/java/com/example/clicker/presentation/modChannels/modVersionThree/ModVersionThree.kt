@@ -266,23 +266,23 @@ fun ModViewComponentVersionThree(
     ModalBottomSheetLayout(
         sheetState = clickedUnbanRequestModalState,
         sheetContent ={
-            when(val response =modViewViewModel.clickedUnbanRequestInfo.value){
-                is Response.Loading ->{
-                    ClickedIndivUnbanRequestModalLoading()
-                }
-                is Response.Success ->{
+//            when(val response =modViewViewModel.clickedUnbanRequestInfo.value){
+//                is Response.Loading ->{
+//                    ClickedIndivUnbanRequestModalLoading()
+//                }
+//                is Response.Success ->{
                     ClickedIndivUnbanRequestModalSuccess(
-                        profileImageURL = response.data.profileImageURL,
-                        displayName = response.data.displayName,
-                        description = response.data.profileDescription,
-                        createdAt = response.data.profileCreatedAt
+                        profileImageURL = "response.data.profileImageURL",
+                        displayName = "response.data.displayName",
+                        description = "response.data.profileDescription",
+                        createdAt = "response.data.profileCreatedAt"
                     )
-                }
-                is Response.Failure ->{
-                    ClickedIndivUnbanRequestModalFailed()
-
-                }
-            }
+              //  }
+//                is Response.Failure ->{
+//                    ClickedIndivUnbanRequestModalFailed()
+//
+//                }
+//            }
 
         }
     ){
@@ -2425,90 +2425,165 @@ fun ClickedIndivUnbanRequestModalSuccess(
 
 ){
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.primary)
-        .padding(horizontal = 5.dp)){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            //this needs to be a loading icon
-            AsyncImage(
-                model = profileImageURL,
-                contentDescription = "icon for user",
-                modifier = Modifier.size(40.dp)
-            )
-            Column(
-                modifier = Modifier.padding(horizontal = 10.dp)
-            ){
+    Box() {
 
-                Text(displayName,color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(horizontal = 5.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                //this needs to be a loading icon
+                AsyncImage(
+                    model = profileImageURL,
+                    contentDescription = "icon for user",
+                    modifier = Modifier.size(40.dp)
+                )
+                Column(
+                    modifier = Modifier.padding(horizontal = 10.dp)
+                ) {
+
+                    Text(
+                        displayName,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    )
 //                Text("badnge list",color = MaterialTheme.colorScheme.onPrimary)
+                }
             }
-        }
-        Spacer(modifier =Modifier.height(5.dp))
-        Row(){
+            Spacer(modifier = Modifier.height(5.dp))
+            Row() {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
+                            )
+                        ) {
+                            append("Account creation:  ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            append(createdAt)
+                        }
+                    }
+                )
+
+            }
+            Row() {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
+                            )
+                        ) {
+                            append("Description:  ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            append(description)
+                        }
+                    }
+                )
+
+            }
+            Spacer(modifier = Modifier.height(5.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    onClick = {
+                        // openWarnDialog()
+                    },
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text("DENY", color = MaterialTheme.colorScheme.onSecondary)
+                }
+                Button(
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    onClick = {
+                        // openWarnDialog()
+                    },
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text("APPROVE", color = MaterialTheme.colorScheme.onSecondary)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(5.dp))
             Text(
                 buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Account creation:  ")
-                    }
-                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append(createdAt)
+                    withStyle(
+                        style = SpanStyle(
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
+                        )
+                    ) {
+                        append("Messages during this session:  ")
                     }
                 }
             )
+            UnbanRequestSessionMessages()
+
 
         }
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Description:  ")
-                    }
-                    withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append(description)
-                    }
-                }
-            )
 
-        }
-        Spacer(modifier =Modifier.height(5.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    // openWarnDialog()
-                },
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text("DENY",color = MaterialTheme.colorScheme.onSecondary)
-            }
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    // openWarnDialog()
-                },
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text("APPROVE",color = MaterialTheme.colorScheme.onSecondary)
-            }
-        }
 
-        Spacer(modifier =Modifier.height(5.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Messages during this session:  ")
-                }
-            }
+    }
+
+}
+@Composable
+fun UnbanRequestErrorMessage(
+    modifier: Modifier,
+    message:String
+){
+    Spacer(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(0.6f))
+    )
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+
+            .padding(horizontal = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        Icon(
+            painter =painterResource(R.drawable.error_outline_24),
+            contentDescription = "error",tint = Color.Red,
+            modifier = Modifier.weight(1f)
         )
-        UnbanRequestSessionMessages()
 
+        Text(
+            message,
+            color = Color.White,
+            modifier = Modifier.weight(6f)
+        )
+
+        Icon(painter =painterResource(R.drawable.error_outline_24),
+            contentDescription = "error",tint = Color.Red,
+            modifier = Modifier.weight(1f)
+        )
 
     }
 }
