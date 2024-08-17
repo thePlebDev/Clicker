@@ -154,6 +154,10 @@ data class ModActionListImmutableCollection(
     val modActionList: List<ModActionData>
 )
 
+@Immutable
+data class UnbanRequestItemImmutableCollection(
+    val list:List<UnbanRequestItem>
+)
 
 @HiltViewModel
 class ModViewViewModel @Inject constructor(
@@ -172,8 +176,38 @@ class ModViewViewModel @Inject constructor(
     /**
      * This is a list of all the individual unban requests
      * */
-    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(UnAuthorizedResponse.Loading)
-    val getUnbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
+    //todo: this needs to be broken up into the response and the list
+    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Loading)
+    val getUnbanRequestResponse: State<UnAuthorizedResponse<Boolean>> = _getUnbanRequestResponse
+
+
+    var unbanRequestItemList = mutableStateListOf<UnbanRequestItem>()
+    private val _getUnbanRequestList: MutableState<UnbanRequestItemImmutableCollection> = mutableStateOf(UnbanRequestItemImmutableCollection(
+        unbanRequestItemList
+    ))
+
+    // Publicly exposed immutable state as State
+    val getUnbanRequestList: State<UnbanRequestItemImmutableCollection> = _getUnbanRequestList
+
+    fun addAllUnbanRequestItemList(unbanRequestList:List<UnbanRequestItem>){
+        unbanRequestItemList.addAll(unbanRequestList)
+        _getUnbanRequestList.value = UnbanRequestItemImmutableCollection(unbanRequestItemList)
+
+    }
+    fun clearUnbanRequestItemList(){
+        unbanRequestItemList.clear()
+        _getUnbanRequestList.value = UnbanRequestItemImmutableCollection(listOf())
+
+    }
+
+
+
+
+
+
+    /**
+     * END OF THE IMMUTABLE LIST
+     * */
 
     private val _resolveUnbanRequest: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Success(false))
     val resolveUnbanRequest: State<UnAuthorizedResponse<Boolean>> = _resolveUnbanRequest
@@ -249,33 +283,39 @@ class ModViewViewModel @Inject constructor(
         getUnbanRequests()
     }
     fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
-        _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("Another one"))
-//        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
-//        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
-//        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
-//        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
-//        twitchModRepo.getUnbanRequests(
-//            authorizationToken=_requestIds.value.oAuthToken,
-//            clientId =_requestIds.value.clientId ,
-//            moderatorID = _requestIds.value.moderatorId,
-//            broadcasterId = _requestIds.value.broadcasterId,
-//            status = UnbanStatusFilter.PENDING
-//        ).collect{response ->
-//            when(response){
-//                is UnAuthorizedResponse.Loading ->{}
-//                is UnAuthorizedResponse.Success ->{
-//                    _getUnbanRequestResponse.value = response
-//                }
-//                is UnAuthorizedResponse.Auth401Failure ->{
-//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
-//                }
-//                is UnAuthorizedResponse.Failure->{
-//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
-//
-//                }
-//            }
-//
-//        }
+        //TODO: CLEAR THE OLD UnbanRequestItemList
+        clearUnbanRequestItemList()
+        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
+        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
+        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
+        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
+
+        twitchModRepo.getUnbanRequests(
+            authorizationToken=_requestIds.value.oAuthToken,
+            clientId =_requestIds.value.clientId ,
+            moderatorID = _requestIds.value.moderatorId,
+            broadcasterId = _requestIds.value.broadcasterId,
+            status = UnbanStatusFilter.PENDING
+        ).collect{response ->
+            when(response){
+                is UnAuthorizedResponse.Loading ->{}
+                is UnAuthorizedResponse.Success ->{
+                    //todo: I need to change when the response gets added
+                    val data = response.data
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(true)
+                    addAllUnbanRequestItemList(data)
+
+                }
+                is UnAuthorizedResponse.Auth401Failure ->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
+                }
+                is UnAuthorizedResponse.Failure->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+
+                }
+            }
+
+        }
 
 
     }
