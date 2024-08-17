@@ -106,6 +106,7 @@ import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
+import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
@@ -131,6 +132,7 @@ import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import com.example.clicker.util.UnAuthorizedResponse
 import kotlin.math.absoluteValue
 
 enum class Sections {
@@ -275,7 +277,11 @@ fun ModViewComponentVersionThree(
                         profileImageURL = "response.data.profileImageURL",
                         displayName = "response.data.displayName",
                         description = "response.data.profileDescription",
-                        createdAt = "response.data.profileCreatedAt"
+                        createdAt = "response.data.profileCreatedAt",
+                        resolveUnbanRequestResponse = modViewViewModel.resolveUnbanRequest.value,
+                        approveUnbanRequest={unbanRequestId ->
+                            modViewViewModel.resolveUnbanRequest(unbanRequestId)
+                        }
                     )
               //  }
 //                is Response.Failure ->{
@@ -2422,8 +2428,10 @@ fun ClickedIndivUnbanRequestModalSuccess(
     displayName:String,
     description:String,
     createdAt:String,
+    approveUnbanRequest:(String)->Unit,
+    resolveUnbanRequestResponse: UnAuthorizedResponse<Boolean>,
 
-){
+    ){
 
     Box() {
 
@@ -2453,7 +2461,6 @@ fun ClickedIndivUnbanRequestModalSuccess(
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = MaterialTheme.typography.headlineMedium.fontSize
                     )
-//                Text("badnge list",color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
             Spacer(modifier = Modifier.height(5.dp))
@@ -2520,7 +2527,7 @@ fun ClickedIndivUnbanRequestModalSuccess(
                 Button(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     onClick = {
-                        // openWarnDialog()
+                        approveUnbanRequest("requestId")
                     },
                     shape = RoundedCornerShape(4.dp)
                 ) {
@@ -2543,7 +2550,22 @@ fun ClickedIndivUnbanRequestModalSuccess(
             )
             UnbanRequestSessionMessages()
 
+        }
+        when(resolveUnbanRequestResponse){
+            is UnAuthorizedResponse.Loading ->{
+                UnbanRequestLoading()
+            }
+            is UnAuthorizedResponse.Success ->{
 
+            }
+            //todo: WE NEED TO ADD THAT 401 FAILURE
+            is UnAuthorizedResponse.Failure ->{
+                UnbanRequestErrorMessage()
+
+            }
+            is UnAuthorizedResponse.Auth401Failure ->{
+                UnbanRequest401ErrorMessage()
+            }
         }
 
 
@@ -2551,41 +2573,94 @@ fun ClickedIndivUnbanRequestModalSuccess(
 
 }
 @Composable
-fun UnbanRequestErrorMessage(
-    modifier: Modifier,
-    message:String
-){
-    Spacer(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(0.6f))
-    )
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-
-            .padding(horizontal = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ){
-        Icon(
-            painter =painterResource(R.drawable.error_outline_24),
-            contentDescription = "error",tint = Color.Red,
-            modifier = Modifier.weight(1f)
+fun UnbanRequestLoading(){
+    Box {
+        Spacer(
+            modifier = Modifier
+                .fillMaxSize()
+                .disableClickAndRipple()
+                .background(Color.Black.copy(0.6f))
         )
-
-        Text(
-            message,
-            color = Color.White,
-            modifier = Modifier.weight(6f)
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
         )
-
-        Icon(painter =painterResource(R.drawable.error_outline_24),
-            contentDescription = "error",tint = Color.Red,
-            modifier = Modifier.weight(1f)
-        )
-
     }
+
+}
+@Composable
+fun UnbanRequestErrorMessage(){
+    Box(){
+        Spacer(
+            modifier = Modifier
+                .fillMaxSize()
+                .disableClickAndRipple()
+                .background(Color.Black.copy(0.6f))
+        )
+        Row(
+            modifier = Modifier.align(Alignment.Center)
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ){
+            Icon(
+                painter =painterResource(R.drawable.error_outline_24),
+                contentDescription = "error",tint = Color.Red,
+            )
+
+            Text(
+                "Request Failed!",
+                color = Color.White,
+                fontSize = 25.sp
+            )
+
+            Icon(painter =painterResource(R.drawable.error_outline_24),
+                contentDescription = "error",tint = Color.Red,
+            )
+
+        }
+    }
+}
+
+@Composable
+fun UnbanRequest401ErrorMessage(
+    message:String ="Request failed. You are missing the proper authentication.Please logout and log back in to be issued the proper authentication"
+){
+    Box(){
+        Spacer(
+            modifier = Modifier
+                .fillMaxSize()
+                .disableClickAndRipple()
+                .background(Color.Black.copy(0.6f))
+        )
+        Row(
+            modifier = Modifier.align(Alignment.Center)
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Icon(
+                painter =painterResource(R.drawable.error_outline_24),
+                contentDescription = "error",tint = Color.Red,
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                message,
+                color = Color.White,
+                modifier = Modifier.weight(6f)
+            )
+
+            Icon(painter =painterResource(R.drawable.error_outline_24),
+                contentDescription = "error",tint = Color.Red,
+                modifier = Modifier.weight(1f)
+            )
+
+        }
+    }
+
+
 }
 @Composable
 fun ClickedIndivUnbanRequestModalFailed(){
