@@ -112,6 +112,7 @@ import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.modView.UnbanRequestItemImmutableCollection
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
@@ -594,7 +595,8 @@ fun ModViewComponentVersionThree(
                 getUnbanRequestResponse= modViewViewModel.getUnbanRequestResponse.value,
                 retryGetUnbanRequest={
                    retryGetUnbanRequest()//todo:this needs to get wrapped
-                }
+                },
+                unbanRequestList=modViewViewModel.getUnbanRequestList.value
 
             )
         }
@@ -680,8 +682,9 @@ fun ModVersionThree(
     modActionListImmutableCollection: ModActionListImmutableCollection,
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
-    getUnbanRequestResponse:UnAuthorizedResponse<List<UnbanRequestItem>>,
+    getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
     retryGetUnbanRequest:() ->Unit,
+    unbanRequestList: UnbanRequestItemImmutableCollection
 
 
 
@@ -831,7 +834,8 @@ fun ModVersionThree(
                             showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
                             getUserInformation={userId -> getUserInformation(userId)},
                             getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()}
+                            retryGetUnbanRequest={retryGetUnbanRequest()},
+                            unbanRequestList=unbanRequestList
                         )
 
                     }
@@ -939,7 +943,8 @@ fun ModVersionThree(
                             showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
                             getUserInformation={userId -> getUserInformation(userId)},
                             getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()}
+                            retryGetUnbanRequest={retryGetUnbanRequest()},
+                            unbanRequestList=unbanRequestList
                         )
 
                     }
@@ -1051,7 +1056,8 @@ fun ModVersionThree(
                                getUserInformation(userId)
                                                },
                             getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()}
+                            retryGetUnbanRequest={retryGetUnbanRequest()},
+                            unbanRequestList=unbanRequestList
                         )
                     }
 
@@ -2103,62 +2109,11 @@ fun UnbanRequests(
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
     retryGetUnbanRequest:() ->Unit,
-    getUnbanRequestResponse:UnAuthorizedResponse<List<UnbanRequestItem>>
+    getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
+    unbanRequestList: UnbanRequestItemImmutableCollection
 ){
-    val testingList = listOf(UnbanRequestItem(
-        id = "12345",
-        broadcaster_name = "StreamerName",
-        broadcaster_login = "streamer_login",
-        broadcaster_id = "broadcaster123",
-        moderator_id = "mod123",
-        moderator_login = "moderator_login",
-        moderator_name = "ModeratorName",
-        user_id = "user123",
-        user_login = "user_login",
-        user_name = "UserName",
-        text = "Please unban me, I won't do it again!",
-        status = "pending",
-        created_at = "2024-08-17T12:34:56Z",
-        resolved_at = null,  // Since it's optional and might not be resolved yet
-        resolution_text = null  // Optional and might not be available yet
-    ),
-        UnbanRequestItem(
-            id = "12345",
-            broadcaster_name = "StreamerName",
-            broadcaster_login = "streamer_login",
-            broadcaster_id = "broadcaster123",
-            moderator_id = "mod123",
-            moderator_login = "moderator_login",
-            moderator_name = "ModeratorName",
-            user_id = "user123",
-            user_login = "user_login",
-            user_name = "UserName",
-            text = "Please unban me, I won't do it again!",
-            status = "pending",
-            created_at = "2024-08-17T12:34:56Z",
-            resolved_at = null,  // Since it's optional and might not be resolved yet
-            resolution_text = null  // Optional and might not be available yet
-        ),
-        UnbanRequestItem(
-            id = "12345",
-            broadcaster_name = "StreamerName",
-            broadcaster_login = "streamer_login",
-            broadcaster_id = "broadcaster123",
-            moderator_id = "mod123",
-            moderator_login = "moderator_login",
-            moderator_name = "ModeratorName",
-            user_id = "user123",
-            user_login = "user_login",
-            user_name = "UserName",
-            text = "Please unban me, I won't do it again!",
-            status = "pending",
-            created_at = "2024-08-17T12:34:56Z",
-            resolved_at = null,  // Since it's optional and might not be resolved yet
-            resolution_text = null  // Optional and might not be available yet
-        ),
 
-    )
-    //todo: Need to add a fake list to make a request
+
     Log.d("UnbanRequestsRecomp","RECOMP")
     Column(){
         UnBanRequestHeader(
@@ -2177,7 +2132,7 @@ fun UnbanRequests(
                     .padding(vertical = 5.dp)
 
             ) {
-                items(testingList){unbanRequest->
+                items(unbanRequestList.list){unbanRequest->
                     IndivUnbanRequest(
                         userId = unbanRequest.user_id,
                         username =unbanRequest.user_name,
