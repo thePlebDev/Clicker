@@ -147,7 +147,39 @@ class TwitchModRepoImpl @Inject constructor(
         status: UnbanStatusFilter,
         unbanRequestId: String
     ): Flow<UnAuthorizedResponse<List<UnbanRequestItem>>> = flow{
+        val response = twitchModClient.approveUnbanRequest(
+            authorizationToken = "Bearer $authorizationToken",
+            clientId = clientId,
+            moderatorID = moderatorID,
+            broadcasterId=broadcasterId,
+            status = status.toString(),
+            unbanRequestID =unbanRequestId
+        )
+        if (response.isSuccessful){
+            Log.d("getUnbanRequestsResponse","SUCCESS")
+            val data = response.body()?.data ?: listOf()
 
+            emit(UnAuthorizedResponse.Success(data))
+
+        }else{
+
+            if(response.code() ==401){
+                Log.d("approveUnbanRequests","401 FAILED")
+                emit(UnAuthorizedResponse.Auth401Failure(Exception("Error! Please try again")))
+            }else{
+                Log.d("approveUnbanRequests","FAILED")
+                Log.d("approveUnbanRequests","message ->${response.message()}")
+                Log.d("approveUnbanRequests","body ->${response.body()}")
+                Log.d("approveUnbanRequests","code ->${response.code()}")
+                emit(UnAuthorizedResponse.Failure(Exception("Error! Please try again")))
+            }
+
+        }
+
+
+    }.catch {
+        Log.d("getUnbanRequestsResponse","EXCEPTION")
+        emit(UnAuthorizedResponse.Failure(Exception("Error! Please try again")))
     }
 }
 

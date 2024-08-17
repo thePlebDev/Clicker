@@ -213,10 +213,34 @@ class ModViewViewModel @Inject constructor(
         unbanRequestId:String,
     ) = viewModelScope.launch(Dispatchers.IO){
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
-        delay(2000)
-        _resolveUnbanRequest.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
-        delay(5000)
-        _resolveUnbanRequest.value = UnAuthorizedResponse.Success(false)
+        //_getUnbanRequestResponse
+        //todo: I need to change _getUnbanRequestResponse in 2 separate items
+
+        twitchModRepo.approveUnbanRequests(
+            authorizationToken=_requestIds.value.oAuthToken,
+            clientId =_requestIds.value.clientId ,
+            moderatorID = _requestIds.value.moderatorId,
+            broadcasterId = _requestIds.value.broadcasterId,
+            status = UnbanStatusFilter.APPROVED,
+            unbanRequestId = unbanRequestId
+        ).collect{response ->
+            when(response){
+                is UnAuthorizedResponse.Loading ->{}
+                is UnAuthorizedResponse.Success ->{
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
+
+                }
+                is UnAuthorizedResponse.Failure ->{
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Failure(Exception("FAILED AGAIN"))
+                }
+                is UnAuthorizedResponse.Auth401Failure ->{
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED AGAIN"))
+                }
+            }
+
+        }
+
+
 
 
     }
@@ -225,33 +249,33 @@ class ModViewViewModel @Inject constructor(
         getUnbanRequests()
     }
     fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
-        _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
-        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
-        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
-        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
-        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
-        twitchModRepo.getUnbanRequests(
-            authorizationToken=_requestIds.value.oAuthToken,
-            clientId =_requestIds.value.clientId ,
-            moderatorID = _requestIds.value.moderatorId,
-            broadcasterId = _requestIds.value.broadcasterId,
-            status = UnbanStatusFilter.PENDING
-        ).collect{response ->
-            when(response){
-                is UnAuthorizedResponse.Loading ->{}
-                is UnAuthorizedResponse.Success ->{
-                    _getUnbanRequestResponse.value = response
-                }
-                is UnAuthorizedResponse.Auth401Failure ->{
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
-                }
-                is UnAuthorizedResponse.Failure->{
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
-
-                }
-            }
-
-        }
+        _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("Another one"))
+//        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
+//        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
+//        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
+//        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
+//        twitchModRepo.getUnbanRequests(
+//            authorizationToken=_requestIds.value.oAuthToken,
+//            clientId =_requestIds.value.clientId ,
+//            moderatorID = _requestIds.value.moderatorId,
+//            broadcasterId = _requestIds.value.broadcasterId,
+//            status = UnbanStatusFilter.PENDING
+//        ).collect{response ->
+//            when(response){
+//                is UnAuthorizedResponse.Loading ->{}
+//                is UnAuthorizedResponse.Success ->{
+//                    _getUnbanRequestResponse.value = response
+//                }
+//                is UnAuthorizedResponse.Auth401Failure ->{
+//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
+//                }
+//                is UnAuthorizedResponse.Failure->{
+//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+//
+//                }
+//            }
+//
+//        }
 
 
     }
