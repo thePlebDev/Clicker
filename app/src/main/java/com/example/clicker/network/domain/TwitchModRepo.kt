@@ -58,7 +58,7 @@ interface TwitchModRepo {
         broadcasterId: String,
         moderatorID: String,
         status: UnbanStatusFilter
-    ): Flow<Response<List<UnbanRequestItem>>>
+    ): Flow<UnAuthorizedResponse<List<UnbanRequestItem>>>
 
     /**
      * - approveUnbanRequests a function meant to approve a user's unban request

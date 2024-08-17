@@ -163,11 +163,17 @@ class ModViewViewModel @Inject constructor(
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
-    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","")))
+    /**
+     * This is the data that is shown to in the modal once the unban request is selected
+     * */
+    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","BOBBERS","")))
     val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
 
-    private val _getUnbanRequestResponse: MutableState<Response<List<UnbanRequestItem>>> = mutableStateOf(Response.Failure(Exception("Failed")))
-    val getUnbanRequestResponse: State<Response<List<UnbanRequestItem>>> = _getUnbanRequestResponse
+    /**
+     * This is a list of all the individual unban requests
+     * */
+    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(UnAuthorizedResponse.Loading)
+    val getUnbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
 
     private val _resolveUnbanRequest: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Success(false))
     val resolveUnbanRequest: State<UnAuthorizedResponse<Boolean>> = _resolveUnbanRequest
@@ -219,7 +225,7 @@ class ModViewViewModel @Inject constructor(
         getUnbanRequests()
     }
     fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
-        _getUnbanRequestResponse.value = Response.Loading
+        _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
         Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
         Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
         Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
@@ -232,12 +238,15 @@ class ModViewViewModel @Inject constructor(
             status = UnbanStatusFilter.PENDING
         ).collect{response ->
             when(response){
-                is Response.Loading ->{}
-                is Response.Success ->{
+                is UnAuthorizedResponse.Loading ->{}
+                is UnAuthorizedResponse.Success ->{
                     _getUnbanRequestResponse.value = response
                 }
-                is Response.Failure->{
-                    _getUnbanRequestResponse.value = Response.Failure(Exception("FAILED"))
+                is UnAuthorizedResponse.Auth401Failure ->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
+                }
+                is UnAuthorizedResponse.Failure->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
 
                 }
             }
