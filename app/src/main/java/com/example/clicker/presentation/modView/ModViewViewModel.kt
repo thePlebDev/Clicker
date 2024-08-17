@@ -33,6 +33,7 @@ import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.StreamUIState
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.util.Response
+import com.example.clicker.util.UnAuthorizedResponse
 import com.example.clicker.util.WebSocketResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -168,6 +169,9 @@ class ModViewViewModel @Inject constructor(
     private val _getUnbanRequestResponse: MutableState<Response<List<UnbanRequestItem>>> = mutableStateOf(Response.Failure(Exception("Failed")))
     val getUnbanRequestResponse: State<Response<List<UnbanRequestItem>>> = _getUnbanRequestResponse
 
+    private val _resolveUnbanRequest: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Success(false))
+    val resolveUnbanRequest: State<UnAuthorizedResponse<Boolean>> = _resolveUnbanRequest
+
 
     init{
         Log.d("AutoModMessageHoldType","LOADING")
@@ -194,6 +198,20 @@ class ModViewViewModel @Inject constructor(
             }
 
         }
+
+    }
+    /**
+     * - [twitch documentation. Resolve unban Request](https://dev.twitch.tv/docs/api/reference/#resolve-unban-requests)
+     * */
+    fun resolveUnbanRequest(
+        unbanRequestId:String,
+    ) = viewModelScope.launch(Dispatchers.IO){
+        _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
+        delay(2000)
+        _resolveUnbanRequest.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+        delay(5000)
+        _resolveUnbanRequest.value = UnAuthorizedResponse.Success(false)
+
 
     }
 

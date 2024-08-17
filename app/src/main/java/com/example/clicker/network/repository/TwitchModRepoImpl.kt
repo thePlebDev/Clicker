@@ -8,6 +8,7 @@ import com.example.clicker.network.domain.TwitchModRepo
 import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
+import com.example.clicker.util.UnAuthorizedResponse
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlinx.coroutines.flow.catch
@@ -129,6 +130,17 @@ class TwitchModRepoImpl @Inject constructor(
     }.catch {
         Log.d("getUnbanRequestsResponse","EXCEPTION")
         emit(Response.Failure(Exception("Error! Please try again")))
+    }
+
+    override suspend fun approveUnbanRequests(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        moderatorID: String,
+        status: UnbanStatusFilter,
+        unbanRequestId: String
+    ): Flow<UnAuthorizedResponse<List<UnbanRequestItem>>> = flow{
+
     }
 }
 

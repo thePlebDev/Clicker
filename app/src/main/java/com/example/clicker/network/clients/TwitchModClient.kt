@@ -61,6 +61,27 @@ interface TwitchModClient {
         @Query("status") status: String,
     ): Response<UnbanRequestData>
 
+    /**
+     * - getUnbanRequests represents a GET method. a function meant to get a broadcasters unban request
+     * - [Official documentation on getting unban requests](https://dev.twitch.tv/docs/api/reference/#get-unban-requests)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the broadcaster the user is watching
+     * @param moderatorID a String used to represent the unique identifier of the user making the request
+     * @param status a String used to represent the filter of what requests we want
+     * */
+    @PATCH("moderation/unban_requests")
+    suspend fun approveUnbanRequest(
+        @Header("Authorization") authorizationToken: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String,
+        @Query("moderator_id") moderatorID: String,
+        @Query("status") status: String,
+        @Query("unban_request_id") unbanRequestID: String,
+    ): Response<UnbanRequestData>
+
+
 
 
 
@@ -118,4 +139,5 @@ data class UnbanRequestItem(
     val resolved_at: String?,
     val resolution_text: String?
 )
+
 

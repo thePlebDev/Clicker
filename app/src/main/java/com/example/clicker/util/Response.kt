@@ -147,3 +147,29 @@ sealed class NetworkNewUserResponse<out T> {
 }
 
 
+/**
+ * Represents a network response and its specific 401 unauthorized error
+ *
+ * This class represents the 4 possible states of network responses in this application.
+ * - [UnAuthorizedResponse.Loading]
+ * - [UnAuthorizedResponse.Success]
+ * - [UnAuthorizedResponse.Failure]
+ * - [UnAuthorizedResponse.Auth401Failure]
+ *
+ * @param T the value returned from the network request
+ *
+ *
+ */
+sealed class UnAuthorizedResponse<out T> {
+    object Loading : UnAuthorizedResponse<Nothing>()
+    data class Success<out T>(
+        val data: T
+    ) : UnAuthorizedResponse<T>()
+    data class Failure(
+        val e: Exception
+    ) : UnAuthorizedResponse<Nothing>()
+    data class Auth401Failure(
+        val e: Exception
+    ) : UnAuthorizedResponse<Nothing>()
+}
+
