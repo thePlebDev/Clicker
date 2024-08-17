@@ -18,7 +18,8 @@ data class ClickedUnbanRequestInfo(
     val profileImageURL:String,
     val profileDescription:String,
     val profileCreatedAt:String,
-    val displayName:String
+    val displayName:String,
+    val requestID:String,
 )
 class TwitchModRepoImpl @Inject constructor(
     private val twitchModClient: TwitchModClient
@@ -53,7 +54,8 @@ class TwitchModRepoImpl @Inject constructor(
                     profileImageURL =body[0].profile_image_url,
                     profileDescription =body[0].description,
                     displayName =body[0].display_name,
-                    profileCreatedAt = createdAt
+                    profileCreatedAt = createdAt,
+                    requestID =body[0].id,
                 )
             ))
         } else {
@@ -106,8 +108,8 @@ class TwitchModRepoImpl @Inject constructor(
         broadcasterId: String,
         moderatorID: String,
         status: UnbanStatusFilter
-    ): Flow<Response<List<UnbanRequestItem>>> = flow {
-        emit(Response.Loading)
+    ): Flow<UnAuthorizedResponse<List<UnbanRequestItem>>> = flow {
+        emit(UnAuthorizedResponse.Loading)
         val response = twitchModClient.getUnbanRequests(
             authorizationToken = "Bearer $authorizationToken",
             clientId = clientId,
@@ -118,18 +120,23 @@ class TwitchModRepoImpl @Inject constructor(
         if (response.isSuccessful){
             Log.d("getUnbanRequestsResponse","SUCCESS")
             val data = response.body()?.data ?: listOf()
-            emit(Response.Success(data))
+            emit(UnAuthorizedResponse.Success(data))
 
         }else{
             Log.d("getUnbanRequestsResponse","FAILED")
             Log.d("getUnbanRequestsResponse","message ->${response.message()}")
             Log.d("getUnbanRequestsResponse","body ->${response.body()}")
             Log.d("getUnbanRequestsResponse","code ->${response.code()}")
-            emit(Response.Failure(Exception("Error! Please try again")))
+            if(response.code() ==401){
+                emit(UnAuthorizedResponse.Auth401Failure(Exception("Error! Please try again")))
+            }else{
+                emit(UnAuthorizedResponse.Failure(Exception("Error! Please try again")))
+            }
+
         }
     }.catch {
         Log.d("getUnbanRequestsResponse","EXCEPTION")
-        emit(Response.Failure(Exception("Error! Please try again")))
+        emit(UnAuthorizedResponse.Failure(Exception("Error! Please try again")))
     }
 
     override suspend fun approveUnbanRequests(
