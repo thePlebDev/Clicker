@@ -2173,7 +2173,7 @@ fun GetUnbanRequest401AuthError(
     doubleClickAndDrag: Boolean,
 ){
     Box() {
-        
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
