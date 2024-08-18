@@ -268,41 +268,6 @@ fun ModViewComponentVersionThree(
 
 
     ModalBottomSheetLayout(
-        sheetState = clickedUnbanRequestModalState,
-        sheetContent ={
-
-            when(val response =modViewViewModel.clickedUnbanRequestInfo.value){
-
-                is Response.Loading ->{
-                    ClickedIndivUnbanRequestModalLoading()
-                }
-                is Response.Success ->{
-
-                    ClickedIndivUnbanRequestModalSuccess(
-                        profileImageURL = response.data.profileImageURL,
-                        displayName = response.data.displayName,
-                        description = response.data.profileDescription,
-                        createdAt = response.data.profileCreatedAt,
-                        requestId= modViewViewModel.clickedUnbanRequestId.value,
-                        resolveUnbanRequestResponse = modViewViewModel.resolveUnbanRequest.value,
-                        approveUnbanRequest={unbanRequestId ->
-                            modViewViewModel.resolveUnbanRequest(unbanRequestId, UnbanStatusFilter.APPROVED)
-                        },
-                        denyUnbanRequest={unbanRequestId ->
-                            modViewViewModel.resolveUnbanRequest(unbanRequestId, UnbanStatusFilter.DENIED)
-                        },
-                    )
-                }
-                is Response.Failure ->{
-                    ClickedIndivUnbanRequestModalFailed()
-
-                }
-            }
-
-        }
-    ){
-
-    ModalBottomSheetLayout(
         sheetState = chatSettingsModalState,
         sheetContent ={
             ChatSettingsColumn(
@@ -588,26 +553,9 @@ fun ModViewComponentVersionThree(
                 },
                 autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                 modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
-                showUnbanRequestBottomModal={
-                    showUnbanRequestsBottomModal()
-
-                },
-                getUserInformation ={userId -> userId
-                   getUserInformation(userId)
-
-                },
-                getUnbanRequestResponse= modViewViewModel.getUnbanRequestResponse.value,
-                retryGetUnbanRequest={
-                   retryGetUnbanRequest()//todo:this needs to get wrapped
-                },
-                unbanRequestList=modViewViewModel.getUnbanRequestList.value,
-                updateClickedUnbanRequestId={unbanRequestId ->
-                    modViewViewModel.updateClickedUnbanRequestId(unbanRequestId)
-                }
 
             )
         }
-    }
     }
 
 
@@ -687,12 +635,6 @@ fun ModVersionThree(
     //immutable Lists
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
-    showUnbanRequestBottomModal: () -> Unit,
-    getUserInformation:(String)->Unit,
-    getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
-    retryGetUnbanRequest:() ->Unit,
-    unbanRequestList: UnbanRequestItemImmutableCollection,
-    updateClickedUnbanRequestId:(String) ->Unit
 
 
 
@@ -829,25 +771,6 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    unbanRequests={
-                        UnbanRequests(
-                            setDragging={newValue ->
-                                setBoxOneDoubleTap(newValue)
-                                setBoxOneDragging(true)
-                            },
-                            doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={
-                                setDoubleClickAndDragFalse()
-                            },
-                            showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                            getUserInformation={userId -> getUserInformation(userId)},
-                            getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList,
-                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
-                        )
-
-                    }
                 )
                 if(boxOneDoubleTap){
                     DetectDoubleClickSpacer(
@@ -939,25 +862,7 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    unbanRequests={
-                        UnbanRequests(
-                            setDragging={newValue ->
-                                setBoxTwoDoubleTap(newValue)
-                                setBoxTwoDragging(true)
-                            },
-                            doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={
-                                setDoubleClickAndDragFalse()
-                            },
-                            showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                            getUserInformation={userId -> getUserInformation(userId)},
-                            getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList,
-                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
-                        )
 
-                    }
 
                 )
                 if(boxTwoDoubleTap){
@@ -1049,29 +954,6 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    unbanRequests={
-                        UnbanRequests(
-                            setDragging={newValue ->
-                                setBoxThreeDoubleTap(newValue)
-                                setBoxThreeDoubleTap(true)
-                            },
-                            doubleClickAndDrag =doubleClickAndDrag,
-                            setDoubleClickAndDragFalse={
-                                setDoubleClickAndDragFalse() //todo: this is causing a recomp
-                            },
-                            showUnbanRequestBottomModal ={
-                                showUnbanRequestBottomModal()
-                                                         },
-                            getUserInformation={userId ->
-                               getUserInformation(userId)
-                                               },
-                            getUnbanRequestResponse=getUnbanRequestResponse,
-                            retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList,
-                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
-                        )
-                    }
-
 
                 )
                 if(boxThreeDoubleTap){
@@ -1183,7 +1065,6 @@ fun ContentDragBox(
     fullChat: @Composable ()-> Unit,
     modActions:@Composable () ->Unit,
     autoModQueue:@Composable () -> Unit,
-    unbanRequests:@Composable () -> Unit,
 ){
     when(contentIndex){
         1 ->{
@@ -1237,16 +1118,16 @@ fun ContentDragBox(
                 }
             }
         }
-        4 ->{
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)) {
-                Box(modifier = Modifier.fillMaxSize()){
-                    unbanRequests()
-                }
-            }
-
-        }
+//        4 ->{
+//            Column(modifier = Modifier
+//                .fillMaxSize()
+//                .background(MaterialTheme.colorScheme.primary)) {
+//                Box(modifier = Modifier.fillMaxSize()){
+//                    unbanRequests()
+//                }
+//            }
+//
+//        }
 
     }
 

@@ -212,7 +212,7 @@ class ModViewViewModel @Inject constructor(
     }
 
 
-    
+
 
     /**
      * END OF THE IMMUTABLE LIST
