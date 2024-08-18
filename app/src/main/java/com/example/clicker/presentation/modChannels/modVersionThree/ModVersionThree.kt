@@ -103,6 +103,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.UnbanRequestItem
+import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.util.AutoModQueueMessage
@@ -285,7 +286,10 @@ fun ModViewComponentVersionThree(
                         requestId= modViewViewModel.clickedUnbanRequestId.value,
                         resolveUnbanRequestResponse = modViewViewModel.resolveUnbanRequest.value,
                         approveUnbanRequest={unbanRequestId ->
-                            modViewViewModel.resolveUnbanRequest(unbanRequestId)
+                            modViewViewModel.resolveUnbanRequest(unbanRequestId, UnbanStatusFilter.APPROVED)
+                        },
+                        denyUnbanRequest={unbanRequestId ->
+                            modViewViewModel.resolveUnbanRequest(unbanRequestId, UnbanStatusFilter.DENIED)
                         }
                     )
                 }
@@ -2445,6 +2449,7 @@ fun ClickedIndivUnbanRequestModalSuccess(
     createdAt:String,
     requestId:String,
     approveUnbanRequest:(String)->Unit,
+    denyUnbanRequest:(String)->Unit,
     resolveUnbanRequestResponse: UnAuthorizedResponse<Boolean>,
 
     ){
@@ -2534,7 +2539,7 @@ fun ClickedIndivUnbanRequestModalSuccess(
                 Button(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     onClick = {
-                        // openWarnDialog()
+                        denyUnbanRequest(requestId)
                     },
                     shape = RoundedCornerShape(4.dp)
                 ) {

@@ -254,6 +254,7 @@ class ModViewViewModel @Inject constructor(
      * */
     fun resolveUnbanRequest(
         unbanRequestId:String,
+        status:UnbanStatusFilter
     ) = viewModelScope.launch(Dispatchers.IO){
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
         //_getUnbanRequestResponse
@@ -272,7 +273,7 @@ class ModViewViewModel @Inject constructor(
             clientId =_requestIds.value.clientId ,
             moderatorID = _requestIds.value.moderatorId,
             broadcasterId = _requestIds.value.broadcasterId,
-            status = UnbanStatusFilter.APPROVED,
+            status = status,
             unbanRequestId = unbanRequestId
         ).collect{response ->
             when(response){
@@ -285,11 +286,20 @@ class ModViewViewModel @Inject constructor(
 
                     if (index != -1) {
                         // Update the item's status to "approved"
-                        val updatedItem = mutableListTesting[index].copy(status = "approved")
+                        if(status == UnbanStatusFilter.APPROVED){
+                            val updatedItem = mutableListTesting[index].copy(status = "approved")
+                            mutableListTesting[index] = updatedItem
+                            clearUnbanRequestItemList()
+                            addAllUnbanRequestItemList(mutableListTesting)
+                        }
+                        else if(status == UnbanStatusFilter.DENIED){
+                            val updatedItem = mutableListTesting[index].copy(status = "denied")
+                            mutableListTesting[index] = updatedItem
+                            clearUnbanRequestItemList()
+                            addAllUnbanRequestItemList(mutableListTesting)
 
-                        mutableListTesting[index] = updatedItem
-                        clearUnbanRequestItemList()
-                        addAllUnbanRequestItemList(mutableListTesting)
+                            }
+                        
                     }
                     _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
                 }
