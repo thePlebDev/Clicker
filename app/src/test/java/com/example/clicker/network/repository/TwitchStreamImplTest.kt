@@ -4,6 +4,7 @@ package com.example.clicker.network.repository
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
 import com.example.clicker.network.clients.TwitchClient
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.AutoModSettings
 import com.example.clicker.network.models.twitchStream.BanUserResponse
@@ -976,6 +977,48 @@ class TwitchStreamImplTest {
         //THEN
 
         Assert.assertEquals(expectedString, parsedString)
+
+    }
+
+    @Test
+    fun `replacing words in list`(){
+        val requestId = "111"
+        val expectedStatus = "APPROVED"
+
+        //GIVEN
+        val unbanRequest = UnbanRequestItem(
+            id = requestId,
+            broadcaster_name = "StreamerName",
+            broadcaster_login = "streamer_login",
+            broadcaster_id = "broadcaster_id_123",
+            moderator_id = "mod_id_678",
+            moderator_login = "mod_login",
+            moderator_name = "ModeratorName",
+            user_id = "user_id_456",
+            user_login = "user_login",
+            user_name = "UserName",
+            text = "Unban request text",
+            status = "Pending",
+            created_at = "2024-08-17T12:34:56Z",
+            resolved_at = null,  // Or provide a date string if resolved
+            resolution_text = null  // Or provide a resolution text if available
+        )
+        val listofUnbanRequests = mutableListOf<UnbanRequestItem>(unbanRequest)
+
+
+        //WHEN
+        val index = listofUnbanRequests.indexOfFirst { it.id == requestId }
+        if (index != -1) {
+            // Update the item's status to "approved"
+            val updatedItem = listofUnbanRequests[index].copy(status = expectedStatus)
+            listofUnbanRequests[index] = updatedItem
+        }
+
+        //THEN
+
+        val actualStatus =listofUnbanRequests[0].status
+
+        Assert.assertEquals(expectedStatus, actualStatus)
 
     }
 

@@ -146,7 +146,7 @@ class TwitchModRepoImpl @Inject constructor(
         moderatorID: String,
         status: UnbanStatusFilter,
         unbanRequestId: String
-    ): Flow<UnAuthorizedResponse<List<UnbanRequestItem>>> = flow{
+    ): Flow<UnAuthorizedResponse<Boolean>> = flow{
         val response = twitchModClient.approveUnbanRequest(
             authorizationToken = "Bearer $authorizationToken",
             clientId = clientId,
@@ -156,10 +156,10 @@ class TwitchModRepoImpl @Inject constructor(
             unbanRequestID =unbanRequestId
         )
         if (response.isSuccessful){
-            Log.d("getUnbanRequestsResponse","SUCCESS")
-            val data = response.body()?.data ?: listOf()
+            Log.d("approveUnbanRequests","SUCCESS")
 
-            emit(UnAuthorizedResponse.Success(data))
+
+            emit(UnAuthorizedResponse.Success(true))
 
         }else{
 
