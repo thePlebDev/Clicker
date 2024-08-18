@@ -290,7 +290,7 @@ fun ModViewComponentVersionThree(
                         },
                         denyUnbanRequest={unbanRequestId ->
                             modViewViewModel.resolveUnbanRequest(unbanRequestId, UnbanStatusFilter.DENIED)
-                        }
+                        },
                     )
                 }
                 is Response.Failure ->{
@@ -2430,14 +2430,8 @@ fun ClickedIndivUnbanRequestModalLoading(){
         }
 
         Spacer(modifier =Modifier.height(5.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Messages during this session:  ")
-                }
-            }
-        )
-        UnbanRequestSessionMessages()
+
+       // UnbanRequestSessionMessages(ClickedUsernameChatsWithDateSentImmutable(listOf()))
 
     }
 }
@@ -2557,19 +2551,8 @@ fun ClickedIndivUnbanRequestModalSuccess(
             }
 
             Spacer(modifier = Modifier.height(5.dp))
-            Text(
-                buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
-                        )
-                    ) {
-                        append("Messages during this session:  ")
-                    }
-                }
-            )
-            UnbanRequestSessionMessages()
+
+       //     UnbanRequestSessionMessages(clickedUsernameChatsDateSentImmutable)
 
         }
         when(val response = resolveUnbanRequestResponse){
@@ -2769,14 +2752,7 @@ fun ClickedIndivUnbanRequestModalFailed(){
         }
 
         Spacer(modifier =Modifier.height(5.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                    append("Messages during this session:  ")
-                }
-            }
-        )
-        UnbanRequestSessionMessages()
+      //  UnbanRequestSessionMessages(ClickedUsernameChatsWithDateSentImmutable(listOf()))
 
 
 
@@ -2785,7 +2761,7 @@ fun ClickedIndivUnbanRequestModalFailed(){
 }
 @Composable
 fun UnbanRequestSessionMessages(
-//    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+     clickedUsernameChatsDateSentImmutable:ClickedUsernameChatsWithDateSentImmutable
 ){
     LazyColumn(
         modifier = Modifier
@@ -2797,38 +2773,38 @@ fun UnbanRequestSessionMessages(
                 shape = RoundedCornerShape(8.dp)
             )
     ) {
-//        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
-//
-//            androidx.compose.material.Text(
-//
-//                buildAnnotatedString {
-//                    withStyle(
-//                        style = SpanStyle(
-//                            color = MaterialTheme.colorScheme.secondary,
-//                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
-//                        )
-//                    ) {
-//                        append("${message.dateSent} ")
-//                    }
-//
-//
-//                    withStyle(
-//                        style = SpanStyle(
-//                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-//                            color = MaterialTheme.colorScheme.onPrimary
-//                        )
-//                    ) {
-//                        append(message.message)
-//                    }
-//
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(5.dp)
-//            )
-//
-//
-//        }
+        items(clickedUsernameChatsDateSentImmutable.clickedChats) {message->
+
+            androidx.compose.material.Text(
+
+                buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                        )
+                    ) {
+                        append("${message.dateSent} ")
+                    }
+
+
+                    withStyle(
+                        style = SpanStyle(
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        append(message.message)
+                    }
+
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+            )
+
+
+        }
     }
 }
 
