@@ -282,7 +282,7 @@ fun ModViewComponentVersionThree(
                         displayName = response.data.displayName,
                         description = response.data.profileDescription,
                         createdAt = response.data.profileCreatedAt,
-                        requestId= response.data.requestID,
+                        requestId= modViewViewModel.clickedUnbanRequestId.value,
                         resolveUnbanRequestResponse = modViewViewModel.resolveUnbanRequest.value,
                         approveUnbanRequest={unbanRequestId ->
                             modViewViewModel.resolveUnbanRequest(unbanRequestId)
@@ -596,7 +596,10 @@ fun ModViewComponentVersionThree(
                 retryGetUnbanRequest={
                    retryGetUnbanRequest()//todo:this needs to get wrapped
                 },
-                unbanRequestList=modViewViewModel.getUnbanRequestList.value
+                unbanRequestList=modViewViewModel.getUnbanRequestList.value,
+                updateClickedUnbanRequestId={unbanRequestId ->
+                    modViewViewModel.updateClickedUnbanRequestId(unbanRequestId)
+                }
 
             )
         }
@@ -684,7 +687,8 @@ fun ModVersionThree(
     getUserInformation:(String)->Unit,
     getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
     retryGetUnbanRequest:() ->Unit,
-    unbanRequestList: UnbanRequestItemImmutableCollection
+    unbanRequestList: UnbanRequestItemImmutableCollection,
+    updateClickedUnbanRequestId:(String) ->Unit
 
 
 
@@ -835,7 +839,8 @@ fun ModVersionThree(
                             getUserInformation={userId -> getUserInformation(userId)},
                             getUnbanRequestResponse=getUnbanRequestResponse,
                             retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList
+                            unbanRequestList=unbanRequestList,
+                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
                         )
 
                     }
@@ -944,7 +949,8 @@ fun ModVersionThree(
                             getUserInformation={userId -> getUserInformation(userId)},
                             getUnbanRequestResponse=getUnbanRequestResponse,
                             retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList
+                            unbanRequestList=unbanRequestList,
+                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
                         )
 
                     }
@@ -1057,7 +1063,8 @@ fun ModVersionThree(
                                                },
                             getUnbanRequestResponse=getUnbanRequestResponse,
                             retryGetUnbanRequest={retryGetUnbanRequest()},
-                            unbanRequestList=unbanRequestList
+                            unbanRequestList=unbanRequestList,
+                            updateClickedUnbanRequestId={unbanRequestId ->updateClickedUnbanRequestId(unbanRequestId)}
                         )
                     }
 
@@ -2110,7 +2117,8 @@ fun UnbanRequests(
     getUserInformation:(String)->Unit,
     retryGetUnbanRequest:() ->Unit,
     getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
-    unbanRequestList: UnbanRequestItemImmutableCollection
+    unbanRequestList: UnbanRequestItemImmutableCollection,
+    updateClickedUnbanRequestId:(String) ->Unit
 ){
 
 
@@ -2133,6 +2141,7 @@ fun UnbanRequests(
 
             ) {
                 items(unbanRequestList.list){unbanRequest->
+
                     IndivUnbanRequest(
                         userId = unbanRequest.user_id,
                         username =unbanRequest.user_name,
@@ -2140,7 +2149,8 @@ fun UnbanRequests(
                         createdAt = unbanRequest.created_at.replace("T"," ").replace("Z"," UTC"),
                         unbanMessage = unbanRequest.text,
                         showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                        getUserInformation={userId ->getUserInformation(userId)}
+                        getUserInformation={userId ->getUserInformation(userId)},
+                        updateClickedUnbanRequestId={updateClickedUnbanRequestId(unbanRequest.id)}
                     )
                 }
 
@@ -2284,8 +2294,17 @@ fun IndivUnbanRequest(
     unbanMessage:String,
     showUnbanRequestBottomModal: () -> Unit,
     getUserInformation:(String)->Unit,
+    updateClickedUnbanRequestId:() ->Unit
 ){
     //todo: this is where I need to use the swipe to delete
+    val onPrimaryColor =MaterialTheme.colorScheme.onPrimary
+    var color by remember { mutableStateOf(onPrimaryColor) }
+    if(status == "approved"){
+        color = Color.Green
+    }
+    else if(status == "denied"){
+        color = Color.Red
+    }
 
     Box(
         modifier = Modifier
@@ -2296,6 +2315,7 @@ fun IndivUnbanRequest(
                 .clickable {
                     getUserInformation(userId)
                     showUnbanRequestBottomModal()
+                    updateClickedUnbanRequestId()
                 }
                 .background(MaterialTheme.colorScheme.primary)
         ) {
@@ -2308,7 +2328,7 @@ fun IndivUnbanRequest(
                     Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
                     Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)
+                Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = color)
 
             }
 

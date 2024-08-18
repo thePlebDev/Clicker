@@ -168,6 +168,15 @@ class ModViewViewModel @Inject constructor(
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
     /**
+     * clickedUnbanRequestID
+     * */
+    private var _clickedUnbanRequestId = mutableStateOf("")
+    val clickedUnbanRequestId =_clickedUnbanRequestId
+    fun updateClickedUnbanRequestId(clickedId:String){
+        _clickedUnbanRequestId.value = clickedId
+    }
+
+    /**
      * This is the data that is shown to in the modal once the unban request is selected
      * */
     private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","BOBBERS","")))
@@ -249,6 +258,14 @@ class ModViewViewModel @Inject constructor(
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
         //_getUnbanRequestResponse
         //todo: I need to change _getUnbanRequestResponse in 2 separate items
+        Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
+        Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
+        Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
+        Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
+        Log.d("resolveUnbanRequestViewModel","unbanRequestId ->$unbanRequestId")
+
+
+
 
         twitchModRepo.approveUnbanRequests(
             authorizationToken=_requestIds.value.oAuthToken,
@@ -261,14 +278,30 @@ class ModViewViewModel @Inject constructor(
             when(response){
                 is UnAuthorizedResponse.Loading ->{}
                 is UnAuthorizedResponse.Success ->{
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
 
+                    val index = unbanRequestItemList.indexOfFirst { it.id == unbanRequestId }
+                    val mutableListTesting = mutableListOf< UnbanRequestItem>()
+                    mutableListTesting.addAll(unbanRequestItemList.toList())
+
+                    if (index != -1) {
+                        // Update the item's status to "approved"
+                        val updatedItem = mutableListTesting[index].copy(status = "approved")
+
+                        mutableListTesting[index] = updatedItem
+                        clearUnbanRequestItemList()
+                        addAllUnbanRequestItemList(mutableListTesting)
+                    }
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
                 }
                 is UnAuthorizedResponse.Failure ->{
                     _resolveUnbanRequest.value = UnAuthorizedResponse.Failure(Exception("FAILED AGAIN"))
+                    delay(1000)
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
                 }
                 is UnAuthorizedResponse.Auth401Failure ->{
                     _resolveUnbanRequest.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED AGAIN"))
+                    delay(3000)
+                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
                 }
             }
 
@@ -303,6 +336,7 @@ class ModViewViewModel @Inject constructor(
                     //todo: I need to change when the response gets added
                     val data = response.data
                     _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(true)
+                    Log.d("retryGetUnbanRequestListData","${data[0]}")
                     addAllUnbanRequestItemList(data)
 
                 }
