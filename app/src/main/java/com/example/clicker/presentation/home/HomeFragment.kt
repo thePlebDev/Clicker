@@ -222,8 +222,10 @@ class HomeFragment : Fragment() {
 
         val width = Resources.getSystem().displayMetrics.widthPixels / 2
         val aspectHeight = (width * 0.5625).toInt()
+        Log.d("onResumeHeight","height->$aspectHeight")
+        Log.d("onResumeHeight","width->$width")
 
-        homeViewModel.updateAspectWidthHeight(540, 303,screenDensity)
+        homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
 
         Log.d("Twitchval", "uri -> $uri")
 
