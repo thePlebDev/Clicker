@@ -30,6 +30,8 @@ import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.presentation.stream.ClickedUserNameChats
+import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.StreamUIState
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.util.Response
@@ -210,9 +212,7 @@ class ModViewViewModel @Inject constructor(
     }
 
 
-
-
-
+    
 
     /**
      * END OF THE IMMUTABLE LIST
@@ -257,7 +257,7 @@ class ModViewViewModel @Inject constructor(
         status:UnbanStatusFilter
     ) = viewModelScope.launch(Dispatchers.IO){
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
-        //_getUnbanRequestResponse
+
         //todo: I need to change _getUnbanRequestResponse in 2 separate items
         Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
         Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
@@ -299,7 +299,7 @@ class ModViewViewModel @Inject constructor(
                             addAllUnbanRequestItemList(mutableListTesting)
 
                             }
-                        
+
                     }
                     _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
                 }
@@ -333,6 +333,7 @@ class ModViewViewModel @Inject constructor(
         Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
         Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
 
+
         twitchModRepo.getUnbanRequests(
             authorizationToken=_requestIds.value.oAuthToken,
             clientId =_requestIds.value.clientId ,
@@ -346,7 +347,6 @@ class ModViewViewModel @Inject constructor(
                     //todo: I need to change when the response gets added
                     val data = response.data
                     _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(true)
-                    Log.d("retryGetUnbanRequestListData","${data[0]}")
                     addAllUnbanRequestItemList(data)
 
                 }
