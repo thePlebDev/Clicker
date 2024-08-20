@@ -357,10 +357,21 @@ class ParsingEngine @Inject constructor() {
             turbo = parsedData["turbo"]?.toIntOrNull() == 1,
             userType = privateMsg,
             userId = parsedData["user-id"],
-            messageType = MessageType.USER,
+            messageType = checkFirstTimeChatter(text), //todo: add parsing to check for first time chatter
             messageList = messageTokenScanner.tokenList,
             dateSend = dateSent
         )
+    }
+
+    fun checkFirstTimeChatter(stringToParse:String): MessageType {
+        val regex = "first-msg=(\\d+)".toRegex()
+        val matchResult = regex.find(stringToParse)
+        val firstMsgValue = matchResult?.groupValues?.get(1) ?:"0"
+        if (firstMsgValue == "1"){
+            return MessageType.FIRSTTIMECHATTER
+        }else{
+            return MessageType.USER
+        }
     }
 
 

@@ -1399,6 +1399,87 @@ class ImprovedChatUI(){
 
 
                 }
+                MessageType.FIRSTTIMECHATTER->{
+                    if(isMod){
+                        HorizontalDragDetectionBox(
+                            itemBeingDragged = {dragOffset ->
+                                FirstTimeChatter{
+                                    ClickableCard(
+                                        twitchUser =twitchChatMessage,
+                                        color = color.value,
+                                        showBottomModal={showBottomModal()},
+                                        updateClickedUser = {  username, userId,isBanned,isMod ->
+                                            updateClickedUser(
+                                                username,
+                                                userId,
+                                                isBanned,
+                                                isMod
+                                            )
+                                        },
+                                        offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
+                                        doubleClickMessage ={username ->doubleClickMessage(username)},
+                                        inlineContentMap=inlineContentMap
+                                    )
+                                }
+
+                            },
+                            quarterSwipeLeftAction={
+                                Log.d("quarterSwipeLeftAction","Cclicked")
+                                if(twitchChatMessage.mod != "1"){
+                                    updateClickedUser(
+                                        twitchChatMessage.displayName?:"",
+                                        twitchChatMessage.userId?:"",
+                                        twitchChatMessage.banned,
+                                        twitchChatMessage.mod == "1"
+                                    )
+                                    showTimeoutDialog()
+                                }
+
+                            },
+                            quarterSwipeRightAction={
+                                Log.d("quarterSwipeLeftAction","Cclicked")
+                                if(twitchChatMessage.mod != "1"){
+                                    updateClickedUser(
+                                        twitchChatMessage.displayName?:"",
+                                        twitchChatMessage.userId?:"",
+                                        twitchChatMessage.banned,
+                                        twitchChatMessage.mod == "1"
+                                    )
+                                    showBanDialog()
+                                }
+
+                            },
+                            halfSwipeAction={
+                                deleteChatMessage(twitchChatMessage.id?:"" )
+                            },
+                            swipeEnabled = true,
+                            twoSwipeOnly= false
+                        )
+                    }
+                    else{
+                        FirstTimeChatter {
+                            ClickableCard(
+                                twitchUser =twitchChatMessage,
+                                color = color.value,
+                                showBottomModal={showBottomModal()},
+                                updateClickedUser = {  username, userId,isBanned,isMod ->
+                                    updateClickedUser(
+                                        username,
+                                        userId,
+                                        isBanned,
+                                        isMod
+                                    )
+                                },
+                                offset = 0f,
+                                doubleClickMessage ={username ->doubleClickMessage(username)},
+                                inlineContentMap=inlineContentMap
+                            )
+                        }
+                    }
+
+
+                }
+
 
                 MessageType.ANNOUNCEMENT -> { //added
                     AnnouncementMessages(
@@ -1443,6 +1524,7 @@ class ImprovedChatUI(){
                         message = twitchChatMessage.userType ?:""
                     )
                 }
+
 
                 else -> {
 
