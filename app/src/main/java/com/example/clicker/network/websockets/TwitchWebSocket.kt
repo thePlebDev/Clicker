@@ -87,6 +87,11 @@ enum class MessageType {
      * */
     CLEARCHATALL,
 
+    /**
+     * Will be used when a user has typed a message that is their first message in chat
+     * */
+    FIRSTTIMECHATTER,
+
 }
 
 class TwitchWebSocket @Inject constructor(

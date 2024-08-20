@@ -12,6 +12,7 @@ import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.repository.util.TwitchClientBuilder
 import com.example.clicker.network.repository.util.createJsonBodyFrom
+import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.IndividualAutoModSettingsDataObjectMother
@@ -1021,6 +1022,21 @@ class TwitchStreamImplTest {
         Assert.assertEquals(expectedStatus, actualStatus)
 
     }
+
+    @Test
+    fun `first time chatter parsing`(){
+        //GIVEN
+        val whatIWantToParse ="first-msg=1"
+        val expectedValue = MessageType.FIRSTTIMECHATTER
+        val stringToParse ="@badge-info=;badges=;client-nonce=cb19f16caec7180ecae3f0676f2fdf53;color=;display-name=themodymoder;emotes=;first-msg=1;flags=24-31:P.3/S.3;id=ad50270b-8970-43b7-9814-68c48bc61882;mod=0;returning-chatter=0;room-id=72614351;subscriber=0;tmi-sent-ts=1724182575873;turbo=0;user-id=946933663;user-type= :themodymoder!themodymoder@themodymoder.tmi.twitch.tv PRIVMSG #varidetta :rabbits have at least 2 nipples. therefore I am a rabbit"
+
+        //WHEN
+       // val actualValue = checkFirstTimeChatter(stringToParse)
+
+        //THEN
+       // Assert.assertEquals(expectedValue, actualValue)
+    }
+
 
 
 
