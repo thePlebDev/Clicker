@@ -1607,6 +1607,7 @@ fun ClickableCard(
     val showIcon = remember { mutableStateOf(false) }
     //this log is how I can check for unnecessary recomps
     Log.d("CLickingCardCheck", "${twitchUser.userType}")
+       // .background(MaterialTheme.colorScheme.primary)
 
     Column(
         modifier = Modifier.combinedClickable(
@@ -1634,6 +1635,7 @@ fun ClickableCard(
         ){
             Column(modifier = Modifier
                 .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
             ) {
                 CheckIfUserDeleted(twitchUser = twitchUser)
                 CheckIfUserIsBanned(twitchUser = twitchUser)
