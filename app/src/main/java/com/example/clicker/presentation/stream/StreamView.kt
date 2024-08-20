@@ -403,7 +403,7 @@ fun StreamView(
                             showModView={
                                 showModView()
                                 clearModViewNotifications()
-                               getUnbanRequests()
+                           //    getUnbanRequests()
                             },
                             updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
