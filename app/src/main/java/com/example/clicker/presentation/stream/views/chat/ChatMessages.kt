@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
@@ -216,9 +217,12 @@ class ChatScope(
             endX = 130.0f
         )
         Box(
-            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
         ){
-            Spacer(modifier = Modifier.align(Alignment.CenterStart)
+            Spacer(modifier = Modifier
+                .align(Alignment.CenterStart)
                 .width(130.dp)
                 .fadingEdge(sideFade)
                 .clip(RoundedCornerShape(4.dp))
@@ -289,9 +293,12 @@ class ChatScope(
             endX = 130.0f
         )
         Box(
-            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
         ){
-            Spacer(modifier = Modifier.align(Alignment.CenterStart)
+            Spacer(modifier = Modifier
+                .align(Alignment.CenterStart)
                 .width(130.dp)
                 .fadingEdge(sideFade)
                 .clip(RoundedCornerShape(4.dp))
@@ -354,6 +361,77 @@ class ChatScope(
 
 
 
+//Tesitng out the UI for first time chatters:
+@Composable
+fun FirstTimeChatter(){
+    val color = MaterialTheme.colorScheme.secondary
 
+    var height by remember { mutableStateOf(80.dp) }
+    val localDensity = LocalDensity.current
+    val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
+    val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
+
+    val sideFade = Brush.horizontalGradient(
+        listOf(
+            color, color.copy(alpha = 0.8f), color.copy(alpha = 0.6f),
+            color.copy(alpha = 0.4f), color.copy(alpha = 0.2f), color.copy(alpha = 0.0f)
+        ),
+        startX = 0.0f,
+        endX = 130.0f
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+    ){
+        Spacer(modifier = Modifier
+            .align(Alignment.CenterStart)
+            .width(130.dp)
+            .fadingEdge(sideFade)
+            .clip(RoundedCornerShape(4.dp))
+            .background(color)
+            .height(height)
+
+        )
+        Row(){
+            Spacer(modifier = Modifier
+                .height(height)
+
+            )
+            Spacer(modifier = Modifier
+                .width(17.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically){
+                    //todo: this should be message type
+                    Text("First Time Chatter", color = MaterialTheme.colorScheme.onPrimary,fontSize=titleFontSize)
+                    Spacer(modifier = Modifier
+                        .width(6.dp)
+                    )
+                    Icon(
+                        painter = painterResource(id = R.drawable.sparkle_awesome_24),
+                        contentDescription = "First time chatter",
+                        tint = color,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+                Text(
+                    //todo: this should be message type
+                    "This is a message to determine what we are typing and when",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize=messageFontSize,
+                    modifier = Modifier.onGloballyPositioned {
+                        height = with(localDensity) { it.size.height.toDp() + 30.dp }
+                    }
+                )
+            }
+        }
+
+    }
+
+}
 
 
