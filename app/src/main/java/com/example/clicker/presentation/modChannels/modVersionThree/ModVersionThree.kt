@@ -1181,17 +1181,17 @@ fun ModViewDrawerContent(
 
 
             }
-            item{
-                ElevatedCardSwitchRow(
-                    "Unban requests",
-                    checkIndexAvailability={checkIndexAvailability(4)},
-                    painter = painterResource(id = R.drawable.time_out_24),
-                    checked = modActionsChecked,
-                    changeChecked = {value ->
-                        //changeModActionsChecked(value) todo: this needs to be its own switch function
-                    }
-                )
-            }
+//            item{
+//                ElevatedCardSwitchRow(
+//                    "Unban requests",
+//                    checkIndexAvailability={checkIndexAvailability(4)},
+//                    painter = painterResource(id = R.drawable.time_out_24),
+//                    checked = modActionsChecked,
+//                    changeChecked = {value ->
+//                        //changeModActionsChecked(value) todo: this needs to be its own switch function
+//                    }
+//                )
+//            }
 
 //            item{
 //                ElevatedCardExample(
