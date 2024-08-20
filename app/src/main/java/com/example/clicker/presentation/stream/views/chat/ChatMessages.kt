@@ -363,13 +363,14 @@ class ChatScope(
 
 //Tesitng out the UI for first time chatters:
 @Composable
-fun FirstTimeChatter(){
+fun FirstTimeChatter(
+    clickableChat: @Composable ()-> Unit,
+){
     val color = MaterialTheme.colorScheme.secondary
 
     var height by remember { mutableStateOf(80.dp) }
-    val localDensity = LocalDensity.current
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
-    val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
+
 
     val sideFade = Brush.horizontalGradient(
         listOf(
@@ -379,57 +380,61 @@ fun FirstTimeChatter(){
         startX = 0.0f,
         endX = 130.0f
     )
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
-    ){
-        Spacer(modifier = Modifier
-            .align(Alignment.CenterStart)
-            .width(130.dp)
-            .fadingEdge(sideFade)
-            .clip(RoundedCornerShape(4.dp))
-            .background(color)
-            .height(height)
+    Column() {
 
-        )
-        Row(){
-            Spacer(modifier = Modifier
-                .height(height)
-
-            )
-            Spacer(modifier = Modifier
-                .width(17.dp)
-            )
-            Column(
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+            Spacer(
                 modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically){
-                    //todo: this should be message type
-                    Text("First Time Chatter", color = MaterialTheme.colorScheme.onPrimary,fontSize=titleFontSize)
-                    Spacer(modifier = Modifier
-                        .width(6.dp)
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.sparkle_awesome_24),
-                        contentDescription = "First time chatter",
-                        tint = color,
-                        modifier = Modifier.size(25.dp)
-                    )
-                }
-                Text(
-                    //todo: this should be message type
-                    "This is a message to determine what we are typing and when",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize=messageFontSize,
-                    modifier = Modifier.onGloballyPositioned {
-                        height = with(localDensity) { it.size.height.toDp() + 30.dp }
-                    }
-                )
-            }
-        }
+                    .align(Alignment.CenterStart)
+                    .width(130.dp)
+                    .fadingEdge(sideFade)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(color)
+                    .height(height)
 
+            )
+            Row() {
+                Spacer(
+                    modifier = Modifier
+                        .height(height)
+
+                )
+                Spacer(
+                    modifier = Modifier
+                        .width(17.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        //todo: this should be message type
+                        Text(
+                            "First Time Chatter",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = titleFontSize
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .width(6.dp)
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.sparkle_awesome_24),
+                            contentDescription = "First time chatter",
+                            tint = color,
+                            modifier = Modifier.size(25.dp)
+                        )
+                    }
+                    clickableChat()
+                }
+            }
+
+        }
+        Spacer(modifier =Modifier.height(5.dp))
     }
 
 }

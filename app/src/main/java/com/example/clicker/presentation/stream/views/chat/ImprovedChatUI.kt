@@ -1377,22 +1377,24 @@ class ImprovedChatUI(){
                         )
                     }else{
 
-                        ClickableCard(
-                            twitchUser =twitchChatMessage,
-                            color = color.value,
-                            showBottomModal={showBottomModal()},
-                            updateClickedUser = {  username, userId,isBanned,isMod ->
-                                updateClickedUser(
-                                    username,
-                                    userId,
-                                    isBanned,
-                                    isMod
-                                )
-                            },
-                            offset = 0f,
-                            doubleClickMessage ={username ->doubleClickMessage(username)},
-                            inlineContentMap=inlineContentMap
-                        )
+                            ClickableCard(
+                                twitchUser =twitchChatMessage,
+                                color = color.value,
+                                showBottomModal={showBottomModal()},
+                                updateClickedUser = {  username, userId,isBanned,isMod ->
+                                    updateClickedUser(
+                                        username,
+                                        userId,
+                                        isBanned,
+                                        isMod
+                                    )
+                                },
+                                offset = 0f,
+                                doubleClickMessage ={username ->doubleClickMessage(username)},
+                                inlineContentMap=inlineContentMap
+                            )
+
+
                     }
 
 
@@ -1550,7 +1552,6 @@ fun ClickableCard(
         ){
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
             ) {
                 CheckIfUserDeleted(twitchUser = twitchUser)
                 CheckIfUserIsBanned(twitchUser = twitchUser)
