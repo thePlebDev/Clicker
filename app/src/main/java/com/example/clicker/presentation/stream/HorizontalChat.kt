@@ -116,6 +116,7 @@ fun HorizontalChat(
 
     val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
         streamViewModel.sendMessage(message)
+        streamViewModel.updateMostFrequentEmoteList()
     } }
 
 

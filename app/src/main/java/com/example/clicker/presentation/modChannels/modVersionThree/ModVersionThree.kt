@@ -693,6 +693,7 @@ fun ModVersionThree(
         bottomBar = {},
         floatingActionButton = {}
     ) { innerPadding ->
+        val scope = rememberCoroutineScope()
         Box(
             modifier = Modifier
                 .padding(innerPadding)
