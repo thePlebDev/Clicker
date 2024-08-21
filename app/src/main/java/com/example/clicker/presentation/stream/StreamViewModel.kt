@@ -248,25 +248,11 @@ class StreamViewModel @Inject constructor(
     fun updateMostFrequentEmoteListTesting(clickedItem:EmoteNameUrl){
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
         val newClickedItem = EmoteNameUrlNumber(clickedItem.name,clickedItem.url,1)
-        if(oldList.size ==12){
+        val newList = oldList + listOf(newClickedItem)
+        mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
+            list =newList
+        )
 
-        }else{
-            val foundItem =oldList.find { it.name == clickedItem.name }
-            if(foundItem!= null){
-                val foundIndex = oldList.indexOf(foundItem)
-                val timesClicked =foundItem.timesClicked +1
-                oldList[foundIndex] =EmoteNameUrlNumber(clickedItem.name,clickedItem.url,timesClicked)
-                mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
-                    list =oldList
-                )
-            }else{
-                val newList = oldList + listOf(newClickedItem)
-                mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
-                    list =newList
-                )
-            }
-
-        }
         Log.d("updateMostFrequentEmoteListTestingUpdate","list->${mostFrequentEmoteListTesting.value.list}")
         Log.d("updateMostFrequentEmoteListTestingUpdate","newUpdate->${mostFrequentEmoteListTesting.value.list[0].timesClicked}")
 
