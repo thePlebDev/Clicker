@@ -122,6 +122,7 @@ import kotlin.math.roundToInt
 
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.presentation.stream.TextFieldValueImmutable
@@ -171,7 +172,8 @@ fun ChatUI(
     filteredChatListImmutable: FilteredChatListImmutableCollection,
 
     actualTextFieldValue:TextFieldValue,
-    changeActualTextFieldValue:(String,TextRange)->Unit
+    changeActualTextFieldValue:(String,TextRange)->Unit,
+
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -305,7 +307,8 @@ fun ChatUI(
         channelBetterTTVResponse=channelBetterTTVResponse,
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub=userIsSub,
-        forwardSlashes=forwardSlashes
+        forwardSlashes=forwardSlashes,
+
         )
 }
 
@@ -381,7 +384,8 @@ fun ChatUIBox(
                             globalBetterTTVEmotes =globalBetterTTVEmotes,
                             channelBetterTTVResponse=channelBetterTTVResponse,
                             sharedBetterTTVResponse=sharedBetterTTVResponse,
-                            userIsSub=userIsSub
+                            userIsSub=userIsSub,
+
                         )
 
                 }
@@ -437,6 +441,7 @@ fun EmoteBoard(
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit,
     userIsSub:Boolean,
+
 ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
@@ -548,7 +553,8 @@ fun EmoteBoard(
                                 channelBetterTTVResponse = channelBetterTTVResponse,
                                 sharedBetterTTVResponse=sharedBetterTTVResponse,
                                 betterTTVLazyGridState=betterTTVLazyGridState,
-                                modifier = Modifier.padding(bottom = 50.dp)
+                                modifier = Modifier.padding(bottom = 50.dp),
+
                             )
                             BetterTTVEmoteBottomUI(
                                 closeEmoteBoard={closeEmoteBoard()},
@@ -561,7 +567,7 @@ fun EmoteBoard(
                                 },
                                 scrollToChannelEmotes={
                                     scope.launch {
-                                        betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size )
+                                        betterTTVLazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size +1)
                                     }
                                 },
 //                            scrollToMostFrequentlyUsedEmotes={
@@ -571,7 +577,7 @@ fun EmoteBoard(
 //                            },
                                 scrollToSharedChannelEmotes = {
                                     scope.launch {
-                                        betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size)
+                                        betterTTVLazyGridState.scrollToItem(channelBetterTTVResponse.list.size+1 +emoteBoardMostFrequentList.list.size+1)
                                     }
                                 },
                                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -618,6 +624,41 @@ fun BetterTTVEmoteBoard(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
+        /*****************************START OF THE Most Recent EMOTES*******************************/
+//        header {
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 5.dp)
+//            ) {
+//                Spacer(modifier = Modifier.padding(5.dp))
+//                Text(
+//                    "Frequently Used Emotes",
+//                    color = MaterialTheme.colorScheme.onPrimary,
+//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+//                ) // or any composable for your single row
+//                Spacer(modifier = Modifier.padding(2.dp))
+//                Divider(
+//                    thickness = 2.dp,
+//                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+//                    modifier = Modifier.fillMaxWidth()
+//                )
+//                Spacer(modifier = Modifier.padding(5.dp))
+//            }
+//
+//        }
+//        items(
+//            mostFrequentBetterTTVResponse.list,
+//        ) {
+//            GifLoadingAnimation(
+//                url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+//                contentDescription = "${it.code} emote",
+//                emoteName =it.code,
+//                updateTextWithEmote ={value ->
+//                    updateTextWithEmote(value)
+//                }
+//            )
+//        }
         /*****************************START OF THE CHANNEL EMOTES*******************************/
         //todo: adding the channelUI
         header {
@@ -649,6 +690,7 @@ fun BetterTTVEmoteBoard(
                         emoteName =it.code,
                         updateTextWithEmote ={value ->
                             updateTextWithEmote(value)
+//                            updateFrequentBetterTTVTempList(it)
                         }
                     )
                 }
@@ -683,6 +725,7 @@ fun BetterTTVEmoteBoard(
                 emoteName =it.code,
                 updateTextWithEmote ={value ->
                       updateTextWithEmote(value)
+//                    updateFrequentBetterTTVTempList(it)
                 }
             )
         }
@@ -1011,11 +1054,9 @@ fun LazyGridEmotes(
             }
 
         }
-////        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
-      //  if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
+
             items(
                 emoteBoardMostFrequentList.list,
-
             ) {
                 AsyncImage(
                     model = it.url,
@@ -1025,11 +1066,10 @@ fun LazyGridEmotes(
                         .height(60.dp)
                         .padding(5.dp)
                         .clickable {
-                            //updateTextWithEmote(it.name)
+                            updateTextWithEmote(it.name)
                         }
                 )
             }
-        //}
 
 
 

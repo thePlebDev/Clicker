@@ -53,6 +53,7 @@ import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteNameUrlNumber
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
+import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
@@ -240,6 +241,31 @@ class StreamViewModel @Inject constructor(
     val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
     val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlList())
     val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
+    // IndivBetterTTVEmoteList
+
+
+    val mostFrequentEmoteListBetterTTV = mutableStateOf(IndivBetterTTVEmoteList())
+    val temporaryMostFrequentListBetterTTV = mutableStateListOf<IndivBetterTTVEmote>()
+    fun updateTemporaryMostFrequentListBetterTTV(clickedItem:IndivBetterTTVEmote){
+        if(!temporaryMostFrequentListBetterTTV.contains(clickedItem)){
+            temporaryMostFrequentListBetterTTV.add(clickedItem)
+        }
+        Log.d("updateTemporaryMostFrequentListBetterTTV","list ->${temporaryMostFrequentListBetterTTV.toList()}")
+    }
+    fun updateMostFrequentEmoteListBetterTTV(){
+        //Need to do some sorting between the two
+        val oldList = mostFrequentEmoteListBetterTTV.value.list.toMutableList()
+        val oldTemporaryList = temporaryMostFrequentListBetterTTV.filter { !oldList.contains(it) }
+        val newList = oldList + oldTemporaryList
+        //need to do sorting and validation checks
+
+        mostFrequentEmoteListBetterTTV.value = mostFrequentEmoteListBetterTTV.value.copy(
+            list =newList
+        )
+        temporaryMostFrequentListBetterTTV.clear()
+
+
+    }
 
     fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
         if(!temporaryMostFrequentList.contains(clickedItem)){
@@ -256,9 +282,6 @@ class StreamViewModel @Inject constructor(
     fun updateMostFrequentEmoteList(){
         //Need to do some sorting between the two
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
-//        if(oldList.size >=10){
-//            val
-//        }
         val oldTemporaryList = temporaryMostFrequentList.filter { !oldList.contains(it) }
         val newList = oldList + oldTemporaryList
         //need to do sorting and validation checks

@@ -151,6 +151,7 @@ fun StreamView(
     val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
         streamViewModel.sendMessage(message)
         streamViewModel.updateMostFrequentEmoteList()
+        streamViewModel.updateMostFrequentEmoteListBetterTTV()
     } }
 
     val updateAdvancedChatSettings:(AdvancedChatSettings) -> Unit = remember(streamViewModel) { { newValue ->
@@ -415,9 +416,9 @@ fun StreamView(
                             filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
                             actualTextFieldValue = streamViewModel.textFieldValue.value,
                             changeActualTextFieldValue={text,textRange->
-
                                 changeActualTextFieldValue(text,textRange)
                             },
+
 
 
 
