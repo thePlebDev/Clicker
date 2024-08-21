@@ -166,7 +166,12 @@ fun FullChatModView(
                 showIconBasedOnTextLength ={
                     ShowIconBasedOnTextLength(
                         textFieldValue =textFieldValue,
-                        chat = {item -> sendMessageToWebSocket(item)},
+                        chat = {item ->
+
+                            hideSoftKeyboard()
+                            emoteKeyBoardHeight.value = 0.dp// closes emote board
+                            sendMessageToWebSocket(item)
+                               },
                         showModal ={showModal()},
                     )
                 },
