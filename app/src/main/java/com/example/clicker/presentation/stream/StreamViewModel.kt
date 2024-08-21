@@ -252,20 +252,7 @@ class StreamViewModel @Inject constructor(
         }
         Log.d("updateTemporaryMostFrequentListBetterTTV","list ->${temporaryMostFrequentListBetterTTV.toList()}")
     }
-    fun updateMostFrequentEmoteListBetterTTV(){
-        //Need to do some sorting between the two
-        val oldList = mostFrequentEmoteListBetterTTV.value.list.toMutableList()
-        val oldTemporaryList = temporaryMostFrequentListBetterTTV.filter { !oldList.contains(it) }
-        val newList = oldList + oldTemporaryList
-        //need to do sorting and validation checks
 
-        mostFrequentEmoteListBetterTTV.value = mostFrequentEmoteListBetterTTV.value.copy(
-            list =newList
-        )
-        temporaryMostFrequentListBetterTTV.clear()
-
-
-    }
 
     fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
         if(!temporaryMostFrequentList.contains(clickedItem)){

@@ -106,6 +106,7 @@ import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
@@ -234,6 +235,7 @@ fun ModViewComponentVersionThree(
 
     val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
         streamViewModel.sendMessage(message)
+        streamViewModel.updateMostFrequentEmoteList()
     } }
     val setIndex:(Int)->Unit = remember(modVersionThreeViewModel) { { newValue ->
 
@@ -263,6 +265,10 @@ fun ModViewComponentVersionThree(
     val retryGetUnbanRequest:()->Unit = remember(modVersionThreeViewModel) { {
         modViewViewModel.retryGetUnbanRequest()
 
+    } }
+
+    val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
+        streamViewModel.updateTemporaryMostFrequentList(it)
     } }
 
 
@@ -516,7 +522,7 @@ fun ModViewComponentVersionThree(
                         },
                         emoteBoardMostFrequentList = streamViewModel.mostFrequentEmoteListTesting.value,
                         updateMostFrequentEmoteList = { value ->
-                            // updateMostFrequentEmoteList(value)
+                             updateMostFrequentEmoteList(value)
                         },
                         globalBetterTTVEmotes = streamViewModel.globalBetterTTVEmotes.value,
                         channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
