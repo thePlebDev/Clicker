@@ -170,6 +170,7 @@ fun FullChatModView(
 
                             hideSoftKeyboard()
                             emoteKeyBoardHeight.value = 0.dp// closes emote board
+                            iconClicked = false // changes the icon
                             sendMessageToWebSocket(item)
                                },
                         showModal ={showModal()},
