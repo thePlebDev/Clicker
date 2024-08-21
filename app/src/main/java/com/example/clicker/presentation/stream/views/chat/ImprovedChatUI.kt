@@ -511,25 +511,24 @@ fun EmoteBoard(
 
                                 )
                                 EmoteBottomUI(
+                                    modifier = Modifier.align(Alignment.BottomCenter),
                                     closeEmoteBoard = { closeEmoteBoard() },
                                     deleteEmote = { deleteEmote() },
                                     scrollToGlobalEmotes = {
                                         scope.launch {
-                                            lazyGridState.scrollToItem((emoteBoardChannelList.list.size + 1))
+                                            lazyGridState.scrollToItem((emoteBoardChannelList.list.size + emoteBoardMostFrequentList.list.size +1))
                                         }
                                     },
                                     scrollToChannelEmotes = {
                                         scope.launch {
-                                            lazyGridState.scrollToItem(0)
+                                            lazyGridState.scrollToItem(emoteBoardMostFrequentList.list.size+1)
                                         }
                                     },
-                                    modifier = Modifier.align(Alignment.BottomCenter)
-
-//                            scrollToMostFrequentlyUsedEmotes={
-//                                scope.launch {
-//                                    lazyGridState.scrollToItem(0)
-//                                }
-//                            }
+                                    scrollToMostFrequentlyUsedEmotes={
+                                        scope.launch {
+                                            lazyGridState.scrollToItem(0)
+                                        }
+                                     }
 
 
                                 )
@@ -783,7 +782,7 @@ fun EmoteBottomUI(
     scrollToGlobalEmotes:() ->Unit,
     scrollToChannelEmotes:()->Unit,
     modifier:Modifier,
-    //scrollToMostFrequentlyUsedEmotes:()->Unit,
+    scrollToMostFrequentlyUsedEmotes:()->Unit,
 ){
     val haptic = LocalHapticFeedback.current
     Row(modifier = modifier
@@ -807,15 +806,15 @@ fun EmoteBottomUI(
                 contentDescription = "click to close keyboard emote")
             Spacer(modifier = Modifier.width(10.dp))
 
-//            Icon(modifier= Modifier
-//                .size(25.dp)
-//                .clickable {
-//                    Log.d("EmoteBottomUI", "RECENT")
-//                   // scrollToMostFrequentlyUsedEmotes()
-//                },
-//                tint = MaterialTheme.colorScheme.onPrimary,
-//                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
-//            Spacer(modifier = Modifier.width(10.dp))
+            Icon(modifier= Modifier
+                .size(25.dp)
+                .clickable {
+                    Log.d("EmoteBottomUI", "RECENT")
+                   scrollToMostFrequentlyUsedEmotes()
+                },
+                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
+            Spacer(modifier = Modifier.width(10.dp))
 
             Icon(modifier= Modifier
                 .size(25.dp)
