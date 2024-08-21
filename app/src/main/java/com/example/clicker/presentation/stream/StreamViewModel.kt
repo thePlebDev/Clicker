@@ -238,23 +238,31 @@ class StreamViewModel @Inject constructor(
      * */
     //todo: mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
-    val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlNumberList())
+    val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlList())
+    val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
+
+    fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
+        temporaryMostFrequentList.add(clickedItem)
+        Log.d("updateTemporaryMostFrequentList","list ->${temporaryMostFrequentList.toList()}")
+    }
 
 
     fun updateMostFrequentEmoteList(clickedItem:EmoteNameUrl){
         mostFrequentEmoteList.add(clickedItem)
     }
-    @SuppressLint("LongLogTag")
-    fun updateMostFrequentEmoteListTesting(clickedItem:EmoteNameUrl){
+
+    fun updateMostFrequentEmoteList(){
+        //Need to do some sorting between the two
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
-        val newClickedItem = EmoteNameUrlNumber(clickedItem.name,clickedItem.url,1)
-        val newList = oldList + listOf(newClickedItem)
+        val oldTemporaryList = temporaryMostFrequentList
+        val newList = oldList + oldTemporaryList
+        //need to do sorting and validation checks
+
         mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
             list =newList
         )
+        temporaryMostFrequentList.clear()
 
-        Log.d("updateMostFrequentEmoteListTestingUpdate","list->${mostFrequentEmoteListTesting.value.list}")
-        Log.d("updateMostFrequentEmoteListTestingUpdate","newUpdate->${mostFrequentEmoteListTesting.value.list[0].timesClicked}")
 
     }
     /**

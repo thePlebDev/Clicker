@@ -158,11 +158,11 @@ fun ChatUI(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
-    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
     showModView:()->Unit,
@@ -300,7 +300,7 @@ fun ChatUI(
             iconClicked = false
         },
         deleteEmote={deleteEmote()},
-        updateMostFrequentEmoteList ={value ->updateMostFrequentEmoteList(value)},
+        updateTempararyMostFrequentEmoteList ={value ->updateTempararyMostFrequentEmoteList(value)},
         globalBetterTTVEmotes=globalBetterTTVEmotes,
         channelBetterTTVResponse=channelBetterTTVResponse,
         sharedBetterTTVResponse=sharedBetterTTVResponse,
@@ -324,11 +324,11 @@ fun ChatUIBox(
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
-    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit,
@@ -375,8 +375,8 @@ fun ChatUIBox(
                             deleteEmote={
                                 deleteEmote()
                                         },
-                            updateMostFrequentEmoteList={value ->
-                                updateMostFrequentEmoteList(value)
+                            updateTempararyMostFrequentEmoteList={value ->
+                                updateTempararyMostFrequentEmoteList(value)
                                                         },
                             globalBetterTTVEmotes =globalBetterTTVEmotes,
                             channelBetterTTVResponse=channelBetterTTVResponse,
@@ -428,8 +428,8 @@ fun EmoteBoard(
     modifier:Modifier,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
-    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
+    updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
     channelBetterTTVResponse: IndivBetterTTVEmoteList,
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
@@ -503,8 +503,8 @@ fun EmoteBoard(
                                             emoteValue
                                         )
                                     },
-                                    updateMostFrequentEmoteList = { value ->
-                                           updateMostFrequentEmoteList(value)
+                                    updateTempararyMostFrequentEmoteList = { value ->
+                                        updateTempararyMostFrequentEmoteList(value)
                                     },
                                     modifier = Modifier.padding(bottom = 50.dp),
                                     userIsSub=userIsSub
@@ -965,9 +965,8 @@ fun BetterTTVEmoteBottomUI(
 fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlNumberList,
-
-    updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    emoteBoardMostFrequentList: EmoteNameUrlList,
+    updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
 
     lazyGridState: LazyGridState,
@@ -1100,7 +1099,7 @@ fun LazyGridEmotes(
                         .padding(5.dp)
                         .clickable {
                             updateTextWithEmote(it.name)
-                            updateMostFrequentEmoteList(
+                            updateTempararyMostFrequentEmoteList(
                                 EmoteNameUrl(it.name, it.url)
                             )
                         }
@@ -1150,7 +1149,7 @@ fun LazyGridEmotes(
                     .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
-                        updateMostFrequentEmoteList(
+                        updateTempararyMostFrequentEmoteList(
                             EmoteNameUrl(it.name, it.url)
                         )
                     }

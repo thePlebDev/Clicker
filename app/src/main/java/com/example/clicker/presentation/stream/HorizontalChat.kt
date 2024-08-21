@@ -101,7 +101,7 @@ fun HorizontalChat(
         )
     } }
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
-        streamViewModel.updateMostFrequentEmoteListTesting(it)
+        streamViewModel.updateTemporaryMostFrequentList(it)
     } }
     val hideClickedUserBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
@@ -270,7 +270,7 @@ fun HorizontalChat(
                 deleteEmote={streamViewModel.deleteEmote()},
                 showModView = {},
                 emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                updateMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
+                updateTempararyMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
                 globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
                 channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                 sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,

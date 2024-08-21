@@ -118,7 +118,7 @@ fun StreamView(
     } }
 
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
-        streamViewModel.updateMostFrequentEmoteListTesting(it)
+        streamViewModel.updateTemporaryMostFrequentList(it)
     } }
 
     val updateTextWithEmote:(String)->Unit =remember(streamViewModel) { {
@@ -150,6 +150,7 @@ fun StreamView(
 
     val sendMessageToWebSocket:(String) -> Unit = remember(streamViewModel) { { message ->
         streamViewModel.sendMessage(message)
+        streamViewModel.updateMostFrequentEmoteList()
     } }
 
     val updateAdvancedChatSettings:(AdvancedChatSettings) -> Unit = remember(streamViewModel) { { newValue ->
@@ -405,7 +406,7 @@ fun StreamView(
                                 clearModViewNotifications()
                            //    getUnbanRequests()
                             },
-                            updateMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
+                            updateTempararyMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
                             channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
                             sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
