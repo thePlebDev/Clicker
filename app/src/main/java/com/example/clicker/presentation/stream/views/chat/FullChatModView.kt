@@ -70,6 +70,7 @@ fun FullChatModView(
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String, TextRange)->Unit,
 
+
 ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
@@ -188,7 +189,8 @@ fun FullChatModView(
         channelBetterTTVResponse=channelBetterTTVResponse,
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub = userIsSub,
-        forwardSlashes = forwardSlashes
+        forwardSlashes = forwardSlashes,
+
 
 
     )
