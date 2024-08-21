@@ -66,6 +66,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -274,6 +275,10 @@ fun ChatUI(
                     ShowIconBasedOnTextLength(
                         textFieldValue =textFieldValue,
                         chat = {item ->
+                            hideSoftKeyboard()
+                            //this is to close the emote board
+                            emoteKeyBoardHeight.value = 0.dp
+                            iconClicked = false
                             sendMessageToWebSocket(item)
                                },
                         showModal ={
@@ -499,7 +504,7 @@ fun EmoteBoard(
                                         )
                                     },
                                     updateMostFrequentEmoteList = { value ->
-                                        //   updateMostFrequentEmoteList(value)
+                                           updateMostFrequentEmoteList(value)
                                     },
                                     modifier = Modifier.padding(bottom = 50.dp),
                                     userIsSub=userIsSub
@@ -974,7 +979,6 @@ fun LazyGridEmotes(
 
 
 
-    Log.d("LoadingGridEmoteBoard", "EMOTERECOMP")
     LazyVerticalGrid(
         state = lazyGridState,
         columns = GridCells.Adaptive(minSize = 60.dp),
@@ -987,46 +991,47 @@ fun LazyGridEmotes(
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         /*****************************START OF THE Most Recent EMOTES*******************************/
-//        header {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 5.dp)
-//            ) {
-//                Spacer(modifier = Modifier.padding(5.dp))
-//                Text(
-//                    "Frequently Used Emotes",
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
-//                ) // or any composable for your single row
-//                Spacer(modifier = Modifier.padding(2.dp))
-//                Divider(
-//                    thickness = 2.dp,
-//                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//                Spacer(modifier = Modifier.padding(5.dp))
-//            }
-//
-//        }
-//        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
-//        if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
-//            items(
-//                emoteBoardMostFrequentList.list,
-//            ) {
-//                AsyncImage(
-//                    model = it.url,
-//                    contentDescription = it.name,
-//                    modifier = Modifier
-//                        .width(60.dp)
-//                        .height(60.dp)
-//                        .padding(5.dp)
-//                        .clickable {
-//                            //updateTextWithEmote(it.name)
-//                        }
-//                )
-//            }
-//        }
+        header {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 5.dp)
+            ) {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    "Frequently Used Emotes",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                ) // or any composable for your single row
+                Spacer(modifier = Modifier.padding(2.dp))
+                Divider(
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.padding(5.dp))
+            }
+
+        }
+////        //todo: I THINK THIS IS THE PROBLEM OF JUMPING
+      //  if(lazyGridState.firstVisibleItemIndex < 1){ //todo: This fixes the jumping issue but still a little laggy(can fix later)
+            items(
+                emoteBoardMostFrequentList.list,
+
+            ) {
+                AsyncImage(
+                    model = it.url,
+                    contentDescription = it.name,
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(60.dp)
+                        .padding(5.dp)
+                        .clickable {
+                            //updateTextWithEmote(it.name)
+                        }
+                )
+            }
+        //}
 
 
 
@@ -1052,7 +1057,7 @@ fun LazyGridEmotes(
             }
 
         }
-
+//
         items(emoteBoardChannelList.list){
             if(it.emoteType == EmoteTypes.SUBS && !userIsSub){
                 Box(
@@ -1109,7 +1114,7 @@ fun LazyGridEmotes(
 //                tint = Color.Unspecified
 //            )
         }
-        /*****************************START OF THE GLOBAL EMOTES*******************************/
+//        /*****************************START OF THE GLOBAL EMOTES*******************************/
         header {
             Column(modifier= Modifier
                 .fillMaxWidth()
@@ -1135,7 +1140,7 @@ fun LazyGridEmotes(
         items(emoteBoardGlobalList.list){
 //            Log.d("GlobalEmotesLoaded","name ->${it.name}")
 //            Log.d("GlobalEmotesLoaded","url ->${it.url}")
-//            Log.d("GlobalEmotesLoaded","-------------")
+//
             AsyncImage(
                 model = it.url,
                 contentDescription = it.name,
@@ -1145,7 +1150,9 @@ fun LazyGridEmotes(
                     .padding(5.dp)
                     .clickable {
                         updateTextWithEmote(it.name)
-                        updateMostFrequentEmoteList(it)
+                        updateMostFrequentEmoteList(
+                            EmoteNameUrl(it.name, it.url)
+                        )
                     }
             )
         }
