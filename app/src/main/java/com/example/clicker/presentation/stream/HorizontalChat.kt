@@ -101,6 +101,7 @@ fun HorizontalChat(
         )
     } }
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
+
         streamViewModel.updateTemporaryMostFrequentList(it)
     } }
     val hideClickedUserBottomModal:()->Unit =remember(bottomModalState) { {

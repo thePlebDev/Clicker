@@ -242,7 +242,9 @@ class StreamViewModel @Inject constructor(
     val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
 
     fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
-        temporaryMostFrequentList.add(clickedItem)
+        if(!temporaryMostFrequentList.contains(clickedItem)){
+            temporaryMostFrequentList.add(clickedItem)
+        }
         Log.d("updateTemporaryMostFrequentList","list ->${temporaryMostFrequentList.toList()}")
     }
 
@@ -254,7 +256,10 @@ class StreamViewModel @Inject constructor(
     fun updateMostFrequentEmoteList(){
         //Need to do some sorting between the two
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
-        val oldTemporaryList = temporaryMostFrequentList
+//        if(oldList.size >=10){
+//            val
+//        }
+        val oldTemporaryList = temporaryMostFrequentList.filter { !oldList.contains(it) }
         val newList = oldList + oldTemporaryList
         //need to do sorting and validation checks
 
