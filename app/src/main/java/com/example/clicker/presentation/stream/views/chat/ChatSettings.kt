@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.stream.views.chat
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.SwitchDefaults
@@ -40,7 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -72,6 +76,7 @@ val slowModeList =listOf(
 )
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatSettingsColumn(
      advancedChatSettings: AdvancedChatSettings,
@@ -79,13 +84,7 @@ fun ChatSettingsColumn(
      changeNoChatMode:(Boolean)->Unit,
 
      followerModeListImmutable: ImmutableModeList,
-
      slowModeListImmutable: ImmutableModeList,
-
-
-
-
-
      selectedFollowersModeItem: ListTitleValue,
      changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
 
@@ -101,64 +100,86 @@ fun ChatSettingsColumn(
     Log.d("ChatSettingsColumn","Recomping")
 
 
-    Column(modifier = Modifier
+    LazyColumn(modifier = Modifier
         .fillMaxSize()
-        .verticalScroll(rememberScrollState())
         .background(MaterialTheme.colorScheme.primary)) {
-        Text("Moderator chat settings",color = Color.White,
+        stickyHeader {
+            ChatSettingsHeaderColumn("Moderator chat settings")
+        }
+        item{
+            EmoteOnlySwitch(
+                setExpanded ={newValue -> },
+                emoteOnly =emoteOnly,
+                setEmoteOnly={newValue ->setEmoteOnly(newValue)},
+                switchEnabled=chatSettingsEnabled
+            )
+        }
+
+        item{
+            SubscriberOnlySwitch(
+                setExpanded ={newValue -> },
+                subscriberOnly = subscriberOnly,
+                setSubscriberOnly = {newValue -> setSubscriberOnly(newValue) },
+                switchEnabled=chatSettingsEnabled
+            )
+        }
+
+        item{
+            //todo: these are the modal items the pop up
+            SlowModeCheck(
+                setExpanded ={newValue -> },
+                chatSettingsEnabled=chatSettingsEnabled,
+                slowModeList=slowModeList,
+                selectedSlowModeItem=selectedSlowModeItem,
+                changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue)},
+                titleListImmutable = slowModeListImmutable
+
+            )
+        }
+        item{
+            FollowersOnlyCheck(
+                chatSettingsEnabled=chatSettingsEnabled,
+                setExpanded ={newValue -> },
+                followersOnlyList=followerModeList,
+                selectedFollowersModeItem=selectedFollowersModeItem,
+                changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
+                titleListImmutable = followerModeListImmutable
+            )
+        }
+        stickyHeader {
+            ChatSettingsHeaderColumn("Advanced chat settings")
+        }
+        item{
+            AdvancedChatSettings(
+                advancedChatSettings = advancedChatSettings,
+                changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)},
+                changeNoChatMode ={newValue ->changeNoChatMode(newValue)}
+            )
+        }
+        stickyHeader {
+            ChatSettingsHeaderColumn("Chat Experience")
+        }
+
+        item{
+            SliderAdvancedExample()
+        }
+
+    }
+}
+
+@Composable
+fun ChatSettingsHeaderColumn(
+    headerText:String,
+    fontSize: TextUnit = MaterialTheme.typography.headlineLarge.fontSize
+){
+    Column(modifier = Modifier.background(MaterialTheme.colorScheme.primary)){
+        Text(headerText,color = MaterialTheme.colorScheme.onPrimary,
             modifier= Modifier.padding(start=15.dp),
-            fontSize = MaterialTheme.typography.headlineLarge.fontSize
+            fontSize = fontSize
         )
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal = 15.dp))
         Spacer(modifier =Modifier.size(10.dp))
-
-        EmoteOnlySwitch(
-            setExpanded ={newValue -> },
-            emoteOnly =emoteOnly,
-            setEmoteOnly={newValue ->setEmoteOnly(newValue)},
-            switchEnabled=chatSettingsEnabled
-        )
-        SubscriberOnlySwitch(
-            setExpanded ={newValue -> },
-            subscriberOnly = subscriberOnly,
-            setSubscriberOnly = {newValue -> setSubscriberOnly(newValue) },
-            switchEnabled=chatSettingsEnabled
-        )
-
-        //todo: these are the modal items the pop up
-        SlowModeCheck(
-            setExpanded ={newValue -> },
-            chatSettingsEnabled=chatSettingsEnabled,
-            slowModeList=slowModeList,
-            selectedSlowModeItem=selectedSlowModeItem,
-            changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue)},
-            titleListImmutable = slowModeListImmutable
-
-        )
-
-        FollowersOnlyCheck(
-            chatSettingsEnabled=chatSettingsEnabled,
-            setExpanded ={newValue -> },
-            followersOnlyList=followerModeList,
-            selectedFollowersModeItem=selectedFollowersModeItem,
-            changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
-            titleListImmutable = followerModeListImmutable
-        )
-        //todo: these are the modal items the pop up
-
-
-
-
-
-        AdvancedChatSettings(
-            advancedChatSettings = advancedChatSettings,
-            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)},
-            changeNoChatMode ={newValue ->changeNoChatMode(newValue)}
-        )
-
-
     }
-
 }
 
 @Composable
@@ -168,12 +189,6 @@ fun AdvancedChatSettings(
     changeNoChatMode:(Boolean)->Unit
 ){
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Advanced chat settings",color = Color.White,
-            modifier= Modifier.padding(start=15.dp),
-            fontSize = MaterialTheme.typography.headlineLarge.fontSize
-        )
-        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal = 15.dp))
-        Spacer(modifier =Modifier.size(10.dp))
 
        ReSubsSwitch(
             advancedChatSettings=advancedChatSettings,

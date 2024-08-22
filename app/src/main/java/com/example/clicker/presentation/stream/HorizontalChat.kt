@@ -148,8 +148,6 @@ fun HorizontalChat(
         }
     ) {
 
-
-
         ModalBottomSheetLayout(
             sheetBackgroundColor = MaterialTheme.colorScheme.primary,
             sheetState = bottomModalState,
