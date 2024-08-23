@@ -97,16 +97,25 @@ fun ChatSettingsColumn(
      setSubscriberOnly:(Boolean) ->Unit,
 
      badgeSize:Float,
-     changeBadgeSize:(Float)->Unit
+     changeBadgeSize:(Float)->Unit,
+     emoteSize:Float,
+     changeEmoteSize:(Float)->Unit,
+     usernameSize:Float,
+     changeUsernameSize:(Float)->Unit,
+     messageSize:Float,
+     changeMessageSize:(Float)->Unit,
+     lineHeight: Float,
+     changeLineHeight:(Float)->Unit,
+     customUsernameColor: Boolean,
+     changeCustomUsernameColor: (Boolean)->Unit
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
 
-    var emoteSize by remember { mutableFloatStateOf(35f) }
-    var usernameSize by remember { mutableFloatStateOf(15f) }
-    var messageSize by remember { mutableFloatStateOf(15f) }
-    var lineHeight by remember { mutableFloatStateOf((15f *1.6f)) }
-    var customUsernameColor by remember { mutableStateOf(true) }
+
+
+
+
 
 
 
@@ -170,7 +179,7 @@ fun ChatSettingsColumn(
             Column(){
                 ChatSettingsHeaderColumn("Chat Experience")
                 ExampleText(
-                    badgeSize = 35f,
+                    badgeSize = badgeSize,
                     usernameSize=usernameSize,
                     messageSize = messageSize,
                     emoteSize = emoteSize,
@@ -186,15 +195,15 @@ fun ChatSettingsColumn(
                 badgeSize=badgeSize,
                 changeBadgeSliderValue={newValue -> changeBadgeSize(newValue)},
                 usernameSize=usernameSize,
-                changeUsernameSize = {newValue -> usernameSize = newValue},
+                changeUsernameSize = {newValue -> changeUsernameSize(newValue)},
                 messageSize = messageSize,
-                changeMessageSize = {newValue ->messageSize = newValue},
+                changeMessageSize = {newValue ->changeMessageSize(newValue)},
                 emoteSize = emoteSize,
-                changeEmoteSize = {newValue -> emoteSize = newValue},
+                changeEmoteSize = {newValue -> changeEmoteSize(newValue)},
                 lineHeight =lineHeight,
-                changeLineHeight = {newValue -> lineHeight = newValue},
+                changeLineHeight = {newValue -> changeLineHeight(newValue)},
                 customUsernameColor =customUsernameColor,
-                changeCustomUsernameColor ={newValue -> customUsernameColor = newValue}
+                changeCustomUsernameColor ={newValue -> changeCustomUsernameColor(newValue)}
             )
         }
 

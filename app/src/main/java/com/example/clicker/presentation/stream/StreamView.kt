@@ -212,15 +212,28 @@ fun StreamView(
     val getUnbanRequests:() -> Unit = remember(modViewViewModel) { {
         modViewViewModel.getUnbanRequests()
     } }
+    /*******ALL FUNCTIONS RELATED TO CHAT SETTINGS SIZE***********/
     val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
         chatSettingsViewModel.changeBadgeSize(newValue)
     } }
-
-
-    var badgeSizeTesting by remember { mutableFloatStateOf(20f) }
-    val badgeSize:() -> Float = remember(chatSettingsViewModel) { {
-        chatSettingsViewModel.badgeSize.value
+    val changeEmoteSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeEmoteSize(newValue)
     } }
+    val changeUsernameSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeUsernameSize(newValue)
+    } }
+    val changeMessageSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeMessageSize(newValue)
+    } }
+    val changeLineHeight:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeLineHeight(newValue)
+    } }
+    val changeCustomUsernameColor:(Boolean) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeCustomUsernameColor(newValue)
+    } }
+
+
+
 
 
 
@@ -270,8 +283,19 @@ fun StreamView(
                         setEmoteOnly = {newValue -> updateEmoteOnly(newValue) },
                         subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
                         setSubscriberOnly={newValue -> updateSubscriberOnly(newValue) },
+
                         badgeSize = chatSettingsViewModel.badgeSize.value,
-                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)}
+                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
+                        emoteSize = chatSettingsViewModel.emoteSize.value,
+                        changeEmoteSize={newValue -> changeEmoteSize(newValue)},
+                        usernameSize = chatSettingsViewModel.usernameSize.value,
+                        changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
+                        messageSize = chatSettingsViewModel.messageSize.value,
+                        changeMessageSize={newValue ->changeMessageSize(newValue)},
+                        lineHeight = chatSettingsViewModel.lineHeight.value,
+                        changeLineHeight = {newValue -> changeLineHeight(newValue)},
+                        customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
+                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
                     )
                 }
             ) {

@@ -142,9 +142,7 @@ fun ModViewComponentVersionThree(
     modVersionThreeViewModel:ModVersionThreeViewModel,// unstable
     chatSettingsViewModel: ChatSettingsViewModel,
 ){
-    val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
-        chatSettingsViewModel.changeBadgeSize(newValue)
-    } }
+
 
     val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -256,6 +254,25 @@ fun ModViewComponentVersionThree(
         streamViewModel.updateTemporaryMostFrequentList(it)
     } }
 
+    /*******ALL FUNCTIONS RELATED TO CHAT SETTINGS SIZE***********/
+    val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeBadgeSize(newValue)
+    } }
+    val changeEmoteSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeEmoteSize(newValue)
+    } }
+    val changeUsernameSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeUsernameSize(newValue)
+    } }
+    val changeMessageSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeMessageSize(newValue)
+    } }
+    val changeLineHeight:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeLineHeight(newValue)
+    } }
+    val changeCustomUsernameColor:(Boolean) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeCustomUsernameColor(newValue)
+    } }
 
 
     ModalBottomSheetLayout(
@@ -280,8 +297,19 @@ fun ModViewComponentVersionThree(
                 setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
                 subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
                 setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
-                badgeSize = chatSettingsViewModel.badgeSize.value ,
-                changeBadgeSize = {newValue-> changeBadgeSize(newValue)}
+
+                badgeSize = chatSettingsViewModel.badgeSize.value,
+                changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
+                emoteSize = chatSettingsViewModel.emoteSize.value,
+                changeEmoteSize={newValue -> changeEmoteSize(newValue)},
+                usernameSize = chatSettingsViewModel.usernameSize.value,
+                changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
+                messageSize = chatSettingsViewModel.messageSize.value,
+                changeMessageSize={newValue ->changeMessageSize(newValue)},
+                lineHeight = chatSettingsViewModel.lineHeight.value,
+                changeLineHeight = {newValue -> changeLineHeight(newValue)},
+                customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
+                changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
             )
         }
     ) {
