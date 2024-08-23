@@ -340,13 +340,13 @@ fun ExampleText(
         }
         withStyle(style = SpanStyle(color = Color.White)) {
             withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = messageSize.sp)) {
-                append("Test message used to show how chat can look")
+                append("Test used to show how chat can look")
             }
             appendInlineContent(feelsGoodId, "[icon]")
             appendInlineContent(feelsGoodId, "[icon]")
 
             withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = messageSize.sp)) {
-                append(" and edit the chat experience")
+                append(" and edit the chat")
             }
 
         }
