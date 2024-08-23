@@ -1,15 +1,10 @@
 package com.example.clicker.presentation.stream
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberDrawerState
@@ -20,24 +15,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.unit.sp
 import com.example.clicker.network.repository.EmoteNameUrl
-import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.modView.followerModeList
 import com.example.clicker.presentation.modView.followerModeListImmutable
-import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 
 
 import com.example.clicker.presentation.stream.views.BottomModal
 
-import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
-import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
 
 import kotlinx.coroutines.launch
 
@@ -48,6 +38,7 @@ import kotlinx.coroutines.launch
 fun HorizontalChat(
     streamViewModel: StreamViewModel,
     autoModViewModel:AutoModViewModel,
+    chatSettingsViewModel: ChatSettingsViewModel,
     modViewViewModel:ModViewViewModel,
     hideSoftKeyboard:()->Unit,
 ){
@@ -119,6 +110,10 @@ fun HorizontalChat(
         streamViewModel.updateMostFrequentEmoteList()
     } }
 
+    val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeBadgeSize(newValue)
+    } }
+
 
     //todo: Also need to refactor the dialogs
 
@@ -144,6 +139,8 @@ fun HorizontalChat(
                 setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
                 subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
                 setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+                badgeSize = chatSettingsViewModel.badgeSize.value ,
+                changeBadgeSize = {newValue-> changeBadgeSize(newValue)}
             )
         }
     ) {

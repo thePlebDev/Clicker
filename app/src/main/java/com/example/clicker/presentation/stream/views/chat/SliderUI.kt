@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.views.chat
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
@@ -21,8 +22,10 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderPositions
@@ -45,6 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -62,7 +67,7 @@ import com.example.clicker.R
 
 @Composable
 fun SliderAdvanced(
-    badgeSize: Float,
+    badgeSize:Float,
     changeBadgeSliderValue: (Float) -> Unit,
     usernameSize:Float,
     changeUsernameSize: (Float) -> Unit,
@@ -79,16 +84,21 @@ fun SliderAdvanced(
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 10.dp)) {
-        ChatSlider(
-            slideText = "Badge Size",
-            sliderValue = badgeSize,
-            changeSliderValue= {newValue ->changeBadgeSliderValue(newValue)}
+        BadgeSlider(
+            sliderValue =  badgeSize,
+            changeSliderValue= {newValue ->
+                Log.d("BadgeSliderFunc","newValue ->$newValue")
+                changeBadgeSliderValue(newValue)
+            }
         )
 
         ChatSlider(
             slideText = "Username Size",
             sliderValue = usernameSize,
-            changeSliderValue= {newValue ->changeUsernameSize(newValue)}
+            changeSliderValue= {newValue ->
+                Log.d("UsernameSliderFunc","newValue ->$newValue")
+                changeUsernameSize(newValue)
+            }
 
         )
         ChatSlider(
@@ -117,6 +127,41 @@ fun SliderAdvanced(
 
 
     }
+}
+
+
+@Composable
+fun BadgeSlider(
+    sliderValue:Float,
+    changeSliderValue:(Float)->Unit,
+){
+
+
+
+
+
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+    val textFontSize = MaterialTheme.typography.headlineMedium.fontSize
+    Column {
+        Text("Badge Size",color = onPrimaryColor, fontSize = textFontSize,)
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Slider(
+                modifier = Modifier.fillMaxWidth(0.9f),
+                value = sliderValue,
+                onValueChange = { changeSliderValue(it) },
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                steps = 3,
+                valueRange = 15f..35f
+            )
+
+            Spacer(modifier = Modifier.size(10.dp))
+        }
+    }
+
 }
 
 @Composable
@@ -312,9 +357,55 @@ fun ExampleText(
     }
     Text(text = text,
         inlineContent = inlineContent,
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(5.dp),
         color = MaterialTheme.colorScheme.onPrimary,
         lineHeight = lineHeight.sp,
 
         )
+}
+
+@Composable
+private fun MyOutlinedTextField(
+    provideName: () -> String,
+    onNameChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = provideName(),
+        onValueChange = { onNameChange(it) },
+        label = { Text("Name") }
+    )
+}
+
+@Composable
+fun HelloContent(
+    provideName: String,
+    onNameChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+    ) {
+
+        Column( Modifier
+         ) {
+            Text(
+                text = "Hello,",
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+
+        MyOutlinedTextField(provideName = { provideName }, onNameChange = onNameChange)
+
+        Button(
+            onClick = {}
+        ) {
+            Text(
+                text = "Dummy Button", modifier = Modifier
+
+            )
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.stream.views.chat
+package com.example.clicker.presentation.stream.views.chat.chatSettings
 
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
@@ -35,21 +33,22 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.stream.AdvancedChatSettings
+import com.example.clicker.presentation.stream.views.chat.ExampleText
+import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
 
 
 val followerModeList =listOf(
@@ -97,9 +96,12 @@ fun ChatSettingsColumn(
      subscriberOnly:Boolean,
      setSubscriberOnly:(Boolean) ->Unit,
 
+     badgeSize:Float,
+     changeBadgeSize:(Float)->Unit
+
 ){
     Log.d("ChatSettingsColumn","Recomping")
-    var badgeSize by remember { mutableFloatStateOf(20f) }
+
     var emoteSize by remember { mutableFloatStateOf(35f) }
     var usernameSize by remember { mutableFloatStateOf(15f) }
     var messageSize by remember { mutableFloatStateOf(15f) }
@@ -137,7 +139,7 @@ fun ChatSettingsColumn(
             SlowModeCheck(
                 setExpanded ={newValue -> },
                 chatSettingsEnabled=chatSettingsEnabled,
-                slowModeList=slowModeList,
+                slowModeList= slowModeList,
                 selectedSlowModeItem=selectedSlowModeItem,
                 changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue)},
                 titleListImmutable = slowModeListImmutable
@@ -148,7 +150,7 @@ fun ChatSettingsColumn(
             FollowersOnlyCheck(
                 chatSettingsEnabled=chatSettingsEnabled,
                 setExpanded ={newValue -> },
-                followersOnlyList=followerModeList,
+                followersOnlyList= followerModeList,
                 selectedFollowersModeItem=selectedFollowersModeItem,
                 changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue)},
                 titleListImmutable = followerModeListImmutable
@@ -168,7 +170,7 @@ fun ChatSettingsColumn(
             Column(){
                 ChatSettingsHeaderColumn("Chat Experience")
                 ExampleText(
-                    badgeSize = badgeSize,
+                    badgeSize = 35f,
                     usernameSize=usernameSize,
                     messageSize = messageSize,
                     emoteSize = emoteSize,
@@ -178,10 +180,11 @@ fun ChatSettingsColumn(
             }
         }
 
+
         item{
             SliderAdvanced(
-                badgeSize,
-                changeBadgeSliderValue={newValue -> badgeSize = newValue},
+                badgeSize=badgeSize,
+                changeBadgeSliderValue={newValue -> changeBadgeSize(newValue)},
                 usernameSize=usernameSize,
                 changeUsernameSize = {newValue -> usernameSize = newValue},
                 messageSize = messageSize,

@@ -1,59 +1,43 @@
 package com.example.clicker.presentation.stream
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Button
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.modView.followerModeList
-import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 
-import com.example.clicker.presentation.stream.views.BottomModal.BottomModalBuilder
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
-import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
+import com.example.clicker.presentation.stream.views.chat.BadgeSlider
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
-import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
 
@@ -69,6 +53,7 @@ fun StreamView(
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
     modViewViewModel: ModViewViewModel,
+    chatSettingsViewModel: ChatSettingsViewModel,
     homeViewModel: HomeViewModel,
     hideSoftKeyboard:()->Unit,
     showModView:()->Unit,
@@ -227,6 +212,16 @@ fun StreamView(
     val getUnbanRequests:() -> Unit = remember(modViewViewModel) { {
         modViewViewModel.getUnbanRequests()
     } }
+    val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeBadgeSize(newValue)
+    } }
+
+
+    var badgeSizeTesting by remember { mutableFloatStateOf(20f) }
+    val badgeSize:() -> Float = remember(chatSettingsViewModel) { {
+        chatSettingsViewModel.badgeSize.value
+    } }
+
 
 
 
@@ -247,12 +242,13 @@ fun StreamView(
         Configuration.ORIENTATION_LANDSCAPE -> {
 
             HorizontalChat(
-                streamViewModel,
-                autoModViewModel,
-                modViewViewModel,
+                streamViewModel=streamViewModel,
+                autoModViewModel=autoModViewModel,
+                modViewViewModel=modViewViewModel,
                 hideSoftKeyboard={
                     hideSoftKeyboard()
-                }
+                },
+                chatSettingsViewModel=chatSettingsViewModel,
             )
         }
         else -> {
@@ -274,6 +270,8 @@ fun StreamView(
                         setEmoteOnly = {newValue -> updateEmoteOnly(newValue) },
                         subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
                         setSubscriberOnly={newValue -> updateSubscriberOnly(newValue) },
+                        badgeSize = chatSettingsViewModel.badgeSize.value,
+                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)}
                     )
                 }
             ) {

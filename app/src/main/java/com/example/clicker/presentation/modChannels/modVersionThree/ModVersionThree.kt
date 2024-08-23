@@ -1,12 +1,8 @@
 package com.example.clicker.presentation.modChannels.modVersionThree
 
-import android.content.res.Resources
 import android.util.Log
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +11,6 @@ import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -53,40 +48,32 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Blue
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -102,8 +89,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.clients.UnbanRequestItem
-import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
@@ -116,27 +101,23 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.UnbanRequestItemImmutableCollection
 import com.example.clicker.presentation.stream.StreamViewModel
-import com.example.clicker.presentation.stream.views.BottomModal
-import com.example.clicker.presentation.stream.views.chat.ChatSettingsColumn
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.DualIconsButton
 import com.example.clicker.presentation.stream.views.chat.FullChatModView
 import com.example.clicker.presentation.stream.views.chat.ImprovedChatUI
 import com.example.clicker.presentation.stream.views.chat.isScrolledToEnd
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import com.example.clicker.presentation.modView.followerModeList
-import com.example.clicker.presentation.modView.slowModeList
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
-import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.util.UnAuthorizedResponse
-import kotlin.math.absoluteValue
 
 enum class Sections {
     ONE, TWO, THREE
@@ -158,8 +139,12 @@ fun ModViewComponentVersionThree(
     streamViewModel: StreamViewModel,// unstable
     modViewViewModel: ModViewViewModel,// unstable
     hideSoftKeyboard:()->Unit,
-    modVersionThreeViewModel:ModVersionThreeViewModel// unstable
+    modVersionThreeViewModel:ModVersionThreeViewModel,// unstable
+    chatSettingsViewModel: ChatSettingsViewModel,
 ){
+    val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
+        chatSettingsViewModel.changeBadgeSize(newValue)
+    } }
 
     val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -295,6 +280,8 @@ fun ModViewComponentVersionThree(
                 setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
                 subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
                 setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
+                badgeSize = chatSettingsViewModel.badgeSize.value ,
+                changeBadgeSize = {newValue-> changeBadgeSize(newValue)}
             )
         }
     ) {

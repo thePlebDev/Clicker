@@ -57,6 +57,7 @@ import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionTh
 import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.ui.theme.AppTheme
@@ -77,6 +78,7 @@ class StreamFragment : Fragment() {
     private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
     private val modViewViewModel:ModViewViewModel by activityViewModels()
     private val modVersionThreeViewModel:ModVersionThreeViewModel by activityViewModels()
+    private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -442,7 +444,8 @@ class StreamFragment : Fragment() {
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(binding.root, InputMethodManager.RESULT_SHOWN);
             },
-            modVersionThreeViewModel =modVersionThreeViewModel
+            modVersionThreeViewModel =modVersionThreeViewModel,
+            chatSettingsViewModel = chatSettingsViewModel
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView) //this is the horizontal view
@@ -557,6 +560,7 @@ fun setOrientation(
     binding: FragmentStreamBinding,
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
+    chatSettingsViewModel:ChatSettingsViewModel,
     homeViewModel: HomeViewModel,
     modViewDragStateViewModel: ModViewDragStateViewModel,
     modViewViewModel: ModViewViewModel,
@@ -577,6 +581,7 @@ fun setOrientation(
                     streamViewModel,
                     autoModViewModel,
                     modViewViewModel,
+                    chatSettingsViewModel,
                     homeViewModel,
                     hideSoftKeyboard ={
                         hideSoftKeyboard()
@@ -643,6 +648,7 @@ fun setOrientation(
                         },
                         modVersionThreeViewModel =modVersionThreeViewModel,
                         modViewDragStateViewModel=modViewDragStateViewModel,
+                        chatSettingsViewModel=chatSettingsViewModel
                     )
 
 
