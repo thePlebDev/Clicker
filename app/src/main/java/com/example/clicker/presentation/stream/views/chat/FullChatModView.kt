@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.example.clicker.network.clients.Emote
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.EmoteListMap
@@ -51,6 +52,7 @@ fun FullChatModView(
     deleteChatMessage:(String)->Unit,
     clickedCommandAutoCompleteText: (String) -> Unit,
     inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
@@ -108,7 +110,8 @@ fun FullChatModView(
                 isMod = isMod,
                 inlineContentMap=inlineContentMap,
                 fullMode = fullMode,
-                setDragging ={setDragging()}
+                setDragging ={setDragging()},
+                badgeListMap=badgeListMap,
 
             )
         },

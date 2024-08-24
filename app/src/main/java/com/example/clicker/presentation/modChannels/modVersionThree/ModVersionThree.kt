@@ -449,7 +449,8 @@ fun ModViewComponentVersionThree(
                         doubleClickAndDrag = modVersionThreeViewModel.doubleClickAndDrag.value,
                         setDoubleClickAndDragFalse = {
                             setDoubleClickAndDragFalse()
-                        }
+                        },
+                        badgeListMap = streamViewModel.badgeListMap.value,
                     )
                 },
                 fullChat = { setDragging ->
@@ -549,7 +550,7 @@ fun ModViewComponentVersionThree(
                         changeActualTextFieldValue = { text, textRange ->
                             changeActualTextFieldValue(text, textRange)
                         },
-
+                        badgeListMap= streamViewModel.badgeListMap.value,
 
                         )
 
@@ -1487,9 +1488,10 @@ fun SmallChat(
     deleteChatMessage:(String)->Unit,
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
-    setDoubleClickAndDragFalse:()->Unit
+    setDoubleClickAndDragFalse:()->Unit,
 
     ){
     val lazyColumnListState = rememberLazyListState()
@@ -1518,7 +1520,8 @@ fun SmallChat(
                 inlineContentMap=inlineContentMap,
                 setDragging = {value -> setDragging(value)},
                 doubleClickAndDrag=doubleClickAndDrag,
-                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                badgeListMap=badgeListMap,
 
                 )
         },
@@ -1659,9 +1662,11 @@ fun SmallChatUILazyColumn(
     modifier: Modifier,
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
-    setDoubleClickAndDragFalse:()->Unit
+    setDoubleClickAndDragFalse:()->Unit,
+
 ){
     val coroutineScope = rememberCoroutineScope()
     val chatUIScope = remember(){ ImprovedChatUI() }
@@ -1719,7 +1724,9 @@ fun SmallChatUILazyColumn(
                         deleteChatMessage(messageId)
                                       },
                     isMod = false,
-                    inlineContentMap=inlineContentMap
+                    inlineContentMap=inlineContentMap,
+                    badgeListMap=badgeListMap,
+
 
                 )
 
