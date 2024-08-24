@@ -28,6 +28,7 @@ import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.util.EmoteParsing
 import com.example.clicker.network.repository.util.handleException
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -521,25 +522,19 @@ class TwitchEmoteImpl @Inject constructor(
 
 
             val parsedEmoteData = data?.map{
-                EmoteNameUrlEmoteType(
-                    name = it.set_id,
+                ChatBadgePair(
+                    id = it.set_id,
                     url = it.versions[0].image_url_1x,
-                    emoteType = EmoteTypes.FOLLOWERS
+
                 )
             }?: listOf()
 
-            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
-                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
-            }
-            _emoteList.value = emoteList.value.copy(
-                map = _emoteList.value.map + innerInlineContentMap
-            )
-            emit(Response.Success(true))
+
+            emit(Response.Success(parsedEmoteData))
             Log.d("getGlobalChatBadges", "SUCCESS")
             Log.d("getGlobalChatBadges", "data ->${data}")
         }else{
-            emit(Response.Success(false))
+            emit(Response.Failure(Exception(Exception("Failed"))))
             Log.d("getGlobalChatBadges", "FAILED")
             Log.d("getGlobalChatBadges", "code ->${response.code()}")
             Log.d("getGlobalChatBadges", "message ->${response.message()}")

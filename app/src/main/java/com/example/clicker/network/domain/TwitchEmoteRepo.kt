@@ -8,6 +8,7 @@ import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
@@ -89,7 +90,7 @@ interface TwitchEmoteRepo {
 
 
     /*****BELOW ARE THE METHODS THAT ARE USED TO GET THE CHAT BADGES****/
-    suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String): Flow<Response<Boolean>>
+    suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String): Flow<Response<List<ChatBadgePair>>>
 
 }
 

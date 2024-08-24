@@ -40,6 +40,7 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
@@ -68,6 +69,7 @@ class HomeFragment : Fragment() {
     private val modViewViewModel: ModViewViewModel by activityViewModels()
     private val logoutViewModel: LogoutViewModel by activityViewModels()
     private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
+    private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -152,7 +154,8 @@ class HomeFragment : Fragment() {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
                             },
                             logoutViewModel=logoutViewModel,
-                            modVersionThreeViewModel =modVersionThreeViewModel
+                            modVersionThreeViewModel =modVersionThreeViewModel,
+                            chatSettingsViewModel=chatSettingsViewModel
 
                         )
                     }

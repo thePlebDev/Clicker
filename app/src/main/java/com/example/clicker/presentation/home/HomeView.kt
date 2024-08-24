@@ -47,6 +47,7 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 
 import com.example.clicker.util.WebSocketResponse
 
@@ -55,6 +56,7 @@ import com.example.clicker.util.WebSocketResponse
 fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
+    chatSettingsViewModel:ChatSettingsViewModel,
     logoutViewModel: LogoutViewModel,
     onNavigate: (Int) -> Unit,
     autoModViewModel: AutoModViewModel,
@@ -110,7 +112,7 @@ fun ValidationView(
                 streamViewModel.state.value.clientId,
                 streamViewModel.state.value.broadcasterId,
             )
-            streamViewModel.getGlobalChatBadges(
+            chatSettingsViewModel.getGlobalChatBadges(
                 oAuthToken =homeViewModel.state.value.oAuthToken,
                 clientId = streamViewModel.state.value.clientId,
             )

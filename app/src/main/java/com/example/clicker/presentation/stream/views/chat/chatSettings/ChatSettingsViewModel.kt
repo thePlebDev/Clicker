@@ -9,6 +9,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,12 +21,17 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ChatBadgePair(
@@ -34,9 +40,10 @@ data class ChatBadgePair(
 )
 @HiltViewModel
 class ChatSettingsViewModel @Inject constructor(
-
+    private val twitchEmoteImpl: TwitchEmoteRepo,
 ): ViewModel() {
 
+    //todo: Make a request to get all the global chat badges
 
 
 /************************ ALL THE CHAT SIZE RELATED THINGS*******************************/
@@ -52,8 +59,19 @@ class ChatSettingsViewModel @Inject constructor(
     val lineHeight: State<Float> = _lineHeight
     private val _customUsernameColor= mutableStateOf(true)  // Initial value
     val customUsernameColor: State<Boolean> = _customUsernameColor
-    private val chatBadgeList = listOf(
-        // HARD CODED SO EVEN IF REQUEST TO GET BADGES FAILS, USER CAN STILL SEE SUBS AND MODS
+//    private val chatBadgeList = listOf(
+//        // HARD CODED SO EVEN IF REQUEST TO GET BADGES FAILS, USER CAN STILL SEE SUBS AND MODS
+//        ChatBadgePair(
+//            url ="https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1",
+//            id="subscriber"
+//        ),
+//        ChatBadgePair(
+//            url ="https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1",
+//            id="moderator"
+//        )
+//    )
+
+    val chatBadgeList =   mutableStateListOf<ChatBadgePair>(
         ChatBadgePair(
             url ="https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1",
             id="subscriber"
@@ -63,7 +81,6 @@ class ChatSettingsViewModel @Inject constructor(
             id="moderator"
         )
     )
-
     fun changeBadgeSize(newValue:Float){
 
         _badgeSize.value = newValue
@@ -74,6 +91,7 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createNewMap():Map<String, InlineTextContent>{
+
         val newMap = chatBadgeList.map {chatBadgeValue ->
             Pair(
                 chatBadgeValue.id,
@@ -122,6 +140,35 @@ class ChatSettingsViewModel @Inject constructor(
 
      private val inlineContentMapGlobalBadgeList = mutableStateOf( EmoteListMap(createNewMap()))
      val globalChatBadgesMap: State<EmoteListMap> =inlineContentMapGlobalBadgeList
+
+    fun getGlobalChatBadges(
+        oAuthToken: String,
+        clientId: String,
+    )= viewModelScope.launch(Dispatchers.IO){
+
+        if(chatBadgeList.toList().size==2){ //this being true indicates that there has been no call to 
+            twitchEmoteImpl.getGlobalChatBadges(
+                oAuthToken,clientId
+            ).collect{response->
+
+                when(response){
+                    is Response.Loading->{}
+                    is Response.Success->{
+                        if(response.data.isNotEmpty()){
+                            chatBadgeList.clear()
+                            chatBadgeList.addAll(response.data)
+                            inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewMap())
+
+                        }
+
+                    }
+                    is Response.Failure->{}
+                }
+
+            }
+        }
+
+        }
 
 
 }
