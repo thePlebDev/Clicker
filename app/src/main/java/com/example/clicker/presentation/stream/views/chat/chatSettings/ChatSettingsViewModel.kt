@@ -24,11 +24,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.domain.ChatSettingsDataStore
+import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -41,13 +44,14 @@ data class ChatBadgePair(
 @HiltViewModel
 class ChatSettingsViewModel @Inject constructor(
     private val twitchEmoteImpl: TwitchEmoteRepo,
+    private val chatSettingsDataStore: ChatSettingsDataStore,
 ): ViewModel() {
 
     //todo: Make a request to get all the global chat badges
 
 
 /************************ ALL THE CHAT SIZE RELATED THINGS*******************************/
-    private val _badgeSize = mutableStateOf(40f)  // Initial value
+    private val _badgeSize = mutableStateOf(20f)  // Initial value
     val badgeSize: State<Float> = _badgeSize
     private val _emoteSize = mutableStateOf(35f)  // Initial value
     val emoteSize: State<Float> = _emoteSize
@@ -59,19 +63,11 @@ class ChatSettingsViewModel @Inject constructor(
     val lineHeight: State<Float> = _lineHeight
     private val _customUsernameColor= mutableStateOf(true)  // Initial value
     val customUsernameColor: State<Boolean> = _customUsernameColor
-//    private val chatBadgeList = listOf(
-//        // HARD CODED SO EVEN IF REQUEST TO GET BADGES FAILS, USER CAN STILL SEE SUBS AND MODS
-//        ChatBadgePair(
-//            url ="https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1",
-//            id="subscriber"
-//        ),
-//        ChatBadgePair(
-//            url ="https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1",
-//            id="moderator"
-//        )
-//    )
+
+
 
     val chatBadgeList =   mutableStateListOf<ChatBadgePair>(
+        // HARD CODED SO EVEN IF REQUEST TO GET BADGES FAILS, USER CAN STILL SEE SUBS AND MODS
         ChatBadgePair(
             url ="https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1",
             id="subscriber"
@@ -81,15 +77,29 @@ class ChatSettingsViewModel @Inject constructor(
             id="moderator"
         )
     )
+    init{
+        getStoredBadgeSize()
+    }
+    private fun getStoredBadgeSize(){
+        viewModelScope.launch {
+            chatSettingsDataStore.getBadgeSize().collect{storedBadgeSize ->
+                _badgeSize.value = storedBadgeSize
+            }
+            createNewMap()
+        }
+    }
     fun changeBadgeSize(newValue:Float){
 
         _badgeSize.value = newValue
-
-
         inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewMap())
+        storeBadgeSizeLocally(newValue)
 
 
     }
+    private fun storeBadgeSizeLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setBadgeSize(newValue)
+    }
+
     private fun createNewMap():Map<String, InlineTextContent>{
 
         val newMap = chatBadgeList.map {chatBadgeValue ->
@@ -113,6 +123,7 @@ class ChatSettingsViewModel @Inject constructor(
                 }
             )
         }.toMap()
+
         return newMap
 
     }
@@ -146,7 +157,7 @@ class ChatSettingsViewModel @Inject constructor(
         clientId: String,
     )= viewModelScope.launch(Dispatchers.IO){
 
-        if(chatBadgeList.toList().size==2){ //this being true indicates that there has been no call to 
+        if(chatBadgeList.toList().size==2){ //this being true indicates that there has been no call to
             twitchEmoteImpl.getGlobalChatBadges(
                 oAuthToken,clientId
             ).collect{response->

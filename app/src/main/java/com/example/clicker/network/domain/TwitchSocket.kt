@@ -58,7 +58,8 @@ interface TwitchSocket {
      * */
     fun run(
         channelName: String?,
-        username: String
+        username: String,
+        oAuthToken:String,
     ): Unit
 
     /**

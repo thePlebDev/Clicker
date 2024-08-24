@@ -3,6 +3,7 @@ package com.example.clicker.di.modules
 import android.content.Context
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BetterTTVEmoteClient
 import com.example.clicker.network.clients.TwitchAuthenticationClient
@@ -45,6 +46,7 @@ import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.AuthenticationEvent
 import com.example.clicker.presentation.AuthenticationEventBus
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -164,6 +166,11 @@ object SingletonModule {
             .build().create(TwitchModClient::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }
     @Singleton
     @Provides
     fun providesTokenDataStore(
@@ -171,6 +178,16 @@ object SingletonModule {
     ): TwitchDataStore {
         return TokenDataStore(appContext)
     }
+    @Singleton
+    @Provides
+    fun providesChatSettingsDataStore(
+        twitchTokenDataStore: TokenDataStore
+    ): ChatSettingsDataStore {
+        return twitchTokenDataStore
+    }
+
+
+
 
     @Singleton
     @Provides
@@ -215,7 +232,7 @@ object SingletonModule {
         tokenDataStore: TwitchDataStore,
         twitchParsingEngine: ParsingEngine
     ): TwitchSocket {
-        return TwitchWebSocket(tokenDataStore,twitchParsingEngine)
+        return TwitchWebSocket(twitchParsingEngine)
     }
 
 
@@ -250,3 +267,4 @@ object SingletonModule {
 
 
 }
+

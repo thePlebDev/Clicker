@@ -554,24 +554,25 @@ class StreamViewModel @Inject constructor(
         }
     }
 
+    //for right now this has been removed 2024-08-24
     //todo:THIS IS THE MONITORING of the network status
     init{
-        viewModelScope.launch {
-            networkMonitoring.networkStatus.collect{nullableValue ->
-                nullableValue?.also{nonNullableValue ->
-                    _uiState.value = _uiState.value.copy(
-                        networkStatus = nonNullableValue
-                    )
-                    if(nullableValue){
-                        val username =_uiState.value.login
-                        val channelName = _channelName.value?:""
-                        webSocket.run(channelName, username)
-                    }
-
-                }
-
-            }
-        }
+//        viewModelScope.launch {
+//            networkMonitoring.networkStatus.collect{nullableValue ->
+//                nullableValue?.also{nonNullableValue ->
+//                    _uiState.value = _uiState.value.copy(
+//                        networkStatus = nonNullableValue
+//                    )
+//                    if(nullableValue){
+//                        val username =_uiState.value.login
+//                        val channelName = _channelName.value?:""
+//                        webSocket.run(channelName, username)
+//                    }
+//
+//                }
+//
+//            }
+//        }
     }
 
     fun getGlobalChatBadges(
@@ -1091,6 +1092,8 @@ class StreamViewModel @Inject constructor(
      * */
     private fun startWebSocket(channelName: String) = viewModelScope.launch {
         Log.d("startWebSocket", "startWebSocket() is being called")
+        val oAuthToken =_uiState.value.oAuthToken
+
 
         if(_advancedChatSettingsState.value.noChatMode){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
@@ -1098,7 +1101,7 @@ class StreamViewModel @Inject constructor(
         }else{
 
             val username = _uiState.value.login
-            webSocket.run(channelName, username)
+            webSocket.run(channelName, username,oAuthToken)
             listChats.clear()
         }
     }
