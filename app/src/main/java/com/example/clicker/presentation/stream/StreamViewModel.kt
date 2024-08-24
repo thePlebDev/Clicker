@@ -223,6 +223,7 @@ class StreamViewModel @Inject constructor(
     val inlineTextContentTest = twitchEmoteImpl.emoteList
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
+    val badgeListMap = twitchEmoteImpl.globalChatBadges
 
     private val _globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = mutableStateOf(Response.Loading)
 

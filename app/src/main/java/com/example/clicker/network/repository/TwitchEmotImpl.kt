@@ -49,7 +49,9 @@ class TwitchEmoteImpl @Inject constructor(
     private val modId = "moderator"
     private val subId = "subscriber"
     private val monitorId ="monitorIcon"
+    private val badgeSize:Float =20f
 
+    //todo: this needs to be moved to the badgeListMap
     /** - inlineContentMap represents the inlineConent for the sub,mod and SeemsGood icons.
      * This is created before the [getGlobalEmotes] method is called so that there can still be mod and sub icons as soon as the
      * user loads into chat
@@ -57,66 +59,7 @@ class TwitchEmoteImpl @Inject constructor(
      *
      * */
     private val inlineContentMap = mapOf(
-        Pair(
-
-            modId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 20.sp,
-                    height = 20.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = modBadge,
-                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-        Pair(
-
-            subId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 20.sp,
-                    height = 20.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                AsyncImage(
-                    model = subBadge,
-                    contentDescription = stringResource(R.string.sub_badge_icon_description),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
-                )
-            }
-        ),
-        Pair(
-
-            monitorId,
-            InlineTextContent(
-
-                Placeholder(
-                    width = 20.sp,
-                    height = 20.sp,
-                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                )
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.visibility_24),
-                    "contentDescription",
-                    tint= Color.Yellow,
-                    modifier = Modifier.size(35.dp)
-                )
-            }
-        ),
-        Pair(
+        Pair( //todo: This one can stay
 
             feelsGoodId,
             InlineTextContent(
@@ -138,9 +81,57 @@ class TwitchEmoteImpl @Inject constructor(
         ),
 
         )
+    /***********************END OF THE inlineContentMap****************************************/
+    private val inlineContentMapGlobalBadgeList = mapOf(
+        Pair( //todo: This should get moved
+
+            modId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = badgeSize.sp,
+                    height = badgeSize.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = modBadge,
+                    contentDescription = stringResource(R.string.moderator_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+        Pair(
+
+            subId,
+            InlineTextContent(
+
+                Placeholder(
+                    width = badgeSize.sp,
+                    height = badgeSize.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = subBadge,
+                    contentDescription = stringResource(R.string.sub_badge_icon_description),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                )
+            }
+        ),
+
+        )
     private val _emoteList: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMap))
 
     override val emoteList: State<EmoteListMap> = _emoteList //this is what is shown in the chat UI(not emote box UI but chat UI )
+
+    private val _globalChatBadges: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMapGlobalBadgeList))
+
+    override val globalChatBadges: State<EmoteListMap> = _globalChatBadges
 
     private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
@@ -369,10 +360,10 @@ class TwitchEmoteImpl @Inject constructor(
         emoteValue: EmoteNameUrlEmoteType,
         innerInlineContentMap: MutableMap<String, InlineTextContent>
     ){
-        emoteParsing.createMapValueForComposeChatChannelEmotes(
-            emoteValue,
-            innerInlineContentMap
-        )
+//        emoteParsing.createMapValueForComposeChatChannelEmotes(
+//            emoteValue,
+//            innerInlineContentMap
+//        )
 
     }
 

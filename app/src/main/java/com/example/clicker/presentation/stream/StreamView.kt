@@ -440,6 +440,8 @@ fun StreamView(
                             changeActualTextFieldValue={text,textRange->
                                 changeActualTextFieldValue(text,textRange)
                             },
+                            badgeListMap= chatSettingsViewModel.globalChatBadgesMap.value,
+
 
 
 

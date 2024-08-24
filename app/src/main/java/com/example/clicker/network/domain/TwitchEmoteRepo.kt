@@ -22,6 +22,9 @@ import kotlinx.coroutines.flow.Flow
  * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
  * @property emoteBoardChannelList a [State] object containing a map of all the channel emotes.These are the channel emotes that the
  * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
+
+ * @property globalChatBadges a [State] object containing a map of all the global chat badges.
+ * This holds all of the combined values from Twitch's global emote chat badge enpoint
  *
  * @property globalBetterTTVEmotes a [State] object containing a [IndivBetterTTVEmoteList] object that represents all the global BetterTTV emotes. You can
  * read more about the BetterTTV global emote, [HERE](https://betterttv.com/developers/api#global-emotes)
@@ -46,6 +49,8 @@ interface TwitchEmoteRepo {
 
     val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList>
     val sharedBetterTTVEmotes: State<IndivBetterTTVEmoteList>
+
+    val globalChatBadges: State<EmoteListMap>
 
     /**
      * getGlobalEmotes a function used to make a request to the Twitch servers to access the global emotes

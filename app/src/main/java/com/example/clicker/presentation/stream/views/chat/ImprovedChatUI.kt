@@ -43,6 +43,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -89,6 +90,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -158,6 +161,7 @@ fun ChatUI(
     inlineContentMap: EmoteListMap,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
+    badgeListMap:EmoteListMap,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
@@ -173,6 +177,7 @@ fun ChatUI(
 
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String,TextRange)->Unit,
+
 
 ){
     val lazyColumnListState = rememberLazyListState()
@@ -209,7 +214,8 @@ fun ChatUI(
                 modifier=modifier,
                 deleteChatMessage={messageId ->deleteChatMessage(messageId)},
                 isMod = isMod,
-                inlineContentMap=inlineContentMap
+                inlineContentMap=inlineContentMap,
+                badgeListMap=badgeListMap,
 
             )
         },
@@ -853,7 +859,7 @@ fun EmoteBottomUI(
                 .size(25.dp)
                 .clickable {
                     Log.d("EmoteBottomUI", "RECENT")
-                   scrollToMostFrequentlyUsedEmotes()
+                    scrollToMostFrequentlyUsedEmotes()
                 },
                 tint = MaterialTheme.colorScheme.onPrimary,
                 painter = painterResource(id =R.drawable.autorenew_24), contentDescription = "click to scroll to most recent emotes")
@@ -1260,8 +1266,10 @@ class ImprovedChatUI(){
         modifier: Modifier,
         isMod: Boolean,
         inlineContentMap: EmoteListMap,
+        badgeListMap:EmoteListMap,
         fullMode:Boolean= false,
         setDragging:()->Unit ={},
+
     ){
         val coroutineScope = rememberCoroutineScope()
         LazyColumn(
@@ -1322,7 +1330,9 @@ class ImprovedChatUI(){
                         deleteChatMessage(messageId)
                                       },
                     isMod = false,
-                    inlineContentMap=inlineContentMap
+                    inlineContentMap=inlineContentMap,
+                    badgeListMap=badgeListMap,
+
 
                 )
 
@@ -1346,7 +1356,8 @@ class ImprovedChatUI(){
         doubleClickMessage:(String)->Unit,
         deleteChatMessage:(String)->Unit,
         isMod:Boolean,
-        inlineContentMap:EmoteListMap
+        inlineContentMap:EmoteListMap,
+        badgeListMap:EmoteListMap,
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -1385,7 +1396,9 @@ class ImprovedChatUI(){
                                     },
                                     offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
                                     doubleClickMessage ={username ->doubleClickMessage(username)},
-                                    inlineContentMap=inlineContentMap
+                                    inlineContentMap=inlineContentMap,
+                                    badgeListMap=badgeListMap,
+
                                 )
                             },
                             quarterSwipeLeftAction={
@@ -1436,7 +1449,9 @@ class ImprovedChatUI(){
                                 },
                                 offset = 0f,
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
-                                inlineContentMap=inlineContentMap
+                                inlineContentMap=inlineContentMap,
+                                badgeListMap=badgeListMap,
+
                             )
 
 
@@ -1463,7 +1478,9 @@ class ImprovedChatUI(){
                                         },
                                         offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
                                         doubleClickMessage ={username ->doubleClickMessage(username)},
-                                        inlineContentMap=inlineContentMap
+                                        inlineContentMap=inlineContentMap,
+                                        badgeListMap=badgeListMap,
+
                                     )
                                 }
 
@@ -1517,7 +1534,9 @@ class ImprovedChatUI(){
                                 },
                                 offset = 0f,
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
-                                inlineContentMap=inlineContentMap
+                                inlineContentMap=inlineContentMap,
+                                badgeListMap=badgeListMap,
+
                             )
                         }
                     }
@@ -1645,7 +1664,8 @@ fun ClickableCard(
     showBottomModal:()->Unit,
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     doubleClickMessage:(String)->Unit,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
 
 
     ){
@@ -1688,7 +1708,8 @@ fun ClickableCard(
                     twitchUser = twitchUser,
                     color = color,
                     fontSize = 13.sp,
-                    inlineContentMap=inlineContentMap
+                    inlineContentMap=inlineContentMap,
+                    badgeListMap=badgeListMap,
 
                 )
             }
@@ -2378,7 +2399,8 @@ fun TextWithChatBadges(
     twitchUser: TwitchUserData,
     color: Color,
     fontSize: TextUnit,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
 
     ){
     Row(
@@ -2395,7 +2417,8 @@ fun TextWithChatBadges(
             textSize = fontSize,
             messageList=twitchUser.messageList,
             inlineContentMap =inlineContentMap,
-            badgeList = twitchUser.badges
+            badgeList = twitchUser.badges,
+            badgeListMap =badgeListMap,
 
         )
 
@@ -2407,7 +2430,7 @@ fun TextWithChatBadges(
  * */
 /**
  *
- * ChatBadges is the composable that is responsible for showing the chat badges(mod or sub) beside the users username.
+ * ChatBadges is the composable that is responsible for showing the chat badges(mod,sub and global) beside the users username.
  * Also, it shows all of the normal chat messages(with their emotes)
  *
  * @param username a String representing the user that is currently sending chats
@@ -2428,21 +2451,30 @@ fun ChatBadges(
     textSize: TextUnit,
     messageList:List<MessageToken>,
     badgeList:List<String>,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    badgeListMap:EmoteListMap,
 ) {
 
-    Log.d("ChatBadgesusername","username->$messageList")
 
+    val newMap = inlineContentMap.map +badgeListMap.map
+
+    //subscriber
+    /***********TESTING OUT THE EMOTES MAPS*******************/
+
+
+
+    /***********END TESTING OUT THE EMOTES MAPS*******************/
     //moderator subscriber
     Log.d("LoggingBadges","list -> $badgeList")
 
     val text = buildAnnotatedString {
 
         for(item in badgeList){
-            if(inlineContentMap.map.containsKey(item)){
-                withStyle(style = SpanStyle(fontSize = 10.sp)) {
+            if(badgeListMap.map.containsKey(item)){
+                withStyle(style = SpanStyle(fontSize = 15.sp)) {
                     appendInlineContent(item, item)
                 }
+
             }
         }
 
@@ -2467,7 +2499,7 @@ fun ChatBadges(
     Row(){
         Text(
             text = text,
-            inlineContent = inlineContentMap.map,
+            inlineContent = newMap,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),

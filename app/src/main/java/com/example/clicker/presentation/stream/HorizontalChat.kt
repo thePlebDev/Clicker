@@ -305,6 +305,8 @@ fun HorizontalChat(
                 changeActualTextFieldValue={text,textRange->
                     changeActualTextFieldValue(text, textRange)
                 },
+                badgeListMap= streamViewModel.badgeListMap.value,
+
 
 
             )
