@@ -240,6 +240,7 @@ fun StreamView(
 
 
 
+
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current

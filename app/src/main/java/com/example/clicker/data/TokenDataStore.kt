@@ -1,12 +1,15 @@
 package com.example.clicker.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +22,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "to
 
 class TokenDataStore @Inject constructor(
     private val context: Context
-):TwitchDataStore {
+):TwitchDataStore,ChatSettingsDataStore {
 
     private val _oneClickActionState = MutableStateFlow(false)
      val oneClickActionState = _oneClickActionState.asStateFlow() // this is the text data shown to the user
@@ -32,6 +35,8 @@ class TokenDataStore @Inject constructor(
     private val userLoggedOutStatusKey = booleanPreferencesKey("user_logged_out_loading_status")
 
     private val clientIdKey = stringPreferencesKey("client_id")
+
+    private val badgeSizeIdKey = floatPreferencesKey("badge_size_id")
 
 
     override suspend fun setOAuthToken(oAuthToken: String) {
@@ -110,6 +115,30 @@ class TokenDataStore @Inject constructor(
                 preferences[clientIdKey] ?: ""
             }
         return clientId
+    }
+
+    override suspend fun setBadgeSize(badgeSize: Float) {
+        try {
+            context.dataStore.edit { tokens ->
+                tokens[badgeSizeIdKey] = badgeSize
+            }
+            Log.d("TokenDataStoreException", "SUCCESS")
+        } catch (e: Exception) {
+            Log.d("TokenDataStoreException", "Error setting badge size")
+            Log.d("TokenDataStoreException", "cause-> ${e.cause}")
+            Log.d("TokenDataStoreException", "localizedMessage-> ${e.localizedMessage}")
+            Log.d("TokenDataStoreException", "message-> ${e.message}")
+            Log.d("TokenDataStoreException", "stackTrace-> ${e.stackTrace}")
+        }
+
+    }
+
+    override fun getBadgeSize(): Flow<Float> {
+        val badgeSize: Flow<Float> = context.dataStore.data
+            .map { preferences ->
+                preferences[badgeSizeIdKey] ?: 20f
+            }
+        return badgeSize
     }
 }
 

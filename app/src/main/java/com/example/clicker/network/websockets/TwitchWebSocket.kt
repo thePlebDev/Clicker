@@ -95,7 +95,6 @@ enum class MessageType {
 }
 
 class TwitchWebSocket @Inject constructor(
-    private val tokenDataStore: TwitchDataStore,
     private val twitchParsingEngine: ParsingEngine
 ) : WebSocketListener(), TwitchSocket {
 
@@ -128,6 +127,7 @@ class TwitchWebSocket @Inject constructor(
     private val webSocketURL = "wss://irc-ws.chat.twitch.tv:443"
     var streamerChannelName = ""
     private var loggedInUsername = ""
+    private var oAuthenticationToken =""
 
 
     private val _state = MutableStateFlow(initialValue)
@@ -158,8 +158,10 @@ class TwitchWebSocket @Inject constructor(
     private val _bannedUsername: MutableStateFlow<String?> = MutableStateFlow(null)
     val bannedUsername = _bannedUsername.asStateFlow() // this is the text data shown to the user
 
-    override fun run(channelName: String?, username: String) {
+    //todo: This needs to be passed the oAuthtoken
+    override fun run(channelName: String?, username: String,oAuthToken:String) {
         loggedInUsername = username
+        oAuthenticationToken = oAuthToken
         if (channelName != null) {
             streamerChannelName = channelName
             if (webSocket != null) {
@@ -197,16 +199,13 @@ class TwitchWebSocket @Inject constructor(
         openChat(webSocket)
     }
 
-    fun openChat(webSocket: WebSocket) = GlobalScope.launch {
+    fun openChat(webSocket: WebSocket){
         webSocket.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
-
-        tokenDataStore.getOAuthToken().collect { oAuthToken ->
             Log.d("NICKUSERNAME", "state --> $loggedInUsername")
-            Log.d("OAuthtokenStoof", oAuthToken)
-            webSocket.send("PASS oauth:$oAuthToken")
+            Log.d("OAuthtokenStoof", "stored token ->$oAuthenticationToken")
+            webSocket.send("PASS oauth:$oAuthenticationToken")
             webSocket.send("NICK $loggedInUsername")
             webSocket.send("JOIN #$streamerChannelName")
-        }
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
@@ -293,9 +292,11 @@ class TwitchWebSocket @Inject constructor(
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         // t.printStackTrace()
-        Log.d("websocketStooffail", "onFailure: ${t.printStackTrace()}")
-        Log.d("websocketStooffail", "onFailure: ${t.message}")
-        Log.d("websocketStooffail", "onFailure: ${t.cause}")
+        Log.d("websocketStooffail", "onFailure stack->: ${t.printStackTrace()}")
+        Log.d("websocketStooffail", "onFailure message->: ${t.message}")
+        Log.d("websocketStooffail", "onFailure cause-> : ${t.cause}")
+        Log.d("websocketStooffail", "onFailure localizedMessage-> : ${t.localizedMessage}")
+        Log.d("websocketStooffail", "onFailure stackTraceToString-> : ${t.stackTraceToString()}")
 
 
         _hasWebSocketFailed.tryEmit(true)
