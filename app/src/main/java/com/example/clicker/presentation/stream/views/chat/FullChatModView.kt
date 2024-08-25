@@ -74,7 +74,12 @@ fun FullChatModView(
     usernameSize:Float,
     messageSize:Float,
     lineHeight:Float,
-    useCustomUsernameColors:Boolean
+    useCustomUsernameColors:Boolean,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap: EmoteListMap,
+    channelBetterTTVEmoteContentMap: EmoteListMap,
+    sharedBetterTTVEmoteContentMap: EmoteListMap
 
 
 ){
@@ -119,7 +124,12 @@ fun FullChatModView(
                 usernameSize=usernameSize,
                 messageSize=messageSize,
                 lineHeight=lineHeight,
-                useCustomUsernameColors=useCustomUsernameColors
+                useCustomUsernameColors=useCustomUsernameColors,
+                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
             )
         },

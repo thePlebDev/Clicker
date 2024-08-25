@@ -445,7 +445,12 @@ fun StreamView(
                             usernameSize = chatSettingsViewModel.usernameSize.value,
                             messageSize = chatSettingsViewModel.messageSize.value,
                             lineHeight=chatSettingsViewModel.lineHeight.value,
-                            useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value
+                            useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+                            globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                            channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                            globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                            channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                            sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                         )
 
 

@@ -40,6 +40,7 @@ class TokenDataStore @Inject constructor(
     private val badgeSizeIdKey = floatPreferencesKey("badge_size_id")
     private val usernameSizeIdKey = floatPreferencesKey("username_size_id")
     private val messageSizeIdKey = floatPreferencesKey("message_size_id")
+    private val emoteSizeIdKey = floatPreferencesKey("emote_size_id")
     private val lineHeightIdKey = floatPreferencesKey("line_height_id")
     private val customUsernameColorIdKey = booleanPreferencesKey("custom_username_color_id")
 
@@ -177,6 +178,25 @@ class TokenDataStore @Inject constructor(
                 preferences[messageSizeIdKey] ?: 15f
             }
         return badgeSize
+    }
+
+    override suspend fun setEmoteSize(emoteSize: Float) {
+        try {
+            context.dataStore.edit { tokens ->
+                tokens[emoteSizeIdKey] = emoteSize
+            }
+            Log.d("TokenDataStoreException", "SUCCESS")
+        } catch (e: Exception) {
+        }
+
+    }
+
+    override fun getEmoteSize(): Flow<Float> {
+        val emoteSize: Flow<Float> = context.dataStore.data
+            .map { preferences ->
+                preferences[emoteSizeIdKey] ?: 35f
+            }
+        return emoteSize
     }
 
     override suspend fun setLineHeight(lineHeight: Float) {

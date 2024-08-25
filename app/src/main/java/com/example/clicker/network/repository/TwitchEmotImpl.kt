@@ -31,6 +31,8 @@ import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -51,6 +53,8 @@ class TwitchEmoteImpl @Inject constructor(
     private val subId = "subscriber"
     private val monitorId ="monitorIcon"
     private val badgeSize:Float =20f
+
+
 
     //todo: this needs to be moved to the badgeListMap
     /** - inlineContentMap represents the inlineConent for the sub,mod and SeemsGood icons.
@@ -152,6 +156,25 @@ class TwitchEmoteImpl @Inject constructor(
 
 
 
+
+    //this is used to hold the list for the chat UI states
+    private val _combinedEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val combinedEmoteList: StateFlow<List<EmoteNameUrl>> = _combinedEmoteList
+
+    private val _channelEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val channelEmoteList: StateFlow<List<EmoteNameUrl>> = _channelEmoteList
+
+    private val _globalBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val globalBetterTTVEmoteList: StateFlow<List<EmoteNameUrl>> = _globalBetterTTVEmoteList
+
+    private val _channelBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val channelBetterTTVEmoteList: StateFlow<List<EmoteNameUrl>> = _channelBetterTTVEmoteList
+
+    private val _sharedBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val sharedBetterTTVEmoteList: StateFlow<List<EmoteNameUrl>> = _sharedBetterTTVEmoteList
+
+
+
     override fun getGlobalEmotes(
         oAuthToken: String,
         clientId: String,
@@ -161,6 +184,7 @@ class TwitchEmoteImpl @Inject constructor(
              authorization = "Bearer $oAuthToken",
              clientId = clientId
          )
+
           val newInnerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
 
@@ -169,6 +193,7 @@ class TwitchEmoteImpl @Inject constructor(
               val parsedEmoteData = data?.map {
                   EmoteNameUrl(it.name,it.images.url_1x)
               }
+              _combinedEmoteList.tryEmit(parsedEmoteData?: listOf())
               //todo: this function signature is terrible, confusing  and needs to be changed
               globalEmoteParsing(
                   newInnerInlineContentMap=newInnerInlineContentMap,
@@ -268,6 +293,13 @@ class TwitchEmoteImpl @Inject constructor(
             val sortedEmoteData = followerEmotes + subscriberEmotes
 
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
+            val newChannelEmoteList = parsedEmoteData?.map{
+                EmoteNameUrl(
+                    name = it.name,
+                    url = it.url
+                )
+            }
+            _channelEmoteList.tryEmit(newChannelEmoteList ?: listOf())
 
 
             //todo: this function signature is terrible, confusing  and needs to be changed
@@ -383,6 +415,13 @@ class TwitchEmoteImpl @Inject constructor(
                 url="https://cdn.betterttv.net/emote/${it.id}/1x",
                 emoteType = EmoteTypes.FOLLOWERS
             )}
+            val globalBetterTTVEmoteList = parsedEmoteData?.map{
+                EmoteNameUrl(
+                    name = it.name,
+                    url = it.url
+                )
+            }
+            _globalBetterTTVEmoteList.tryEmit(globalBetterTTVEmoteList ?: listOf())
             val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
             parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
                 createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
@@ -434,6 +473,21 @@ class TwitchEmoteImpl @Inject constructor(
 //            _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
 //                list = data
 //            )
+            //todo: same thing but for shared
+            val channelBetterTTVEmoteList = channelEmotes?.map{
+                EmoteNameUrl(
+                    name = it.code,
+                    url = "https://cdn.betterttv.net/emote/${it.id}/1x"
+                )
+            }
+            val sharedBetterTTVEmoteList = sharedEmotes?.map{
+                EmoteNameUrl(
+                    name = it.code,
+                    url = "https://cdn.betterttv.net/emote/${it.id}/1x"
+                )
+            }
+            _channelBetterTTVEmoteList.tryEmit(channelBetterTTVEmoteList ?: listOf())
+            _sharedBetterTTVEmoteList.tryEmit(sharedBetterTTVEmoteList ?: listOf())
 
 
             /**************/

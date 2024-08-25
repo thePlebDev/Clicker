@@ -28,6 +28,7 @@ import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +73,8 @@ class ChatSettingsViewModel @Inject constructor(
 
 
 
+
+
     val chatBadgeList =   mutableStateListOf<ChatBadgePair>(
         // HARD CODED SO EVEN IF REQUEST TO GET BADGES FAILS, USER CAN STILL SEE SUBS AND MODS
         ChatBadgePair(
@@ -83,25 +86,132 @@ class ChatSettingsViewModel @Inject constructor(
             id="moderator"
         )
     )
+    //todo: add global emotes(DONE)
+    private val globalEmoteList =  mutableListOf<EmoteNameUrl>()
+    //todo: add channel emotes(DONE)
+    private val channelEmoteList =  mutableListOf<EmoteNameUrl>()
+    //todo: add global betterTTVEmotes(DONE)
+    private val globalBetterTTVEmoteList =  mutableListOf<EmoteNameUrl>()
+    //todo: add channel betterTTVEmotes(DONE)
+    val channelBetterTTVEmoteList =  mutableListOf<EmoteNameUrl>()
+    //todo: add shared betterTTVEmotes
+    val sharedBetterTTVEmoteList =  mutableListOf<EmoteNameUrl>()
+
+    /***********EMOTE AND BADGE RELATED THINGS***************/
+    private val inlineContentMapGlobalBadgeList = mutableStateOf( EmoteListMap(createNewBadgeMap()))
+    val globalChatBadgesMap: State<EmoteListMap> =inlineContentMapGlobalBadgeList
+
+    private val inlineContentMapGlobalEmoteList = mutableStateOf( EmoteListMap(mapOf()))
+    val globalEmoteMap: State<EmoteListMap> =inlineContentMapGlobalEmoteList
+
+    private val _inlineContentMapChannelEmoteList = mutableStateOf( EmoteListMap(mapOf()))
+    val inlineContentMapChannelEmoteList: State<EmoteListMap> =_inlineContentMapChannelEmoteList
+
+    private val _betterTTVGlobalInlineContentMapChannelEmoteList = mutableStateOf( EmoteListMap(mapOf()))
+    val betterTTVGlobalInlineContentMapChannelEmoteList: State<EmoteListMap> =_betterTTVGlobalInlineContentMapChannelEmoteList
+
+    private val _betterTTVChannelInlineContentMapChannelEmoteList = mutableStateOf( EmoteListMap(mapOf()))
+    val betterTTVChannelInlineContentMapChannelEmoteList: State<EmoteListMap> =_betterTTVChannelInlineContentMapChannelEmoteList
+
+    private val _betterTTVSharedInlineContentMapChannelEmoteList = mutableStateOf( EmoteListMap(mapOf()))
+    val betterTTVSharedInlineContentMapChannelEmoteList: State<EmoteListMap> =_betterTTVSharedInlineContentMapChannelEmoteList
     init{
         getStoredBadgeSize()
         getUsernameSize()
         getMessageSize()
         getLineHeight()
         getShowCustomUsernameColor()
+        getEmoteSize()
+    }
+    init {
+
+        monitorForChannelTwitchEmotes()
+    }
+    init {
+        monitorForGlobalTwitchEmotes()
+    }
+    init{
+        monitorForGlobalBetterTTVEmotes()
+    }
+    init{
+        monitorForChannelBetterTTVEmotes()
+    }
+    init{
+        monitorForSharedBetterTTVEmotes()
+    }
+
+    private fun monitorForSharedBetterTTVEmotes(){
+        viewModelScope.launch {
+            twitchEmoteImpl.sharedBetterTTVEmoteList.collect{response ->
+                if (sharedBetterTTVEmoteList.isEmpty()){
+                    sharedBetterTTVEmoteList.addAll(response)
+                    //the map creator needs to be changed
+                    _betterTTVSharedInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVSharedEmoteMap())
+                }
+                Log.d("sharedBetterTTVEmoteList","response ->${response}")
+            }
+        }
+    }
+    private fun monitorForChannelBetterTTVEmotes(){
+        viewModelScope.launch {
+            twitchEmoteImpl.channelBetterTTVEmoteList.collect{response ->
+                if (channelBetterTTVEmoteList.isEmpty()){
+                    channelBetterTTVEmoteList.addAll(response)
+                    _betterTTVChannelInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVChanelEmoteMap())
+                }
+
+                Log.d("globalBetterTTVEmoteList","response ->${response}")
+            }
+        }
+    }
+    private fun monitorForGlobalBetterTTVEmotes(){
+        viewModelScope.launch {
+            twitchEmoteImpl.globalBetterTTVEmoteList.collect{response ->
+                if (globalBetterTTVEmoteList.isEmpty()){
+                    globalBetterTTVEmoteList.addAll(response)
+                    _betterTTVGlobalInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVGlobalEmoteMap())
+                }
+
+                Log.d("globalBetterTTVEmoteList","response ->${response}")
+            }
+        }
+    }
+    private fun monitorForGlobalTwitchEmotes(){
+        viewModelScope.launch {
+            twitchEmoteImpl.channelEmoteList.collect{response ->
+                if (channelEmoteList.isEmpty()){
+                    channelEmoteList.addAll(response)
+                    _inlineContentMapChannelEmoteList.value = EmoteListMap(createNewChannelEmoteMap())
+                }
+
+                Log.d("channelEmoteList","response ->${response}")
+            }
+        }
+    }
+    private fun monitorForChannelTwitchEmotes(){
+        viewModelScope.launch {
+            twitchEmoteImpl.combinedEmoteList.collect{response ->
+                if (globalEmoteList.isEmpty()){
+                    globalEmoteList.addAll(response)
+                    createNewGlobalEmoteMap()
+                }
+
+                Log.d("combinedEmoteListing","response ->${response}")
+            }
+        }
     }
     private fun getStoredBadgeSize(){
         viewModelScope.launch {
             chatSettingsDataStore.getBadgeSize().collect{storedBadgeSize ->
                 _badgeSize.value = storedBadgeSize
             }
-            createNewMap()
+            createNewBadgeMap()
         }
     }
     fun changeBadgeSize(newValue:Float){
 
         _badgeSize.value = newValue
-        inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewMap())
+        inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewBadgeMap())
         storeBadgeSizeLocally(newValue)
 
     }
@@ -112,7 +222,7 @@ class ChatSettingsViewModel @Inject constructor(
 
 
 
-    private fun createNewMap():Map<String, InlineTextContent>{
+    private fun createNewBadgeMap():Map<String, InlineTextContent>{
 
         val newMap = chatBadgeList.map {chatBadgeValue ->
             Pair(
@@ -139,11 +249,169 @@ class ChatSettingsViewModel @Inject constructor(
         return newMap
 
     }
+    private fun createNewGlobalEmoteMap():Map<String, InlineTextContent>{
+
+        val newMap = globalEmoteList.map {emote ->
+            Pair(
+                emote.name,
+                InlineTextContent(
+
+                    Placeholder(
+                        width = _emoteSize.value.sp,
+                        height = _emoteSize.value.sp,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                    )
+                ) {
+                    AsyncImage(
+                        model =emote.url ,
+                        contentDescription = "${emote.name} badge",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp)
+                    )
+                }
+            )
+
+        }.toMap()
+
+        return newMap
+
+    }
+    private fun createNewChannelEmoteMap():Map<String, InlineTextContent>{
+
+        val newMap = channelEmoteList.map {emote ->
+            Pair(
+                emote.name,
+                InlineTextContent(
+
+                    Placeholder(
+                        width = _emoteSize.value.sp,
+                        height = _emoteSize.value.sp,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                    )
+                ) {
+                    AsyncImage(
+                        model =emote.url ,
+                        contentDescription = "${emote.name} badge",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp)
+                    )
+                }
+            )
+
+        }.toMap()
+
+        return newMap
+
+    }
+    private fun createBetterTTVGlobalEmoteMap():Map<String, InlineTextContent>{
+
+        val newMap = globalBetterTTVEmoteList.map {emote ->
+            Pair(
+                emote.name,
+                InlineTextContent(
+
+                    Placeholder(
+                        width = _emoteSize.value.sp,
+                        height = _emoteSize.value.sp,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                    )
+                ) {
+                    AsyncImage(
+                        model =emote.url ,
+                        contentDescription = "${emote.name} badge",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp)
+                    )
+                }
+            )
+
+        }.toMap()
+
+        return newMap
+
+    }
+    private fun createBetterTTVChanelEmoteMap():Map<String, InlineTextContent>{
+
+        val newMap = channelBetterTTVEmoteList.map {emote ->
+            Pair(
+                emote.name,
+                InlineTextContent(
+
+                    Placeholder(
+                        width = _emoteSize.value.sp,
+                        height = _emoteSize.value.sp,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                    )
+                ) {
+                    AsyncImage(
+                        model =emote.url ,
+                        contentDescription = "${emote.name} badge",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp)
+                    )
+                }
+            )
+
+        }.toMap()
+
+        return newMap
+
+    }
+    private fun createBetterTTVSharedEmoteMap():Map<String, InlineTextContent>{
+
+        val newMap = sharedBetterTTVEmoteList.map {emote ->
+            Pair(
+                emote.name,
+                InlineTextContent(
+
+                    Placeholder(
+                        width = _emoteSize.value.sp,
+                        height = _emoteSize.value.sp,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                    )
+                ) {
+                    AsyncImage(
+                        model =emote.url ,
+                        contentDescription = "${emote.name} badge",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp)
+                    )
+                }
+            )
+
+        }.toMap()
+
+        return newMap
+
+    }
+
 
     fun changeEmoteSize(newValue:Float){
         _emoteSize.value = newValue
+        inlineContentMapGlobalEmoteList.value = EmoteListMap(createNewGlobalEmoteMap())
+        _inlineContentMapChannelEmoteList.value = EmoteListMap(createNewChannelEmoteMap())
+        _betterTTVGlobalInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVGlobalEmoteMap())
+        _betterTTVChannelInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVChanelEmoteMap())
+        _betterTTVSharedInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVSharedEmoteMap())
+        storeEmoteSizeLocally(newValue)
+        
+
 
     }
+    private fun getEmoteSize()=viewModelScope.launch{
+        chatSettingsDataStore.getEmoteSize().collect{storedEmoteSize ->
+            _emoteSize.value = storedEmoteSize
+        }
+    }
+    private fun storeEmoteSizeLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setEmoteSize(newValue)
+    }
+
     fun changeUsernameSize(newValue:Float){
         _usernameSize.value = newValue
         storeUsernameSizeLocally(newValue)
@@ -198,8 +466,7 @@ class ChatSettingsViewModel @Inject constructor(
 
 
 
-     private val inlineContentMapGlobalBadgeList = mutableStateOf( EmoteListMap(createNewMap()))
-     val globalChatBadgesMap: State<EmoteListMap> =inlineContentMapGlobalBadgeList
+
 
     fun getGlobalChatBadges(
         oAuthToken: String,
@@ -217,7 +484,7 @@ class ChatSettingsViewModel @Inject constructor(
                         if(response.data.isNotEmpty()){
                             chatBadgeList.clear()
                             chatBadgeList.addAll(response.data)
-                            inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewMap())
+                            inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewBadgeMap())
 
                         }
 

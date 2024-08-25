@@ -11,6 +11,7 @@ import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 
 /**
@@ -52,6 +53,12 @@ interface TwitchEmoteRepo {
     val sharedBetterTTVEmotes: State<IndivBetterTTVEmoteList>
 
     val globalChatBadges: State<EmoteListMap>
+
+    val combinedEmoteList:StateFlow<List<EmoteNameUrl>>
+    val channelEmoteList:StateFlow<List<EmoteNameUrl>>
+    val globalBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
+    val channelBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
+    val sharedBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
 
     /**
      * getGlobalEmotes a function used to make a request to the Twitch servers to access the global emotes

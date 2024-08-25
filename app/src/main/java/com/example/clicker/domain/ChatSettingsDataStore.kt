@@ -16,6 +16,10 @@ interface ChatSettingsDataStore {
 
     fun getMessageSize(): Flow<Float>
 
+    suspend fun setEmoteSize(emoteSize: Float)
+
+    fun getEmoteSize(): Flow<Float>
+
     suspend fun setLineHeight(badgeSize: Float)
 
     fun getLineHeight(): Flow<Float>
