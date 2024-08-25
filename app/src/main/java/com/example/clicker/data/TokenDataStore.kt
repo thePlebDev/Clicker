@@ -36,7 +36,12 @@ class TokenDataStore @Inject constructor(
 
     private val clientIdKey = stringPreferencesKey("client_id")
 
+    /**below are all the variables used to store data about the chat settings*/
     private val badgeSizeIdKey = floatPreferencesKey("badge_size_id")
+    private val usernameSizeIdKey = floatPreferencesKey("username_size_id")
+    private val messageSizeIdKey = floatPreferencesKey("message_size_id")
+    private val lineHeightIdKey = floatPreferencesKey("line_height_id")
+    private val customUsernameColorIdKey = booleanPreferencesKey("custom_username_color_id")
 
 
     override suspend fun setOAuthToken(oAuthToken: String) {
@@ -124,11 +129,6 @@ class TokenDataStore @Inject constructor(
             }
             Log.d("TokenDataStoreException", "SUCCESS")
         } catch (e: Exception) {
-            Log.d("TokenDataStoreException", "Error setting badge size")
-            Log.d("TokenDataStoreException", "cause-> ${e.cause}")
-            Log.d("TokenDataStoreException", "localizedMessage-> ${e.localizedMessage}")
-            Log.d("TokenDataStoreException", "message-> ${e.message}")
-            Log.d("TokenDataStoreException", "stackTrace-> ${e.stackTrace}")
         }
 
     }
@@ -139,6 +139,75 @@ class TokenDataStore @Inject constructor(
                 preferences[badgeSizeIdKey] ?: 20f
             }
         return badgeSize
+    }
+
+    override suspend fun setUsernameSize(usernameSize: Float) {
+        try {
+            context.dataStore.edit { tokens ->
+                tokens[usernameSizeIdKey] = usernameSize
+            }
+            Log.d("TokenDataStoreException", "SUCCESS")
+        } catch (e: Exception) {
+        }
+
+    }
+
+    override fun getUsernameSize(): Flow<Float> {
+        val badgeSize: Flow<Float> = context.dataStore.data
+            .map { preferences ->
+                preferences[usernameSizeIdKey] ?: 15f
+            }
+        return badgeSize
+    }
+
+    override suspend fun setMessageSize(messageSize: Float) {
+        try {
+            context.dataStore.edit { tokens ->
+                tokens[messageSizeIdKey] = messageSize
+            }
+            Log.d("TokenDataStoreException", "SUCCESS")
+        } catch (e: Exception) {
+        }
+
+    }
+
+    override fun getMessageSize(): Flow<Float> {
+        val badgeSize: Flow<Float> = context.dataStore.data
+            .map { preferences ->
+                preferences[messageSizeIdKey] ?: 15f
+            }
+        return badgeSize
+    }
+
+    override suspend fun setLineHeight(lineHeight: Float) {
+            context.dataStore.edit { tokens ->
+                tokens[lineHeightIdKey] = lineHeight
+            }
+
+
+    }
+
+    override fun getLineHeight(): Flow<Float> {
+        val lineHeight: Flow<Float> = context.dataStore.data
+            .map { preferences ->
+                preferences[lineHeightIdKey] ?: (15f *1.6f)
+            }
+        return lineHeight
+    }
+
+    override suspend fun setCustomUsernameColor(showCustomUsernameColor: Boolean) {
+
+        context.dataStore.edit { tokens ->
+            tokens[customUsernameColorIdKey] = showCustomUsernameColor
+        }
+    }
+
+    override fun getCustomUsernameColor(): Flow<Boolean> {
+        val showCustomUsernameColor: Flow<Boolean> = context.dataStore.data
+            .map { preferences ->
+                preferences[customUsernameColorIdKey] ?: true
+            }
+        return showCustomUsernameColor
     }
 }
 

@@ -177,6 +177,10 @@ fun ChatUI(
 
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String,TextRange)->Unit,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
 
 ){
@@ -216,6 +220,10 @@ fun ChatUI(
                 isMod = isMod,
                 inlineContentMap=inlineContentMap,
                 badgeListMap=badgeListMap,
+                usernameSize=usernameSize,
+                messageSize=messageSize,
+                lineHeight=lineHeight,
+                useCustomUsernameColors=useCustomUsernameColors
 
             )
         },
@@ -1269,6 +1277,10 @@ class ImprovedChatUI(){
         badgeListMap:EmoteListMap,
         fullMode:Boolean= false,
         setDragging:()->Unit ={},
+        usernameSize:Float,
+        messageSize:Float,
+        lineHeight:Float,
+        useCustomUsernameColors:Boolean
 
     ){
         val coroutineScope = rememberCoroutineScope()
@@ -1332,8 +1344,10 @@ class ImprovedChatUI(){
                     isMod = false,
                     inlineContentMap=inlineContentMap,
                     badgeListMap=badgeListMap,
-
-
+                    usernameSize=usernameSize,
+                    messageSize=messageSize,
+                    lineHeight=lineHeight,
+                    useCustomUsernameColors=useCustomUsernameColors
                 )
 
             }
@@ -1358,6 +1372,10 @@ class ImprovedChatUI(){
         isMod:Boolean,
         inlineContentMap:EmoteListMap,
         badgeListMap:EmoteListMap,
+        usernameSize:Float,
+        messageSize:Float,
+        lineHeight:Float,
+        useCustomUsernameColors:Boolean
     ){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -1398,6 +1416,10 @@ class ImprovedChatUI(){
                                     doubleClickMessage ={username ->doubleClickMessage(username)},
                                     inlineContentMap=inlineContentMap,
                                     badgeListMap=badgeListMap,
+                                    usernameSize=usernameSize,
+                                    messageSize=messageSize,
+                                    lineHeight=lineHeight,
+                                    useCustomUsernameColors=useCustomUsernameColors
 
                                 )
                             },
@@ -1451,6 +1473,10 @@ class ImprovedChatUI(){
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
                                 inlineContentMap=inlineContentMap,
                                 badgeListMap=badgeListMap,
+                                usernameSize=usernameSize,
+                                messageSize=messageSize,
+                                lineHeight=lineHeight,
+                                useCustomUsernameColors=useCustomUsernameColors
 
                             )
 
@@ -1480,6 +1506,10 @@ class ImprovedChatUI(){
                                         doubleClickMessage ={username ->doubleClickMessage(username)},
                                         inlineContentMap=inlineContentMap,
                                         badgeListMap=badgeListMap,
+                                        usernameSize=usernameSize,
+                                        messageSize=messageSize,
+                                        lineHeight=lineHeight,
+                                        useCustomUsernameColors=useCustomUsernameColors
 
                                     )
                                 }
@@ -1536,6 +1566,10 @@ class ImprovedChatUI(){
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
                                 inlineContentMap=inlineContentMap,
                                 badgeListMap=badgeListMap,
+                                usernameSize=usernameSize,
+                                messageSize=messageSize,
+                                lineHeight=lineHeight,
+                                useCustomUsernameColors=useCustomUsernameColors
 
                             )
                         }
@@ -1666,6 +1700,10 @@ fun ClickableCard(
     doubleClickMessage:(String)->Unit,
     inlineContentMap: EmoteListMap,
     badgeListMap:EmoteListMap,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
 
     ){
@@ -1710,6 +1748,10 @@ fun ClickableCard(
                     fontSize = 13.sp,
                     inlineContentMap=inlineContentMap,
                     badgeListMap=badgeListMap,
+                    usernameSize=usernameSize,
+                    messageSize= messageSize,
+                    lineHeight=lineHeight,
+                    useCustomUsernameColors=useCustomUsernameColors
 
                 )
             }
@@ -2401,6 +2443,10 @@ fun TextWithChatBadges(
     fontSize: TextUnit,
     inlineContentMap: EmoteListMap,
     badgeListMap:EmoteListMap,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
     ){
     Row(
@@ -2419,7 +2465,10 @@ fun TextWithChatBadges(
             inlineContentMap =inlineContentMap,
             badgeList = twitchUser.badges,
             badgeListMap =badgeListMap,
-
+            usernameSize=usernameSize,
+            messageSize=messageSize,
+            lineHeight=lineHeight,
+            useCustomUsernameColors=useCustomUsernameColors
         )
 
     } // end of the row
@@ -2453,7 +2502,12 @@ fun ChatBadges(
     badgeList:List<String>,
     inlineContentMap: EmoteListMap,
     badgeListMap:EmoteListMap,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 ) {
+    val usernameColor = if(useCustomUsernameColors) color else MaterialTheme.colorScheme.onPrimary
 
 
     val newMap = inlineContentMap.map +badgeListMap.map
@@ -2478,13 +2532,13 @@ fun ChatBadges(
             }
         }
 
-        withStyle(style = SpanStyle(color = color, fontSize = textSize)) {
+        withStyle(style = SpanStyle(color = usernameColor, fontSize = usernameSize.sp)) {
             append("$username ")
         }
        //todo:below should get replaced with the new messageList
         for(messageToken in messageList){
             if(messageToken.messageType == PrivateMessageType.MESSAGE){
-                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = messageSize.sp)) {
 
                     appendInlineContent(messageToken.messageValue, "${messageToken.messageValue} ")
                 }
@@ -2504,7 +2558,8 @@ fun ChatBadges(
                 .fillMaxWidth()
                 .padding(5.dp),
             color = color,
-            fontSize = textSize
+            fontSize = textSize,
+            lineHeight = lineHeight.sp
         )
     }
 

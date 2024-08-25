@@ -306,6 +306,10 @@ fun HorizontalChat(
                     changeActualTextFieldValue(text, textRange)
                 },
                 badgeListMap= streamViewModel.badgeListMap.value,
+                usernameSize = chatSettingsViewModel.usernameSize.value,
+                messageSize = chatSettingsViewModel.messageSize.value,
+                lineHeight=chatSettingsViewModel.lineHeight.value,
+                useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value
 
 
 

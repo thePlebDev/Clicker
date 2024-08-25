@@ -71,6 +71,10 @@ fun FullChatModView(
     filteredChatListImmutable: FilteredChatListImmutableCollection,
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String, TextRange)->Unit,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
 
 ){
@@ -112,6 +116,10 @@ fun FullChatModView(
                 fullMode = fullMode,
                 setDragging ={setDragging()},
                 badgeListMap=badgeListMap,
+                usernameSize=usernameSize,
+                messageSize=messageSize,
+                lineHeight=lineHeight,
+                useCustomUsernameColors=useCustomUsernameColors
 
             )
         },
