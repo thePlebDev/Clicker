@@ -454,7 +454,12 @@ fun ModViewComponentVersionThree(
                         usernameSize=chatSettingsViewModel.usernameSize.value,
                         messageSize = chatSettingsViewModel.messageSize.value,
                         lineHeight=chatSettingsViewModel.lineHeight.value,
-                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value
+                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                        channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                        globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                        channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                        sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                     )
                 },
                 fullChat = { setDragging ->
@@ -559,6 +564,11 @@ fun ModViewComponentVersionThree(
                         messageSize = chatSettingsViewModel.messageSize.value,
                         lineHeight=chatSettingsViewModel.lineHeight.value,
                         useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                        channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                        globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                        channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                        sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
 
                         )
 
@@ -1496,6 +1506,11 @@ fun SmallChat(
     deleteChatMessage:(String)->Unit,
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
     badgeListMap:EmoteListMap,
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
@@ -1537,7 +1552,12 @@ fun SmallChat(
                 usernameSize=usernameSize,
                 messageSize=messageSize,
                 lineHeight=lineHeight,
-                useCustomUsernameColors=useCustomUsernameColors
+                useCustomUsernameColors=useCustomUsernameColors,
+                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap
 
                 )
         },
@@ -1678,6 +1698,11 @@ fun SmallChatUILazyColumn(
     modifier: Modifier,
     isMod: Boolean,
     inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap: EmoteListMap,
+    sharedBetterTTVEmoteContentMap: EmoteListMap,
     badgeListMap:EmoteListMap,
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
@@ -1685,7 +1710,9 @@ fun SmallChatUILazyColumn(
     usernameSize:Float,
     messageSize:Float,
     lineHeight:Float,
-    useCustomUsernameColors:Boolean
+    useCustomUsernameColors:Boolean,
+
+
 
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -1749,7 +1776,12 @@ fun SmallChatUILazyColumn(
                     usernameSize=usernameSize,
                     messageSize=messageSize,
                     lineHeight=lineHeight,
-                    useCustomUsernameColors=useCustomUsernameColors
+                    useCustomUsernameColors=useCustomUsernameColors,
+                    globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                    channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                    globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                    channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                    sharedBetterTTVEmoteContentMap =sharedBetterTTVEmoteContentMap
 
 
                 )

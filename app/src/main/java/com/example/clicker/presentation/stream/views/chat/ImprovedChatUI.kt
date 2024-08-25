@@ -180,7 +180,12 @@ fun ChatUI(
     usernameSize:Float,
     messageSize:Float,
     lineHeight:Float,
-    useCustomUsernameColors:Boolean
+    useCustomUsernameColors:Boolean,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
 
 
 ){
@@ -223,7 +228,12 @@ fun ChatUI(
                 usernameSize=usernameSize,
                 messageSize=messageSize,
                 lineHeight=lineHeight,
-                useCustomUsernameColors=useCustomUsernameColors
+                useCustomUsernameColors=useCustomUsernameColors,
+                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap
 
             )
         },
@@ -1274,6 +1284,11 @@ class ImprovedChatUI(){
         modifier: Modifier,
         isMod: Boolean,
         inlineContentMap: EmoteListMap,
+        globalTwitchEmoteContentMap:EmoteListMap,
+        channelTwitchEmoteContentMap:EmoteListMap,
+        globalBetterTTVEmoteContentMap:EmoteListMap,
+        channelBetterTTVEmoteContentMap:EmoteListMap,
+        sharedBetterTTVEmoteContentMap:EmoteListMap,
         badgeListMap:EmoteListMap,
         fullMode:Boolean= false,
         setDragging:()->Unit ={},
@@ -1347,7 +1362,12 @@ class ImprovedChatUI(){
                     usernameSize=usernameSize,
                     messageSize=messageSize,
                     lineHeight=lineHeight,
-                    useCustomUsernameColors=useCustomUsernameColors
+                    useCustomUsernameColors=useCustomUsernameColors,
+                    globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                    channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                    globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                    channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                    sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap
                 )
 
             }
@@ -1371,6 +1391,11 @@ class ImprovedChatUI(){
         deleteChatMessage:(String)->Unit,
         isMod:Boolean,
         inlineContentMap:EmoteListMap,
+        globalTwitchEmoteContentMap:EmoteListMap,
+        channelTwitchEmoteContentMap:EmoteListMap,
+        globalBetterTTVEmoteContentMap:EmoteListMap,
+        channelBetterTTVEmoteContentMap:EmoteListMap,
+        sharedBetterTTVEmoteContentMap:EmoteListMap,
         badgeListMap:EmoteListMap,
         usernameSize:Float,
         messageSize:Float,
@@ -1419,7 +1444,12 @@ class ImprovedChatUI(){
                                     usernameSize=usernameSize,
                                     messageSize=messageSize,
                                     lineHeight=lineHeight,
-                                    useCustomUsernameColors=useCustomUsernameColors
+                                    useCustomUsernameColors=useCustomUsernameColors,
+                                    globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                                    channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                                    globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                                    channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                                    sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
                                 )
                             },
@@ -1472,11 +1502,16 @@ class ImprovedChatUI(){
                                 offset = 0f,
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
                                 inlineContentMap=inlineContentMap,
+                                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
                                 badgeListMap=badgeListMap,
                                 usernameSize=usernameSize,
                                 messageSize=messageSize,
                                 lineHeight=lineHeight,
-                                useCustomUsernameColors=useCustomUsernameColors
+                                useCustomUsernameColors=useCustomUsernameColors,
+                                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
                             )
 
@@ -1505,11 +1540,16 @@ class ImprovedChatUI(){
                                         offset = if (twitchChatMessage.mod != "1") dragOffset else 0f,
                                         doubleClickMessage ={username ->doubleClickMessage(username)},
                                         inlineContentMap=inlineContentMap,
+                                        globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
                                         badgeListMap=badgeListMap,
                                         usernameSize=usernameSize,
                                         messageSize=messageSize,
                                         lineHeight=lineHeight,
-                                        useCustomUsernameColors=useCustomUsernameColors
+                                        useCustomUsernameColors=useCustomUsernameColors,
+                                        channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                                        globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                                        channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                                        sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
                                     )
                                 }
@@ -1565,11 +1605,16 @@ class ImprovedChatUI(){
                                 offset = 0f,
                                 doubleClickMessage ={username ->doubleClickMessage(username)},
                                 inlineContentMap=inlineContentMap,
+                                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
                                 badgeListMap=badgeListMap,
                                 usernameSize=usernameSize,
                                 messageSize=messageSize,
                                 lineHeight=lineHeight,
-                                useCustomUsernameColors=useCustomUsernameColors
+                                useCustomUsernameColors=useCustomUsernameColors,
+                                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
                             )
                         }
@@ -1699,6 +1744,11 @@ fun ClickableCard(
     updateClickedUser: (String, String, Boolean, Boolean) -> Unit,
     doubleClickMessage:(String)->Unit,
     inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
     badgeListMap:EmoteListMap,
     usernameSize:Float,
     messageSize:Float,
@@ -1747,11 +1797,16 @@ fun ClickableCard(
                     color = color,
                     fontSize = 13.sp,
                     inlineContentMap=inlineContentMap,
+                    globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                    channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                    globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
                     badgeListMap=badgeListMap,
                     usernameSize=usernameSize,
                     messageSize= messageSize,
                     lineHeight=lineHeight,
-                    useCustomUsernameColors=useCustomUsernameColors
+                    useCustomUsernameColors=useCustomUsernameColors,
+                    channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                    sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
 
                 )
             }
@@ -2442,11 +2497,16 @@ fun TextWithChatBadges(
     color: Color,
     fontSize: TextUnit,
     inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
     badgeListMap:EmoteListMap,
     usernameSize:Float,
     messageSize:Float,
     lineHeight:Float,
-    useCustomUsernameColors:Boolean
+    useCustomUsernameColors:Boolean,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
 
     ){
     Row(
@@ -2463,12 +2523,17 @@ fun TextWithChatBadges(
             textSize = fontSize,
             messageList=twitchUser.messageList,
             inlineContentMap =inlineContentMap,
+            globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
             badgeList = twitchUser.badges,
             badgeListMap =badgeListMap,
             usernameSize=usernameSize,
             messageSize=messageSize,
             lineHeight=lineHeight,
-            useCustomUsernameColors=useCustomUsernameColors
+            useCustomUsernameColors=useCustomUsernameColors,
+            channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+            globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+            channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+            sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
         )
 
     } // end of the row
@@ -2501,6 +2566,11 @@ fun ChatBadges(
     messageList:List<MessageToken>,
     badgeList:List<String>,
     inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
     badgeListMap:EmoteListMap,
     usernameSize:Float,
     messageSize:Float,
@@ -2510,7 +2580,7 @@ fun ChatBadges(
     val usernameColor = if(useCustomUsernameColors) color else MaterialTheme.colorScheme.onPrimary
 
 
-    val newMap = inlineContentMap.map +badgeListMap.map
+    val newMap = globalTwitchEmoteContentMap.map +badgeListMap.map +channelTwitchEmoteContentMap.map +globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map+sharedBetterTTVEmoteContentMap.map
 
     //subscriber
     /***********TESTING OUT THE EMOTES MAPS*******************/
