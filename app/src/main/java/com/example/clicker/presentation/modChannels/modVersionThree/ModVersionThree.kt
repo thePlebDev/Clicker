@@ -451,6 +451,10 @@ fun ModViewComponentVersionThree(
                             setDoubleClickAndDragFalse()
                         },
                         badgeListMap = streamViewModel.badgeListMap.value,
+                        usernameSize=chatSettingsViewModel.usernameSize.value,
+                        messageSize = chatSettingsViewModel.messageSize.value,
+                        lineHeight=chatSettingsViewModel.lineHeight.value,
+                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value
                     )
                 },
                 fullChat = { setDragging ->
@@ -551,6 +555,10 @@ fun ModViewComponentVersionThree(
                             changeActualTextFieldValue(text, textRange)
                         },
                         badgeListMap= streamViewModel.badgeListMap.value,
+                        usernameSize = chatSettingsViewModel.usernameSize.value,
+                        messageSize = chatSettingsViewModel.messageSize.value,
+                        lineHeight=chatSettingsViewModel.lineHeight.value,
+                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
 
                         )
 
@@ -1492,6 +1500,10 @@ fun SmallChat(
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
     ){
     val lazyColumnListState = rememberLazyListState()
@@ -1522,6 +1534,10 @@ fun SmallChat(
                 doubleClickAndDrag=doubleClickAndDrag,
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
                 badgeListMap=badgeListMap,
+                usernameSize=usernameSize,
+                messageSize=messageSize,
+                lineHeight=lineHeight,
+                useCustomUsernameColors=useCustomUsernameColors
 
                 )
         },
@@ -1666,6 +1682,10 @@ fun SmallChatUILazyColumn(
     setDragging: (Boolean) -> Unit,
     doubleClickAndDrag:Boolean,
     setDoubleClickAndDragFalse:()->Unit,
+    usernameSize:Float,
+    messageSize:Float,
+    lineHeight:Float,
+    useCustomUsernameColors:Boolean
 
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -1726,6 +1746,10 @@ fun SmallChatUILazyColumn(
                     isMod = false,
                     inlineContentMap=inlineContentMap,
                     badgeListMap=badgeListMap,
+                    usernameSize=usernameSize,
+                    messageSize=messageSize,
+                    lineHeight=lineHeight,
+                    useCustomUsernameColors=useCustomUsernameColors
 
 
                 )

@@ -53,14 +53,20 @@ class ChatSettingsViewModel @Inject constructor(
 /************************ ALL THE CHAT SIZE RELATED THINGS*******************************/
     private val _badgeSize = mutableStateOf(20f)  // Initial value
     val badgeSize: State<Float> = _badgeSize
+    //todo:this is going to be saved for last
     private val _emoteSize = mutableStateOf(35f)  // Initial value
     val emoteSize: State<Float> = _emoteSize
+    //todo:1) DONE
     private val _usernameSize = mutableStateOf(15f)  // Initial value
     val usernameSize: State<Float> = _usernameSize
+    //todo:2) DONE
     private val _messageSize = mutableStateOf(15f)  // Initial value
     val messageSize: State<Float> = _messageSize
+    //todo:3) DONE
     private val _lineHeight= mutableStateOf((15f *1.6f))  // Initial value
     val lineHeight: State<Float> = _lineHeight
+    //todo:4)
+    //THIS NEEDS TO BE STORED LOCALLY WHEN I GET BACK!!!!!!
     private val _customUsernameColor= mutableStateOf(true)  // Initial value
     val customUsernameColor: State<Boolean> = _customUsernameColor
 
@@ -79,6 +85,10 @@ class ChatSettingsViewModel @Inject constructor(
     )
     init{
         getStoredBadgeSize()
+        getUsernameSize()
+        getMessageSize()
+        getLineHeight()
+        getShowCustomUsernameColor()
     }
     private fun getStoredBadgeSize(){
         viewModelScope.launch {
@@ -94,11 +104,13 @@ class ChatSettingsViewModel @Inject constructor(
         inlineContentMapGlobalBadgeList.value = EmoteListMap(createNewMap())
         storeBadgeSizeLocally(newValue)
 
-
     }
     private fun storeBadgeSizeLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
         chatSettingsDataStore.setBadgeSize(newValue)
     }
+
+
+
 
     private fun createNewMap():Map<String, InlineTextContent>{
 
@@ -134,15 +146,52 @@ class ChatSettingsViewModel @Inject constructor(
     }
     fun changeUsernameSize(newValue:Float){
         _usernameSize.value = newValue
+        storeUsernameSizeLocally(newValue)
+    }
+    private fun getUsernameSize()=viewModelScope.launch{
+        chatSettingsDataStore.getUsernameSize().collect{storedUsernameSize ->
+            _usernameSize.value = storedUsernameSize
+        }
+    }
+    private fun storeUsernameSizeLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setUsernameSize(newValue)
     }
     fun changeMessageSize(newValue:Float){
         _messageSize.value = newValue
+        storeMessageSizeLocally(newValue)
+    }
+    private fun getMessageSize()=viewModelScope.launch{
+        chatSettingsDataStore.getMessageSize().collect{storedMessageSize ->
+            _messageSize.value = storedMessageSize
+        }
+    }
+    private fun storeMessageSizeLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setMessageSize(newValue)
     }
     fun changeLineHeight(newValue:Float){
         _lineHeight.value = newValue
+        storeLineHeightLocally(newValue)
     }
+    private fun getLineHeight()=viewModelScope.launch{
+        chatSettingsDataStore.getLineHeight().collect{storedLineHeight ->
+            _lineHeight.value = storedLineHeight
+        }
+    }
+    private fun storeLineHeightLocally(newValue: Float)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setLineHeight(newValue)
+    }
+
     fun changeCustomUsernameColor(newValue:Boolean){
         _customUsernameColor.value = newValue
+        storeCustomUsernameLocally(newValue)
+    }
+    private fun getShowCustomUsernameColor()=viewModelScope.launch{
+        chatSettingsDataStore.getCustomUsernameColor().collect{showCustomUsernameColor ->
+            _customUsernameColor.value = showCustomUsernameColor
+        }
+    }
+    private fun storeCustomUsernameLocally(newValue: Boolean)=viewModelScope.launch(Dispatchers.IO){
+        chatSettingsDataStore.setCustomUsernameColor(newValue)
     }
 
     /************************ ALL THE CHAT SIZE RELATED THINGS END*******************************/
