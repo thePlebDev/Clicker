@@ -217,6 +217,7 @@ class StreamViewModel @Inject constructor(
 
     private val _emoteBoardData: MutableState<EmoteBoardData> = mutableStateOf(EmoteBoardData(200,false))
     val emoteBoardData: State<EmoteBoardData> = _emoteBoardData
+    val testing = "should be deleted"
 
 
     /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
