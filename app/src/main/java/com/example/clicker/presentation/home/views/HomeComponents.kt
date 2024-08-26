@@ -105,6 +105,9 @@ import com.example.clicker.util.Response
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
 
+        lowPowerModeActive:Boolean,
+        changeLowPowerMode:(Boolean)->Unit,
+
 
     ){
         HomeModalBottomSheetBuilder(
@@ -145,7 +148,9 @@ import com.example.clicker.util.Response
                     bottomModalState =bottomModalState,
                     loginWithTwitch ={loginWithTwitch()},
                     showNetworkRefreshError =showNetworkRefreshError,
-                    hapticFeedBackError={hapticFeedBackError()}
+                    hapticFeedBackError={hapticFeedBackError()},
+                    lowPowerModeActive=lowPowerModeActive,
+                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)}
 
                 )
 

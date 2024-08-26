@@ -186,6 +186,7 @@ fun ChatUI(
     globalBetterTTVEmoteContentMap:EmoteListMap,
     channelBetterTTVEmoteContentMap:EmoteListMap,
     sharedBetterTTVEmoteContentMap:EmoteListMap,
+    lowPowerMode:Boolean,
 
 
 ){
@@ -332,6 +333,7 @@ fun ChatUI(
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub=userIsSub,
         forwardSlashes=forwardSlashes,
+        lowPowerMode=lowPowerMode
 
         )
 }
@@ -347,6 +349,7 @@ fun ChatUIBox(
     scrollToBottom: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     enterChat: @Composable ImprovedChatUI.(modifier: Modifier) -> Unit,
     noChat:Boolean,
+    lowPowerMode:Boolean,
     clickedCommandAutoCompleteText: (String) -> Unit,
     emoteKeyBoardHeight: Dp,
     emoteBoardGlobalList: EmoteNameUrlList,
@@ -365,76 +368,87 @@ fun ChatUIBox(
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
     val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
+    val chatUIScope = remember() { ImprovedChatUI() }
 
 
 
     //todo: add a conditional to show emoteBoard to help with recomps
 
-
-    val chatUIScope = remember(){ ImprovedChatUI() }
-    with(chatUIScope){
-        Box(modifier = Modifier.fillMaxSize()){
-            scrollToBottom(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp)
-                    .zIndex(5f)
+    if(lowPowerMode){
+        with(chatScope) {
+            NoticeMessages(
+                systemMessage = "",
+                message = "Low power mode: ACTIVE"
             )
+        }
+    }else {
 
-            Column(Modifier.fillMaxSize()) {
 
-                chatUI(modifier = Modifier.weight(1f))
-                enterChat(Modifier.fillMaxWidth())
 
-                if(emoteKeyBoardHeight==350.dp){
+        with(chatUIScope) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                scrollToBottom(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 80.dp)
+                        .zIndex(5f)
+                )
+
+                Column(Modifier.fillMaxSize()) {
+
+                    chatUI(modifier = Modifier.weight(1f))
+                    enterChat(Modifier.fillMaxWidth())
+
+                    if (emoteKeyBoardHeight == 350.dp) {
 
                         EmoteBoard(
                             modifier = Modifier.zIndex(8f),
                             emoteBoardGlobalList,
-                            emoteBoardMostFrequentList=emoteBoardMostFrequentList,
-                            updateTextWithEmote={newValue ->
+                            emoteBoardMostFrequentList = emoteBoardMostFrequentList,
+                            updateTextWithEmote = { newValue ->
                                 updateTextWithEmote(newValue)
-                                                },
-                            emoteBoardChannelList=emoteBoardChannelList,
-                            closeEmoteBoard={
+                            },
+                            emoteBoardChannelList = emoteBoardChannelList,
+                            closeEmoteBoard = {
                                 closeEmoteBoard()
-                                            },
-                            deleteEmote={
+                            },
+                            deleteEmote = {
                                 deleteEmote()
-                                        },
-                            updateTempararyMostFrequentEmoteList={value ->
+                            },
+                            updateTempararyMostFrequentEmoteList = { value ->
                                 updateTempararyMostFrequentEmoteList(value)
-                                                        },
-                            globalBetterTTVEmotes =globalBetterTTVEmotes,
-                            channelBetterTTVResponse=channelBetterTTVResponse,
-                            sharedBetterTTVResponse=sharedBetterTTVResponse,
-                            userIsSub=userIsSub,
+                            },
+                            globalBetterTTVEmotes = globalBetterTTVEmotes,
+                            channelBetterTTVResponse = channelBetterTTVResponse,
+                            sharedBetterTTVResponse = sharedBetterTTVResponse,
+                            userIsSub = userIsSub,
 
-                        )
+                            )
 
+                    }
                 }
-            }
-            determineScrollState()
-            if(noChat){
-                    with(chatScope){
+                determineScrollState()
+                if (noChat) {
+                    with(chatScope) {
                         NoticeMessages(
-                            systemMessage="",
-                            message ="You are in No Chat mode"
+                            systemMessage = "",
+                            message = "You are in No Chat mode"
                         )
                     }
 
-            }
-
-
-            ForwardSlash(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 60.dp),
-                forwardSlashes =forwardSlashes,
-                clickedCommandAutoCompleteText={clickedValue ->
-                    clickedCommandAutoCompleteText(clickedValue)
                 }
-            )
+
+
+                ForwardSlash(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 60.dp),
+                    forwardSlashes = forwardSlashes,
+                    clickedCommandAutoCompleteText = { clickedValue ->
+                        clickedCommandAutoCompleteText(clickedValue)
+                    }
+                )
+            }
         }
     }
 
