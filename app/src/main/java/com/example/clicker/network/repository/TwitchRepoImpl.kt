@@ -1,6 +1,7 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.network.clients.GetModChannelsData
@@ -88,5 +89,32 @@ class TwitchRepoImpl @Inject constructor(
         }
     }.catch { cause ->
         handleNetworkAuthExceptions(cause)
+    }
+
+    //todo: this needs to called after the get all streams API call
+    override suspend fun getAllFollowedStreamers(
+        authorizationToken: String,
+        clientId: String,
+        userId: String
+    ): Flow<Response<AllFollowedStreamers>>  = flow{
+        val response = twitchClient.getAllFollowedStreamers(
+
+            authorization = "Bearer $authorizationToken",
+            clientId = clientId,
+            userId = userId
+        )
+        val body = response.body() ?:  AllFollowedStreamers(0, listOf())
+
+        if (response.isSuccessful) {
+            Log.d("getAllFollowedStreamers","SUCCESS")
+            emit(Response.Success(body))
+        } else {
+            Log.d("getAllFollowedStreamers","FAILED")
+            Log.d("getAllFollowedStreamers","code = ${response.code()}")
+            Log.d("getAllFollowedStreamers","message = ${response.message()}")
+            emit(Response.Failure(Exception("Error!, Please try again")))
+        }
+    }.catch { cause ->
+        emit(Response.Failure(Exception("Error!, Please try again")))
     }
 }

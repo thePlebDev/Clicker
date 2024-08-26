@@ -1186,6 +1186,9 @@ class StreamViewModel @Inject constructor(
         login:String
     ) {
         Log.d("updateChannelNameAndClientIdAndUserId","broadcasterId --->${broadcasterId}")
+        Log.d("updateChannelNameAndClientIdAndUserId","userId --->${userId}")
+        Log.d("updateChannelNameAndClientIdAndUserId","oAuthToken --->${_uiState.value.oAuthToken}")
+
         _channelName.tryEmit(channelName)
         //startWebSocket(channelName)
 

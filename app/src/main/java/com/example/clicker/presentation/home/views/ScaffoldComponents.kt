@@ -97,6 +97,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
@@ -177,6 +178,7 @@ class MainScaffoldScope(){
 
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
+        offlineStreams: AllFollowedStreamers
 
 
         ){
@@ -309,7 +311,8 @@ class MainScaffoldScope(){
                     hapticFeedBackError={hapticFeedBackError()},
                     height = height,
                     width = width,
-                    density = screenDensity
+                    density = screenDensity,
+                    offlineStreams=offlineStreams
                 )
 
             }
@@ -916,6 +919,7 @@ class LiveChannelsLazyColumnScope(){
         height: Int,
         width: Int,
         density:Float,
+        offlineStreams: AllFollowedStreamers
 
         ){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
@@ -968,16 +972,18 @@ class LiveChannelsLazyColumnScope(){
 
                             }
                             stickyHeader {
-                                ModHeader("Offline")
+                                ModHeader("${offlineStreams.data.size} Offline")
                             }
-                            item{
+                            items(offlineStreams.data){
                                 OfflineModChannelItem(
                                     height,
                                     width,
                                     density,
-                                    channelName = "Meanermeeny"
+                                    channelName = it.broadcaster_login
                                 )
                             }
+
+
                             // end of the lazy column
                         }
                     }
@@ -1031,11 +1037,12 @@ class LiveChannelsLazyColumnScope(){
         headerTitle:String
     ){
         Row(
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clip(shape = RoundedCornerShape(5.dp))
-                .background(color = MaterialTheme.colorScheme.primary)
+                .fillMaxWidth()
+                .background(color = MaterialTheme.colorScheme.primary),
+
 
         ){
             androidx.compose.material3.Text(

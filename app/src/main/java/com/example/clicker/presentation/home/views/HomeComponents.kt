@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.models.twitchRepo.StreamData
 
 
@@ -107,6 +108,7 @@ import com.example.clicker.util.Response
 
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
+        offlineStreams: AllFollowedStreamers
 
 
     ){
@@ -150,7 +152,8 @@ import com.example.clicker.util.Response
                     showNetworkRefreshError =showNetworkRefreshError,
                     hapticFeedBackError={hapticFeedBackError()},
                     lowPowerModeActive=lowPowerModeActive,
-                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)}
+                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
+                    offlineStreams=offlineStreams
 
                 )
 
