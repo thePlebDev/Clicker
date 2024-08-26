@@ -2,6 +2,12 @@ package com.example.clicker.presentation.home.views
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -36,6 +42,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -47,6 +54,8 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -68,6 +77,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -675,27 +685,137 @@ object ScaffoldScope{
         scaffoldState: ScaffoldState,
         userIsLoggedIn: Boolean
     ) {
+        var checked by remember { mutableStateOf(true) }
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)){
-            if (userIsLoggedIn) {
-                AccountActionCard(
-                    scaffoldState,
-                    accountAction = { showLogoutDialog() },
-                    title = stringResource(R.string.logout_icon_description),
-                    iconImageVector = Icons.Default.ExitToApp
+            Column(
+                modifier= Modifier.matchParentSize().padding(horizontal = 15.dp)
+            ){
+
+                if (userIsLoggedIn) {
+                    AccountActionCard(
+                        scaffoldState,
+                        accountAction = { showLogoutDialog() },
+                        title = stringResource(R.string.logout_icon_description),
+                        iconImageVector = Icons.Default.ExitToApp
+                    )
+                } else {
+                    AccountActionCard(
+                        scaffoldState,
+                        accountAction = { loginWithTwitch() },
+                        title = stringResource(R.string.login_with_twitch),
+                        iconImageVector = Icons.Default.AccountCircle
+                    )
+
+                }
+
+                AccountActionCardWithSwitch(
+                    checkedValue =checked,
+                    changeCheckedValue={newValue ->checked = newValue}
                 )
-            } else {
-                AccountActionCard(
-                    scaffoldState,
-                    accountAction = { loginWithTwitch() },
-                    title = stringResource(R.string.login_with_twitch),
-                    iconImageVector = Icons.Default.AccountCircle
-                )
+                LowPowerModeAnimatedColumn(checked)
+
 
             }
+
         }
 
+    }
+    @Composable
+    fun LowPowerModeAnimatedColumn(checked:Boolean){
+        val density = LocalDensity.current
+        AnimatedVisibility(
+            visible = checked,
+            enter = slideInVertically {
+                // Slide in from 40 dp from the top.
+                with(density) { -40.dp.roundToPx() }
+            } + expandVertically(
+                // Expand from the top.
+                expandFrom = Alignment.Top
+            ) + fadeIn(
+                // Fade in with the initial alpha of 0.3f.
+                initialAlpha = 0.3f
+            ),
+            exit = slideOutVertically() + shrinkVertically() + fadeOut()
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(15.dp)){
+                Text("Status: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                Text("   - Active", Modifier.fillMaxWidth(),color = Color.Green,fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Benefits: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                Text("   - 5% to 20% less battery usage", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                Text("   - No background data refresh", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                Text("   - No extra network calls", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+                Text("   - No chat", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = 18.sp)
+
+            }
+
+        }
+
+    }
+    @Composable
+    fun AccountActionCardWithSwitch(
+        checkedValue:Boolean,
+        changeCheckedValue:(Boolean)->Unit
+    ) {
+        val scope = rememberCoroutineScope()
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)
+                .clickable {changeCheckedValue(!checkedValue)
+
+                },
+            elevation = 10.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.secondary),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Text("Low power mode", fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
+                SwitchWithIcon(
+                    checkedValue =checkedValue,
+                    changeCheckedValue={newValue ->changeCheckedValue(newValue)}
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun SwitchWithIcon(
+        checkedValue:Boolean,
+        changeCheckedValue:(Boolean)->Unit
+    ) {
+
+
+        Switch(
+            checked = checkedValue,
+            onCheckedChange = {
+                changeCheckedValue(it)
+            },
+            thumbContent = if (checkedValue) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                }
+            } else {
+                null
+            },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = Color.DarkGray,
+                uncheckedTrackColor = Color.DarkGray,
+            )
+        )
     }
 
     /**

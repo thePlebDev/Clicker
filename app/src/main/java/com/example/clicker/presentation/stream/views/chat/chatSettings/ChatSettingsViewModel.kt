@@ -399,7 +399,7 @@ class ChatSettingsViewModel @Inject constructor(
         _betterTTVChannelInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVChanelEmoteMap())
         _betterTTVSharedInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVSharedEmoteMap())
         storeEmoteSizeLocally(newValue)
-        
+
 
 
     }
