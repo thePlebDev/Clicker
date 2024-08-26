@@ -392,7 +392,6 @@ object ModChannelComponents{
             density:Float,
             channelName:String
 
-
         ){
             Row(
                 modifier = Modifier

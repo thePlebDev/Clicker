@@ -74,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -106,6 +107,7 @@ import com.example.clicker.presentation.home.views.ScaffoldParts.ImageWithViewCo
 import com.example.clicker.presentation.home.views.ScaffoldParts.LiveChannelRowItem
 import com.example.clicker.presentation.home.views.ScaffoldParts.StreamTitleWithInfo
 import com.example.clicker.presentation.home.views.ScaffoldParts.setTagAndId
+import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.modChannels.views.PullToRefresh
 import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
@@ -175,6 +177,7 @@ class MainScaffoldScope(){
 
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
+
 
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -303,7 +306,10 @@ class MainScaffoldScope(){
                     },
                     bottomModalState =bottomModalState,
                     showNetworkRefreshError =showNetworkRefreshError,
-                    hapticFeedBackError={hapticFeedBackError()}
+                    hapticFeedBackError={hapticFeedBackError()},
+                    height = height,
+                    width = width,
+                    density = screenDensity
                 )
 
             }
@@ -907,6 +913,9 @@ class LiveChannelsLazyColumnScope(){
         newUserAlert:@Composable (message:String) ->Unit,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
+        height: Int,
+        width: Int,
+        density:Float,
 
         ){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
@@ -958,6 +967,17 @@ class LiveChannelsLazyColumnScope(){
                                 }
 
                             }
+                            stickyHeader {
+                                ModHeader("Offline")
+                            }
+                            item{
+                                OfflineModChannelItem(
+                                    height,
+                                    width,
+                                    density,
+                                    channelName = "Meanermeeny"
+                                )
+                            }
                             // end of the lazy column
                         }
                     }
@@ -1004,6 +1024,87 @@ class LiveChannelsLazyColumnScope(){
             }
         }
 
+    }
+
+    @Composable
+    fun ModHeader(
+        headerTitle:String
+    ){
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(5.dp))
+                .background(color = MaterialTheme.colorScheme.primary)
+
+        ){
+            androidx.compose.material3.Text(
+                headerTitle,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                modifier = Modifier.padding(horizontal = 5.dp)
+            )
+        }
+
+    }
+    @Composable
+    fun OfflineModChannelItem(
+        height: Int,
+        width: Int,
+        density:Float,
+        channelName:String
+
+
+    ){
+        Row(
+            modifier = Modifier
+                .clickable {}
+        ){
+            OfflineModChannelImage(height, width, density)
+            StreamerName(channelName)
+        }
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+        )
+    }
+    @Composable
+    fun StreamerName(channelName:String){
+        Column(modifier = Modifier.padding(start = 10.dp)) {
+            androidx.compose.material3.Text(
+                channelName,
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+    }
+    @Composable
+    fun OfflineModChannelImage(
+        height: Int,
+        width: Int,
+        density:Float,
+
+        ){
+        val adjustedHeight = height/density
+        val adjustedWidth = width/density
+        Column() {
+            Box(
+                modifier = Modifier
+                    .height(adjustedHeight.dp)
+                    .width(adjustedWidth.dp)
+                    .clip(RectangleShape)
+                    .background(Color.DarkGray)
+            ){
+                androidx.compose.material3.Text(
+                    "Offline",
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                    color = Color.White
+                )
+            }
+            Spacer(modifier=Modifier.height(10.dp))
+        }
     }
 
 
