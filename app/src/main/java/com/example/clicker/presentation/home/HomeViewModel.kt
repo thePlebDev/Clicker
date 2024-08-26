@@ -7,7 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.clients.GetModChannelsData
+import com.example.clicker.network.clients.Streamer
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
@@ -106,6 +108,49 @@ class HomeViewModel @Inject constructor(
     val validatedUser = _validatedUser
     private val _oAuthToken = MutableStateFlow<String?>(null)
     val oAuthToken:String? =  _oAuthToken.value
+
+
+    private var _offlineFollowedStreams: MutableState<AllFollowedStreamers> = mutableStateOf(AllFollowedStreamers(0,
+        listOf()
+    ))
+    val offlineFollowedStreams: State<AllFollowedStreamers> = _offlineFollowedStreams
+
+    private fun getAllFollowedStreams(
+        authorizationToken: String,
+        clientId: String,
+        userId: String,
+        listOfLiveStreamers:List<StreamData>
+    ){
+
+        viewModelScope.launch(Dispatchers.IO) {
+            twitchRepoImpl.getAllFollowedStreamers(
+                authorizationToken=authorizationToken,
+                clientId = clientId,
+                userId = userId
+            ).collect{response ->
+                when(response){
+                    is Response.Loading->{}
+                    is Response.Success->{
+                        val data = response.data
+                        val listOfAllFollowedStreamers = data.data
+                        val offlineList = mutableListOf<Streamer>()
+                        listOfAllFollowedStreamers.forEach { allStreamers ->
+                            val found = listOfLiveStreamers.find { it.userLogin == allStreamers.broadcaster_login }
+                            if(found == null){
+                                offlineList.add(allStreamers)
+                            }
+                        }
+                        _offlineFollowedStreams.value =AllFollowedStreamers(
+                            total = offlineList.size,
+                            data =offlineList
+                        )
+                        Log.d("getAllFollowedStreamsResponse","list ->${offlineList}")
+                    }
+                    is Response.Failure->{}
+                }
+            }
+        }
+    }
 
 
 
@@ -509,6 +554,12 @@ class HomeViewModel @Inject constructor(
                                 userId = _validatedUser.value?.userId ?:"",
                                 liveFollowedStreamers = replacedWidthHeightList
                     )
+                            getAllFollowedStreams(
+                                authorizationToken = _oAuthToken.value ?: "",
+                                clientId = _validatedUser.value?.clientId ?:"",
+                                userId = _validatedUser.value?.userId ?:"",
+                                listOfLiveStreamers = replacedWidthHeightList
+                            )
                         }
                         // end
                         is NetworkNewUserResponse.Failure -> {
