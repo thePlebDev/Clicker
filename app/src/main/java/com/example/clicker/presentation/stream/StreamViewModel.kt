@@ -234,6 +234,13 @@ class StreamViewModel @Inject constructor(
     val channelBetterTTVEmote = twitchEmoteImpl.channelBetterTTVEmotes
     val sharedChannelBetterTTVEmote = twitchEmoteImpl.sharedBetterTTVEmotes
 
+    /*****LOW POWER MODE******/
+    private var _lowPowerModeActive: MutableState<Boolean> = mutableStateOf(false)
+    val lowPowerModeActive: State<Boolean> = _lowPowerModeActive
+    fun changeLowPowerModeActive(newValue:Boolean){
+        _lowPowerModeActive.value = newValue
+    }
+
 
     /**
      * A list representing all the most recent clicked emotes
@@ -556,24 +563,7 @@ class StreamViewModel @Inject constructor(
 
     //for right now this has been removed 2024-08-24
     //todo:THIS IS THE MONITORING of the network status
-    init{
-//        viewModelScope.launch {
-//            networkMonitoring.networkStatus.collect{nullableValue ->
-//                nullableValue?.also{nonNullableValue ->
-//                    _uiState.value = _uiState.value.copy(
-//                        networkStatus = nonNullableValue
-//                    )
-//                    if(nullableValue){
-//                        val username =_uiState.value.login
-//                        val channelName = _channelName.value?:""
-//                        webSocket.run(channelName, username)
-//                    }
-//
-//                }
-//
-//            }
-//        }
-    }
+
 
     fun getGlobalChatBadges(
         oAuthToken: String,
@@ -1095,7 +1085,8 @@ class StreamViewModel @Inject constructor(
         val oAuthToken =_uiState.value.oAuthToken
 
 
-        if(_advancedChatSettingsState.value.noChatMode){
+
+        if(_advancedChatSettingsState.value.noChatMode|| _lowPowerModeActive.value){
             //this is meant to be empty to represent doing nothing and the user being in no chat mode
             //no actions are to be commited in this conditional branch
         }else{

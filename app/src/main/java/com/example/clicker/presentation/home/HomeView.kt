@@ -74,6 +74,7 @@ fun ValidationView(
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.state.value.oAuthToken
+    val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
 
 
 
@@ -85,39 +86,43 @@ fun ValidationView(
             onNavigate(R.id.action_homeFragment_to_logoutFragment)
                          },
         onNavigate = {id -> onNavigate(id) },
-        updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-            streamViewModel.getBetterTTVGlobalEmotes()
-            streamViewModel.updateChannelNameAndClientIdAndUserId(
-                streamerName,
-                clientId,
-                broadcasterId,
-                userId,
-                login =homeViewModel.validatedUser.value?.login ?:""
-            )
-            autoModViewModel.updateAutoModCredentials(
-                oAuthToken = homeViewModel.state.value.oAuthToken,
-                clientId = streamViewModel.state.value.clientId,
-                moderatorId = streamViewModel.state.value.userId,
-                broadcasterId = streamViewModel.state.value.broadcasterId,
-            )
-            updateModViewSettings(
-                homeViewModel.state.value.oAuthToken,
-                streamViewModel.state.value.clientId,
-                streamViewModel.state.value.broadcasterId,
-                streamViewModel.state.value.userId,
-            )
-            createNewTwitchEventWebSocket()
-            streamViewModel.getChannelEmotes(
-                homeViewModel.state.value.oAuthToken,
-                streamViewModel.state.value.clientId,
-                streamViewModel.state.value.broadcasterId,
-            )
-            chatSettingsViewModel.getGlobalChatBadges(
-                oAuthToken =homeViewModel.state.value.oAuthToken,
-                clientId = streamViewModel.state.value.clientId,
-            )
-            streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
-            streamViewModel.clearAllChatters()
+        updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
+            if (!lowPowerModeActive) {
+
+                Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
+                streamViewModel.updateChannelNameAndClientIdAndUserId(
+                    streamerName,
+                    clientId,
+                    broadcasterId,
+                    userId,
+                    login = homeViewModel.validatedUser.value?.login ?: ""
+                )
+                streamViewModel.getBetterTTVGlobalEmotes()
+                autoModViewModel.updateAutoModCredentials(
+                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                    moderatorId = streamViewModel.state.value.userId,
+                    broadcasterId = streamViewModel.state.value.broadcasterId,
+                )
+                updateModViewSettings(
+                    homeViewModel.state.value.oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                    streamViewModel.state.value.userId,
+                )
+                createNewTwitchEventWebSocket()
+                streamViewModel.getChannelEmotes(
+                    homeViewModel.state.value.oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                )
+                chatSettingsViewModel.getGlobalChatBadges(
+                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                )
+                streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+                streamViewModel.clearAllChatters()
+            }
 
         },
         updateClickedStreamInfo={
@@ -153,7 +158,9 @@ fun ValidationView(
         showLogoutDialog ={homeViewModel.showLogoutDialog()},
         currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
         showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
-        hapticFeedBackError={hapticFeedBackError()}
+        hapticFeedBackError={hapticFeedBackError()},
+        lowPowerModeActive=lowPowerModeActive,
+        changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)}
 
     )
 

@@ -79,7 +79,8 @@ fun FullChatModView(
     channelTwitchEmoteContentMap:EmoteListMap,
     globalBetterTTVEmoteContentMap: EmoteListMap,
     channelBetterTTVEmoteContentMap: EmoteListMap,
-    sharedBetterTTVEmoteContentMap: EmoteListMap
+    sharedBetterTTVEmoteContentMap: EmoteListMap,
+    lowPowerMode:Boolean,
 
 
 ){
@@ -217,6 +218,7 @@ fun FullChatModView(
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub = userIsSub,
         forwardSlashes = forwardSlashes,
+        lowPowerMode = lowPowerMode
 
 
 

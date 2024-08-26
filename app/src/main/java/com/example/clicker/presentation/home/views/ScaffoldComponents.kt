@@ -173,6 +173,9 @@ class MainScaffoldScope(){
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
 
+        lowPowerModeActive:Boolean,
+        changeLowPowerMode:(Boolean)->Unit,
+
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -231,7 +234,9 @@ class MainScaffoldScope(){
                         loginWithTwitch()
                     },
                     scaffoldState = scaffoldState,
-                    userIsLoggedIn = userIsLoggedIn
+                    userIsLoggedIn = userIsLoggedIn,
+                    lowPowerModeActive=lowPowerModeActive,
+                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)}
                 )
 
             }
@@ -683,9 +688,11 @@ object ScaffoldScope{
         showLogoutDialog: () -> Unit,
         loginWithTwitch: () -> Unit,
         scaffoldState: ScaffoldState,
-        userIsLoggedIn: Boolean
+        userIsLoggedIn: Boolean,
+        lowPowerModeActive:Boolean,
+        changeLowPowerMode:(Boolean)->Unit,
     ) {
-        var checked by remember { mutableStateOf(true) }
+
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)){
@@ -711,10 +718,10 @@ object ScaffoldScope{
                 }
 
                 AccountActionCardWithSwitch(
-                    checkedValue =checked,
-                    changeCheckedValue={newValue ->checked = newValue}
+                    checkedValue =lowPowerModeActive,
+                    changeCheckedValue={newValue ->changeLowPowerMode(newValue)}
                 )
-                LowPowerModeAnimatedColumn(checked)
+                LowPowerModeAnimatedColumn(lowPowerModeActive)
 
 
             }
@@ -759,7 +766,6 @@ object ScaffoldScope{
         checkedValue:Boolean,
         changeCheckedValue:(Boolean)->Unit
     ) {
-        val scope = rememberCoroutineScope()
 
         Card(
             modifier = Modifier
