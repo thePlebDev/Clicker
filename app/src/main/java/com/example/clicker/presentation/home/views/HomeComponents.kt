@@ -44,7 +44,6 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.stream.ClickedStreamInfo
-import com.example.clicker.presentation.vods.views.Vods
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
@@ -112,79 +111,75 @@ import com.example.clicker.util.Response
         changeLowPowerMode:(Boolean)->Unit,
         offlineStreams: AllFollowedStreamers,
 
-    //VOD DATA THAT CAN BE DELETE AFTER USE
-        vodList: List<VOD>
+
 
 
     ){
-        Vods(
-            height = height,
-            vodList=vodList
+
+        HomeModalBottomSheetBuilder(
+            loginBottomModal = {
+                LoginWithTwitchBottomModalButton(
+                    loginWithTwitch = { loginWithTwitch() }
+                )
+            },
+            scaffoldHomeView ={
+                MainScaffoldComponent(
+                    onNavigate = {id -> onNavigate(id) },
+                    updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                        updateStreamerName(
+                            streamerName,
+                            clientId,
+                            broadcasterId,
+                            userId
+                        )
+                    },
+                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                    followedStreamerList = followedStreamerList,
+
+                    clientId = clientId,
+                    userId = userId,
+                    height = height,
+                    width = width,
+                    showLogoutDialog = {
+                        showLogoutDialog()
+                    },
+                    userIsLoggedIn =userIsAuthenticated,
+
+                    screenDensity =screenDensity,
+                    homeRefreshing =homeRefreshing,
+                    homeRefreshFunc = {homeRefreshFunc()},
+                    networkMessageColor =networkMessageColor,
+                    networkMessage = networkMessage,
+                    showNetworkMessage =showNetworkMessage,
+                    bottomModalState =bottomModalState,
+                    loginWithTwitch ={loginWithTwitch()},
+                    showNetworkRefreshError =showNetworkRefreshError,
+                    hapticFeedBackError={hapticFeedBackError()},
+                    lowPowerModeActive=lowPowerModeActive,
+                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
+                    offlineStreams=offlineStreams
+
+                )
+
+            },
+
+            logoutDialog ={
+
+                    LogoutDialog(
+                        logoutDialogIsOpen =logoutDialogIsOpen,
+                        closeDialog = {hideLogoutDialog()},
+                        logout={
+                            //todo: this is where we are going to navigate to the logout UI
+
+                            logout()
+                        },
+                        currentUsername =currentUsername
+                    )
+
+
+            },
+            bottomModalState =bottomModalState,
         )
-//        HomeModalBottomSheetBuilder(
-//            loginBottomModal = {
-//                LoginWithTwitchBottomModalButton(
-//                    loginWithTwitch = { loginWithTwitch() }
-//                )
-//            },
-//            scaffoldHomeView ={
-//                MainScaffoldComponent(
-//                    onNavigate = {id -> onNavigate(id) },
-//                    updateStreamerName = { streamerName, clientId,broadcasterId,userId->
-//                        updateStreamerName(
-//                            streamerName,
-//                            clientId,
-//                            broadcasterId,
-//                            userId
-//                        )
-//                    },
-//                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
-//                    followedStreamerList = followedStreamerList,
-//
-//                    clientId = clientId,
-//                    userId = userId,
-//                    height = height,
-//                    width = width,
-//                    showLogoutDialog = {
-//                        showLogoutDialog()
-//                    },
-//                    userIsLoggedIn =userIsAuthenticated,
-//
-//                    screenDensity =screenDensity,
-//                    homeRefreshing =homeRefreshing,
-//                    homeRefreshFunc = {homeRefreshFunc()},
-//                    networkMessageColor =networkMessageColor,
-//                    networkMessage = networkMessage,
-//                    showNetworkMessage =showNetworkMessage,
-//                    bottomModalState =bottomModalState,
-//                    loginWithTwitch ={loginWithTwitch()},
-//                    showNetworkRefreshError =showNetworkRefreshError,
-//                    hapticFeedBackError={hapticFeedBackError()},
-//                    lowPowerModeActive=lowPowerModeActive,
-//                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
-//                    offlineStreams=offlineStreams
-//
-//                )
-//
-//            },
-//
-//            logoutDialog ={
-//
-//                    LogoutDialog(
-//                        logoutDialogIsOpen =logoutDialogIsOpen,
-//                        closeDialog = {hideLogoutDialog()},
-//                        logout={
-//                            //todo: this is where we are going to navigate to the logout UI
-//
-//                            logout()
-//                        },
-//                        currentUsername =currentUsername
-//                    )
-//
-//
-//            },
-//            bottomModalState =bottomModalState,
-//        )
 
 
     }// end of homeViewImplementation

@@ -527,6 +527,7 @@ class HomeViewModel @Inject constructor(
                         }
                         is NetworkNewUserResponse.Success -> {
 
+
                             val replacedWidthHeightList = response.data.map {
                                 it.changeUrlWidthHeight(
                                     _uiState.value.width,
@@ -539,6 +540,7 @@ class HomeViewModel @Inject constructor(
                                     (_uiState.value.aspectHeight)/2
                                 )
                             }
+                            Log.d("getLiveStreamsURL","url --> ${replacedWidthHeightList[0].thumbNailUrl}")
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkNewUserResponse.Success(replacedWidthHeightList),
