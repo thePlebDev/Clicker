@@ -309,10 +309,6 @@ class MainScaffoldScope(){
                     bottomModalState =bottomModalState,
                     showNetworkRefreshError =showNetworkRefreshError,
                     hapticFeedBackError={hapticFeedBackError()},
-                    height = height,
-                    width = width,
-                    density = screenDensity,
-                    offlineStreams=offlineStreams
                 )
 
             }
@@ -916,10 +912,6 @@ class LiveChannelsLazyColumnScope(){
         newUserAlert:@Composable (message:String) ->Unit,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
-        height: Int,
-        width: Int,
-        density:Float,
-        offlineStreams: AllFollowedStreamers
 
         ){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
@@ -967,21 +959,12 @@ class LiveChannelsLazyColumnScope(){
 
 
                                 with(lazyColumnScope){
+
                                     liveChannelRowItem(streamItem)
                                 }
 
                             }
-                            stickyHeader {
-                                ModHeader("${offlineStreams.data.size} Offline")
-                            }
-                            items(offlineStreams.data){
-                                OfflineModChannelItem(
-                                    height,
-                                    width,
-                                    density,
-                                    channelName = it.broadcaster_login
-                                )
-                            }
+
 
 
                             // end of the lazy column

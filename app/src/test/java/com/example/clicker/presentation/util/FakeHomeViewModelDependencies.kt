@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.util
 
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -8,6 +9,7 @@ import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
+import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -52,6 +54,14 @@ class FakeTwitchImplRepo: TwitchRepo {
         userId: String
     ): Flow<NetworkAuthResponse<GetModChannels>> = flow{
         emit(NetworkAuthResponse.Loading)
+    }
+
+    override suspend fun getAllFollowedStreamers(
+        authorizationToken: String,
+        clientId: String,
+        userId: String
+    ): Flow<Response<AllFollowedStreamers>> {
+        TODO("Not yet implemented")
     }
 
 }

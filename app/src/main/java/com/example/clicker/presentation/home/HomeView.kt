@@ -48,7 +48,6 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
-import com.example.clicker.presentation.vods.VODViewModel
 
 import com.example.clicker.util.WebSocketResponse
 
@@ -58,7 +57,6 @@ fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     chatSettingsViewModel:ChatSettingsViewModel,
-    vodViewModel: VODViewModel,
     logoutViewModel: LogoutViewModel,
     onNavigate: (Int) -> Unit,
     autoModViewModel: AutoModViewModel,
@@ -164,7 +162,6 @@ fun ValidationView(
         lowPowerModeActive=lowPowerModeActive,
         changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
         offlineStreams = homeViewModel.offlineFollowedStreams.value,
-        vodList = vodViewModel.vodList.toList()
 
     )
 
