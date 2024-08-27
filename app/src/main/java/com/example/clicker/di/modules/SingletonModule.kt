@@ -11,6 +11,7 @@ import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.clients.TwitchModClient
+import com.example.clicker.network.clients.TwitchVODClient
 import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.NetworkMonitorRepo
 import com.example.clicker.network.domain.TwitchAuthentication
@@ -24,6 +25,7 @@ import com.example.clicker.network.repository.TwitchRepoImpl
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.TwitchWebSocket
 import com.example.clicker.network.domain.TwitchSocket
+import com.example.clicker.network.domain.TwitchVODRepo
 import com.example.clicker.network.interceptors.LiveNetworkMonitor
 import com.example.clicker.network.interceptors.LoggingInterceptor
 import com.example.clicker.network.interceptors.NetworkMonitor
@@ -39,6 +41,7 @@ import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.TwitchModRepoImpl
 import com.example.clicker.network.repository.TwitchStreamImpl
+import com.example.clicker.network.repository.TwitchVODRepoImpl
 import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
@@ -109,6 +112,16 @@ object SingletonModule {
             .addConverterFactory(GsonConverterFactory.create())
             .client(monitorClient)
             .build().create(TwitchClient::class.java)
+    }
+
+    @Singleton //scope binding
+    @Provides
+    fun providesVODClient(
+    ): TwitchVODClient {
+        return Retrofit.Builder()
+            .baseUrl("https://api.twitch.tv/helix/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(TwitchVODClient::class.java)
     }
 
     @Singleton //scope binding
@@ -199,6 +212,11 @@ object SingletonModule {
     @Provides
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
+    }
+
+    @Provides
+    fun provideTwitchVODRepo(twitchVODRepoImpl: TwitchVODRepoImpl): TwitchVODRepo {
+        return twitchVODRepoImpl
     }
 
 
