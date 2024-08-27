@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.clients.AllFollowedStreamers
+import com.example.clicker.network.clients.VOD
 import com.example.clicker.network.models.twitchRepo.StreamData
 
 
@@ -109,12 +110,16 @@ import com.example.clicker.util.Response
 
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
-        offlineStreams: AllFollowedStreamers
+        offlineStreams: AllFollowedStreamers,
+
+    //VOD DATA THAT CAN BE DELETE AFTER USE
+        vodList: List<VOD>
 
 
     ){
         Vods(
-            height = height
+            height = height,
+            vodList=vodList
         )
 //        HomeModalBottomSheetBuilder(
 //            loginBottomModal = {
