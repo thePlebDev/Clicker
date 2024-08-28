@@ -329,7 +329,7 @@ fun StreamView(
                             openWarnDialog={
                                changeOpenWarningDialog()
                             },
-                            inlineContentMap=streamViewModel.inlineTextContentTest.value,
+                            badgeInlineContentMap=chatSettingsViewModel.globalChatBadgesMap.value,
                             clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value,
                             globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
                             channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
