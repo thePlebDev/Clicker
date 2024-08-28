@@ -332,7 +332,7 @@ fun ModViewComponentVersionThree(
                     openBanDialog = { streamViewModel.openBanDialog.value = true },
                     openWarnDialog = { streamViewModel.changeOpenWarningDialog(true) },
                     clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
-                    inlineContentMap = streamViewModel.inlineTextContentTest.value,
+                    badgeInlineContentMap = chatSettingsViewModel.globalChatBadgesMap.value,
                     clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value,
                     globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
                     channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,

@@ -75,8 +75,8 @@ fun TestingNewBottomModal(
     openBanDialog: () -> Unit,
 //
     openWarnDialog:()->Unit,
-    clickedUserBadgeList:ClickedUserBadgesImmutable,
-    inlineContentMap: EmoteListMap,
+    clickedUserBadgeList:ClickedUserBadgesImmutable, //badgeList
+    badgeInlineContentMap: EmoteListMap,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,
     globalBetterTTVEmoteContentMap:EmoteListMap,
@@ -93,8 +93,8 @@ fun TestingNewBottomModal(
             clickedUsername = clickedUsername,
             textFieldValue = textFieldValue,
             hideModal = {closeBottomModal()},
-            clickedUserBadgeList=clickedUserBadgeList,
-            inlineContentMap=inlineContentMap
+            clickedUserBadgeList=clickedUserBadgeList, //badges
+            badgeInlineContentMap=badgeInlineContentMap
         )
         TestingNewContentBottomPart(
             banned =banned,
@@ -423,7 +423,7 @@ fun TestingNewContentBanner(
     textFieldValue: MutableState<TextFieldValue>,
     hideModal:()->Unit,
     clickedUserBadgeList: ClickedUserBadgesImmutable,
-    inlineContentMap: EmoteListMap
+    badgeInlineContentMap: EmoteListMap
 
     ){
 
@@ -477,7 +477,7 @@ fun TestingNewContentBanner(
         Row(){
             for(item in clickedUserBadgeList.clickedBadges){
                 val text = buildAnnotatedString {
-                    if (inlineContentMap.map.containsKey(item)) {
+                    if (badgeInlineContentMap.map.containsKey(item)) {
                         withStyle(style = SpanStyle(fontSize = 10.sp)) {
                             appendInlineContent(item, item)
                         }
@@ -485,7 +485,7 @@ fun TestingNewContentBanner(
                 }
                 androidx.compose.material3.Text(
                     text = text,
-                    inlineContent = inlineContentMap.map,
+                    inlineContent = badgeInlineContentMap.map,
                     modifier = Modifier
                         .padding(5.dp)
                         .clickable {
@@ -557,7 +557,7 @@ fun TestingNewContentBottomPart(
 
 @Composable
 fun TestingNewClickedUserMessages(
-    //todo: I need to chunk these messages up
+
     clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,
