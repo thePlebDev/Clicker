@@ -331,7 +331,11 @@ fun StreamView(
                             },
                             inlineContentMap=streamViewModel.inlineTextContentTest.value,
                             clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value,
-                            globalTwitchEmoteContentMap=chatSettingsViewModel.globalEmoteMap.value
+                            globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                            channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                            globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                            channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                            sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
 
                             )
                     }

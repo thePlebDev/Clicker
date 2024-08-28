@@ -55,6 +55,7 @@ import com.example.clicker.network.repository.EmoteNameUrlNumber
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.network.repository.TwitchEmoteImpl
+import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
@@ -94,7 +95,8 @@ data class EmoteBoardData(
 )
 data class ClickedUserNameChats(
     val dateSent:String,
-    val message:String
+    val message:String,
+    val messageTokenList: List<MessageToken>,
 )
 
 @Immutable
@@ -767,14 +769,21 @@ class StreamViewModel @Inject constructor(
 
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
         val clickedUserMessages = clickedUserChats.map {
+            val scanner = MessageScanner(it.userType?:"")
+
+
+            /**WHEN*/
+            scanner.startScanningTokens()
             ClickedUserNameChats(
                 message =it.userType?:"",
-                dateSent = it.dateSend
+                dateSent = it.dateSend,
+                messageTokenList = scanner.tokenList
             )
         }
         val badges = clickedUserChats.first().badges
        // clickedUserBadges.addAll(badges)
         addAllClickedUserBadgesImmutable(badges)
+
 
 
 
@@ -997,7 +1006,8 @@ class StreamViewModel @Inject constructor(
                         listOf(
                             ClickedUserNameChats(
                                 message =twitchUserMessage.userType?:"",
-                                dateSent = twitchUserMessage.dateSend
+                                dateSent = twitchUserMessage.dateSend,
+                                messageTokenList = MessageScanner(twitchUserMessage.userType?:"").tokenList
                             )
                         )
                     )
