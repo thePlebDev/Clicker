@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -76,7 +77,11 @@ fun TestingNewBottomModal(
     openWarnDialog:()->Unit,
     clickedUserBadgeList:ClickedUserBadgesImmutable,
     inlineContentMap: EmoteListMap,
-    globalTwitchEmoteContentMap:EmoteListMap
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
 ){
     Log.d("TestingNewBottomModalRecomp","RECOMP")
     Column(
@@ -105,7 +110,11 @@ fun TestingNewBottomModal(
         )
         TestingNewClickedUserMessages(
             clickedUsernameChatsWithDateSentImmutable =clickedUsernameChatsDateSentImmutable,
-            globalTwitchEmoteContentMap=globalTwitchEmoteContentMap
+            globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+            channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+            globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+            channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+            sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
         )
 
     }
@@ -483,7 +492,7 @@ fun TestingNewContentBanner(
                             clickedBadgeName = text.text
                             scope.launch {
                                 delay(2000)
-                                clickedBadgeName =""
+                                clickedBadgeName = ""
                             }
                         }
                     ,
@@ -548,9 +557,15 @@ fun TestingNewContentBottomPart(
 
 @Composable
 fun TestingNewClickedUserMessages(
+    //todo: I need to chunk these messages up
     clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
-    globalTwitchEmoteContentMap:EmoteListMap
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
 ){
+    val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -562,25 +577,28 @@ fun TestingNewClickedUserMessages(
             )
     ) {
         items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+            val annotatedString =buildAnnotatedString {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+                    append("${message.dateSent} ")
+                }
+
+                for(item in message.messageTokenList){
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        appendInlineContent("${item.messageValue}","${item.messageValue} ")
+                    }
+                }
+
+
+            }
 
             Text(
-
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-                        append("${message.dateSent} ")
-                    }
-
-
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append(message.message)
-                    }
-
-                },
+                text =annotatedString,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp),
-                inlineContent = globalTwitchEmoteContentMap.map
+                inlineContent = newMap
             )
+
 
 
         }
