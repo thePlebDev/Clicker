@@ -591,6 +591,7 @@ fun EmoteBoard(
                                 channelBetterTTVResponse = channelBetterTTVResponse,
                                 sharedBetterTTVResponse=sharedBetterTTVResponse,
                                 betterTTVLazyGridState=betterTTVLazyGridState,
+                                updateTempararyMostFrequentEmoteList={usedEmote->updateTempararyMostFrequentEmoteList(usedEmote)},
                                 modifier = Modifier.padding(bottom = 50.dp),
 
                             )
@@ -645,11 +646,11 @@ fun BetterTTVEmoteBoard(
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     betterTTVLazyGridState: LazyGridState,
     updateTextWithEmote: (String) -> Unit,
+    updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     modifier:Modifier
 
 ){
     Log.d("BetterTTVEmoteBoardRELOAD","RELOAD")
-
 
     LazyVerticalGrid(
         state =betterTTVLazyGridState,
@@ -662,41 +663,7 @@ fun BetterTTVEmoteBoard(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        /*****************************START OF THE Most Recent EMOTES*******************************/
-//        header {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 5.dp)
-//            ) {
-//                Spacer(modifier = Modifier.padding(5.dp))
-//                Text(
-//                    "Frequently Used Emotes",
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
-//                ) // or any composable for your single row
-//                Spacer(modifier = Modifier.padding(2.dp))
-//                Divider(
-//                    thickness = 2.dp,
-//                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//                Spacer(modifier = Modifier.padding(5.dp))
-//            }
-//
-//        }
-//        items(
-//            mostFrequentBetterTTVResponse.list,
-//        ) {
-//            GifLoadingAnimation(
-//                url ="https://cdn.betterttv.net/emote/${it.id}/1x",
-//                contentDescription = "${it.code} emote",
-//                emoteName =it.code,
-//                updateTextWithEmote ={value ->
-//                    updateTextWithEmote(value)
-//                }
-//            )
-//        }
+
         /*****************************START OF THE CHANNEL EMOTES*******************************/
         //todo: adding the channelUI
         header {
@@ -728,7 +695,12 @@ fun BetterTTVEmoteBoard(
                         emoteName =it.code,
                         updateTextWithEmote ={value ->
                             updateTextWithEmote(value)
-//                            updateFrequentBetterTTVTempList(it)
+                            updateTempararyMostFrequentEmoteList(
+                                EmoteNameUrl(
+                                    name=it.code,
+                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                                )
+                            )
                         }
                     )
                 }
@@ -763,7 +735,12 @@ fun BetterTTVEmoteBoard(
                 emoteName =it.code,
                 updateTextWithEmote ={value ->
                       updateTextWithEmote(value)
-//                    updateFrequentBetterTTVTempList(it)
+                    updateTempararyMostFrequentEmoteList(
+                        EmoteNameUrl(
+                            name=it.code,
+                            url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                        )
+                    )
                 }
             )
         }
@@ -803,6 +780,12 @@ fun BetterTTVEmoteBoard(
                         emoteName =it.code,
                         updateTextWithEmote ={value ->
                             updateTextWithEmote(value)
+                            updateTempararyMostFrequentEmoteList(
+                                EmoteNameUrl(
+                                    name=it.code,
+                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                                )
+                            )
                         }
                     )
                 }
