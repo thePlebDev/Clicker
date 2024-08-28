@@ -75,7 +75,8 @@ fun TestingNewBottomModal(
 //
     openWarnDialog:()->Unit,
     clickedUserBadgeList:ClickedUserBadgesImmutable,
-    inlineContentMap: EmoteListMap
+    inlineContentMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap
 ){
     Log.d("TestingNewBottomModalRecomp","RECOMP")
     Column(
@@ -103,7 +104,8 @@ fun TestingNewBottomModal(
             openWarnDialog={openWarnDialog()},
         )
         TestingNewClickedUserMessages(
-            clickedUsernameChatsWithDateSentImmutable =clickedUsernameChatsDateSentImmutable
+            clickedUsernameChatsWithDateSentImmutable =clickedUsernameChatsDateSentImmutable,
+            globalTwitchEmoteContentMap=globalTwitchEmoteContentMap
         )
 
     }
@@ -547,6 +549,7 @@ fun TestingNewContentBottomPart(
 @Composable
 fun TestingNewClickedUserMessages(
     clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+    globalTwitchEmoteContentMap:EmoteListMap
 ){
     LazyColumn(
         modifier = Modifier
@@ -575,7 +578,8 @@ fun TestingNewClickedUserMessages(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp)
+                    .padding(5.dp),
+                inlineContent = globalTwitchEmoteContentMap.map
             )
 
 

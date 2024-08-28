@@ -176,6 +176,7 @@ fun HorizontalChat(
             sheetBackgroundColor = MaterialTheme.colorScheme.primary,
             sheetState = bottomModalState,
             sheetContent = {
+                //todo: this needs to be changed to: TestingNewBottomModal - same for the modView
                 BottomModal.BottomModalBuilder(
                     clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
 
