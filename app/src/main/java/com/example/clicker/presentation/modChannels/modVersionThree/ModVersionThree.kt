@@ -333,7 +333,8 @@ fun ModViewComponentVersionThree(
                     openWarnDialog = { streamViewModel.changeOpenWarningDialog(true) },
                     clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
                     inlineContentMap = streamViewModel.inlineTextContentTest.value,
-                    clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value
+                    clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value,
+                    globalTwitchEmoteContentMap=chatSettingsViewModel.globalEmoteMap.value,
                 )
             }
         ) {

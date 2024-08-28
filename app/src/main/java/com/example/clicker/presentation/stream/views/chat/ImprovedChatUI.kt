@@ -2563,10 +2563,10 @@ fun ChatBadges(
     messageList:List<MessageToken>,
     badgeList:List<String>,
     inlineContentMap: EmoteListMap,
-    globalTwitchEmoteContentMap:EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap, //this is 0
     channelTwitchEmoteContentMap:EmoteListMap,
     globalBetterTTVEmoteContentMap:EmoteListMap,
-    channelBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     badgeListMap:EmoteListMap,
     usernameSize:Float,
@@ -2575,6 +2575,13 @@ fun ChatBadges(
     useCustomUsernameColors:Boolean
 ) {
     val usernameColor = if(useCustomUsernameColors) color else MaterialTheme.colorScheme.onPrimary
+    Log.d("EmoteMapSize","sharedBetterTTVEmoteContentMap ->----------------START--------------------")
+    Log.d("EmoteMapSize","globalTwitchEmoteContentMap ->${globalTwitchEmoteContentMap.map.size}")
+    Log.d("EmoteMapSize","channelTwitchEmoteContentMap ->${channelTwitchEmoteContentMap.map.size}")
+    Log.d("EmoteMapSize","globalBetterTTVEmoteContentMap ->${globalBetterTTVEmoteContentMap.map.size}")
+    Log.d("EmoteMapSize","channelBetterTTVEmoteContentMap ->${channelBetterTTVEmoteContentMap.map.size}")
+    Log.d("EmoteMapSize","sharedBetterTTVEmoteContentMap ->${sharedBetterTTVEmoteContentMap.map.size}")
+    Log.d("EmoteMapSize","sharedBetterTTVEmoteContentMap ->----------------END--------------------")
 
 
     val newMap = globalTwitchEmoteContentMap.map +badgeListMap.map +channelTwitchEmoteContentMap.map +globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map+sharedBetterTTVEmoteContentMap.map

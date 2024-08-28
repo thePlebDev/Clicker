@@ -330,7 +330,8 @@ fun StreamView(
                                changeOpenWarningDialog()
                             },
                             inlineContentMap=streamViewModel.inlineTextContentTest.value,
-                            clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value
+                            clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value,
+                            globalTwitchEmoteContentMap=chatSettingsViewModel.globalEmoteMap.value
 
                             )
                     }
