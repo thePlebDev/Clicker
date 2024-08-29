@@ -13,9 +13,11 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -128,7 +131,8 @@ class StreamFragment : Fragment() {
         overlayComposeView: View,
         composeView: ComposeView,
         longPressComposeView: View,
-        rootConstraintLayout: ConstraintLayout
+        rootConstraintLayout: ConstraintLayout,
+        viewToBeDragged:View
     ){
         horizontalClickableWebView.expandedMethod = {
             Log.d("lOGGGINTHEDOUBLECLICK", "called to make view expanded")
@@ -136,11 +140,22 @@ class StreamFragment : Fragment() {
                 "(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();",
                 null
             );
+            /*************** viewToBeDragged ***************************/
+            val viewToBeDraggedParams = viewToBeDragged.layoutParams as ConstraintLayout.LayoutParams
+            viewToBeDraggedParams.width =rootConstraintLayout.width
+            viewToBeDraggedParams.endToEnd =myWebView.id
+            viewToBeDraggedParams.startToStart =myWebView.id
+
+            viewToBeDragged.layoutParams = viewToBeDraggedParams
+            Log.d("TryingTOChangeWidth","viewToBeDraggedParams growing")
+
+            /***********************************************************/
             setImmersiveMode(requireActivity().window)
 
             val overlayComposeParams =
                 overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
             overlayComposeParams.width = rootConstraintLayout.width
+
 
 //      Create layout parameters to match parent
             val layoutParams = ConstraintLayout.LayoutParams(
@@ -172,7 +187,7 @@ class StreamFragment : Fragment() {
         composeView: ComposeView,
         longPressComposeView: View,
         rootConstraintLayout:ConstraintLayout,
-        overlapView: View
+        overlapView: View,
 
     ){
         horizontalClickableWebView.showLongClickView={
@@ -182,6 +197,7 @@ class StreamFragment : Fragment() {
 
             val sixtyWidth =(rootConstraintLayout.width * 0.6).toInt()
             //GET ALL THE PARAMS WE NEED TO CHANGE
+
             val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
             overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
 
@@ -217,14 +233,79 @@ class StreamFragment : Fragment() {
     private fun horizontalOverlayHeightAnimation(
         horizontalClickableWebView: HorizontalClickableWebView,
         overlapView: View,
-        rootConstraintLayout: ConstraintLayout
+        rootConstraintLayout: ConstraintLayout,
+        viewToBeDragged:View,
     ){
+        val maxHeight = rootConstraintLayout.layoutParams.height
+        viewToBeDragged.y = 1321f
+        Log.d("viewToBeDraggedTesting","height ->${(maxHeight).toFloat()} dragheight ->${viewToBeDragged.layoutParams.height}")
+
+
+
+
+        viewToBeDragged.viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    // Get the height of the view after it is drawn
+                    val viewHeight = viewToBeDragged.height
+                    val horizontalClickableWebViewHeight =horizontalClickableWebView.height
+
+                    // Do something with the height
+                    Log.d("viewToBeDraggedHeight", "horizontal Height --> $horizontalClickableWebViewHeight")
+                    Log.d("viewToBeDraggedHeight", "Height: $viewHeight")
+                    Log.d("viewToBeDraggedHeight", "rootConstraintLayout: ${rootConstraintLayout.height}")
+                    Log.d("viewToBeDraggedHeight", "roof: ${rootConstraintLayout.height + viewHeight}")
+                    Log.d("viewToBeDraggedHeight", "bottom: ${rootConstraintLayout.height - viewHeight}")
+                    viewToBeDragged.y =(viewHeight +rootConstraintLayout.height).toFloat() //so this actually works
+                    ViewCompat.setOnApplyWindowInsetsListener(viewToBeDragged) { view, insets ->
+                        val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+                        val statusBarTopHeight = systemBarsInsets.top
+                        val statusBarBottomHeight = systemBarsInsets.bottom
+                        val screenHeight = resources.displayMetrics.heightPixels
+                        val heightWithoutStatusBar = screenHeight - statusBarTopHeight
+                        Log.d("viewToBeDraggedHeight", "statusBar top --> $statusBarTopHeight")
+                        Log.d("viewToBeDraggedHeight", "statusBar Bottom --> $statusBarBottomHeight")
+
+                        // Use heightWithoutStatusBar as needed
+
+                        insets // Return the insets as needed
+                    }
+
+                    // Remove the listener to prevent this from being called repeatedly
+                    viewToBeDragged.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                }
+            }
+        )
+
+
+
+
+        horizontalClickableWebView.dragFunction = { value ->
+          //  Log.d("horizontalDragTest", "float->$value")
+
+            // Calculate the new Y position
+            val newY = viewToBeDragged.y - value
+            viewToBeDragged.y = newY.coerceIn(639f, 1321f)
+            //viewToBeDragged.y = newY.coerceIn(0f, 1000f)
+            Log.d("viewToBeDraggedTesting","height ->${viewToBeDragged.height}")
+
+            // Constrain the Y position to not exceed the bottom of the screen
+            val bottomLimit = (maxHeight - viewToBeDragged.height).toFloat()
+//            if(bottomLimit <=viewToBeDragged.y){
+//                Log.d("horizontalDragTest", "LIMIT HIT")
+//
+//            }
+//            viewToBeDragged.y = newY.coerceIn(0f, bottomLimit)
+        }
+
         horizontalClickableWebView.singleTapMethod={
             val overlayHeight = overlapView.height
             val determinedHeight = (rootConstraintLayout.height * 0.9).toInt()
 
             //This is true
             if(overlayHeight == 1){
+              //  viewToBeDragged.y = 200f
                 animateHeight(
                     layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
                     finalHeight = determinedHeight,
@@ -233,6 +314,7 @@ class StreamFragment : Fragment() {
                 autoModViewModel.setHorizontalOverlayToVisible()
 
             }else{
+               // viewToBeDragged.y = height.toFloat()
                 animateHeight(
                     layoutParams =overlapView.layoutParams as ConstraintLayout.LayoutParams,
                     finalHeight = 1,
@@ -305,8 +387,10 @@ class StreamFragment : Fragment() {
         myWebView: WebView,
         composeView: ComposeView,
         rootConstraintLayout: ConstraintLayout,
+        viewToBeDragged: View,
         ){
         horizontalClickableWebView.collapsedMethodDoubleClick = {
+
             unsetImmersiveMode(requireActivity().window)
             Log.d("collapsedMethodAgain","DOUBLE COLLAPSE")
             val webViewWidth =(rootConstraintLayout.width * 0.56).toInt()
@@ -317,6 +401,17 @@ class StreamFragment : Fragment() {
                 webViewWidth,
                 ConstraintLayout.LayoutParams.MATCH_PARENT
             )
+
+            /*************** viewToBeDragged ***************************/
+            val viewToBeDraggedParams = viewToBeDragged.layoutParams as ConstraintLayout.LayoutParams
+            viewToBeDraggedParams.width =(rootConstraintLayout.width * 0.56).toInt()
+            viewToBeDraggedParams.endToEnd =myWebView.id
+            viewToBeDraggedParams.startToStart =myWebView.id
+
+            viewToBeDragged.layoutParams = viewToBeDraggedParams
+            Log.d("TryingTOChangeWidth","viewToBeDraggedParams")
+
+            /***********************************************************/
 
 
             composeView.visibility = View.VISIBLE
@@ -346,15 +441,18 @@ class StreamFragment : Fragment() {
         composeView: ComposeView,
         longPressComposeView: View,
         rootConstraintLayout: ConstraintLayout,
-        overlapView: View
+        overlapView: View,
+        viewToBeDragged: View
     ){
+
         setHorizontalExpandedClick(
             myWebView =myWebView,
             horizontalClickableWebView =horizontalClickableWebView,
             overlayComposeView =overlayComposeView,
             composeView =composeView,
             longPressComposeView =longPressComposeView,
-            rootConstraintLayout = rootConstraintLayout
+            rootConstraintLayout = rootConstraintLayout,
+            viewToBeDragged=viewToBeDragged
         )
 
 
@@ -377,7 +475,8 @@ class StreamFragment : Fragment() {
         horizontalOverlayHeightAnimation(
             horizontalClickableWebView=horizontalClickableWebView,
             overlapView=overlapView,
-            rootConstraintLayout=rootConstraintLayout
+            rootConstraintLayout=rootConstraintLayout,
+            viewToBeDragged=viewToBeDragged
         )
 
 
@@ -395,7 +494,8 @@ class StreamFragment : Fragment() {
             horizontalClickableWebView =horizontalClickableWebView,
             overlayComposeView =overlayComposeView,
             composeView =composeView,
-            rootConstraintLayout = rootConstraintLayout
+            rootConstraintLayout = rootConstraintLayout,
+            viewToBeDragged=viewToBeDragged
         )
 
     }
@@ -452,12 +552,24 @@ class StreamFragment : Fragment() {
         val composeView:ComposeView = view.findViewById(R.id.compose_view)
 
 
+
         if (orientationIsLandscape) {
             val overlapView:View = view.findViewById(R.id.overlapView)
             val overlayComposeView:View = view.findViewById(R.id.overlapComposeView)
             val longPressComposeView:View = view.findViewById(R.id.compose_view_long_press)
             val rootConstraintLayout:ConstraintLayout = view.findViewById(R.id.rootLayout)
             val horizontalClickableWebView: HorizontalClickableWebView = myWebView as HorizontalClickableWebView
+            val viewToBeDragged:View = view.findViewById(R.id.dragOverlapView)
+            /*************** viewToBeDragged ***************************/
+            val viewToBeDraggedParams = viewToBeDragged.layoutParams as ConstraintLayout.LayoutParams
+            viewToBeDraggedParams.width =(rootConstraintLayout.width * 0.56).toInt()
+            viewToBeDraggedParams.endToEnd =myWebView.id
+            viewToBeDraggedParams.startToStart =myWebView.id
+
+            viewToBeDragged.layoutParams = viewToBeDraggedParams
+            Log.d("TryingTOChangeWidth","viewToBeDraggedParams")
+
+            /***********************************************************/
 
 
             (horizontalClickableWebView as ViewGroup).layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
@@ -470,7 +582,8 @@ class StreamFragment : Fragment() {
                 myWebView =myWebView,
                 longPressComposeView =longPressComposeView,
                 rootConstraintLayout =rootConstraintLayout,
-                overlapView =overlapView
+                overlapView =overlapView,
+                viewToBeDragged=viewToBeDragged
             )
 
 
@@ -495,6 +608,7 @@ class StreamFragment : Fragment() {
         return view
     }
 
+    //todo: color for overlapView ->#B3000000
     /**
      * verticalWebViewOverlayClicked is a private function that is used to set up the functionality what happens when the stream is
      * in a vertical UI and and the clicks the webView

@@ -21,6 +21,9 @@ class ClickableWebView: WebView {
     ) {
     }
     var expanded = false
+    init{
+        Log.d("onScrollDistanceDetection","INIT")
+    }
 
 
     var expandedMethod ={}
@@ -30,10 +33,9 @@ class ClickableWebView: WebView {
 
 
 private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
-    override fun onDown(e: MotionEvent): Boolean {
-        return true
-    }
+
     override fun onDoubleTapEvent(motionEvent: MotionEvent): Boolean {
+
 
         when(motionEvent.action){
             MotionEvent.ACTION_DOWN -> {
@@ -45,6 +47,7 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
                     collapsedMethod()
                 }
             }
+
         }
 
 
@@ -62,6 +65,8 @@ private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
         super.onLongPress(e)
         Log.d("onLongPress","VERTICAL LONG PRESS")
     }
+
+
 
 }
 
@@ -108,13 +113,23 @@ class HorizontalClickableWebView: WebView {
     var singleTapMethod={}
     var showLongClickView ={}
     var hideLongClickView ={}
+    var dragFunction:(Float) ->Unit={}
 
 
 
     private val myListener =  object : GestureDetector.SimpleOnGestureListener() {
-        override fun onDown(e: MotionEvent): Boolean {
-            return true
+        override fun onScroll(
+            e1: MotionEvent?,
+            e2: MotionEvent,
+            distanceX: Float,
+            distanceY: Float
+        ): Boolean {
+            Log.d("HORIZONTALScrollDistanceDetection","Y -> $distanceY")
+            dragFunction(distanceY)
+            return super.onScroll(e1, e2, distanceX, distanceY)
         }
+
+
         override fun onDoubleTapEvent(motionEvent: MotionEvent): Boolean {
 
             when(motionEvent.action){

@@ -45,6 +45,29 @@
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/dragOverlapView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#FF0000"
+            android:animateLayoutChanges="true"
+            app:layout_constraintTop_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.4"
+            app:layout_constraintWidth_percent="0.6"
+            >
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/dragOverlapComposeView"
+                android:animateLayoutChanges="true"
+                android:layout_width="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_height="match_parent"
+                app:layout_constraintWidth_percent="1"
+                />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
         <androidx.compose.ui.platform.ComposeView

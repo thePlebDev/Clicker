@@ -1037,7 +1037,17 @@ fun LazyGridEmotes(
     modifier:Modifier,
 ) {
 
+    val context = LocalContext.current
 
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            if (Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
 
 
 
@@ -1082,6 +1092,7 @@ fun LazyGridEmotes(
                 AsyncImage(
                     model = it.url,
                     contentDescription = it.name,
+                    imageLoader =imageLoader,
                     modifier = Modifier
                         .width(60.dp)
                         .height(60.dp)
@@ -1127,6 +1138,7 @@ fun LazyGridEmotes(
                     AsyncImage(
                         model = it.url,
                         contentDescription = it.name,
+                        imageLoader =imageLoader,
                         modifier = Modifier
                             .width(60.dp)
                             .height(60.dp)
@@ -1153,6 +1165,7 @@ fun LazyGridEmotes(
                 AsyncImage(
                     model = it.url,
                     contentDescription = it.name,
+                    imageLoader =imageLoader,
                     modifier = Modifier
                         .width(60.dp)
                         .height(60.dp)
@@ -1166,12 +1179,7 @@ fun LazyGridEmotes(
                 )
             }
 
-//            Icon(
-//                painter = rememberAsyncImagePainter(it.url),
-//                contentDescription = null,
-//                modifier = Modifier.size(42.dp),
-//                tint = Color.Unspecified
-//            )
+
         }
 //        /*****************************START OF THE GLOBAL EMOTES*******************************/
         header {
@@ -1203,6 +1211,7 @@ fun LazyGridEmotes(
             AsyncImage(
                 model = it.url,
                 contentDescription = it.name,
+                imageLoader =imageLoader,
                 modifier = Modifier
                     .width(60.dp)
                     .height(60.dp)
