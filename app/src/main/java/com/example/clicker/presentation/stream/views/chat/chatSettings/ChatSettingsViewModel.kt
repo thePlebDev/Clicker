@@ -1,5 +1,7 @@
 package com.example.clicker.presentation.stream.views.chat.chatSettings
 
+import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -22,7 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import com.example.clicker.R
 import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
@@ -31,6 +37,7 @@ import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +53,7 @@ data class ChatBadgePair(
 class ChatSettingsViewModel @Inject constructor(
     private val twitchEmoteImpl: TwitchEmoteRepo,
     private val chatSettingsDataStore: ChatSettingsDataStore,
+    @ApplicationContext private val context: Context
 ): ViewModel() {
 
     //todo: Make a request to get all the global chat badges
@@ -251,6 +259,15 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createNewGlobalEmoteMap():Map<String, InlineTextContent>{
+        val imageLoader = ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
 
         val newMap = globalEmoteList.map {emote ->
             Pair(
@@ -266,6 +283,7 @@ class ChatSettingsViewModel @Inject constructor(
                     AsyncImage(
                         model =emote.url ,
                         contentDescription = "${emote.name} badge",
+                        imageLoader = imageLoader,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(2.dp)
@@ -279,6 +297,15 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createNewChannelEmoteMap():Map<String, InlineTextContent>{
+        val imageLoader = ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
 
         val newMap = channelEmoteList.map {emote ->
             Pair(
@@ -294,6 +321,7 @@ class ChatSettingsViewModel @Inject constructor(
                     AsyncImage(
                         model =emote.url ,
                         contentDescription = "${emote.name} badge",
+                        imageLoader = imageLoader,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(2.dp)
@@ -307,6 +335,15 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createBetterTTVGlobalEmoteMap():Map<String, InlineTextContent>{
+        val imageLoader = ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
 
         val newMap = globalBetterTTVEmoteList.map {emote ->
             Pair(
@@ -322,6 +359,7 @@ class ChatSettingsViewModel @Inject constructor(
                     AsyncImage(
                         model =emote.url ,
                         contentDescription = "${emote.name} badge",
+                        imageLoader = imageLoader,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(2.dp)
@@ -335,6 +373,15 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createBetterTTVChanelEmoteMap():Map<String, InlineTextContent>{
+        val imageLoader = ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
 
         val newMap = channelBetterTTVEmoteList.map {emote ->
             Pair(
@@ -350,6 +397,7 @@ class ChatSettingsViewModel @Inject constructor(
                     AsyncImage(
                         model =emote.url ,
                         contentDescription = "${emote.name} badge",
+                        imageLoader = imageLoader,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(2.dp)
@@ -363,6 +411,15 @@ class ChatSettingsViewModel @Inject constructor(
 
     }
     private fun createBetterTTVSharedEmoteMap():Map<String, InlineTextContent>{
+        val imageLoader = ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
 
         val newMap = sharedBetterTTVEmoteList.map {emote ->
             Pair(
@@ -378,6 +435,7 @@ class ChatSettingsViewModel @Inject constructor(
                     AsyncImage(
                         model =emote.url ,
                         contentDescription = "${emote.name} badge",
+                        imageLoader = imageLoader,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(2.dp)
