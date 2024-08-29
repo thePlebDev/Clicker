@@ -43,6 +43,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.LinkedList
+import java.util.Queue
 import javax.inject.Inject
 
 data class ChatBadgePair(
@@ -149,6 +151,7 @@ class ChatSettingsViewModel @Inject constructor(
     }
 
     private fun monitorForSharedBetterTTVEmotes(){
+        val queue: Queue<Int> = LinkedList<Int>()
         viewModelScope.launch {
             twitchEmoteImpl.sharedBetterTTVEmoteList.collect{response ->
                 if (sharedBetterTTVEmoteList.isEmpty()){

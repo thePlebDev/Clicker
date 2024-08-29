@@ -83,6 +83,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Queue
 
 data class ChattingUser(
     val username: String,
@@ -208,6 +209,7 @@ class StreamViewModel @Inject constructor(
 
 
 
+
     /**
      * The name of the channel that this chat is connecting to
      * */
@@ -256,17 +258,13 @@ class StreamViewModel @Inject constructor(
 
     val mostFrequentEmoteListBetterTTV = mutableStateOf(IndivBetterTTVEmoteList())
     val temporaryMostFrequentListBetterTTV = mutableStateListOf<IndivBetterTTVEmote>()
-    fun updateTemporaryMostFrequentListBetterTTV(clickedItem:IndivBetterTTVEmote){
-        if(!temporaryMostFrequentListBetterTTV.contains(clickedItem)){
-            temporaryMostFrequentListBetterTTV.add(clickedItem)
-        }
-        Log.d("updateTemporaryMostFrequentListBetterTTV","list ->${temporaryMostFrequentListBetterTTV.toList()}")
-    }
+
 
 
     fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
         if(!temporaryMostFrequentList.contains(clickedItem)){
             temporaryMostFrequentList.add(clickedItem)
+
         }
         Log.d("updateTemporaryMostFrequentList","list ->${temporaryMostFrequentList.toList()}")
     }
