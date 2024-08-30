@@ -23,6 +23,7 @@ import com.example.clicker.presentation.modView.slowModeListImmutable
 
 
 import com.example.clicker.presentation.stream.views.BottomModal
+import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
@@ -64,6 +65,7 @@ fun HorizontalChat(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+
 
 
 
@@ -130,6 +132,19 @@ fun HorizontalChat(
         chatSettingsViewModel.changeCustomUsernameColor(newValue)
     } }
 
+    val unBanUser:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.unBanUser()
+    } }
+    val setOpenTimeoutDialogTrue:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenTimeoutDialogTrue()
+    } }
+    val setOpenBanDialogTrue:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.setOpenBanDialogTrue()
+    } }
+
+    val changeOpenWarningDialog:() -> Unit = remember(streamViewModel) { {
+        streamViewModel.changeOpenWarningDialog(true)
+    } }
 
     //todo: Also need to refactor the dialogs
 
@@ -176,30 +191,34 @@ fun HorizontalChat(
             sheetBackgroundColor = MaterialTheme.colorScheme.primary,
             sheetState = bottomModalState,
             sheetContent = {
-                //todo: this needs to be changed to: TestingNewBottomModal - same for the modView
-                BottomModal.BottomModalBuilder(
+                TestingNewBottomModal(
                     clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-
                     textFieldValue = streamViewModel.textFieldValue,
                     closeBottomModal = {
-
+                        hideClickedUserBottomModal()
                     },
                     banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
                     unbanUser = {
-                          streamViewModel.unBanUser()
+                        unBanUser()
                     },
-                    isMod = true,
+                    isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                     openTimeoutDialog = {
-                          streamViewModel.openTimeoutDialog.value = true
-                        streamViewModel.openTimeoutDialog.value = true
+                        setOpenTimeoutDialogTrue()
                     },
-
                     openBanDialog = {
-                        streamViewModel.openBanDialog.value = true
-                                    },
-                    openWarnDialog={streamViewModel.changeOpenWarningDialog(true)},
+                        setOpenBanDialogTrue()
+                    },
                     clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
-
+                    openWarnDialog={
+                        changeOpenWarningDialog()
+                    },
+                    badgeInlineContentMap=chatSettingsViewModel.globalChatBadgesMap.value,
+                    clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value,
+                    globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                    channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                    globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                    channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                    sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
 
                     )
             }
