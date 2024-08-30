@@ -189,10 +189,11 @@ class StreamFragment : Fragment() {
         longPressComposeView: View,
         rootConstraintLayout:ConstraintLayout,
         overlapView: View,
+        viewToBeDragged:View
 
     ){
         horizontalClickableWebView.showLongClickView={
-            Log.d("lOGGGINTHEDOUBLECLICK","called to make view expanded")
+            Log.d("LongPressCheck","setHorizontalLongPressTesting()")
             unsetImmersiveMode(requireActivity().window)
             horizontalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
 
@@ -203,6 +204,16 @@ class StreamFragment : Fragment() {
             overlayComposeParams.width =(rootConstraintLayout.width * 0.6).toInt()
 
             val webViewLayoutParams= myWebView.layoutParams as ConstraintLayout.LayoutParams
+            /*************** viewToBeDragged ***************************/
+            val viewToBeDraggedParams = viewToBeDragged.layoutParams as ConstraintLayout.LayoutParams
+            viewToBeDraggedParams.width =(rootConstraintLayout.width * 0.6).toInt()
+            viewToBeDraggedParams.endToEnd =myWebView.id
+            viewToBeDraggedParams.startToStart =myWebView.id
+
+            viewToBeDragged.layoutParams = viewToBeDraggedParams
+            Log.d("TryingTOChangeWidth","viewToBeDraggedParams")
+
+            /***********************************************************/
 
             //CHANGE THE WIDTH
 
@@ -465,7 +476,8 @@ class StreamFragment : Fragment() {
             myWebView =myWebView,
             longPressComposeView =longPressComposeView,
             rootConstraintLayout =rootConstraintLayout,
-            overlapView =overlapView
+            overlapView =overlapView,
+            viewToBeDragged=viewToBeDragged
         )
 
 
