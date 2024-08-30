@@ -56,6 +56,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.horizontalStreamOverlay.OverlayStreamRow
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -237,7 +238,9 @@ class StreamFragment : Fragment() {
         viewToBeDragged:View,
     ){
         val maxHeight = rootConstraintLayout.layoutParams.height
-        viewToBeDragged.y = 1321f
+        var ceiling = 0f
+        var floor = 0f
+//        viewToBeDragged.y = 1321f
         Log.d("viewToBeDraggedTesting","height ->${(maxHeight).toFloat()} dragheight ->${viewToBeDragged.layoutParams.height}")
 
 
@@ -250,15 +253,22 @@ class StreamFragment : Fragment() {
                     val viewHeight = viewToBeDragged.height
                     val horizontalClickableWebViewHeight =horizontalClickableWebView.height
 
+
                     // Do something with the height
                     Log.d("viewToBeDraggedHeight", "horizontal Height --> $horizontalClickableWebViewHeight")
                     Log.d("viewToBeDraggedHeight", "Height: $viewHeight")
                     Log.d("viewToBeDraggedHeight", "rootConstraintLayout: ${rootConstraintLayout.height}")
                     Log.d("viewToBeDraggedHeight", "roof: ${rootConstraintLayout.height + viewHeight}")
                     Log.d("viewToBeDraggedHeight", "bottom: ${rootConstraintLayout.height - viewHeight}")
-                    viewToBeDragged.y =(viewHeight +rootConstraintLayout.height).toFloat() //so this actually works
+                    viewToBeDragged.y =(viewHeight +rootConstraintLayout.height).toFloat()
+
+                    ceiling =(rootConstraintLayout.height - viewHeight).toFloat()
+                    floor =(rootConstraintLayout.height + viewHeight).toFloat()
                     ViewCompat.setOnApplyWindowInsetsListener(viewToBeDragged) { view, insets ->
                         val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//                        horizontalClickableWebView.overlayDragCeiling = 471f
+//                        horizontalClickableWebView.overlayDragFloor = 1415f
+
 
                         val statusBarTopHeight = systemBarsInsets.top
                         val statusBarBottomHeight = systemBarsInsets.bottom
@@ -282,21 +292,10 @@ class StreamFragment : Fragment() {
 
 
         horizontalClickableWebView.dragFunction = { value ->
-          //  Log.d("horizontalDragTest", "float->$value")
-
             // Calculate the new Y position
             val newY = viewToBeDragged.y - value
-            viewToBeDragged.y = newY.coerceIn(639f, 1321f)
-            //viewToBeDragged.y = newY.coerceIn(0f, 1000f)
-            Log.d("viewToBeDraggedTesting","height ->${viewToBeDragged.height}")
+            viewToBeDragged.y = newY.coerceIn(ceiling, floor) //the lower value is how far you can pull up
 
-            // Constrain the Y position to not exceed the bottom of the screen
-            val bottomLimit = (maxHeight - viewToBeDragged.height).toFloat()
-//            if(bottomLimit <=viewToBeDragged.y){
-//                Log.d("horizontalDragTest", "LIMIT HIT")
-//
-//            }
-//            viewToBeDragged.y = newY.coerceIn(0f, bottomLimit)
         }
 
         horizontalClickableWebView.singleTapMethod={
@@ -729,6 +728,18 @@ fun setOrientation(
 
         }
     }
+    binding.dragOverlapComposeView?.apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        setContent {
+            AppTheme {
+                OverlayStreamRow(
+                    homeViewModel=homeViewModel
+                )
+
+            }
+        }
+    }
+
     binding.overlapComposeView?.apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {

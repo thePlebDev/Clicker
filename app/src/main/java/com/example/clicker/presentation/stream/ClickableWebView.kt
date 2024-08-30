@@ -105,6 +105,11 @@ class HorizontalClickableWebView: WebView {
     var expanded = false
     var longPressOpen = false
 
+    var overlayDragCeiling =471f
+    var overlayDragFloor =1415f
+//    var overlayDragCeiling =0f //this is how far the user can drag UP
+//    var overlayDragFloor =0f //this is how far the user can drag DOWN (is the largest of the two numbers)
+
 
 
     var expandedMethod ={} //called to make the webView full screen
