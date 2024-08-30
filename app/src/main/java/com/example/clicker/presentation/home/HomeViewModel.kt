@@ -115,6 +115,14 @@ class HomeViewModel @Inject constructor(
     ))
     val offlineFollowedStreams: State<AllFollowedStreamers> = _offlineFollowedStreams
 
+    private var _clickedStreamerName: MutableState<String> = mutableStateOf("")
+    val clickedStreamerName: State<String> = _clickedStreamerName
+
+    fun updateClickedStreamerName(clickedUsername:String){
+        _clickedStreamerName.value = clickedUsername
+    }
+
+
 
     /**BELOW IS THE NETWORK REQUEST BUILDER*/
 

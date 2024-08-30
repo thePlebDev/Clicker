@@ -55,6 +55,8 @@ fun OverlayStreamRow(
 ){
     val height = homeViewModel.state.value.aspectHeight
     val width = homeViewModel.state.value.width
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -98,6 +100,8 @@ fun OverlayStreamRow(
 
         },
         updateClickedStreamInfo ={value -> updateClickedStreamInfo(value)},
+        clickedStreamName = homeViewModel.clickedStreamerName.value,
+        updateClickedStreamerName = {clickedName ->homeViewModel.updateClickedStreamerName(clickedName)}
     )
 
 
@@ -117,8 +121,10 @@ fun LazyRowViewTesting(
     updateStreamerName: (String, String, String, String) -> Unit,
     getChannelEmotes:(String) ->Unit,
     updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+    clickedStreamName:String,
+    updateClickedStreamerName:(String) ->Unit
 ){
-    var clickedStreamName by remember { mutableStateOf("") }
+
     LazyRow(modifier = Modifier
         .fillMaxSize()
         .padding(10.dp)) {
@@ -158,7 +164,7 @@ fun LazyRowViewTesting(
                         },
                         reconnectWebSocketChat ={channelName ->reconnectWebSocketChat(channelName)},
                         clickedStreamName=clickedStreamName,
-                        updateClickedStreamerName = {streamerName -> clickedStreamName = streamerName}
+                        updateClickedStreamerName = {streamerName -> updateClickedStreamerName(streamerName)}
                     )
                 }
 

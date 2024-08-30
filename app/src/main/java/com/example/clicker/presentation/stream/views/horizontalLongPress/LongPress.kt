@@ -142,6 +142,7 @@ fun HorizontalLongPressView(
                                     updateStreamerName(streamerName,clientId,broadcasterId,userId)
                                     Log.d("horizontalNavigation","CLICKING")
                                     streamViewModel.clearAllChatters()
+                                    homeViewModel.updateClickedStreamerName(streamerName)
 
                                 },
                                 clientId =clientId,
@@ -193,6 +194,7 @@ fun TestingLazyColumnItem(
     clientId: String,
     userId:String,
     updateStreamerName: (String, String, String, String) -> Unit,
+
     ){
     LazyColumn(
         modifier = Modifier

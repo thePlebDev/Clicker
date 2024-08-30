@@ -88,6 +88,7 @@ fun ValidationView(
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
             if (!lowPowerModeActive) {
+                homeViewModel.updateClickedStreamerName(streamerName)
 
                 Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
                 streamViewModel.updateChannelNameAndClientIdAndUserId(
