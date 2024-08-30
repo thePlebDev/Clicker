@@ -60,6 +60,15 @@
 
 <img src="https://github.com/thePlebDev/Clicker/assets/47083513/f185213b-2e76-401e-93de-141639e1aed5" alt="Screenshot" height="400"/>
 
+<img src="https://github.com/user-attachments/assets/99df4e8a-6783-40df-a4ff-49bd8823bef5" alt="Screenshot" height="400"/>
+
+
+
+
+
+
+
+
 
 ## How can you help?
 
