@@ -91,9 +91,9 @@ data class HomeUIState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val twitchRepoImpl: TwitchRepo, //todo:TEST
+    private val twitchRepoImpl: TwitchRepo, //todo:TEST(DONE)
     private val ioDispatcher: CoroutineDispatcher,
-    private val tokenDataStore: TwitchDataStore,//todo:TEST
+    private val tokenDataStore: TwitchDataStore,//todo:TEST-> needs to be done as an instramented tests
     private val authentication: TwitchAuthentication,//todo:TEST
     private val twitchEmoteImpl: TwitchEmoteRepo,//todo:TEST
 ) : ViewModel() {

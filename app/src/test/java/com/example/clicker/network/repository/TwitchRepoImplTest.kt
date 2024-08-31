@@ -61,7 +61,7 @@ class TwitchRepoImplTest {
 
     @Test
     fun `calls getModeratedChannels() but Authentication401Interceptor throws exception`() = runTest {
-        
+
         // Arrange - setup mocks and dependencies for each test
         val retrofitClient = TwitchHomeClientBuilder
             .addMockedUrl(mockWebServer.url("/").toString())
