@@ -91,11 +91,11 @@ data class HomeUIState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val twitchRepoImpl: TwitchRepo,
+    private val twitchRepoImpl: TwitchRepo, //todo:TEST
     private val ioDispatcher: CoroutineDispatcher,
-    private val tokenDataStore: TwitchDataStore,
-    private val authentication: TwitchAuthentication,
-    private val twitchEmoteImpl: TwitchEmoteRepo,
+    private val tokenDataStore: TwitchDataStore,//todo:TEST
+    private val authentication: TwitchAuthentication,//todo:TEST
+    private val twitchEmoteImpl: TwitchEmoteRepo,//todo:TEST
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
