@@ -20,8 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.BetterTTVChannelEmote
 import com.example.clicker.network.clients.BetterTTVChannelEmotes
 import com.example.clicker.network.clients.BetterTTVEmoteClient
+import com.example.clicker.network.clients.BetterTTVSharedEmote
 import com.example.clicker.network.clients.ChannelEmote
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.clients.TwitchEmoteClient
@@ -155,7 +157,14 @@ class TwitchEmoteImpl @Inject constructor(
     /**Below are the parameters for the global emotes*/
     private val _globalBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
     override val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _globalBetterTTVEmotes
+
+    /**
+     * private mutable version of [channelBetterTTVEmotes]
+     * */
     private val _channelBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
+    /**
+     * channelBetterTTVEmotes represents the emotes that are shown to the user in the emote board
+     * */
     override val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _channelBetterTTVEmotes
 
     private val _sharedBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
@@ -181,7 +190,14 @@ class TwitchEmoteImpl @Inject constructor(
     private val _globalBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
     override val globalBetterTTVEmoteList: StateFlow<List<EmoteNameUrl>> = _globalBetterTTVEmoteList
 
+    /**
+     * private mutable version of [channelBetterTTVEmoteList]
+     * */
     private val _channelBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    /**
+     * channelBetterTTVEmoteList represents the list of emotes shown to the user inside of the streamer's chat
+     * and the clicked user messages. This is not responsible for showing the emotes inside of the user's emote box
+     * */
     override val channelBetterTTVEmoteList: StateFlow<List<EmoteNameUrl>> = _channelBetterTTVEmoteList
 
     private val _sharedBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
@@ -289,18 +305,6 @@ class TwitchEmoteImpl @Inject constructor(
 
 
 
-
-    private fun createChannelEmoteMapValue(
-        emoteValue: EmoteNameUrlEmoteType,
-        innerInlineContentMap: MutableMap<String, InlineTextContent>
-    ){
-//        emoteParsing.createMapValueForComposeChatChannelEmotes(
-//            emoteValue,
-//            innerInlineContentMap
-//        )
-
-    }
-
     override suspend fun getBetterTTVGlobalEmotes()= flow{
         //1) get the emotes //2)update the _emoteList
         emit(Response.Loading)
@@ -363,18 +367,6 @@ class TwitchEmoteImpl @Inject constructor(
             Log.d("getBetterTTVChannelEmotes", "sharedEmotes ->$sharedEmotes")
             Log.d("getBetterTTVChannelEmotes", "channelEmotes ->$channelEmotes")
 
-            /******BELOW IS HOW THE THINGS ARE GOING*********/
-            //todo: So I need to create a  List<EmoteNameUrlEmoteType>
-//            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-//            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
-//                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
-//            }
-//            _emoteList.value = emoteList.value.copy(
-//                map = _emoteList.value.map + innerInlineContentMap
-//            )
-//            _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
-//                list = data
-//            )
             //todo: same thing but for shared
             val channelBetterTTVEmoteList = channelEmotes?.map{
                 EmoteNameUrl(
@@ -394,65 +386,18 @@ class TwitchEmoteImpl @Inject constructor(
 
             /**************/
             //"https://cdn.betterttv.net/emote/${it.id}/1x"
-            val sharedAndChannelList = mutableListOf<EmoteNameUrlEmoteType>()
+            /******below adds the emotes to the emote board*******/
 
             channelEmotes?.also{listOfChannelEmotes ->
-                val parsedChannelEmotes =listOfChannelEmotes.map {channelEmote ->
-                    IndivBetterTTVEmote(
-                        id =channelEmote.id,
-                        code=channelEmote.code,
-                        imageType=channelEmote.imageType,
-                        animated = channelEmote.animated,
-                        userId = channelEmote.userId,
-                        modifier = false
-                    )
-                }
-                Log.d("getBetterTTVChannelEmotes", "parsedData ->$parsedChannelEmotes")
-                _channelBetterTTVEmotes.value = _channelBetterTTVEmotes.value.copy(
-                    list = parsedChannelEmotes
-                )
-                listOfChannelEmotes.forEach{
-                    sharedAndChannelList.add(
-                        EmoteNameUrlEmoteType(
-                            name = it.code,
-                            url = "https://cdn.betterttv.net/emote/${it.id}/1x",
-                            emoteType = EmoteTypes.FOLLOWERS
-                        )
-                    )
-                }
+                emitIndivBetterTTVChannelEmotes(listOfChannelEmotes)
+
             }
+            /***************************************************************************************************************/
 
             sharedEmotes?.also{listOfChannelEmotes ->
-                val parsedSharedEmotes =listOfChannelEmotes.map {channelEmote ->
-                    IndivBetterTTVEmote(
-                        id =channelEmote.id,
-                        code=channelEmote.code,
-                        imageType=channelEmote.imageType,
-                        animated = channelEmote.animated,
-                        userId = channelEmote.id,
-                        modifier = false
-                    )
-                }
-                _sharedBetterTTVEmotes.value = _sharedBetterTTVEmotes.value.copy(
-                    list = parsedSharedEmotes
-                )
-                listOfChannelEmotes.forEach{
-                    sharedAndChannelList.add(
-                        EmoteNameUrlEmoteType(
-                            name = it.code,
-                            url = "https://cdn.betterttv.net/emote/${it.id}/1x",
-                            emoteType = EmoteTypes.FOLLOWERS
-                        )
-                    )
-                }
+                emitIndivBetterTTVSharedEmotes(listOfChannelEmotes)
             }
-            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-            sharedAndChannelList.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
-                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
-            }
-            _emoteList.value = emoteList.value.copy(
-                map = _emoteList.value.map + innerInlineContentMap
-            )
+
             Log.d("getBetterTTVChannelEmotes", "DONE")
 
         }else{
@@ -465,6 +410,48 @@ class TwitchEmoteImpl @Inject constructor(
         Log.d("getChannelEmotes","EXCEPTION error message ->${cause.message}")
         Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
         emit(Response.Failure(Exception("Unable to get emotes")))
+    }
+    /**
+     * emitIndivBetterTTVChannelEmotes parses a list of [BetterTTVChannelEmote] objects and emits a
+     * list shown to the user in the emote board
+     * */
+    private fun emitIndivBetterTTVChannelEmotes(listOfChannelEmotes: List<BetterTTVChannelEmote>){
+        val parsedChannelEmotes =listOfChannelEmotes.map {channelEmote ->
+            IndivBetterTTVEmote(
+                id =channelEmote.id,
+                code=channelEmote.code,
+                imageType=channelEmote.imageType,
+                animated = channelEmote.animated,
+                userId = channelEmote.userId,
+                modifier = false
+            )
+        }
+        Log.d("getBetterTTVChannelEmotes", "parsedData ->$parsedChannelEmotes")
+        _channelBetterTTVEmotes.value = _channelBetterTTVEmotes.value.copy(
+            list = parsedChannelEmotes
+        )
+
+    }
+
+    /**
+     * emitIndivBetterTTVSharedEmotes parses a list of [BetterTTVSharedEmote] objects and emits a
+     * list shown to the user in the emote board
+     * */
+    private fun emitIndivBetterTTVSharedEmotes(listOfChannelEmotes: List<BetterTTVSharedEmote>){
+        val parsedSharedEmotes =listOfChannelEmotes.map {channelEmote ->
+            IndivBetterTTVEmote(
+                id =channelEmote.id,
+                code=channelEmote.code,
+                imageType=channelEmote.imageType,
+                animated = channelEmote.animated,
+                userId = channelEmote.id,
+                modifier = false
+            )
+        }
+        _sharedBetterTTVEmotes.value = _sharedBetterTTVEmotes.value.copy(
+            list = parsedSharedEmotes
+        )
+
     }
 
     override suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String)= flow{
