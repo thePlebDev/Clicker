@@ -1,12 +1,20 @@
 package com.example.clicker.network.repository
 
 import com.example.clicker.network.clients.BetterTTVEmoteClient
+import com.example.clicker.network.clients.ChannelEmote
+import com.example.clicker.network.clients.ChannelEmoteResponse
+import com.example.clicker.network.clients.ChannelImages
+import com.example.clicker.network.clients.GetModChannels
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.repository.util.createJsonBodyFrom
+import com.example.clicker.util.NetworkAuthResponse
+import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert
@@ -34,7 +42,7 @@ class TwitchEmoteImplTest {
 
 
     @Test
-    fun `testing to see if it will work`()= runTest{
+    fun `underTest_getChannelEmotes() SUCCESS`()= runTest{
         val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -45,13 +53,21 @@ class TwitchEmoteImplTest {
             .create(BetterTTVEmoteClient::class.java)
 
         underTest = TwitchEmoteImpl(retrofitClient,betterTTVEmoteClient)
-
-
         /**WHEN*/
-        /**WHEN*/
-        //val actualResponse = underTest.getChannelEmotes("","","").last()
 
-        Assert.assertEquals(1, 1)
+        val  singleEmote =ChannelEmote("","", ChannelImages("","",""), listOf(), listOf(),
+            listOf(),"subscriptions"
+        )
+        val expectedBody =  ChannelEmoteResponse(listOf())
+        val expectedResponse = Response.Success(true)
+
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(expectedBody)
+        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
+
+        val actualResponse = underTest.getChannelEmotes("","","").last()
+
+        Assert.assertEquals(expectedResponse, actualResponse)
     }
 
     @Test

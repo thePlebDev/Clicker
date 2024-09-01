@@ -22,6 +22,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.BetterTTVChannelEmotes
 import com.example.clicker.network.clients.BetterTTVEmoteClient
+import com.example.clicker.network.clients.ChannelEmote
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.BetterTTVEmotes
@@ -141,9 +142,15 @@ class TwitchEmoteImpl @Inject constructor(
     private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
 
+    /**
+     * private mutable version of [emoteBoardChannelList]
+     * */
     private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlEmoteTypeList>(EmoteNameUrlEmoteTypeList())
+    /**
+     * emoteBoardChannelList represents the list of emotes shown to the user inside of emote board. Specifically the channel
+     * emote section.
+     * */
     override val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList> = _emoteBoardChannelList
-
     /**Below are the parameters for the global emotes*/
     private val _globalBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
     override val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _globalBetterTTVEmotes
@@ -161,7 +168,15 @@ class TwitchEmoteImpl @Inject constructor(
     private val _combinedEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
     override val combinedEmoteList: StateFlow<List<EmoteNameUrl>> = _combinedEmoteList
 
+
+    /**
+     * private mutable version of [channelEmoteList]
+     * */
     private val _channelEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    /**
+     * channelEmoteList represents the list of emotes shown to the user inside of the streamer's chat
+     * and the clicked user messages. This is not responsible for showing the emotes inside of the user's emote box
+     * */
     override val channelEmoteList: StateFlow<List<EmoteNameUrl>> = _channelEmoteList
 
     private val _globalBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
@@ -279,54 +294,31 @@ class TwitchEmoteImpl @Inject constructor(
             clientId = clientId,
             broadcasterId = broadcasterId
         )
+
         if(response.isSuccessful){
-            val data = response.body()?.data
+            val data = response.body()?.data?: listOf()
+            emit(Response.Success(true))
+            if(data.isNotEmpty()){
 
-
-            val parsedEmoteData = data?.map {// getting data from the request
-                val emoteType = if(it.emote_type =="subscriptions") EmoteTypes.SUBS else EmoteTypes.FOLLOWERS
-                Log.d("getChannelEmotesId","emote_type -->$emoteType")
-                EmoteNameUrlEmoteType(it.name,it.images.url_1x,emoteType)
-            }
-            val followerEmotes =parsedEmoteData?.filter { it.emoteType == EmoteTypes.FOLLOWERS}?: listOf()
-            val subscriberEmotes = parsedEmoteData?.filter { it.emoteType == EmoteTypes.SUBS} ?: listOf()
-            val sortedEmoteData = followerEmotes + subscriberEmotes
-
-            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-            val newChannelEmoteList = parsedEmoteData?.map{
-                EmoteNameUrl(
-                    name = it.name,
-                    url = it.url
-                )
-            }
-            _channelEmoteList.tryEmit(newChannelEmoteList ?: listOf())
-
-
-            //todo: this function signature is terrible, confusing  and needs to be changed
-            newChannelEmoteParsing(
-                parsedEmoteData=  sortedEmoteData,
-                innerInlineContentMap= innerInlineContentMap,
-                convertResponseDataToGlobalEmoteMap={emoteValue,innerMap ->
-                    createChannelEmoteMapValue(
-                        emoteValue,
-                        innerMap
-                    )
-                },
-                updateGlobalEmoteMap={innerMap ->
-                    _emoteList.value = emoteList.value.copy( // update _emoteList with the newly updated innerInlineContentMap
-
-                        map = _emoteList.value.map + innerMap
-                    )
-
-                },
-                updateChannelEmoteBoard={channelEmoteList ->
-                    _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
-                        list = channelEmoteList
+                val parsedEmoteData = convertDataToEmoteNameUrlEmoteType(data)
+                val newChannelEmoteList = parsedEmoteData.map{
+                    EmoteNameUrl(
+                        name = it.name,
+                        url = it.url
                     )
                 }
-            )
+
+                _channelEmoteList.tryEmit(newChannelEmoteList)
 
 
+                val followerEmotes =parsedEmoteData.filter { it.emoteType == EmoteTypes.FOLLOWERS}
+                val subscriberEmotes = parsedEmoteData.filter { it.emoteType == EmoteTypes.SUBS}
+                val sortedEmoteData = followerEmotes + subscriberEmotes
+                _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
+                    list = sortedEmoteData
+                )
+
+            }
 
             Log.d("getChannelEmotes","body--> ${response.body()}")
 
@@ -342,33 +334,17 @@ class TwitchEmoteImpl @Inject constructor(
         Log.d("getChannelEmotes","EXCEPTION error cause ->${cause.cause}")
         emit(Response.Failure(Exception("Unable to get emotes")))
     }
-
-    /**
-     * channelEmoteParsing() is a private function that is used for parsing out the emotes from the request asking Twitch servers
-     * to get Channel specific emotes
-     * @param innerInlineContentMap is a [MutableMap] used to hold values used by the [InlineTextContent] objects showing the emotes
-     * in the text chat
-     * @param parsedEmoteData is a nullable List of [EmoteNameUrl] objects that is parsed from the request.
-     * @param convertResponseDataToGlobalEmoteMap a function used to convert the data coming from the request to a map that can be added to the emote map
-     * @param updateGlobalEmoteMap a function that takes the newly updated [innerInlineContentMap] and adds it to the [emoteList]
-     * @param updateChannelEmoteBoard a function that takes the [parsedEmoteData] and updates the [emoteBoardChannelList]
-     * */
-    private fun newChannelEmoteParsing(
-        parsedEmoteData: List<EmoteNameUrlEmoteType>?,
-        innerInlineContentMap: MutableMap<String, InlineTextContent>,
-        convertResponseDataToGlobalEmoteMap:(emoteValue: EmoteNameUrlEmoteType, innerInlineContentMap: MutableMap<String, InlineTextContent>) ->Unit,
-        updateGlobalEmoteMap:(innerMap: MutableMap<String, InlineTextContent>)->Unit,
-        updateChannelEmoteBoard:(channelEmoteList:List<EmoteNameUrlEmoteType>)->Unit
-    ){
-        if(parsedEmoteData !== null){
-            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
-                convertResponseDataToGlobalEmoteMap(emoteValue,innerInlineContentMap)
-            }
-            updateGlobalEmoteMap(innerInlineContentMap)
-            updateChannelEmoteBoard(parsedEmoteData)
-
+    private fun convertDataToEmoteNameUrlEmoteType(
+        data: List<ChannelEmote>
+    ): List<EmoteNameUrlEmoteType>{
+       return data.map {// getting data from the request
+            val emoteType = if(it.emote_type =="subscriptions") EmoteTypes.SUBS else EmoteTypes.FOLLOWERS
+            EmoteNameUrlEmoteType(it.name,it.images.url_1x,emoteType)
         }
+
     }
+
+
 
     /**
      * createMapValue is a private function that creates the a [InlineTextContent] object and adds it to the
