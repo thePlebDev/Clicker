@@ -104,9 +104,8 @@ import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.ScaffoldParts.AccountActionCard
 import com.example.clicker.presentation.home.views.ScaffoldParts.EmptyFollowingList
 import com.example.clicker.presentation.home.views.ScaffoldParts.GettingStreamsError
-import com.example.clicker.presentation.home.views.ScaffoldParts.ImageWithViewCount
 import com.example.clicker.presentation.home.views.ScaffoldParts.LiveChannelRowItem
-import com.example.clicker.presentation.home.views.ScaffoldParts.StreamTitleWithInfo
+
 import com.example.clicker.presentation.home.views.ScaffoldParts.setTagAndId
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.modChannels.views.PullToRefresh
@@ -114,13 +113,13 @@ import com.example.clicker.util.NetworkResponse
 import com.example.clicker.util.PullRefreshState
 import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 import com.example.clicker.presentation.sharedViews.ButtonScope
+import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
-import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -129,8 +128,6 @@ import kotlinx.coroutines.launch
 
 
 
-@Stable
-class MainScaffoldScope(){
 
     /**
      *
@@ -154,7 +151,7 @@ class MainScaffoldScope(){
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    fun MainScaffoldComponent(
+    fun HomeViewScaffold(
         showLogoutDialog:()->Unit,
         userIsLoggedIn: Boolean,
         followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
@@ -178,7 +175,6 @@ class MainScaffoldScope(){
 
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
-        offlineStreams: AllFollowedStreamers
 
 
         ){
@@ -186,7 +182,7 @@ class MainScaffoldScope(){
         val scope = rememberCoroutineScope()
 
 
-        SharedComponents.DrawerScaffold(
+        DrawerScaffold(
             scaffoldState = scaffoldState,
             topBar = {
                 IconTextTopBarRow(
@@ -318,7 +314,7 @@ class MainScaffoldScope(){
     }
 
 
-}
+
 
 
 
@@ -388,14 +384,14 @@ class MainScaffoldScope(){
                     onNavigate(R.id.action_homeFragment_to_streamFragment)
                 }
             ){
-                ScaffoldParts.ImageWithViewCount(
+                ImageWithViewCount(
                     url = streamItem.thumbNailUrl,
                     height = height,
                     width = width,
                     viewCount = streamItem.viewerCount,
                     density =density
                 )
-                ScaffoldParts.StreamTitleWithInfo(
+                StreamTitleWithInfo(
                     streamerName = streamItem.userLogin,
                     streamTitle = streamItem.title,
                     gameTitle = streamItem.gameName
@@ -409,142 +405,9 @@ class MainScaffoldScope(){
             )
         }
 
-        /**
-         * - Contains 0 extra parts
-         *
-         * - CustomBottomBar is a custom bottom bar for a [Scaffold] and is meant to act as the home activities Navigation
-         * */
 
 
-        /**
-         * - Contains 0 extra parts
-         *
-         * - AnimatedErrorMessage is an animated Error message that will only be shown to the user where an error from fetching
-         * the network occurs
-         *
-         * @param modifier a modifier used to determine where this composable should be displayed
-         * @param showFailedNetworkRequestMessage a Boolean used to determine if the error message should show or not.
-         * @param errorMessage a String displaying the actual error message
-         * */
-        @Composable
-        fun AnimatedErrorMessage(
-            modifier: Modifier,
-            showFailedNetworkRequestMessage: Boolean,
-            errorMessage:String
-        ){
-            AnimatedVisibility(
-                visible = showFailedNetworkRequestMessage,
-                modifier = modifier
-                    .padding(5.dp)
 
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    elevation = 10.dp,
-                    backgroundColor = MaterialTheme.colorScheme.secondary
-                ) {
-                    Text(
-                        errorMessage,
-                        textAlign = TextAlign.Center,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        color = Color.Red,
-                        modifier = Modifier.padding(10.dp)
-                    )
-                }
-            }
-        }
-
-
-        /**
-         * - Contains 0 extra parts
-         *
-         * - StreamTitleWithInfo is a Column that shows information about the streamer and the game they are playing
-         *
-         * @param streamerName a String representing the name of the live streamer
-         * @param streamTitle a String representing the title of the streamer's stream
-         * @param gameTitle a String representing the title of the game they are playing
-         * */
-        @Composable
-        fun StreamTitleWithInfo(
-            streamerName:String,
-            streamTitle:String,
-            gameTitle:String
-        ){
-            Column(modifier = Modifier.padding(start = 10.dp)) {
-                Text(
-                    streamerName,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    streamTitle,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    modifier = Modifier.alpha(0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    gameTitle,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    modifier = Modifier.alpha(0.7f),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
-        /**
-         * - Contains 0 extra parts
-         *
-         * - ImageWithViewCount is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
-         * It will show the thumbnail for the stream and their current viewer count
-         *
-         * @param url a String representing the thumbnail image
-         * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
-         * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
-         * @param viewCount a Int representing the number of current viewers the streamer has
-         * */
-        @Composable
-        fun ImageWithViewCount(
-            url: String,
-            height: Int,
-            width: Int,
-            viewCount:Int,
-            density:Float
-        ){
-            Log.d("ImageHeightWidth","url -> $url")
-            Box() {
-                val adjustedHeight = height/density
-                val adjustedWidth = width/density
-                SubcomposeAsyncImage(
-                    model = url,
-                    loading = {
-                        Column(modifier = Modifier
-                            .height((adjustedHeight).dp)
-                            .width((adjustedWidth).dp)
-                            .background(MaterialTheme.colorScheme.primary),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            CircularProgressIndicator()
-                        }
-                    },
-                    contentDescription = stringResource(R.string.sub_compose_async_image_description)
-                )
-                Text(
-                    "${viewCount}",
-                    style = TextStyle(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(5.dp)
-                )
-            }
-        }
 
         /**
          * - Contains 0 extra parts
@@ -1014,7 +877,7 @@ class LiveChannelsLazyColumnScope(){
         }
 
     }
-    
+
 
 
 
@@ -1057,79 +920,7 @@ class LiveChannelsLazyColumnScope(){
         }
     }
 
-    /**
-     * - Contains 2 extra parts:
-     * 1) [ImageWithViewCount]
-     * 2) [StreamTitleWithInfo]
-     *
-     * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
-     * retrieved from the Twitch server
-     *
-     * @param updateStreamerName a function used to update the current streamer the user has clicked on. This information is used
-     * to connect the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] to the Twitch servers
-     * @param streamItem a [StreamInfo][com.example.clicker.presentation.home.StreamInfo] object that is used to represent the all the information
-     * of a single live stream
-     * @param clientId a String representing the clientId of the user
-     * @param userId a String representing the userId of the user
-     * @param onNavigate a function used to navigate to the StreamView
-     * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
-     * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
-     * */
-    @Composable
-    fun LiveChannelRowItem(
-        updateStreamerName: (String, String, String, String) -> Unit,
-        updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-        streamItem: StreamData,
-        clientId: String,
-        userId:String,
-        onNavigate: (Int) -> Unit,
-        height: Int,
-        width: Int,
-        density:Float
 
-    ){
-
-        Row(
-            modifier = Modifier.clickable {
-                updateClickedStreamInfo(
-                    ClickedStreamInfo(
-                        channelName = streamItem.userLogin,
-                        streamTitle = streamItem.title,
-                        category =  streamItem.gameName,
-                        tags = streamItem.tags,
-                        adjustedUrl = streamItem.thumbNailUrl
-                    )
-                )
-
-                updateStreamerName(
-                    streamItem.userLogin,
-                    clientId,
-                    streamItem.userId,
-                    userId
-                )
-                onNavigate(R.id.action_homeFragment_to_streamFragment)
-            }
-        ){
-            ScaffoldParts.ImageWithViewCount(
-                url = streamItem.thumbNailUrl,
-                height = height,
-                width = width,
-                viewCount = streamItem.viewerCount,
-                density =density
-            )
-            ScaffoldParts.StreamTitleWithInfo(
-                streamerName = streamItem.userLogin,
-                streamTitle = streamItem.title,
-                gameTitle = streamItem.gameName
-            )
-
-        }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-        )
-    }
     /**
      * - Contains 0 extra parts
      *
@@ -1174,6 +965,94 @@ class LiveChannelsLazyColumnScope(){
     }
 
 }/**END OF LAZYCOLUMNSCOPE*/
+
+
+/**
+ *
+ * - StreamTitleWithInfo is a Column that shows information about the streamer and the game they are playing
+ *
+ * @param streamerName a String representing the name of the live streamer
+ * @param streamTitle a String representing the title of the streamer's stream
+ * @param gameTitle a String representing the title of the game they are playing
+ * */
+@Composable
+fun StreamTitleWithInfo(
+    streamerName:String,
+    streamTitle:String,
+    gameTitle:String
+){
+    Column(modifier = Modifier.padding(start = 10.dp)) {
+        Text(
+            streamerName,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Text(
+            streamTitle,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            modifier = Modifier.alpha(0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Text(
+            gameTitle,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            modifier = Modifier.alpha(0.7f),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+/**
+ *
+ * - ImageWithViewCount is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
+ * It will show the thumbnail for the stream and their current viewer count
+ *
+ * @param url a String representing the thumbnail image
+ * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
+ * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+ * @param viewCount a Int representing the number of current viewers the streamer has
+ * */
+@Composable
+fun ImageWithViewCount(
+    url: String,
+    height: Int,
+    width: Int,
+    viewCount:Int,
+    density:Float
+){
+    Log.d("ImageHeightWidth","url -> $url")
+    Box() {
+        val adjustedHeight = height/density
+        val adjustedWidth = width/density
+        SubcomposeAsyncImage(
+            model = url,
+            loading = {
+                Column(modifier = Modifier
+                    .height((adjustedHeight).dp)
+                    .width((adjustedWidth).dp)
+                    .background(MaterialTheme.colorScheme.primary),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    CircularProgressIndicator()
+                }
+            },
+            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+        )
+        Text(
+            "${viewCount}",
+            style = TextStyle(
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                fontWeight = FontWeight.ExtraBold
+            ),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(5.dp)
+        )
+    }
+}
 
 
 

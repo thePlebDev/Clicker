@@ -162,7 +162,6 @@ fun ValidationView(
         hapticFeedBackError={hapticFeedBackError()},
         lowPowerModeActive=lowPowerModeActive,
         changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
-        offlineStreams = homeViewModel.offlineFollowedStreams.value,
 
     )
 
