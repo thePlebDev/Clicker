@@ -58,8 +58,6 @@ class TwitchAuthenticationImpl @Inject constructor(
         handleNetworkAuthExceptions(cause)
     }
 
-
-
     override suspend fun validateToken(
         token: String,
     ): Flow<NetworkNewUserResponse<ValidatedUser>> = flow {
