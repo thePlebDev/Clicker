@@ -12,6 +12,7 @@ import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.repository.util.createJsonBodyFrom
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.last
@@ -142,6 +143,32 @@ class TwitchEmoteImplTest {
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
 
         val actualResponse = underTest.getBetterTTVChannelEmotes("").last()
+
+        /*******THEN*******/
+        Assert.assertEquals(EXPECTED_RESPONSE, actualResponse)
+    }
+
+    @Test
+    fun `getGlobalChatBadges() SUCCESS`()= runTest{
+        /*******GIVEN*******/
+        val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TwitchEmoteClient::class.java)
+        val betterTTVEmoteClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(BetterTTVEmoteClient::class.java)
+        underTest = TwitchEmoteImpl(retrofitClient,betterTTVEmoteClient)
+        val EXPECTED_BODY =  ChatBadgePair("","")
+        val EXPECTED_RESPONSE = Response.Success(listOf<ChatBadgePair>())
+
+        /*******WHEN*******/
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(EXPECTED_BODY)
+        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
+
+        val actualResponse = underTest.getGlobalChatBadges("","").last()
 
         /*******THEN*******/
         Assert.assertEquals(EXPECTED_RESPONSE, actualResponse)
