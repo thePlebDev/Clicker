@@ -71,11 +71,11 @@ import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.NotificationsScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
-import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
@@ -130,7 +130,7 @@ object ModChannelComponents{
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
     ){
-        SharedComponents.NoDrawerScaffold(
+        NoDrawerScaffold(
             topBar = {
                 IconTextTopBarRow(
                     icon ={

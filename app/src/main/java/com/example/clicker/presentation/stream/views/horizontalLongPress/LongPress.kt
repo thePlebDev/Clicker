@@ -68,10 +68,10 @@ import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
-import com.example.clicker.presentation.sharedViews.SharedComponents
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.util.NetworkNewUserResponse
@@ -96,8 +96,7 @@ fun HorizontalLongPressView(
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
 
 
-    SharedComponents
-        .NoDrawerScaffold(
+    NoDrawerScaffold(
             topBar = {
                 TopBarTextRow(text)
             },

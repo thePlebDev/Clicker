@@ -106,13 +106,8 @@ import com.example.clicker.util.Response
         currentUsername:String,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
-
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
-        offlineStreams: AllFollowedStreamers,
-
-
-
 
     ){
 
@@ -123,7 +118,7 @@ import com.example.clicker.util.Response
                 )
             },
             scaffoldHomeView ={
-                MainScaffoldComponent(
+                HomeViewScaffold(
                     onNavigate = {id -> onNavigate(id) },
                     updateStreamerName = { streamerName, clientId,broadcasterId,userId->
                         updateStreamerName(
@@ -157,7 +152,6 @@ import com.example.clicker.util.Response
                     hapticFeedBackError={hapticFeedBackError()},
                     lowPowerModeActive=lowPowerModeActive,
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
-                    offlineStreams=offlineStreams
 
                 )
 
@@ -187,38 +181,32 @@ import com.example.clicker.util.Response
 
 
         /**
-         * - HomeModalBottomSheetBuilder is used inside of  [HomeViewImplementation].
-         *
+         * - HomeModalBottomSheetBuilder uses [Slotting](https://chrisbanes.me/posts/slotting-in-with-compose-ui/)
+         * to create what a logged in user sees when they open the application
          *
          * @param loginBottomModal a composable function that will be shown on the bottom modal
          * @param scaffoldHomeView a composable function that will be covered by the bottom modal
-         * @param forceRegisterLinks a composable function that will be shown when their is no deep links registered
          * @param bottomModalState the state of the [ModalBottomSheetLayout]
-         * @param domainIsRegistered a boolean determining if [forceRegisterLinks] should be shown or not
          * */
         @OptIn(ExperimentalMaterialApi::class)
         @Composable
         fun HomeModalBottomSheetBuilder(
-            loginBottomModal:@Composable Parts.() -> Unit,
-            scaffoldHomeView:@Composable MainScaffoldScope.() -> Unit,
+            loginBottomModal:@Composable () -> Unit,
+            scaffoldHomeView:@Composable () -> Unit,
             logoutDialog:@Composable HomeDialogs.() -> Unit,
             bottomModalState: ModalBottomSheetState,
         ){
-            val partsScope = remember() { Parts() }
+
             val homeDialogScope = remember(){HomeDialogs()}
-            val mainScaffoldScope = remember(){MainScaffoldScope()}
+
             ModalBottomSheetLayout(
                 sheetState = bottomModalState,
                 sheetContent = {
-                    with(partsScope) {
-                        loginBottomModal()
-                    }
+                    loginBottomModal()
 
                 }
             ) {
-                with(mainScaffoldScope){
-                    scaffoldHomeView()
-                }
+                scaffoldHomeView()
             }
 
             with(homeDialogScope) {
@@ -230,125 +218,41 @@ import com.example.clicker.util.Response
         }
 
 
-    /**
-     * The components inside of [Parts] represent all the composables that make up the the `HomeView` experience
-     * */
-@Stable class Parts(){
+/**
 
-
-
-
-        /**
-         * - Contains 0 extra parts
-         *
-         * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
-         *
-         * @param modalText a String that will be displayed on the button and will tell the user what the button does
-         * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
-         * to log in with Twitch
-         * */
-        @Composable
-        fun LoginWithTwitchBottomModalButton(
-            loginWithTwitch:()->Unit
-        ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(MaterialTheme.colorScheme.primary),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Log out to be issued a new Twitch authentication token",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-                Button(onClick = { loginWithTwitch() }) {
-                    Text(text = "Log out of Twitch")
-                }
-            }
+ *
+ * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
+ *
+ * @param modalText a String that will be displayed on the button and will tell the user what the button does
+ * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
+ * to log in with Twitch
+ * */
+@Composable
+fun LoginWithTwitchBottomModalButton(
+    loginWithTwitch:()->Unit
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Log out to be issued a new Twitch authentication token",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Button(onClick = { loginWithTwitch() }) {
+            Text(text = "Log out of Twitch")
         }
-
-        /**
-         * - Contains 0 extra parts
-         *
-         * - DisableForceRegister is shown to the user if they are on Android 12 or up and have not validated the deep link
-         *
-         * @param addToLinks a function used to send the user to validate the deep link
-         * */
-        @Composable
-        fun DisableForceRegister(
-            addToLinks: () -> Unit
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Spacer(
-                    modifier = Modifier
-                        .disableClickAndRipple()
-                        .background(
-                            color = Color.Gray.copy(alpha = .7f)
-                        )
-                        .matchParentSize()
-                )
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(15.dp)
-                        .align(Alignment.Center)
-                        .clickable { },
-                    backgroundColor = MaterialTheme.colorScheme.primary,
-                    elevation = 10.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(5.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            stringResource(R.string.you_must_add),
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            stringResource(R.string.package_name),
-                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            stringResource(R.string.enable_login_with_Android_12),
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            textAlign = TextAlign.Center
-                        )
-                        Button(
-                            onClick = { addToLinks() },
-                            modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary)
-                        ) {
-                            Text(text =stringResource(R.string.add_to_links), fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onSecondary)
-                        }
-                    }
-                }
-            } // end of the box
-        }
-
-
-
-
-
-    }//end of parts
-
-
-    //parts
+    }
+}
 
 
 
