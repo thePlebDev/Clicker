@@ -229,7 +229,7 @@ class StreamViewModel @Inject constructor(
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
     val badgeListMap = twitchEmoteImpl.globalChatBadges
 
-    private val _globalBetterTTVEmotes: MutableState<Response<List<IndivBetterTTVEmote>>> = mutableStateOf(Response.Loading)
+
 
 
 
@@ -334,18 +334,8 @@ class StreamViewModel @Inject constructor(
     fun getBetterTTVGlobalEmotes(){
         viewModelScope.launch(Dispatchers.IO) {
             twitchEmoteImpl.getBetterTTVGlobalEmotes().collect{response ->
+                //Nothing is done when collecting values
 
-                when(response){
-                    is Response.Loading ->{
-                        _globalBetterTTVEmotes.value = Response.Loading
-                    }
-                    is Response.Success ->{
-                        _globalBetterTTVEmotes.value = response
-                    }
-                    is Response.Failure ->{
-                        _globalBetterTTVEmotes.value = Response.Failure(Exception("Failed"))
-                    }
-                }
 
             }
         }

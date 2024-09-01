@@ -5,6 +5,7 @@ import com.example.clicker.network.clients.ChannelEmote
 import com.example.clicker.network.clients.ChannelEmoteResponse
 import com.example.clicker.network.clients.ChannelImages
 import com.example.clicker.network.clients.GetModChannels
+import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
@@ -91,10 +92,31 @@ class TwitchEmoteImplTest {
 
         /*******THEN*******/
         Assert.assertEquals(EXPECTED_RESPONSE, actualResponse)
+    }
 
+    @Test
+    fun `getBetterTTVGlobalEmotes() SUCCESS`()= runTest{
+        /*******GIVEN*******/
+        val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TwitchEmoteClient::class.java)
+        val betterTTVEmoteClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(BetterTTVEmoteClient::class.java)
+        underTest = TwitchEmoteImpl(retrofitClient,betterTTVEmoteClient)
+        val EXPECTED_BODY =  listOf(IndivBetterTTVEmote("","","",false,"",false))
+        val EXPECTED_RESPONSE = Response.Success(EXPECTED_BODY)
 
+        /*******WHEN*******/
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(EXPECTED_BODY)
+        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
 
+        val actualResponse = underTest.getBetterTTVGlobalEmotes().last()
 
-        Assert.assertEquals(1, 1)
+        /*******THEN*******/
+        Assert.assertEquals(EXPECTED_RESPONSE, actualResponse)
     }
 }
