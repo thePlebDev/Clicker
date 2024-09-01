@@ -205,7 +205,7 @@ class ChatSettingsViewModel @Inject constructor(
 
                 if (channelEmoteList.isEmpty()){
                     channelEmoteList.addAll(response)
-                    _channelEmoteInlineContentMap.value = EmoteListMap(createNewGlobalEmoteMap())
+                    _channelEmoteInlineContentMap.value = EmoteListMap(createNewChannelEmoteMap())
                 }
 
                 Log.d("combinedEmoteListing","response ->${response}")
