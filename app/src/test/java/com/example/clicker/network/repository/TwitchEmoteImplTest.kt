@@ -43,6 +43,7 @@ class TwitchEmoteImplTest {
 
     @Test
     fun `underTest_getChannelEmotes() SUCCESS`()= runTest{
+        /*******GIVEN*******/
         val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -51,13 +52,9 @@ class TwitchEmoteImplTest {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(BetterTTVEmoteClient::class.java)
-
         underTest = TwitchEmoteImpl(retrofitClient,betterTTVEmoteClient)
-        /**WHEN*/
 
-        val  singleEmote =ChannelEmote("","", ChannelImages("","",""), listOf(), listOf(),
-            listOf(),"subscriptions"
-        )
+        /*******WHEN*******/
         val expectedBody =  ChannelEmoteResponse(listOf())
         val expectedResponse = Response.Success(true)
 
@@ -65,14 +62,35 @@ class TwitchEmoteImplTest {
         val jsonBody = createJsonBodyFrom(expectedBody)
         mockWebServer.enqueue(MockResponse().setBody(jsonBody))
 
+        /*******THEN*******/
         val actualResponse = underTest.getChannelEmotes("","","").last()
-
         Assert.assertEquals(expectedResponse, actualResponse)
     }
 
     @Test
-    fun `Testing to see if this will work with the URL`(){
-        val url ="https://static-cdn.jtvnw.net/cf_vods/d2nvs31859zcd8/c95762008d772477a222_hasanabi_44729954811_1724617099//thumb/thumb0-%{width}x%{height}.jpg"
+    fun `getGlobalEmotes() SUCCESS`()= runTest{
+        /*******GIVEN*******/
+        val retrofitClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TwitchEmoteClient::class.java)
+        val betterTTVEmoteClient = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(BetterTTVEmoteClient::class.java)
+        underTest = TwitchEmoteImpl(retrofitClient,betterTTVEmoteClient)
+        val EXPECTED_BODY =  ChannelEmoteResponse(listOf())
+        val EXPECTED_RESPONSE = Response.Success(true)
+
+        /*******WHEN*******/
+        // Schedule a successful response
+        val jsonBody = createJsonBodyFrom(EXPECTED_BODY)
+        mockWebServer.enqueue(MockResponse().setBody(jsonBody))
+
+        val actualResponse = underTest.getGlobalEmotes("","").last()
+
+        /*******THEN*******/
+        Assert.assertEquals(EXPECTED_RESPONSE, actualResponse)
 
 
 
