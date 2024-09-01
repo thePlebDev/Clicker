@@ -151,7 +151,7 @@ class ChatSettingsViewModel @Inject constructor(
     }
 
     private fun monitorForSharedBetterTTVEmotes(){
-        val queue: Queue<Int> = LinkedList<Int>()
+
         viewModelScope.launch {
             twitchEmoteImpl.sharedBetterTTVEmoteList.collect{response ->
                 if (sharedBetterTTVEmoteList.isEmpty()){

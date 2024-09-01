@@ -37,6 +37,9 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @property getGlobalEmotes()
  * @property getChannelEmotes()
+ * @property getBetterTTVGlobalEmotes()
+ * @property getBetterTTVChannelEmotes()
+ * @property getGlobalChatBadges()
  *
  * */
 interface TwitchEmoteRepo {
@@ -91,12 +94,31 @@ interface TwitchEmoteRepo {
 
 
 
+    /**
+     * getBetterTTVGlobalEmotes a function used to make a request to the BetterTTV servers to access the global emote
+     *
+     * @return a [Flow] object containing a [Response] object that is used to determine if the request was a success or not
+     * */
     suspend fun getBetterTTVGlobalEmotes(): Flow<Response<List<IndivBetterTTVEmote>>>
 
+    /**
+     * getBetterTTVChannelEmotes a function used to make a request to the BetterTTV servers to access the channel specific emotes
+     *
+     * @return a [Flow] object containing a [Response] object that is used to determine if the request was a success or not
+     * */
     suspend fun getBetterTTVChannelEmotes(broadCasterId:String): Flow<Response<BetterTTVChannelEmotes>>
 
 
-    /*****BELOW ARE THE METHODS THAT ARE USED TO GET THE CHAT BADGES****/
+    /**
+     * getGlobalChatBadges a function used to make a request to the Twitch servers to access the global chat badges
+     * - Documentation for the global badges can be found [HERE](https://dev.twitch.tv/docs/api/reference/#get-global-chat-badges)
+     *
+     * @param oAuthToken a String object used to represent the oAuth-Token granted from the Twitch servers to the user. Each
+     * oAuth-Token represents a unique user experience
+     * @param clientId a String object used to represent the id of the developer account
+     *
+     * @return a [Flow] object containing a [Response] object that is used to determine if the request was a success or not
+     * */
     suspend fun getGlobalChatBadges(oAuthToken: String, clientId: String): Flow<Response<List<ChatBadgePair>>>
 
 }

@@ -41,10 +41,11 @@ import javax.inject.Inject
 class TwitchEmoteImpl @Inject constructor(
     private val twitchEmoteClient: TwitchEmoteClient,
     private val betterTTVClient: BetterTTVEmoteClient,
-    private val emoteParsing:EmoteParsing = EmoteParsing()
+    private val emoteParsing:EmoteParsing = EmoteParsing() //todo: this can be deleted
 
 ): TwitchEmoteRepo {
 
+    // values are hard coded so if all requests fail, the user can still see who the mods and subs are
     private val modBadge = "https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1"
     private val subBadge = "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1"
     private val feelsGood = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0"
@@ -309,29 +310,30 @@ class TwitchEmoteImpl @Inject constructor(
 
             val data = response.body() ?: listOf()
             Log.d("getGlobalBetterTTVEmotes", "DATA ->${data}")
+            if(data.isNotEmpty()){
+                val parsedEmoteData = data.map { EmoteNameUrlEmoteType(
+                    name = it.code,
+                    url="https://cdn.betterttv.net/emote/${it.id}/1x",
+                    emoteType = EmoteTypes.FOLLOWERS
+                )}
+                val globalBetterTTVEmoteList = parsedEmoteData.map{
+                    EmoteNameUrl(
+                        name = it.name,
+                        url = it.url
+                    )
+                }
+                _globalBetterTTVEmoteList.tryEmit(globalBetterTTVEmoteList ?: listOf())
+                val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
-            val parsedEmoteData = data.map { EmoteNameUrlEmoteType(
-                name = it.code,
-                url="https://cdn.betterttv.net/emote/${it.id}/1x",
-                emoteType = EmoteTypes.FOLLOWERS
-            )}
-            val globalBetterTTVEmoteList = parsedEmoteData?.map{
-                EmoteNameUrl(
-                    name = it.name,
-                    url = it.url
+                _emoteList.value = emoteList.value.copy(
+                    map = _emoteList.value.map + innerInlineContentMap
+                )
+                _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
+                    list = data
                 )
             }
-            _globalBetterTTVEmoteList.tryEmit(globalBetterTTVEmoteList ?: listOf())
-            val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
-            parsedEmoteData.forEach {emoteValue -> // convert the parsed data into values that can be stored into _emoteList
-                createChannelEmoteMapValue(emoteValue,innerInlineContentMap)
-            }
-            _emoteList.value = emoteList.value.copy(
-                map = _emoteList.value.map + innerInlineContentMap
-            )
-            _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
-                list = data
-            )
+
+
 
 
             emit(Response.Success(data))

@@ -566,6 +566,7 @@ fun TestingNewClickedUserMessages(
     sharedBetterTTVEmoteContentMap:EmoteListMap,
 ){
     val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -577,6 +578,7 @@ fun TestingNewClickedUserMessages(
             )
     ) {
         items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+
             val annotatedString =buildAnnotatedString {
                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
                     append("${message.dateSent} ")
