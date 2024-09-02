@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -61,14 +62,9 @@ class HomeViewModel @Inject constructor(
 
     private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
     val validatedUser = _validatedUser
+
     private val _oAuthToken = MutableStateFlow<String?>(null)
-    val oAuthToken:String? =  _oAuthToken.value
-
-
-    private var _offlineFollowedStreams: MutableState<AllFollowedStreamers> = mutableStateOf(AllFollowedStreamers(0,
-        listOf()
-    ))
-    val offlineFollowedStreams: State<AllFollowedStreamers> = _offlineFollowedStreams
+    val oAuthToken:StateFlow<String?> =  _oAuthToken.asStateFlow()
 
     private var _clickedStreamerName: MutableState<String> = mutableStateOf("")
     val clickedStreamerName: State<String> = _clickedStreamerName
@@ -78,8 +74,6 @@ class HomeViewModel @Inject constructor(
     }
 
 
-
-    /**BELOW IS THE NETWORK REQUEST BUILDER*/
 
     fun hideLogoutDialog(){
         _uiState.value = _uiState.value.copy(
@@ -103,6 +97,9 @@ class HomeViewModel @Inject constructor(
         monitorForValidatedUser()
     }
 
+    /**
+     * - tries to retrieve a locally stored OAuth Token
+     * */
     init{
         getOAuthToken()
     }
@@ -251,7 +248,7 @@ class HomeViewModel @Inject constructor(
                     getLiveStreams(
                         clientId = nonNullValidatedUser.clientId,
                         userId = nonNullValidatedUser.userId,
-                        oAuthToken = _uiState.value.oAuthToken
+                        oAuthToken = _oAuthToken.value ?:""
                     )
                    // getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
                 }
@@ -280,6 +277,7 @@ class HomeViewModel @Inject constructor(
     private fun getOAuthToken() = viewModelScope.launch(ioDispatcher) {
         tokenDataStore.getOAuthToken().collect { storedOAuthToken ->
             if (storedOAuthToken.length > 2) {
+
                 _oAuthToken.tryEmit(storedOAuthToken)
             }
         }
@@ -345,9 +343,10 @@ class HomeViewModel @Inject constructor(
                     is NetworkNewUserResponse.Success -> {
 
                         _uiState.value = _uiState.value.copy(
-                            oAuthToken = oAuthenticationToken,
                             userIsLoggedIn = NetworkAuthResponse.Success(true)
                         )
+
+
                         //todo: set the logout and login idea
 
                         _validatedUser.tryEmit(response.data)
@@ -531,6 +530,7 @@ fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): Stream
             .replace("{height}", "$aspectHeight")
     )
 }
+/**************************MODELS BELOW**************************/
 
 data class MainBusState(
     val oAuthToken: String? = null,
@@ -568,7 +568,6 @@ data class HomeUIState(
     val aspectHeight: Int = 0,
     val screenDensity: Float = 0f,
     val streamersListLoading: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-    val oAuthToken: String = "",
 
     val networkConnectionState:Boolean = true,
 

@@ -60,6 +60,7 @@ fun ModChannelView(
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
     val showNetworkRefreshError:Boolean = homeViewModel.state.value.showNetworkRefreshError
+    val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
 
 
 
@@ -96,13 +97,13 @@ fun ModChannelView(
                     login = homeViewModel.validatedUser.value?.login ?:""
                 )
                 autoModViewModel.updateAutoModCredentials(
-                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    oAuthToken = oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                     moderatorId = streamViewModel.state.value.userId,
                     broadcasterId = streamViewModel.state.value.broadcasterId,
                 )
                 updateModViewSettings(
-                    homeViewModel.state.value.oAuthToken,
+                    oAuthToken,
                     streamViewModel.state.value.clientId,
                     streamViewModel.state.value.broadcasterId,
                     streamViewModel.state.value.userId,
@@ -110,14 +111,14 @@ fun ModChannelView(
                 createNewTwitchEventWebSocket()
                 //
                 streamViewModel.getChannelEmotes(
-                    homeViewModel.state.value.oAuthToken,
+                    oAuthToken,
                     streamViewModel.state.value.clientId,
                     streamViewModel.state.value.broadcasterId,
                 )
                 //todo: I think this is where I need to make the call
                 Log.d("CLickingtestingTHingy","AGAIN CLICKED")
                 streamViewModel.getGlobalChatBadges(
-                    oAuthToken =homeViewModel.state.value.oAuthToken,
+                    oAuthToken =oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                 )
                 streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
