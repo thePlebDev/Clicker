@@ -158,6 +158,12 @@ class ChatSettingsViewModel @Inject constructor(
                     sharedBetterTTVEmoteList.addAll(response)
                     //the map creator needs to be changed
                     _betterTTVSharedInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVSharedEmoteMap())
+                }else{
+                    sharedBetterTTVEmoteList.clear()
+                    sharedBetterTTVEmoteList.addAll(response)
+                    //the map creator needs to be changed
+                    _betterTTVSharedInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVSharedEmoteMap())
+
                 }
                 Log.d("sharedBetterTTVEmoteList","response ->${response}")
             }
@@ -169,6 +175,11 @@ class ChatSettingsViewModel @Inject constructor(
                 if (channelBetterTTVEmoteList.isEmpty()){
                     channelBetterTTVEmoteList.addAll(response)
                     _betterTTVChannelInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVChanelEmoteMap())
+                }else{
+                    channelBetterTTVEmoteList.clear()
+                    channelBetterTTVEmoteList.addAll(response)
+                    _betterTTVChannelInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVChanelEmoteMap())
+
                 }
 
                 Log.d("globalBetterTTVEmoteList","response ->${response}")
@@ -179,6 +190,10 @@ class ChatSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             twitchEmoteImpl.globalBetterTTVEmoteList.collect{response ->
                 if (globalBetterTTVEmoteList.isEmpty()){
+                    globalBetterTTVEmoteList.addAll(response)
+                    _betterTTVGlobalInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVGlobalEmoteMap())
+                }else{
+                    globalBetterTTVEmoteList.clear()
                     globalBetterTTVEmoteList.addAll(response)
                     _betterTTVGlobalInlineContentMapChannelEmoteList.value = EmoteListMap(createBetterTTVGlobalEmoteMap())
                 }
@@ -195,7 +210,7 @@ class ChatSettingsViewModel @Inject constructor(
                     _globalEmoteInlineContentMap.value = EmoteListMap(createNewGlobalEmoteMap())
                 }
 
-                Log.d("channelEmoteList","response ->${response}")
+                Log.d("globalTwitchEmoteList","response ->${response}")
             }
         }
     }
@@ -206,6 +221,11 @@ class ChatSettingsViewModel @Inject constructor(
                 if (channelEmoteList.isEmpty()){
                     channelEmoteList.addAll(response)
                     _channelEmoteInlineContentMap.value = EmoteListMap(createNewChannelEmoteMap())
+                }else{
+                    channelEmoteList.clear()
+                    channelEmoteList.addAll(response)
+                    _channelEmoteInlineContentMap.value = EmoteListMap(createNewChannelEmoteMap())
+
                 }
 
                 Log.d("combinedEmoteListing","response ->${response}")
@@ -311,6 +331,7 @@ class ChatSettingsViewModel @Inject constructor(
             .build()
 
         val newMap = channelEmoteList.map {emote ->
+            Log.d("convertDataToEmoteNameUrlEmoteType", emote.name)
             Pair(
                 emote.name,
                 InlineTextContent(
