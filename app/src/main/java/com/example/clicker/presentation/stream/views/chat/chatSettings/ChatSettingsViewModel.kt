@@ -36,6 +36,7 @@ import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.util.Response
+import com.example.clicker.util.mapWithRetry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.LinkedList
 import java.util.Queue
 import javax.inject.Inject
@@ -470,6 +472,31 @@ class ChatSettingsViewModel @Inject constructor(
         }.toMap()
 
         return newMap
+
+    }
+
+     fun getGlobalEmote(oAuthToken:String,clientId: String) {
+
+         if(globalEmoteList.isEmpty()){
+             viewModelScope.launch {
+                 withContext(Dispatchers.IO){
+                     twitchEmoteImpl.getGlobalEmotes(
+                         oAuthToken, clientId
+                     ).mapWithRetry(
+                         action={
+                             // result is the result from getGlobalEmotes()
+                                 result -> result
+                         },
+                         predicate = { result, attempt ->
+                             val repeatResult = result is Response.Failure && attempt < 3
+                             repeatResult
+                         }
+                     ).collect{}
+                 }
+
+             }
+         }
+
 
     }
 
