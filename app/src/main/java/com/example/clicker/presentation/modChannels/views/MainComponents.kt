@@ -70,7 +70,8 @@ import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
 import com.example.clicker.presentation.sharedViews.ErrorScope
-import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
+
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.NotificationsScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
@@ -251,14 +252,14 @@ object ModChannelComponents{
             clientId:String,
             userId:String,
             showLoginModal:()->Unit,
-            loadingIndicator:@Composable IndicatorScopes.() -> Unit,
+            loadingIndicator:@Composable () -> Unit,
             showNetworkRefreshError:Boolean,
             hapticFeedBackError:() ->Unit,
 
             ){
             val fontSize =MaterialTheme.typography.headlineMedium.fontSize
             val errorScope = remember(){ ErrorScope(fontSize) }
-            val indicatorScopes = remember() { IndicatorScopes() }
+
             Box(modifier = Modifier.fillMaxSize()){
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -266,9 +267,9 @@ object ModChannelComponents{
                     when(modChannelResponseState){
                         is NetworkNewUserResponse.Loading ->{
                             item{
-                                with(indicatorScopes){
+
                                     loadingIndicator()
-                                }
+
 
                             }
 
