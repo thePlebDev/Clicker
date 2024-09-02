@@ -212,12 +212,16 @@ class TwitchEmoteImpl @Inject constructor(
         clientId: String,
     ): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)
+        Log.d("getGlobalEmotes","OAUTHTOKEN ->${oAuthToken}")
+        Log.d("getGlobalEmotes","clientId ->${clientId}")
+
          val response = twitchEmoteClient.getGlobalEmotes(
              authorization = "Bearer $oAuthToken",
              clientId = clientId
          )
 
           if (response.isSuccessful) {
+              Log.d("getGlobalEmotes","SUCCESS")
               val data = response.body()?.data ?: listOf()
               if(data.isNotEmpty()){
                   val parsedEmoteData = data.map {

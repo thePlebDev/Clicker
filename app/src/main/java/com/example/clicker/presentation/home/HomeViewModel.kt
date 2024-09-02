@@ -51,7 +51,6 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,//todo:TEST-> needs to be done as an instrumented tests
     private val authentication: TwitchAuthentication,//todo:TEST(DONE)
-    private val twitchEmoteImpl: TwitchEmoteRepo,//todo:TEST(DONE)
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -149,7 +148,7 @@ class HomeViewModel @Inject constructor(
                     userId = _validatedUser.value?.userId ?:"",
                     oAuthToken = _oAuthToken.value ?: "",
                 )
-                getGlobalEmote(_oAuthToken.value ?: "",_validatedUser.value?.clientId ?:"")
+               // getGlobalEmote(_oAuthToken.value ?: "",_validatedUser.value?.clientId ?:"")
             }
 
         }
@@ -254,7 +253,7 @@ class HomeViewModel @Inject constructor(
                         userId = nonNullValidatedUser.userId,
                         oAuthToken = _uiState.value.oAuthToken
                     )
-                    getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
+                   // getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
                 }
             }
         }
@@ -286,27 +285,8 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    //
-    private fun getGlobalEmote(oAuthToken:String,clientId: String) {
+    //todo: this needs to get moved
 
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                twitchEmoteImpl.getGlobalEmotes(
-                    oAuthToken, clientId
-                ).mapWithRetry(
-                    action={
-                        // result is the result from getGlobalEmotes()
-                            result -> result
-                    },
-                    predicate = { result, attempt ->
-                        val repeatResult = result is Response.Failure && attempt < 3
-                        repeatResult
-                    }
-                ).collect{}
-            }
-
-        }
-    }
 
 
 

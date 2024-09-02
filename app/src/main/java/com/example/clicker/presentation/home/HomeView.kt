@@ -90,6 +90,7 @@ fun ValidationView(
             if (!lowPowerModeActive) {
                 homeViewModel.updateClickedStreamerName(streamerName)
 
+
                 Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
                 streamViewModel.updateChannelNameAndClientIdAndUserId(
                     streamerName,
@@ -118,6 +119,10 @@ fun ValidationView(
                     streamViewModel.state.value.broadcasterId,
                 )
                 chatSettingsViewModel.getGlobalChatBadges(
+                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                )
+                chatSettingsViewModel.getGlobalEmote(
                     oAuthToken = homeViewModel.state.value.oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                 )
