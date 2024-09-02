@@ -73,7 +73,7 @@ fun ValidationView(
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
-    val oAuthToken = homeViewModel.state.value.oAuthToken
+    val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
     val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
 
 
@@ -101,29 +101,29 @@ fun ValidationView(
                 )
                 streamViewModel.getBetterTTVGlobalEmotes()
                 autoModViewModel.updateAutoModCredentials(
-                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    oAuthToken = oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                     moderatorId = streamViewModel.state.value.userId,
                     broadcasterId = streamViewModel.state.value.broadcasterId,
                 )
                 updateModViewSettings(
-                    homeViewModel.state.value.oAuthToken,
+                    oAuthToken,
                     streamViewModel.state.value.clientId,
                     streamViewModel.state.value.broadcasterId,
                     streamViewModel.state.value.userId,
                 )
                 createNewTwitchEventWebSocket()
                 streamViewModel.getChannelEmotes(
-                    homeViewModel.state.value.oAuthToken,
+                    oAuthToken,
                     streamViewModel.state.value.clientId,
                     streamViewModel.state.value.broadcasterId,
                 )
                 chatSettingsViewModel.getGlobalChatBadges(
-                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    oAuthToken = oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                 )
                 chatSettingsViewModel.getGlobalEmote(
-                    oAuthToken = homeViewModel.state.value.oAuthToken,
+                    oAuthToken = oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                 )
                 streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)

@@ -94,6 +94,7 @@ fun HorizontalLongPressView(
 
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
+    val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
 
 
     NoDrawerScaffold(
@@ -114,7 +115,7 @@ fun HorizontalLongPressView(
                                 loadURL ={
                                         newUrl ->
                                     updateModViewSettings(
-                                        homeViewModel.state.value.oAuthToken,
+                                        oAuthToken,
                                         streamViewModel.state.value.clientId,
                                         streamViewModel.state.value.broadcasterId,
                                         streamViewModel.state.value.userId,
@@ -128,7 +129,7 @@ fun HorizontalLongPressView(
                                 getChannelEmotes={
                                         broadcasterId ->
                                     streamViewModel.getChannelEmotes(
-                                        homeViewModel.state.value.oAuthToken,
+                                        oAuthToken,
                                         streamViewModel.state.value.clientId,
                                         broadcasterId,
                                     )

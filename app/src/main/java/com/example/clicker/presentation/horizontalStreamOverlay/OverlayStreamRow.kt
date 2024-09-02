@@ -55,6 +55,7 @@ fun OverlayStreamRow(
 ){
     val height = homeViewModel.state.value.aspectHeight
     val width = homeViewModel.state.value.width
+    val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
 
 
     Box(
@@ -73,7 +74,7 @@ fun OverlayStreamRow(
         userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:"",
         loadURL ={ newUrl ->
             updateModViewSettings(
-                homeViewModel.state.value.oAuthToken,
+                oAuthToken,
                 streamViewModel.state.value.clientId,
                 streamViewModel.state.value.broadcasterId,
                 streamViewModel.state.value.userId,
@@ -92,7 +93,7 @@ fun OverlayStreamRow(
         getChannelEmotes={
                 broadcasterId ->
             streamViewModel.getChannelEmotes(
-                homeViewModel.state.value.oAuthToken,
+                oAuthToken,
                 streamViewModel.state.value.clientId,
                 broadcasterId,
             )
@@ -200,9 +201,11 @@ fun ImageWithViewCount(
     val adjustedWidth = width / density
     val clickedModifier = Modifier
         .clip(RoundedCornerShape(5.dp))
-        .border( width = 4.dp,
+        .border(
+            width = 4.dp,
             color = MaterialTheme.colorScheme.secondary,
-            shape = RoundedCornerShape(5.dp))
+            shape = RoundedCornerShape(5.dp)
+        )
     val nonClickedModifier = Modifier.clip(RoundedCornerShape(5.dp))
     val chosenModifier = if(clickedStreamName == streamerName) clickedModifier else nonClickedModifier
     Row(
