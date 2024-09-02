@@ -110,6 +110,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
+import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
@@ -1301,8 +1302,9 @@ fun ElevatedCardSwitchRow(
         )
 
         SwitchWithIcon(
-            checked = checked,
-            changeChecked ={value -> changeChecked(value)}
+            checkedValue = checked,
+            changeCheckedValue ={value -> changeChecked(value)},
+            icon = Icons.Filled.Check,
         )
     }
 }
@@ -1329,50 +1331,6 @@ fun ElevatedCardSwitchTextRow(
     }
 }
 
-@Composable
-fun SwitchWithIcon(
-    checked:Boolean,
-    changeChecked:(Boolean) ->Unit,
-
-    ) {
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(90.dp)
-            .padding(top = 13.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                changeChecked(it)
-            },
-            thumbContent = if (checked) {
-                {
-                    androidx.compose.material.Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                        tint = Color.White
-                    )
-                }
-            } else {
-                null
-            },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
-        )
-    }
-
-}
 
 @Composable
 fun TextColumn(
