@@ -35,6 +35,9 @@ import kotlinx.coroutines.flow.StateFlow
  * @property sharedBetterTTVEmotes a [State] object containing a [IndivBetterTTVEmoteList] object that represents all the shared BetterTTV emotes.
  * You can read more about the BetterTTV shared emotes, [HERE](https://betterttv.com/developers/api#user)
  *
+ *@property globalTwitchEmoteList a [StateFlow] object containing a list of [EmoteNameUrl] objects that represents all the Global Twitch emotes.
+ * You can read more about the Global Twitch emotes, [HERE](https://dev.twitch.tv/docs/api/reference/#get-global-emotes)
+ *
  * @property getGlobalEmotes()
  * @property getChannelEmotes()
  * @property getBetterTTVGlobalEmotes()
@@ -44,7 +47,7 @@ import kotlinx.coroutines.flow.StateFlow
  * */
 interface TwitchEmoteRepo {
 
-    val emoteList: State<EmoteListMap>
+//    val emoteList: State<EmoteListMap>
 
     val emoteBoardGlobalList: State<EmoteNameUrlList>
 
@@ -57,7 +60,8 @@ interface TwitchEmoteRepo {
 
     val globalChatBadges: State<EmoteListMap>
 
-    val combinedEmoteList:StateFlow<List<EmoteNameUrl>>
+
+    val globalTwitchEmoteList:StateFlow<List<EmoteNameUrl>>
     val channelEmoteList:StateFlow<List<EmoteNameUrl>>
     val globalBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
     val channelBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
