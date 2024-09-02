@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 
 
 @Composable
@@ -176,42 +177,12 @@ fun UsernameColorSwitch(
         Text("Custom username color",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize,)
         SwitchWithIcon(
             checkedValue = customUsernameColor,
-            changeCheckedValue = {newValue->changeCustomUsernameColor(newValue)}
+            changeCheckedValue = {newValue->changeCustomUsernameColor(newValue)},
+            icon = Icons.Filled.Check,
         )
     }
 }
 
-@Composable
-fun SwitchWithIcon(
-    checkedValue:Boolean,
-    changeCheckedValue:(Boolean)->Unit
-) {
-
-
-    Switch(
-        checked = checkedValue,
-        onCheckedChange = {
-            changeCheckedValue(it)
-        },
-        thumbContent = if (checkedValue) {
-            {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                )
-            }
-        } else {
-            null
-        },
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = MaterialTheme.colorScheme.secondary,
-            uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-            checkedTrackColor = Color.DarkGray,
-            uncheckedTrackColor = Color.DarkGray,
-        )
-    )
-}
 
 @Composable
 fun ChatSlider(

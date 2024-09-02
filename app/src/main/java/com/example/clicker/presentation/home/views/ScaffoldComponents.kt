@@ -120,6 +120,7 @@ import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
 import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
+import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -654,43 +655,15 @@ object ScaffoldScope{
                 Text("Low power mode", fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
                 SwitchWithIcon(
                     checkedValue =checkedValue,
-                    changeCheckedValue={newValue ->changeCheckedValue(newValue)}
+                    changeCheckedValue={newValue ->changeCheckedValue(newValue)},
+                    icon = Icons.Filled.Check,
                 )
+
             }
         }
     }
 
-    @Composable
-    fun SwitchWithIcon(
-        checkedValue:Boolean,
-        changeCheckedValue:(Boolean)->Unit
-    ) {
 
-
-        Switch(
-            checked = checkedValue,
-            onCheckedChange = {
-                changeCheckedValue(it)
-            },
-            thumbContent = if (checkedValue) {
-                {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
-            },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
-        )
-    }
 
     /**
      * - Contains 0 extra parts

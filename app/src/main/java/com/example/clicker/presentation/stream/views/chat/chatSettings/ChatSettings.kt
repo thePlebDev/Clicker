@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
+import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
@@ -292,19 +294,15 @@ fun EmoteOnlySwitch(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Emotes-only chat", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Switch(
-                    enabled =switchEnabled,
-                    checked = emoteOnly,
-                    onCheckedChange = {
-                        setEmoteOnly(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                        checkedTrackColor = Color.DarkGray,
-                        uncheckedTrackColor = Color.DarkGray,
-                    )
+
+                SwitchWithIcon(
+                    checkedValue = emoteOnly,
+                    changeCheckedValue = {newValue->setEmoteOnly(newValue)},
+                    icon = Icons.Filled.Check,
+                    switchEnabled =switchEnabled
                 )
+
+
             }
         }
     )
@@ -333,18 +331,11 @@ fun SubscriberOnlySwitch(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Subscriber-only chat", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                Switch(
-                    enabled=switchEnabled,
-                    checked = subscriberOnly,
-                    onCheckedChange = {
-                        setSubscriberOnly(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                        checkedTrackColor = Color.DarkGray,
-                        uncheckedTrackColor = Color.DarkGray,
-                    )
+                SwitchWithIcon(
+                    checkedValue = subscriberOnly,
+                    changeCheckedValue = {newValue->setSubscriberOnly(newValue)},
+                    icon = Icons.Filled.Check,
+                    switchEnabled =switchEnabled
                 )
             }
         }
@@ -527,19 +518,13 @@ fun SubsSwitch(
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Switch(
-            checked = advancedChatSettings.showSubs,
-            enabled = true,
-            onCheckedChange = {
-                val newValue =advancedChatSettings.copy(showSubs = it)
-                changeAdvancedChatSettings(newValue)
-            },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
+        SwitchWithIcon(
+            checkedValue = advancedChatSettings.showSubs,
+            changeCheckedValue = {newValue->
+                val value =advancedChatSettings.copy(showSubs = newValue)
+                changeAdvancedChatSettings(value)
+                                 },
+            icon = Icons.Filled.Check,
         )
     }
 }
@@ -561,19 +546,13 @@ fun GiftSubsSwitch(
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Switch(
-            checked = advancedChatSettings.showGiftSubs,
-            enabled = true,
-            onCheckedChange = {
-                val newValue =advancedChatSettings.copy(showGiftSubs = it)
-                changeAdvancedChatSettings(newValue)
+        SwitchWithIcon(
+            checkedValue = advancedChatSettings.showGiftSubs,
+            changeCheckedValue = {newValue->
+                val value =advancedChatSettings.copy(showGiftSubs = newValue)
+                changeAdvancedChatSettings(value)
             },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
+            icon = Icons.Filled.Check,
         )
     }
 }
@@ -595,20 +574,16 @@ fun AnonGiftSubsSwitch(
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Switch(
-            checked = advancedChatSettings.showAnonSubs,
-            enabled = true,
-            onCheckedChange = {
-                val newValue =advancedChatSettings.copy(showAnonSubs = it)
-                changeAdvancedChatSettings(newValue)
+
+        SwitchWithIcon(
+            checkedValue = advancedChatSettings.showAnonSubs,
+            changeCheckedValue = {newValue->
+                val value =advancedChatSettings.copy(showAnonSubs = newValue)
+                changeAdvancedChatSettings(value)
             },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
+            icon = Icons.Filled.Check,
         )
+
     }
 }
 //"Re-Sub messages"
@@ -629,19 +604,14 @@ fun ReSubsSwitch(
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Switch(
-            checked = advancedChatSettings.showReSubs,
-            enabled = true,
-            onCheckedChange = {
-                val newValue =advancedChatSettings.copy(showReSubs = it)
-                changeAdvancedChatSettings(newValue)
+
+        SwitchWithIcon(
+            checkedValue = advancedChatSettings.showReSubs,
+            changeCheckedValue = {newValue->
+                val value =advancedChatSettings.copy(showReSubs = newValue)
+                changeAdvancedChatSettings(value)
             },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
+            icon = Icons.Filled.Check,
         )
     }
 }
@@ -662,18 +632,12 @@ fun NoChatSwitch(
             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Switch(
-            checked = advancedChatSettings.noChatMode,
-            enabled = true,
-            onCheckedChange = {
-                changeNoChatMode(it)
+        SwitchWithIcon(
+            checkedValue = advancedChatSettings.noChatMode,
+            changeCheckedValue = {newValue->
+                changeNoChatMode(newValue)
             },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                checkedTrackColor = Color.DarkGray,
-                uncheckedTrackColor = Color.DarkGray,
-            )
+            icon = Icons.Filled.Check,
         )
     }
 }
