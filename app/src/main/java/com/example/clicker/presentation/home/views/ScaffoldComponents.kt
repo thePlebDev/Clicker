@@ -18,18 +18,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerValue
@@ -45,86 +42,44 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.clients.AllFollowedStreamers
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.home.StreamInfo
-import com.example.clicker.presentation.home.disableClickAndRipple
-import com.example.clicker.presentation.home.views.ScaffoldParts.AccountActionCard
-import com.example.clicker.presentation.home.views.ScaffoldParts.EmptyFollowingList
-import com.example.clicker.presentation.home.views.ScaffoldParts.GettingStreamsError
-import com.example.clicker.presentation.home.views.ScaffoldParts.LiveChannelRowItem
 
-import com.example.clicker.presentation.home.views.ScaffoldParts.setTagAndId
-import com.example.clicker.presentation.modChannels.views.ModChannelComponents
-import com.example.clicker.presentation.modChannels.views.PullToRefresh
-import com.example.clicker.util.NetworkResponse
-import com.example.clicker.util.PullRefreshState
-import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
-import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.ErrorScope
-import com.example.clicker.presentation.sharedViews.IndicatorScopes
+import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
-import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
-import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.ClickedStreamInfo
-import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -132,8 +87,8 @@ import kotlinx.coroutines.launch
 
     /**
      *
-     * - MainScaffoldComponent is used soley inside of [HomeViewImplementation][HomeComponents.HomeViewImplementation] to
-     * create the scaffold home view. Essentially it is what the user sees when the data loads from the twitch server plus a
+     * - HomeViewScaffold is used to create the scaffold home view.
+     * Essentially it is what the user sees when the data loads from the twitch server plus a
      * Scaffold drawer which allows the user to login and logout
      *
      * @param login a function that is used to log in the current user into their twitch account
@@ -173,11 +128,8 @@ import kotlinx.coroutines.launch
         loginWithTwitch:() ->Unit,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
-
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
-
-
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -228,7 +180,7 @@ import kotlinx.coroutines.launch
                 )
             },
             drawerContent = {
-                ScaffoldScope.LoginLogoutScaffoldDrawer(
+                LoginLogoutScaffoldDrawer(
                     showLogoutDialog = {
                         showLogoutDialog()
                     },
@@ -323,7 +275,7 @@ import kotlinx.coroutines.launch
      * Parts represents the most individual parts of [ScaffoldComponents] and should be thought of as the individual
      * pieces that are used inside of a [Builders] to create a [ScaffoldComponents] implementation
      * */
-    private object ScaffoldParts{
+
         @OptIn(ExperimentalComposeUiApi::class)
         fun Modifier.setTagAndId(tag: String): Modifier {
             return this
@@ -333,9 +285,6 @@ import kotlinx.coroutines.launch
 
 
         /**
-         * - Contains 2 extra parts:
-         * 1) [ImageWithViewCount]
-         * 2) [StreamTitleWithInfo]
          *
          * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
          * retrieved from the Twitch server
@@ -411,7 +360,6 @@ import kotlinx.coroutines.launch
 
 
         /**
-         * - Contains 0 extra parts
          *
          * - GettingStreamsError is a composable function that will appear to the user when there was an error
          * retrieving the streams from the Twitch server
@@ -453,7 +401,6 @@ import kotlinx.coroutines.launch
             }
         }
         /**
-         * - Contains 0 extra parts
          *
          * - EmptyFollowingList is a composable function that will appear to the user when there are no live channels
          *
@@ -489,67 +436,14 @@ import kotlinx.coroutines.launch
             }
         }
 
-        /**
-         * - Contains 0 extra parts
-         *
-         * - AccountActionCard is a clickable card that can be clicked on the trigger the action of [accountAction]
-         *
-         * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
-         * @param accountAction a function will be run once the Card is clicked
-         * @param title a string representing a text that will be shown on the Card and should tell the user what the clickable card does
-         * @param iconImageVector a [ImageVector] that will be displayed after the [title]
-         * */
-        @Composable
-        fun AccountActionCard(
-            scaffoldState: ScaffoldState,
-            accountAction: () -> Unit,
-            title:String,
-            iconImageVector: ImageVector
-        ) {
-            val scope = rememberCoroutineScope()
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .clickable {
-                        scope.launch {
-                            scaffoldState.drawerState.close()
-                        }
-                        accountAction()
-                    },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.secondary),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    Text(title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
-                    Icon(
-                        iconImageVector,
-                        stringResource(R.string.logout_icon_description),
-                        modifier = Modifier.size(35.dp),
-                        tint =  MaterialTheme.colorScheme.onSecondary
-                    )
-                }
-            }
-        }
 
 
 
-    }
 
-@Stable
-object ScaffoldScope{
     /**
-     * - Contains 1 extra part [AccountActionCard]
      *
      * - ScaffoldDrawer is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
      *
-
      * @param userIsLoggedIn a boolean to determine if the user is logged in or not
      * */
     @Composable
@@ -572,14 +466,14 @@ object ScaffoldScope{
                 if (userIsLoggedIn) {
                     AccountActionCard(
                         scaffoldState,
-                        accountAction = { showLogoutDialog() },
+                        onCardClick = { showLogoutDialog() },
                         title = stringResource(R.string.logout_icon_description),
                         iconImageVector = Icons.Default.ExitToApp
                     )
                 } else {
                     AccountActionCard(
                         scaffoldState,
-                        accountAction = { loginWithTwitch() },
+                        onCardClick = { loginWithTwitch() },
                         title = stringResource(R.string.login_with_twitch),
                         iconImageVector = Icons.Default.AccountCircle
                     )
@@ -666,9 +560,8 @@ object ScaffoldScope{
 
 
     /**
-     * - Contains 0 extra parts
      *
-     * - AccountActionCard is a clickable card that can be clicked on the trigger the action of [accountAction]
+     * - AccountActionCard is a clickable card that can be clicked on the trigger the action of [onCardClick]
      *
      * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
      * @param onCardClick a function will be run once the Card is clicked
@@ -714,7 +607,7 @@ object ScaffoldScope{
         }
     }
 
-}
+
 
 @Stable
 class LiveChannelsLazyColumnScope(){
@@ -741,7 +634,7 @@ class LiveChannelsLazyColumnScope(){
         bottomModalState: ModalBottomSheetState,
         followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         contentPadding: PaddingValues,
-        loadingIndicator:@Composable IndicatorScopes.() -> Unit,
+        loadingIndicator:@Composable () -> Unit,
         emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
         liveChannelRowItem:@Composable LiveChannelsLazyColumnScope.(streamItem: StreamData) -> Unit,
         gettingStreamError:@Composable LiveChannelsLazyColumnScope.(message:String) -> Unit,
@@ -753,7 +646,7 @@ class LiveChannelsLazyColumnScope(){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
         val scope = rememberCoroutineScope()
         val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
-        val indicatorScopes = remember() { IndicatorScopes() }
+
         val errorScope = remember(){ ErrorScope(fontSize) }
 
 
@@ -774,9 +667,9 @@ class LiveChannelsLazyColumnScope(){
                             bottomModalState.hide()
                         }
                         item {
-                            with(indicatorScopes){
+
                                 loadingIndicator()
-                            }
+
                         }
                     }
                     is NetworkNewUserResponse.Success -> {
@@ -1026,6 +919,7 @@ fun ImageWithViewCount(
         )
     }
 }
+
 
 
 

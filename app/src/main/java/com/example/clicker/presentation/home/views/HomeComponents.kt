@@ -43,6 +43,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 
 import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.stream.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -193,27 +194,16 @@ import com.example.clicker.util.Response
         fun HomeModalBottomSheetBuilder(
             loginBottomModal:@Composable () -> Unit,
             scaffoldHomeView:@Composable () -> Unit,
-            logoutDialog:@Composable HomeDialogs.() -> Unit,
+            logoutDialog:@Composable () -> Unit,
             bottomModalState: ModalBottomSheetState,
         ){
 
-            val homeDialogScope = remember(){HomeDialogs()}
-
             ModalBottomSheetLayout(
                 sheetState = bottomModalState,
-                sheetContent = {
-                    loginBottomModal()
-
-                }
-            ) {
-                scaffoldHomeView()
-            }
-
-            with(homeDialogScope) {
-                logoutDialog()
-            }
-
-
+                sheetContent = { loginBottomModal() },
+                content = {scaffoldHomeView()}
+            )
+            logoutDialog()
 
         }
 

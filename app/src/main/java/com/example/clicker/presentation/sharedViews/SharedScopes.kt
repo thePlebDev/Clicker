@@ -9,16 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -29,15 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
-import com.example.clicker.presentation.modChannels.views.PullToRefresh
-import com.example.clicker.presentation.modChannels.views.rememberPullToRefreshState
 
 /**
  * ScaffoldBottomBarScope represents all the available components to a [Scaffold's](https://developer.android.com/jetpack/compose/components/scaffold)
@@ -384,31 +377,9 @@ class NotificationsScope(
 }
 
 
-/**
- * IndicatorScopes is a scope used to strongly type composable parameters that requires Loading indicators
- *
- * */
-@Stable
-class IndicatorScopes(){
-    /**
-     * LazyListLoadingIndicator is a [Row] composable meant to show a [CircularProgressIndicator] to the user
-     *
-     * */
-    @Composable
-    fun LazyListLoadingIndicator(){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(40.dp),
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
 
-    }
 
-}
+
 
 
 /**
@@ -481,4 +452,18 @@ fun NewUserAlert(
             )
         }
     }
+}
+
+@Composable
+fun LazyListLoadingIndicator(){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(40.dp),
+            color = MaterialTheme.colorScheme.secondary
+        )
+    }
+
 }
