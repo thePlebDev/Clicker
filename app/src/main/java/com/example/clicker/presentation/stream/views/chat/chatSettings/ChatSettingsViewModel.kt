@@ -189,7 +189,7 @@ class ChatSettingsViewModel @Inject constructor(
     }
     private fun monitorForGlobalTwitchEmotes(){
         viewModelScope.launch {
-            twitchEmoteImpl.combinedEmoteList.collect{response ->
+            twitchEmoteImpl.globalTwitchEmoteList.collect{response ->
                 if (globalEmoteList.isEmpty()){
                     globalEmoteList.addAll(response)
                     _globalEmoteInlineContentMap.value = EmoteListMap(createNewGlobalEmoteMap())

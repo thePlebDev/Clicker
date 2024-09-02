@@ -135,7 +135,6 @@ enum class Sections {
 fun ModViewComponentVersionThree(
     closeModView:()->Unit,
     modViewDragStateViewModel: ModViewDragStateViewModel,// unstable
-    inlineContentMap: EmoteListMap,
     twitchUserChat: List<TwitchUserData>, // unstable this is the only one I am going to fix
     streamViewModel: StreamViewModel,// unstable
     modViewViewModel: ModViewViewModel,// unstable
@@ -447,7 +446,6 @@ fun ModViewComponentVersionThree(
                         },
                         //todo:change back to --> true for testing
                         isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                        inlineContentMap = inlineContentMap,
                         setDragging = { value ->
                             Log.d("DOUBLECLICKDRAGGING", "click from the outside")
                             setDragging()
@@ -534,7 +532,6 @@ fun ModViewComponentVersionThree(
                                 clickedValue
                             )
                         },
-                        inlineContentMap = streamViewModel.inlineTextContentTest.value,
                         hideSoftKeyboard = {
                             hideSoftKeyboard()
 
@@ -1469,7 +1466,6 @@ fun SmallChat(
     doubleClickMessage:(String)->Unit,
     deleteChatMessage:(String)->Unit,
     isMod: Boolean,
-    inlineContentMap: EmoteListMap,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,
     globalBetterTTVEmoteContentMap:EmoteListMap,
@@ -1508,7 +1504,6 @@ fun SmallChat(
                 modifier=modifier,
                 deleteChatMessage={messageId ->deleteChatMessage(messageId)},
                 isMod = isMod,
-                inlineContentMap=inlineContentMap,
                 setDragging = {value -> setDragging(value)},
                 doubleClickAndDrag=doubleClickAndDrag,
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
@@ -1661,7 +1656,6 @@ fun SmallChatUILazyColumn(
     deleteChatMessage:(String)->Unit,
     modifier: Modifier,
     isMod: Boolean,
-    inlineContentMap: EmoteListMap,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,
     globalBetterTTVEmoteContentMap:EmoteListMap,
@@ -1735,7 +1729,6 @@ fun SmallChatUILazyColumn(
                         deleteChatMessage(messageId)
                                       },
                     isMod = false,
-                    inlineContentMap=inlineContentMap,
                     badgeListMap=badgeListMap,
                     usernameSize=usernameSize,
                     messageSize=messageSize,

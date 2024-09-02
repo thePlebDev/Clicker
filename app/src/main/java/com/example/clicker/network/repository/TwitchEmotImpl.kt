@@ -134,14 +134,19 @@ class TwitchEmoteImpl @Inject constructor(
         ),
 
         )
-    private val _emoteList: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMap))
 
-    override val emoteList: State<EmoteListMap> = _emoteList //this is what is shown in the chat UI(not emote box UI but chat UI )
+//    private val _emoteList: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMap))
+//    override val emoteList: State<EmoteListMap> = _emoteList //this is what is shown in the chat UI(not emote box UI but chat UI )
 
+    /**
+     * private mutable version of [globalChatBadges]
+     * */
     private val _globalChatBadges: MutableState<EmoteListMap> = mutableStateOf(EmoteListMap(inlineContentMapGlobalBadgeList))
-
     override val globalChatBadges: State<EmoteListMap> = _globalChatBadges
 
+    /**
+     * private mutable version of [emoteBoardGlobalList]
+     * */
     private val _emoteBoardGlobalList = mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
     override val emoteBoardGlobalList:State<EmoteNameUrlList> = _emoteBoardGlobalList
 
@@ -149,12 +154,11 @@ class TwitchEmoteImpl @Inject constructor(
      * private mutable version of [emoteBoardChannelList]
      * */
     private val _emoteBoardChannelList = mutableStateOf<EmoteNameUrlEmoteTypeList>(EmoteNameUrlEmoteTypeList())
-    /**
-     * emoteBoardChannelList represents the list of emotes shown to the user inside of emote board. Specifically the channel
-     * emote section.
-     * */
     override val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList> = _emoteBoardChannelList
-    /**Below are the parameters for the global emotes*/
+
+    /**
+     * private mutable version of [globalBetterTTVEmotes]
+     * */
     private val _globalBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
     override val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _globalBetterTTVEmotes
 
@@ -162,19 +166,21 @@ class TwitchEmoteImpl @Inject constructor(
      * private mutable version of [channelBetterTTVEmotes]
      * */
     private val _channelBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
-    /**
-     * channelBetterTTVEmotes represents the emotes that are shown to the user in the emote board
-     * */
     override val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _channelBetterTTVEmotes
 
+    /**
+     * private mutable version of [sharedBetterTTVEmotes]
+     * */
     private val _sharedBetterTTVEmotes = mutableStateOf<IndivBetterTTVEmoteList>(IndivBetterTTVEmoteList())
     override val sharedBetterTTVEmotes:State<IndivBetterTTVEmoteList> = _sharedBetterTTVEmotes
 
 
 
-    //this is used to hold the list for the chat UI states
-    private val _combinedEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
-    override val combinedEmoteList: StateFlow<List<EmoteNameUrl>> = _combinedEmoteList
+    /**
+     * private mutable version of [globalTwitchEmoteList]
+     * */
+    private val _globalTwitchEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
+    override val globalTwitchEmoteList: StateFlow<List<EmoteNameUrl>> = _globalTwitchEmoteList
 
 
     /**
@@ -224,7 +230,7 @@ class TwitchEmoteImpl @Inject constructor(
                   _emoteBoardGlobalList.value = _emoteBoardGlobalList.value.copy(
                       list = parsedEmoteData
                   )
-                  _combinedEmoteList.tryEmit(parsedEmoteData)
+                  _globalTwitchEmoteList.tryEmit(parsedEmoteData)
               }
 
             emit(Response.Success(true))
@@ -329,9 +335,9 @@ class TwitchEmoteImpl @Inject constructor(
                 _globalBetterTTVEmoteList.tryEmit(globalBetterTTVEmoteList ?: listOf())
                 val innerInlineContentMap: MutableMap<String, InlineTextContent> = mutableMapOf()
 
-                _emoteList.value = emoteList.value.copy(
-                    map = _emoteList.value.map + innerInlineContentMap
-                )
+//                _emoteList.value = emoteList.value.copy(
+//                    map = _emoteList.value.map + innerInlineContentMap
+//                )
                 _globalBetterTTVEmotes.value = _globalBetterTTVEmotes.value.copy(
                     list = data
                 )

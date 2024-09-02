@@ -224,7 +224,6 @@ class StreamViewModel @Inject constructor(
 
 
     /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
-    val inlineTextContentTest = twitchEmoteImpl.emoteList
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
     val badgeListMap = twitchEmoteImpl.globalChatBadges
@@ -814,7 +813,7 @@ class StreamViewModel @Inject constructor(
     }
     fun deleteEmote(){
         Log.d("addToken","deleteEmote()")
-        textParsing.deleteEmote(inlineTextContentTest.value.map)
+
     }
 
     /**
