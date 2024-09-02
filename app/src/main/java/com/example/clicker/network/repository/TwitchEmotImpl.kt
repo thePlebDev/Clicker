@@ -187,10 +187,6 @@ class TwitchEmoteImpl @Inject constructor(
      * private mutable version of [channelEmoteList]
      * */
     private val _channelEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
-    /**
-     * channelEmoteList represents the list of emotes shown to the user inside of the streamer's chat
-     * and the clicked user messages. This is not responsible for showing the emotes inside of the user's emote box
-     * */
     override val channelEmoteList: StateFlow<List<EmoteNameUrl>> = _channelEmoteList
 
     private val _globalBetterTTVEmoteList = MutableStateFlow(listOf<EmoteNameUrl>())
@@ -264,9 +260,11 @@ class TwitchEmoteImpl @Inject constructor(
             val data = response.body()?.data?: listOf()
             emit(Response.Success(true))
             if(data.isNotEmpty()){
+               // Log.d("CheckkinggetChannelEmotes","emotes ->${data}")
 
                 val parsedEmoteData = convertDataToEmoteNameUrlEmoteType(data)
                 val newChannelEmoteList = parsedEmoteData.map{
+
                     EmoteNameUrl(
                         name = it.name,
                         url = it.url
@@ -279,12 +277,14 @@ class TwitchEmoteImpl @Inject constructor(
                 val followerEmotes =parsedEmoteData.filter { it.emoteType == EmoteTypes.FOLLOWERS}
                 val subscriberEmotes = parsedEmoteData.filter { it.emoteType == EmoteTypes.SUBS}
                 val sortedEmoteData = followerEmotes + subscriberEmotes
+                Log.d("CheckkinggetChannelEmotes","emotes ->${sortedEmoteData}")
                 _emoteBoardChannelList.value = _emoteBoardChannelList.value.copy(
                     list = sortedEmoteData
                 )
 
             }
 
+            Log.d("getChannelEmotes","SUCCESS")
             Log.d("getChannelEmotes","body--> ${response.body()}")
 
         }else{

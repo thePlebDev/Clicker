@@ -2606,6 +2606,7 @@ fun ChatBadges(
         }
        //todo:below should get replaced with the new messageList
         for(messageToken in messageList){
+
             if(messageToken.messageType == PrivateMessageType.MESSAGE){
                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = messageSize.sp)) {
 
