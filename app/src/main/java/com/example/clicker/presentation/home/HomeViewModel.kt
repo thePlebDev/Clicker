@@ -60,7 +60,14 @@ class HomeViewModel @Inject constructor(
     private var _modChannelUIState: MutableState<ModChannelUIState> = mutableStateOf(ModChannelUIState())
     val modChannelUIState: State<ModChannelUIState> = _modChannelUIState
 
+    /**
+     * _validatedUser private mutable version of [validatedUser]
+     * */
     private val _validatedUser = MutableStateFlow<ValidatedUser?>(null)
+    /**
+     * - validatedUser is a [MutableStateFlow] containing a nullable [ValidatedUser] object. The non-null value represents a
+     * logged in user
+     * */
     val validatedUser = _validatedUser
 
     private val _oAuthToken = MutableStateFlow<String?>(null)
@@ -107,7 +114,10 @@ class HomeViewModel @Inject constructor(
 
 
 
-    //
+    /**
+     * - pullToRefreshModChannels() is a function that gets called when the user pulls down to refresh the mod channels page
+     * - if the [validatedUser] is not null, then it will call [getLiveStreams] to refresh the page
+     * */
     fun pullToRefreshModChannels(){
         viewModelScope.launch(ioDispatcher) {
             _modChannelUIState.value = _modChannelUIState.value.copy(
@@ -412,15 +422,18 @@ class HomeViewModel @Inject constructor(
         userId: String,
         oAuthToken: String
     ) {
+
         Log.d("getLiveStreams","OAuthToken --> ${oAuthToken}")
         try {
-            withContext(Dispatchers.IO + CoroutineName("GetLiveStreams")) {
+            withContext(ioDispatcher + CoroutineName("GetLiveStreams")) {
 
                 twitchRepoImpl.getFollowedLiveStreams(
                     authorizationToken = oAuthToken,
                     clientId = clientId,
                     userId = userId
                 ).collect { response ->
+
+                    println("RESPONSE --> $response")
                     when (response) {
                         is NetworkNewUserResponse.Loading -> {
                         }
@@ -439,7 +452,6 @@ class HomeViewModel @Inject constructor(
                                     (_uiState.value.aspectHeight)/2
                                 )
                             }
-                            Log.d("getLiveStreamsURL","url --> ${replacedWidthHeightList[0].thumbNailUrl}")
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkNewUserResponse.Success(replacedWidthHeightList),
@@ -449,6 +461,7 @@ class HomeViewModel @Inject constructor(
                             _modChannelUIState.value = _modChannelUIState.value.copy(
                                 modRefreshing = false,
                             )
+
                             getModeratedChannels(
                                 oAuthToken = _oAuthToken.value ?: "",
                                 clientId = _validatedUser.value?.clientId ?:"",
@@ -458,6 +471,7 @@ class HomeViewModel @Inject constructor(
                         }
                         // end
                         is NetworkNewUserResponse.Failure -> {
+                            println("getLiveStreams() FAILED ")
                             _uiState.value = _uiState.value.copy(
                                 homeRefreshing = false,
                                 streamersListLoading = response,

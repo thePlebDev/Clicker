@@ -40,7 +40,7 @@ class FakeAuthentication  private constructor() {
          * - setValidateTokenReturn_Success is a builder function.
          * - ensures that [validateToken] will return a [NetworkNewUserResponse.Success] value
          * */
-        fun setValidateTokenReturn_Success(): Companion {
+        fun validateTokenReturn_Success(): Companion {
             validateTokenReturnType = NetworkNewUserResponse.Success(
                 ValidatedUser("","",
                     listOf(),"11",2
@@ -68,31 +68,46 @@ class FakeAuthentication  private constructor() {
 
 
 }
+
 /*******************************************START OF TwitchRepo*************************************************************************/
-class FakeTwitchImplRepo: TwitchRepo {
-    override suspend fun getFollowedLiveStreams(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ): Flow<NetworkNewUserResponse<List<StreamData>>> = flow{
-        emit(NetworkNewUserResponse.Loading)
+class FakeTwitchImplRepo {
+
+
+    companion object:TwitchRepo{
+
+        private var getFollowedLiveStreamsReturnType:NetworkNewUserResponse<List<StreamData>> =NetworkNewUserResponse.Loading
+        private var getModeratedChannelsReturnType:NetworkAuthResponse<GetModChannels> = NetworkAuthResponse.Loading
+        override suspend fun getFollowedLiveStreams(
+            authorizationToken: String,
+            clientId: String,
+            userId: String
+        ): Flow<NetworkNewUserResponse<List<StreamData>>> = flow{
+            emit(getFollowedLiveStreamsReturnType)
+        }
+
+        override suspend fun getModeratedChannels(
+            authorizationToken: String,
+            clientId: String,
+            userId: String
+        ): Flow<NetworkAuthResponse<GetModChannels>> = flow{
+            emit(getModeratedChannelsReturnType)
+        }
+        fun build():TwitchRepo{
+            return this
+        }
+        fun getFollowedLiveStreams_Failure():Companion{
+            getFollowedLiveStreamsReturnType =NetworkNewUserResponse.Failure(Exception("Failed"))
+            return this
+        }
+        fun getFollowedLiveStreams_Success():Companion{
+            getFollowedLiveStreamsReturnType =NetworkNewUserResponse.Success(listOf())
+            return this
+        }
+
     }
 
-    override suspend fun getModeratedChannels(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ): Flow<NetworkAuthResponse<GetModChannels>> = flow{
-        emit(NetworkAuthResponse.Loading)
-    }
 
-    override suspend fun getAllFollowedStreamers(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ): Flow<Response<AllFollowedStreamers>> {
-        TODO("Not yet implemented")
-    }
+
 
 }
 /*******************************************START OF TwitchDataStore*************************************************************************/
