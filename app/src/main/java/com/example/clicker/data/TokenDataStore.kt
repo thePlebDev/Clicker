@@ -15,6 +15,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 // At the top level of your kotlin file:
@@ -68,11 +69,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getUsername(): Flow<String> {
-        val username: Flow<String> = context.dataStore.data
-            .map { preferences ->
-                preferences[usernameKey] ?: ""
-            }
-        return username
+        try{
+            val username: Flow<String> = context.dataStore.data
+                .map { preferences ->
+                    preferences[usernameKey] ?: ""
+                }
+            return username
+        }catch(e:Exception){
+            return flowOf("")
+        }
+
     }
 
     /*****CHANGIGN THE ONES BELOW******/
@@ -84,13 +90,18 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getLoggedOutStatus(): Flow<String?> {
+        try{
+            val username: Flow<String?> = context.dataStore.data
+                .map { preferences ->
+                    preferences[userLoggedOutKey]
+                }
 
-        val username: Flow<String?> = context.dataStore.data
-            .map { preferences ->
-                preferences[userLoggedOutKey]
-            }
+            return username
+        }catch(e:Exception){
+            return flowOf(null)
+        }
 
-        return username
+
     }
 
     /*****CHANGIGN THE ONES ABOVE******/
@@ -102,11 +113,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getLoggedOutLoading(): Flow<Boolean> {
-        val loggedOutStatus: Flow<Boolean> = context.dataStore.data
-            .map { preferences ->
-                preferences[userLoggedOutStatusKey] ?: false
-            }
-        return loggedOutStatus
+        try{
+            val loggedOutStatus: Flow<Boolean> = context.dataStore.data
+                .map { preferences ->
+                    preferences[userLoggedOutStatusKey] ?: false
+                }
+            return loggedOutStatus
+        }catch(e:Exception){
+            return flowOf(false)
+        }
+
     }
 
     override suspend fun setClientId(clientId: String) {
@@ -116,11 +132,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getClientId(): Flow<String> {
-        val clientId: Flow<String> = context.dataStore.data
-            .map { preferences ->
-                preferences[clientIdKey] ?: ""
-            }
-        return clientId
+        try{
+            val clientId: Flow<String> = context.dataStore.data
+                .map { preferences ->
+                    preferences[clientIdKey] ?: ""
+                }
+            return clientId
+        }catch(e:Exception){
+            return flowOf("")
+        }
+
     }
 
     override suspend fun setBadgeSize(badgeSize: Float) {
@@ -135,11 +156,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getBadgeSize(): Flow<Float> {
-        val badgeSize: Flow<Float> = context.dataStore.data
-            .map { preferences ->
-                preferences[badgeSizeIdKey] ?: 20f
-            }
-        return badgeSize
+        try{
+            val badgeSize: Flow<Float> = context.dataStore.data
+                .map { preferences ->
+                    preferences[badgeSizeIdKey] ?: 20f
+                }
+            return badgeSize
+        }catch(e:Exception){
+            return flowOf(20f)
+        }
+
     }
 
     override suspend fun setUsernameSize(usernameSize: Float) {
@@ -154,11 +180,15 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getUsernameSize(): Flow<Float> {
-        val badgeSize: Flow<Float> = context.dataStore.data
-            .map { preferences ->
-                preferences[usernameSizeIdKey] ?: 15f
-            }
-        return badgeSize
+        try{
+            val badgeSize: Flow<Float> = context.dataStore.data
+                .map { preferences ->
+                    preferences[usernameSizeIdKey] ?: 15f
+                }
+            return badgeSize
+        }catch(e:Exception){
+            return flowOf(15f)
+        }
     }
 
     override suspend fun setMessageSize(messageSize: Float) {
@@ -173,11 +203,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getMessageSize(): Flow<Float> {
-        val badgeSize: Flow<Float> = context.dataStore.data
-            .map { preferences ->
-                preferences[messageSizeIdKey] ?: 15f
-            }
-        return badgeSize
+        try{
+            val badgeSize: Flow<Float> = context.dataStore.data
+                .map { preferences ->
+                    preferences[messageSizeIdKey] ?: 15f
+                }
+            return badgeSize
+        }catch(e:Exception){
+            return flowOf(15f)
+        }
+
     }
 
     override suspend fun setEmoteSize(emoteSize: Float) {
@@ -192,11 +227,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getEmoteSize(): Flow<Float> {
-        val emoteSize: Flow<Float> = context.dataStore.data
-            .map { preferences ->
-                preferences[emoteSizeIdKey] ?: 35f
-            }
-        return emoteSize
+        try{
+            val emoteSize: Flow<Float> = context.dataStore.data
+                .map { preferences ->
+                    preferences[emoteSizeIdKey] ?: 35f
+                }
+            return emoteSize
+        }catch(e:Exception){
+            return flowOf(35f)
+        }
+
     }
 
     override suspend fun setLineHeight(lineHeight: Float) {
@@ -208,11 +248,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getLineHeight(): Flow<Float> {
-        val lineHeight: Flow<Float> = context.dataStore.data
-            .map { preferences ->
-                preferences[lineHeightIdKey] ?: (15f *1.6f)
-            }
-        return lineHeight
+        try{
+            val lineHeight: Flow<Float> = context.dataStore.data
+                .map { preferences ->
+                    preferences[lineHeightIdKey] ?: (15f *1.6f)
+                }
+            return lineHeight
+        }catch(e:Exception){
+            return flowOf((15f *1.6f))
+        }
+
     }
 
     override suspend fun setCustomUsernameColor(showCustomUsernameColor: Boolean) {
@@ -223,11 +268,16 @@ class TokenDataStore @Inject constructor(
     }
 
     override fun getCustomUsernameColor(): Flow<Boolean> {
-        val showCustomUsernameColor: Flow<Boolean> = context.dataStore.data
-            .map { preferences ->
-                preferences[customUsernameColorIdKey] ?: true
-            }
-        return showCustomUsernameColor
+        try{
+            val showCustomUsernameColor: Flow<Boolean> = context.dataStore.data
+                .map { preferences ->
+                    preferences[customUsernameColorIdKey] ?: true
+                }
+            return showCustomUsernameColor
+        }catch(e:Exception){
+            return flowOf(true)
+        }
+
     }
 }
 
