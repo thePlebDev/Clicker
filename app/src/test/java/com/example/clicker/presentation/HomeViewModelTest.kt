@@ -70,13 +70,13 @@ class HomeViewModelTest {
 
     //runTest{} creates a TestScope, which is an implementation of CoroutineScope that will always use a TestDispatcher.
     @Test
-    fun testing_new_user_no_oAuthToken_found() = runTest {
+    fun testing_returning_user_oAuthToken_found() = runTest {
         /**GIVEN*/
         val dispatcher = StandardTestDispatcher(testScheduler)
         val homeViewModel:HomeViewModel = HomeViewModel(
             ioDispatcher =dispatcher,
-            authentication = FakeAuthentication.setValidateTokenReturn_Success().build(),
-            twitchRepoImpl = FakeTwitchImplRepo(),
+            authentication = FakeAuthentication.validateTokenReturn_Success().build(),
+            twitchRepoImpl = FakeTwitchImplRepo.build(),
             tokenDataStore = FakeTokenDataStore.fullOAuthToken().build()
         )
 
@@ -91,6 +91,55 @@ class HomeViewModelTest {
         /**THEN*/
 
         Assert.assertEquals(expectedValue, actualValue)
+    }
+
+    @Test
+    fun `pullToRefreshModChannels Failure`()= runTest{
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = FakeAuthentication.validateTokenReturn_Success().build(),
+            twitchRepoImpl = FakeTwitchImplRepo.getFollowedLiveStreams_Failure().build(),
+            tokenDataStore = FakeTokenDataStore.build()
+        )
+
+        /**WHEN*/
+        //this is the key to make it all work
+        homeViewModel.pullToRefreshModChannels()
+        advanceUntilIdle()
+        val actualValue = homeViewModel.state.value.streamersListLoading
+        val expectedValue = NetworkNewUserResponse.Failure(Exception("Failed"))
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedValue.javaClass, actualValue.javaClass)
+
+    }
+    @Test
+    fun `pullToRefreshModChannels Success`()= runTest{
+        /**GIVEN*/
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val homeViewModel:HomeViewModel = HomeViewModel(
+            ioDispatcher =dispatcher,
+            authentication = FakeAuthentication.validateTokenReturn_Success().build(),
+            twitchRepoImpl = FakeTwitchImplRepo.getFollowedLiveStreams_Success().build(),
+            tokenDataStore = FakeTokenDataStore.build()
+        )
+
+        /**WHEN*/
+        //this is the key to make it all work
+        homeViewModel.pullToRefreshModChannels()
+        advanceUntilIdle()
+        val actualValue = homeViewModel.state.value.streamersListLoading
+        val expectedValue = NetworkNewUserResponse.Success(listOf<StreamData>())
+
+
+        /**THEN*/
+
+        Assert.assertEquals(expectedValue.javaClass, actualValue.javaClass)
+
     }
 //
 //    @Test

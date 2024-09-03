@@ -44,17 +44,5 @@ interface TwitchRepo {
         userId: String
     ):Flow<NetworkAuthResponse<GetModChannels>>
 
-    /**
-     * - getAllFollowedStreamers returns all the followed channels of a specific user.
-     *
-     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
-     * @param clientId a String used to represent the clientId(unique identifier) of this application
-     * @param userId a String used to represent the unique identifier of the current logged in user
-     * */
-    suspend fun getAllFollowedStreamers(
-        authorizationToken: String,
-        clientId: String,
-        userId: String
-    ):Flow<Response<AllFollowedStreamers>>
 
 }
