@@ -68,27 +68,29 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
 
+    //runTest{} creates a TestScope, which is an implementation of CoroutineScope that will always use a TestDispatcher.
     @Test
     fun testing_new_user_no_oAuthToken_found() = runTest {
         /**GIVEN*/
         val dispatcher = StandardTestDispatcher(testScheduler)
         val homeViewModel:HomeViewModel = HomeViewModel(
             ioDispatcher =dispatcher,
-            authentication = FakeAuthentication(),
+            authentication = FakeAuthentication.setValidateTokenReturn_Success().build(),
             twitchRepoImpl = FakeTwitchImplRepo(),
-            tokenDataStore = FakeTokenDataStore(
-                userIsNewUser = true
-            )
+            tokenDataStore = FakeTokenDataStore.fullOAuthToken().build()
         )
+
         /**WHEN*/
-        delay(1000)
-        val actualShowLoginModal = false
-        val expectedShowLoginModalValue = true
+        advanceUntilIdle() //this is the key to make it all work
+        val actualValue = homeViewModel.validatedUser.value?.userId
+        val expectedValue ="11"
+
+
 
 
         /**THEN*/
 
-        Assert.assertEquals(1, 1)
+        Assert.assertEquals(expectedValue, actualValue)
     }
 //
 //    @Test
