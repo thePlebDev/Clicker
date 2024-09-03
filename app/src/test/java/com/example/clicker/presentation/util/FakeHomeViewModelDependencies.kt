@@ -7,38 +7,68 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.presentation.util.FakeAuthentication.Companion.validateToken
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
+import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class FakeAuthentication(
+//todo: I NEED TO RETURN ALL OF THIS BACK INTO THE BUILD PATTERN
+/**
+ * FakeAuthentication is a STUB builder class  meant to return hard coded values that mimic interacting with a
+ *  implementation of [TwitchAuthentication]
+ * */
+class FakeAuthentication  private constructor() {
 
-): TwitchAuthentication {
-    private var validateTokenReturnType:NetworkNewUserResponse<ValidatedUser> =NetworkNewUserResponse.Failure(Exception("RETURN TYPE SET TO NetworkNewUserResponse.Failure"))
-    private var logoutReturnType:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading
 
-    override suspend fun validateToken(
-        token: String
-    ): Flow<NetworkNewUserResponse<ValidatedUser>> = flow{
+    companion object:TwitchAuthentication{
+        private var validateTokenReturnType:NetworkNewUserResponse<ValidatedUser> =NetworkNewUserResponse.Loading
+        private var logoutReturnType:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading
 
-        emit(validateTokenReturnType)
+        /**
+         * - build is the main builder function
+         * - Once this method is called, the class is created
+         * @return [TwitchAuthentication]
+         * */
+        fun build(): TwitchAuthentication {
+            return this
+        }
+        /**
+         * - setValidateTokenReturn_Success is a builder function.
+         * - ensures that [validateToken] will return a [NetworkNewUserResponse.Success] value
+         * */
+        fun setValidateTokenReturn_Success(): Companion {
+            validateTokenReturnType = NetworkNewUserResponse.Success(
+                ValidatedUser("","",
+                    listOf(),"11",2
+                )
+            )
+            return this
+
+        }
+
+        override suspend fun validateToken(
+            token: String
+        ): Flow<NetworkNewUserResponse<ValidatedUser>> = flow{
+
+            emit(validateTokenReturnType)
+        }
+
+        override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<Boolean>> = flow{
+            emit(logoutReturnType)
+        }
+
     }
 
 
 
-    override fun logout(clientId: String, token: String): Flow<NetworkAuthResponse<Boolean>> = flow{
-        emit(logoutReturnType)
-    }
-    fun setValidateTokenReturnType(returnType:NetworkNewUserResponse<ValidatedUser>){
-        this.validateTokenReturnType = returnType
-    }
-    fun setLogoutReturnType(returnType:NetworkAuthResponse<Boolean>){
-        this.logoutReturnType = returnType
-    }
+
 
 }
+/*******************************************START OF TwitchRepo*************************************************************************/
 class FakeTwitchImplRepo: TwitchRepo {
     override suspend fun getFollowedLiveStreams(
         authorizationToken: String,
@@ -65,53 +95,86 @@ class FakeTwitchImplRepo: TwitchRepo {
     }
 
 }
-class FakeTokenDataStore(
-    private val userIsNewUser:Boolean
-): TwitchDataStore {
+/*******************************************START OF TwitchDataStore*************************************************************************/
 
-    override suspend fun setOAuthToken(oAuthToken: String) {
 
-    }
+/**
+ * FakeTokenDataStore is a STUB builder class meant to return hard coded values that mimic interacting with a
+ *  implementation of [TwitchDataStore]
+ * */
+class FakeTokenDataStore private constructor() {
 
-    override fun getOAuthToken(): Flow<String> = flow{
-        if(userIsNewUser){
-            emit("")
-        }else{
-            emit("fakeOAuthToken")
+    companion object:TwitchDataStore{
+        private var oAuthToken:String =""
+
+        /**
+         * - build() is the main builder function
+         * - Once this method is called, the class is created
+         * @return [TwitchDataStore]
+         * */
+        fun build(): TwitchDataStore {
+            return this
+        }
+
+        /**
+         * - emptyOAuthToken is a builder function.
+         * - ensures that [getOAuthToken] will return a String object with a length less than 2
+         * */
+        fun emptyOAuthToken(): Companion {
+            oAuthToken =""
+            return this
+        }
+        /**
+         * - fullOAuthToken is a builder function.
+         * - ensures that [getOAuthToken] will return a String object with a length greater than 2
+         * */
+        fun fullOAuthToken():Companion{
+            oAuthToken ="FakeOAuthToken"
+            return this
+        }
+
+
+        override suspend fun setOAuthToken(oAuthToken: String) {
+
+        }
+
+        override fun getOAuthToken(): Flow<String> = flow{
+            emit(oAuthToken)
+
+        }
+        override suspend fun setUsername(username: String) {
+            TODO("Not yet implemented")
+        }
+
+        override fun getUsername(): Flow<String> {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun setLoggedOutStatus(loggedOut: String) {
+            TODO("Not yet implemented")
+        }
+
+        override fun getLoggedOutStatus(): Flow<String?> {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun setLoggedOutLoading(loggedOutStatus: Boolean) {
+            TODO("Not yet implemented")
+        }
+
+        override fun getLoggedOutLoading(): Flow<Boolean> {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun setClientId(clientId: String) {
+            TODO("Not yet implemented")
+        }
+
+        override fun getClientId(): Flow<String> {
+            TODO("Not yet implemented")
         }
 
     }
 
-    override suspend fun setUsername(username: String) {
-
-    }
-
-    override fun getUsername(): Flow<String> = flow{
-        emit("")
-    }
-
-    override suspend fun setLoggedOutStatus(loggedOut: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getLoggedOutStatus(): Flow<String?> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun setLoggedOutLoading(loggedOutStatus: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getLoggedOutLoading(): Flow<Boolean> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun setClientId(clientId: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getClientId(): Flow<String> {
-        TODO("Not yet implemented")
-    }
 
 }
