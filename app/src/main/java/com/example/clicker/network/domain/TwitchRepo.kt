@@ -1,12 +1,9 @@
 package com.example.clicker.network.domain
 
-import com.example.clicker.network.clients.AllFollowedStreamers
-import com.example.clicker.network.clients.GetModChannels
+import com.example.clicker.network.models.twitchClient.GetModChannels
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
-import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
 
 /**

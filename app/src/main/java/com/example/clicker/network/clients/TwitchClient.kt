@@ -331,18 +331,7 @@ data class ChannelInformation(
 
 
 )
-data class GetModChannels(
-    val data:List<GetModChannelsData>
-)
-data class GetModChannelsData(
 
-    @SerializedName("broadcaster_id")
-    val broadcasterId: String,
-    @SerializedName("broadcaster_login")
-    val broadcasterLogin: String,
-    @SerializedName("broadcaster_name")
-    val broadcasterName: String,
-)
 
 data class BanUser(
     val data: BanUserData
