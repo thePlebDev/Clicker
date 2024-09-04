@@ -228,7 +228,7 @@ class HomeViewModel @Inject constructor(
      *
      * @return [ModeratorOfflineOnlineLists]
      * */
-    fun createOfflineAndOnlineLists(
+    private fun createOfflineAndOnlineLists(
         modChannelList: List<GetModChannelsData>,
         liveFollowedStreamers:List<StreamData>
     ):ModeratorOfflineOnlineLists{
