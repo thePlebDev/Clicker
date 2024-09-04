@@ -1,42 +1,22 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
-import com.example.clicker.network.clients.AllFollowedStreamers
-import com.example.clicker.network.clients.BanUser
-import com.example.clicker.network.clients.GetModChannels
-import com.example.clicker.network.clients.GetModChannelsData
-import com.example.clicker.network.clients.TwitchAuthenticationClient
-import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
-import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
-import com.example.clicker.network.domain.TwitchStream
-import com.example.clicker.network.interceptors.NoNetworkException
+import com.example.clicker.network.models.twitchClient.GetModChannels
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.network.models.twitchStream.UpdateChatSettings
-import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
-import com.example.clicker.network.models.twitchRepo.toStreamInfo
-import com.example.clicker.network.models.twitchStream.AutoModSettings
-import com.example.clicker.network.models.twitchStream.BanUserResponse
-import com.example.clicker.network.models.twitchStream.IndividualAutoModSettings
-import com.example.clicker.network.repository.util.handleException
 import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
 import com.example.clicker.network.repository.util.handleNetworkNewUserExceptions
-import com.example.clicker.presentation.home.StreamInfo
-import com.example.clicker.util.LogWrap
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
-import com.example.clicker.util.Response
-import com.example.clicker.util.logCoroutineInfo
-import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 class TwitchRepoImpl @Inject constructor(
-    private val twitchClient: TwitchHomeClient,
+    private val twitchHomeClient: TwitchHomeClient,
 ) : TwitchRepo  {
 
      override suspend fun getFollowedLiveStreams(
@@ -47,7 +27,7 @@ class TwitchRepoImpl @Inject constructor(
         emit(NetworkNewUserResponse.Loading)
 
 
-        val response = twitchClient.getFollowedStreams(
+        val response = twitchHomeClient.getFollowedStreams(
             authorization = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId
@@ -74,7 +54,7 @@ class TwitchRepoImpl @Inject constructor(
     ):Flow<NetworkAuthResponse<GetModChannels>> = flow{
         emit(NetworkAuthResponse.Loading)
         val emptyBody = GetModChannels(data= listOf())
-        val response = twitchClient.getModeratedChannels(
+        val response = twitchHomeClient.getModeratedChannels(
             authorizationToken = "Bearer $authorizationToken",
             clientId = clientId,
             userId = userId

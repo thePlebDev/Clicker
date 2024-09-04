@@ -7,37 +7,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.clients.AllFollowedStreamers
-import com.example.clicker.network.clients.GetModChannelsData
-import com.example.clicker.network.clients.Streamer
+import com.example.clicker.network.models.twitchClient.GetModChannelsData
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.AuthenticationEvent
-import com.example.clicker.presentation.authentication.AuthenticationUIState
-import com.example.clicker.presentation.stream.util.NetworkMonitoring
-import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
-import com.example.clicker.util.NetworkResponse
-import com.example.clicker.util.Response
-import com.example.clicker.util.logCoroutineInfo
-import com.example.clicker.util.mapWithRetry
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -162,13 +147,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * runFakeRequest() is a suspending function used to simulate a request to the servers. It is called from
-     * [pullToRefreshModChannels]
-     * - This function should only get called if _uiState.value.modChannelShowBottomModal is set to true, which means that
-     * the user has not authenticated with Twitch yet.
-     * */
 
+    /**
+     * getModeratedChannels() is used to make a request to the Twitch servers and get a response of all the channels a user moderates
+     * for.
+     *
+     * @param oAuthToken representing the users logged in session
+     * @param clientId representing this app
+     * @param userId represents the logged in user
+     * @param liveFollowedStreamers represents all the live streams
+     * */
     private fun getModeratedChannels(
         oAuthToken: String,
         clientId:String,
@@ -189,24 +177,11 @@ class HomeViewModel @Inject constructor(
                         is NetworkAuthResponse.Success ->{
 
                             val responseData =response.data.data
-                            val offlineModList = mutableListOf<String>()
-                            val onlineList = mutableListOf<StreamData>()
+                            val parsedData =createOfflineAndOnlineLists(responseData,liveFollowedStreamers)
 
-                            val listOfModName = responseData.map{it.broadcasterName}
-                            val listOfStreamerName = liveFollowedStreamers.map { it.userName }
-
-                            for (name in listOfModName){
-                                if(listOfStreamerName.contains(name)){
-                                    val item = liveFollowedStreamers.first { it.userName == name }
-                                    onlineList.add(item)
-                                }else{
-                                    val offlineItem = responseData.first{it.broadcasterName ==name}
-                                    offlineModList.add(offlineItem.broadcasterName)
-                                }
-                            }
                             _modChannelUIState.value = _modChannelUIState.value.copy(
-                                offlineModChannelList = offlineModList,
-                                liveModChannelList = onlineList,
+                                offlineModChannelList = parsedData.offlineModList,
+                                liveModChannelList = parsedData.onlineList,
                                 modChannelResponseState = NetworkNewUserResponse.Success(true),
                                 modRefreshing = false
                             )
@@ -244,7 +219,50 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+//todo: add documentation for GetModChannelsData and StreamData
+    /**
+     * createOfflineAndOnlineLists() is used to create the list of online mod channels and offline mod channels
+     *
+     * @param modChannelList is a list of [GetModChannelsData] objects representing all the channels the user is a moderator for
+     * @param liveFollowedStreamers is a list of [StreamData] objects representing all the live channels that the user follows
+     *
+     * @return [ModeratorOfflineOnlineLists]
+     * */
+    fun createOfflineAndOnlineLists(
+        modChannelList: List<GetModChannelsData>,
+        liveFollowedStreamers:List<StreamData>
+    ):ModeratorOfflineOnlineLists{
+        //todo: return both of these
+        val offlineModList = mutableListOf<String>()
+        val onlineList = mutableListOf<StreamData>()
 
+        val listOfModName = modChannelList.map{it.broadcasterName}
+        val listOfStreamerName = liveFollowedStreamers.map { it.userName }
+
+        for (name in listOfModName){
+            if(listOfStreamerName.contains(name)){
+                val item = liveFollowedStreamers.first { it.userName == name }
+                onlineList.add(item)
+            }else{
+                val offlineItem = modChannelList.first{it.broadcasterName ==name}
+                offlineModList.add(offlineItem.broadcasterName)
+            }
+        }
+        return ModeratorOfflineOnlineLists(
+            offlineModList =offlineModList,
+            onlineList=onlineList
+        )
+    }
+
+    /**
+     * - ModeratorOfflineOnlineLists is used to represent the offline and online moderation channels
+     * @param offlineModList a list containing on the names of the offline mod channels
+     * @param onlineList a list of [StreamData] objects that represent all of the online mod channels
+     * */
+    data class ModeratorOfflineOnlineLists(
+        val offlineModList: MutableList<String>,
+        val onlineList: MutableList<StreamData>
+    )
 
 
 /**
