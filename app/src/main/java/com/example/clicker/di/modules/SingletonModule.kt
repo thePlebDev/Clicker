@@ -46,8 +46,6 @@ import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
-import com.example.clicker.presentation.AuthenticationEvent
-import com.example.clicker.presentation.AuthenticationEventBus
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import dagger.Binds
 import dagger.Module
@@ -254,11 +252,6 @@ object SingletonModule {
     }
 
 
-    @Singleton
-    @Provides
-    fun provideAuthenticationEvent(): AuthenticationEvent {
-        return AuthenticationEventBus()
-    }
 
     @Provides
     fun providesTwitchEventSubscriptionWebSocket(): TwitchEventSubscriptionWebSocket {

@@ -1,39 +1,18 @@
 package com.example.clicker.presentation.stream
 
-import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.material.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.getSelectedText
-import androidx.compose.ui.text.input.getTextAfterSelection
-import androidx.compose.ui.text.input.getTextBeforeSelection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.compose.AsyncImage
-import com.example.clicker.R
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
@@ -51,14 +30,21 @@ import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
-import com.example.clicker.network.repository.EmoteNameUrlNumber
-import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
-import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
-import com.example.clicker.network.websockets.TwitchEventSubWebSocket
+import com.example.clicker.presentation.stream.models.AdvancedChatSettings
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+import com.example.clicker.presentation.stream.models.ClickedUIState
+import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
+import com.example.clicker.presentation.stream.models.ClickedUserNameChats
+import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
+import com.example.clicker.presentation.stream.models.EmoteBoardData
+import com.example.clicker.presentation.stream.models.ModChatSettings
+import com.example.clicker.presentation.stream.models.StreamUIState
+import com.example.clicker.presentation.stream.models.TextFieldValueImmutable
+import com.example.clicker.presentation.stream.util.AutoCompleteChat
 
 
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
@@ -76,119 +62,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Queue
-
-data class ChattingUser(
-    val username: String,
-    val message: String
-)
-
-data class EmoteBoardData(
-    val height:Int,
-    val showBoard:Boolean
-)
-data class ClickedUserNameChats(
-    val dateSent:String,
-    val message:String,
-    val messageTokenList: List<MessageToken>,
-)
-
-@Immutable
-data class TextFieldValueImmutable(
-    val textFieldValue: TextFieldValue
-)
-@Immutable
-data class ClickedUsernameChatsWithDateSentImmutable(
-    val clickedChats:List<ClickedUserNameChats>
-)
-
-@Immutable
-data class ClickedUserBadgesImmutable(
-    val clickedBadges:List<String>
-)
 
 
-
-/**
- * ChatSettings holds all the data representing the current mod related chat settings
- * */
-data class ModChatSettings(
-    val showChatSettingAlert: Boolean = false,
-    val showUndoButton:Boolean = false,
-    val data: ChatSettingsData = ChatSettingsData(
-        slowMode = false,slowModeWaitTime = null,
-        followerMode = false, followerModeDuration =null ,
-        subscriberMode = false,emoteMode=false
-    ),
-
-    val switchesEnabled:Boolean = true
-)
-/**
- * AdvancedChatSettings holds all the data representing the current advanced settings relating to the chat messages
- *
- * @param noChatMode a boolean determining if the user should be shown the chat messages or not
- * @param showSubs a boolean determining if the user should be shown subscription messages or not
- * @param showReSubs a boolean determining if the user should be shown re-subscription messages or not
- * @param showAnonSubs a boolean determining if the user should be shown anonymous subscription messages or not
- * @param showGiftSubs a boolean determining if the user should be shown gift subscription messages or not
- * */
-data class AdvancedChatSettings(
-    val noChatMode:Boolean = false,
-    val showSubs:Boolean = true,
-    val showReSubs:Boolean = true,
-    val showAnonSubs:Boolean = true,
-    val showGiftSubs:Boolean = true,
-)
-data class StreamUIState(
-    val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket twitchImpl
-    val loggedInUserData: LoggedInUserData? = null, //websocket
-
-    val clientId: String = "", //twitchRepoImpl
-    val broadcasterId: String = "", //twitchRepoImpl
-    val userId: String = "", //twitchRepoImpl. This is also the moderatorId
-    val login:String="",
-    val oAuthToken: String = "", //twitchRepoImpl
-
-
-    val oneClickActionsChecked:Boolean = true,
-    val noChatMode:Boolean = false,
-    val timeoutUserError:Boolean = false,
-    val banUserError:Boolean = false,
-
-    val banDuration: Int = 0, //twitchRepoImpl
-    val banReason: String = "", //twitchRepoImpl
-    val timeoutDuration: Int = 60, //twitchRepoImpl
-    val timeoutReason: String = "", //twitchRepoImpl
-    val banResponse: Response<Boolean> = Response.Success(false), //twitchRepoImpl
-    val banResponseMessage: String = "", //twitchRepoImpl
-    val undoBanResponse: Boolean = false, //twitchRepoImpl
-    val showStickyHeader: Boolean = false, //twitchRepoImpl
-
-    val chatSettingsFailedMessage: String = "",
-    val networkStatus:Boolean? = null,
-)
-data class ClickedUIState(
-    val clickedUsername:String ="", //websocket
-    val clickedUserId: String ="",
-    val clickedUsernameBanned: Boolean=false,
-    val clickedUsernameIsMod:Boolean =false,
-    val shouldMonitorUser:Boolean = false,
-)
-
-data class ClickedStreamInfo(
-    val channelName: String ="",
-    val streamTitle:String ="",
-    val category:String="",
-    val tags:List<String> = listOf(),
-    val adjustedUrl:String=""
-)
 
 
 @HiltViewModel

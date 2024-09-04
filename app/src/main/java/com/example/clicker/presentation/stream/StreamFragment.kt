@@ -61,6 +61,8 @@ import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionTh
 import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
+import com.example.clicker.presentation.stream.customWebViews.HorizontalClickableWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
@@ -603,7 +605,7 @@ class StreamFragment : Fragment() {
             /**THIS conditional means that the phone is vertical */
             //I think this is the UI where the modView goes
            // setModViewUIOffScreen(view)
-            verticalWebViewOverlayClicked(myWebView as ClickableWebView)
+            verticalWebViewOverlayClicked(myWebView as VerticalWebView)
             setBackButtonOnClick(view)
 
 
@@ -625,15 +627,15 @@ class StreamFragment : Fragment() {
      * in a vertical UI and and the clicks the webView
      * */
     private fun verticalWebViewOverlayClicked(
-        clickableWebView: ClickableWebView
+        verticalClickableWebView: VerticalWebView
     ){
-        clickableWebView.singleTapMethod={
+        verticalClickableWebView.singleTapMethod={
             if(autoModViewModel.verticalOverlayIsVisible.value){
                 autoModViewModel.setVerticalOverlayToHidden()
             }else{
                 autoModViewModel.setVerticalOverlayToVisible()
             }
-            clickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+            verticalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
 
         }
     }
