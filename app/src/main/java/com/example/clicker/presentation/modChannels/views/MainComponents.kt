@@ -64,7 +64,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 

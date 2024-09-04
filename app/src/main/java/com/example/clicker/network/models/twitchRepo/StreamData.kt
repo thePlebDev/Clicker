@@ -1,6 +1,7 @@
 package com.example.clicker.network.models.twitchRepo
 
-import com.example.clicker.presentation.home.StreamInfo
+
+import com.example.clicker.presentation.home.models.StreamInfo
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -52,7 +53,7 @@ data class StreamData(
 )
 
 /**
- * toStreamInfo() is used to convert StreamData objects to [StreamInfo] objects
+ * - toStreamInfo() is used to convert StreamData objects to [StreamInfo] objects
  * */
 fun StreamData.toStreamInfo(): StreamInfo {
     return StreamInfo(
@@ -62,5 +63,18 @@ fun StreamData.toStreamInfo(): StreamInfo {
         views = this.viewerCount,
         url = this.thumbNailUrl,
         broadcasterId = this.userId
+    )
+}
+
+
+/**
+ *  - changeUrlWidthHeight() Is used to change the thumbNailUrl parameter on a [StreamData] object
+ *  - You can read the full documentation on getting live streams,[HERE](https://dev.twitch.tv/docs/api/reference/#get-streams)
+ * */
+fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamData {
+
+    return copy(
+        thumbNailUrl = thumbNailUrl.replace("{width}", "$aspectWidth")
+            .replace("{height}", "$aspectHeight")
     )
 }

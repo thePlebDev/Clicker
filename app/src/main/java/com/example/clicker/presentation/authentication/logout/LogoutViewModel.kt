@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchAuthentication
-import com.example.clicker.presentation.home.HomeUIState
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import dagger.hilt.android.lifecycle.HiltViewModel

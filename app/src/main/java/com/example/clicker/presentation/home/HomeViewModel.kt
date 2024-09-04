@@ -12,6 +12,11 @@ import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.network.models.twitchRepo.changeUrlWidthHeight
+import com.example.clicker.presentation.home.models.HomeUIState
+import com.example.clicker.presentation.home.models.ModChannelUIState
+import com.example.clicker.presentation.home.models.UserTypes
+import com.example.clicker.presentation.home.util.createOfflineAndOnlineLists
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,13 +35,12 @@ import kotlinx.coroutines.withContext
 
 
 
-
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val twitchRepoImpl: TwitchRepo, //todo:TEST(DONE)
+    private val twitchRepoImpl: TwitchRepo,
     private val ioDispatcher: CoroutineDispatcher,
-    private val tokenDataStore: TwitchDataStore,//todo:TEST-> needs to be done as an instrumented tests
-    private val authentication: TwitchAuthentication,//todo:TEST(DONE)
+    private val tokenDataStore: TwitchDataStore,
+    private val authentication: TwitchAuthentication,
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -125,8 +129,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun pullToRefreshHome(){
 
+    /**
+     * - pullToRefreshHome() is called when the user pulls down to refresh the home page.
+     * It will first check if their is a non-null [validatedUser] object. If there is a non-null value, then
+     * [getLiveStreams] will be called
+     * */
+     fun pullToRefreshHome(){
         viewModelScope.launch(ioDispatcher) {
             _uiState.value = _uiState.value.copy(
                 homeRefreshing = true,
@@ -141,7 +150,6 @@ class HomeViewModel @Inject constructor(
                     userId = _validatedUser.value?.userId ?:"",
                     oAuthToken = _oAuthToken.value ?: "",
                 )
-               // getGlobalEmote(_oAuthToken.value ?: "",_validatedUser.value?.clientId ?:"")
             }
 
         }
@@ -219,50 +227,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-//todo: add documentation for GetModChannelsData and StreamData
-    /**
-     * createOfflineAndOnlineLists() is used to create the list of online mod channels and offline mod channels
-     *
-     * @param modChannelList is a list of [GetModChannelsData] objects representing all the channels the user is a moderator for
-     * @param liveFollowedStreamers is a list of [StreamData] objects representing all the live channels that the user follows
-     *
-     * @return [ModeratorOfflineOnlineLists]
-     * */
-    private fun createOfflineAndOnlineLists(
-        modChannelList: List<GetModChannelsData>,
-        liveFollowedStreamers:List<StreamData>
-    ):ModeratorOfflineOnlineLists{
-        //todo: return both of these
-        val offlineModList = mutableListOf<String>()
-        val onlineList = mutableListOf<StreamData>()
 
-        val listOfModName = modChannelList.map{it.broadcasterName}
-        val listOfStreamerName = liveFollowedStreamers.map { it.userName }
-
-        for (name in listOfModName){
-            if(listOfStreamerName.contains(name)){
-                val item = liveFollowedStreamers.first { it.userName == name }
-                onlineList.add(item)
-            }else{
-                val offlineItem = modChannelList.first{it.broadcasterName ==name}
-                offlineModList.add(offlineItem.broadcasterName)
-            }
-        }
-        return ModeratorOfflineOnlineLists(
-            offlineModList =offlineModList,
-            onlineList=onlineList
-        )
-    }
-
-    /**
-     * - ModeratorOfflineOnlineLists is used to represent the offline and online moderation channels
-     * @param offlineModList a list containing on the names of the offline mod channels
-     * @param onlineList a list of [StreamData] objects that represent all of the online mod channels
-     * */
-    data class ModeratorOfflineOnlineLists(
-        val offlineModList: MutableList<String>,
-        val onlineList: MutableList<StreamData>
-    )
 
 
 /**
@@ -425,15 +390,16 @@ class HomeViewModel @Inject constructor(
 
     // THIS IS THE END
 
-    //todo: This should just call the getFollowedLiveStreams() method
-    fun pullToRefreshGetLiveStreams() {
-        viewModelScope.launch {
-            withContext(ioDispatcher + CoroutineName("GetLiveStreamsPull")) {
-                pullToRefreshHome()
-            }
-        }
-    }
 
+    /**
+     * - getLiveStreams() is used to make a request to the Twitch servers and get a response of all the live channel a user follows
+     * for.
+     * - You can read the full documentation on getting live streams,[HERE](https://dev.twitch.tv/docs/api/reference/#get-streams)
+     *
+     * @param oAuthToken representing the users logged in session
+     * @param clientId representing this app
+     * @param userId represents the logged in user
+     * */
 
     private suspend fun getLiveStreams(
         clientId: String,
@@ -555,61 +521,4 @@ class HomeViewModel @Inject constructor(
 
 /***END OF VIEWMODEL**/
 
-//todo: this can cause a crash
-fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamData {
-
-    return copy(
-        thumbNailUrl = thumbNailUrl.replace("{width}", "$aspectWidth")
-            .replace("{height}", "$aspectHeight")
-    )
-}
 /**************************MODELS BELOW**************************/
-
-data class MainBusState(
-    val oAuthToken: String? = null,
-    val authUser: ValidatedUser? = null
-)
-/**
- * UserTypes is used to in the [determineUserType()][com.example.clicker.presentation.home.HomeViewModel.determineUserType] method
- * to determine the type of user the current user is
- * */
-enum class UserTypes {
-    NEW, RETURNING, LOGGEDOUT,
-}
-/**
- * StreamInfo is a data class that represents all the information that is shown to the user when their followed streams
- * are fetched
- *
- * */
-data class StreamInfo(
-    val streamerName: String,
-    val streamTitle: String,
-    val gameTitle: String,
-    val views: Int,
-    val url: String,
-    val broadcasterId: String
-)
-data class ModChannelUIState(
-    val offlineModChannelList:List<String> =listOf(),
-    val liveModChannelList:List<StreamData> = listOf(),
-    val modChannelResponseState:NetworkNewUserResponse<Boolean> = NetworkNewUserResponse.Loading,
-    val modRefreshing:Boolean = false,
-)
-data class HomeUIState(
-
-    val width: Int = 0,
-    val aspectHeight: Int = 0,
-    val screenDensity: Float = 0f,
-    val streamersListLoading: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-
-    val networkConnectionState:Boolean = true,
-
-    val homeRefreshing:Boolean = false,
-    val homeNetworkErrorMessage:String ="Disconnected from network",
-    val logoutDialogIsOpen:Boolean=false,
-    val horizontalLongHoldStreamList:NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,
-    val userIsLoggedIn:NetworkAuthResponse<Boolean> = NetworkAuthResponse.Loading,
-    val showFailedDialog:Boolean = false,
-    val showNetworkRefreshError:Boolean = false,
-
-    )

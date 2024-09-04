@@ -33,8 +33,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
-import com.example.clicker.presentation.authentication.AuthenticationViewModel
+
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel

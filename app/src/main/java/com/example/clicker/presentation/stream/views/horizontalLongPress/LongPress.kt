@@ -106,7 +106,7 @@ fun HorizontalLongPressView(
                     LongPressPullToRefresh(
                         contentPadding =contentPadding,
                         refreshing =homeViewModel.state.value.homeRefreshing,
-                        refreshFun = {homeViewModel.pullToRefreshGetLiveStreams()},
+                        refreshFun = {homeViewModel.pullToRefreshHome()},
                         content ={
                             TestingLazyColumnItem(
                                 height = homeViewModel.state.value.aspectHeight,
