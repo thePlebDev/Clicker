@@ -32,7 +32,8 @@ import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.modChannels.views.ModChannelComponents
+import com.example.clicker.presentation.modChannels.views.MainModView
+import com.example.clicker.presentation.modChannels.views.ModChannelsBottomModalSheetContent
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -67,7 +68,7 @@ fun ModChannelView(
     ModalBottomSheetLayout(
         sheetState = bottomModalState,
         sheetContent = {
-            BottomModalSheetContent(
+            ModChannelsBottomModalSheetContent(
                 loginWithTwitch= {
                     logoutViewModel.setLoggedOutStatus("TRUE")
                     onNavigate(R.id.action_modChannelsFragment_to_logoutFragment)
@@ -76,7 +77,7 @@ fun ModChannelView(
         }
     ) {
 
-        ModChannelComponents.MainModView(
+        MainModView(
             popBackStackNavigation = { popBackStackNavigation() },
             height = homeViewModel.state.value.aspectHeight,
             width = homeViewModel.state.value.width,
@@ -145,34 +146,3 @@ fun ModChannelView(
 
 }
 
-@Composable
-fun BottomModalSheetContent(
-    loginWithTwitch: () -> Unit,
-){
-    val fontSize =MaterialTheme.typography.headlineSmall.fontSize
-    val buttonScope = remember(){ ButtonScope(fontSize) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(MaterialTheme.colorScheme.primary),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "Log out to be issued a new Twitch authentication token",
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-            modifier = Modifier
-                .padding(bottom = 10.dp)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        with(buttonScope){
-            this.Button(
-                text ="Log out of Twitch",
-                onClick = { loginWithTwitch()},
-            )
-        }
-    }
-}

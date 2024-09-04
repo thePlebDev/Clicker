@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.icons.Icons
@@ -64,10 +65,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.home.disableClickAndRipple
-import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
+import com.example.clicker.presentation.sharedViews.ButtonScope
 
-import com.example.clicker.presentation.modChannels.views.ModChannelComponents.Parts.EmptyList
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 
@@ -83,24 +82,8 @@ import kotlinx.coroutines.delay
 
 import kotlinx.coroutines.launch
 
-/**
- * - Contains 1 implementation:
- * 1) [MainModView]
- *
- * - ModChannelComponents represents all the UI composables that create the UI experience for the ModChannelView
- *
- *
- * */
-
-object ModChannelComponents{
-    /**THIS IS THE MAIN IMPLEMENTATION LEVEL*/
 
     /**
-     * - Implementation of [Builders.ScaffoldBuilder].
-     * - Contains 3 parts:
-     * 1) [CustomTopBar][Parts.CustomTopBar]
-     * 2) [CustomBottomBar][Parts.CustomBottomBar]
-     * 3) [ModChannelsResponse][Parts.ModChannelsResponse]
      *
      * @param onNavigate a function used to navigate from the home page to the individual stream view
      * @param height a Int representing the height in a aspect ratio that will make the images look nice
@@ -185,7 +168,7 @@ object ModChannelComponents{
                     )
                 }
             ){
-                Parts.ModChannelsResponse(
+                ModChannelsResponse(
                     height,
                     width,
                     density,
@@ -215,15 +198,9 @@ object ModChannelComponents{
     }
 
 
-    /**
-     * Parts represents the most individual parts of [ModChannelComponents] and should be thought of as the individual
-     * pieces that are used inside of a [Builders] to create a [ModChannelComponents] implementation
-     * */
-    private object Parts{
+
 
         /**
-         * - Contains 1 extra parts:
-         * 1) [ModChannelList]
          *
          * - ModChannelsResponse is a composable function used to show the current state of the data to
          * to the user. Either LOADING,SUCCESS OR FAILURE. All dependent on the network call to get channels where the
@@ -296,7 +273,7 @@ object ModChannelComponents{
                                     streamTitle=streamInfo.title,
                                     gameTitle =streamInfo.gameName,
                                     viewCount = streamInfo.viewerCount,
-                                    url = streamInfo.thumbNailUrl,
+                                    thumbnailURL = streamInfo.thumbNailUrl,
                                     updateStreamerName ={
                                             streamerName,clientId,broadcasterId,userId ->
                                         updateStreamerName(streamerName,clientId,broadcasterId,userId)
@@ -374,9 +351,6 @@ object ModChannelComponents{
 
 
         /**
-         * - Contains 2 extra parts:
-         * 1) [OfflineModChannelImage]
-         * 2) [StreamerName]
          *
          * - OfflineModChannelItem is a composable function meant to show the individual mod channels that are offline
          *
@@ -409,20 +383,17 @@ object ModChannelComponents{
         }
 
         /**
-         * - Contains 2 extra parts:
-         * 1) [OfflineModChannelImage]
-         * 2) [StreamInfo]
          *
          * - LiveModChannelItem is a composable function meant to show the individual mod channels that are live
          *
          * @param height a Int representing the height in a aspect ratio that will make the images look nice
          * @param width a Int representing the width in a aspect ratio that will make the images look nice
          * @param density a float meant to represent the screen density of the current device
-         * @param channelName a String meant to represent the name of the channel shown to the user
+         * @param streamerName a String meant to represent the name of the channel shown to the user
          * @param streamTitle a String meant to represent the name of the title of the stream
          * @param gameTitle a String meant to represent the name of the title of the game
          *
-         * @param url a String used to load the screen shot of what the streamer is playing
+         * @param thumbnailURL a String used to load the screen shot of what the streamer is playing
          * @param viewCount a Int meant to represent how many users are viewing the stream
          * */
         @Composable
@@ -434,7 +405,7 @@ object ModChannelComponents{
             streamerName:String,
             streamTitle:String,
             gameTitle:String,
-            url:String,
+            thumbnailURL:String,
             viewCount: Int,
             updateStreamerName: (String, String,String,String) -> Unit,
             updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
@@ -471,7 +442,7 @@ object ModChannelComponents{
                     height = height,
                     width = width,
                     density = density,
-                    url= url,
+                    thumbnailURL= thumbnailURL,
                     viewCount = viewCount
                 )
                 StreamInfo(streamerName,streamTitle,gameTitle)
@@ -485,12 +456,8 @@ object ModChannelComponents{
 
 
         /**
-         * - Contains 0 extra parts:
-
-         *
          * - StreamInfo is a composable function meant to show the individual information about a stream
          *
-
          * @param streamTitle a String meant to represent the name of the title of the stream
          * @param gameTitle a String meant to represent the name of the title of the game
          * @param streamerName a String meant to represent the name of the streamer
@@ -525,10 +492,10 @@ object ModChannelComponents{
         }
 
         /**
-         * - Contains 0 extra parts
-         *
          * - ErrorPullToRefresh is a composable function that will appear to the user when a generic error
          * has happened and they have to pull to make the request again
+         *
+         * @param errorMessage means to represent the message that is shown to the user when an error occurs
          *
          * */
         @Composable
@@ -575,7 +542,6 @@ object ModChannelComponents{
 
 
         /**
-         * - Contains 0 extra parts:
          *
          * - StreamerName is a composable function meant to show the individual streamer's name
          *
@@ -593,8 +559,6 @@ object ModChannelComponents{
         }
 
         /**
-         * - Contains 0 extra parts:
-         *
          * - ModHeader is a composable function meant to act as a sticky header in a [LazyColumn]
          *
          * @param headerTitle a String meant to represent the name of the streamer
@@ -622,8 +586,6 @@ object ModChannelComponents{
         }
 
         /**
-         * - Contains 0 extra parts:
-         *
          * - EmptyList is a composable function meant to shown to the user when there is a empty [LazyColumn]
          *
          * @param message a String meant to represent a message shown directly to the user
@@ -655,9 +617,7 @@ object ModChannelComponents{
 
 
         /**
-         * - Contains 0 extra parts:
-         *
-         * - OfflineModChannelImage is a composable function meant to mimic a streamer's stream image
+         * - OfflineModChannelImage is a composable function meant to mimic a streamer's stream thumbnail
          *
          * @param height a Int representing the height in a aspect ratio that will make the images look nice
          * @param width a Int representing the width in a aspect ratio that will make the images look nice
@@ -685,19 +645,30 @@ object ModChannelComponents{
                 Spacer(modifier=Modifier.height(10.dp))
             }
         }
+
+
+/**
+ * - OnlineModChannelImage is a composable function meant to demonstrate that a user is live and show a provided thumbnail
+ *
+ * @param height a Int representing the height in a aspect ratio that will make the images look nice
+ * @param width a Int representing the width in a aspect ratio that will make the images look nice
+ * @param density a float meant to represent the screen density of the current device
+ * @param viewCount meant to represent the number of viewers a stream currently has
+ * @param thumbnailURL mean to represent the URL of a thumbnail that is shown to users
+ * */
         @Composable
         fun OnlineModChannelImage(
             height: Int,
             width: Int,
             density:Float,
             viewCount:Int,
-            url:String
+            thumbnailURL:String
         ){
             Box() {
                 val adjustedHeight = height/density
                 val adjustedWidth = width/density
                 SubcomposeAsyncImage(
-                    model = url,
+                    model = thumbnailURL,
                     loading = {
                         Column(modifier = Modifier
                             .height((adjustedHeight).dp)
@@ -726,11 +697,45 @@ object ModChannelComponents{
 
         }
 
-    }/***END OF THE PARTS****/
 
+
+
+/**
+ * ModChannelsBottomModalSheetContent() is composable meant to be shown in a [ModalBottomSheetLayout] sheet content
+ *
+ * @param loginWithTwitch a function used to promp the user to login with Twitch
+ * */
+@Composable
+fun ModChannelsBottomModalSheetContent(
+    loginWithTwitch: () -> Unit,
+){
+    val fontSize =MaterialTheme.typography.headlineSmall.fontSize
+    val buttonScope = remember(){ ButtonScope(fontSize) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Log out to be issued a new Twitch authentication token",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        with(buttonScope){
+            this.Button(
+                text ="Log out of Twitch",
+                onClick = { loginWithTwitch()},
+            )
+        }
+    }
 }
-
-
 
 
 
