@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.stream
+package com.example.clicker.presentation.stream.util
 
 import android.util.Log
 import androidx.compose.runtime.State

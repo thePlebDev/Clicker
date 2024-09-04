@@ -63,7 +63,7 @@
 
 
 
-            <com.example.clicker.presentation.stream.ClickableWebView
+            <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
                 android:id="@+id/webView"
                 android:layout_width="0.dp"
                 android:layout_height="0.dp"

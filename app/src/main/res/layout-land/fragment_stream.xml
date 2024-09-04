@@ -13,7 +13,7 @@
         >
 
 
-        <com.example.clicker.presentation.stream.HorizontalClickableWebView
+        <com.example.clicker.presentation.stream.customWebViews.HorizontalClickableWebView
             android:id="@+id/webView"
             android:layout_width="0.dp"
             android:layout_height="0.dp"

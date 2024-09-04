@@ -67,7 +67,6 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
