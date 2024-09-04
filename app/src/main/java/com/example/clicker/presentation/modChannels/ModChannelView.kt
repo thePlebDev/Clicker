@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modChannels.views.ModChannelComponents
 import com.example.clicker.presentation.sharedViews.ButtonScope

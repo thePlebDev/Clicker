@@ -2,6 +2,23 @@ package com.example.clicker.domain
 
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * - TwitchDataStore is the interface that acts as the API for all the methods accessing the locally stored DataStore
+ * - You can read more about the token data store, [HERE](https://developer.android.com/topic/libraries/architecture/datastore)
+ *
+ * @property setOAuthToken a function meant to SET the locally stored oAuthToken
+ * @property getOAuthToken aa function meant to GET the locally stored oAuthToken
+ *
+ * @property setUsername a function meant to SET the locally stored username of the logged in user
+ * @property getUsername a function meant to GET the locally stored username of the logged in user
+ *
+ * @property setLoggedOutStatus a function meant to SET the locally stored loggedOutStatus, which is a string that determines if the user is logged in or not
+ * @property getLoggedOutStatus a function meant to GET the locally stored loggedOutStatus, which is a string that determines if the user is logged in or not
+ *
+ * @property setClientId a function meant to SET the locally stored clientId, Which is the the unique identifier of the application
+ * @property getClientId a function meant to GET the locally stored clientId, Which is the the unique identifier of the application
+ *
+ * */
 interface TwitchDataStore {
 
     suspend fun setOAuthToken(oAuthToken: String)

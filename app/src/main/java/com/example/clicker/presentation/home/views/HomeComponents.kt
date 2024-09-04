@@ -36,12 +36,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
-import com.example.clicker.network.clients.AllFollowedStreamers
-import com.example.clicker.network.clients.VOD
+
 import com.example.clicker.network.models.twitchRepo.StreamData
 
 
-import com.example.clicker.presentation.home.StreamInfo
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.stream.ClickedStreamInfo

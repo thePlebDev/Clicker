@@ -57,7 +57,6 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentLogoutBinding
 import com.example.clicker.databinding.FragmentNewUserBinding
-import com.example.clicker.presentation.home.UserTypes
 import com.example.clicker.presentation.authentication.logout.views.LogoutMainComponent
 import com.example.clicker.presentation.authentication.twitchAuthorizationScopeURL
 import com.example.clicker.presentation.stream.StreamViewModel
