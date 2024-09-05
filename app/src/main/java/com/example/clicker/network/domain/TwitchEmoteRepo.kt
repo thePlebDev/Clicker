@@ -16,15 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * TwitchEmoteRepo is the interface that acts as the API for all the methods needed to interact with Twitch's emote servers
- *
- * @property emoteList a [State] object containing a map of all the emotes.
- * This holds all of the combined values that will be shown in chat. So all the values inside of this object represent all the emotes
- * that will be visible inside of chat
+
  * @property emoteBoardGlobalList a [State] object containing a map of all the global emotes. These are the global emotes that the
  * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
  * @property emoteBoardChannelList a [State] object containing a map of all the channel emotes.These are the channel emotes that the
  * user is shown inside of the emote board(mock soft keyboard with emotes instead of keys)
-
  * @property globalChatBadges a [State] object containing a map of all the global chat badges.
  * This holds all of the combined values from Twitch's global emote chat badge enpoint
  *
@@ -35,8 +31,13 @@ import kotlinx.coroutines.flow.StateFlow
  * @property sharedBetterTTVEmotes a [State] object containing a [IndivBetterTTVEmoteList] object that represents all the shared BetterTTV emotes.
  * You can read more about the BetterTTV shared emotes, [HERE](https://betterttv.com/developers/api#user)
  *
- *@property globalTwitchEmoteList a [StateFlow] object containing a list of [EmoteNameUrl] objects that represents all the Global Twitch emotes.
+ * @property globalTwitchEmoteList a [StateFlow] object containing a list of [EmoteNameUrl] objects that represents all the Global Twitch emotes.
  * You can read more about the Global Twitch emotes, [HERE](https://dev.twitch.tv/docs/api/reference/#get-global-emotes)
+ * @property channelEmoteList a [StateFlow] object used to hold all the Twitch channel emotes shown to the user in chat
+ * @property globalBetterTTVEmoteList a [StateFlow] object used to hold all the betterTTV global emotes shown to the user in chat
+ * @property channelBetterTTVEmoteList a [StateFlow] object used to hold all the betterTTV channel emotes shown to the user in chat
+ * @property sharedBetterTTVEmoteList a [StateFlow] object used to hold all the betterTTV shared emotes shown to the user in chat
+ *
  *
  * @property getGlobalEmotes()  a function called to get Twitch  global emotes
  * @property getChannelEmotes() a function called to get channel  global emotes
@@ -49,19 +50,17 @@ interface TwitchEmoteRepo {
 
     val emoteBoardGlobalList: State<EmoteNameUrlList>
     val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList>
-    val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList>
+    val globalChatBadges: State<EmoteListMap>
 
+    val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList>
     val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList>
     val sharedBetterTTVEmotes: State<IndivBetterTTVEmoteList>
 
-    val globalChatBadges: State<EmoteListMap>
-
-
     val globalTwitchEmoteList:StateFlow<List<EmoteNameUrl>>
-    val channelEmoteList:StateFlow<List<EmoteNameUrl>>
-    val globalBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
-    val channelBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
-    val sharedBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>>
+    val channelEmoteList:StateFlow<List<EmoteNameUrl>> // add documenation for this
+    val globalBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>> // add documenation for this
+    val channelBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>> // add documenation for this
+    val sharedBetterTTVEmoteList:StateFlow<List<EmoteNameUrl>> // add documenation for this
 
     /**
      * getGlobalEmotes a function used to make a request to the Twitch servers to access the global emotes
