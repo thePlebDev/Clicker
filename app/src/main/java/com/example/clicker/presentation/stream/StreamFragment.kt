@@ -767,7 +767,8 @@ fun setOrientation(
                             clientId,
                             broadcasterId,
                             userId,
-                            login =homeViewModel.validatedUser.value?.login ?:""
+                            login =homeViewModel.validatedUser.value?.login ?:"",
+                            oAuthToken= homeViewModel.oAuthToken.value ?:""
                         )
                     }
                 )
@@ -844,7 +845,8 @@ fun setOrientation(
                             clientId,
                             broadcasterId,
                             userId,
-                            login =homeViewModel.validatedUser.value?.login ?:""
+                            login =homeViewModel.validatedUser.value?.login ?:"",
+                            oAuthToken= homeViewModel.oAuthToken.value ?:""
                         )
                     }
                 )
