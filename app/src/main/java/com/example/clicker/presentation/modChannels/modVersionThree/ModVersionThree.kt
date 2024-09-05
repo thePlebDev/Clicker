@@ -112,7 +112,7 @@ import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
-import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
+import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
@@ -2685,7 +2685,7 @@ fun ClickedIndivUnbanRequestModalFailed(){
 }
 @Composable
 fun UnbanRequestSessionMessages(
-     clickedUsernameChatsDateSentImmutable:ClickedUsernameChatsWithDateSentImmutable
+     clickedUsernameChatsDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable
 ){
     LazyColumn(
         modifier = Modifier

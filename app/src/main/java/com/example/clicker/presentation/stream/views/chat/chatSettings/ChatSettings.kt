@@ -48,7 +48,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
-import com.example.clicker.presentation.stream.AdvancedChatSettings
+import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
 
@@ -81,35 +81,35 @@ val slowModeList =listOf(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatSettingsColumn(
-     advancedChatSettings: AdvancedChatSettings,
-     changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
-     changeNoChatMode:(Boolean)->Unit,
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
+    changeNoChatMode:(Boolean)->Unit,
 
-     followerModeListImmutable: ImmutableModeList,
-     slowModeListImmutable: ImmutableModeList,
-     selectedFollowersModeItem: ListTitleValue,
-     changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+    followerModeListImmutable: ImmutableModeList,
+    slowModeListImmutable: ImmutableModeList,
+    selectedFollowersModeItem: ListTitleValue,
+    changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
 
-     selectedSlowModeItem: ListTitleValue,
-     changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
-     chatSettingsEnabled:Boolean,
-     emoteOnly:Boolean,
-     setEmoteOnly:(Boolean) ->Unit,
-     subscriberOnly:Boolean,
-     setSubscriberOnly:(Boolean) ->Unit,
+    selectedSlowModeItem: ListTitleValue,
+    changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+    chatSettingsEnabled:Boolean,
+    emoteOnly:Boolean,
+    setEmoteOnly:(Boolean) ->Unit,
+    subscriberOnly:Boolean,
+    setSubscriberOnly:(Boolean) ->Unit,
 
-     badgeSize:Float,
-     changeBadgeSize:(Float)->Unit,
-     emoteSize:Float,
-     changeEmoteSize:(Float)->Unit,
-     usernameSize:Float,
-     changeUsernameSize:(Float)->Unit,
-     messageSize:Float,
-     changeMessageSize:(Float)->Unit,
-     lineHeight: Float,
-     changeLineHeight:(Float)->Unit,
-     customUsernameColor: Boolean,
-     changeCustomUsernameColor: (Boolean)->Unit
+    badgeSize:Float,
+    changeBadgeSize:(Float)->Unit,
+    emoteSize:Float,
+    changeEmoteSize:(Float)->Unit,
+    usernameSize:Float,
+    changeUsernameSize:(Float)->Unit,
+    messageSize:Float,
+    changeMessageSize:(Float)->Unit,
+    lineHeight: Float,
+    changeLineHeight:(Float)->Unit,
+    customUsernameColor: Boolean,
+    changeCustomUsernameColor: (Boolean)->Unit
 
 ){
     Log.d("ChatSettingsColumn","Recomping")

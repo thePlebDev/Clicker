@@ -52,9 +52,8 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.repository.EmoteListMap
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
-import com.example.clicker.presentation.stream.ClickedUserBadgesImmutable
-import com.example.clicker.presentation.stream.ClickedUserNameChats
-import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
+import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
+import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import kotlinx.coroutines.delay
@@ -75,7 +74,7 @@ fun TestingNewBottomModal(
     openBanDialog: () -> Unit,
 //
     openWarnDialog:()->Unit,
-    clickedUserBadgeList:ClickedUserBadgesImmutable, //badgeList
+    clickedUserBadgeList: ClickedUserBadgesImmutable, //badgeList
     badgeInlineContentMap: EmoteListMap,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,

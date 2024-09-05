@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.RoomState
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import javax.inject.Inject
 import okhttp3.WebSocket
@@ -430,7 +431,8 @@ class ParsingEngine @Inject constructor() {
     }
 
     /**
-     * Send the PONG message to the websocket
+     * - Send the PONG message to the websocket
+     * - You can read more about the Ping/Pond interaction on the Twitch documentation, [HERE](https://dev.twitch.tv/docs/eventsub/websocket-reference/#ping-message)
      * @property webSocket the [WebSocket] which PONG will be sent to and tell the Twitch IRC servers to not disconnect
      */
     fun sendPong(webSocket: WebSocket) {

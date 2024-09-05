@@ -245,7 +245,6 @@ object SingletonModule {
     }
     @Provides
     fun provideTwitchWebSocket(
-        tokenDataStore: TwitchDataStore,
         twitchParsingEngine: ParsingEngine
     ): TwitchSocket {
         return TwitchWebSocket(twitchParsingEngine)

@@ -42,7 +42,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.sharedViews.LogoutDialog
-import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
@@ -108,7 +108,7 @@ import com.example.clicker.util.Response
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
 
-    ){
+        ){
 
         HomeModalBottomSheetBuilder(
             loginBottomModal = {
