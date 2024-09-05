@@ -38,21 +38,17 @@ import kotlinx.coroutines.flow.StateFlow
  *@property globalTwitchEmoteList a [StateFlow] object containing a list of [EmoteNameUrl] objects that represents all the Global Twitch emotes.
  * You can read more about the Global Twitch emotes, [HERE](https://dev.twitch.tv/docs/api/reference/#get-global-emotes)
  *
- * @property getGlobalEmotes()
- * @property getChannelEmotes()
- * @property getBetterTTVGlobalEmotes()
- * @property getBetterTTVChannelEmotes()
- * @property getGlobalChatBadges()
+ * @property getGlobalEmotes()  a function called to get Twitch  global emotes
+ * @property getChannelEmotes() a function called to get channel  global emotes
+ * @property getBetterTTVGlobalEmotes() a function called to get better ttv  global emotes
+ * @property getBetterTTVChannelEmotes() a function called to get better ttv  channel emotes
+ * @property getGlobalChatBadges() a function called to get Twitch  channel emotes
  *
  * */
 interface TwitchEmoteRepo {
 
-//    val emoteList: State<EmoteListMap>
-
     val emoteBoardGlobalList: State<EmoteNameUrlList>
-
     val emoteBoardChannelList:State<EmoteNameUrlEmoteTypeList>
-
     val globalBetterTTVEmotes:State<IndivBetterTTVEmoteList>
 
     val channelBetterTTVEmotes:State<IndivBetterTTVEmoteList>

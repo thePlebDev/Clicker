@@ -1,7 +1,6 @@
 package com.example.clicker.presentation.stream
 
 import android.util.Log
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -13,23 +12,17 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BanUser
 import com.example.clicker.network.clients.BanUserData
-import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.clients.WarnData
 import com.example.clicker.network.clients.WarnUserBody
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
-import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.domain.TwitchSocket
-import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.EmoteNameUrl
 import com.example.clicker.network.repository.EmoteNameUrlList
-import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
@@ -40,14 +33,11 @@ import com.example.clicker.presentation.stream.models.ClickedUIState
 import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
 import com.example.clicker.presentation.stream.models.ClickedUserNameChats
 import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
-import com.example.clicker.presentation.stream.models.EmoteBoardData
 import com.example.clicker.presentation.stream.models.ModChatSettings
 import com.example.clicker.presentation.stream.models.StreamUIState
 import com.example.clicker.presentation.stream.models.TextFieldValueImmutable
-import com.example.clicker.presentation.stream.util.AutoCompleteChat
 
 
-import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TextParsing
@@ -75,7 +65,6 @@ class StreamViewModel @Inject constructor(
     private val webSocket: TwitchSocket,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher,
-    private val autoCompleteChat: AutoCompleteChat,
     private val twitchEmoteImpl: TwitchEmoteRepo,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
@@ -892,7 +881,6 @@ class StreamViewModel @Inject constructor(
                     MessageType.USER ->{
                         Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
                         Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
-                        autoCompleteChat.addChatter(twitchUserMessage.displayName!!)
                         addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
                         listChats.add(twitchUserMessage)
                     }
