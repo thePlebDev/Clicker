@@ -115,7 +115,6 @@ import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteTypes
 import com.example.clicker.network.websockets.MessageToken
-import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.PrivateMessageType
 
 
@@ -128,7 +127,7 @@ import coil.decode.ImageDecoderDecoder
 import com.example.clicker.network.clients.IndivBetterTTVEmote
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
-import com.example.clicker.presentation.stream.TextFieldValueImmutable
+import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 

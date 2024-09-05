@@ -20,7 +20,6 @@ import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.EmoteNameUrlList
 import com.example.clicker.network.repository.EmoteNameUrlNumberList
 import com.example.clicker.network.repository.IndivBetterTTVEmoteList
-import com.example.clicker.presentation.stream.TextFieldValueImmutable
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection

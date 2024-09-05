@@ -3,7 +3,7 @@ package com.example.clicker.presentation.stream.util
 import android.util.Log
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.MessageToken
-import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject

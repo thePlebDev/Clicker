@@ -73,9 +73,8 @@ import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.NotificationsScope
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
-import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
-import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
-import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay

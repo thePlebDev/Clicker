@@ -38,8 +38,9 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.presentation.stream.ClickedStreamInfo
+
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 
 

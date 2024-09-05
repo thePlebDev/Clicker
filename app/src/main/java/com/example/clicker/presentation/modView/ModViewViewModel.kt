@@ -30,9 +30,6 @@ import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
-import com.example.clicker.presentation.stream.ClickedUserNameChats
-import com.example.clicker.presentation.stream.ClickedUsernameChatsWithDateSentImmutable
-import com.example.clicker.presentation.stream.StreamUIState
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.util.Response
 import com.example.clicker.util.UnAuthorizedResponse

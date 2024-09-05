@@ -23,7 +23,6 @@ import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
-import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -34,6 +33,7 @@ import com.example.clicker.network.repository.IndivBetterTTVEmoteList
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
+import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.presentation.stream.models.ClickedUIState
@@ -98,8 +98,7 @@ class StreamViewModel @Inject constructor(
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
 
-    private val _emoteBoardData: MutableState<EmoteBoardData> = mutableStateOf(EmoteBoardData(200,false))
-    val emoteBoardData: State<EmoteBoardData> = _emoteBoardData
+
 
 
     /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
@@ -112,6 +111,7 @@ class StreamViewModel @Inject constructor(
 
 
 
+    //todo: not sure if these are still needed
     val globalBetterTTVEmotes=twitchEmoteImpl.globalBetterTTVEmotes
     val channelBetterTTVEmote = twitchEmoteImpl.channelBetterTTVEmotes
     val sharedChannelBetterTTVEmote = twitchEmoteImpl.sharedBetterTTVEmotes
@@ -131,11 +131,7 @@ class StreamViewModel @Inject constructor(
     val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
     val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlList())
     val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
-    // IndivBetterTTVEmoteList
 
-
-    val mostFrequentEmoteListBetterTTV = mutableStateOf(IndivBetterTTVEmoteList())
-    val temporaryMostFrequentListBetterTTV = mutableStateListOf<IndivBetterTTVEmote>()
 
 
 
@@ -196,17 +192,8 @@ class StreamViewModel @Inject constructor(
         _clickedStreamInfo.value =clickedStreamInfo
         _channelName.value = clickedStreamInfo.channelName
     }
-    private val _showAutoModSettings = mutableStateOf(false)
-    val showAutoModSettings = _showAutoModSettings
 
-    fun setAutoModSettings(show:Boolean){
-        _showAutoModSettings.value = show
-    }
-    fun updateStreamTitle(newStreamTitle:String){
-        _clickedStreamInfo.value = _clickedStreamInfo.value.copy(
-            streamTitle = newStreamTitle
-        )
-    }
+
 
     //todo: THIS IS THE CODE FOR THE etterTTVEmotesImpl.getGlobalEmotes()
     fun getBetterTTVGlobalEmotes(){
@@ -688,11 +675,30 @@ class StreamViewModel @Inject constructor(
         )
     }
     fun addEmoteToText(emoteText:String){
-        textParsing.updateTextField(" $emoteText ")
+        //Log.d("DeleteTOkenFunc","adding emtote -->$emoteText")
+        textParsing.updateTextField(" $emoteText")
     }
-    fun deleteEmote(){
-        Log.d("addToken","deleteEmote()")
 
+
+    fun deleteEmote(){
+
+        if (textFieldValue.value.text.isEmpty()) {
+            Log.d("DeleteTokenFunc", "string message -> EMPTY")
+        } else {
+            val cursorIndex = textFieldValue.value.selection.start
+
+            // Ensure that the cursor is not at the beginning of the text
+            if (cursorIndex > 0) {
+                val newText = textFieldValue.value.text.removeRange(cursorIndex - 1, cursorIndex)
+                Log.d("DeleteTokenFunc", "newText -> $newText")
+
+                // Update the TextFieldValue with the new text and adjust the cursor position
+                textFieldValue.value = TextFieldValue(
+                    text = newText,
+                    selection = TextRange(cursorIndex - 1) // Move the cursor back by one position
+                )
+            }
+        }
     }
 
     /**

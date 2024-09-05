@@ -69,10 +69,9 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
-import com.example.clicker.presentation.sharedViews.ScaffoldBottomBarScope
-import com.example.clicker.presentation.sharedViews.ScaffoldTopBarScope
-import com.example.clicker.presentation.stream.ClickedStreamInfo
+
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -87,7 +86,7 @@ fun HorizontalLongPressView(
     updateModViewSettings:(String,String,String,String,)->Unit,
     updateStreamerName: (String, String, String, String) -> Unit,
 
-){
+    ){
     val clicked = remember { mutableStateOf(true) }
     val text = if (clicked.value) "Live channels" else "Mod channels"
 

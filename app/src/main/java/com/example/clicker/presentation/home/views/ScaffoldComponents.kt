@@ -78,7 +78,7 @@ import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
-import com.example.clicker.presentation.stream.ClickedStreamInfo
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.launch
 
