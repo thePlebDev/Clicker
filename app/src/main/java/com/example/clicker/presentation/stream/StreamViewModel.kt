@@ -73,13 +73,10 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class StreamViewModel @Inject constructor(
     private val webSocket: TwitchSocket,
-    private val tokenDataStore: TwitchDataStore,
     private val twitchRepoImpl: TwitchStream,
     private val ioDispatcher: CoroutineDispatcher,
     private val autoCompleteChat: AutoCompleteChat,
-    private val networkMonitoring: NetworkMonitoring,
     private val twitchEmoteImpl: TwitchEmoteRepo,
-    private val betterTTVEmotesImpl: BetterTTVEmotesImpl,
     private val textParsing:TextParsing = TextParsing(),
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
@@ -468,18 +465,7 @@ class StreamViewModel @Inject constructor(
 
 
 
-    /**
-     * showUndoButton() is function used by [SettingsSwitches][com.example.clicker.presentation.stream.views.ChatSettingsContainer.SettingsSwitches]
-     * composable to hide or show the [DraggableUndoButton][com.example.clicker.presentation.stream.views.MainChat.MainChatParts.DraggableUndoButton]
-     *
-     * @param status a boolean representing the current state of the switch being clicked
-     * */
-    fun showUndoButton(status:Boolean){
 
-        _modChatSettingsState.value = _modChatSettingsState.value.copy(
-            showUndoButton = status
-        )
-    }
     fun setNoChatMode(status: Boolean){
         _advancedChatSettingsState.value = _advancedChatSettingsState.value.copy(
             noChatMode = status
@@ -1065,8 +1051,12 @@ class StreamViewModel @Inject constructor(
         clientId: String,
         broadcasterId: String,
         userId: String,
-        login:String
+        login:String,
+        oAuthToken: String
     ) {
+        _uiState.value = _uiState.value.copy(
+            oAuthToken = oAuthToken
+        )
         Log.d("updateChannelNameAndClientIdAndUserId","broadcasterId --->${broadcasterId}")
         Log.d("updateChannelNameAndClientIdAndUserId","userId --->${userId}")
         Log.d("updateChannelNameAndClientIdAndUserId","oAuthToken --->${_uiState.value.oAuthToken}")
@@ -1081,152 +1071,14 @@ class StreamViewModel @Inject constructor(
             login =login
         )
 
-        getChatSettings(clientId, broadcasterId)
         listChats.clear()
 
     }
-    fun retryGettingChatSetting() {
-        getChatSettings(
-            clientId = _uiState.value.clientId,
-            broadcasterId = _uiState.value.broadcasterId
-        )
-    }
 
 
-    /**
-     * getChatSettings() is a private function used by [updateChannelNameAndClientIdAndUserId] and [retryGettingChatSetting] to
-     * get the chat settings of the current channel the viewer is viewing
-     * */
-    private fun getChatSettings(
-        clientId: String,
-        broadcasterId: String
-    ) = viewModelScope.launch {
 
 
-        withContext(Dispatchers.IO + CoroutineName("GetChatSettings")) {
-            tokenDataStore.getOAuthToken().collect { oAuthToken ->
 
-                if (oAuthToken.isNotEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        oAuthToken = oAuthToken
-                    )
-
-                    Log.d("getChatSettingsteSTING","broadcasterId ->$broadcasterId")
-                    Log.d("getChatSettingsteSTING","oAuthToken ->$oAuthToken")
-                    Log.d("getChatSettingsteSTING","moderatorId ->${_uiState.value.userId}")
-                    twitchRepoImpl.getChatSettings("Bearer $oAuthToken", clientId, broadcasterId).collect { response ->
-                        when (response) {
-                            is Response.Loading -> {
-                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
-                                    switchesEnabled = false
-                                )
-                            }
-                            is Response.Success -> {
-
-                                val chatSettingsData = response.data.data[0]
-                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
-                                    data = chatSettingsData,
-                                    switchesEnabled = true
-                                )
-                            }
-                            is Response.Failure -> {
-
-                                _modChatSettingsState.value = _modChatSettingsState.value.copy(
-                                    switchesEnabled = true,
-                                    showChatSettingAlert = true
-
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    fun closeSettingsAlertHeader(){
-        _modChatSettingsState.value = _modChatSettingsState.value.copy(
-            showChatSettingAlert = false
-        )
-    }
-
-    //below is what I am building to create the new generic chat settings switch function
-    /**
-     * toggleChatSettings() is a generic function that is called when a [Switch][androidx.compose.material.Switch] inside of [ChatSettingsContainer][com.example.clicker.presentation.stream.views.ChatSettingsContainer]
-     * is clicked. Once triggered this function will send a request to the Twitch server and attempt to change the current channel's chat settings
-     *
-     *
-     * @param checkedBoolean a boolean that represents the current [Switch's][androidx.compose.material.Switch] state. True for clicked and false for not clicked
-     * @param switchType is a Enum of type [ChatSettingsContainer.SwitchTypes] and represents which switch got toggled
-     * */
-    fun toggleChatSettings(chatSettingsData: ChatSettingsData){
-        _modChatSettingsState.value = _modChatSettingsState.value.copy(
-            switchesEnabled = false,
-            showChatSettingAlert = false
-        )
-        // then we make the request
-        // if the request is a success update the chatSettingsData, set switchesEnabled = true
-        // if the request fails, do nothing except, switchesEnabled = true,showChatSettingAlert=true
-        updateDateChatSettings(chatSettingsData)
-
-    }
-
-
-    /**
-     * updateDateChatSettings() is a private function called by [toggleChatSettings] and it is making the actual request
-     * to the Twitch server to update the channels chat settings
-     *
-     * @param updatedChatSettings this object represents the updated settings it is sending to the Twitch servers. The object
-     * will differ depending on SwitchType passed to the [toggleChatSettings] function
-     *
-     * */
-    private fun updateDateChatSettings(
-        chatSettingsData: ChatSettingsData,
-    ) = viewModelScope.launch{
-        Log.d("updateDateChatSettingsTesting","broadcasterId ->${_uiState.value.broadcasterId}")
-        Log.d("updateDateChatSettingsTesting","moderatorId ->${_uiState.value.userId}")
-        Log.d("updateDateChatSettingsTesting","oAuthToken ->${_uiState.value.oAuthToken}")
-
-
-        withContext(ioDispatcher + CoroutineName("updateDateChatSettings")) {
-            twitchRepoImpl.updateChatSettings(
-                oAuthToken = _uiState.value.oAuthToken,
-                clientId = _uiState.value.clientId,
-                moderatorId = _uiState.value.userId,
-                broadcasterId = _uiState.value.broadcasterId,
-                body = UpdateChatSettings(
-                    emote_mode = chatSettingsData.emoteMode,
-                    follower_mode = chatSettingsData.followerMode,
-                    slow_mode = chatSettingsData.slowMode,
-                    subscriber_mode = chatSettingsData.subscriberMode
-                )
-            ).collect { response ->
-                when (response) {
-                    is Response.Loading -> {
-                        Log.d("changeChatSettings", "LOADING")
-                    }
-                    is Response.Success -> {
-
-                        _modChatSettingsState.value = _modChatSettingsState.value.copy(
-                            data = chatSettingsData,
-                            switchesEnabled = true,
-                        )
-
-                    }
-                    is Response.Failure -> {
-                        Log.d("changeChatSettings", "FAILED -> ${response.e.message}")
-                        _modChatSettingsState.value = _modChatSettingsState.value.copy(
-                            showChatSettingAlert = true,
-                            switchesEnabled = true,
-                        )
-
-                    }
-                }
-            }
-        }
-
-    }
 /******************************WARNING USER**********************************************************/
 fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 

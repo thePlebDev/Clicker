@@ -97,7 +97,8 @@ fun ValidationView(
                     clientId,
                     broadcasterId,
                     userId,
-                    login = homeViewModel.validatedUser.value?.login ?: ""
+                    login = homeViewModel.validatedUser.value?.login ?: "",
+                    oAuthToken= homeViewModel.oAuthToken.value ?:""
                 )
                 streamViewModel.getBetterTTVGlobalEmotes()
                 autoModViewModel.updateAutoModCredentials(

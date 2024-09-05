@@ -94,7 +94,8 @@ fun ModChannelView(
                     clientId,
                     broadcasterId,
                     userId,
-                    login = homeViewModel.validatedUser.value?.login ?:""
+                    login = homeViewModel.validatedUser.value?.login ?:"",
+                    oAuthToken= homeViewModel.oAuthToken.value ?:""
                 )
                 autoModViewModel.updateAutoModCredentials(
                     oAuthToken = oAuthToken,

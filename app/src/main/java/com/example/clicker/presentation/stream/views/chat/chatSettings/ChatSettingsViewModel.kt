@@ -578,6 +578,7 @@ class ChatSettingsViewModel @Inject constructor(
 
 
 
+
     fun getGlobalChatBadges(
         oAuthToken: String,
         clientId: String,
