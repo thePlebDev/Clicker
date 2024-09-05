@@ -83,9 +83,7 @@ class StreamViewModel @Inject constructor(
 
     private val _clientId: MutableState<String?> = mutableStateOf(null)
     val clientId: State<String?> = _clientId
-
-
-
+    
 
     /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
@@ -130,10 +128,6 @@ class StreamViewModel @Inject constructor(
     }
 
 
-    fun updateMostFrequentEmoteList(clickedItem:EmoteNameUrl){
-        mostFrequentEmoteList.add(clickedItem)
-    }
-
     fun updateMostFrequentEmoteList(){
         //Need to do some sorting between the two
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
@@ -165,10 +159,7 @@ class StreamViewModel @Inject constructor(
     private val _clickedUIState = mutableStateOf(ClickedUIState())
     val clickedUIState = _clickedUIState
 
-    //all the related chat settings code
-    //todo: I think this can get deleted
-    private val _modChatSettingsState = mutableStateOf(ModChatSettings())
-    val modChatSettingsState = _modChatSettingsState
+
 
     private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
     val clickedStreamInfo = _clickedStreamInfo
@@ -181,7 +172,7 @@ class StreamViewModel @Inject constructor(
 
 
 
-    //todo: THIS IS THE CODE FOR THE etterTTVEmotesImpl.getGlobalEmotes()
+
     fun getBetterTTVGlobalEmotes(){
         viewModelScope.launch(Dispatchers.IO) {
             twitchEmoteImpl.getBetterTTVGlobalEmotes().collect{response ->
@@ -234,7 +225,6 @@ class StreamViewModel @Inject constructor(
 
 
     val openWarningDialog =mutableStateOf(false)
-    val warningTextIsEmpty =mutableStateOf(false)
     val warningText = mutableStateOf("")
     fun changeWarningText(newValue:String){
         warningText.value = newValue
@@ -242,10 +232,6 @@ class StreamViewModel @Inject constructor(
     fun changeOpenWarningDialog(newValue:Boolean){
         openWarningDialog.value = newValue
     }
-    /***
-     * the immutable TextFieldValue
-     */
-    val textFieldValueImmutable:MutableState<TextFieldValueImmutable> = mutableStateOf(TextFieldValueImmutable(textParsing.textFieldValue.value))
 
 
 
@@ -327,8 +313,6 @@ class StreamViewModel @Inject constructor(
     private val allChatters = mutableStateListOf<String>()
 
     private val monitoredUsers = mutableStateListOf<String>()
-     val shouldMonitorUser:State<Boolean>
-        get() = mutableStateOf(monitoredUsers.contains(_clickedUIState.value.clickedUsername))
 
 
 
@@ -344,33 +328,9 @@ class StreamViewModel @Inject constructor(
     fun updateAdvancedChatSettings(advancedChatSettings: AdvancedChatSettings){
         _advancedChatSettingsState.value =advancedChatSettings
     }
-    fun updateShouldMonitorUser(){
-        val clickedUsername = _clickedUIState.value.clickedUsername
-        val alreadyMonitored =monitoredUsers.contains(clickedUsername)
-
-        if(alreadyMonitored){
-            monitoredUsers.remove(clickedUsername)
-        }else{
-            monitoredUsers.add(clickedUsername)
-        }
-
-    }
-    fun callingThePrivateMethodFromView(a:Int,b:Int){
-        privateMethod(a,b)
-    }
-    private fun privateMethod(a:Int,b:Int): Int{
-        //pretend this is advanced logic
-        val answer =(a/b) * 45 -9
-        return answer
-    }
 
 
-    init{
-//        getAutoModStatus()
-    }
-    val another ="Disconnected from chat. Check internet connection. Click button to attempt reconnect. If issue persists, your token may be expired and you have to logout to be issued a new one"
-
-    val errorValue = TwitchUserDataObjectMother
+    private val errorValue = TwitchUserDataObjectMother
         .addColor("#FF0000")
         .addDisplayName("Connection Error")
         .addMessageType(MessageType.ERROR)
@@ -378,7 +338,7 @@ class StreamViewModel @Inject constructor(
             "Disconnected from chat."
         )
         .build()
-    val noInternetErrorValue = TwitchUserDataObjectMother
+    private val noInternetErrorValue = TwitchUserDataObjectMother
         .addColor("#FF0000")
         .addDisplayName("Connection Error")
         .addMessageType(MessageType.ERROR)
@@ -449,12 +409,6 @@ class StreamViewModel @Inject constructor(
 
     }
 
-
-
-
-
-
-
     fun setNoChatMode(status: Boolean){
         _advancedChatSettingsState.value = _advancedChatSettingsState.value.copy(
             noChatMode = status
@@ -473,12 +427,6 @@ class StreamViewModel @Inject constructor(
 
 
     }
-    fun closeStickyHeader() {
-        _uiState.value = _uiState.value.copy(
-            showStickyHeader = false
-        )
-    }
-
     fun changeTimeoutDuration(duration: Int) {
         _uiState.value = _uiState.value.copy(
             timeoutDuration = duration
@@ -503,7 +451,7 @@ class StreamViewModel @Inject constructor(
     // TODO: NOTES FOR WHEN I COME BACK
     // this should be hooked up to a hot flow and run eachtime a new messageId is sent to it
     //todo:chat method
-    fun filterMessages(messageId: String) {
+    private fun filterMessages(messageId: String) {
         try{
             val found = listChats.first { it.id == messageId }
             val foundIndex = listChats.indexOf(found)
@@ -566,7 +514,7 @@ class StreamViewModel @Inject constructor(
     }
 
     //CHAT METHOD
-    fun addChatter(username: String, message: String) {
+    private fun addChatter(username: String, message: String) {
         if (!allChatters.contains(username)) {
             allChatters.add(username)
         }
@@ -586,14 +534,9 @@ class StreamViewModel @Inject constructor(
         Log.d("updateClickedChat","clickedUsername ->${clickedUsername}")
 
 
-
-       // clickedUsernameChatsWithDateSent.clear()
         clearClickedUsernameChatsDateSent()
-       // clickedUserBadges.clear()
-        clearAllClickedUserBadgesImmutable()
-        val messages = listChats.filter { it.displayName == clickedUsername }
-            .map { "${it.dateSend} " +if (it.deleted)  it.userType!! + " (deleted by mod)" else it.userType!!   }
 
+        clearAllClickedUserBadgesImmutable()
 
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
         val clickedUserMessages = clickedUserChats.map {
@@ -609,14 +552,9 @@ class StreamViewModel @Inject constructor(
             )
         }
         val badges = clickedUserChats.first().badges
-       // clickedUserBadges.addAll(badges)
+
         addAllClickedUserBadgesImmutable(badges)
 
-
-
-
-
-        //clickedUsernameChatsWithDateSent.addAll(clickedUserMessages)
         addAllClickedUsernameChatsDateSent(clickedUserMessages)
         _clickedUIState.value = _clickedUIState.value.copy(
             clickedUsername = clickedUsername,
@@ -650,7 +588,6 @@ class StreamViewModel @Inject constructor(
         )
     }
     fun addEmoteToText(emoteText:String){
-        //Log.d("DeleteTOkenFunc","adding emtote -->$emoteText")
         textParsing.updateTextField(" $emoteText")
     }
 
@@ -689,7 +626,7 @@ class StreamViewModel @Inject constructor(
 
     //TODO****************************todo:SOCKET RELATED BELOW*******************************************************
 
-    fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
+    private fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         chatList.clear()
         val data =TwitchUserDataObjectMother
             .addMessageType(MessageType.JOIN)
@@ -699,15 +636,7 @@ class StreamViewModel @Inject constructor(
 
         chatList.add(data)
     }
-    //this is the culprit
-    fun notifyChatOfBanTimeoutEvent(chatList: SnapshotStateList<TwitchUserData>, message: String?){
-        val data = TwitchUserDataObjectMother
-            .addMessageType(MessageType.CLEARCHAT)
-            .addUserType(message)
-            .addColor("#000000")
-            .build()
-        chatList.add(data)
-    }
+
 
 
 
@@ -842,13 +771,6 @@ class StreamViewModel @Inject constructor(
 
                 if (twitchUserMessage.displayName == _clickedUIState.value.clickedUsername) {
 
-
-//                    clickedUsernameChatsWithDateSent.add(
-//                        ClickedUserNameChats(
-//                            message =twitchUserMessage.userType?:"",
-//                            dateSent = twitchUserMessage.dateSend
-//                        )
-//                    )
                     addAllClickedUsernameChatsDateSent(
                         listOf(
                             ClickedUserNameChats(
@@ -924,12 +846,6 @@ class StreamViewModel @Inject constructor(
         startWebSocket(channelName)
     }
 
-    //TODO: SOCKET METHOD
-    fun restartWebSocket() {
-        val channelName = _channelName.value ?: ""
-        Log.d("startWebSocket", "websocket is starting")
-        startWebSocket(channelName)
-    }
 
     //TODO: SOCKET METHOD
     /**
@@ -977,7 +893,6 @@ class StreamViewModel @Inject constructor(
             messageTokenList=messageTokenList
         )
 
-        // val messageResult = webSocket.sendMessage(chatMessage)
         textFieldValue.value = TextFieldValue(
             text = "",
             selection = TextRange(0)
@@ -1050,7 +965,6 @@ class StreamViewModel @Inject constructor(
         Log.d("updateChannelNameAndClientIdAndUserId","oAuthToken --->${_uiState.value.oAuthToken}")
 
         _channelName.tryEmit(channelName)
-        //startWebSocket(channelName)
 
         _uiState.value = _uiState.value.copy(
             clientId = clientId,
@@ -1242,16 +1156,6 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
             }
             }
 
-    }
-    fun setTimeoutUserError(timeoutUserError:Boolean){
-        _uiState.value = _uiState.value.copy(
-            timeoutUserError = timeoutUserError,
-        )
-    }
-    fun setBanUserError(banUserError: Boolean){
-        _uiState.value = _uiState.value.copy(
-            banUserError = banUserError,
-        )
     }
 
 
