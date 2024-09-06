@@ -22,7 +22,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel

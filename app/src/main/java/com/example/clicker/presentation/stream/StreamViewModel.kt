@@ -21,8 +21,9 @@ import com.example.clicker.network.domain.TwitchStream
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.repository.EmoteNameUrl
-import com.example.clicker.network.repository.EmoteNameUrlList
+import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrlList
+
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
@@ -71,33 +72,55 @@ class StreamViewModel @Inject constructor(
     private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {
 
-
-
-
-
     /**
-     * The name of the channel that this chat is connecting to
+     * private mutable version of [channelName]
      * */
     private val _channelName: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    /**
+     * a [StateFlow] String object used to hold the channel name of the stream the channel is viewing
+     * */
     val channelName: StateFlow<String?> = _channelName
 
+    /**
+     * private mutable version of [clientId]
+     * */
     private val _clientId: MutableState<String?> = mutableStateOf(null)
+    /**
+     * a [State] nullable-String object used to hold the unique identifier of the Android application
+     * */
     val clientId: State<String?> = _clientId
-    
 
     /********THIS IS ALL THE EMOTE RELATED CALLS**************************************/
+    /**
+     * - a State object containing a [EmoteNameUrlList] object which represents all the
+     * global Twitch emotes to be shown in the emote board
+     * */
     val globalEmoteUrlList = twitchEmoteImpl.emoteBoardGlobalList
+    /**
+     * - a State object containing a [EmoteNameUrlEmoteTypeList][com.example.clicker.network.repository.models.EmoteNameUrlEmoteTypeList] object which represents all the channel
+     * specific Twitch emotes to be shown in the emote board
+     * */
     val channelEmoteUrlList = twitchEmoteImpl.emoteBoardChannelList
+    /**
+     * - a State object containing a [EmoteListMap][com.example.clicker.network.repository.models.EmoteListMap] object which represents all the
+     * global Twitch badges to be shown in the emote board
+     * */
     val badgeListMap = twitchEmoteImpl.globalChatBadges
-
-
-
-
-
-
-    //todo: not sure if these are still needed
+    /**
+     * - a State object containing a [IndivBetterTTVEmoteList][com.example.clicker.network.repository.models.IndivBetterTTVEmoteList]
+     * object which represents all the global BetterTTV emotes to be shown in the emote board
+     * */
     val globalBetterTTVEmotes=twitchEmoteImpl.globalBetterTTVEmotes
+    /**
+     * - a State object containing a [IndivBetterTTVEmoteList][com.example.clicker.network.repository.models.IndivBetterTTVEmoteList]
+     * object which represents all the channel specific BetterTTV emotes to be shown in the emote board
+     * */
     val channelBetterTTVEmote = twitchEmoteImpl.channelBetterTTVEmotes
+    /**
+     * - a State object containing a [IndivBetterTTVEmoteList][com.example.clicker.network.repository.models.IndivBetterTTVEmoteList]
+     * object which represents all the channel shared BetterTTV emotes to be shown in the emote board
+     * */
     val sharedChannelBetterTTVEmote = twitchEmoteImpl.sharedBetterTTVEmotes
 
     /*****LOW POWER MODE******/
@@ -111,10 +134,94 @@ class StreamViewModel @Inject constructor(
     /**
      * A list representing all the most recent clicked emotes
      * */
-    //todo: mutableStateOf<EmoteNameUrlList>(EmoteNameUrlList())
-    val mostFrequentEmoteList = mutableStateListOf<EmoteNameUrl>()
     val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlList())
-    val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
+    private val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
+
+    /**
+     * A list representing all the chats users have sent
+     * */
+    val listChats = mutableStateListOf<TwitchUserData>()
+
+    /**
+     * A list representing all the actions taken by moderators
+     * */
+    private val modActionList= mutableStateListOf<TwitchUserData>()
+
+
+    private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
+    val state: State<StreamUIState> = _uiState
+
+    private val _clickedUIState = mutableStateOf(ClickedUIState())
+    val clickedUIState = _clickedUIState
+
+    private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
+    val clickedStreamInfo = _clickedStreamInfo
+
+
+    /**
+     * The UI state that represents all the data meant for the [ChatSettingsContainer.EnhancedChatSettingsBox] composable
+     * */
+    private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
+    val advancedChatSettingsState = _advancedChatSettingsState
+
+
+    /**
+     * represents what the user is typing in the text field
+     * */
+    //todo:I THINK I COULD MOVE THIS TO ANOTHER---(DONE)
+    val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
+
+    val openTimeoutDialog = mutableStateOf(false)
+    val openBanDialog = mutableStateOf(false)
+
+
+
+
+
+    /**
+     * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
+     * into the text box
+     * */
+    var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
+    val filteredChatListImmutable = textParsing.filteredChatListImmutable
+
+    val forwardSlashCommandImmutable = textParsing.forwardSlashCommandsState
+
+    fun clearFilteredChatterList(){
+        textParsing.clearFilteredChatterList()
+    }
+
+    val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
+    val clickedUserBadges =mutableStateListOf<String>() //this needs to be make stable
+    private var _clickedUserBadgesImmutable by mutableStateOf(
+        ClickedUserBadgesImmutable(clickedUserBadges)
+    )
+
+
+
+
+    init{
+        monitorForWebSocketFailure()
+    }
+
+    init {
+        monitorForLatestBannedMessageId()
+    }
+    init{
+        monitorForLatestBannedUserId()
+    }
+    init {
+        monitorForLoggedInUserData()
+    }
+    init {
+        monitorSocketForChatMessages()
+    }
+    init {
+        monitorForChannelName()
+    }
+    init {
+        monitorSocketRoomState()
+    }
 
 
 
@@ -142,27 +249,6 @@ class StreamViewModel @Inject constructor(
 
 
     }
-    /**
-     * A list representing all the chats users have sent
-     * */
-    val listChats = mutableStateListOf<TwitchUserData>()
-
-    /**
-     * A list representing all the actions taken by moderators
-     * */
-    val modActionList= mutableStateListOf<TwitchUserData>()
-
-
-    private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
-    val state: State<StreamUIState> = _uiState
-
-    private val _clickedUIState = mutableStateOf(ClickedUIState())
-    val clickedUIState = _clickedUIState
-
-
-
-    private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
-    val clickedStreamInfo = _clickedStreamInfo
 
     fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
         //todo: need to do some adjusting for the thumbnail url
@@ -191,23 +277,6 @@ class StreamViewModel @Inject constructor(
         }
     }
 
-
-
-    /**
-     * The UI state that represents all the data meant for the [ChatSettingsContainer.EnhancedChatSettingsBox] composable
-     * */
-    private val _advancedChatSettingsState = mutableStateOf(AdvancedChatSettings())
-    val advancedChatSettingsState = _advancedChatSettingsState
-
-
-    /**
-     * represents what the user is typing in the text field
-     * */
-    //todo:I THINK I COULD MOVE THIS TO ANOTHER---(DONE)
-    val textFieldValue:MutableState<TextFieldValue> = textParsing.textFieldValue
-
-    val openTimeoutDialog = mutableStateOf(false)
-    val openBanDialog = mutableStateOf(false)
 
     fun setOpenTimeoutDialogFalse(){
         openTimeoutDialog.value = false
@@ -247,30 +316,6 @@ class StreamViewModel @Inject constructor(
     }
 
 
-
-
-
-    /**
-     * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
-     * into the text box
-     * */
-    var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
-    val filteredChatListImmutable = textParsing.filteredChatListImmutable
-
-    val forwardSlashCommandImmutable = textParsing.forwardSlashCommandsState
-
-    fun clearFilteredChatterList(){
-        textParsing.clearFilteredChatterList()
-    }
-
-
-
-
-    val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
-    val clickedUserBadges =mutableStateListOf<String>() //this needs to be make stable
-    private var _clickedUserBadgesImmutable by mutableStateOf(
-        ClickedUserBadgesImmutable(clickedUserBadges)
-    )
 
     // Publicly exposed immutable state as State
     val clickedUserBadgesImmutable: State<ClickedUserBadgesImmutable>
@@ -329,38 +374,6 @@ class StreamViewModel @Inject constructor(
         _advancedChatSettingsState.value =advancedChatSettings
     }
 
-
-    private val errorValue = TwitchUserDataObjectMother
-        .addColor("#FF0000")
-        .addDisplayName("Connection Error")
-        .addMessageType(MessageType.ERROR)
-        .addUserType(
-            "Disconnected from chat."
-        )
-        .build()
-    private val noInternetErrorValue = TwitchUserDataObjectMother
-        .addColor("#FF0000")
-        .addDisplayName("Connection Error")
-        .addMessageType(MessageType.ERROR)
-        .addUserType(
-            "Disconnected from chat. Please check network and try again"
-        )
-        .build()
-    init{
-        viewModelScope.launch {
-            webSocket.hasWebSocketFailed.collect{nullableValue ->
-                nullableValue?.also { value ->
-                    if(value && _uiState.value.networkStatus == true){
-                        //todo: CHECK IF THERE IS AN INTERNET CONNECTION
-                        listChats.add(noInternetErrorValue)
-                    }else{
-                        listChats.add(errorValue)
-                    }
-                }
-
-            }
-        }
-    }
 
     //for right now this has been removed 2024-08-24
     //todo:THIS IS THE MONITORING of the network status
@@ -638,35 +651,44 @@ class StreamViewModel @Inject constructor(
     }
 
 
+    private val errorValue = TwitchUserDataObjectMother
+        .addColor("#FF0000")
+        .addDisplayName("Connection Error")
+        .addMessageType(MessageType.ERROR)
+        .addUserType(
+            "Disconnected from chat."
+        )
+        .build()
+    private val noInternetErrorValue = TwitchUserDataObjectMother
+        .addColor("#FF0000")
+        .addDisplayName("Connection Error")
+        .addMessageType(MessageType.ERROR)
+        .addUserType(
+            "Disconnected from chat. Please check network and try again"
+        )
+        .build()
+    private fun monitorForWebSocketFailure(){
+        viewModelScope.launch(ioDispatcher) {
+            webSocket.hasWebSocketFailed.collect{nullableValue ->
+                nullableValue?.also { value ->
+                    if(value && _uiState.value.networkStatus == true){
+                        //todo: CHECK IF THERE IS AN INTERNET CONNECTION
+                        listChats.add(noInternetErrorValue)
+                    }else{
+                        listChats.add(errorValue)
+                    }
+                }
+
+            }
+        }
+    }
 
 
 
     /**THis is the data for the new filter methods*/
     private val _idOfLatestBan = mutableStateOf("")
 
-    init {
-        monitorForLatestBannedMessageId()
-    }
-    init{
-        monitorForLatestBannedUserId()
-    }
-    init {
-        monitorForLoggedInUserData()
-    }
-    init {
-        monitorSocketForChatMessages()
-    }
-    init {
-        //TODO: SOCKET METHOD
-        monitorForChannelName()
-    }
-    init {
-        //TODO: SOCKET METHOD
 
-        monitorSocketRoomState()
-
-
-    }
     private fun monitorForLatestBannedMessageId(){
         viewModelScope.launch {
             withContext(ioDispatcher + CoroutineName("MessageToDeleteId")) {
@@ -782,9 +804,7 @@ class StreamViewModel @Inject constructor(
                     )
 
                 }
-                if(monitoredUsers.contains(twitchUserMessage.displayName)){
-                    //twitchUserMessage.isMonitored = true
-                }
+
                 when(twitchUserMessage.messageType){
                     MessageType.CLEARCHAT ->{
                         modActionList.add(twitchUserMessage)
@@ -927,7 +947,7 @@ class StreamViewModel @Inject constructor(
                 getUserId = {conditional ->
                     listChats.find { conditional(it) }?.userId
                 },
-                addToMonitorUser={username -> monitoredUsers.add(username)},
+                addToMonitorUser={username -> },
                 removeFromMonitorUser ={username -> monitoredUsers.remove(username)},
                 currentUsername = _uiState.value.loggedInUserData?.displayName?:"",
                 sendToWebSocket = {message ->

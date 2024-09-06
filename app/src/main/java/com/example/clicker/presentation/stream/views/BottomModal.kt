@@ -50,7 +50,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.BanUser
-import com.example.clicker.network.repository.EmoteListMap
+import com.example.clicker.network.repository.models.EmoteListMap
+
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
 import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
 import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable

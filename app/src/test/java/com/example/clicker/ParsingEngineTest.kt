@@ -2,9 +2,9 @@ package com.example.clicker
 
 import com.example.clicker.network.clients.Emote
 import com.example.clicker.network.websockets.MessageScanner
-import com.example.clicker.network.websockets.MessageType
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.findEmoteNames
+import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.presentation.stream.util.Token
 import com.example.clicker.presentation.stream.util.TokenType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother

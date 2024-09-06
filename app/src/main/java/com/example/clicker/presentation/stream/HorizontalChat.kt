@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
-import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.modView.slowModeListImmutable
