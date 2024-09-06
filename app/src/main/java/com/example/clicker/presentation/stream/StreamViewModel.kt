@@ -182,7 +182,6 @@ class StreamViewModel @Inject constructor(
      * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
      * into the text box
      * */
-    var filteredChatList:SnapshotStateList<String> = textParsing.filteredChatList
     val filteredChatListImmutable = textParsing.filteredChatListImmutable
 
     val forwardSlashCommandImmutable = textParsing.forwardSlashCommandsState
@@ -199,6 +198,54 @@ class StreamViewModel @Inject constructor(
 
     /**THis is the data for the new filter methods*/
     private val _idOfLatestBan = mutableStateOf("")
+
+
+
+    val openWarningDialog =mutableStateOf(false)
+    val warningText = mutableStateOf("")
+
+
+    // Publicly exposed immutable state as State
+    val clickedUserBadgesImmutable: State<ClickedUserBadgesImmutable>
+        get() = mutableStateOf(_clickedUserBadgesImmutable)
+    private fun addAllClickedUserBadgesImmutable(clickedBadges:List<String>){
+        clickedUserBadges.addAll(clickedBadges)
+        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(clickedUserBadges)
+    }
+    private fun clearAllClickedUserBadgesImmutable(){
+        clickedUserBadges.clear()
+        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(listOf())
+    }
+    /**
+     * I need to make the immutable version of clickedUsernameChatsWithDateSent
+     * */
+    // this is the immutable clickedUsernameChatsWithDateSentImmutable
+    // Immutable state holder
+    private var _clickedUsernameChatsDateSentImmutable by mutableStateOf(
+        ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
+    )
+
+    // Publicly exposed immutable state as State
+    val clickedUsernameChatsDateSentImmutable: State<ClickedUsernameChatsWithDateSentImmutable>
+        get() = mutableStateOf(_clickedUsernameChatsDateSentImmutable)
+
+    private fun addAllClickedUsernameChatsDateSent(clickedChats:List<ClickedUserNameChats>){
+        clickedUsernameChatsWithDateSent.addAll(clickedChats)
+        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
+
+    }
+    private fun clearClickedUsernameChatsDateSent(){
+        clickedUsernameChatsWithDateSent.clear()
+        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(listOf())
+
+    }
+
+
+    /*** END OF THE MUTABLE LIST OF ClickedUsernameChatsWithDateSentImmutable ***/
+
+    private val allChatters = mutableStateListOf<String>()
+
+    private val monitoredUsers = mutableStateListOf<String>()
 
 
 
@@ -472,7 +519,7 @@ class StreamViewModel @Inject constructor(
 
 
     fun getBetterTTVGlobalEmotes(){
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             twitchEmoteImpl.getBetterTTVGlobalEmotes().collect{response ->
                 //Nothing is done when collecting values
 
@@ -482,7 +529,7 @@ class StreamViewModel @Inject constructor(
     }
     fun getBetterTTVChannelEmotes(broadcasterId: String){
         Log.d("getBetterTTVChannelEmotes", "broadcasterId ->$broadcasterId")
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             twitchEmoteImpl.getBetterTTVChannelEmotes(broadcasterId).collect{response ->
 
             }
@@ -503,10 +550,6 @@ class StreamViewModel @Inject constructor(
         openBanDialog.value = true
     }
 
-
-
-    val openWarningDialog =mutableStateOf(false)
-    val warningText = mutableStateOf("")
     fun changeWarningText(newValue:String){
         warningText.value = newValue
     }
@@ -529,54 +572,6 @@ class StreamViewModel @Inject constructor(
 
 
 
-    // Publicly exposed immutable state as State
-    val clickedUserBadgesImmutable: State<ClickedUserBadgesImmutable>
-        get() = mutableStateOf(_clickedUserBadgesImmutable)
-    private fun addAllClickedUserBadgesImmutable(clickedBadges:List<String>){
-        clickedUserBadges.addAll(clickedBadges)
-        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(clickedUserBadges)
-    }
-    private fun clearAllClickedUserBadgesImmutable(){
-        clickedUserBadges.clear()
-        _clickedUserBadgesImmutable = ClickedUserBadgesImmutable(listOf())
-    }
-    /**
-     * I need to make the immutable version of clickedUsernameChatsWithDateSent
-     * */
-    // this is the immutable clickedUsernameChatsWithDateSentImmutable
-    // Immutable state holder
-    private var _clickedUsernameChatsDateSentImmutable by mutableStateOf(
-        ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
-    )
-
-    // Publicly exposed immutable state as State
-    val clickedUsernameChatsDateSentImmutable: State<ClickedUsernameChatsWithDateSentImmutable>
-        get() = mutableStateOf(_clickedUsernameChatsDateSentImmutable)
-
-    private fun addAllClickedUsernameChatsDateSent(clickedChats:List<ClickedUserNameChats>){
-        clickedUsernameChatsWithDateSent.addAll(clickedChats)
-        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(clickedUsernameChatsWithDateSent)
-
-    }
-    private fun clearClickedUsernameChatsDateSent(){
-        clickedUsernameChatsWithDateSent.clear()
-        _clickedUsernameChatsDateSentImmutable = ClickedUsernameChatsWithDateSentImmutable(listOf())
-
-    }
-
-
-    /*** END OF THE MUTABLE LIST OF ClickedUsernameChatsWithDateSentImmutable ***/
-
-    private val allChatters = mutableStateListOf<String>()
-
-    private val monitoredUsers = mutableStateListOf<String>()
-
-
-
-
-
-
-
     /**
      * updateAdvancedChatSettings is used to update the [_advancedChatSettingsState] UI state
      *
@@ -595,7 +590,7 @@ class StreamViewModel @Inject constructor(
         oAuthToken: String,
         clientId: String,
     ){
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             twitchEmoteImpl.getGlobalChatBadges(
                 oAuthToken,clientId
             ).collect{
@@ -616,7 +611,7 @@ class StreamViewModel @Inject constructor(
 //        Log.d("getGlobalEmotes","broadcasterId ->$broadcasterId")
         //todo: this needs to become a get channel specific emotes
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEmoteImpl.getChannelEmotes(
                     oAuthToken,clientId,broadcasterId
                 ).mapWithRetry(
@@ -645,7 +640,7 @@ class StreamViewModel @Inject constructor(
         }else{
             startWebSocket(channelName.value ?:"")
         }
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             delay(200)
             listChats.clear()
         }
@@ -876,7 +871,7 @@ class StreamViewModel @Inject constructor(
      * startWebSocket() is a private method meant to be called by methods inside of [StreamViewModel]
      * It is used to start and connect a Websocket using the [TwitchSocket]
      * */
-    private fun startWebSocket(channelName: String) = viewModelScope.launch {
+    private fun startWebSocket(channelName: String) = viewModelScope.launch(ioDispatcher) {
         Log.d("startWebSocket", "startWebSocket() is being called")
         val oAuthToken =_uiState.value.oAuthToken
 
@@ -1006,7 +1001,7 @@ class StreamViewModel @Inject constructor(
 
 
 /******************************WARNING USER**********************************************************/
-fun warnUser()=viewModelScope.launch(Dispatchers.IO){
+fun warnUser()=viewModelScope.launch(ioDispatcher){
 
         Log.d("WarningTextExpty","FALSE")
         val warnUserBody = WarnUserBody(
@@ -1065,7 +1060,7 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 }
     private fun warnUserSlashCommand(
         userId:String,reason: String,username:String
-    ) = viewModelScope.launch(Dispatchers.IO){
+    ) = viewModelScope.launch(ioDispatcher){
         val warnUserBody = WarnUserBody(
             data = WarnData(
                 user_id = userId,
@@ -1341,7 +1336,7 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
 
         }
     }
-    //TODO: TWICH METHOD
+    //TODO: DOES THIS EVEN WORK WITHOUT _idOfLatestBan
     fun unBanUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("UnBanUser")) {
             twitchRepoImpl.unBanUser(
@@ -1349,7 +1344,7 @@ fun warnUser()=viewModelScope.launch(Dispatchers.IO){
                 clientId = _uiState.value.clientId,
                 moderatorId = _uiState.value.userId,
                 broadcasterId = _uiState.value.broadcasterId,
-                userId = _idOfLatestBan.value //TODO:PASS IT IN
+                userId = _clickedUIState.value.clickedUserId //TODO:PASS IT IN
 
             ).collect { response ->
                 when (response) {
