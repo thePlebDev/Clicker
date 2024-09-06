@@ -73,6 +73,20 @@ class ModViewDragState(){
             }
         }
     }
+    fun checkBanThreshold():Boolean{
+        return offset.value >= quarterWidth
+    }
+    fun checkTimeoutThreshold():Boolean{
+        return offset.value <= -quarterWidth
+    }
+    fun checkDeleteMessageThresholdLeft():Boolean{
+        return offset.value >= halfWidth
+    }
+    fun checkDeleteMessageThresholdRight():Boolean{
+        return offset.value <= -halfWidth
+
+    }
+
 
     fun checkQuarterSwipeThresholds(
         leftSwipeAction:()->Unit,
