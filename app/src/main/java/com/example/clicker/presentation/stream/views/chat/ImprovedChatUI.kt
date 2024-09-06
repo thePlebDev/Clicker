@@ -1358,7 +1358,7 @@ class ImprovedChatUI(){
                     deleteChatMessage={messageId->
                         deleteChatMessage(messageId)
                                       },
-                    isMod = false,
+                    isMod = isMod,
                     badgeListMap=badgeListMap,
                     usernameSize=usernameSize,
                     messageSize=messageSize,
