@@ -94,7 +94,6 @@ data class StreamUIState(
     val showStickyHeader: Boolean = false, //twitchRepoImpl
 
     val chatSettingsFailedMessage: String = "",
-    val networkStatus:Boolean? = null,
 )
 data class ClickedUIState(
     val clickedUsername:String ="", //websocket
