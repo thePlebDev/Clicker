@@ -1783,7 +1783,6 @@ fun ClickableCard(
         ){
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
             ) {
                 CheckIfUserDeleted(twitchUser = twitchUser)
                 CheckIfUserIsBanned(twitchUser = twitchUser)
@@ -1872,48 +1871,14 @@ fun HorizontalDragDetectionBox(
     quarterSwipeRightAction:()->Unit,
     quarterSwipeLeftAction:()->Unit,
     halfSwipeAction:()->Unit={},
-    halfSwipeIconResource: Painter = painterResource(id = R.drawable.delete_outline_24),
-    quarterSwipeLeftIconResource: Painter = painterResource(id = R.drawable.time_out_24),
-    quarterSwipeRightIconResource: Painter = painterResource(id = R.drawable.ban_24),
-    hideIconColor: Color = MaterialTheme.colorScheme.primary,
-    showIconColor: Color = MaterialTheme.colorScheme.onPrimary,
     swipeEnabled:Boolean
 ){
-    var iconShownToUser: Painter = painterResource(id = R.drawable.ban_24)
+
     var dragging by remember{ mutableStateOf(true) }
     val state = rememberDraggableActions()
     val offset = if(swipeEnabled) state.offset.value else 0f
-    var iconColor = hideIconColor
+    var iconColor = MaterialTheme.colorScheme.onPrimary
 
-    //todo: this could probably use derivedstateof
-    if(dragging && !twoSwipeOnly){
-        if (state.offset.value >= (state.halfWidth)) {
-            iconShownToUser =halfSwipeIconResource
-            iconColor = showIconColor
-        }
-        else if (state.offset.value <= -(state.halfWidth)){
-            iconShownToUser =halfSwipeIconResource
-            iconColor = showIconColor
-        }
-        else if (state.offset.value <= -(state.quarterWidth)){
-            iconShownToUser =quarterSwipeLeftIconResource
-            iconColor = showIconColor
-        }
-        else if (state.offset.value >= (state.quarterWidth)){
-            iconShownToUser = quarterSwipeRightIconResource
-            iconColor = showIconColor
-        }
-    }
-    else if(dragging && twoSwipeOnly){
-        if (state.offset.value <= -(state.quarterWidth)){
-            iconShownToUser =quarterSwipeLeftIconResource
-            iconColor = showIconColor
-        }
-        else if (state.offset.value >= (state.quarterWidth)){
-            iconShownToUser = quarterSwipeRightIconResource
-            iconColor = showIconColor
-        }
-    }
 
 
     Box(
@@ -1961,15 +1926,39 @@ fun HorizontalDragDetectionBox(
             }
     ){
 
-        Icon(painter = iconShownToUser, contentDescription = "",tint = iconColor, modifier = Modifier
-            .align(Alignment.CenterEnd)
-            .padding(end = 10.dp)
-        )
-        Icon(painter = iconShownToUser, contentDescription = "",tint = iconColor,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 10.dp)
-        )
+        if(state.checkDeleteMessageThresholdLeft()){
+            Log.d("CheckingThresholder","DELETE LEFT")
+            Icon(painter = painterResource(id =R.drawable.delete_outline_24), contentDescription = "",tint = iconColor,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 10.dp)
+            )
+        }
+        else if(state.checkDeleteMessageThresholdRight()){
+            Log.d("CheckingThresholder","DELETE RIGHT")
+            Icon(painter = painterResource(id =R.drawable.delete_outline_24), contentDescription = "",tint = iconColor,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(start = 10.dp)
+            )
+        }
+        else if(state.checkBanThreshold()){
+            Log.d("CheckingThresholder","BAN")
+            Icon(painter = painterResource(id =R.drawable.ban_24), contentDescription = "",tint = iconColor,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 10.dp)
+            )
+        }
+        else if(state.checkTimeoutThreshold()){
+            Log.d("CheckingThresholder","TIMEOUT")
+            Icon(painter = painterResource(id =R.drawable.time_out_24), contentDescription = "",tint = iconColor, modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 10.dp)
+            )
+        }
+
+
 
         itemBeingDragged(offset)
     }

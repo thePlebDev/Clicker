@@ -3144,36 +3144,36 @@ fun AutoModBoxHorizontalDragBox(
 
 ){
     Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$swiped")
-
-    HorizontalDragDetectionBox(
-        itemBeingDragged ={offset ->
-            AutoModItemRow(
-                username,
-                fullText,
-                offset = offset,
-                approved =approved,
-                messageCategory = messageCategory
-            )
-        },
-        quarterSwipeRightAction = {
-            manageAutoModMessage(
-                messageId,
-                "DENY"
-            )
-            Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
-        },
-        quarterSwipeLeftAction = {
-            Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
-            manageAutoModMessage(
-                messageId,
-                "ALLOW"
-            )
-        },
-        twoSwipeOnly = true,
-        quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
-        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
-        swipeEnabled = !swiped,
-    )
+//TODO: CREATE A HorizontalDragDetectionBox WITH ONLY TWO SWIPES
+//    HorizontalDragDetectionBox(
+//        itemBeingDragged ={offset ->
+//            AutoModItemRow(
+//                username,
+//                fullText,
+//                offset = offset,
+//                approved =approved,
+//                messageCategory = messageCategory
+//            )
+//        },
+//        quarterSwipeRightAction = {
+//            manageAutoModMessage(
+//                messageId,
+//                "DENY"
+//            )
+//            Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
+//        },
+//        quarterSwipeLeftAction = {
+//            Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
+//            manageAutoModMessage(
+//                messageId,
+//                "ALLOW"
+//            )
+//        },
+//        twoSwipeOnly = true,
+//        quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
+//        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
+//        swipeEnabled = !swiped,
+//    )
 }
 
 /**
