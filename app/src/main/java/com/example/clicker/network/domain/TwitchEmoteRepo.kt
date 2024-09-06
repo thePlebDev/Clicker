@@ -1,13 +1,13 @@
 package com.example.clicker.network.domain
 
 import androidx.compose.runtime.State
-import com.example.clicker.network.clients.BetterTTVChannelEmotes
-import com.example.clicker.network.clients.IndivBetterTTVEmote
-import com.example.clicker.network.repository.EmoteListMap
-import com.example.clicker.network.repository.EmoteNameUrl
-import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
-import com.example.clicker.network.repository.EmoteNameUrlList
-import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.network.models.emotes.BetterTTVChannelEmotes
+import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
+import com.example.clicker.network.repository.models.EmoteListMap
+import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrlEmoteTypeList
+import com.example.clicker.network.repository.models.EmoteNameUrlList
+import com.example.clicker.network.repository.models.IndivBetterTTVEmoteList
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow

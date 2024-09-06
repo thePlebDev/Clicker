@@ -90,8 +90,9 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.repository.EmoteListMap
-import com.example.clicker.network.repository.EmoteNameUrl
+
+import com.example.clicker.network.repository.models.EmoteListMap
+import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
@@ -1658,7 +1659,7 @@ fun SmallChatUILazyColumn(
     isMod: Boolean,
     globalTwitchEmoteContentMap:EmoteListMap,
     channelTwitchEmoteContentMap:EmoteListMap,
-    globalBetterTTVEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap: EmoteListMap,
     channelBetterTTVEmoteContentMap: EmoteListMap,
     sharedBetterTTVEmoteContentMap: EmoteListMap,
     badgeListMap:EmoteListMap,
@@ -1672,7 +1673,7 @@ fun SmallChatUILazyColumn(
 
 
 
-){
+    ){
     val coroutineScope = rememberCoroutineScope()
     val chatUIScope = remember(){ ImprovedChatUI() }
     val hapticFeedback = LocalHapticFeedback.current

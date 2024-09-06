@@ -109,11 +109,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.repository.EmoteListMap
-import com.example.clicker.network.repository.EmoteNameUrl
-import com.example.clicker.network.repository.EmoteNameUrlEmoteTypeList
-import com.example.clicker.network.repository.EmoteNameUrlList
-import com.example.clicker.network.repository.EmoteTypes
+
 import com.example.clicker.network.websockets.MessageToken
 import com.example.clicker.network.websockets.PrivateMessageType
 
@@ -124,9 +120,13 @@ import kotlin.math.roundToInt
 
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import com.example.clicker.network.clients.IndivBetterTTVEmote
-import com.example.clicker.network.repository.EmoteNameUrlNumberList
-import com.example.clicker.network.repository.IndivBetterTTVEmoteList
+import com.example.clicker.network.repository.models.EmoteListMap
+import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrlEmoteTypeList
+import com.example.clicker.network.repository.models.EmoteNameUrlList
+import com.example.clicker.network.repository.models.EmoteTypes
+import com.example.clicker.network.repository.models.IndivBetterTTVEmoteList
+
 import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
@@ -159,7 +159,7 @@ fun ChatUI(
     clickedCommandAutoCompleteText: (String) -> Unit,
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
-    badgeListMap:EmoteListMap,
+    badgeListMap: EmoteListMap,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
     emoteBoardMostFrequentList: EmoteNameUrlList,
     globalBetterTTVEmotes: IndivBetterTTVEmoteList,
@@ -187,7 +187,7 @@ fun ChatUI(
     lowPowerMode:Boolean,
 
 
-){
+    ){
     val lazyColumnListState = rememberLazyListState()
     var autoscroll by remember { mutableStateOf(true) }
     val emoteKeyBoardHeight = remember { mutableStateOf(0.dp) }

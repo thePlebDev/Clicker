@@ -33,8 +33,8 @@ import com.example.clicker.R
 import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.domain.TwitchEmoteRepo
-import com.example.clicker.network.repository.EmoteListMap
-import com.example.clicker.network.repository.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteListMap
+import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.util.Response
 import com.example.clicker.util.mapWithRetry
 import dagger.hilt.android.lifecycle.HiltViewModel
