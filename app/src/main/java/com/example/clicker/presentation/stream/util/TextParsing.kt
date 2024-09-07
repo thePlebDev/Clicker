@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import javax.inject.Inject
 
 /**
- * ForwardSlashCommands represents the possible commands a user can type out in the chat. ie, ***\ban*** or ***\unban***
+ * ForwardSlashCommands represents the possible commands a user can type out in the chat.
  *
  * @param title a String representing the title of the slash command
  * @param subtitle a String representing an explanation of what this command does

@@ -1088,18 +1088,16 @@ class StreamViewModel @Inject constructor(
                 tokenCommand = tokenCommand,
                 chatMessage = chatMessage,isMod = isMod,
                 addMessageToListChats = {message ->addMessageToListChats(message)},
-                banUserSlashCommandTest ={ userId, reason ->
+                banUserSlashCommand ={ userId, reason ->
                     banUserSlashCommand(userId, reason)
                 },
-                unbanUserSlashTest={userId ->
+                unbanUserSlash={userId ->
                     unBanUserSlashCommand(userId)
 
                 },
                 getUserId = {conditional ->
                     listChats.find { conditional(it) }?.userId
                 },
-                addToMonitorUser={username -> },
-                removeFromMonitorUser ={username -> },
                 currentUsername = _uiState.value.loggedInUserData?.displayName?:"",
                 sendToWebSocket = {message ->
                     webSocket.sendMessage(message)
