@@ -18,7 +18,7 @@ import com.example.clicker.network.repository.models.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.models.EmoteNameUrlList
 import com.example.clicker.network.repository.models.IndivBetterTTVEmoteList
 
-import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
+import com.example.clicker.presentation.stream.util.FilteredChatterListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommands
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 import com.example.clicker.util.Response
@@ -64,7 +64,7 @@ fun FullChatModView(
     sharedBetterTTVResponse: IndivBetterTTVEmoteList,
     userIsSub:Boolean,
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
-    filteredChatListImmutable: FilteredChatListImmutableCollection,
+    filteredChatListImmutable: FilteredChatterListImmutableCollection,
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String, TextRange)->Unit,
     usernameSize:Float,

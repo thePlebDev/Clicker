@@ -192,13 +192,10 @@ class StreamViewModel @Inject constructor(
      * A list of Strings that represents the list of users that are being searched when the user enters the ***@***
      * into the text box
      * */
-    val filteredChatListImmutable = textParsing.filteredChatListImmutable
+    val filteredChatListImmutable = textParsing.filteredChatterListImmutable
 
     val forwardSlashCommandImmutable = textParsing.forwardSlashCommandsState
 
-    fun clearFilteredChatterList(){
-        textParsing.clearFilteredChatterList()
-    }
 
     val clickedUsernameChatsWithDateSent = mutableStateListOf<ClickedUserNameChats>()
     val clickedUserBadges =mutableStateListOf<String>() //this needs to be make stable
@@ -939,7 +936,7 @@ class StreamViewModel @Inject constructor(
      *
      * */
     fun addEmoteToText(emoteText:String){
-        textParsing.updateTextField(" $emoteText")
+        textParsing.updateTextFieldWithEmote(" $emoteText")
     }
 
 

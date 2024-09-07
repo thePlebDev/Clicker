@@ -129,7 +129,7 @@ import com.example.clicker.network.websockets.models.MessageToken
 
 import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.network.websockets.models.PrivateMessageType
-import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
+import com.example.clicker.presentation.stream.util.FilteredChatterListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 
 /**
@@ -172,7 +172,7 @@ fun ChatUI(
     showModView:()->Unit,
     userIsSub:Boolean,
     forwardSlashes:ForwardSlashCommandsImmutableCollection,
-    filteredChatListImmutable: FilteredChatListImmutableCollection,
+    filteredChatListImmutable: FilteredChatterListImmutableCollection,
 
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String,TextRange)->Unit,
@@ -2137,7 +2137,7 @@ fun ClickedAutoText(
  * */
 @Composable
 fun FilteredMentionLazyRow(
-    filteredChatListImmutable: FilteredChatListImmutableCollection,
+    filteredChatListImmutable: FilteredChatterListImmutableCollection,
     clickedAutoCompleteText: (String) -> Unit,
 ){
     LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
