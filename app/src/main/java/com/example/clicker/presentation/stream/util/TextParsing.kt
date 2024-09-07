@@ -15,6 +15,13 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 
 import javax.inject.Inject
 
+/**
+ * ForwardSlashCommands represents the possible commands a user can type out in the chat. ie, ***\ban*** or ***\unban***
+ *
+ * @param title a String representing the title of the slash command
+ * @param subtitle a String representing an explanation of what this command does
+ * @param clickedValue a String representing the value that will be added to chat when clicked
+ * */
 data class ForwardSlashCommands(
     val title:String,
     val subtitle:String,
@@ -26,6 +33,8 @@ data class ForwardSlashCommands(
  *  always marking the List as unstable.
  *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
  *
+ * - ForwardSlashCommandsImmutableCollection is an immutable wrapper for a list of ForwardSlashCommands object. Where each object
+ * represents a slash command typed out by the user
  * */
 @Immutable
 data class ForwardSlashCommandsImmutableCollection(
@@ -36,10 +45,11 @@ data class ForwardSlashCommandsImmutableCollection(
  * FilteredChatListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
  *  always marking the List as unstable.
  *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
+ *  - FilteredChatListImmutableCollection is an immutable wrapper for a list of filtered Twitch chatter  usernames
  *
  * */
 @Immutable
-data class FilteredChatListImmutableCollection(
+data class FilteredChatterListImmutableCollection(
     val chatList: List<String>
 )
 
@@ -50,68 +60,71 @@ class TextParsing @Inject constructor() {
         ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
         ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
         ForwardSlashCommands(title="/warn [username] [reason]", subtitle = "issue a warning to a user that they must acknowledge before chatting again",clickedValue="warn")
-//        ForwardSlashCommands(title="/monitor [username] ", subtitle = "Start monitoring a user's messages (only visible to you)",clickedValue="monitor"),
-//        ForwardSlashCommands(title="/unmonitor [username] ", subtitle = "Stop monitoring a user's messages",clickedValue="unmonitor")
+
     )
 
-    //
+    /**
+     * a [TextFieldValue] object that represents what the user is typing inside of the TextField
+     * */
     val textFieldValue = mutableStateOf(
         TextFieldValue(
             text = "",
             selection = TextRange(0)
         )
     )
-    var filteredChatList = mutableStateListOf<String>()
+    private var filteredChatterList = mutableStateListOf<String>()
 
     private val _forwardSlashCommands = mutableStateListOf<ForwardSlashCommands>()
-    /********Immutable _filteredChatListImmutableCollection*************/
-    // Immutable state holder
-    private var _filteredChatListImmutableCollection by mutableStateOf(
-        FilteredChatListImmutableCollection(filteredChatList)
+
+    /**
+     * private mutable version of [filteredChatterListImmutable]
+     * */
+    private var _filteredChatterListImmutableCollection by mutableStateOf(
+        FilteredChatterListImmutableCollection(filteredChatterList)
     )
+    /**
+     * a [FilteredChatterListImmutableCollection] containing a list of all the filtered chatters. Used by the UI when a
+     * user types a ***@***
+     *
+     * */
+    val filteredChatterListImmutable: State<FilteredChatterListImmutableCollection>
+        get() = mutableStateOf(_filteredChatterListImmutableCollection)
 
-    // Publicly exposed immutable state as State
-    val filteredChatListImmutable: State<FilteredChatListImmutableCollection>
-        get() = mutableStateOf(_filteredChatListImmutableCollection)
-
-    private fun addAllFilteredChatList(commands:List<String>){
-        filteredChatList.addAll(commands)
-        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(filteredChatList)
+    private fun addAllFilteredChattersList(commands:List<String>){
+        filteredChatterList.addAll(commands)
+        _filteredChatterListImmutableCollection = FilteredChatterListImmutableCollection(filteredChatterList)
 
     }
     private fun filterChatListUsername(
         usernameRegex: Regex
     ){
-        filteredChatList.removeIf{
+        filteredChatterList.removeIf{
             !it.contains(usernameRegex)
         }
-        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(filteredChatList)
+        _filteredChatterListImmutableCollection = FilteredChatterListImmutableCollection(filteredChatterList)
     }
 
     private fun clearFilteredChatterListImmutable() {
-        filteredChatList.clear()
-        _filteredChatListImmutableCollection = FilteredChatListImmutableCollection(listOf())
+        filteredChatterList.clear()
+        _filteredChatterListImmutableCollection = FilteredChatterListImmutableCollection(listOf())
     }
 
 
 
-    /********END --> Immutable _filteredChatListImmutableCollection*************/
 
-    /********** New forward slash command to make it immutable *************/
-    // Immutable state holder
+    /**
+     * private mutable version of [forwardSlashCommandsState]
+     * */
     private var _forwardSlashCommandsImmutableCollection by mutableStateOf(
         ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
     )
-
-    // Publicly exposed immutable state as State
+    /**
+     * - a state object containing a [ForwardSlashCommandsImmutableCollection] object
+     * */
     val forwardSlashCommandsState: State<ForwardSlashCommandsImmutableCollection>
         get() = mutableStateOf(_forwardSlashCommandsImmutableCollection)
 
-    // Update the collection whenever the mutable list changes
-    fun addForwardSlashCommand(command: ForwardSlashCommands) {
-        _forwardSlashCommands.add(command)
-        _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
-    }
+
     private fun addAllForwardSlashCommand(commands:List<ForwardSlashCommands>){
         _forwardSlashCommands.addAll(commands)
         _forwardSlashCommandsImmutableCollection = ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
@@ -139,8 +152,6 @@ class TextParsing @Inject constructor() {
      * It will create a new text with the clicked username and replace the old text that the user was typing
      *
      * @param username a string meant to represent the username that the user just clicked on
-     * @param parsingIndex a integer that represents where the parsing should begin
-     * @param clearChat a function meant to represent any extra clean up that needs to take place.
      * */
     fun clickUsernameAutoTextChange(
         username:String,
@@ -153,17 +164,22 @@ class TextParsing @Inject constructor() {
             text = replacedString,
             selection = TextRange(replacedString.length)
         )
-      //  filteredChatList.clear()
+
         clearFilteredChatterList()
 
     }
 
-    fun clearFilteredChatterList(){
-      //  filteredChatList.clear()
+    private fun clearFilteredChatterList(){
+
         clearFilteredChatterListImmutable()
     }
 
-    fun updateTextField(emoteText:String){
+    /**
+     * updateTextField is a function used to update [textFieldValue] with a text that represents the Emote a user just clicked
+     *
+     * @param emoteText a String representing the emote a user just clicked on
+     * */
+    fun updateTextFieldWithEmote(emoteText:String){
         val currentString = textFieldValue.value.text
         val cursorPosition = textFieldValue.value.selection.start
 
@@ -176,26 +192,6 @@ class TextParsing @Inject constructor() {
         )
     }
 
-    fun deleteEmote(
-        emoteMap:Map<String, InlineTextContent>
-
-    ){
-        val tokenScanner = DeletingEmotes(
-            textFieldValue.value,
-            deleteEmotes={
-                    newText,newCursorIndex ->
-                            textFieldValue.value = textFieldValue.value.copy(
-                                text = newText,
-                                selection = TextRange(newCursorIndex, newCursorIndex)
-                            )
-            },
-            emoteMap=emoteMap,
-        )
-        Log.d("addToken","startScanningTokens()")
-        tokenScanner.startScanningTokens()
-
-
-    }
 
 
     /**
@@ -203,8 +199,6 @@ class TextParsing @Inject constructor() {
      * It will create a new text with the clicked slash command and replace the old text that the user was typing
      *
      * @param command a string meant to represent the slash command that the user clicked on
-     * @param slashCommandIndex a integer that represents where the parsing should begin for the slash command
-     * @param cleanUp a function meant to represent any extra clean up that needs to take place.
      * */
     fun clickSlashCommandTextAutoChange(
         command:String,
@@ -217,13 +211,18 @@ class TextParsing @Inject constructor() {
             selection = TextRange(replacedString.length)
         )
         _forwardSlashCommands.clear()
-       // filteredChatList.clear()
         clearFilteredChatterList()
         slashCommandIndex =0
     }
 
 
-    //
+    /**
+     * parsingMethod is a function that gets called each time the user types in the chat box. Also, its main job is to
+     * monitor for if the user types in ***@*** or slash command
+     *
+     * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing in chat
+     * @param allChatters a List of Strings representing all of the individual chatters in this chat
+     * */
     fun parsingMethod(
         textFieldValue: TextFieldValue,
         allChatters:List<String>
@@ -319,7 +318,7 @@ class TextParsing @Inject constructor() {
         Log.d("newParsingAgain","-----------BEGIN PARSING----------")
       //  filteredChatList.clear()
         clearFilteredChatterList()
-        addAllFilteredChatList(allChatters)
+        addAllFilteredChattersList(allChatters)
        // filteredChatList.addAll(allChatters)
         parsingIndex =textFieldValue.selection.start
         startParsing = true
@@ -368,90 +367,6 @@ class TextParsing @Inject constructor() {
      * */
     private fun negateSlashCommandStateNClearForwardSlashCommands(){
         slashCommandState = false
-    }
-
-}
-
-class DeletingEmotes(
-    private val source:TextFieldValue,
-    private val deleteEmotes:(String,Int)->Unit,
-    private val emoteMap:Map<String, InlineTextContent>
-    ){
-    private var start = 0
-    private var current =source.text.length -1
-
-    fun startScanningTokens(){
-        if(source.text.isNotEmpty()){
-            start = current
-            scanToken()
-        }
-    }
-    private fun scanToken(){
-        val c = source.text[current]
-        Log.d("addToken","current -> ${c}")
-        when(c){
-            ' '->{
-               // Log.d("deleteSpacered","c -> $c <---")
-                deleteSpace()
-            }
-            else->{
-                while (notStartNullOrEmptySpace(peek())){
-                    Log.d("whileLooping","current -> ${current}")
-                    reverse()
-                }
-                deleteToken()
-            }
-
-        }
-    }
-
-    private fun isAtStart():Boolean{
-        return current<=0
-    }
-    private fun reverse(){
-
-        current = -- current
-    }
-
-    private fun deleteSpace(){
-        Log.d("addToken","deleteSpace")
-
-        val newString = source.text.removeRange(current,source.selection.start)
-
-        val newCursorIndex = newString.length
-
-        deleteEmotes(newString,newCursorIndex)
-    }
-
-    private fun deleteToken(){
-        val text = source.text.substring(current, source.selection.start)
-        val newString = source.text.removeRange(current,source.selection.start)
-        Log.d("addToken","deleteToken")
-
-
-        if(emoteMap.containsKey(source.text.substring(current+1, source.selection.start))){
-            Log.d("addToken","true")
-            val newCursorIndex = newString.length
-
-            deleteEmotes(newString,newCursorIndex)
-        }else{
-            Log.d("addToken","deleteSingleItem-> $text")
-            deleteSingleItem()
-        }
-    }
-    private fun deleteSingleItem(){
-        val newString = source.text.removeRange(source.selection.start-1,source.selection.start)
-        val newCursorIndex = newString.length
-
-        deleteEmotes(newString,newCursorIndex)
-    }
-    private fun peek(): Char {
-        return if (isAtStart()) '\u0000' else source.text[current]
-    }
-    private fun notStartNullOrEmptySpace(c:Char):Boolean{
-        Log.d("notStartNullOrEmptySpace","c check -> ${c != ' '}")
-        Log.d("notStartNullOrEmptySpace","current check -> ${current<=0}")
-        return c != ' ' && current>0
     }
 
 }
