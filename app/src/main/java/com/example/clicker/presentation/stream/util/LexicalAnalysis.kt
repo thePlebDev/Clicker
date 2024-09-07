@@ -16,12 +16,10 @@ import javax.inject.Inject
  * @property TEXT represents normal text being typed
  * @property UNRECOGNIZED triggered by a **`/fdjsafds`** command or any other command that is not set up
  *
- * @property MONITOR triggered by a **`/monitor`** command
- * @property UNMONITOR triggered by a **`/unmonitor`** command
  *
  * */
 enum class TokenType {
-    BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED,MONITOR,UNMONITOR, WARN
+    BAN, UNBAN,USERNAME,TEXT, UNRECOGNIZED, WARN
 }
 
 
@@ -50,8 +48,6 @@ data class Token(
      class UnrecognizedCommand(command:String):TextCommands(command)
      class NormalMessage(message:String) : TextCommands(message)
 
-     class Monitor(username: String):TextCommands(username)
-     class UnMonitor(username: String):TextCommands(username)
      object NoUsername : TextCommands()
      object InitialValue : TextCommands()
 
@@ -74,8 +70,6 @@ class Scanner (private val source:String) {
         map["@username"] = Token(TokenType.USERNAME,"/username")
         map["/warn"] = Token(TokenType.WARN,"/warn")
 
-        map["/monitor"] = Token(TokenType.MONITOR,"/monitor")
-        map["/unmonitor"] = Token(TokenType.UNMONITOR,"/unmonitor")
     }
     private val tokens = mutableListOf<Token>()
     val tokenList:List<Token> = tokens
@@ -222,36 +216,7 @@ class TokenCommand @Inject constructor(){
                     return TextCommands.NoUsername
                 }
             }
-            hasMonitorTokenType(tokenList) ->{
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send unBan command
 
-                   // _tokenCommand.tryEmit(TextCommands.MONITOR(username=username.replace("@", "")))
-                    return TextCommands.Monitor(username=username.replace("@", ""))
-                }
-                else{
-                    //todo: tell user that there is no username
-                 //   _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NoUsername
-                }
-            }
-            hasUnMonitorTokenType(tokenList) ->{
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send unBan command
-
-
-                    return TextCommands.UnMonitor(username=username.replace("@", ""))
-                }
-                else{
-                    //todo: tell user that there is no username
-
-                    return TextCommands.NoUsername
-                }
-            }
             hasWarnTokenType(tokenList)->{
                 val username =tokenList
                     .find{ it.tokenType == TokenType.USERNAME }?.lexeme
@@ -278,12 +243,6 @@ class TokenCommand @Inject constructor(){
 
     }
 
-    private fun hasMonitorTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.MONITOR }
-    }
-    private fun hasUnMonitorTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.UNMONITOR }
-    }
     private fun hasBanTokenType(tokens: List<Token>): Boolean {
         return tokens.any { it.tokenType == TokenType.BAN }
     }

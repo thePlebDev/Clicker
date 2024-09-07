@@ -8,9 +8,32 @@ import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
+/**
+ *
+ *
+ * This class is used to determine which [TextCommands] was entered and execute the proper function through [runMonitorToken]
+ *
+ * @property runMonitorToken a function that depending on the type of [TextCommands] will inform the user of the action
+
+ */
 class TokenMonitoring @Inject constructor(){
 
 
+    /**
+     * this is a testing thing
+     *
+     * @param tokenCommand a [TextCommands] object the will determine what action the function will take
+     * @param chatMessage a String representing what the user has typed and sent
+     * @param isMod a Boolean determining if the user is a moderator or not
+     * @param currentUsername a String representing the username of the currently logged in User
+     * @param sendToWebSocket a function that will send the [chatMessage] to the websocket to be seen by other users
+     * @param addMessageToListChats a function that will send the [chatMessage] to the UI so that is can be see user (not seen by others)
+     * @param banUserSlashCommand a function called when a user types /ban
+     * @param getUserId a function used to find a user in the chat session
+     * @param unbanUserSlash a function called when a user types /unban
+     * @param messageTokenList a List of [MessageToken] representing all the individual words the user has typed out
+     * @param warnUser a function called when a user types /warn
+     * */
      fun runMonitorToken(
          tokenCommand: TextCommands,
          chatMessage:String,
@@ -18,11 +41,9 @@ class TokenMonitoring @Inject constructor(){
          currentUsername:String,
          sendToWebSocket:(String) ->Unit,
          addMessageToListChats:(TwitchUserData)->Unit,
-         banUserSlashCommandTest:(String,String)->Unit,
+         banUserSlashCommand:(String,String)->Unit,
          getUserId:((TwitchUserData)->Boolean)->String?,
-         unbanUserSlashTest:(String)->Unit,
-         addToMonitorUser:(String) ->Unit,
-         removeFromMonitorUser:(String) ->Unit,
+         unbanUserSlash:(String)->Unit,
          messageTokenList: List<MessageToken>,
          warnUser:(String,String,String) ->Unit,
 
@@ -31,19 +52,12 @@ class TokenMonitoring @Inject constructor(){
 
             when(tokenCommand){
                 is TextCommands.UnrecognizedCommand ->{
-                    Log.d("monitoringTokens", "UNRECOGNIZEDCOMMAND")
-                    Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                    Log.d("monitoringTokens", "reason -->${tokenCommand.reason}")
-                    Log.d("monitoringTokens", "chatMessage -->${chatMessage}")
-                    val message = TwitchUserDataObjectMother
-                        .addUserType(chatMessage)
-                        .addColor("#BF40BF")
-                        .addSystemMessage("Unrecognized command ")
-                        .addDisplayName("Unrecognized command")
-                        .addMod("mod")
-                        .addMessageType(MessageType.ANNOUNCEMENT)
+
+                    val message = Messages.unrecognizedCommand
                         .addMessageTokens(messageTokenList)
+                        .addUserType(chatMessage)
                         .build()
+
                     addMessageToListChats(message)
                 }
                 is TextCommands.Ban ->{
@@ -53,37 +67,26 @@ class TokenMonitoring @Inject constructor(){
                     val userId =getUserId { it.displayName == tokenCommand.username }
                     if(isMod){
                         if(userId ==null){
-                            val message = TwitchUserDataObjectMother
-                                .addUserType("${tokenCommand.username} not found in this session")
-                                .addColor("#BF40BF")
-                                .addDisplayName("Unrecognized username")
-                                .addMod("mod")
-                                .addSystemMessage("${tokenCommand.username} not found in this session")
-                                .addMessageType(MessageType.ANNOUNCEMENT)
+                            val usernameMessageNotFound = Messages.usernameNotFound
                                 .addMessageTokens(messageTokenList)
+                                .addUserType("${tokenCommand.username} not found in this session")
+                                .addSystemMessage("${tokenCommand.username} not found in this session")
                                 .build()
-                            addMessageToListChats(message)
+                            addMessageToListChats(usernameMessageNotFound)
                         }
                         else{
                             Log.d("monitoringTokens", "userId -->$userId")
-                            val message = TwitchUserDataObjectMother
+                            val message = Messages.normalMessage
                                 .addUserType(chatMessage)
-                                .addColor("#BF40BF")
                                 .addDisplayName(currentUsername)
-                                .addMod("mod")
                                 .addMessageType(MessageType.USER)
                                 .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
-                            banUserSlashCommandTest(userId,tokenCommand.reason)
+                            banUserSlashCommand(userId,tokenCommand.reason)
                         }
                     }else{
-                        val message = TwitchUserDataObjectMother
-                            .addUserType("You are not a moderator in this chat. You do not have the proper permissions for this command")
-                            .addColor("#BF40BF")
-                            .addDisplayName("System message")
-                            .addMod("mod")
-                            .addSystemMessage("You are not a moderator in this chat.You do not have the proper permissions for this command")
+                        val message = Messages.youAreNotAModerator
                             .addMessageType(MessageType.ANNOUNCEMENT)
                             .addMessageTokens(messageTokenList)
                             .build()
@@ -98,40 +101,28 @@ class TokenMonitoring @Inject constructor(){
                     //  val userId = listChats.find { it.displayName == tokenCommand.username }?.userId
                     val userId =getUserId { it.displayName == tokenCommand.username }
 
-
                     if(isMod){
                         if(userId ==null){
-                            val message = TwitchUserDataObjectMother
-                                .addUserType("${tokenCommand.username} not found in this session")
-                                .addColor("#BF40BF")
-                                .addDisplayName("Unrecognized username")
-                                .addSystemMessage("")
-                                .addMod("mod")
-                                .addMessageType(MessageType.ANNOUNCEMENT)
+                            val usernameMessageNotFound = Messages.usernameNotFound
                                 .addMessageTokens(messageTokenList)
+                                .addUserType("${tokenCommand.username} not found in this session")
+                                .addSystemMessage("${tokenCommand.username} not found in this session")
                                 .build()
-                            addMessageToListChats(message)
+                            addMessageToListChats(usernameMessageNotFound)
                         }else{
                             //todo: add the unban features
-                            val message = TwitchUserDataObjectMother
+                            val message = Messages.normalMessage
                                 .addUserType(chatMessage)
-                                .addColor("#BF40BF")
                                 .addDisplayName(currentUsername)
-                                .addMod("mod")
                                 .addMessageType(MessageType.USER)
                                 .addMessageTokens(messageTokenList)
                                 .build()
                             addMessageToListChats(message)
-                            unbanUserSlashTest(userId)
+                            unbanUserSlash(userId)
                             Log.d("monitoringTokens", "userId -->$userId")
                         }
                     }else{
-                        val message = TwitchUserDataObjectMother
-                            .addUserType("You are not a moderator in this chat")
-                            .addColor("#BF40BF")
-                            .addDisplayName("System message")
-                            .addMod("mod")
-                            .addSystemMessage("You are not a moderator in this chat.You do not have the proper permissions for this command")
+                        val message = Messages.youAreNotAModerator
                             .addMessageType(MessageType.ANNOUNCEMENT)
                             .addMessageTokens(messageTokenList)
                             .build()
@@ -140,56 +131,19 @@ class TokenMonitoring @Inject constructor(){
 
                 }
                 is TextCommands.NoUsername ->{
-                    Log.d("monitoringTokens", "NOUSERNAME")
-                    Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                    val message = TwitchUserDataObjectMother
-                        .addUserType(chatMessage)
-                        .addColor("#BF40BF")
-                        .addDisplayName("Username not found")
-                        .addMod("mod")
-                        .addSystemMessage("")
-                        .addMessageType(MessageType.ANNOUNCEMENT)
+
+                    val usernameMessageNotFound = Messages.usernameNotFound
                         .addMessageTokens(messageTokenList)
+                        .addUserType("${tokenCommand.username} not found in this session")
+                        .addSystemMessage("${tokenCommand.username} not found in this session")
                         .build()
-                    addMessageToListChats(message)
+                    addMessageToListChats(usernameMessageNotFound)
                 }
                 is TextCommands.NormalMessage ->{
-                    Log.d("monitoringTokens", "NORMALMESSAGE ---> ${tokenCommand.username}")
                     sendToWebSocket(tokenCommand.username)
-                    Log.d("monitoringTokens", "username -->${tokenCommand.username}")
-                    val message = TwitchUserDataObjectMother
+                    val message = Messages.normalMessage
                         .addUserType(chatMessage)
-                        .addColor("#BF40BF")
                         .addDisplayName(currentUsername)
-                        .addMod("mod")
-                        .addMessageType(MessageType.USER)
-                        .addMessageTokens(messageTokenList)
-                        .build()
-                    addMessageToListChats(message)
-                }
-                is TextCommands.Monitor ->{
-                    Log.d("MONITOR","Monitor --> ${tokenCommand.username}")
-                    addToMonitorUser(tokenCommand.username)
-
-                    val message = TwitchUserDataObjectMother
-                        .addUserType(chatMessage)
-                        .addColor("#BF40BF")
-                        .addDisplayName(currentUsername)
-                        .addMod("mod")
-                        .addMessageType(MessageType.USER)
-                        .addMessageTokens(messageTokenList)
-                        .build()
-                    addMessageToListChats(message)
-                }
-                is TextCommands.UnMonitor ->{
-                    Log.d("MONITOR","UN-MONITOR --> ${tokenCommand.username}")
-                    removeFromMonitorUser(tokenCommand.username)
-
-                    val message = TwitchUserDataObjectMother
-                        .addUserType(chatMessage)
-                        .addColor("#BF40BF")
-                        .addDisplayName(currentUsername)
-                        .addMod("mod")
                         .addMessageType(MessageType.USER)
                         .addMessageTokens(messageTokenList)
                         .build()
@@ -209,21 +163,15 @@ class TokenMonitoring @Inject constructor(){
 
                     if(isMod){
                         if(userId ==null){
-                            val message = TwitchUserDataObjectMother
-                                .addUserType("${tokenCommand.username} not found in this session")
-                                .addColor("#BF40BF")
-                                .addDisplayName("Unrecognized username")
-                                .addMod("mod")
-                                .addSystemMessage("${tokenCommand.username} not found in this session")
-                                .addMessageType(MessageType.ANNOUNCEMENT)
+                            val usernameMessageNotFound = Messages.usernameNotFound
                                 .addMessageTokens(messageTokenList)
+                                .addUserType("${tokenCommand.username} not found in this session")
+                                .addSystemMessage("${tokenCommand.username} not found in this session")
                                 .build()
-                            addMessageToListChats(message)
+
+                            addMessageToListChats(usernameMessageNotFound)
                         }else{
-                            //todo: this is where we run the actual request
-//
-//                            Log.d("TextCommandTestingWarn","userId --> ${userId}")
-//                            Log.d("TextCommandTestingWarn","reason --> ${tokenCommand.reason}")
+
                             if(tokenCommand.reason.isEmpty()){
                                 warnUser(userId,"Warning",tokenCommand.username)
                             }else{
@@ -231,12 +179,7 @@ class TokenMonitoring @Inject constructor(){
                             }
                         }
                     }else{
-                        val message = TwitchUserDataObjectMother
-                            .addUserType("You are not a moderator in this chat")
-                            .addColor("#BF40BF")
-                            .addDisplayName("System message")
-                            .addMod("mod")
-                            .addSystemMessage("You are not a moderator in this chat. You do not have the proper permissions for this command")
+                        val message = Messages.youAreNotAModerator
                             .addMessageType(MessageType.ANNOUNCEMENT)
                             .addMessageTokens(messageTokenList)
                             .build()
@@ -249,4 +192,36 @@ class TokenMonitoring @Inject constructor(){
 
 
     }
+}
+/**
+ * a class representing all the possible messages that a user will see once [runMonitorToken][TokenMonitoring.runMonitorToken]
+ * is run
+ * */
+object Messages{
+    val unrecognizedCommand = TwitchUserDataObjectMother
+        .addColor("#BF40BF")
+        .addSystemMessage("Unrecognized command ")
+        .addDisplayName("Unrecognized command")
+        .addMod("mod")
+        .addMessageType(MessageType.ANNOUNCEMENT)
+
+    val usernameNotFound =  TwitchUserDataObjectMother
+        .addColor("#BF40BF")
+        .addDisplayName("Unrecognized username")
+        .addMod("mod")
+        .addMessageType(MessageType.ANNOUNCEMENT)
+
+    val youAreNotAModerator =TwitchUserDataObjectMother
+        .addUserType("You are not a moderator in this chat")
+        .addColor("#BF40BF")
+        .addDisplayName("System message")
+        .addMod("mod")
+        .addSystemMessage("You are not a moderator in this chat. You do not have the proper permissions for this command")
+        .addMessageType(MessageType.ANNOUNCEMENT)
+
+    val normalMessage = TwitchUserDataObjectMother
+        .addMod("mod")
+        .addColor("#BF40BF")
+
+
 }
