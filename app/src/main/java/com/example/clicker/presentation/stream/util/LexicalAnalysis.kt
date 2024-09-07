@@ -29,19 +29,31 @@ data class Token(
     val tokenType: TokenType,
     val lexeme:String
 )
-/**THIS IS TERRIBLE AND CONFUSING WITH THE USERNAME/REASON/COMMAND/MESSAGE AND IT NEEDS TO BE REFACTORED**/
+/**
+ * TextCommands represents a command that was sent in the chat message box
+ *
+ * @property Ban represents the /ban command
+ * @property Warn represents the /warn command
+ * @property UnBan represents the /unban command
+ * @property UnrecognizedCommand represents the edge case where a / was typed but no command
+ * @property NormalMessage represents a normal messag sent by the user
+ * @property Monitor represents the /monitor command
+ * @property UnMonitor represents the /unmonitor command
+ * @property NoUsername represents the edge case where a command was typed but no username
+ * @property InitialValue represents the edge case of the first message typed in chat
+ * */
  sealed class TextCommands(val username: String="",val reason: String =""){
      class Ban(username:String,reason:String):TextCommands(username,reason)
 
     class Warn(username:String,reason:String):TextCommands(username,reason)
      class UnBan(username:String):TextCommands(username)
-     class UNRECOGNIZEDCOMMAND(command:String):TextCommands(command)
-     class NORMALMESSAGE(message:String) : TextCommands(message)
+     class UnrecognizedCommand(command:String):TextCommands(command)
+     class NormalMessage(message:String) : TextCommands(message)
 
-     class MONITOR(username: String):TextCommands(username)
-     class UnMONITOR(username: String):TextCommands(username)
-     object NOUSERNAME : TextCommands()
-     object INITIALVALUE : TextCommands()
+     class Monitor(username: String):TextCommands(username)
+     class UnMonitor(username: String):TextCommands(username)
+     object NoUsername : TextCommands()
+     object InitialValue : TextCommands()
 
 
  }
@@ -168,7 +180,7 @@ class TokenCommand @Inject constructor(){
             hasUnrecognizedTokenType(tokenList)->{
                 val unrecognized =tokenList.first { it.tokenType == TokenType.UNRECOGNIZED }.lexeme
               //  _tokenCommand.tryEmit(TextCommands.UNRECOGNIZEDCOMMAND(unrecognized))
-                return TextCommands.UNRECOGNIZEDCOMMAND(unrecognized)
+                return TextCommands.UnrecognizedCommand(unrecognized)
 
             }
             hasBanTokenType(tokenList)->{
@@ -189,7 +201,7 @@ class TokenCommand @Inject constructor(){
                 else{
                     //todo: tell user that there is no username
                   //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NOUSERNAME
+                    return TextCommands.NoUsername
                 }
 
             }
@@ -207,7 +219,7 @@ class TokenCommand @Inject constructor(){
                 else{
                     //todo: tell user that there is no username
                   //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NOUSERNAME
+                    return TextCommands.NoUsername
                 }
             }
             hasMonitorTokenType(tokenList) ->{
@@ -217,12 +229,12 @@ class TokenCommand @Inject constructor(){
                     //todo: send unBan command
 
                    // _tokenCommand.tryEmit(TextCommands.MONITOR(username=username.replace("@", "")))
-                    return TextCommands.MONITOR(username=username.replace("@", ""))
+                    return TextCommands.Monitor(username=username.replace("@", ""))
                 }
                 else{
                     //todo: tell user that there is no username
                  //   _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NOUSERNAME
+                    return TextCommands.NoUsername
                 }
             }
             hasUnMonitorTokenType(tokenList) ->{
@@ -232,12 +244,12 @@ class TokenCommand @Inject constructor(){
                     //todo: send unBan command
 
 
-                    return TextCommands.UnMONITOR(username=username.replace("@", ""))
+                    return TextCommands.UnMonitor(username=username.replace("@", ""))
                 }
                 else{
                     //todo: tell user that there is no username
 
-                    return TextCommands.NOUSERNAME
+                    return TextCommands.NoUsername
                 }
             }
             hasWarnTokenType(tokenList)->{
@@ -252,14 +264,14 @@ class TokenCommand @Inject constructor(){
                     return TextCommands.Warn(username=username.replace("@", ""),reason=reason)
 
                 }else{
-                    return TextCommands.NOUSERNAME
+                    return TextCommands.NoUsername
                 }
 
             }
 
             else->{
                 val message = tokenList.map { it.lexeme }.joinToString(separator = " ")
-                return TextCommands.NORMALMESSAGE(message)
+                return TextCommands.NormalMessage(message)
 
             }
         }

@@ -12,8 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getTextBeforeSelection
-import com.example.clicker.network.websockets.MessageToken
-import com.example.clicker.network.websockets.PrivateMessageType
 
 import javax.inject.Inject
 

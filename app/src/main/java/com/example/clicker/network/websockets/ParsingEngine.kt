@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.clicker.network.models.websockets.LoggedInUserData
 import com.example.clicker.network.models.websockets.RoomState
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.websockets.models.MessageToken
 import com.example.clicker.network.websockets.models.MessageType
+import com.example.clicker.network.websockets.models.PrivateMessageType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import javax.inject.Inject
 import okhttp3.WebSocket
@@ -17,22 +19,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-data class EmoteInText(
-    val emoteUrl:String,
-    val startIndex:Int,
-    val endIndex:Int
-)
-
-fun findEmoteNames(input: String, emoteNames: List<String>): List<EmoteInText> {
-    val regex = Regex("\\b(?:${emoteNames.joinToString("|")})\\b")
-    return regex.findAll(input).map {
-        EmoteInText(
-            emoteUrl = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
-            startIndex = it.range.first,
-            endIndex = it.range.last
-        )
-    }.toList()
-}
 
 /**
  * The ParsingEngine class represents all the current methods avaliable to parse messages sent from the Twitch IRC chat.
@@ -469,14 +455,6 @@ class ParsingEngine @Inject constructor() {
     }
 }
 
-enum class PrivateMessageType {
-    MESSAGE, EMOTE
-}
-data class MessageToken(
-    val messageType:PrivateMessageType,
-    val messageValue:String ="",
-    val url:String=""
-)
 
 class MessageScanner(
     private val source:String

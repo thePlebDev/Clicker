@@ -2,7 +2,7 @@ package com.example.clicker.presentation.stream.util
 
 import android.util.Log
 import com.example.clicker.network.models.websockets.TwitchUserData
-import com.example.clicker.network.websockets.MessageToken
+import com.example.clicker.network.websockets.models.MessageToken
 import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.StateFlow
@@ -12,25 +12,25 @@ class TokenMonitoring @Inject constructor(){
 
 
      fun runMonitorToken(
-        tokenCommand: TextCommands,
-        chatMessage:String,
-        isMod: Boolean,
-        currentUsername:String,
-        sendToWebSocket:(String) ->Unit,
-        addMessageToListChats:(TwitchUserData)->Unit,
-        banUserSlashCommandTest:(String,String)->Unit,
-        getUserId:((TwitchUserData)->Boolean)->String?,
-        unbanUserSlashTest:(String)->Unit,
-        addToMonitorUser:(String) ->Unit,
-        removeFromMonitorUser:(String) ->Unit,
-        messageTokenList: List<MessageToken>,
-        warnUser:(String,String,String) ->Unit,
+         tokenCommand: TextCommands,
+         chatMessage:String,
+         isMod: Boolean,
+         currentUsername:String,
+         sendToWebSocket:(String) ->Unit,
+         addMessageToListChats:(TwitchUserData)->Unit,
+         banUserSlashCommandTest:(String,String)->Unit,
+         getUserId:((TwitchUserData)->Boolean)->String?,
+         unbanUserSlashTest:(String)->Unit,
+         addToMonitorUser:(String) ->Unit,
+         removeFromMonitorUser:(String) ->Unit,
+         messageTokenList: List<MessageToken>,
+         warnUser:(String,String,String) ->Unit,
 
-    ){
+         ){
          Log.d("monitoringTokens", "username ->${tokenCommand.username}")
 
             when(tokenCommand){
-                is TextCommands.UNRECOGNIZEDCOMMAND ->{
+                is TextCommands.UnrecognizedCommand ->{
                     Log.d("monitoringTokens", "UNRECOGNIZEDCOMMAND")
                     Log.d("monitoringTokens", "username -->${tokenCommand.username}")
                     Log.d("monitoringTokens", "reason -->${tokenCommand.reason}")
@@ -139,7 +139,7 @@ class TokenMonitoring @Inject constructor(){
                     }
 
                 }
-                is TextCommands.NOUSERNAME ->{
+                is TextCommands.NoUsername ->{
                     Log.d("monitoringTokens", "NOUSERNAME")
                     Log.d("monitoringTokens", "username -->${tokenCommand.username}")
                     val message = TwitchUserDataObjectMother
@@ -153,7 +153,7 @@ class TokenMonitoring @Inject constructor(){
                         .build()
                     addMessageToListChats(message)
                 }
-                is TextCommands.NORMALMESSAGE ->{
+                is TextCommands.NormalMessage ->{
                     Log.d("monitoringTokens", "NORMALMESSAGE ---> ${tokenCommand.username}")
                     sendToWebSocket(tokenCommand.username)
                     Log.d("monitoringTokens", "username -->${tokenCommand.username}")
@@ -167,7 +167,7 @@ class TokenMonitoring @Inject constructor(){
                         .build()
                     addMessageToListChats(message)
                 }
-                is TextCommands.MONITOR ->{
+                is TextCommands.Monitor ->{
                     Log.d("MONITOR","Monitor --> ${tokenCommand.username}")
                     addToMonitorUser(tokenCommand.username)
 
@@ -181,7 +181,7 @@ class TokenMonitoring @Inject constructor(){
                         .build()
                     addMessageToListChats(message)
                 }
-                is TextCommands.UnMONITOR ->{
+                is TextCommands.UnMonitor ->{
                     Log.d("MONITOR","UN-MONITOR --> ${tokenCommand.username}")
                     removeFromMonitorUser(tokenCommand.username)
 
@@ -197,7 +197,7 @@ class TokenMonitoring @Inject constructor(){
                 }
 
                 //todo: should have a normal command that just sends information to the websocket
-                is TextCommands.INITIALVALUE ->{
+                is TextCommands.InitialValue ->{
                     Log.d("monitoringTokens", "INITIALVALUE")
 
                 }
