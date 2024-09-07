@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.input.TextFieldValue
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.models.websockets.LoggedInUserData
-import com.example.clicker.network.websockets.MessageToken
+import com.example.clicker.network.websockets.models.MessageToken
 import com.example.clicker.util.Response
 
 data class ChattingUser(
@@ -16,6 +16,15 @@ data class EmoteBoardData(
     val height:Int,
     val showBoard:Boolean
 )
+
+/**
+ * ClickedUserNameChats represents a individual chat message
+ *
+ * @param dateSent a String representing the date the message was sent
+ * @param message A String representing the entire message
+ * @param messageTokenList A list of [MessageToken] objects where each object is a individual word of [message]
+ *
+ * */
 data class ClickedUserNameChats(
     val dateSent:String,
     val message:String,
@@ -95,14 +104,32 @@ data class StreamUIState(
 
     val chatSettingsFailedMessage: String = "",
 )
+
+/**
+ * ClickedUIState represents all the information related to a clicked user inside of the chat
+ *
+ * @param clickedUsername a String representing the username of the clicked user
+ * @param clickedUserId a String representing the unique identifier of the clicked user
+ * @param clickedUsernameBanned a Boolean representing if the clicked user is banned or not
+ * @param clickedUsernameIsMod a Boolean representing if the clicked user is a mod or not
+ * */
 data class ClickedUIState(
     val clickedUsername:String ="", //websocket
     val clickedUserId: String ="",
     val clickedUsernameBanned: Boolean=false,
     val clickedUsernameIsMod:Boolean =false,
-    val shouldMonitorUser:Boolean = false,
 )
 
+/**
+ * A object containing all the information related to the stream the user is currently watching
+ *
+ * @param channelName a String representing the channel name of the stream the user is currently watching
+ * @param streamTitle a String representing the stream title the user is currently watching
+ * @param category a String representing the stream category the user is currently watching
+ * @param tags a List of strings representing the stream tags the user is currently watching
+ * @param adjustedUrl a String representing the url to watch the stream
+ *
+ * */
 data class ClickedStreamInfo(
     val channelName: String ="",
     val streamTitle:String ="",

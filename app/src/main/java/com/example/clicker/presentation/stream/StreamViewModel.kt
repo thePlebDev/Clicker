@@ -25,9 +25,10 @@ import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.network.repository.models.EmoteNameUrlList
 
 import com.example.clicker.network.websockets.MessageScanner
-import com.example.clicker.network.websockets.MessageToken
-import com.example.clicker.network.websockets.PrivateMessageType
+import com.example.clicker.network.websockets.models.MessageToken
+
 import com.example.clicker.network.websockets.models.MessageType
+import com.example.clicker.network.websockets.models.PrivateMessageType
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.presentation.stream.models.ClickedUIState
@@ -151,11 +152,23 @@ class StreamViewModel @Inject constructor(
     private var _uiState: MutableState<StreamUIState> = mutableStateOf(StreamUIState())
     val state: State<StreamUIState> = _uiState
 
+    /**
+     * a private mutable version of [clickedUIState]
+     * */
     private val _clickedUIState = mutableStateOf(ClickedUIState())
+    /**
+     * clickedUIState is a [ClickedUIState] object that represents the information of the last user clicked
+     * */
     val clickedUIState = _clickedUIState
 
+    /**
+     * private mutable value of [clickedStreamInfo]
+     * */
     private val _clickedStreamInfo = mutableStateOf(ClickedStreamInfo())
-    val clickedStreamInfo = _clickedStreamInfo
+    /**
+     * a State object containing a [ClickedStreamInfo]
+     * */
+    val clickedStreamInfo:State<ClickedStreamInfo> = _clickedStreamInfo
 
 
     /**
@@ -173,9 +186,6 @@ class StreamViewModel @Inject constructor(
 
     val openTimeoutDialog = mutableStateOf(false)
     val openBanDialog = mutableStateOf(false)
-
-
-
 
 
     /**
@@ -201,8 +211,23 @@ class StreamViewModel @Inject constructor(
 
 
 
-    val openWarningDialog =mutableStateOf(false)
-    val warningText = mutableStateOf("")
+    /**
+     * private mutable version of [openWarningDialog]
+     * */
+    private val _openWarningDialog =mutableStateOf(false)
+    /**
+     * a [State] object containing a Boolean determining if the warn dialog should be shown to the user
+     * */
+    val openWarningDialog:State<Boolean> = _openWarningDialog
+    /**
+     * private mutable version of [warningText]
+     * */
+    private val _warningText = mutableStateOf("")
+    /**
+     * a [State] object containing a String determining the text shown in the warn dialog
+     * */
+    val warningText:State<String> = _warningText
+
 
 
     // Publicly exposed immutable state as State
@@ -241,12 +266,10 @@ class StreamViewModel @Inject constructor(
     }
 
 
-    /*** END OF THE MUTABLE LIST OF ClickedUsernameChatsWithDateSentImmutable ***/
-
+    /**
+     * allChatters is a list of Strings representing all of the chatters interacting with the streamers chat.
+     * **/
     private val allChatters = mutableStateListOf<String>()
-
-    private val monitoredUsers = mutableStateListOf<String>()
-
 
 
 
@@ -446,7 +469,7 @@ class StreamViewModel @Inject constructor(
                     MessageType.USER ->{
                         Log.d("CheckingChattersNmae","${twitchUserMessage.displayName!!}")
                         Log.d("CheckingChattersNmae","${twitchUserMessage.userType!!}")
-                        addChatter(twitchUserMessage.displayName!!,twitchUserMessage.userType!!)
+                        addChatter(twitchUserMessage.displayName!!)
                         listChats.add(twitchUserMessage)
                     }
                     MessageType.SUB ->{
@@ -485,6 +508,11 @@ class StreamViewModel @Inject constructor(
     }
 
 
+    /**
+     *  a function used to update [temporaryMostFrequentList] with [clickedItem] if [clickedItem] is not already in [temporaryMostFrequentList]
+     *
+     *  @param clickedItem a [EmoteNameUrl] representing the most recently clicked emote
+     * */
     fun updateTemporaryMostFrequentList(clickedItem:EmoteNameUrl){
         if(!temporaryMostFrequentList.contains(clickedItem)){
             temporaryMostFrequentList.add(clickedItem)
@@ -494,6 +522,9 @@ class StreamViewModel @Inject constructor(
     }
 
 
+    /**
+     *  a function used to update [mostFrequentEmoteListTesting] with the most recent emotes
+     * */
     fun updateMostFrequentEmoteList(){
         //Need to do some sorting between the two
         val oldList = mostFrequentEmoteListTesting.value.list.toMutableList()
@@ -509,15 +540,19 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     *  a function used to update [_clickedStreamInfo]
+     * */
     fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
-        //todo: need to do some adjusting for the thumbnail url
         _clickedStreamInfo.value =clickedStreamInfo
         _channelName.value = clickedStreamInfo.channelName
     }
 
 
 
-
+    /**
+     *  a function used to call [getBetterTTVGlobalEmotes][com.example.clicker.network.domain.TwitchEmoteRepo.getBetterTTVGlobalEmotes]
+     * */
     fun getBetterTTVGlobalEmotes(){
         viewModelScope.launch(ioDispatcher) {
             twitchEmoteImpl.getBetterTTVGlobalEmotes().collect{response ->
@@ -527,6 +562,10 @@ class StreamViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     *  a function used to call [getBetterTTVChannelEmotes][com.example.clicker.network.domain.TwitchEmoteRepo.getBetterTTVChannelEmotes]
+     * */
     fun getBetterTTVChannelEmotes(broadcasterId: String){
         Log.d("getBetterTTVChannelEmotes", "broadcasterId ->$broadcasterId")
         viewModelScope.launch(ioDispatcher) {
@@ -537,28 +576,55 @@ class StreamViewModel @Inject constructor(
     }
 
 
+    /**
+     *  a function used to set the value of [openTimeoutDialog] to false
+     * */
     fun setOpenTimeoutDialogFalse(){
         openTimeoutDialog.value = false
     }
+    /**
+     *  a function used to set the value of [openTimeoutDialog] to true
+     * */
     fun setOpenTimeoutDialogTrue(){
         openTimeoutDialog.value = true
     }
+    /**
+     *  a function used to set the value of [openBanDialog] to false
+     * */
     fun setOpenBanDialogFalse(){
         openBanDialog.value = false
     }
+    /**
+     *  a function used to set the value of [openBanDialog] to true
+     * */
     fun setOpenBanDialogTrue(){
         openBanDialog.value = true
     }
 
+    /**
+     *  a function used to change the value of [_warningText]
+     *
+     * @param newValue a String representing what is shown in the warn dialog
+     * */
     fun changeWarningText(newValue:String){
-        warningText.value = newValue
+        _warningText.value = newValue
     }
+    /**
+     *  a function used to change the value of [_openWarningDialog]
+     *
+     * @param newValue a Boolean used to determine if warn dialog should be shown
+     * */
     fun changeOpenWarningDialog(newValue:Boolean){
-        openWarningDialog.value = newValue
+        _openWarningDialog.value = newValue
     }
 
 
-
+    /**
+     *  a function used to change the value of [textFieldValue]
+     *
+     * @param text a String representing what the user has typed
+     * @param textRange a [TextRange] object for what the user has typed
+     * */
     fun changeActualTextFieldValue(
         text:String,
         textRange:TextRange
@@ -582,10 +648,13 @@ class StreamViewModel @Inject constructor(
     }
 
 
-    //for right now this has been removed 2024-08-24
-    //todo:THIS IS THE MONITORING of the network status
 
-
+    /**
+     *  a function used get the global chat badges
+     *
+     * @param oAuthToken a String representing the user's logged in session
+     * @param clientId a String representing this application's unique identifier
+     * */
     fun getGlobalChatBadges(
         oAuthToken: String,
         clientId: String,
@@ -600,7 +669,13 @@ class StreamViewModel @Inject constructor(
 
     }
 
-    /***/
+    /**
+     *  a function used get the channel emotes related to [broadcasterId]
+     *
+     * @param oAuthToken a String representing the user's logged in session
+     * @param clientId a String representing this application's unique identifier
+     * @param broadcasterId a String representing the unique identifier for a Twitch channel
+     * */
     fun getChannelEmotes(
         oAuthToken: String,
         clientId: String,
@@ -629,6 +704,11 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     *  a function used determine if the application should be in no chat mode or not
+     *
+     * @param status a Boolean representing if the chat should be in no chat mode or not
+     * */
     fun setNoChatMode(status: Boolean){
         _advancedChatSettingsState.value = _advancedChatSettingsState.value.copy(
             noChatMode = status
@@ -647,30 +727,43 @@ class StreamViewModel @Inject constructor(
 
 
     }
+    /**
+     *  a function used change the ***timeoutDuration*** parameter of [_uiState]
+     *
+     * @param duration a Int representing duration of a timeout
+     * */
     fun changeTimeoutDuration(duration: Int) {
         _uiState.value = _uiState.value.copy(
             timeoutDuration = duration
         )
     }
+    /**
+     *  a function used change the ***timeoutReason*** parameter of [_uiState]
+     *
+     * @param reason a String representing reason for a timeout
+     * */
     fun changeTimeoutReason(reason: String) {
         _uiState.value = _uiState.value.copy(
             timeoutReason = reason
         )
     }
-    fun changeBanDuration(duration: Int) {
-        _uiState.value = _uiState.value.copy(
-            banDuration = duration
-        )
-    }
+    /**
+     *  a function used change the ***banReason*** parameter of [_uiState]
+     *
+     * @param reason a String representing reason for a ban
+     * */
     fun changeBanReason(reason: String) {
         _uiState.value = _uiState.value.copy(
             banReason = reason
         )
     }
 
-    // TODO: NOTES FOR WHEN I COME BACK
-    // this should be hooked up to a hot flow and run eachtime a new messageId is sent to it
-    //todo:chat method
+    /**
+     *  a function used with [monitorForLatestBannedMessageId] to find the message inside of [listChats] with the
+     *  matching [messageId] and changing the deleted parameter to true
+     *
+     * @param messageId a String representing the unique identifier for the message
+     * */
     private fun filterMessages(messageId: String) {
         try{
             val found = listChats.first { it.id == messageId }
@@ -684,6 +777,13 @@ class StreamViewModel @Inject constructor(
         }
 
     }
+    /**
+     * ------ MY FAVOURITE FEATURE BY THE WAY ------
+     *
+     * a function to send the SeemsGood emote to the user specified in [username]
+     *
+     * @param username a unique identifier for the chat message
+     * */
     fun sendDoubleTapEmote(username:String){
         Log.d("SendingDoubleClick","username -->$username")
         if(username.isNotEmpty()){
@@ -692,7 +792,12 @@ class StreamViewModel @Inject constructor(
     }
 
 
-    //TWITCH METHOD
+    /**
+     * a function used to send a request via [deleteChatMessage][com.example.clicker.network.domain.TwitchStream.deleteChatMessage]
+     * to delete a message
+     *
+     * @param messageId a unique identifier for the chat message
+     * */
     fun deleteChatMessage(messageId: String) = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("DeleteChatMessage")) {
             val isMod = _uiState.value.loggedInUserData?.mod ?: false
@@ -733,49 +838,46 @@ class StreamViewModel @Inject constructor(
         }
     }
 
-    //CHAT METHOD
-    private fun addChatter(username: String, message: String) {
+    /**
+     * a function used to add new [username] Strings to [allChatters]
+     *
+     * @param username a String representing the username visible on screen and is used by other chatters to identify people
+     * */
+    private fun addChatter(username: String) {
         if (!allChatters.contains(username)) {
             allChatters.add(username)
         }
     }
+    /**
+     * a function used to clear/empty [allChatters]
+     * */
     fun clearAllChatters(){
         allChatters.clear()
     }
 
-    //CHAT METHOD
+   /**
+    * updateClickedChat is a function meant to update the [_clickedUIState] state
+    *
+    * @param clickedUsername a String representing the username of the clicked user
+    * @param clickedUserId a String representing the unique identifier of the clicked user
+    * @param banned a Boolean representing if the clicked user is banned or not
+    * @param isMod a Boolean representing if the clicked user is a mod or not
+    * */
     fun updateClickedChat(
         clickedUsername: String,
         clickedUserId: String,
         banned: Boolean,
         isMod: Boolean
     ) {
-        Log.d("updateClickedChat","CLICKED")
-        Log.d("updateClickedChat","clickedUsername ->${clickedUsername}")
-
 
         clearClickedUsernameChatsDateSent()
-
         clearAllClickedUserBadgesImmutable()
-
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
-        val clickedUserMessages = clickedUserChats.map {
-            val scanner = MessageScanner(it.userType?:"")
-
-
-            /**WHEN*/
-            scanner.startScanningTokens()
-            ClickedUserNameChats(
-                message =it.userType?:"",
-                dateSent = it.dateSend,
-                messageTokenList = scanner.tokenList
-            )
-        }
+        val clickedUserMessages = createClickedUsernameChats(clickedUserChats)
         val badges = clickedUserChats.first().badges
-
         addAllClickedUserBadgesImmutable(badges)
-
         addAllClickedUsernameChatsDateSent(clickedUserMessages)
+
         _clickedUIState.value = _clickedUIState.value.copy(
             clickedUsername = clickedUsername,
             clickedUserId = clickedUserId,
@@ -785,6 +887,29 @@ class StreamViewModel @Inject constructor(
 
     }
 
+    /**
+     * createClickedUsernameChats is a function meant to take a list of [TwitchUserData]
+     *
+     * @param clickedUserChats a List of [TwitchUserData] objects representing all of the chat messages sent by a desired user
+     *
+     * @return a List of [ClickedUserNameChats] objects
+     * */
+    private fun createClickedUsernameChats(
+        clickedUserChats: List<TwitchUserData>
+    ):List<ClickedUserNameChats>{
+        val clickedUserMessages = clickedUserChats.map {
+            val scanner = MessageScanner(it.userType?:"")
+
+            scanner.startScanningTokens()
+            ClickedUserNameChats(
+                message =it.userType?:"",
+                dateSent = it.dateSend,
+                messageTokenList = scanner.tokenList
+            )
+        }
+        return clickedUserMessages
+
+    }
 //todo:*******************************************Parsing methods*************************************************
 
     /**
@@ -807,11 +932,21 @@ class StreamViewModel @Inject constructor(
             username =username,
         )
     }
+    /**
+     * addEmoteToText is function used add [emoteText] to the chat TextView
+     *
+     * @param emoteText a String representing the name of the emote
+     *
+     * */
     fun addEmoteToText(emoteText:String){
         textParsing.updateTextField(" $emoteText")
     }
 
 
+    /**
+     * deleteEmote is function used to delete the messages in the TextView when a User is using the emote board
+     *
+     * */
     fun deleteEmote(){
 
         if (textFieldValue.value.text.isEmpty()) {
@@ -844,8 +979,12 @@ class StreamViewModel @Inject constructor(
         )
     }
 
-    //TODO****************************todo:SOCKET RELATED BELOW*******************************************************
 
+    /**
+     * clearAllChatMessages is a function used to clean the remove all chat messages from the screen
+     *
+     * @param chatList a List representing all the chat messages the user has sent
+     * */
     private fun clearAllChatMessages(chatList: SnapshotStateList<TwitchUserData>){
         chatList.clear()
         val data =TwitchUserDataObjectMother
@@ -861,15 +1000,21 @@ class StreamViewModel @Inject constructor(
 
 
 
+    /**
+     * restartWebSocketFromLongClickMenu() is a function that is meant to start a websocket for the [channelName]
+     *
+     * @param channelName a String used to represent the channel we are going to try to connect to
+     * */
     fun restartWebSocketFromLongClickMenu(channelName: String){
         startWebSocket(channelName)
     }
 
 
-    //TODO: SOCKET METHOD
     /**
-     * startWebSocket() is a private method meant to be called by methods inside of [StreamViewModel]
+     * startWebSocket() is a function meant to be called by methods inside of [StreamViewModel]
      * It is used to start and connect a Websocket using the [TwitchSocket]
+     *
+     * @param channelName a String representing the channel I am going to connect to with the websocket
      * */
     private fun startWebSocket(channelName: String) = viewModelScope.launch(ioDispatcher) {
         Log.d("startWebSocket", "startWebSocket() is being called")
@@ -887,10 +1032,15 @@ class StreamViewModel @Inject constructor(
             listChats.clear()
         }
     }
+
+    /**
+     * sendMessage() is a function that is meant to monitor [chatMessage] for text commands and send the the message to the
+     * currently connected websocket
+     *
+     * @param chatMessage a String representing what the user has typed in chat
+     * */
     fun sendMessage(chatMessage: String){
-        //the scanner should be inside of the tokenCommand. I should be able to just call
-        //tokenCommand.checkForSlashCommands(chatMessage) and everything gets done automatically
-        // Why do I even tokenCommand.tokenCommand to be a state view?
+
         val scanner = Scanner(chatMessage)
 
         scanner.scanTokens()
@@ -899,9 +1049,6 @@ class StreamViewModel @Inject constructor(
         val messageTokenList = tokenList.map { MessageToken(PrivateMessageType.MESSAGE, messageValue = it.lexeme) }
         // todo: I need to test this
        val textCommands = tokenCommand.checkForSlashCommands(tokenList)
-
-        Log.d("TokenTextCommand","text command username ->${textCommands.username}")
-        Log.d("TokenTextCommand","type ->${textCommands.javaClass}")
 
 
         monitorToken(
@@ -920,7 +1067,15 @@ class StreamViewModel @Inject constructor(
     }
 
     /**
-     * This is the function that is responsible for running the commands of the slash commands
+     * monitorToken() is responsible for running the commands of the slash commands
+     *
+     * @param tokenCommand a [TextCommands] object representing any command typed into chat
+     * @param chatMessage a String representing the actual chat message
+     *
+     * @param isMod a Boolean representing if the user is a moderator or not
+     * @param addMessageToListChats a String representing the actual chat message
+     * @param messageTokenList a function used to send the chat message to the UI
+     * @param messageTokenList a list of [MessageToken] objects where each object represents an individual word
      *
      * */
     private fun monitorToken(
@@ -947,7 +1102,7 @@ class StreamViewModel @Inject constructor(
                     listChats.find { conditional(it) }?.userId
                 },
                 addToMonitorUser={username -> },
-                removeFromMonitorUser ={username -> monitoredUsers.remove(username)},
+                removeFromMonitorUser ={username -> },
                 currentUsername = _uiState.value.loggedInUserData?.displayName?:"",
                 sendToWebSocket = {message ->
                     webSocket.sendMessage(message)
@@ -959,8 +1114,6 @@ class StreamViewModel @Inject constructor(
 
     }
 
-
-    /********END OF SOCKET METHODS***********/
 
 
 
@@ -1000,14 +1153,16 @@ class StreamViewModel @Inject constructor(
 
 
 
-/******************************WARNING USER**********************************************************/
+/**
+ * StreamViewModel method for [warnUser][com.example.clicker.network.domain.TwitchStream.warnUser]
+ * */
 fun warnUser()=viewModelScope.launch(ioDispatcher){
 
         Log.d("WarningTextExpty","FALSE")
         val warnUserBody = WarnUserBody(
             data = WarnData(
                 user_id = _clickedUIState.value.clickedUserId,
-                reason = warningText.value
+                reason = _warningText.value
             )
         )
         Log.d("warnUserFunc","oAuthToken ->${_uiState.value.oAuthToken}")
@@ -1058,6 +1213,9 @@ fun warnUser()=viewModelScope.launch(ioDispatcher){
 
 
 }
+    /**
+     * warnUserSlashCommand is the method called when a user types /warn. It is a wrapper method for [warnUser][com.example.clicker.network.domain.TwitchStream.warnUser]
+     * */
     private fun warnUserSlashCommand(
         userId:String,reason: String,username:String
     ) = viewModelScope.launch(ioDispatcher){
@@ -1112,6 +1270,10 @@ fun warnUser()=viewModelScope.launch(ioDispatcher){
 
 
 
+    /**
+     * StreamViewModel wrapper method for [banUser][com.example.clicker.network.domain.TwitchStream.banUser]. called to timeout a
+     * user. According to Twitch, the only difference between a timeout and a ban, is the duration.
+     * */
     fun timeoutUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("TimeoutUser")) {
             val isMod:Boolean = _uiState.value.loggedInUserData?.mod ?: false
@@ -1179,46 +1341,9 @@ fun warnUser()=viewModelScope.launch(ioDispatcher){
 
 
 
-    private fun unBanUserSlashCommand(userId: String) = viewModelScope.launch{
-        withContext(ioDispatcher + CoroutineName("UnBanUser")) {
-            twitchRepoImpl.unBanUser(
-                oAuthToken = _uiState.value.oAuthToken,
-                clientId = _uiState.value.clientId,
-                moderatorId = _uiState.value.userId,
-                broadcasterId = _uiState.value.broadcasterId,
-                userId = userId //TODO:PASS IT IN
-
-            ).collect { response ->
-                when (response) {
-                    is Response.Loading -> {
-                        Log.d("TESTINGTHEUNBANRESPONSE", "LOADING")
-                    }
-                    is Response.Success -> {
-                        _uiState.value = _uiState.value.copy(
-                            banResponse = Response.Success(true),
-                            undoBanResponse = true
-                        )
-
-                        val unBanSuccessMessage =TwitchUserDataObjectMother.addColor("#FFBB86FC")
-                            .addDisplayName("Room update")
-                            .addUserType("Unban successful")
-                            .addMessageType(MessageType.NOTICE)
-                            .build()
-                        listChats.add(unBanSuccessMessage)
-                    }
-                    is Response.Failure -> {
-                        Log.d("TESTINGTHEUNBANRESPONSE", "FAILED")
-                        _uiState.value = _uiState.value.copy(
-                            showStickyHeader = true,
-                            undoBanResponse = false,
-                            banResponseMessage = "Fail. User may be unbanned"
-                        )
-                    }
-                }
-            }
-        }
-
-    }
+    /**
+     * banUserSlashCommand is the method called when a user types /ban. It is a wrapper method for [banUser][com.example.clicker.network.domain.TwitchStream.banUser]
+     * */
     private fun banUserSlashCommand(userId: String, reason:String){
         Log.d("banUserSlashCommand","oAuthToken-->  ${_uiState.value.oAuthToken}")
         Log.d("banUserSlashCommand","clientId-->${_uiState.value.clientId}")
@@ -1276,7 +1401,10 @@ fun warnUser()=viewModelScope.launch(ioDispatcher){
 
     }
 
-    //TODO: TWICH METHOD
+
+    /**
+     * StreamViewModel method for [banUser][com.example.clicker.network.domain.TwitchStream.banUser]
+     * */
     fun banUser() = viewModelScope.launch {
         val banUserNew = BanUser(
             data = BanUserData( //TODO:SHOULD BE PASSED IN
@@ -1336,7 +1464,55 @@ fun warnUser()=viewModelScope.launch(ioDispatcher){
 
         }
     }
-    //TODO: DOES THIS EVEN WORK WITHOUT _idOfLatestBan
+
+
+    /**
+     * unBanUserSlashCommand is the method called when a user types /unban. It is a wrapper method for [unBanUser][com.example.clicker.network.domain.TwitchStream.unBanUser]
+     * */
+    private fun unBanUserSlashCommand(userId: String) = viewModelScope.launch{
+        withContext(ioDispatcher + CoroutineName("UnBanUser")) {
+            twitchRepoImpl.unBanUser(
+                oAuthToken = _uiState.value.oAuthToken,
+                clientId = _uiState.value.clientId,
+                moderatorId = _uiState.value.userId,
+                broadcasterId = _uiState.value.broadcasterId,
+                userId = userId //TODO:PASS IT IN
+
+            ).collect { response ->
+                when (response) {
+                    is Response.Loading -> {
+                        Log.d("TESTINGTHEUNBANRESPONSE", "LOADING")
+                    }
+                    is Response.Success -> {
+                        _uiState.value = _uiState.value.copy(
+                            banResponse = Response.Success(true),
+                            undoBanResponse = true
+                        )
+
+                        val unBanSuccessMessage =TwitchUserDataObjectMother.addColor("#FFBB86FC")
+                            .addDisplayName("Room update")
+                            .addUserType("Unban successful")
+                            .addMessageType(MessageType.NOTICE)
+                            .build()
+                        listChats.add(unBanSuccessMessage)
+                    }
+                    is Response.Failure -> {
+                        Log.d("TESTINGTHEUNBANRESPONSE", "FAILED")
+                        _uiState.value = _uiState.value.copy(
+                            showStickyHeader = true,
+                            undoBanResponse = false,
+                            banResponseMessage = "Fail. User may be unbanned"
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * StreamViewModel method for [unBanUser][com.example.clicker.network.domain.TwitchStream.unBanUser]
+     * */
     fun unBanUser() = viewModelScope.launch {
         withContext(ioDispatcher + CoroutineName("UnBanUser")) {
             twitchRepoImpl.unBanUser(

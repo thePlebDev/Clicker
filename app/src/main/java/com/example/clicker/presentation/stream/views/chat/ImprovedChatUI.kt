@@ -110,8 +110,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 
-import com.example.clicker.network.websockets.MessageToken
-import com.example.clicker.network.websockets.PrivateMessageType
+
 
 
 import kotlinx.coroutines.delay
@@ -126,8 +125,10 @@ import com.example.clicker.network.repository.models.EmoteNameUrlEmoteTypeList
 import com.example.clicker.network.repository.models.EmoteNameUrlList
 import com.example.clicker.network.repository.models.EmoteTypes
 import com.example.clicker.network.repository.models.IndivBetterTTVEmoteList
+import com.example.clicker.network.websockets.models.MessageToken
 
 import com.example.clicker.network.websockets.models.MessageType
+import com.example.clicker.network.websockets.models.PrivateMessageType
 import com.example.clicker.presentation.stream.util.FilteredChatListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 
