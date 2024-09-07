@@ -23,6 +23,12 @@ enum class TokenType {
 }
 
 
+/**
+ * Token represents a individual word that the user has typed out
+ *
+ * @param tokenType a [TokenType] representing what kind of word this token represents
+ * @param lexeme a String representing the actual value of this token
+ * */
 data class Token(
     val tokenType: TokenType,
     val lexeme:String
@@ -158,101 +164,4 @@ class Scanner (private val source:String) {
 
 
 
-}
-class TokenCommand @Inject constructor(){
-
-    /**
-     * checkForSlashCommands is used to return a single [TextCommands] object. Which is used to determine if any commands should
-     * be sent from the users messaging prompts. ie, /ban,/unban or /warn
-     * */
-     fun checkForSlashCommands(tokenList: List<Token>):TextCommands{
-        //create findusername() function to check for null
-         Log.d("checkForSlashCommands","tokenList size -->${tokenList.size}")
-        val listOfTextCommands = mutableListOf<TextCommands>()
-
-        when{
-            hasUnrecognizedTokenType(tokenList)->{
-                val unrecognized =tokenList.first { it.tokenType == TokenType.UNRECOGNIZED }.lexeme
-              //  _tokenCommand.tryEmit(TextCommands.UNRECOGNIZEDCOMMAND(unrecognized))
-                return TextCommands.UnrecognizedCommand(unrecognized)
-
-            }
-            hasBanTokenType(tokenList)->{
-                //make ban request
-                // get username and text
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send Ban command
-                    val reason = tokenList
-                        .filter { it.tokenType == TokenType.TEXT }
-                        .map{ it.lexeme }
-                        .joinToString(separator = " ")
-
-                  //  _tokenCommand.tryEmit(TextCommands.Ban(username=username.replace("@", ""),reason=reason))
-                    return TextCommands.Ban(username=username.replace("@", ""),reason=reason)
-                }
-                else{
-                    //todo: tell user that there is no username
-                  //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NoUsername
-                }
-
-            }
-            hasUnbanTokenType(tokenList)->{
-                //make unban request
-                // get username
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    //todo: send unBan command
-
-                 //   _tokenCommand.tryEmit(TextCommands.UnBan(username=username.replace("@", "")))
-                    return TextCommands.UnBan(username=username.replace("@", ""))
-                }
-                else{
-                    //todo: tell user that there is no username
-                  //  _tokenCommand.tryEmit(TextCommands.NOUSERNAME)
-                    return TextCommands.NoUsername
-                }
-            }
-
-            hasWarnTokenType(tokenList)->{
-                val username =tokenList
-                    .find{ it.tokenType == TokenType.USERNAME }?.lexeme
-                if(username != null){
-                    val reason = tokenList
-                        .filter { it.tokenType == TokenType.TEXT }
-                        .map{ it.lexeme }
-                        .joinToString(separator = " ")
-
-                    return TextCommands.Warn(username=username.replace("@", ""),reason=reason)
-
-                }else{
-                    return TextCommands.NoUsername
-                }
-
-            }
-
-            else->{
-                val message = tokenList.map { it.lexeme }.joinToString(separator = " ")
-                return TextCommands.NormalMessage(message)
-
-            }
-        }
-
-    }
-
-    private fun hasBanTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.BAN }
-    }
-    private fun hasUnbanTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.UNBAN }
-    }
-    private fun hasUnrecognizedTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.UNRECOGNIZED }
-    }
-    private fun hasWarnTokenType(tokens: List<Token>): Boolean {
-        return tokens.any { it.tokenType == TokenType.WARN }
-    }
 }
