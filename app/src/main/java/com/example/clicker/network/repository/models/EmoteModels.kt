@@ -5,7 +5,6 @@ import androidx.compose.runtime.Immutable
 import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
 
 
-
 /**
  * EmoteNameEmoteType represents a single Twitch Emote from the Twitch servers, when calling get channel emotes
  * - you can read more about getting channel emotes, [HERE](https://dev.twitch.tv/docs/api/reference/#get-channel-emotes)
@@ -17,7 +16,8 @@ import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
 data class EmoteNameUrlEmoteType(
     val name:String,
     val url:String,
-    val emoteType:EmoteTypes
+    val emoteType:EmoteTypes,
+    val channelName:String =""
 )
 
 /**
@@ -37,6 +37,7 @@ data class EmoteNameUrlList(
     val list:List<EmoteNameUrl> = listOf()
 )
 
+
 /**
  * EmoteNameUrl represents a single Twitch Emote from the Twitch servers. Each instance of this class is a unique Emote
  *
@@ -46,6 +47,7 @@ data class EmoteNameUrlList(
 data class EmoteNameUrl(
     val name:String,
     val url:String,
+    val channelName: String=""
 )
 
 
