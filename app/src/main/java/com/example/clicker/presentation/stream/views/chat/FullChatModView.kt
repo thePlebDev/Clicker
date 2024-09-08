@@ -52,7 +52,7 @@ fun FullChatModView(
     hideSoftKeyboard:()-> Unit,
     emoteBoardGlobalList: EmoteNameUrlList,
     emoteBoardChannelList: EmoteNameUrlEmoteTypeList,
-    emoteBoardMostFrequentList: EmoteNameUrlList,
+    emoteBoardMostFrequentList:  EmoteNameUrlList,
     updateMostFrequentEmoteList:(EmoteNameUrl)->Unit,
     updateTextWithEmote:(String) ->Unit,
     deleteEmote:()->Unit,
@@ -77,6 +77,7 @@ fun FullChatModView(
     channelBetterTTVEmoteContentMap: EmoteListMap,
     sharedBetterTTVEmoteContentMap: EmoteListMap,
     lowPowerMode:Boolean,
+    channelName:String,
 
     ){
     val lazyColumnListState = rememberLazyListState()
@@ -212,7 +213,8 @@ fun FullChatModView(
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub = userIsSub,
         forwardSlashes = forwardSlashes,
-        lowPowerMode = lowPowerMode
+        lowPowerMode = lowPowerMode,
+        channelName = channelName
 
 
 

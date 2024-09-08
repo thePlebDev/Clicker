@@ -22,7 +22,9 @@ import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.domain.TwitchSocket
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.network.repository.models.EmoteNameUrlEmoteType
 import com.example.clicker.network.repository.models.EmoteNameUrlList
+import com.example.clicker.network.repository.models.EmoteTypes
 
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.models.MessageToken
@@ -58,6 +60,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+
+
 
 
 
@@ -136,7 +141,10 @@ class StreamViewModel @Inject constructor(
      * A list representing all the most recent clicked emotes
      * */
     val mostFrequentEmoteListTesting = mutableStateOf(EmoteNameUrlList())
+
+
     private val temporaryMostFrequentList = mutableStateListOf<EmoteNameUrl>()
+
 
     /**
      * A list representing all the chats users have sent
@@ -381,6 +389,7 @@ class StreamViewModel @Inject constructor(
                 _channelName.collect { channelName ->
                     channelName?.let {
                         startWebSocket(channelName)
+                        filterOutChannelEmotesFromMostRecentList(channelName)
                     }
                 }
             }
@@ -536,6 +545,16 @@ class StreamViewModel @Inject constructor(
 
 
     }
+    private fun filterOutChannelEmotesFromMostRecentList(channelName: String){
+        val oldListMapped = mostFrequentEmoteListTesting.value.list
+
+        mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
+            list =oldListMapped.filter{it.channelName =="GLOBAL"}
+        )
+        temporaryMostFrequentList.clear()
+
+
+    }
 
     /**
      *  a function used to update [_clickedStreamInfo]
@@ -678,6 +697,7 @@ class StreamViewModel @Inject constructor(
         clientId: String,
         broadcasterId: String
     ){
+        Log.d("getChannelEmotesChannelEmotes","channel name -> ${_channelName.value}")
 //        Log.d("getGlobalEmotes","oAuthToken-->${oAuthToken}")
 //        Log.d("getGlobalEmotes","clientId ->$clientId")
 //        Log.d("getGlobalEmotes","broadcasterId ->$broadcasterId")
@@ -685,7 +705,7 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(ioDispatcher){
                 twitchEmoteImpl.getChannelEmotes(
-                    oAuthToken,clientId,broadcasterId
+                    oAuthToken,clientId,broadcasterId,_channelName.value?:""
                 ).mapWithRetry(
                     action={
                         // result is the result from getChannelEmotes()
@@ -936,6 +956,7 @@ class StreamViewModel @Inject constructor(
      *
      * */
     fun addEmoteToText(emoteText:String){
+        Log.d("ChannelNameTest","_channelName ->${_channelName.value}")
         textParsing.updateTextFieldWithEmote(" $emoteText")
     }
 

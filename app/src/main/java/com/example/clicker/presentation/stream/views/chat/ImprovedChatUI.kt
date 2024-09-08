@@ -145,7 +145,6 @@ fun ChatUI(
     showBanDialog:()->Unit,
     doubleClickMessage:(String)->Unit,
 
-
     //below is what is needed for the chat UI
     textFieldValue: MutableState<TextFieldValue>,
     clickedAutoCompleteText: (String) -> Unit,
@@ -186,6 +185,7 @@ fun ChatUI(
     channelBetterTTVEmoteContentMap:EmoteListMap,
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     lowPowerMode:Boolean,
+    channelName:String,
 
 
     ){
@@ -331,7 +331,8 @@ fun ChatUI(
         sharedBetterTTVResponse=sharedBetterTTVResponse,
         userIsSub=userIsSub,
         forwardSlashes=forwardSlashes,
-        lowPowerMode=lowPowerMode
+        lowPowerMode=lowPowerMode,
+        channelName=channelName
 
         )
 }
@@ -362,6 +363,7 @@ fun ChatUIBox(
     deleteEmote:()->Unit,
     userIsSub:Boolean,
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
+    channelName:String,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -420,6 +422,7 @@ fun ChatUIBox(
                             channelBetterTTVResponse = channelBetterTTVResponse,
                             sharedBetterTTVResponse = sharedBetterTTVResponse,
                             userIsSub = userIsSub,
+                            channelName=channelName
 
                             )
 
@@ -477,8 +480,9 @@ fun EmoteBoard(
     closeEmoteBoard: () -> Unit,
     deleteEmote:()->Unit,
     userIsSub:Boolean,
+    channelName:String,
 
-){
+    ){
     Log.d("FlowRowSimpleUsageExampleClicked", "EmoteBoard recomp")
     val lazyGridState = rememberLazyGridState()
     val betterTTVLazyGridState = rememberLazyGridState()
@@ -548,7 +552,8 @@ fun EmoteBoard(
                                         updateTempararyMostFrequentEmoteList(value)
                                     },
                                     modifier = Modifier.padding(bottom = 50.dp),
-                                    userIsSub=userIsSub
+                                    userIsSub=userIsSub,
+                                    channelName=channelName
 
                                 )
                                 EmoteBottomUI(
@@ -591,6 +596,7 @@ fun EmoteBoard(
                                 betterTTVLazyGridState=betterTTVLazyGridState,
                                 updateTempararyMostFrequentEmoteList={usedEmote->updateTempararyMostFrequentEmoteList(usedEmote)},
                                 modifier = Modifier.padding(bottom = 50.dp),
+                                channelName=channelName
 
                             )
                             BetterTTVEmoteBottomUI(
@@ -645,6 +651,7 @@ fun BetterTTVEmoteBoard(
     betterTTVLazyGridState: LazyGridState,
     updateTextWithEmote: (String) -> Unit,
     updateTempararyMostFrequentEmoteList:(EmoteNameUrl)->Unit,
+    channelName:String,
     modifier:Modifier
 
 ){
@@ -696,7 +703,8 @@ fun BetterTTVEmoteBoard(
                             updateTempararyMostFrequentEmoteList(
                                 EmoteNameUrl(
                                     name=it.code,
-                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                                    channelName = channelName
                                 )
                             )
                         }
@@ -736,7 +744,8 @@ fun BetterTTVEmoteBoard(
                     updateTempararyMostFrequentEmoteList(
                         EmoteNameUrl(
                             name=it.code,
-                            url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                            url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                            channelName = channelName
                         )
                     )
                 }
@@ -781,7 +790,8 @@ fun BetterTTVEmoteBoard(
                             updateTempararyMostFrequentEmoteList(
                                 EmoteNameUrl(
                                     name=it.code,
-                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x"
+                                    url ="https://cdn.betterttv.net/emote/${it.id}/1x",
+                                    channelName="GLOBAL"
                                 )
                             )
                         }
@@ -1021,7 +1031,6 @@ fun BetterTTVEmoteBottomUI(
  * - restartable
  * - skippable
  * */
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun LazyGridEmotes(
     emoteBoardGlobalList: EmoteNameUrlList,
@@ -1032,6 +1041,7 @@ fun LazyGridEmotes(
 
     lazyGridState: LazyGridState,
     userIsSub:Boolean,
+    channelName:String,
     modifier:Modifier,
 ) {
 
@@ -1171,7 +1181,11 @@ fun LazyGridEmotes(
                         .clickable {
                             updateTextWithEmote(it.name)
                             updateTempararyMostFrequentEmoteList(
-                                EmoteNameUrl(it.name, it.url)
+                                EmoteNameUrl(
+                                    it.name,
+                                    it.url,
+                                    channelName = channelName
+                                )
                             )
                         }
                 )
@@ -1217,7 +1231,7 @@ fun LazyGridEmotes(
                     .clickable {
                         updateTextWithEmote(it.name)
                         updateTempararyMostFrequentEmoteList(
-                            EmoteNameUrl(it.name, it.url)
+                            EmoteNameUrl(it.name, it.url,"GLOBAL")
                         )
                     }
             )

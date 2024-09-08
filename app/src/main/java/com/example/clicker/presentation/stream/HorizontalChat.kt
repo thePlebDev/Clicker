@@ -335,9 +335,7 @@ fun HorizontalChat(
                 channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
                 sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                 lowPowerMode= streamViewModel.lowPowerModeActive.value,
-
-
-
+                channelName = streamViewModel.channelName.value ?:""
 
             )
 

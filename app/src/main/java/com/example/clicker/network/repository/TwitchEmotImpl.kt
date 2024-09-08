@@ -259,7 +259,7 @@ class TwitchEmoteImpl @Inject constructor(
 
 
     override fun getChannelEmotes(
-        oAuthToken: String, clientId: String,broadcasterId:String
+        oAuthToken: String, clientId: String,broadcasterId:String,channelName: String
     ): Flow<Response<Boolean>> =flow{
         emit(Response.Loading)
         val response = twitchEmoteClient.getChannelEmotes(
@@ -274,7 +274,7 @@ class TwitchEmoteImpl @Inject constructor(
             if(data.isNotEmpty()){
                // Log.d("CheckkinggetChannelEmotes","emotes ->${data}")
 
-                val parsedEmoteData = convertDataToEmoteNameUrlEmoteType(data)
+                val parsedEmoteData = convertDataToEmoteNameUrlEmoteType(data,channelName)
                 val newChannelEmoteList = parsedEmoteData.map{
 
                     EmoteNameUrl(
@@ -312,11 +312,17 @@ class TwitchEmoteImpl @Inject constructor(
         emit(Response.Failure(Exception("Unable to get emotes")))
     }
     private fun convertDataToEmoteNameUrlEmoteType(
-        data: List<ChannelEmote>
+        data: List<ChannelEmote>,
+        channelName:String,
     ): List<EmoteNameUrlEmoteType>{
        return data.map {// getting data from the request
             val emoteType = if(it.emote_type =="subscriptions") EmoteTypes.SUBS else EmoteTypes.FOLLOWERS
-            EmoteNameUrlEmoteType(it.name,it.images.url_1x,emoteType)
+            EmoteNameUrlEmoteType(
+                it.name,
+                it.images.url_1x,
+                emoteType,
+                channelName = channelName
+            )
         }
 
     }
