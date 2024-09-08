@@ -3,7 +3,6 @@ package com.example.clicker
 import com.example.clicker.network.clients.Emote
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.ParsingEngine
-import com.example.clicker.network.websockets.findEmoteNames
 import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.presentation.stream.util.Token
 import com.example.clicker.presentation.stream.util.TokenType
@@ -13,6 +12,7 @@ import org.junit.Test
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.regex.Pattern
 
 class ParsingEngineTest {
     val underTest: ParsingEngine = ParsingEngine()
@@ -247,7 +247,7 @@ class ParsingEngineTest {
         val emoteNames = listOf("SeemsGood","ChewyYAY", "GoatEmotey", "GoldPLZ", "ForSigmar", "TwitchConHYPE", "PopNemo", "FlawlessVictory", "PikaRamen", "DinoDance", "NiceTry", "LionOfYara", "NewRecord", "Lechonk", "Getcamped", "SUBprise", "FallHalp", "FallCry", "FallWinning")
 
         /**WHEN*/
-        val foundEmotes = findEmoteNames(privateMsg, emoteNames)
+      //  val foundEmotes = findEmoteNames(privateMsg, emoteNames)
 
         /**THEN*/
         //Assert.assertEquals(foundEmotes[0].emoteKey, foundEmoteOne)
@@ -350,6 +350,32 @@ class ParsingEngineTest {
 
 
     }
+
+
+    @Test
+    fun testing_again_test2(){
+        // the regex engine is NFA
+        val timesToDo = 1000L
+        val LONGER_EXPECTED_MESSAGE = "@NotTooBadAye same was just thinking the same thing"
+        val channelName = "cohhcarnage"
+
+
+        val longerParsingString = "@badge-info=;badges=premium/1;client-nonce=3110c13339efbb8bf9e2c10c9951de6d;color=#8A2BE2;display-name=PixelWhip;emotes=;first-msg=0;flags=;id=1df2a3a7-7ab7-42a3-882c-836cea92f377;mod=0;reply-parent-display-name=NotTooBadAye;reply-parent-msg-body=this\\sgame\\sreminds\\sme\\sof\\sNeopets;reply-parent-msg-id=43eb8d7d-4584-4777-9b14-fc6479637b20;reply-parent-user-id=72807154;reply-parent-user-login=nottoobadaye;reply-thread-parent-msg-id=43eb8d7d-4584-4777-9b14-fc6479637b20;reply-thread-parent-user-login=nottoobadaye;returning-chatter=0;room-id=26610234;subscriber=0;tmi-sent-ts=1696686129437;turbo=0;user-id=66065436;user-type= :pixelwhip!pixelwhip@pixelwhip.tmi.twitch.tv PRIVMSG #cohhcarnage :$LONGER_EXPECTED_MESSAGE"
+
+        for (i in 4 downTo 1) {
+            var count = timesToDo
+            val startTime = System.currentTimeMillis()
+            while (--count > 0) {
+                underTest.privateMessageParsing(longerParsingString,channelName)
+            }
+            val seconds = (System.currentTimeMillis() - startTime) / 1000.0
+            println("Alternation takes $seconds seconds")
+        }
+
+
+        Assert.assertEquals(1, 2)
+    }
+
 
 }
 // this function works, manualy test it when I wake up

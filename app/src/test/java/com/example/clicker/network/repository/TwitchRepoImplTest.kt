@@ -1,18 +1,20 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
-import com.example.clicker.network.clients.GetModChannels
+
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.models.twitchClient.GetModChannels
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.models.twitchRepo.toStreamInfo
 import com.example.clicker.network.repository.util.TwitchHomeClientBuilder
 import com.example.clicker.network.repository.util.createJsonBodyFrom
-import com.example.clicker.presentation.home.StreamInfo
+import com.example.clicker.presentation.home.models.StreamInfo
+
 
 import com.example.clicker.presentation.stream.util.Scanner
 import com.example.clicker.presentation.stream.util.Token

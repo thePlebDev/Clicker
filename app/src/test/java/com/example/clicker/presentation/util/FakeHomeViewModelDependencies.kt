@@ -1,11 +1,11 @@
 package com.example.clicker.presentation.util
 
 import com.example.clicker.domain.TwitchDataStore
-import com.example.clicker.network.clients.AllFollowedStreamers
-import com.example.clicker.network.clients.GetModChannels
+
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
+import com.example.clicker.network.models.twitchClient.GetModChannels
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.util.FakeAuthentication.Companion.validateToken

@@ -316,14 +316,6 @@ class ParsingEngine @Inject constructor() {
         }
         val parsedBadgesList = parseBadges(text)
 
-      //  Log.d("PRIVATEMSSGDATE","dateParsedOut --> $dateParsedOut")
-//            ?.toLong()?.also {
-//            val date = Date(it)
-//            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-//            val formattedDate = format.format(date)
-////            Log.d("PRIVATEMSSGDATE","formattedDate --> $formattedDate")
-//
-//        }
         val badgeInfo =parseBadgeInfo(text)
 
         return TwitchUserData(

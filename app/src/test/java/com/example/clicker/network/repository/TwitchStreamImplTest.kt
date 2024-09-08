@@ -12,7 +12,8 @@ import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.UpdateChatSettings
 import com.example.clicker.network.repository.util.TwitchClientBuilder
 import com.example.clicker.network.repository.util.createJsonBodyFrom
-import com.example.clicker.network.websockets.MessageType
+import com.example.clicker.network.websockets.models.MessageType
+
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.Response
 import com.example.clicker.util.objectMothers.IndividualAutoModSettingsDataObjectMother
