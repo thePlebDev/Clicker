@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.stream.util
 
 import android.util.Log
+import com.example.clicker.presentation.stream.util.domain.TokenCommandParsing
 import javax.inject.Inject
 
 /**
@@ -8,17 +9,9 @@ import javax.inject.Inject
  *
  * @property checkForSlashCommands
  * */
-class TokenCommand @Inject constructor(){
+class TokenCommand @Inject constructor(): TokenCommandParsing {
 
-    /**
-     * checkForSlashCommands is used to return a single [TextCommands] object. Which is used to determine if any commands should
-     * be sent from the users messaging prompts. ie, /ban,/unban or /warn
-     *
-     * @param tokenList a list of [Token] objects meant to represent the individual words the user typed out
-     *
-     * @return [TextCommands] object
-     * */
-    fun checkForSlashCommands(tokenList: List<Token>):TextCommands{
+    override fun checkForSlashCommands(tokenList: List<Token>):TextCommands{
 
         when{
             hasUnrecognizedTokenType(tokenList)->{

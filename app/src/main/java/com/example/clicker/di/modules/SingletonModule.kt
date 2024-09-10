@@ -48,8 +48,10 @@ import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.TextParsing
+import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.util.TokenMonitoring
 import com.example.clicker.presentation.stream.util.domain.TextFieldParsing
+import com.example.clicker.presentation.stream.util.domain.TokenCommandParsing
 import com.example.clicker.presentation.stream.util.domain.TokenParsing
 import dagger.Binds
 import dagger.Module
@@ -105,6 +107,11 @@ object SingletonModule {
     @Provides
     fun providesTokenParsing(): TokenParsing {
         return TokenMonitoring()
+    }
+
+    @Provides
+    fun providesTokenCommandParsing(): TokenCommandParsing {
+        return TokenCommand()
     }
 
 
