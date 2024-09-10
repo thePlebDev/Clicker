@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.getTextBeforeSelection
+import com.example.clicker.presentation.stream.util.domain.TextFieldParsing
 
 import javax.inject.Inject
 
@@ -55,7 +56,7 @@ data class FilteredChatterListImmutableCollection(
 
 
 
-class TextParsing @Inject constructor() {
+class TextParsing @Inject constructor():TextFieldParsing {
     private val listOfCommands = listOf(
         ForwardSlashCommands(title="/ban [username] [reason] ", subtitle = "Permanently ban a user from chat",clickedValue="ban"),
         ForwardSlashCommands(title="/unban [username] ", subtitle = "Remove a timeout or a permanent ban on a user",clickedValue="unban"),
@@ -63,10 +64,8 @@ class TextParsing @Inject constructor() {
 
     )
 
-    /**
-     * a [TextFieldValue] object that represents what the user is typing inside of the TextField
-     * */
-    val textFieldValue = mutableStateOf(
+
+    override val textFieldValue = mutableStateOf(
         TextFieldValue(
             text = "",
             selection = TextRange(0)
@@ -82,12 +81,7 @@ class TextParsing @Inject constructor() {
     private var _filteredChatterListImmutableCollection by mutableStateOf(
         FilteredChatterListImmutableCollection(filteredChatterList)
     )
-    /**
-     * a [FilteredChatterListImmutableCollection] containing a list of all the filtered chatters. Used by the UI when a
-     * user types a ***@***
-     *
-     * */
-    val filteredChatterListImmutable: State<FilteredChatterListImmutableCollection>
+    override val filteredChatterListImmutable: State<FilteredChatterListImmutableCollection>
         get() = mutableStateOf(_filteredChatterListImmutableCollection)
 
     private fun addAllFilteredChattersList(commands:List<String>){
@@ -118,10 +112,8 @@ class TextParsing @Inject constructor() {
     private var _forwardSlashCommandsImmutableCollection by mutableStateOf(
         ForwardSlashCommandsImmutableCollection(_forwardSlashCommands)
     )
-    /**
-     * - a state object containing a [ForwardSlashCommandsImmutableCollection] object
-     * */
-    val forwardSlashCommandsState: State<ForwardSlashCommandsImmutableCollection>
+
+    override val forwardSlashCommandsState: State<ForwardSlashCommandsImmutableCollection>
         get() = mutableStateOf(_forwardSlashCommandsImmutableCollection)
 
 
@@ -145,17 +137,9 @@ class TextParsing @Inject constructor() {
     var slashCommandState:Boolean = false
     var slashCommandIndex:Int =0
 
-    /********BELOW ARE ALL THE methods*******/
 
-    /**
-     * clickUsernameAutoTextChange() is a function meant to be run when a user clicks on a username after typing the ***@*** symbol.
-     * It will create a new text with the clicked username and replace the old text that the user was typing
-     *
-     * @param username a string meant to represent the username that the user just clicked on
-     * */
-    fun clickUsernameAutoTextChange(
+    override fun clickUsernameAutoTextChange(
         username:String,
-
     ){
         val currentCharacterIndex = textFieldValue.value.selection.end
 
@@ -174,12 +158,7 @@ class TextParsing @Inject constructor() {
         clearFilteredChatterListImmutable()
     }
 
-    /**
-     * updateTextField is a function used to update [textFieldValue] with a text that represents the Emote a user just clicked
-     *
-     * @param emoteText a String representing the emote a user just clicked on
-     * */
-    fun updateTextFieldWithEmote(emoteText:String){
+    override fun updateTextFieldWithEmote(emoteText:String){
         val currentString = textFieldValue.value.text
         val cursorPosition = textFieldValue.value.selection.start
 
@@ -194,13 +173,8 @@ class TextParsing @Inject constructor() {
 
 
 
-    /**
-     * clickUsernameAutoTextChange() is a function meant to be run when a user clicks on a slash command after typing the `\` symbol.
-     * It will create a new text with the clicked slash command and replace the old text that the user was typing
-     *
-     * @param command a string meant to represent the slash command that the user clicked on
-     * */
-    fun clickSlashCommandTextAutoChange(
+
+    override fun clickSlashCommandTextAutoChange(
         command:String,
     ){
         val currentCharacterIndex = textFieldValue.value.selection.end
@@ -215,15 +189,7 @@ class TextParsing @Inject constructor() {
         slashCommandIndex =0
     }
 
-
-    /**
-     * parsingMethod is a function that gets called each time the user types in the chat box. Also, its main job is to
-     * monitor for if the user types in ***@*** or slash command
-     *
-     * @param textFieldValue a [TextFieldValue] that represents what the user is currently typing in chat
-     * @param allChatters a List of Strings representing all of the individual chatters in this chat
-     * */
-    fun parsingMethod(
+    override fun parsingMethod(
         textFieldValue: TextFieldValue,
         allChatters:List<String>
     ){

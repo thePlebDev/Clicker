@@ -47,6 +47,8 @@ import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
+import com.example.clicker.presentation.stream.util.TextParsing
+import com.example.clicker.presentation.stream.util.domain.TextFieldParsing
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -93,6 +95,10 @@ object SingletonModule {
     @Provides
     fun providesBetterTTVEmotes(betterTTVEmotesImpl: BetterTTVEmotesImpl): BetterTTVEmotes {
         return betterTTVEmotesImpl
+    }
+    @Provides
+    fun providesTextFieldParsing(): TextFieldParsing {
+        return TextParsing()
     }
 
 
