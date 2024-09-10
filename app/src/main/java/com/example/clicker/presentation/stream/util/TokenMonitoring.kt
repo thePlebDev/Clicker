@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.websockets.models.MessageToken
 import com.example.clicker.network.websockets.models.MessageType
+import com.example.clicker.presentation.stream.util.domain.TokenParsing
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -16,25 +17,11 @@ import javax.inject.Inject
  * @property runMonitorToken a function that depending on the type of [TextCommands] will inform the user of the action
 
  */
-class TokenMonitoring @Inject constructor(){
+class TokenMonitoring @Inject constructor():TokenParsing{
 
 
-    /**
-     * this is a testing thing
-     *
-     * @param tokenCommand a [TextCommands] object the will determine what action the function will take
-     * @param chatMessage a String representing what the user has typed and sent
-     * @param isMod a Boolean determining if the user is a moderator or not
-     * @param currentUsername a String representing the username of the currently logged in User
-     * @param sendToWebSocket a function that will send the [chatMessage] to the websocket to be seen by other users
-     * @param addMessageToListChats a function that will send the [chatMessage] to the UI so that is can be see user (not seen by others)
-     * @param banUserSlashCommand a function called when a user types /ban
-     * @param getUserId a function used to find a user in the chat session
-     * @param unbanUserSlash a function called when a user types /unban
-     * @param messageTokenList a List of [MessageToken] representing all the individual words the user has typed out
-     * @param warnUser a function called when a user types /warn
-     * */
-     fun runMonitorToken(
+
+     override fun runMonitorToken(
          tokenCommand: TextCommands,
          chatMessage:String,
          isMod: Boolean,
