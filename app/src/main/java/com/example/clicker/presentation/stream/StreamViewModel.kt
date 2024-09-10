@@ -47,6 +47,7 @@ import com.example.clicker.presentation.stream.util.TextCommands
 import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.util.TokenMonitoring
+import com.example.clicker.presentation.stream.util.domain.TextFieldParsing
 import com.example.clicker.util.Response
 import com.example.clicker.util.mapWithRetry
 import com.example.clicker.util.objectMothers.TwitchUserDataObjectMother
@@ -69,11 +70,11 @@ import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
+    private val ioDispatcher: CoroutineDispatcher,
     private val webSocket: TwitchSocket,
     private val twitchRepoImpl: TwitchStream,
-    private val ioDispatcher: CoroutineDispatcher,
     private val twitchEmoteImpl: TwitchEmoteRepo,
-    private val textParsing:TextParsing = TextParsing(),
+    private val textParsing: TextFieldParsing,
     private val tokenMonitoring: TokenMonitoring= TokenMonitoring(),
     private val tokenCommand: TokenCommand =TokenCommand(),
 ) : ViewModel() {

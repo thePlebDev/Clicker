@@ -70,7 +70,7 @@ class HomeViewModelTest {
     @Test
     fun testing_returning_user_oAuthToken_found() = runTest {
         /**GIVEN*/
-        val dispatcher = StandardTestDispatcher(testScheduler)
+        val dispatcher = mainDispatcherRule.testDispatcher
         val homeViewModel:HomeViewModel = HomeViewModel(
             ioDispatcher =dispatcher,
             authentication = FakeAuthentication.validateTokenReturn_Success().build(),
