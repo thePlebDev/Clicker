@@ -48,6 +48,7 @@ import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
 import com.example.clicker.presentation.stream.util.TokenMonitoring
 import com.example.clicker.presentation.stream.util.domain.TextFieldParsing
+import com.example.clicker.presentation.stream.util.domain.TokenCommandParsing
 import com.example.clicker.presentation.stream.util.domain.TokenParsing
 import com.example.clicker.util.Response
 import com.example.clicker.util.mapWithRetry
@@ -77,7 +78,7 @@ class StreamViewModel @Inject constructor(
     private val twitchEmoteImpl: TwitchEmoteRepo,
     private val textParsing: TextFieldParsing,
     private val tokenMonitoring: TokenParsing,
-    private val tokenCommand: TokenCommand =TokenCommand(),
+    private val tokenCommand: TokenCommandParsing,
 ) : ViewModel() {
 
     /**
