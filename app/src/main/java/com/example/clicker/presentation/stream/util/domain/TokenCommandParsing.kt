@@ -6,7 +6,7 @@ import com.example.clicker.presentation.stream.util.Token
 
 /**
  * TokenCommandParsing is the interface that acts as the API for all the methods needed to parse [Token] objects
- * that are created from the users commands 
+ * that are created from the users commands
  *
  * @property checkForSlashCommands the function that will parse the [TextCommands] objects
  * */

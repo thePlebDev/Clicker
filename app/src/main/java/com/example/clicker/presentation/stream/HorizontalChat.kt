@@ -22,7 +22,6 @@ import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.modView.slowModeListImmutable
 
 
-import com.example.clicker.presentation.stream.views.BottomModal
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn

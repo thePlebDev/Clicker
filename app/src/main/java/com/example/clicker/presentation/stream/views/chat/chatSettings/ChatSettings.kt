@@ -1,49 +1,76 @@
 package com.example.clicker.presentation.stream.views.chat.chatSettings
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.TextField
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -51,6 +78,7 @@ import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
+import kotlinx.coroutines.launch
 
 
 val followerModeList =listOf(
@@ -114,18 +142,418 @@ fun ChatSettingsColumn(
 ){
     Log.d("ChatSettingsColumn","Recomping")
 
+    val scope = rememberCoroutineScope()
+    val secondaryColor =MaterialTheme.colorScheme.secondary
+
+    //modifier =Modifier.weight(1f)
+    val pagerState = rememberPagerState(pageCount = {
+        2
+    })
+    val underlineModifier = Modifier.drawBehind {
+        val strokeWidthPx = 1.dp.toPx()
+        val verticalOffset = size.height - 2.sp.toPx()
+        drawLine(
+            color = secondaryColor,
+            strokeWidth = strokeWidthPx,
+            start = Offset(0f, verticalOffset),
+            end = Offset(size.width, verticalOffset)
+        )
+    }
+
+    Column(){
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)){
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(
+                "Chat settings", color = MaterialTheme.colorScheme.onPrimary,
+                modifier = if (pagerState.currentPage == 0) underlineModifier else Modifier.clickable {
+                    scope.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                },
+            )
+            Spacer(modifier = Modifier.width(25.dp))
+           Text(
+                "Stream info",
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = if (pagerState.currentPage == 1) underlineModifier else Modifier.clickable {
+                    scope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                },
+            )
+
+        }
 
 
 
+        HorizontalPager(state = pagerState) { page ->
+            // Our page content
+            when(page) {
+                0 -> {
+                    ChatSettingsLazyColumn(
+                        advancedChatSettings = advancedChatSettings,
+                        changeAdvancedChatSettings = {newValue -> changeAdvancedChatSettings(newValue) },
+                        changeNoChatMode = {newValue -> changeNoChatMode(newValue) },
+                        chatSettingsEnabled = chatSettingsEnabled,
+                        followerModeListImmutable = followerModeListImmutable,
+                        slowModeListImmutable= slowModeListImmutable,
+                        selectedFollowersModeItem=selectedFollowersModeItem,
+                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue) },
+                        selectedSlowModeItem=selectedSlowModeItem,
+                        changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue) },
+                        emoteOnly = emoteOnly,
+                        setEmoteOnly = {newValue -> setEmoteOnly(newValue) },
+                        subscriberOnly =subscriberOnly,
+                        setSubscriberOnly={newValue -> setSubscriberOnly(newValue) },
+
+                        badgeSize = badgeSize,
+                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
+                        emoteSize = emoteSize,
+                        changeEmoteSize={newValue -> changeEmoteSize(newValue)},
+                        usernameSize = usernameSize,
+                        changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
+                        messageSize = messageSize,
+                        changeMessageSize={newValue ->changeMessageSize(newValue)},
+                        lineHeight = lineHeight,
+                        changeLineHeight = {newValue -> changeLineHeight(newValue)},
+                        customUsernameColor = customUsernameColor,
+                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
+                    )
+                }
+                1->{
+                    ChannelInfoLazyColumn()
+                }
+            }
+        }
 
 
+    }
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChannelInfoLazyColumn(){
 
 
     LazyColumn(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)) {
         stickyHeader {
-            ChatSettingsHeaderColumn("Moderator chat settings")
+            StickyHeaderColumn("Stream title")
+        }
+        item{ChannelInfoTitle() }
+        stickyHeader {
+            StickyHeaderColumn("Category")
+        }
+        item{ CircularProgressIndicator()} // change at the end
+        stickyHeader {
+            StickyHeaderColumn("Stream Tags")
+        }
+        item{
+            ChannelTagsInfo()
+
+        }
+        stickyHeader {
+            StickyHeaderColumn("Content classification")
+        }
+        item{
+            ContentClassificationBox()
+        }
+
+    }
+}
+
+@Composable
+fun StreamLanguage(){
+    
+}
+
+@Composable
+fun ContentClassificationBox() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .clickable {
+                    expanded = true
+                },
+            enabled = false,
+            //todo: this is what is shown to the user as the selected choice
+            value = "Content Classification",
+            onValueChange = { },
+            label = {  },
+            colors = TextFieldDefaults.colors(
+                disabledTextColor = Color.White,
+                disabledContainerColor = Color.DarkGray,
+                disabledTrailingIconColor = Color.Unspecified,
+                disabledLabelColor = Color.Unspecified,
+                disabledPlaceholderColor = Color.Unspecified,
+                disabledSupportingTextColor = Color.Unspecified,
+                disabledPrefixColor = Color.Unspecified,
+                disabledSuffixColor = Color.Unspecified
+            ),
+            trailingIcon = {
+                if(expanded){
+                    Icon(painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24), contentDescription ="Content Classification open" )
+                }else{
+                    Icon(painter = painterResource(id = R.drawable.keyboard_arrow_down_24), contentDescription ="Content Classification closed" )
+                }
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.DarkGray
+                )
+        ){
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> //expanded=newValue
+                            },
+                title = "Drugs, Intoxication, or Excessive Tobacco Use",
+                selectText={},
+                subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
+                        ", discussions of illegal drugs"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> },
+                title = "Gambling",
+                selectText={},
+                subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> },
+                title = "Significant Profanity or Vulgarity",
+                selectText={},
+                subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
+                        "of speech"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> },
+                title = "Sexual Themes",
+                selectText={},
+                subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> },
+                title = "Violent and Graphic depictions",
+                selectText={},
+                subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ContentClassificationTextMenuItem(
+                setExpanded={newValue -> },
+                title = "Mature-rated game",
+                selectText={},
+                subtitle = "Games that are rated Mature or less suitable for a younger audience"
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+        }
+
+    }
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ChannelTagsInfo(){
+    var text by remember { mutableStateOf("Hello") }
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+    Column(modifier= Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+            Text("Tags",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+            Text("25",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
+        }
+        CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                singleLine = false,
+                maxLines = 5,
+                value = text,
+
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { text = it},
+                colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
+                    textColor = Color.White,
+                    backgroundColor = Color.DarkGray,
+                    cursorColor = Color.White,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                placeholder = {
+                              Text("Enter your own tag")
+                },
+                trailingIcon = {}
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+            FlowRow(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+
+            ) {
+                Box(modifier= Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color.DarkGray)
+                    .padding(5.dp)
+                ){
+                    Row(){
+                        Text("Talking",color = Color.White)
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_close_24),
+                            contentDescription = "Remove tag",
+                            tint = Color.White
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(modifier= Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color.DarkGray)
+                    .padding(5.dp)){
+                    Row(){
+                        Text("Gaming",color = Color.White)
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_close_24),
+                            contentDescription = "Remove tag",
+                            tint = Color.White
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(modifier= Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color.DarkGray)
+                    .padding(5.dp)){
+                    Row(){
+                        Text("Eating and talking",color = Color.White)
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_close_24),
+                            contentDescription = "Remove tag",
+                            tint = Color.White
+                        )
+                    }
+                }
+                Box(modifier= Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color.DarkGray)
+                    .padding(5.dp)){
+                    Row(){
+                        Text("More things and more gami",color = Color.White)
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_close_24),
+                            contentDescription = "Remove tag",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+
+    }
+}
+@Composable
+fun ChannelInfoTitle(){
+    var text by remember { mutableStateOf("Hello") }
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+    Column(modifier= Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+            Text("Title",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+            Text("140",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                singleLine = false,
+                maxLines = 5,
+                value = text,
+
+                shape = RoundedCornerShape(8.dp),
+                onValueChange = { text = it},
+                colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
+                    textColor = Color.White,
+                    backgroundColor = Color.DarkGray,
+                    cursorColor = Color.White,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                placeholder = {},
+                trailingIcon = {}
+            )
+        }
+
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChatSettingsLazyColumn(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
+    changeNoChatMode:(Boolean)->Unit,
+
+    followerModeListImmutable: ImmutableModeList,
+    slowModeListImmutable: ImmutableModeList,
+    selectedFollowersModeItem: ListTitleValue,
+    changeSelectedFollowersModeItem: (ListTitleValue) -> Unit,
+
+    selectedSlowModeItem: ListTitleValue,
+    changeSelectedSlowModeItem: (ListTitleValue) -> Unit,
+    chatSettingsEnabled:Boolean,
+    emoteOnly:Boolean,
+    setEmoteOnly:(Boolean) ->Unit,
+    subscriberOnly:Boolean,
+    setSubscriberOnly:(Boolean) ->Unit,
+
+    badgeSize:Float,
+    changeBadgeSize:(Float)->Unit,
+    emoteSize:Float,
+    changeEmoteSize:(Float)->Unit,
+    usernameSize:Float,
+    changeUsernameSize:(Float)->Unit,
+    messageSize:Float,
+    changeMessageSize:(Float)->Unit,
+    lineHeight: Float,
+    changeLineHeight:(Float)->Unit,
+    customUsernameColor: Boolean,
+    changeCustomUsernameColor: (Boolean)->Unit
+){
+    LazyColumn(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)) {
+        stickyHeader {
+            StickyHeaderColumn("Moderator chat settings")
         }
         item{
             EmoteOnlySwitch(
@@ -168,7 +596,7 @@ fun ChatSettingsColumn(
             )
         }
         stickyHeader {
-            ChatSettingsHeaderColumn("Advanced chat settings")
+            StickyHeaderColumn("Advanced chat settings")
         }
         item{
             AdvancedChatSettings(
@@ -179,7 +607,7 @@ fun ChatSettingsColumn(
         }
         stickyHeader {
             Column(){
-                ChatSettingsHeaderColumn("Chat Experience")
+                StickyHeaderColumn("Chat Experience")
                 ExampleText(
                     badgeSize = badgeSize,
                     usernameSize=usernameSize,
@@ -210,10 +638,11 @@ fun ChatSettingsColumn(
         }
 
     }
+
 }
 
 @Composable
-fun ChatSettingsHeaderColumn(
+fun StickyHeaderColumn(
     headerText:String,
     fontSize: TextUnit = MaterialTheme.typography.headlineLarge.fontSize
 ){
@@ -341,6 +770,7 @@ fun SubscriberOnlySwitch(
         }
     )
 }
+
 
 @Composable
 fun SlowModeCheck(
@@ -499,6 +929,76 @@ fun TextMenuItem(
             Text(title, color = MaterialTheme.colorScheme.onPrimary)
         }
     )
+}
+@Composable
+fun ContentClassificationTextMenuItem(
+    setExpanded: (Boolean) -> Unit,
+    selectText:()->Unit,
+    title:String,
+    subtitle:String,
+){
+    DropdownMenuItem(
+        onClick = {
+            setExpanded(false)
+            selectText()
+        },
+        text = {
+            Column(
+            ){
+                Row(verticalAlignment = Alignment.CenterVertically){
+                    CustomCheckBox()
+                    Spacer(modifier=Modifier.width(10.dp))
+                    Text(title, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                }
+                Text(subtitle, color = MaterialTheme.colorScheme.onPrimary)
+            }
+        }
+    )
+}
+
+@Composable
+fun CustomCheckBox(){
+    var checked by remember { mutableStateOf(false) }
+    val onPrimaryColor = if(checked) MaterialTheme.colorScheme.secondary else  MaterialTheme.colorScheme.onPrimary
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val animatedColor by animateColorAsState(
+        if (checked) MaterialTheme.colorScheme.secondary else primaryColor,
+        label = "color"
+    )
+
+    Box(modifier = Modifier
+        .border(1.dp, onPrimaryColor, RoundedCornerShape(5.dp))
+        .height(20.dp)
+        .width(20.dp)
+        .drawBehind {
+            val cornerRadius =
+                5.dp.toPx() // Convert DP to pixels for the rounded corners
+            drawRoundRect(
+                color = animatedColor,
+                cornerRadius = CornerRadius(cornerRadius, cornerRadius)
+            )
+        }
+        .clip(
+            RoundedCornerShape(5.dp)
+        )
+        .clickable {
+            checked = !checked
+        }
+    ){
+        Column( modifier = Modifier.align(Alignment.Center),) {
+            AnimatedVisibility(
+                checked,
+                enter = scaleIn(initialScale = 0.5f), // Scale in animation
+                exit = shrinkOut(shrinkTowards = Alignment.Center)
+            ) {
+                Icon(painter = painterResource(R.drawable.baseline_check_24),
+                    contentDescription = "checked",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+    }
 }
 
 @Composable
