@@ -2222,21 +2222,17 @@ fun ShowIconBasedOnTextLength(
 /**
  * A styled [TextField] to allow the user to enter chat messages
  * @param modifier determines how much of the screen it takes up. should be given a value of .weight(2f)
- * @param textFieldValue The value that the user it currently typing in
  * @param newFilterMethod This method will trigger where to show the [TextChatParts.FilteredMentionLazyRow] or not
  *
  * */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StylizedTextField(
     modifier: Modifier,
-    //textFieldValue: MutableState<TextFieldValue>,
     newFilterMethod:(TextFieldValue) ->Unit,
     showKeyBoard:()->Unit,
     showEmoteBoard:() ->Unit,
     iconClicked:Boolean,
     setIconClicked:(Boolean)->Unit,
-
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String,TextRange)->Unit
 ){

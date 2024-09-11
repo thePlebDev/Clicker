@@ -392,7 +392,7 @@ class StreamViewModel @Inject constructor(
                 _channelName.collect { channelName ->
                     channelName?.let {
                         startWebSocket(channelName)
-                        filterOutChannelEmotesFromMostRecentList(channelName)
+                        filterOutChannelEmotesFromMostRecentList()
                     }
                 }
             }
@@ -548,7 +548,7 @@ class StreamViewModel @Inject constructor(
 
 
     }
-    private fun filterOutChannelEmotesFromMostRecentList(channelName: String){
+    private fun filterOutChannelEmotesFromMostRecentList(){
         val oldListMapped = mostFrequentEmoteListTesting.value.list
 
         mostFrequentEmoteListTesting.value = mostFrequentEmoteListTesting.value.copy(
