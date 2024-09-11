@@ -38,6 +38,8 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -242,7 +244,7 @@ fun ChannelInfoLazyColumn(){
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)) {
         stickyHeader {
-            StickyHeaderColumn("Stream title")
+            StickyHeaderColumn("Stream Title")
         }
         item{ChannelInfoTitle() }
         stickyHeader {
@@ -257,18 +259,146 @@ fun ChannelInfoLazyColumn(){
 
         }
         stickyHeader {
-            StickyHeaderColumn("Content classification")
+            StickyHeaderColumn("Content Classification")
         }
         item{
             ContentClassificationBox()
         }
+        stickyHeader {
+            StickyHeaderColumn("Stream Language")
+        }
+        item{
+            StreamLanguage()
+        }
+        item{
+            Spacer(modifier =Modifier.height(10.dp))
+        }
+        item{
+            ShareButton()
+        }
 
     }
+}
+@Composable
+fun ShareButton(){
+
+    Box(modifier = Modifier.fillMaxWidth().padding(10.dp)){
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick={},
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ){
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_rocket_launch_24),
+                    contentDescription ="Share link to channel",
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+                Text("Share link to channel" ,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_rocket_launch_24),
+                    contentDescription ="Share link to channel",
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+        }
+    }
+
+
 }
 
 @Composable
 fun StreamLanguage(){
-    
+    var selectedLanguage by remember { mutableStateOf<String?>(null) }
+    var expanded by remember { mutableStateOf(false) }
+    val languages = listOf("American Sign Language","Arabic","Bulgarian","Catalan","Chinese","Czech","Danish","Dutch","English","Finish","French","German",
+    "German","Greek","Hindi","Hungarian","Indonesian","Italian","Japanese","Korean","Malay","Norwegian","Polish","Portuguese","Romanian",
+    "Russian","Slovak","Spanish","Swedish","Tagalog","Thai","Turkish","Ukrainian","Vietnamese","Other")
+
+    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .clickable {
+                    expanded = true
+                },
+            enabled = false,
+            //todo: this is what is shown to the user as the selected choice
+            value = selectedLanguage?:"Select language" ,
+            onValueChange = { },
+            label = {  },
+            colors = TextFieldDefaults.colors(
+                disabledTextColor = Color.White,
+                disabledContainerColor = Color.DarkGray,
+                disabledTrailingIconColor = Color.Unspecified,
+                disabledLabelColor = Color.Unspecified,
+                disabledPlaceholderColor = Color.Unspecified,
+                disabledSupportingTextColor = Color.Unspecified,
+                disabledPrefixColor = Color.Unspecified,
+                disabledSuffixColor = Color.Unspecified
+            ),
+            trailingIcon = {
+                if(expanded){
+                    Icon(painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24), contentDescription ="Content Classification open" )
+                }else{
+                    Icon(painter = painterResource(id = R.drawable.keyboard_arrow_down_24), contentDescription ="Content Classification closed" )
+                }
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.DarkGray
+                )
+                .padding(horizontal = 10.dp)
+        ){
+            Box(modifier = Modifier.fillMaxWidth()){
+                Column() {
+                    for(item in languages){
+                        Spacer(modifier =Modifier.height(10.dp))
+                        Text(
+                            item,
+                            fontSize =MaterialTheme.typography.headlineMedium.fontSize,
+                            color = Color.White,
+                            modifier = Modifier
+                                .clickable {
+                                    selectedLanguage = item
+                                    expanded = false
+                                }
+                        )
+
+                    }
+                }
+
+
+                Icon(
+                    painter = painterResource(id =R.drawable.baseline_close_24),
+                    contentDescription = "Close language menu",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .clickable {
+                            expanded = false
+                        }
+                )
+            }
+
+        }
+
+    }
 }
 
 @Composable
@@ -316,52 +446,67 @@ fun ContentClassificationBox() {
                     Color.DarkGray
                 )
         ){
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> //expanded=newValue
-                            },
-                title = "Drugs, Intoxication, or Excessive Tobacco Use",
-                selectText={},
-                subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
-                        ", discussions of illegal drugs"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> },
-                title = "Gambling",
-                selectText={},
-                subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> },
-                title = "Significant Profanity or Vulgarity",
-                selectText={},
-                subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
-                        "of speech"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> },
-                title = "Sexual Themes",
-                selectText={},
-                subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> },
-                title = "Violent and Graphic depictions",
-                selectText={},
-                subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ContentClassificationTextMenuItem(
-                setExpanded={newValue -> },
-                title = "Mature-rated game",
-                selectText={},
-                subtitle = "Games that are rated Mature or less suitable for a younger audience"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
+            Box(){
+
+                Column(){
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> //expanded=newValue
+                        },
+                        title = "Drugs, Intoxication, or Excessive Tobacco Use",
+                        selectText={},
+                        subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
+                                ", discussions of illegal drugs"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> },
+                        title = "Gambling",
+                        selectText={},
+                        subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> },
+                        title = "Significant Profanity or Vulgarity",
+                        selectText={},
+                        subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
+                                "of speech"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> },
+                        title = "Sexual Themes",
+                        selectText={},
+                        subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> },
+                        title = "Violent and Graphic depictions",
+                        selectText={},
+                        subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ContentClassificationTextMenuItem(
+                        setExpanded={newValue -> },
+                        title = "Mature-rated game",
+                        selectText={},
+                        subtitle = "Games that are rated Mature or less suitable for a younger audience"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+                Icon(
+                    painter = painterResource(id =R.drawable.baseline_close_24),
+                    contentDescription = "Close language menu",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .clickable {
+                            expanded = false
+                        }
+                )
+            }
+
 
         }
 
