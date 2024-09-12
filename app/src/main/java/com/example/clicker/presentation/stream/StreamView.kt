@@ -39,6 +39,8 @@ import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
+import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
+import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
 import kotlinx.coroutines.launch
 
 
@@ -55,10 +57,10 @@ fun StreamView(
     autoModViewModel: AutoModViewModel,
     modViewViewModel: ModViewViewModel,
     chatSettingsViewModel: ChatSettingsViewModel,
-    homeViewModel: HomeViewModel,
     hideSoftKeyboard:()->Unit,
     showModView:()->Unit,
     modViewIsVisible:Boolean,
+    streamInfoViewModel:StreamInfoViewModel
 
 ) {
     val twitchUserChat = streamViewModel.listChats.toList()
@@ -233,6 +235,31 @@ fun StreamView(
         chatSettingsViewModel.changeCustomUsernameColor(newValue)
     } }
 
+    val changeStreamTitle:(String) -> Unit = remember(streamInfoViewModel) { { newTitle->
+        streamInfoViewModel.changeChannelTitle(newTitle)
+    } }
+
+
+    val addTag:(String) -> Unit = remember(streamInfoViewModel) { { newTagTitle->
+        streamInfoViewModel.addToTagList(newTagTitle)
+    } }
+    val removeTag:(String) -> Unit = remember(streamInfoViewModel) { { oldTag->
+        streamInfoViewModel.removeTagFromList(oldTag)
+    } }
+    val changeTagTitle:(String) -> Unit = remember(streamInfoViewModel) { { tagTitle->
+        streamInfoViewModel.changeTagTitle(tagTitle)
+    } }
+
+    val changeContentClassification:(ContentClassificationCheckBox) -> Unit = remember(streamInfoViewModel) { { newClassification->
+        streamInfoViewModel.changeContentClassification(newClassification)
+    } }
+
+    val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
+        streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
+    } }
+
+
+
 
 
 
@@ -264,6 +291,7 @@ fun StreamView(
                     hideSoftKeyboard()
                 },
                 chatSettingsViewModel=chatSettingsViewModel,
+                streamInfoViewModel=streamInfoViewModel
             )
         }
         else -> {
@@ -297,7 +325,28 @@ fun StreamView(
                         lineHeight = chatSettingsViewModel.lineHeight.value,
                         changeLineHeight = {newValue -> changeLineHeight(newValue)},
                         customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
-                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
+                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
+
+                        changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
+                        streamTitle = streamInfoViewModel.channelTitle.value,
+                        titleLength =streamInfoViewModel.maxLengthOfTitle.value,
+
+
+                        tagList=streamInfoViewModel.tagList.toList(),
+                        tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
+                        tagTitle = streamInfoViewModel.tagTitle.value,
+                        addTag = {newTag -> addTag(newTag)},
+                        removeTag={oldTag -> removeTag(oldTag)},
+                        changeTagTitle = {tagTitle ->changeTagTitle(tagTitle)},
+
+                        contentClassificationCheckBox=streamInfoViewModel.contentClassification.value,
+                        changeContentClassification = {newValue->changeContentClassification(newValue)},
+                        selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
+                        changeSelectedLanguage = {newValue ->
+                            selectStreamValue(newValue)
+                        }
+
+
                     )
                 }
             ) {
