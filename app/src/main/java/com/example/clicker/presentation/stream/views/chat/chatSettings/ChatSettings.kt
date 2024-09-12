@@ -33,6 +33,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
@@ -80,6 +81,7 @@ import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
+import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
 import kotlinx.coroutines.launch
 
 
@@ -139,7 +141,24 @@ fun ChatSettingsColumn(
     lineHeight: Float,
     changeLineHeight:(Float)->Unit,
     customUsernameColor: Boolean,
-    changeCustomUsernameColor: (Boolean)->Unit
+    changeCustomUsernameColor: (Boolean)->Unit,
+
+    streamTitle:String,
+    changeStreamTitle:(String)->Unit,
+    titleLength:Int,
+
+    tagList:List<String>,
+    tagTitle:String,
+    tagTitleLength:Int,
+    changeTagTitle:(String)->Unit,
+    addTag:(String)->Unit,
+    removeTag:(String)->Unit,
+
+    contentClassificationCheckBox: ContentClassificationCheckBox,
+    changeContentClassification:(ContentClassificationCheckBox)->Unit,
+    selectedLanguage:String?,
+    changeSelectedLanguage:(String)->Unit,
+
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
@@ -225,7 +244,26 @@ fun ChatSettingsColumn(
                     )
                 }
                 1->{
-                    ChannelInfoLazyColumn()
+                    ChannelInfoLazyColumn(
+                        streamTitle=streamTitle,
+                        changeStreamTitle={newValue ->changeStreamTitle(newValue)},
+                        titleLength=titleLength,
+
+                        tagList=tagList,
+                        tagTitleLength=tagTitleLength,
+                        tagTitle = tagTitle,
+                        addTag = {newTag -> addTag(newTag)},
+                        removeTag={oldTag -> removeTag(oldTag)},
+                        changeTagTitle = {oldValue ->changeTagTitle(oldValue)},
+                        contentClassificationCheckBox=contentClassificationCheckBox,
+                        changeContentClassification={newClassification ->changeContentClassification(newClassification)},
+                        selectedLanguage =selectedLanguage,
+                        changeSelectedLanguage = {newValue ->
+                            changeSelectedLanguage(newValue)
+                        }
+
+
+                    )
                 }
             }
         }
@@ -237,7 +275,24 @@ fun ChatSettingsColumn(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ChannelInfoLazyColumn(){
+fun ChannelInfoLazyColumn(
+    streamTitle:String,
+    changeStreamTitle:(String)->Unit,
+    titleLength:Int,
+
+    tagList:List<String>,
+    tagTitle:String,
+    tagTitleLength:Int,
+    changeTagTitle:(String)->Unit,
+    addTag:(String)->Unit,
+    removeTag:(String)->Unit,
+
+    contentClassificationCheckBox: ContentClassificationCheckBox,
+    changeContentClassification:(ContentClassificationCheckBox)->Unit,
+
+    selectedLanguage:String?,
+    changeSelectedLanguage:(String)->Unit,
+){
 
 
     LazyColumn(modifier = Modifier
@@ -246,7 +301,13 @@ fun ChannelInfoLazyColumn(){
         stickyHeader {
             StickyHeaderColumn("Stream Title")
         }
-        item{ChannelInfoTitle() }
+        item{
+            ChannelInfoTitle(
+                streamTitle=streamTitle,
+                changeStreamTitle={newValue ->changeStreamTitle(newValue)},
+                titleLength=titleLength
+            )
+        }
         stickyHeader {
             StickyHeaderColumn("Category")
         }
@@ -255,20 +316,35 @@ fun ChannelInfoLazyColumn(){
             StickyHeaderColumn("Stream Tags")
         }
         item{
-            ChannelTagsInfo()
+            ChannelTagsInfo(
+                tagList =tagList,
+                tagTitle=tagTitle,
+                tagTitleLength=tagTitleLength,
+                changeTagTitle={newValue ->changeTagTitle(newValue)},
+                addTag={newTag ->addTag(newTag)},
+                removeTag={oldTag -> removeTag(oldTag)}
+            )
 
         }
         stickyHeader {
             StickyHeaderColumn("Content Classification")
         }
         item{
-            ContentClassificationBox()
+            ContentClassificationBox(
+                contentClassificationCheckBox=contentClassificationCheckBox,
+                changeContentClassification={newClassification ->changeContentClassification(newClassification)}
+            )
         }
         stickyHeader {
             StickyHeaderColumn("Stream Language")
         }
         item{
-            StreamLanguage()
+            StreamLanguage(
+                selectedLanguage =selectedLanguage,
+                changeSelectedLanguage = {newValue ->
+                    changeSelectedLanguage(newValue)
+                }
+            )
         }
         item{
             Spacer(modifier =Modifier.height(10.dp))
@@ -282,7 +358,9 @@ fun ChannelInfoLazyColumn(){
 @Composable
 fun ShareButton(){
 
-    Box(modifier = Modifier.fillMaxWidth().padding(10.dp)){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(10.dp)){
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick={},
@@ -317,8 +395,10 @@ fun ShareButton(){
 }
 
 @Composable
-fun StreamLanguage(){
-    var selectedLanguage by remember { mutableStateOf<String?>(null) }
+fun StreamLanguage(
+     selectedLanguage:String?,
+     changeSelectedLanguage:(String)->Unit,
+){
     var expanded by remember { mutableStateOf(false) }
     val languages = listOf("American Sign Language","Arabic","Bulgarian","Catalan","Chinese","Czech","Danish","Dutch","English","Finish","French","German",
     "German","Greek","Hindi","Hungarian","Indonesian","Italian","Japanese","Korean","Malay","Norwegian","Polish","Portuguese","Romanian",
@@ -376,7 +456,7 @@ fun StreamLanguage(){
                             color = Color.White,
                             modifier = Modifier
                                 .clickable {
-                                    selectedLanguage = item
+                                    changeSelectedLanguage(item)
                                     expanded = false
                                 }
                         )
@@ -402,7 +482,10 @@ fun StreamLanguage(){
 }
 
 @Composable
-fun ContentClassificationBox() {
+fun ContentClassificationBox(
+    contentClassificationCheckBox: ContentClassificationCheckBox,
+    changeContentClassification:(ContentClassificationCheckBox)->Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
@@ -456,14 +539,26 @@ fun ContentClassificationBox() {
                         title = "Drugs, Intoxication, or Excessive Tobacco Use",
                         selectText={},
                         subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
-                                ", discussions of illegal drugs"
+                                ", discussions of illegal drugs",
+                        checked = contentClassificationCheckBox.drugsIntoxication,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(drugsIntoxication = checked)
+                            Log.d("Changingtheclassification","checked ->${checked}")
+                            Log.d("Changingtheclassification","newClassification ->${newClassification}")
+                            changeContentClassification(newClassification)
+                        }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ContentClassificationTextMenuItem(
                         setExpanded={newValue -> },
                         title = "Gambling",
                         selectText={},
-                        subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money"
+                        subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money",
+                        checked = contentClassificationCheckBox.gambling,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(gambling = checked)
+                            changeContentClassification(newClassification)
+                        }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ContentClassificationTextMenuItem(
@@ -471,28 +566,50 @@ fun ContentClassificationBox() {
                         title = "Significant Profanity or Vulgarity",
                         selectText={},
                         subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
-                                "of speech"
+                                "of speech",
+                        checked = contentClassificationCheckBox.significantProfanity,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(significantProfanity = checked)
+                            changeContentClassification(newClassification)
+                        }
+
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ContentClassificationTextMenuItem(
                         setExpanded={newValue -> },
                         title = "Sexual Themes",
                         selectText={},
-                        subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences"
+                        subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences" ,
+                        checked = contentClassificationCheckBox.sexualThemes,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(sexualThemes = checked)
+                            changeContentClassification(newClassification)
+                        }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ContentClassificationTextMenuItem(
                         setExpanded={newValue -> },
                         title = "Violent and Graphic depictions",
                         selectText={},
-                        subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death"
+                        subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death",
+                        checked = contentClassificationCheckBox.violentGraphic,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(violentGraphic = checked)
+                            changeContentClassification(newClassification)
+                        }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ContentClassificationTextMenuItem(
                         setExpanded={newValue -> },
                         title = "Mature-rated game",
                         selectText={},
-                        subtitle = "Games that are rated Mature or less suitable for a younger audience"
+                        subtitle = "Games that are rated Mature or less suitable for a younger audience",
+                        checked = contentClassificationCheckBox.matureRatedGame,
+                        changedChecked = {checked ->
+                            val newClassification = contentClassificationCheckBox.copy(matureRatedGame = checked)
+                            changeContentClassification(newClassification)
+                        }
+
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
@@ -514,8 +631,15 @@ fun ContentClassificationBox() {
 }
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ChannelTagsInfo(){
-    var text by remember { mutableStateOf("Hello") }
+fun ChannelTagsInfo(
+    tagList:List<String>,
+    tagTitle:String,
+    tagTitleLength:Int,
+    changeTagTitle:(String)->Unit,
+    addTag:(String)->Unit,
+    removeTag:(String)->Unit,
+){
+
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
         backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
@@ -525,7 +649,7 @@ fun ChannelTagsInfo(){
         .padding(horizontal = 10.dp)){
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Text("Tags",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-            Text("25",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
+            Text("$tagTitleLength",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
         }
         CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
 
@@ -534,10 +658,15 @@ fun ChannelTagsInfo(){
                     .fillMaxWidth(),
                 singleLine = false,
                 maxLines = 5,
-                value = text,
+                value = tagTitle,
 
                 shape = RoundedCornerShape(8.dp),
-                onValueChange = { text = it},
+                onValueChange = {
+                    val maxLength =24
+                    if (tagTitle.length <= maxLength || it.length < tagTitle.length) {
+                        changeTagTitle(it)
+                    }
+                                },
                 colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
                     textColor = Color.White,
                     backgroundColor = Color.DarkGray,
@@ -547,9 +676,23 @@ fun ChannelTagsInfo(){
                     unfocusedIndicatorColor = Color.Transparent
                 ),
                 placeholder = {
-                              Text("Enter your own tag")
+                              Text("Enter your own tag",color = Color.White)
                 },
-                trailingIcon = {}
+                trailingIcon = {
+
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "Add new tag",
+                        modifier = Modifier
+                            .size(35.dp)
+                            .clickable {
+                                addTag(tagTitle)
+                            }
+                            .padding(start = 5.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+
+                }
             )
         }
 
@@ -559,69 +702,38 @@ fun ChannelTagsInfo(){
                 verticalArrangement = Arrangement.spacedBy(10.dp)
 
             ) {
-                Box(modifier= Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color.DarkGray)
-                    .padding(5.dp)
-                ){
-                    Row(){
-                        Text("Talking",color = Color.White)
-                        Icon(
-                            painter = painterResource(id =R.drawable.baseline_close_24),
-                            contentDescription = "Remove tag",
-                            tint = Color.White
-                        )
+                for(item in tagList){
+                    Box(modifier= Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(Color.DarkGray)
+                        .padding(5.dp)
+                    ){
+                        Row(){
+                            Text(item,color = Color.White)
+                            Icon(
+                                painter = painterResource(id =R.drawable.baseline_close_24),
+                                contentDescription = "Remove tag",
+                                tint = Color.White,
+                                modifier = Modifier.clickable {
+                                    removeTag(item)
+                                }
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.width(5.dp))
                 }
-                Spacer(modifier = Modifier.width(5.dp))
-                Box(modifier= Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color.DarkGray)
-                    .padding(5.dp)){
-                    Row(){
-                        Text("Gaming",color = Color.White)
-                        Icon(
-                            painter = painterResource(id =R.drawable.baseline_close_24),
-                            contentDescription = "Remove tag",
-                            tint = Color.White
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(5.dp))
-                Box(modifier= Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color.DarkGray)
-                    .padding(5.dp)){
-                    Row(){
-                        Text("Eating and talking",color = Color.White)
-                        Icon(
-                            painter = painterResource(id =R.drawable.baseline_close_24),
-                            contentDescription = "Remove tag",
-                            tint = Color.White
-                        )
-                    }
-                }
-                Box(modifier= Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color.DarkGray)
-                    .padding(5.dp)){
-                    Row(){
-                        Text("More things and more gami",color = Color.White)
-                        Icon(
-                            painter = painterResource(id =R.drawable.baseline_close_24),
-                            contentDescription = "Remove tag",
-                            tint = Color.White
-                        )
-                    }
-                }
+
             }
 
 
     }
 }
 @Composable
-fun ChannelInfoTitle(){
-    var text by remember { mutableStateOf("Hello") }
+fun ChannelInfoTitle(
+    streamTitle:String,
+    changeStreamTitle:(String)->Unit,
+    titleLength:Int
+){
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
         backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
@@ -631,7 +743,7 @@ fun ChannelInfoTitle(){
         .padding(horizontal = 10.dp)){
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Text("Title",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-            Text("140",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
+            Text("$titleLength",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
         }
         Spacer(modifier = Modifier.height(5.dp))
         CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
@@ -641,10 +753,15 @@ fun ChannelInfoTitle(){
                     .fillMaxWidth(),
                 singleLine = false,
                 maxLines = 5,
-                value = text,
+                value = streamTitle,
 
                 shape = RoundedCornerShape(8.dp),
-                onValueChange = { text = it},
+                onValueChange = {
+                    val maxLength =139
+                    if (streamTitle.length <= maxLength || it.length < streamTitle.length) {
+                        changeStreamTitle(it)
+                    }
+                                },
                 colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
                     textColor = Color.White,
                     backgroundColor = Color.DarkGray,
@@ -653,7 +770,9 @@ fun ChannelInfoTitle(){
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                placeholder = {},
+                placeholder = {
+                    Text("Enter stream title",color = Color.White)
+                },
                 trailingIcon = {}
             )
         }
@@ -1081,6 +1200,8 @@ fun ContentClassificationTextMenuItem(
     selectText:()->Unit,
     title:String,
     subtitle:String,
+    checked: Boolean,
+    changedChecked:(Boolean)->Unit,
 ){
     DropdownMenuItem(
         onClick = {
@@ -1091,7 +1212,10 @@ fun ContentClassificationTextMenuItem(
             Column(
             ){
                 Row(verticalAlignment = Alignment.CenterVertically){
-                    CustomCheckBox()
+                    CustomCheckBox(
+                        checked=checked,
+                        changeChecked={newValue -> changedChecked(newValue)}
+                    )
                     Spacer(modifier=Modifier.width(10.dp))
                     Text(title, color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                 }
@@ -1102,8 +1226,10 @@ fun ContentClassificationTextMenuItem(
 }
 
 @Composable
-fun CustomCheckBox(){
-    var checked by remember { mutableStateOf(false) }
+fun CustomCheckBox(
+    checked:Boolean,
+    changeChecked:(Boolean)->Unit,
+){
     val onPrimaryColor = if(checked) MaterialTheme.colorScheme.secondary else  MaterialTheme.colorScheme.onPrimary
     val primaryColor = MaterialTheme.colorScheme.primary
     val animatedColor by animateColorAsState(
@@ -1127,7 +1253,7 @@ fun CustomCheckBox(){
             RoundedCornerShape(5.dp)
         )
         .clickable {
-            checked = !checked
+            changeChecked(!checked)
         }
     ){
         Column( modifier = Modifier.align(Alignment.Center),) {

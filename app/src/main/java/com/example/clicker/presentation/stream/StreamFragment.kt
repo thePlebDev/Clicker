@@ -66,6 +66,7 @@ import com.example.clicker.presentation.stream.customWebViews.HorizontalClickabl
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
+import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -85,6 +86,7 @@ class StreamFragment : Fragment() {
     private val modViewViewModel:ModViewViewModel by activityViewModels()
     private val modVersionThreeViewModel:ModVersionThreeViewModel by activityViewModels()
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
+    private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
 
     override fun onResume() {
         super.onResume()
@@ -558,7 +560,8 @@ class StreamFragment : Fragment() {
                 imm.showSoftInput(binding.root, InputMethodManager.RESULT_SHOWN);
             },
             modVersionThreeViewModel =modVersionThreeViewModel,
-            chatSettingsViewModel = chatSettingsViewModel
+            chatSettingsViewModel = chatSettingsViewModel,
+            streamInfoViewModel=streamInfoViewModel
         )
 
         val myWebView: WebView = view.findViewById(R.id.webView) //this is the horizontal view
@@ -695,7 +698,9 @@ fun setOrientation(
     modVersionThreeViewModel:ModVersionThreeViewModel,
     hideSoftKeyboard:() ->Unit,
     showSoftKeyboard:()->Unit,
+    streamInfoViewModel:StreamInfoViewModel
 ): FrameLayout {
+
 
 
 
@@ -709,7 +714,6 @@ fun setOrientation(
                     autoModViewModel,
                     modViewViewModel,
                     chatSettingsViewModel,
-                    homeViewModel,
                     hideSoftKeyboard ={
                         hideSoftKeyboard()
 
@@ -735,7 +739,8 @@ fun setOrientation(
                         }
 
                     },
-                    modViewIsVisible = modViewDragStateViewModel.showModView.value
+                    modViewIsVisible = modViewDragStateViewModel.showModView.value,
+                    streamInfoViewModel=streamInfoViewModel
                 )
 
             }
@@ -809,7 +814,8 @@ fun setOrientation(
                         },
                         modVersionThreeViewModel =modVersionThreeViewModel,
                         modViewDragStateViewModel=modViewDragStateViewModel,
-                        chatSettingsViewModel=chatSettingsViewModel
+                        chatSettingsViewModel=chatSettingsViewModel,
+                        streamInfoViewModel=streamInfoViewModel
                     )
 
 

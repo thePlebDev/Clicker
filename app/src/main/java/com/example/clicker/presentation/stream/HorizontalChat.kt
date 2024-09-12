@@ -28,6 +28,8 @@ import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSetti
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
+import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
+import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
 
 import kotlinx.coroutines.launch
 
@@ -41,6 +43,7 @@ fun HorizontalChat(
     chatSettingsViewModel: ChatSettingsViewModel,
     modViewViewModel:ModViewViewModel,
     hideSoftKeyboard:()->Unit,
+    streamInfoViewModel: StreamInfoViewModel
 ){
     val twitchUserChat = streamViewModel.listChats.toList()
     val lazyColumnListState = rememberLazyListState()
@@ -145,6 +148,29 @@ fun HorizontalChat(
         streamViewModel.changeOpenWarningDialog(true)
     } }
 
+    val changeStreamTitle:(String) -> Unit = remember(streamInfoViewModel) { { newTitle->
+        streamInfoViewModel.changeChannelTitle(newTitle)
+    } }
+
+
+    val addTag:(String) -> Unit = remember(streamInfoViewModel) { { newTagTitle->
+        streamInfoViewModel.addToTagList(newTagTitle)
+    } }
+    val removeTag:(String) -> Unit = remember(streamInfoViewModel) { { oldTag->
+        streamInfoViewModel.removeTagFromList(oldTag)
+    } }
+    val changeTagTitle:(String) -> Unit = remember(streamInfoViewModel) { { tagTitle->
+        streamInfoViewModel.changeTagTitle(tagTitle)
+    } }
+
+    val changeContentClassification:(ContentClassificationCheckBox) -> Unit = remember(streamInfoViewModel) { { newClassification->
+        streamInfoViewModel.changeContentClassification(newClassification)
+    } }
+
+    val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
+        streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
+    } }
+
     //todo: Also need to refactor the dialogs
 
     ModalBottomSheetLayout(
@@ -181,7 +207,24 @@ fun HorizontalChat(
                 lineHeight = chatSettingsViewModel.lineHeight.value,
                 changeLineHeight = {newValue -> changeLineHeight(newValue)},
                 customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
-                changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
+                changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
+
+                changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
+                streamTitle = streamInfoViewModel.channelTitle.value,
+                titleLength =streamInfoViewModel.maxLengthOfTitle.value,
+
+                tagList=streamInfoViewModel.tagList.toList(),
+                tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
+                tagTitle = streamInfoViewModel.tagTitle.value,
+                addTag = {newTag -> addTag(newTag)},
+                removeTag={oldTag -> removeTag(oldTag)},
+                changeTagTitle = {tagTitle ->changeTagTitle(tagTitle)},
+                contentClassificationCheckBox=streamInfoViewModel.contentClassification.value,
+                changeContentClassification = {newValue->changeContentClassification(newValue)},
+                selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
+                changeSelectedLanguage = {newValue ->
+                    selectStreamValue(newValue)
+                }
             )
         }
     ) {
