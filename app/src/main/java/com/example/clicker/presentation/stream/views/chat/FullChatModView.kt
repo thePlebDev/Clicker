@@ -85,6 +85,7 @@ fun FullChatModView(
     val emoteKeyBoardHeight = remember { mutableStateOf(0.dp) }
     var iconClicked by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var showChatSettings by remember { mutableStateOf(false) }
 
     ChatUIBox(
         determineScrollState={
@@ -190,7 +191,11 @@ fun FullChatModView(
                             iconClicked = false // changes the icon
                             sendMessageToWebSocket(item)
                                },
-                        showModal ={showModal()},
+                        showModal ={
+                            showChatSettings = !showChatSettings
+                            //todo:This needs to change
+                           // showModal()
+                                   },
                     )
                 },
             )
@@ -214,7 +219,8 @@ fun FullChatModView(
         userIsSub = userIsSub,
         forwardSlashes = forwardSlashes,
         lowPowerMode = lowPowerMode,
-        channelName = channelName
+        channelName = channelName,
+        showChatSettings = showChatSettings
 
 
 

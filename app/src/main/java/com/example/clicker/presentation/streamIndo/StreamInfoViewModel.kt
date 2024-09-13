@@ -115,7 +115,7 @@ class StreamInfoViewModel @Inject constructor(
                     _channelTitle.value = channelInfo.title
                     tagList.addAll(channelInfo.tags)
                     //content classification
-                    //branded content 
+                    //branded content
                     val contentClassification = channelInfo.content_classification_labels
                     for (item in contentClassification){
                        when(item){
