@@ -2,12 +2,16 @@ package com.example.clicker.presentation.stream
 
 import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,9 +23,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.sp
 import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -78,6 +85,10 @@ fun StreamView(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    val editChannelInformationModalState= rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
     var bottomModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(bottomModalState)) }
 
 //    var oneClickActionsChecked by remember { mutableStateOf(true) }
@@ -98,6 +109,11 @@ fun StreamView(
     val showChatSettingsBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
             outerBottomModalState.show()
+        }
+    } }
+    val showChannelInformationBottomModal:()->Unit =remember(editChannelInformationModalState) { {
+        scope.launch {
+            editChannelInformationModalState.show()
         }
     } }
 
@@ -262,13 +278,6 @@ fun StreamView(
 
 
 
-
-
-
-
-
-
-
     val showWarnDialog = remember{ mutableStateOf(false) }
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -295,6 +304,22 @@ fun StreamView(
             )
         }
         else -> {
+            //editChannelInformationModalState
+            ModalBottomSheetLayout(
+                sheetState=editChannelInformationModalState,
+                sheetContent = {
+                    Column(modifier = Modifier.fillMaxSize().background(Color.Red)){
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                        Text("Another one",color = Color.Red,fontSize = 30.sp)
+                    }
+                }
+            ){
+
+
             ModalBottomSheetLayout(
                 sheetState = outerBottomModalState,
                 sheetContent ={
@@ -350,8 +375,6 @@ fun StreamView(
                     )
                 }
             ) {
-
-
 
                 ModalBottomSheetLayout(
                     sheetBackgroundColor = MaterialTheme.colorScheme.primary,
@@ -506,7 +529,8 @@ fun StreamView(
                             channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
                             sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                             lowPowerMode= streamViewModel.lowPowerModeActive.value,
-                            channelName = streamViewModel.channelName.value ?:""
+                            channelName = streamViewModel.channelName.value ?:"",
+                            showChannelInformationModal = {showChannelInformationBottomModal()}
                         )
 
 
@@ -526,11 +550,7 @@ fun StreamView(
 
         }
     }
-
-
-
-
-
+    }
 
 }
 
