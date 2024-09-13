@@ -24,56 +24,42 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -81,8 +67,7 @@ import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
-import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
-import kotlinx.coroutines.launch
+import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
 
 
 val followerModeList =listOf(
@@ -202,7 +187,10 @@ fun ChannelInfoLazyColumn(
 
     selectedLanguage:String?,
     changeSelectedLanguage:(String)->Unit,
-    closeChannelInfoModal:()->Unit
+    closeChannelInfoModal:()->Unit,
+
+    checkedBrandedContent:Boolean,
+    changeBrandedContent:(Boolean)->Unit
 ){
 
 
@@ -262,7 +250,14 @@ fun ChannelInfoLazyColumn(
                 }
             )
         }
-      
+        item{
+            BrandedContentInfo(
+                checkedBrandedContent=checkedBrandedContent,
+                changedCheckedBrandedContent={newValue -> changeBrandedContent(newValue)}
+            )
+        }
+
+
         item{
             Spacer(modifier =Modifier.height(10.dp))
         }
@@ -270,6 +265,34 @@ fun ChannelInfoLazyColumn(
             ShareButton()
         }
 
+    }
+}
+
+@Composable
+fun BrandedContentInfo(
+    checkedBrandedContent:Boolean,
+    changedCheckedBrandedContent:(Boolean)->Unit,
+){
+    Column(
+        modifier = Modifier.padding(10.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text("Branded Content",color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize
+            )
+            CustomCheckBox(
+                checked=checkedBrandedContent,
+                changeChecked={changedCheckedBrandedContent(!checkedBrandedContent)}
+            )
+        }
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f))
+        Text("Let viewers know if your stream features branded content. This includes paid product placement, endorsement, or" +
+                " other commercial relationships", color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)
     }
 }
 

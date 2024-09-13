@@ -54,13 +54,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -118,11 +115,10 @@ import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDa
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
-import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
-import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
-import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
+import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.UnAuthorizedResponse
 
 enum class Sections {
@@ -317,8 +313,12 @@ fun ModViewComponentVersionThree(
             editChannelInformationModalState.hide()
         }
     } }
+    val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
+        streamInfoViewModel.changeBrandedContent(newValue)
+    } }
 
-     ModalBottomSheetLayout(
+
+    ModalBottomSheetLayout(
         sheetState=editChannelInformationModalState,
         sheetContent = {
             ChannelInfoLazyColumn(
@@ -337,7 +337,9 @@ fun ModViewComponentVersionThree(
                 changeSelectedLanguage = {newValue ->
                     selectStreamValue(newValue)
                 },
-                closeChannelInfoModal={closeChannelInfoModal()}
+                closeChannelInfoModal={closeChannelInfoModal()},
+                checkedBrandedContent = streamInfoViewModel.brandedContent.value,
+                changeBrandedContent={newValue ->changeBrandedContent(newValue)}
             )
         }
     ) {
