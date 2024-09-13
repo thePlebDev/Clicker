@@ -9,7 +9,6 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,8 +28,8 @@ import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
-import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
-import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
+import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 
 import kotlinx.coroutines.launch
 
@@ -185,6 +184,10 @@ fun HorizontalChat(
     val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
         streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
     } }
+    val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
+        streamInfoViewModel.changeBrandedContent(newValue)
+    } }
+
 
     //todo: Also need to refactor the dialogs
 
@@ -207,7 +210,9 @@ fun HorizontalChat(
                 changeSelectedLanguage = {newValue ->
                     selectStreamValue(newValue)
                 },
-                closeChannelInfoModal={closeChannelInfoModal()}
+                closeChannelInfoModal={closeChannelInfoModal()},
+                checkedBrandedContent = streamInfoViewModel.brandedContent.value,
+                changeBrandedContent={newValue ->changeBrandedContent(newValue)}
             )
         }
     ) {

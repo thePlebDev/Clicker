@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.streamIndo
+package com.example.clicker.presentation.streamInfo
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -10,7 +10,6 @@ import com.example.clicker.network.domain.StreamInfoRepo
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,6 +49,14 @@ class StreamInfoViewModel @Inject constructor(
     fun changeSelectedStreamLanguage(newValue:String){
         _selectedStreamLanguage.value = newValue
     }
+
+    private val _brandedContent: MutableState<Boolean> = mutableStateOf(false)
+    val brandedContent: State<Boolean> = _brandedContent
+
+    fun changeBrandedContent(newValue:Boolean){
+        _brandedContent.value = newValue
+    }
+
 
 
 

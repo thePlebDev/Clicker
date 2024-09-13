@@ -2,35 +2,26 @@ package com.example.clicker.presentation.stream
 
 import android.content.res.Configuration
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.sp
 import com.example.clicker.network.repository.models.EmoteNameUrl
-import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.slowModeListImmutable
@@ -38,7 +29,6 @@ import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
-import com.example.clicker.presentation.stream.views.chat.BadgeSlider
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
@@ -47,8 +37,8 @@ import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
-import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
-import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
+import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import kotlinx.coroutines.launch
 
 
@@ -281,6 +271,10 @@ fun StreamView(
         streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
     } }
 
+    val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
+        streamInfoViewModel.changeBrandedContent(newValue)
+    } }
+
 
 
 
@@ -331,7 +325,9 @@ fun StreamView(
                         changeSelectedLanguage = {newValue ->
                             selectStreamValue(newValue)
                         },
-                        closeChannelInfoModal = {closeChannelInfoModal()}
+                        closeChannelInfoModal = {closeChannelInfoModal()},
+                        checkedBrandedContent = streamInfoViewModel.brandedContent.value,
+                        changeBrandedContent={newValue ->changeBrandedContent(newValue)}
                     )
                 }
             ){

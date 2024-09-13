@@ -2,15 +2,12 @@ package com.example.clicker.presentation.home
 
 import android.app.Activity
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.graphics.Insets
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.HapticFeedbackConstants
@@ -18,15 +15,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.view.Window
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -37,19 +29,14 @@ import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
-import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
-import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.NetworkMonitorService
-import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 // TODO: Rename parameter arguments, choose names that match
