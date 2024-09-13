@@ -26,6 +26,7 @@ import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
@@ -74,6 +75,11 @@ fun HorizontalChat(
     val showChannelInformationBottomModal:()->Unit =remember(bottomModalState) { {
         scope.launch {
             editChannelInformationModalState.show()
+        }
+    } }
+    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
+        scope.launch {
+            editChannelInformationModalState.hide()
         }
     } }
 
@@ -183,45 +189,12 @@ fun HorizontalChat(
     //todo: Also need to refactor the dialogs
 
     ModalBottomSheetLayout(
-        sheetState = outerBottomModalState,
-        sheetContent ={
-            ChatSettingsColumn(
-                advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
-                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
-                chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
-
-                followerModeListImmutable = followerModeListImmutable,
-                slowModeListImmutable= slowModeListImmutable,
-
-                selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                changeSelectedFollowersModeItem ={newValue ->
-                    modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-
-                selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
-                emoteOnly = modViewViewModel.uiState.value.emoteOnly,
-                setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
-                subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
-                setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
-
-                badgeSize = chatSettingsViewModel.badgeSize.value,
-                changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
-                emoteSize = chatSettingsViewModel.emoteSize.value,
-                changeEmoteSize={newValue -> changeEmoteSize(newValue)},
-                usernameSize = chatSettingsViewModel.usernameSize.value,
-                changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
-                messageSize = chatSettingsViewModel.messageSize.value,
-                changeMessageSize={newValue ->changeMessageSize(newValue)},
-                lineHeight = chatSettingsViewModel.lineHeight.value,
-                changeLineHeight = {newValue -> changeLineHeight(newValue)},
-                customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
-                changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
-
+        sheetState=editChannelInformationModalState,
+        sheetContent = {
+            ChannelInfoLazyColumn(
                 changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
                 streamTitle = streamInfoViewModel.channelTitle.value,
                 titleLength =streamInfoViewModel.maxLengthOfTitle.value,
-
                 tagList=streamInfoViewModel.tagList.toList(),
                 tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
                 tagTitle = streamInfoViewModel.tagTitle.value,
@@ -233,165 +206,228 @@ fun HorizontalChat(
                 selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
                 changeSelectedLanguage = {newValue ->
                     selectStreamValue(newValue)
-                }
+                },
+                closeChannelInfoModal={closeChannelInfoModal()}
             )
         }
     ) {
 
         ModalBottomSheetLayout(
-            sheetBackgroundColor = MaterialTheme.colorScheme.primary,
-            sheetState = bottomModalState,
+            sheetState = outerBottomModalState,
             sheetContent = {
-                TestingNewBottomModal(
-                    clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                    textFieldValue = streamViewModel.textFieldValue,
-                    closeBottomModal = {
-                        hideClickedUserBottomModal()
+                ChatSettingsColumn(
+                    advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                    changeAdvancedChatSettings = { newValue ->
+                        streamViewModel.updateAdvancedChatSettings(
+                            newValue
+                        )
                     },
-                    banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
-                    unbanUser = {
-                        unBanUser()
+                    changeNoChatMode = { newValue -> streamViewModel.setNoChatMode(newValue) },
+                    chatSettingsEnabled = modViewViewModel.uiState.value.enabledChatSettings,
+
+                    followerModeListImmutable = followerModeListImmutable,
+                    slowModeListImmutable = slowModeListImmutable,
+
+                    selectedFollowersModeItem = modViewViewModel.uiState.value.selectedFollowerMode,
+                    changeSelectedFollowersModeItem = { newValue ->
+                        modViewViewModel.changeSelectedFollowersModeItem(newValue)
                     },
+
+                    selectedSlowModeItem = modViewViewModel.uiState.value.selectedSlowMode,
+                    changeSelectedSlowModeItem = { newValue ->
+                        modViewViewModel.changeSelectedSlowModeItem(
+                            newValue
+                        )
+                    },
+                    emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+                    setEmoteOnly = { newValue -> modViewViewModel.updateEmoteOnly(newValue) },
+                    subscriberOnly = modViewViewModel.uiState.value.subscriberOnly,
+                    setSubscriberOnly = { newValue -> modViewViewModel.updateSubscriberOnly(newValue) },
+
+                    badgeSize = chatSettingsViewModel.badgeSize.value,
+                    changeBadgeSize = { newValue -> changeBadgeSize(newValue) },
+                    emoteSize = chatSettingsViewModel.emoteSize.value,
+                    changeEmoteSize = { newValue -> changeEmoteSize(newValue) },
+                    usernameSize = chatSettingsViewModel.usernameSize.value,
+                    changeUsernameSize = { newValue -> changeUsernameSize(newValue) },
+                    messageSize = chatSettingsViewModel.messageSize.value,
+                    changeMessageSize = { newValue -> changeMessageSize(newValue) },
+                    lineHeight = chatSettingsViewModel.lineHeight.value,
+                    changeLineHeight = { newValue -> changeLineHeight(newValue) },
+                    customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
+                    changeCustomUsernameColor = { newValue -> changeCustomUsernameColor(newValue) },
+
+                    )
+            }
+        ) {
+
+            ModalBottomSheetLayout(
+                sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+                sheetState = bottomModalState,
+                sheetContent = {
+                    TestingNewBottomModal(
+                        clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                        textFieldValue = streamViewModel.textFieldValue,
+                        closeBottomModal = {
+                            hideClickedUserBottomModal()
+                        },
+                        banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                        unbanUser = {
+                            unBanUser()
+                        },
+                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                        openTimeoutDialog = {
+                            setOpenTimeoutDialogTrue()
+                        },
+                        openBanDialog = {
+                            setOpenBanDialogTrue()
+                        },
+                        clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                        openWarnDialog = {
+                            changeOpenWarningDialog()
+                        },
+                        badgeInlineContentMap = chatSettingsViewModel.globalChatBadgesMap.value,
+                        clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value,
+                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                        channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                        globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                        channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                        sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+
+                        )
+                }
+            ) {
+
+                if (streamViewModel.openWarningDialog.value) {
+                    WarningDialog(
+                        onDismissRequest = {
+                            streamViewModel.changeOpenWarningDialog(false)
+                        },
+                        warnUser = {
+                            streamViewModel.warnUser()
+                            hideClickedUserBottomModal()
+                        },
+                        clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                        waringText = streamViewModel.warningText.value,
+                        changeWaringText = { newValue -> streamViewModel.changeWarningText(newValue) },
+
+                        )
+                }
+                //this is where the chatUI goes
+
+
+                //todo:this is the dialogs
+                TimeoutBanDialogs(
+                    showTimeOutDialog = streamViewModel.openTimeoutDialog.value,
+                    username = streamViewModel.clickedUIState.value.clickedUsername,
+                    timeoutUser = {
+                        streamViewModel.timeoutUser()
+                    },
+                    timeoutDuration = streamViewModel.state.value.timeoutDuration,
+                    closeTimeoutDialog = { streamViewModel.openTimeoutDialog.value = false },
+                    changeTimeoutDuration = { newDuration ->
+                        streamViewModel.changeTimeoutDuration(
+                            newDuration
+                        )
+                    },
+                    timeoutReason = streamViewModel.state.value.timeoutReason,
+                    changeTimeoutReason = { reason -> streamViewModel.changeTimeoutReason(reason) },
+                    showBanDialog = streamViewModel.openBanDialog.value,
+                    changeBanReason = { newReason -> streamViewModel.changeBanReason(newReason) },
+                    banUser = {
+                        streamViewModel.banUser()
+                    },
+                    closeBanDialog = { streamViewModel.openBanDialog.value = false },
+                    banReason = streamViewModel.state.value.banReason,
+                )
+
+                ChatUI(
+                    twitchUserChat = twitchUserChat,
+                    showBottomModal = {
+                        showClickedUserBottomModal()
+                    },
+                    updateClickedUser = { username, userId, banned, isMod ->
+                        updateClickedUser(
+                            username,
+                            userId,
+                            banned,
+                            isMod
+                        )
+                    },
+                    showTimeoutDialog = {
+                        streamViewModel.openTimeoutDialog.value = true
+                    },
+                    showBanDialog = { streamViewModel.openBanDialog.value = true },
+                    doubleClickMessage = { username ->
+                        doubleClickChat(username)
+                    },
+
+                    newFilterMethod = { newTextValue -> streamViewModel.newParsingAgain(newTextValue) },
+
+                    orientationIsVertical = false,
+
                     isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                    openTimeoutDialog = {
-                        setOpenTimeoutDialogTrue()
+                    clickedAutoCompleteText = { username ->
+                        streamViewModel.autoTextChange(username)
                     },
-                    openBanDialog = {
-                        setOpenBanDialogTrue()
+                    showModal = {
+                        showChatSettingsBottomModal()
                     },
-                    clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
-                    openWarnDialog={
-                        changeOpenWarningDialog()
+                    notificationAmount = 0,
+                    textFieldValue = streamViewModel.textFieldValue,
+                    sendMessageToWebSocket = { message ->
+                        sendMessageToWebSocket(message)
+
                     },
-                    badgeInlineContentMap=chatSettingsViewModel.globalChatBadgesMap.value,
-                    clickedUserBadgeList =streamViewModel.clickedUserBadgesImmutable.value,
+                    noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                    deleteChatMessage = { messageId -> streamViewModel.deleteChatMessage(messageId) },
+                    clickedCommandAutoCompleteText = { clickedValue ->
+                        streamViewModel.clickedCommandAutoCompleteText(
+                            clickedValue
+                        )
+                    },
+                    hideSoftKeyboard = {
+                        hideSoftKeyboard()
+                    },
+                    emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                    updateTextWithEmote = { newValue -> streamViewModel.addEmoteToText(newValue) },
+                    emoteBoardChannelList = streamViewModel.channelEmoteUrlList.value,
+                    deleteEmote = { streamViewModel.deleteEmote() },
+                    showModView = {},
+                    emoteBoardMostFrequentList = streamViewModel.mostFrequentEmoteListTesting.value,
+                    updateTempararyMostFrequentEmoteList = { value ->
+                        updateMostFrequentEmoteList(
+                            value
+                        )
+                    },
+                    globalBetterTTVEmotes = streamViewModel.globalBetterTTVEmotes.value,
+                    channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
+                    sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
+                    userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
+                    forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
+                    filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
+                    actualTextFieldValue = streamViewModel.textFieldValue.value,
+                    changeActualTextFieldValue = { text, textRange ->
+                        changeActualTextFieldValue(text, textRange)
+                    },
+                    badgeListMap = streamViewModel.badgeListMap.value,
+                    usernameSize = chatSettingsViewModel.usernameSize.value,
+                    messageSize = chatSettingsViewModel.messageSize.value,
+                    lineHeight = chatSettingsViewModel.lineHeight.value,
+                    useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
                     globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                    channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                    globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                    channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                    sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                    channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                    globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                    channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                    sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                    lowPowerMode = streamViewModel.lowPowerModeActive.value,
+                    channelName = streamViewModel.channelName.value ?: "",
+                    showChannelInformationModal = { showChannelInformationBottomModal() }
 
-                    )
+                )
+
+
             }
-        ){
-
-            if(streamViewModel.openWarningDialog.value){
-                WarningDialog(
-                    onDismissRequest={
-                        streamViewModel.changeOpenWarningDialog(false)
-                                     },
-                    warnUser={
-                        streamViewModel.warnUser()
-                        hideClickedUserBottomModal()
-                             },
-                    clickedUsername=streamViewModel.clickedUIState.value.clickedUsername,
-                    waringText=streamViewModel.warningText.value,
-                    changeWaringText={newValue->streamViewModel.changeWarningText(newValue)},
-
-                    )
-            }
-            //this is where the chatUI goes
-
-
-            //todo:this is the dialogs
-            TimeoutBanDialogs(
-                showTimeOutDialog =streamViewModel.openTimeoutDialog.value,
-                username = streamViewModel.clickedUIState.value.clickedUsername,
-                timeoutUser={
-                    streamViewModel.timeoutUser()
-                },
-                timeoutDuration=streamViewModel.state.value.timeoutDuration,
-                closeTimeoutDialog = {streamViewModel.openTimeoutDialog.value = false},
-                changeTimeoutDuration={newDuration -> streamViewModel.changeTimeoutDuration(newDuration) },
-                timeoutReason=streamViewModel.state.value.timeoutReason,
-                changeTimeoutReason = {reason ->streamViewModel.changeTimeoutReason(reason)},
-                showBanDialog =streamViewModel.openBanDialog.value,
-                changeBanReason = {newReason -> streamViewModel.changeBanReason(newReason)},
-                banUser  ={
-                    streamViewModel.banUser()
-                },
-                closeBanDialog = {streamViewModel.openBanDialog.value = false},
-                banReason = streamViewModel.state.value.banReason,
-            )
-
-            ChatUI(
-                twitchUserChat = twitchUserChat,
-                showBottomModal={
-                    showClickedUserBottomModal()
-                },
-                updateClickedUser = { username, userId, banned, isMod ->
-                    updateClickedUser(
-                        username,
-                        userId,
-                        banned,
-                        isMod
-                    )
-                },
-                showTimeoutDialog={
-                    streamViewModel.openTimeoutDialog.value = true
-                },
-                showBanDialog = {streamViewModel.openBanDialog.value = true},
-                doubleClickMessage={ username->
-                    doubleClickChat(username)
-                },
-
-                newFilterMethod={newTextValue -> streamViewModel.newParsingAgain(newTextValue)},
-
-                orientationIsVertical =false,
-
-                isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                clickedAutoCompleteText = { username ->
-                    streamViewModel.autoTextChange(username)
-                },
-                showModal = {
-                    showChatSettingsBottomModal()
-                },
-                notificationAmount =0,
-                textFieldValue = streamViewModel.textFieldValue,
-                sendMessageToWebSocket = { message ->
-                    sendMessageToWebSocket(message)
-
-                },
-                noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                deleteChatMessage = {messageId ->streamViewModel.deleteChatMessage(messageId)},
-                clickedCommandAutoCompleteText={clickedValue -> streamViewModel.clickedCommandAutoCompleteText(clickedValue)},
-                hideSoftKeyboard ={
-                    hideSoftKeyboard()
-                },
-                emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                updateTextWithEmote = {newValue -> streamViewModel.addEmoteToText(newValue)},
-                emoteBoardChannelList =streamViewModel.channelEmoteUrlList.value,
-                deleteEmote={streamViewModel.deleteEmote()},
-                showModView = {},
-                emoteBoardMostFrequentList= streamViewModel.mostFrequentEmoteListTesting.value,
-                updateTempararyMostFrequentEmoteList={value ->updateMostFrequentEmoteList(value)},
-                globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,
-                channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
-                sharedBetterTTVResponse= streamViewModel.sharedChannelBetterTTVEmote.value,
-                userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
-                forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
-                filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
-                actualTextFieldValue = streamViewModel.textFieldValue.value,
-                changeActualTextFieldValue={text,textRange->
-                    changeActualTextFieldValue(text, textRange)
-                },
-                badgeListMap= streamViewModel.badgeListMap.value,
-                usernameSize = chatSettingsViewModel.usernameSize.value,
-                messageSize = chatSettingsViewModel.messageSize.value,
-                lineHeight=chatSettingsViewModel.lineHeight.value,
-                useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
-                globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
-                lowPowerMode= streamViewModel.lowPowerModeActive.value,
-                channelName = streamViewModel.channelName.value ?:"",
-                showChannelInformationModal = {showChannelInformationBottomModal()}
-
-            )
-
-
         }
     }
 

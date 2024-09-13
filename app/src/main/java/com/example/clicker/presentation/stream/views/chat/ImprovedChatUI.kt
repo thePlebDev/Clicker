@@ -457,7 +457,7 @@ fun ChatUIBox(
                     }
 
                 }
-               // if(showChatSettings){
+
                     Box(modifier = Modifier.align(Alignment.BottomEnd)
                         .padding(bottom = 80.dp)
                     ){
@@ -472,10 +472,6 @@ fun ChatUIBox(
                             )
                         }
                     }
-
-
-
-               // }
 
 
                 ForwardSlash(

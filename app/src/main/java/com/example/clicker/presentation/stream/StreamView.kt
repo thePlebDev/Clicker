@@ -41,6 +41,7 @@ import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.presentation.stream.views.chat.BadgeSlider
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
@@ -114,6 +115,12 @@ fun StreamView(
     val showChannelInformationBottomModal:()->Unit =remember(editChannelInformationModalState) { {
         scope.launch {
             editChannelInformationModalState.show()
+        }
+    } }
+
+    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
+        scope.launch {
+            editChannelInformationModalState.hide()
         }
     } }
 
@@ -308,14 +315,24 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetState=editChannelInformationModalState,
                 sheetContent = {
-                    Column(modifier = Modifier.fillMaxSize().background(Color.Red)){
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                        Text("Another one",color = Color.Red,fontSize = 30.sp)
-                    }
+                    ChannelInfoLazyColumn(
+                        changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
+                        streamTitle = streamInfoViewModel.channelTitle.value,
+                        titleLength =streamInfoViewModel.maxLengthOfTitle.value,
+                        tagList=streamInfoViewModel.tagList.toList(),
+                        tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
+                        tagTitle = streamInfoViewModel.tagTitle.value,
+                        addTag = {newTag -> addTag(newTag)},
+                        removeTag={oldTag -> removeTag(oldTag)},
+                        changeTagTitle = {tagTitle ->changeTagTitle(tagTitle)},
+                        contentClassificationCheckBox=streamInfoViewModel.contentClassification.value,
+                        changeContentClassification = {newValue->changeContentClassification(newValue)},
+                        selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
+                        changeSelectedLanguage = {newValue ->
+                            selectStreamValue(newValue)
+                        },
+                        closeChannelInfoModal = {closeChannelInfoModal()}
+                    )
                 }
             ){
 
@@ -351,26 +368,6 @@ fun StreamView(
                         changeLineHeight = {newValue -> changeLineHeight(newValue)},
                         customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
                         changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
-
-                        changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
-                        streamTitle = streamInfoViewModel.channelTitle.value,
-                        titleLength =streamInfoViewModel.maxLengthOfTitle.value,
-
-
-                        tagList=streamInfoViewModel.tagList.toList(),
-                        tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
-                        tagTitle = streamInfoViewModel.tagTitle.value,
-                        addTag = {newTag -> addTag(newTag)},
-                        removeTag={oldTag -> removeTag(oldTag)},
-                        changeTagTitle = {tagTitle ->changeTagTitle(tagTitle)},
-
-                        contentClassificationCheckBox=streamInfoViewModel.contentClassification.value,
-                        changeContentClassification = {newValue->changeContentClassification(newValue)},
-                        selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
-                        changeSelectedLanguage = {newValue ->
-                            selectStreamValue(newValue)
-                        }
-
 
                     )
                 }
@@ -505,7 +502,6 @@ fun StreamView(
                             showModView={
                                 showModView()
                                 clearModViewNotifications()
-                           //    getUnbanRequests()
                             },
                             updateTempararyMostFrequentEmoteList = {value ->updateMostFrequentEmoteList(value)},
                             globalBetterTTVEmotes=streamViewModel.globalBetterTTVEmotes.value,

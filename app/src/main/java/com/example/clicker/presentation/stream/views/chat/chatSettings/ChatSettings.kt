@@ -143,76 +143,13 @@ fun ChatSettingsColumn(
     customUsernameColor: Boolean,
     changeCustomUsernameColor: (Boolean)->Unit,
 
-    streamTitle:String,
-    changeStreamTitle:(String)->Unit,
-    titleLength:Int,
-
-    tagList:List<String>,
-    tagTitle:String,
-    tagTitleLength:Int,
-    changeTagTitle:(String)->Unit,
-    addTag:(String)->Unit,
-    removeTag:(String)->Unit,
-
-    contentClassificationCheckBox: ContentClassificationCheckBox,
-    changeContentClassification:(ContentClassificationCheckBox)->Unit,
-    selectedLanguage:String?,
-    changeSelectedLanguage:(String)->Unit,
-
 
 ){
     Log.d("ChatSettingsColumn","Recomping")
 
-    val scope = rememberCoroutineScope()
-    val secondaryColor =MaterialTheme.colorScheme.secondary
-
-    //modifier =Modifier.weight(1f)
-    val pagerState = rememberPagerState(pageCount = {
-        2
-    })
-    val underlineModifier = Modifier.drawBehind {
-        val strokeWidthPx = 1.dp.toPx()
-        val verticalOffset = size.height - 2.sp.toPx()
-        drawLine(
-            color = secondaryColor,
-            strokeWidth = strokeWidthPx,
-            start = Offset(0f, verticalOffset),
-            end = Offset(size.width, verticalOffset)
-        )
-    }
 
     Column(){
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)){
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(
-                "Chat settings", color = MaterialTheme.colorScheme.onPrimary,
-                modifier = if (pagerState.currentPage == 0) underlineModifier else Modifier.clickable {
-                    scope.launch {
-                        pagerState.animateScrollToPage(0)
-                    }
-                },
-            )
-            Spacer(modifier = Modifier.width(25.dp))
-           Text(
-                "Stream info",
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = if (pagerState.currentPage == 1) underlineModifier else Modifier.clickable {
-                    scope.launch {
-                        pagerState.animateScrollToPage(1)
-                    }
-                },
-            )
 
-        }
-
-
-
-        HorizontalPager(state = pagerState) { page ->
-            // Our page content
-            when(page) {
-                0 -> {
                     ChatSettingsLazyColumn(
                         advancedChatSettings = advancedChatSettings,
                         changeAdvancedChatSettings = {newValue -> changeAdvancedChatSettings(newValue) },
@@ -243,33 +180,6 @@ fun ChatSettingsColumn(
                         changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)}
                     )
                 }
-                1->{
-                    ChannelInfoLazyColumn(
-                        streamTitle=streamTitle,
-                        changeStreamTitle={newValue ->changeStreamTitle(newValue)},
-                        titleLength=titleLength,
-
-                        tagList=tagList,
-                        tagTitleLength=tagTitleLength,
-                        tagTitle = tagTitle,
-                        addTag = {newTag -> addTag(newTag)},
-                        removeTag={oldTag -> removeTag(oldTag)},
-                        changeTagTitle = {oldValue ->changeTagTitle(oldValue)},
-                        contentClassificationCheckBox=contentClassificationCheckBox,
-                        changeContentClassification={newClassification ->changeContentClassification(newClassification)},
-                        selectedLanguage =selectedLanguage,
-                        changeSelectedLanguage = {newValue ->
-                            changeSelectedLanguage(newValue)
-                        }
-
-
-                    )
-                }
-            }
-        }
-
-
-    }
 
 }
 
@@ -292,6 +202,7 @@ fun ChannelInfoLazyColumn(
 
     selectedLanguage:String?,
     changeSelectedLanguage:(String)->Unit,
+    closeChannelInfoModal:()->Unit
 ){
 
 
@@ -299,6 +210,11 @@ fun ChannelInfoLazyColumn(
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary)) {
         stickyHeader {
+            SaveCloseChannelInformationHeader(
+                closeModal={closeChannelInfoModal()}
+            )
+        }
+        item {
             StickyHeaderColumn("Stream Title")
         }
         item{
@@ -308,11 +224,11 @@ fun ChannelInfoLazyColumn(
                 titleLength=titleLength
             )
         }
-        stickyHeader {
+        item {
             StickyHeaderColumn("Category")
         }
         item{ CircularProgressIndicator()} // change at the end
-        stickyHeader {
+        item {
             StickyHeaderColumn("Stream Tags")
         }
         item{
@@ -326,7 +242,7 @@ fun ChannelInfoLazyColumn(
             )
 
         }
-        stickyHeader {
+        item {
             StickyHeaderColumn("Content Classification")
         }
         item{
@@ -335,7 +251,7 @@ fun ChannelInfoLazyColumn(
                 changeContentClassification={newClassification ->changeContentClassification(newClassification)}
             )
         }
-        stickyHeader {
+        item {
             StickyHeaderColumn("Stream Language")
         }
         item{
@@ -346,11 +262,41 @@ fun ChannelInfoLazyColumn(
                 }
             )
         }
+      
         item{
             Spacer(modifier =Modifier.height(10.dp))
         }
         item{
             ShareButton()
+        }
+
+    }
+}
+
+@Composable
+fun SaveCloseChannelInformationHeader(
+    closeModal:()->Unit
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.primary)
+        .padding(10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Icon(painter = painterResource(id =R.drawable.baseline_close_24),
+            contentDescription ="close" ,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.clickable {
+                closeModal()
+            }
+        )
+        Button(
+            onClick={},
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ){
+            Text("Save", color = MaterialTheme.colorScheme.onSecondary)
         }
 
     }

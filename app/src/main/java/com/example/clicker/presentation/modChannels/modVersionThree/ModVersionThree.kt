@@ -119,6 +119,7 @@ import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.HorizontalDragDetectionBox
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamIndo.ContentClassificationCheckBox
 import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
@@ -311,47 +312,19 @@ fun ModViewComponentVersionThree(
     val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
         streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
     } }
+    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
+        scope.launch {
+            editChannelInformationModalState.hide()
+        }
+    } }
 
-    ModalBottomSheetLayout(
-        sheetState = chatSettingsModalState,
-        sheetContent ={
-            ChatSettingsColumn(
-                advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                changeAdvancedChatSettings = {newValue -> streamViewModel.updateAdvancedChatSettings(newValue)},
-                changeNoChatMode = {newValue -> streamViewModel.setNoChatMode(newValue)},
-
-                chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-
-                followerModeListImmutable = followerModeListImmutable,
-                slowModeListImmutable=slowModeListImmutable,
-
-                selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                changeSelectedFollowersModeItem ={newValue -> modViewViewModel.changeSelectedFollowersModeItem(newValue)},
-
-                selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                changeSelectedSlowModeItem ={newValue ->modViewViewModel.changeSelectedSlowModeItem(newValue)},
-                emoteOnly = modViewViewModel.uiState.value.emoteOnly,
-                setEmoteOnly = {newValue ->modViewViewModel.updateEmoteOnly(newValue)},
-                subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
-                setSubscriberOnly={newValue -> modViewViewModel.updateSubscriberOnly(newValue)},
-
-                badgeSize = chatSettingsViewModel.badgeSize.value,
-                changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
-                emoteSize = chatSettingsViewModel.emoteSize.value,
-                changeEmoteSize={newValue -> changeEmoteSize(newValue)},
-                usernameSize = chatSettingsViewModel.usernameSize.value,
-                changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
-                messageSize = chatSettingsViewModel.messageSize.value,
-                changeMessageSize={newValue ->changeMessageSize(newValue)},
-                lineHeight = chatSettingsViewModel.lineHeight.value,
-                changeLineHeight = {newValue -> changeLineHeight(newValue)},
-                customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
-                changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
-
+     ModalBottomSheetLayout(
+        sheetState=editChannelInformationModalState,
+        sheetContent = {
+            ChannelInfoLazyColumn(
                 changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
                 streamTitle = streamInfoViewModel.channelTitle.value,
                 titleLength =streamInfoViewModel.maxLengthOfTitle.value,
-
                 tagList=streamInfoViewModel.tagList.toList(),
                 tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
                 tagTitle = streamInfoViewModel.tagTitle.value,
@@ -363,303 +336,377 @@ fun ModViewComponentVersionThree(
                 selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
                 changeSelectedLanguage = {newValue ->
                     selectStreamValue(newValue)
-                }
-
+                },
+                closeChannelInfoModal={closeChannelInfoModal()}
             )
         }
     ) {
 
-        ModalBottomSheetLayout(
-            sheetBackgroundColor = MaterialTheme.colorScheme.primary,
-            sheetState = clickedChatterModalState,
-            sheetContent = {
+         ModalBottomSheetLayout(
+             sheetState = chatSettingsModalState,
+             sheetContent = {
+                 ChatSettingsColumn(
+                     advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+                     changeAdvancedChatSettings = { newValue ->
+                         streamViewModel.updateAdvancedChatSettings(
+                             newValue
+                         )
+                     },
+                     changeNoChatMode = { newValue -> streamViewModel.setNoChatMode(newValue) },
 
-                TestingNewBottomModal(
-                    clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
-                    textFieldValue = streamViewModel.textFieldValue,
-                    closeBottomModal = {},
-                    banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
-                    unbanUser = {
-                        streamViewModel.unBanUser()
-                    },
-                    isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                    openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
-                    openBanDialog = { streamViewModel.openBanDialog.value = true },
-                    openWarnDialog = { streamViewModel.changeOpenWarningDialog(true) },
-                    clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
-                    badgeInlineContentMap = chatSettingsViewModel.globalChatBadgesMap.value,
-                    clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value,
-                    globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                    channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                    globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                    channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                    sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
-                )
-            }
-        ) {
-            ModVersionThree(
-                boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
-                setBoxOneOffset = { newValue -> modVersionThreeViewModel.setBoxOneOffset(newValue) },
-                boxOneDragState = modVersionThreeViewModel.boxOneDragState,
-                boxOneSection = modVersionThreeViewModel.boxOneSection,
-                boxOneIndex = modVersionThreeViewModel.boxOneIndex,
-                boxOneDragging = modVersionThreeViewModel.boxesZIndex.value.boxOneIndex,
-                setBoxOneDragging = { newValue ->
-                    Log.d("LoggingTheDragging", "ONE")
-                    setBoxOneDragging(newValue)
-                },
-                setBoxOneIndex = { newValue -> modVersionThreeViewModel.syncBoxOneIndex(newValue) },
-                deleteBoxOne = modVersionThreeViewModel.deleteBoxOne,
-                boxOneHeight = modVersionThreeViewModel.boxOneHeight,
-                boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
-                setBoxOneDoubleTap = { newValue ->
-                    setBoxOneDoubleTap(newValue)
-                },
+                     chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod
+                         ?: false,
 
-                /*************** BOX TWO PARAMETERS***************************************************************/
-                boxTwoOffsetY = modVersionThreeViewModel.boxTwoOffsetY,
-                setBoxTwoOffset = { newValue -> modVersionThreeViewModel.setBoxTwoOffset(newValue) },
-                boxTwoDragState = modVersionThreeViewModel.boxTwoDragState,
-                boxTwoSection = modVersionThreeViewModel.boxTwoSection,
-                boxTwoIndex = modVersionThreeViewModel.boxTwoIndex,
-                boxTwoDragging = modVersionThreeViewModel.boxesZIndex.value.boxTwoIndex,
-                setBoxTwoDragging = { newValue -> setBoxTwoDragging(newValue) },
-                setBoxTwoIndex = { newValue ->
-                    Log.d("LoggingTheDragging", "TWO")
-                    modVersionThreeViewModel.syncBoxTwoIndex(newValue)
-                },
-                deleteBoxTwo = modVersionThreeViewModel.deleteBoxTwo,
-                boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
-                boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
-                setBoxTwoDoubleTap = { newValue ->
-                    setBoxTwoDoubleTap(newValue)
-                },
+                     followerModeListImmutable = followerModeListImmutable,
+                     slowModeListImmutable = slowModeListImmutable,
 
-                /*************** BOX THREE PARAMETERS*****************************************************************/
-                boxThreeOffsetY = modVersionThreeViewModel.boxThreeOffsetY,
-                setBoxThreeOffset = { newValue ->
-                    modVersionThreeViewModel.setBoxThreeOffset(
-                        newValue
-                    )
-                },
-                boxThreeDragState = modVersionThreeViewModel.boxThreeDragState,
-                boxThreeSection = modVersionThreeViewModel.boxThreeSection,
-                boxThreeIndex = modVersionThreeViewModel.boxThreeIndex,
-                boxThreeDragging = modVersionThreeViewModel.boxesZIndex.value.boxThreeIndex,
-                setBoxThreeDragging = { newValue ->
-                    setBoxThreeDragging(newValue)
-                },
-                setBoxThreeIndex = { newValue ->
-                    Log.d("LoggingTheDragging", "THREE")
-                    modVersionThreeViewModel.syncBoxThreeIndex(newValue)
-                },
-                deleteBoxThree = modVersionThreeViewModel.deleteBoxThree,
-                boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
-                boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
-                setBoxThreeDoubleTap = { newValue ->
-                    setBoxThreeDoubleTap(newValue)
+                     selectedFollowersModeItem = modViewViewModel.uiState.value.selectedFollowerMode,
+                     changeSelectedFollowersModeItem = { newValue ->
+                         modViewViewModel.changeSelectedFollowersModeItem(
+                             newValue
+                         )
+                     },
 
-                },
+                     selectedSlowModeItem = modViewViewModel.uiState.value.selectedSlowMode,
+                     changeSelectedSlowModeItem = { newValue ->
+                         modViewViewModel.changeSelectedSlowModeItem(
+                             newValue
+                         )
+                     },
+                     emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+                     setEmoteOnly = { newValue -> modViewViewModel.updateEmoteOnly(newValue) },
+                     subscriberOnly = modViewViewModel.uiState.value.subscriberOnly,
+                     setSubscriberOnly = { newValue ->
+                         modViewViewModel.updateSubscriberOnly(
+                             newValue
+                         )
+                     },
+
+                     badgeSize = chatSettingsViewModel.badgeSize.value,
+                     changeBadgeSize = { newValue -> changeBadgeSize(newValue) },
+                     emoteSize = chatSettingsViewModel.emoteSize.value,
+                     changeEmoteSize = { newValue -> changeEmoteSize(newValue) },
+                     usernameSize = chatSettingsViewModel.usernameSize.value,
+                     changeUsernameSize = { newValue -> changeUsernameSize(newValue) },
+                     messageSize = chatSettingsViewModel.messageSize.value,
+                     changeMessageSize = { newValue -> changeMessageSize(newValue) },
+                     lineHeight = chatSettingsViewModel.lineHeight.value,
+                     changeLineHeight = { newValue -> changeLineHeight(newValue) },
+                     customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
+                     changeCustomUsernameColor = { newValue -> changeCustomUsernameColor(newValue) },
+
+                     )
+             }
+         ) {
+
+             ModalBottomSheetLayout(
+                 sheetBackgroundColor = MaterialTheme.colorScheme.primary,
+                 sheetState = clickedChatterModalState,
+                 sheetContent = {
+
+                     TestingNewBottomModal(
+                         clickedUsername = streamViewModel.clickedUIState.value.clickedUsername,
+                         textFieldValue = streamViewModel.textFieldValue,
+                         closeBottomModal = {},
+                         banned = streamViewModel.clickedUIState.value.clickedUsernameBanned,
+                         unbanUser = {
+                             streamViewModel.unBanUser()
+                         },
+                         isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                         openTimeoutDialog = { streamViewModel.openTimeoutDialog.value = true },
+                         openBanDialog = { streamViewModel.openBanDialog.value = true },
+                         openWarnDialog = { streamViewModel.changeOpenWarningDialog(true) },
+                         clickedUsernameChatsDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                         badgeInlineContentMap = chatSettingsViewModel.globalChatBadgesMap.value,
+                         clickedUserBadgeList = streamViewModel.clickedUserBadgesImmutable.value,
+                         globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                         channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                         globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                         channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                         sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                     )
+                 }
+             ) {
+                 ModVersionThree(
+                     boxOneOffsetY = modVersionThreeViewModel.boxOneOffsetY,
+                     setBoxOneOffset = { newValue ->
+                         modVersionThreeViewModel.setBoxOneOffset(
+                             newValue
+                         )
+                     },
+                     boxOneDragState = modVersionThreeViewModel.boxOneDragState,
+                     boxOneSection = modVersionThreeViewModel.boxOneSection,
+                     boxOneIndex = modVersionThreeViewModel.boxOneIndex,
+                     boxOneDragging = modVersionThreeViewModel.boxesZIndex.value.boxOneIndex,
+                     setBoxOneDragging = { newValue ->
+                         Log.d("LoggingTheDragging", "ONE")
+                         setBoxOneDragging(newValue)
+                     },
+                     setBoxOneIndex = { newValue ->
+                         modVersionThreeViewModel.syncBoxOneIndex(
+                             newValue
+                         )
+                     },
+                     deleteBoxOne = modVersionThreeViewModel.deleteBoxOne,
+                     boxOneHeight = modVersionThreeViewModel.boxOneHeight,
+                     boxOneDoubleTap = modVersionThreeViewModel.doubleTap.value.boxOneDoubleTap,
+                     setBoxOneDoubleTap = { newValue ->
+                         setBoxOneDoubleTap(newValue)
+                     },
+
+                     /*************** BOX TWO PARAMETERS***************************************************************/
+                     boxTwoOffsetY = modVersionThreeViewModel.boxTwoOffsetY,
+                     setBoxTwoOffset = { newValue ->
+                         modVersionThreeViewModel.setBoxTwoOffset(
+                             newValue
+                         )
+                     },
+                     boxTwoDragState = modVersionThreeViewModel.boxTwoDragState,
+                     boxTwoSection = modVersionThreeViewModel.boxTwoSection,
+                     boxTwoIndex = modVersionThreeViewModel.boxTwoIndex,
+                     boxTwoDragging = modVersionThreeViewModel.boxesZIndex.value.boxTwoIndex,
+                     setBoxTwoDragging = { newValue -> setBoxTwoDragging(newValue) },
+                     setBoxTwoIndex = { newValue ->
+                         Log.d("LoggingTheDragging", "TWO")
+                         modVersionThreeViewModel.syncBoxTwoIndex(newValue)
+                     },
+                     deleteBoxTwo = modVersionThreeViewModel.deleteBoxTwo,
+                     boxTwoHeight = modVersionThreeViewModel.boxTwoHeight,
+                     boxTwoDoubleTap = modVersionThreeViewModel.doubleTap.value.boxTwoDoubleTap,
+                     setBoxTwoDoubleTap = { newValue ->
+                         setBoxTwoDoubleTap(newValue)
+                     },
+
+                     /*************** BOX THREE PARAMETERS*****************************************************************/
+                     boxThreeOffsetY = modVersionThreeViewModel.boxThreeOffsetY,
+                     setBoxThreeOffset = { newValue ->
+                         modVersionThreeViewModel.setBoxThreeOffset(
+                             newValue
+                         )
+                     },
+                     boxThreeDragState = modVersionThreeViewModel.boxThreeDragState,
+                     boxThreeSection = modVersionThreeViewModel.boxThreeSection,
+                     boxThreeIndex = modVersionThreeViewModel.boxThreeIndex,
+                     boxThreeDragging = modVersionThreeViewModel.boxesZIndex.value.boxThreeIndex,
+                     setBoxThreeDragging = { newValue ->
+                         setBoxThreeDragging(newValue)
+                     },
+                     setBoxThreeIndex = { newValue ->
+                         Log.d("LoggingTheDragging", "THREE")
+                         modVersionThreeViewModel.syncBoxThreeIndex(newValue)
+                     },
+                     deleteBoxThree = modVersionThreeViewModel.deleteBoxThree,
+                     boxThreeHeight = modVersionThreeViewModel.boxThreeHeight,
+                     boxThreeDoubleTap = modVersionThreeViewModel.doubleTap.value.boxThreeDoubleTap,
+                     setBoxThreeDoubleTap = { newValue ->
+                         setBoxThreeDoubleTap(newValue)
+
+                     },
 
 
-                /*************** GENERICS PARAMETERS*****************************************************************/
-                updateIndex = { newValue ->
-                    setIndex(newValue) //todo: wrap this in a remember function
-                },
-                showError = modVersionThreeViewModel.showPlacementError.value,
-                sectionTwoHeight = modVersionThreeViewModel.section2height,
-                sectionThreeHeight = modVersionThreeViewModel.section3Height,
-                closeModView = { closeModView() },
-                fullChatMode = modVersionThreeViewModel.fullChat.value,
-                deleteOffset = modVersionThreeViewModel.deleteOffset,
+                     /*************** GENERICS PARAMETERS*****************************************************************/
+                     updateIndex = { newValue ->
+                         setIndex(newValue) //todo: wrap this in a remember function
+                     },
+                     showError = modVersionThreeViewModel.showPlacementError.value,
+                     sectionTwoHeight = modVersionThreeViewModel.section2height,
+                     sectionThreeHeight = modVersionThreeViewModel.section3Height,
+                     closeModView = { closeModView() },
+                     fullChatMode = modVersionThreeViewModel.fullChat.value,
+                     deleteOffset = modVersionThreeViewModel.deleteOffset,
 
-                smallChat = { setDragging ->
-                    SmallChat(
-                        twitchUserChat = twitchUserChat,
-                        showBottomModal = {
-                            scope.launch { clickedChatterModalState.show() }
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        showTimeoutDialog = {
-                            streamViewModel.openTimeoutDialog.value = true
-                        },
-                        showBanDialog = { streamViewModel.openBanDialog.value = true },
-                        doubleClickMessage = { username ->
-                            doubleClickChat(username)
-                        },
-                        deleteChatMessage = { messageId ->
-                            streamViewModel.deleteChatMessage(
-                                messageId
-                            )
-                        },
-                        //todo:change back to --> true for testing
-                        isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                        setDragging = { value ->
-                            Log.d("DOUBLECLICKDRAGGING", "click from the outside")
-                            setDragging()
-                        },
-                        doubleClickAndDrag = modVersionThreeViewModel.doubleClickAndDrag.value,
-                        setDoubleClickAndDragFalse = {
-                            setDoubleClickAndDragFalse()
-                        },
-                        badgeListMap = streamViewModel.badgeListMap.value,
-                        usernameSize=chatSettingsViewModel.usernameSize.value,
-                        messageSize = chatSettingsViewModel.messageSize.value,
-                        lineHeight=chatSettingsViewModel.lineHeight.value,
-                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
-                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                        channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                        globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                        channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                        sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
-                    )
-                },
-                fullChat = { setDragging ->
-                    FullChatModView(
-                        twitchUserChat = twitchUserChat,
-                        showBottomModal = {
-                            scope.launch { clickedChatterModalState.show() }
-                        },
-                        updateClickedUser = { username, userId, banned, isMod ->
-                            updateClickedUser(
-                                username,
-                                userId,
-                                banned,
-                                isMod
-                            )
-                        },
-                        showTimeoutDialog = {
-                            streamViewModel.openTimeoutDialog.value = true
-                        },
-                        showBanDialog = { streamViewModel.openBanDialog.value = true },
-                        doubleClickMessage = { username ->
-                            doubleClickChat(username)
+                     smallChat = { setDragging ->
+                         SmallChat(
+                             twitchUserChat = twitchUserChat,
+                             showBottomModal = {
+                                 scope.launch { clickedChatterModalState.show() }
+                             },
+                             updateClickedUser = { username, userId, banned, isMod ->
+                                 updateClickedUser(
+                                     username,
+                                     userId,
+                                     banned,
+                                     isMod
+                                 )
+                             },
+                             showTimeoutDialog = {
+                                 streamViewModel.openTimeoutDialog.value = true
+                             },
+                             showBanDialog = { streamViewModel.openBanDialog.value = true },
+                             doubleClickMessage = { username ->
+                                 doubleClickChat(username)
+                             },
+                             deleteChatMessage = { messageId ->
+                                 streamViewModel.deleteChatMessage(
+                                     messageId
+                                 )
+                             },
+                             //todo:change back to --> true for testing
+                             isMod = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+                             setDragging = { value ->
+                                 Log.d("DOUBLECLICKDRAGGING", "click from the outside")
+                                 setDragging()
+                             },
+                             doubleClickAndDrag = modVersionThreeViewModel.doubleClickAndDrag.value,
+                             setDoubleClickAndDragFalse = {
+                                 setDoubleClickAndDragFalse()
+                             },
+                             badgeListMap = streamViewModel.badgeListMap.value,
+                             usernameSize = chatSettingsViewModel.usernameSize.value,
+                             messageSize = chatSettingsViewModel.messageSize.value,
+                             lineHeight = chatSettingsViewModel.lineHeight.value,
+                             useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+                             globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                             channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                             globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                             channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                             sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                         )
+                     },
+                     fullChat = { setDragging ->
+                         FullChatModView(
+                             twitchUserChat = twitchUserChat,
+                             showBottomModal = {
+                                 scope.launch { clickedChatterModalState.show() }
+                             },
+                             updateClickedUser = { username, userId, banned, isMod ->
+                                 updateClickedUser(
+                                     username,
+                                     userId,
+                                     banned,
+                                     isMod
+                                 )
+                             },
+                             showTimeoutDialog = {
+                                 streamViewModel.openTimeoutDialog.value = true
+                             },
+                             showBanDialog = { streamViewModel.openBanDialog.value = true },
+                             doubleClickMessage = { username ->
+                                 doubleClickChat(username)
 
-                        },
+                             },
 
-                        showOuterBottomModalState = {
-                            Log.d("BottomModalClicked", "showOuterBottomModalState Clicked")
-                            //seems fine that it is empy
+                             showOuterBottomModalState = {
+                                 Log.d("BottomModalClicked", "showOuterBottomModalState Clicked")
+                                 //seems fine that it is empy
 //                    scope.launch {
 //
 //                    }
-                        },
-                        newFilterMethod = { newTextValue ->
-                            streamViewModel.newParsingAgain(
-                                newTextValue
-                            )
-                        },
+                             },
+                             newFilterMethod = { newTextValue ->
+                                 streamViewModel.newParsingAgain(
+                                     newTextValue
+                                 )
+                             },
 
-                        orientationIsVertical = true,
+                             orientationIsVertical = true,
 
-                        //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
-                        isMod = true,
-                        clickedAutoCompleteText = { username ->
-                            streamViewModel.autoTextChange(username)
-                        },
-                        showModal = {
-                            //todo: This is what is clicked when I want to launch the bottom modal
-                            scope.launch {
-                                chatSettingsModalState.show()
-                                // clickedChatterModalState.show()
-                            }
-                        },
-                        notificationAmount = 0,
-                        textFieldValue = streamViewModel.textFieldValue,
-                        sendMessageToWebSocket = { message ->
-                            sendMessageToWebSocket(message)
-                        },
-                        noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
-                        deleteChatMessage = { messageId ->
-                            streamViewModel.deleteChatMessage(
-                                messageId
-                            )
-                        },
-                        clickedCommandAutoCompleteText = { clickedValue ->
-                            streamViewModel.clickedCommandAutoCompleteText(
-                                clickedValue
-                            )
-                        },
-                        hideSoftKeyboard = {
-                            hideSoftKeyboard()
+                             //todo:change back to --> streamViewModel.state.value.loggedInUserData?.mod ?: false
+                             isMod = true,
+                             clickedAutoCompleteText = { username ->
+                                 streamViewModel.autoTextChange(username)
+                             },
+                             showModal = {
+                                 //todo: This is what is clicked when I want to launch the bottom modal
+                                 scope.launch {
+                                     chatSettingsModalState.show()
+                                     // clickedChatterModalState.show()
+                                 }
+                             },
+                             notificationAmount = 0,
+                             textFieldValue = streamViewModel.textFieldValue,
+                             sendMessageToWebSocket = { message ->
+                                 sendMessageToWebSocket(message)
+                             },
+                             noChat = streamViewModel.advancedChatSettingsState.value.noChatMode,
+                             deleteChatMessage = { messageId ->
+                                 streamViewModel.deleteChatMessage(
+                                     messageId
+                                 )
+                             },
+                             clickedCommandAutoCompleteText = { clickedValue ->
+                                 streamViewModel.clickedCommandAutoCompleteText(
+                                     clickedValue
+                                 )
+                             },
+                             hideSoftKeyboard = {
+                                 hideSoftKeyboard()
 
-                        },
-                        emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
-                        updateTextWithEmote = { newValue -> streamViewModel.addEmoteToText(newValue) },
-                        emoteBoardChannelList = streamViewModel.channelEmoteUrlList.value,
-                        deleteEmote = { streamViewModel.deleteEmote() },
-                        showModView = {
-                            closeModView()
-                        },
-                        fullMode = modVersionThreeViewModel.fullChat.value,
-                        setDragging = {
-                            Log.d("doubleClickingThings", "CLICKED")
-                            setDragging()
-                        },
-                        emoteBoardMostFrequentList = streamViewModel.mostFrequentEmoteListTesting.value,
-                        updateMostFrequentEmoteList = { value ->
-                             updateMostFrequentEmoteList(value)
-                        },
-                        globalBetterTTVEmotes = streamViewModel.globalBetterTTVEmotes.value,
-                        channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
-                        sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
-                        userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
-                        forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
-                        filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
-                        actualTextFieldValue = streamViewModel.textFieldValue.value,
-                        changeActualTextFieldValue = { text, textRange ->
-                            changeActualTextFieldValue(text, textRange)
-                        },
-                        badgeListMap= streamViewModel.badgeListMap.value,
-                        usernameSize = chatSettingsViewModel.usernameSize.value,
-                        messageSize = chatSettingsViewModel.messageSize.value,
-                        lineHeight=chatSettingsViewModel.lineHeight.value,
-                        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
-                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                        channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                        globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                        channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                        sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
-                        lowPowerMode= streamViewModel.lowPowerModeActive.value,
-                        channelName = streamViewModel.channelName.value ?:"",
-                        showChannelInformationModal = {showChannelInformationBottomModal()}
+                             },
+                             emoteBoardGlobalList = streamViewModel.globalEmoteUrlList.value,
+                             updateTextWithEmote = { newValue ->
+                                 streamViewModel.addEmoteToText(
+                                     newValue
+                                 )
+                             },
+                             emoteBoardChannelList = streamViewModel.channelEmoteUrlList.value,
+                             deleteEmote = { streamViewModel.deleteEmote() },
+                             showModView = {
+                                 closeModView()
+                             },
+                             fullMode = modVersionThreeViewModel.fullChat.value,
+                             setDragging = {
+                                 Log.d("doubleClickingThings", "CLICKED")
+                                 setDragging()
+                             },
+                             emoteBoardMostFrequentList = streamViewModel.mostFrequentEmoteListTesting.value,
+                             updateMostFrequentEmoteList = { value ->
+                                 updateMostFrequentEmoteList(value)
+                             },
+                             globalBetterTTVEmotes = streamViewModel.globalBetterTTVEmotes.value,
+                             channelBetterTTVResponse = streamViewModel.channelBetterTTVEmote.value,
+                             sharedBetterTTVResponse = streamViewModel.sharedChannelBetterTTVEmote.value,
+                             userIsSub = streamViewModel.state.value.loggedInUserData?.sub ?: false,
+                             forwardSlashes = streamViewModel.forwardSlashCommandImmutable.value,
+                             filteredChatListImmutable = streamViewModel.filteredChatListImmutable.value,
+                             actualTextFieldValue = streamViewModel.textFieldValue.value,
+                             changeActualTextFieldValue = { text, textRange ->
+                                 changeActualTextFieldValue(text, textRange)
+                             },
+                             badgeListMap = streamViewModel.badgeListMap.value,
+                             usernameSize = chatSettingsViewModel.usernameSize.value,
+                             messageSize = chatSettingsViewModel.messageSize.value,
+                             lineHeight = chatSettingsViewModel.lineHeight.value,
+                             useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+                             globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                             channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                             globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                             channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                             sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                             lowPowerMode = streamViewModel.lowPowerModeActive.value,
+                             channelName = streamViewModel.channelName.value ?: "",
+                             showChannelInformationModal = { showChannelInformationBottomModal() }
 
-                        )
+                         )
 
-                },
-                modActionsList = modViewViewModel.modActionsList,
-                modActionStatus = modViewViewModel.modViewStatus.value.modActions,
-                autoModMessageList = modViewViewModel.autoModMessageList,
-                autoModStatus = modViewViewModel.modViewStatus.value.autoModMessageStatus,
-                manageAutoModMessage = { messageId, action ->
-                    manageAutoModMessage(messageId, action)
-                },
-                changeAutoModQueueChecked = { value ->
-                    changeAutoModQueueChecked(value)    //todo: wrap this in a remember function
-                },
-                changeModActionsChecked = { value ->
-                    changeModActionsChecked(value) //todo: wrap this in a remember function
-                },
-                autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
-                modActionsChecked = modViewViewModel.uiState.value.modActionNotifications,
-                doubleClickAndDrag = modVersionThreeViewModel.doubleClickAndDrag.value,
-                setDoubleClickAndDragFalse = {
-                    setDoubleClickAndDragFalse()
-                },
-                autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
-                modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
+                     },
+                     modActionsList = modViewViewModel.modActionsList,
+                     modActionStatus = modViewViewModel.modViewStatus.value.modActions,
+                     autoModMessageList = modViewViewModel.autoModMessageList,
+                     autoModStatus = modViewViewModel.modViewStatus.value.autoModMessageStatus,
+                     manageAutoModMessage = { messageId, action ->
+                         manageAutoModMessage(messageId, action)
+                     },
+                     changeAutoModQueueChecked = { value ->
+                         changeAutoModQueueChecked(value)    //todo: wrap this in a remember function
+                     },
+                     changeModActionsChecked = { value ->
+                         changeModActionsChecked(value) //todo: wrap this in a remember function
+                     },
+                     autoModQueueChecked = modViewViewModel.uiState.value.autoModMessagesNotifications,
+                     modActionsChecked = modViewViewModel.uiState.value.modActionNotifications,
+                     doubleClickAndDrag = modVersionThreeViewModel.doubleClickAndDrag.value,
+                     setDoubleClickAndDragFalse = {
+                         setDoubleClickAndDragFalse()
+                     },
+                     autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
+                     modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
 
-            )
-        }
-    }
+                     )
+             }
+         }
 
+     }
 
 }
 
