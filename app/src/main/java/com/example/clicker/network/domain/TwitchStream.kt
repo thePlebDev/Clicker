@@ -163,12 +163,7 @@ interface TwitchStream {
         autoModSettings: IndividualAutoModSettings
     ):Flow<Response<AutoModSettings>>
 
-    suspend fun updateChannelInformation(
-       authorizationToken: String,
-        clientId: String,
-        broadcasterId: String,
-        channelInformation: ChannelInformation
-    ):Flow<Response<Boolean>>
+
 
 
 }

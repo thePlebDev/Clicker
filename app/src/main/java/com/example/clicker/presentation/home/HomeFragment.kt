@@ -42,6 +42,7 @@ import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.services.NetworkMonitorViewModel
 import com.example.clicker.ui.theme.AppTheme
@@ -71,6 +72,7 @@ class HomeFragment : Fragment() {
     private val logoutViewModel: LogoutViewModel by activityViewModels()
     private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
+    private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,6 +159,7 @@ class HomeFragment : Fragment() {
                             logoutViewModel=logoutViewModel,
                             modVersionThreeViewModel =modVersionThreeViewModel,
                             chatSettingsViewModel=chatSettingsViewModel,
+                            streamInfoViewModel=streamInfoViewModel
 
                         )
                     }

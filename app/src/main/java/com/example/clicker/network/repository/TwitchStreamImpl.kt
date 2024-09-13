@@ -257,38 +257,5 @@ class TwitchStreamImpl @Inject constructor(
         handleException(cause)
     }
 
-    override suspend fun updateChannelInformation(
-        authorizationToken: String,
-        clientId: String,
-        broadcasterId: String,
-        channelInformation: ChannelInformation
-    ): Flow<Response<Boolean>> =flow{
-        Log.d("updateChannelInformation","authorizationToken -> Bearer $authorizationToken")
-        Log.d("updateChannelInformation","clientId -> $clientId")
-        Log.d("updateChannelInformation","broadcasterId -> $broadcasterId")
-        Log.d("updateChannelInformation","channelInformation -> $channelInformation")
 
-        emit(Response.Loading)
-        val response = twitchClient.updateChannelInformation(
-            authorizationToken = "Bearer $authorizationToken",
-            clientId = clientId,
-            broadcasterId = broadcasterId,
-            channelInformation = channelInformation
-        )
-        if (response.isSuccessful) {
-            emit(Response.Success(true))
-            Log.d("updateChannelInformation","message ->${response.message()}")
-            Log.d("updateChannelInformation","code ->${response.code()}")
-            Log.d("updateChannelInformation","body ->${response.body()}")
-        } else {
-            Log.d("updateChannelInformation","message ->${response.message()}")
-            Log.d("updateChannelInformation","code ->${response.code()}")
-            Log.d("updateChannelInformation","body ->${response.body()}")
-            emit(Response.Failure(Exception("Failed to update channel info")))
-        }
-    }.catch { cause ->
-
-        // Log.d("GETTINGLIVESTREAMS","RUNNING THE METHOD USER--> $user ")
-        handleException(cause)
-    }
 }

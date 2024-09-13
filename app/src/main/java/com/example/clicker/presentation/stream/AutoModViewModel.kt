@@ -192,36 +192,7 @@ class AutoModViewModel @Inject constructor(
             updateAutoModSettingsStatus = null
         )
     }
-    fun updateChannelInformation(
-        streamTitle:String,
-        oAuthToken:String,
-        clientId: String,
-        broadcasterId: String,
-    ){
-        viewModelScope.launch {
-            withContext(ioDispatcher){
-                twitchRepoImpl.updateChannelInformation(
-                    authorizationToken = oAuthToken,
-                    clientId = clientId,
-                    broadcasterId = broadcasterId,
-                    channelInformation = ChannelInformation()
-                ).collect{response ->
-                    when(response){
-                        is Response.Loading ->{
-                            Log.d("updateChannelInformation","LOADING")
-                        }
-                        is Response.Success ->{
-                            Log.d("updateChannelInformation","Success")
-                        }
-                        is Response.Failure ->{
-                            Log.d("updateChannelInformation","Failed")
-                        }
-                    }
 
-                }
-            }
-        }
-    }
 
 
     private fun getAutoModStatus(
