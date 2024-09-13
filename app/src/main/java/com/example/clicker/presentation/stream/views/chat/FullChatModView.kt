@@ -41,6 +41,7 @@ fun FullChatModView(
     isMod: Boolean,
     sendMessageToWebSocket: (String) -> Unit,
     showModal: () -> Unit,
+    showChannelInformationModal:()->Unit,
     showOuterBottomModalState:() ->Unit,
     newFilterMethod:(TextFieldValue) ->Unit,
     orientationIsVertical:Boolean,
@@ -220,7 +221,15 @@ fun FullChatModView(
         forwardSlashes = forwardSlashes,
         lowPowerMode = lowPowerMode,
         channelName = channelName,
-        showChatSettings = showChatSettings
+        showChatSettings = showChatSettings,
+        showChatSettingsModal={
+            showModal()
+            showChatSettings = !showChatSettings
+        },
+        showChannelInformationModal={
+            showChannelInformationModal()
+            showChatSettings = !showChatSettings
+        }
 
 
 

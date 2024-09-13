@@ -2,7 +2,10 @@ package com.example.clicker.presentation.stream.views.chat
 
 import android.os.Build
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -151,6 +154,7 @@ fun ChatUI(
     isMod: Boolean,
     sendMessageToWebSocket: (String) -> Unit,
     showModal: () -> Unit,
+    showChannelInformationModal:()->Unit,
     newFilterMethod:(TextFieldValue) ->Unit,
     orientationIsVertical:Boolean,
     notificationAmount:Int,
@@ -309,7 +313,7 @@ fun ChatUI(
                                },
                         showModal ={
                                    showChatSettings = !showChatSettings
-                           // showModal()
+
                                    },
                     )
                 },
@@ -335,7 +339,15 @@ fun ChatUI(
         forwardSlashes=forwardSlashes,
         lowPowerMode=lowPowerMode,
         channelName=channelName,
-        showChatSettings = showChatSettings
+        showChatSettings = showChatSettings,
+        showChatSettingsModal={
+            showModal()
+            showChatSettings = !showChatSettings
+        },
+        showChannelInformationModal={
+            showChannelInformationModal()
+            showChatSettings = !showChatSettings
+        }
 
         )
 }
@@ -367,7 +379,9 @@ fun ChatUIBox(
     userIsSub:Boolean,
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
     channelName:String,
-    showChatSettings:Boolean
+    showChatSettings:Boolean,
+    showChatSettingsModal:()->Unit,
+    showChannelInformationModal:()->Unit,
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -443,36 +457,25 @@ fun ChatUIBox(
                     }
 
                 }
-                if(showChatSettings){
-                    Box(modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(bottom = 80.dp)){
-                        Column(modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(MaterialTheme.colorScheme.secondary)
-                            .padding(vertical =5.dp, horizontal = 10.dp)){
-                            Row(){
-                                Icon(painter = painterResource(id = R.drawable.baseline_settings_24),
-                                    contentDescription = "chat settings", tint = MaterialTheme.colorScheme.onSecondary)
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text("Chat Settings",color = MaterialTheme.colorScheme.onSecondary)
-                            }
-
-                            Spacer(modifier =Modifier.height(10.dp))
-                            Row(){
-                                Icon(
-                                    painter = painterResource(id = R.drawable.edit_24),
-                                    contentDescription = "edit stream info", tint = MaterialTheme.colorScheme.onSecondary )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text("Edit Stream Info",color = MaterialTheme.colorScheme.onSecondary)
-                            }
-
-
+               // if(showChatSettings){
+                    Box(modifier = Modifier.align(Alignment.BottomEnd)
+                        .padding(bottom = 80.dp)
+                    ){
+                        AnimatedVisibility(
+                            showChatSettings,
+                            enter = scaleIn(initialScale = 0.5f), // Scale in animation
+                            exit = shrinkOut(shrinkTowards = Alignment.Center)
+                        ) {
+                            ChatSettingsChannelInfo(
+                                showChatSettingsModal={showChatSettingsModal()},
+                                showChannelInformationModal={showChannelInformationModal()}
+                            )
                         }
                     }
 
 
-                }
+
+               // }
 
 
                 ForwardSlash(
@@ -488,6 +491,43 @@ fun ChatUIBox(
         }
     }
 
+}
+
+@Composable
+fun ChatSettingsChannelInfo(
+    showChatSettingsModal:()->Unit,
+    showChannelInformationModal:()->Unit,
+){
+
+        Column(modifier = Modifier
+            .clip(RoundedCornerShape(5.dp))
+            .background(MaterialTheme.colorScheme.secondary)
+            .padding(vertical =5.dp, horizontal = 10.dp)){
+            Row(
+                modifier = Modifier.clickable {
+                    showChatSettingsModal()
+                }
+            ){
+                Icon(painter = painterResource(id = R.drawable.baseline_settings_24),
+                    contentDescription = "chat settings", tint = MaterialTheme.colorScheme.onSecondary)
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Chat Settings",color = MaterialTheme.colorScheme.onSecondary)
+            }
+
+            Spacer(modifier =Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.clickable {
+                    showChannelInformationModal()
+                }
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.edit_24),
+                    contentDescription = "edit stream info", tint = MaterialTheme.colorScheme.onSecondary )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Edit Stream Info",color = MaterialTheme.colorScheme.onSecondary)
+            }
+
+    }
 }
 
 fun LazyGridScope.header(

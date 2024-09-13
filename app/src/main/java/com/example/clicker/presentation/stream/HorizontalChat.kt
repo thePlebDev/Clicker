@@ -67,6 +67,15 @@ fun HorizontalChat(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    val editChannelInformationModalState= rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val showChannelInformationBottomModal:()->Unit =remember(bottomModalState) { {
+        scope.launch {
+            editChannelInformationModalState.show()
+        }
+    } }
 
 
 
@@ -377,7 +386,8 @@ fun HorizontalChat(
                 channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
                 sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                 lowPowerMode= streamViewModel.lowPowerModeActive.value,
-                channelName = streamViewModel.channelName.value ?:""
+                channelName = streamViewModel.channelName.value ?:"",
+                showChannelInformationModal = {showChannelInformationBottomModal()}
 
             )
 
