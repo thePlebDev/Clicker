@@ -194,6 +194,7 @@ fun ChatUI(
     val emoteKeyBoardHeight = remember { mutableStateOf(0.dp) }
     var iconClicked by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var showChatSettings by remember { mutableStateOf(false) }
 
     ChatUIBox(
         determineScrollState={
@@ -307,7 +308,8 @@ fun ChatUI(
                             sendMessageToWebSocket(item)
                                },
                         showModal ={
-                            showModal()
+                                   showChatSettings = !showChatSettings
+                           // showModal()
                                    },
                     )
                 },
@@ -332,7 +334,8 @@ fun ChatUI(
         userIsSub=userIsSub,
         forwardSlashes=forwardSlashes,
         lowPowerMode=lowPowerMode,
-        channelName=channelName
+        channelName=channelName,
+        showChatSettings = showChatSettings
 
         )
 }
@@ -364,6 +367,7 @@ fun ChatUIBox(
     userIsSub:Boolean,
     forwardSlashes: ForwardSlashCommandsImmutableCollection,
     channelName:String,
+    showChatSettings:Boolean
 ){
     val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
@@ -372,7 +376,6 @@ fun ChatUIBox(
 
 
 
-    //todo: add a conditional to show emoteBoard to help with recomps
 
     if(lowPowerMode){
         with(chatScope) {
@@ -384,6 +387,7 @@ fun ChatUIBox(
     }else {
 
 
+        //todo: I think this is where I need to put the chat settings UI
 
         with(chatUIScope) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -393,6 +397,7 @@ fun ChatUIBox(
                         .padding(bottom = 80.dp)
                         .zIndex(5f)
                 )
+
 
                 Column(Modifier.fillMaxSize()) {
 
@@ -436,6 +441,36 @@ fun ChatUIBox(
                             message = "You are in No Chat mode"
                         )
                     }
+
+                }
+                if(showChatSettings){
+                    Box(modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 80.dp)){
+                        Column(modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(vertical =5.dp, horizontal = 10.dp)){
+                            Row(){
+                                Icon(painter = painterResource(id = R.drawable.baseline_settings_24),
+                                    contentDescription = "chat settings", tint = MaterialTheme.colorScheme.onSecondary)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Chat Settings",color = MaterialTheme.colorScheme.onSecondary)
+                            }
+
+                            Spacer(modifier =Modifier.height(10.dp))
+                            Row(){
+                                Icon(
+                                    painter = painterResource(id = R.drawable.edit_24),
+                                    contentDescription = "edit stream info", tint = MaterialTheme.colorScheme.onSecondary )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Edit Stream Info",color = MaterialTheme.colorScheme.onSecondary)
+                            }
+
+
+                        }
+                    }
+
 
                 }
 
@@ -1231,7 +1266,7 @@ fun LazyGridEmotes(
                     .clickable {
                         updateTextWithEmote(it.name)
                         updateTempararyMostFrequentEmoteList(
-                            EmoteNameUrl(it.name, it.url,"GLOBAL")
+                            EmoteNameUrl(it.name, it.url, "GLOBAL")
                         )
                     }
             )
@@ -1998,9 +2033,10 @@ fun EnterChatColumn(
 ) {
 
     Column(
-        modifier = modifier.background(MaterialTheme.colorScheme.primary)
+        modifier = modifier.background(MaterialTheme.colorScheme.primary.copy(0f))
 
     ) {
+
         filteredRow()
         Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
             verticalAlignment = Alignment.CenterVertically){
@@ -2010,6 +2046,8 @@ fun EnterChatColumn(
         }
     }
 }
+
+
 
 /**
  * - restartable
@@ -2236,7 +2274,7 @@ fun StylizedTextField(
     actualTextFieldValue:TextFieldValue,
     changeActualTextFieldValue:(String,TextRange)->Unit
 ){
-    //todo: NOW I NEED TO MAKE THE EMOTE BOARD AND KEYBOARD SHOW AT ALL
+
     Log.d("StylizedTextFieldRecomp","RECOMP")
 
     val focusRequester = remember { FocusRequester() }
@@ -2254,7 +2292,6 @@ fun StylizedTextField(
         setIconClicked(false)
         showKeyBoard()
     }
-    //todo: Show the icons inside of here
 
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
@@ -2603,7 +2640,6 @@ fun ChatBadges(
         withStyle(style = SpanStyle(color = usernameColor, fontSize = usernameSize.sp)) {
             append("$username ")
         }
-       //todo:below should get replaced with the new messageList
         for(messageToken in messageList){
 
             if(messageToken.messageType == PrivateMessageType.MESSAGE){
