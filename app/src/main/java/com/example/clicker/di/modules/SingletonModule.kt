@@ -11,9 +11,11 @@ import com.example.clicker.network.clients.TwitchClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.clients.TwitchModClient
+import com.example.clicker.network.clients.TwitchStreamInfoClient
 import com.example.clicker.network.clients.TwitchVODClient
 import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.NetworkMonitorRepo
+import com.example.clicker.network.domain.StreamInfoRepo
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
@@ -36,6 +38,7 @@ import com.example.clicker.network.interceptors.responseCodeInterceptors.Respons
 import com.example.clicker.network.repository.BetterTTVEmotesImpl
 import com.example.clicker.network.repository.DebugRetrofitResponse
 import com.example.clicker.network.repository.NetworkMonitorImpl
+import com.example.clicker.network.repository.StreamInfoRepoImpl
 import com.example.clicker.network.repository.TwitchAuthenticationImpl
 import com.example.clicker.network.repository.TwitchEmoteImpl
 import com.example.clicker.network.repository.TwitchEventSub
@@ -130,6 +133,15 @@ object SingletonModule {
             .client(monitorClient)
             .build().create(TwitchClient::class.java)
     }
+    @Singleton //scope binding
+    @Provides
+    fun providesTwitchStreamInfoClient(): TwitchStreamInfoClient {
+        return Retrofit.Builder()
+            .baseUrl("https://api.twitch.tv/helix/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(TwitchStreamInfoClient::class.java)
+    }
+
 
     @Singleton //scope binding
     @Provides
@@ -230,6 +242,13 @@ object SingletonModule {
     fun provideTwitchRepo(twitchRepoImpl: TwitchRepoImpl): TwitchRepo {
         return twitchRepoImpl
     }
+
+    @Provides
+    fun provideStreamInfoRepo(streamInfoRepoImpl: StreamInfoRepoImpl): StreamInfoRepo {
+        return streamInfoRepoImpl
+    }
+
+
 
     @Provides
     fun provideTwitchVODRepo(twitchVODRepoImpl: TwitchVODRepoImpl): TwitchVODRepo {

@@ -5,19 +5,27 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.domain.StreamInfoRepo
+import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class StreamInfoViewModel @Inject constructor(): ViewModel()  {
+class StreamInfoViewModel @Inject constructor(
+    private val streamInfoRepo: StreamInfoRepo
+): ViewModel()  {
 
 
     /**
-     * private mutable version of [clientId]
+     * private mutable version of [channelTitle]
      * */
     private val _channelTitle: MutableState<String> = mutableStateOf("")
     /**
-     * a [State] nullable-String object used to hold the unique identifier of the Android application
+     * a [State] String object used to represent the name of the stream
      * */
     val channelTitle: State<String> = _channelTitle
 
@@ -33,6 +41,7 @@ class StreamInfoViewModel @Inject constructor(): ViewModel()  {
     val maxLengthOfTag: State<Int> = _maxLengthOfTag
     private val _tagTitle: MutableState<String> = mutableStateOf("")
     val tagTitle: State<String> = _tagTitle
+
      val tagList = mutableStateListOf<String>()
 
     private val _selectedStreamLanguage: MutableState<String?> = mutableStateOf(null)
@@ -87,6 +96,109 @@ class StreamInfoViewModel @Inject constructor(): ViewModel()  {
         )
 
     }
+
+    fun getStreamInfo(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String
+    )=viewModelScope.launch(Dispatchers.IO){
+        streamInfoRepo.getChannelInformation(
+            authorizationToken=authorizationToken,
+            clientId=clientId,
+            broadcasterId = broadcasterId
+        ).collect{response ->
+            when(val data =response){
+                is Response.Loading ->{}
+                is Response.Success ->{
+
+                    val channelInfo =data.data
+                    _channelTitle.value = channelInfo.title
+                    tagList.addAll(channelInfo.tags)
+                    //content classification
+                    //branded content 
+                    val contentClassification = channelInfo.content_classification_labels
+                    for (item in contentClassification){
+                       when(item){
+                           "DrugsIntoxication"->{
+                               _contentClassification.value = _contentClassification.value.copy(
+                                   drugsIntoxication = true
+                               )
+                           }
+                           "Gambling"->{
+                               _contentClassification.value = _contentClassification.value.copy(
+                                   gambling = true
+                               )
+                           }
+                           "ProfanityVulgarity"->{
+                               _contentClassification.value = _contentClassification.value.copy(
+                                   significantProfanity = true
+                               )
+                           }
+                           "SexualThemes"->{
+                               _contentClassification.value = _contentClassification.value.copy(
+                                   sexualThemes = true
+                               )
+                           }
+                           "ViolentGraphic"->{
+                               _contentClassification.value = _contentClassification.value.copy(
+                                   violentGraphic = true
+                               )
+                           }
+                       }
+                    }
+
+                    val language = channelInfo.broadcaster_language
+                    if(languageHashMap.containsKey(language)){
+                        _selectedStreamLanguage.value = languageHashMap[language]
+                    }else{
+                        _selectedStreamLanguage.value = "Other"
+                    }
+
+
+                }
+                is Response.Failure ->{}
+            }
+
+        }
+
+    }
+
+}
+var languageHashMap:HashMap<String, String>
+        = HashMap<String, String> ().apply {
+            put("ar","Arabic")
+    put("bg","Bulgarian")
+    put("ca","Catalan")
+    put("zh","Chinese")
+    put("cs","Czech",)
+    put("da","Danish")
+    put("da","Danish")
+    put("nl","Dutch")
+    put("en","English")
+    put("fi","Finnish")
+    put("fr","French")
+    put("de","German")
+    put("el","Greek")
+    put("hi","Hindi")
+    put("hu","Hungarian")
+    put("id","Indonesian")
+    put("it","Italian")
+    put("ja","Japanese")
+    put("Ko","Korean")
+    put("ms","Malay")
+    put("no","Norwegian")
+    put("pl","Polish")
+    put("pt","Portuguese")
+    put("ro","Romanian")
+    put("ru","Russian")
+    put("sk","Slovak")
+    put("es","Spanish")
+    put("sv","Swedish")
+    put("tl","Tagalog")
+    put("th","Thai")
+    put("tr","Turkish")
+    put("uk","Ukrainian")
+    put("ase","American Sign Language")
 
 }
 

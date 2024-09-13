@@ -48,6 +48,7 @@ import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamIndo.StreamInfoViewModel
 
 import com.example.clicker.util.WebSocketResponse
 
@@ -56,6 +57,7 @@ import com.example.clicker.util.WebSocketResponse
 fun ValidationView(
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
+    streamInfoViewModel: StreamInfoViewModel,
     chatSettingsViewModel:ChatSettingsViewModel,
     logoutViewModel: LogoutViewModel,
     onNavigate: (Int) -> Unit,
@@ -129,6 +131,11 @@ fun ValidationView(
                 )
                 streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
                 streamViewModel.clearAllChatters()
+                streamInfoViewModel.getStreamInfo(
+                    authorizationToken = oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                    broadcasterId = streamViewModel.state.value.broadcasterId,
+                )
             }
 
         },

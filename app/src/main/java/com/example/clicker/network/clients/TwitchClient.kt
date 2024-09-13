@@ -190,23 +190,6 @@ interface TwitchClient {
         @Body autoModSettings: IndividualAutoModSettings
     ):Response<AutoModSettings>
 
-    /**
-     * - updateAutoModSettings represents a PATCH method. a function meant to update the channel's information
-     * - You can read more about this endpoint, [HERE](https://dev.twitch.tv/docs/api/reference/#modify-channel-information)
-     *
-     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
-     * @param clientId a String used to represent the clientId(unique identifier) of this application
-     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
-     * @param channelInformation a object of [ChannelInformation] that will be sent to the Twitch servers to update the channel's information
-     * */
-    @Headers("Content-Type: application/json")
-    @PATCH("channels")
-    suspend fun updateChannelInformation(
-        @Header("Authorization") authorizationToken: String,
-        @Header("Client-Id") clientId: String,
-        @Query("broadcaster_id") broadcasterId: String,
-        @Body channelInformation: ChannelInformation
-    ):Response<Void>
 
 
     @Headers("Content-Type: application/json")
@@ -319,18 +302,7 @@ data class ManageAutoModMessage(
     val msgId:String,
     val action:String,
 )
-data class ChannelInformation(
-    val title:String ="ti do be like that sometimes",
-    @SerializedName("is_enabled")
-    val isLabelEnabled: Boolean = false,
-    val id:String = "ProfanityVulgarity",
-    @SerializedName("broadcaster_language")
-    val preferredLanguage: String = "ko",
-    @SerializedName("game_id")
-    val gameId: String = "0",
 
-
-)
 
 
 data class BanUser(
