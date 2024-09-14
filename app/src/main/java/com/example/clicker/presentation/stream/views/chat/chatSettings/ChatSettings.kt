@@ -37,9 +37,11 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -58,6 +60,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
@@ -202,9 +205,7 @@ fun ChannelInfoLazyColumn(
                 closeModal={closeChannelInfoModal()}
             )
         }
-        item {
-            StickyHeaderColumn("Stream Title")
-        }
+
         item{
             ChannelInfoTitle(
                 streamTitle=streamTitle,
@@ -213,12 +214,9 @@ fun ChannelInfoLazyColumn(
             )
         }
         item {
-            StickyHeaderColumn("Category")
+            GameCategory()
         }
-        item{ CircularProgressIndicator()} // change at the end
-        item {
-            StickyHeaderColumn("Stream Tags")
-        }
+
         item{
             ChannelTagsInfo(
                 tagList =tagList,
@@ -230,18 +228,20 @@ fun ChannelInfoLazyColumn(
             )
 
         }
-        item {
-            StickyHeaderColumn("Content Classification")
+        item{
+            Spacer(modifier =Modifier.height(20.dp))
         }
+
         item{
             ContentClassificationBox(
                 contentClassificationCheckBox=contentClassificationCheckBox,
                 changeContentClassification={newClassification ->changeContentClassification(newClassification)}
             )
         }
-        item {
-            StickyHeaderColumn("Stream Language")
+        item{
+            Spacer(modifier =Modifier.height(20.dp))
         }
+
         item{
             StreamLanguage(
                 selectedLanguage =selectedLanguage,
@@ -249,6 +249,9 @@ fun ChannelInfoLazyColumn(
                     changeSelectedLanguage(newValue)
                 }
             )
+        }
+        item{
+            Spacer(modifier =Modifier.height(20.dp))
         }
         item{
             BrandedContentInfo(
@@ -269,6 +272,50 @@ fun ChannelInfoLazyColumn(
 }
 
 @Composable
+fun GameCategory(){
+    Column(
+        modifier = Modifier.padding(10.dp)
+    ) {
+        Text("Category",color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+        )
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f))
+        Spacer(modifier = Modifier.height(5.dp))
+        ElevatedCard(
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 6.dp
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Box(
+                        modifier = Modifier
+                            .height(100.dp)
+                            .width(100.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .background(MaterialTheme.colorScheme.secondary)
+                    ){}
+                    Spacer(modifier =Modifier.width(90.dp))
+                    Text("Fortnite",color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                }
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_close_24),
+                    contentDescription ="delete category" ,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
+                    tint = Color.White
+                )
+            }
+
+
+        }
+
+    }
+}
+@Composable
 fun BrandedContentInfo(
     checkedBrandedContent:Boolean,
     changedCheckedBrandedContent:(Boolean)->Unit,
@@ -283,7 +330,7 @@ fun BrandedContentInfo(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text("Branded Content",color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize
             )
             CustomCheckBox(
                 checked=checkedBrandedContent,
@@ -373,7 +420,15 @@ fun StreamLanguage(
     "German","Greek","Hindi","Hungarian","Indonesian","Italian","Japanese","Korean","Malay","Norwegian","Polish","Portuguese","Romanian",
     "Russian","Slovak","Spanish","Swedish","Tagalog","Thai","Turkish","Ukrainian","Vietnamese","Other")
 
-    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
+    Column(){
+
+        Text("Stream language",
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(start=10.dp)
+        )
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal=10.dp))
+    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)) {
 
         OutlinedTextField(
             modifier = Modifier
@@ -384,9 +439,9 @@ fun StreamLanguage(
                 },
             enabled = false,
             //todo: this is what is shown to the user as the selected choice
-            value = selectedLanguage?:"Select language" ,
+            value = selectedLanguage ?: "Select language",
             onValueChange = { },
-            label = {  },
+            label = { },
             colors = TextFieldDefaults.colors(
                 disabledTextColor = Color.White,
                 disabledContainerColor = Color.DarkGray,
@@ -398,10 +453,16 @@ fun StreamLanguage(
                 disabledSuffixColor = Color.Unspecified
             ),
             trailingIcon = {
-                if(expanded){
-                    Icon(painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24), contentDescription ="Content Classification open" )
-                }else{
-                    Icon(painter = painterResource(id = R.drawable.keyboard_arrow_down_24), contentDescription ="Content Classification closed" )
+                if (expanded) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24),
+                        contentDescription = "Content Classification open"
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.keyboard_arrow_down_24),
+                        contentDescription = "Content Classification closed"
+                    )
                 }
             }
         )
@@ -414,14 +475,14 @@ fun StreamLanguage(
                     Color.DarkGray
                 )
                 .padding(horizontal = 10.dp)
-        ){
-            Box(modifier = Modifier.fillMaxWidth()){
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Column() {
-                    for(item in languages){
-                        Spacer(modifier =Modifier.height(10.dp))
+                    for (item in languages) {
+                        Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             item,
-                            fontSize =MaterialTheme.typography.headlineMedium.fontSize,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             color = Color.White,
                             modifier = Modifier
                                 .clickable {
@@ -435,7 +496,7 @@ fun StreamLanguage(
 
 
                 Icon(
-                    painter = painterResource(id =R.drawable.baseline_close_24),
+                    painter = painterResource(id = R.drawable.baseline_close_24),
                     contentDescription = "Close language menu",
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -446,6 +507,7 @@ fun StreamLanguage(
             }
 
         }
+    }
 
     }
 }
@@ -457,146 +519,155 @@ fun ContentClassificationBox(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
+    Column(){
 
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp)
-                .clickable {
-                    expanded = true
-                },
-            enabled = false,
-            //todo: this is what is shown to the user as the selected choice
-            value = "Content Classification",
-            onValueChange = { },
-            label = {  },
-            colors = TextFieldDefaults.colors(
-                disabledTextColor = Color.White,
-                disabledContainerColor = Color.DarkGray,
-                disabledTrailingIconColor = Color.Unspecified,
-                disabledLabelColor = Color.Unspecified,
-                disabledPlaceholderColor = Color.Unspecified,
-                disabledSupportingTextColor = Color.Unspecified,
-                disabledPrefixColor = Color.Unspecified,
-                disabledSuffixColor = Color.Unspecified
-            ),
-            trailingIcon = {
-                if(expanded){
-                    Icon(painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24), contentDescription ="Content Classification open" )
-                }else{
-                    Icon(painter = painterResource(id = R.drawable.keyboard_arrow_down_24), contentDescription ="Content Classification closed" )
-                }
-            }
+        Text("Content Classification",
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(start=10.dp)
         )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Color.DarkGray
-                )
-        ){
-            Box(){
-
-                Column(){
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> //expanded=newValue
-                        },
-                        title = "Drugs, Intoxication, or Excessive Tobacco Use",
-                        selectText={},
-                        subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
-                                ", discussions of illegal drugs",
-                        checked = contentClassificationCheckBox.drugsIntoxication,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(drugsIntoxication = checked)
-                            Log.d("Changingtheclassification","checked ->${checked}")
-                            Log.d("Changingtheclassification","newClassification ->${newClassification}")
-                            changeContentClassification(newClassification)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> },
-                        title = "Gambling",
-                        selectText={},
-                        subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money",
-                        checked = contentClassificationCheckBox.gambling,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(gambling = checked)
-                            changeContentClassification(newClassification)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> },
-                        title = "Significant Profanity or Vulgarity",
-                        selectText={},
-                        subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
-                                "of speech",
-                        checked = contentClassificationCheckBox.significantProfanity,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(significantProfanity = checked)
-                            changeContentClassification(newClassification)
-                        }
-
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> },
-                        title = "Sexual Themes",
-                        selectText={},
-                        subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences" ,
-                        checked = contentClassificationCheckBox.sexualThemes,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(sexualThemes = checked)
-                            changeContentClassification(newClassification)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> },
-                        title = "Violent and Graphic depictions",
-                        selectText={},
-                        subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death",
-                        checked = contentClassificationCheckBox.violentGraphic,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(violentGraphic = checked)
-                            changeContentClassification(newClassification)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ContentClassificationTextMenuItem(
-                        setExpanded={newValue -> },
-                        title = "Mature-rated game",
-                        selectText={},
-                        subtitle = "Games that are rated Mature or less suitable for a younger audience",
-                        checked = contentClassificationCheckBox.matureRatedGame,
-                        changedChecked = {checked ->
-                            val newClassification = contentClassificationCheckBox.copy(matureRatedGame = checked)
-                            changeContentClassification(newClassification)
-                        }
-
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f), modifier = Modifier.padding(horizontal=10.dp))
+        Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)){
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp)
+                    .clickable {
+                        expanded = true
+                    },
+                enabled = false,
+                //todo: this is what is shown to the user as the selected choice
+                value = "Content Classification",
+                onValueChange = { },
+                label = {  },
+                colors = TextFieldDefaults.colors(
+                    disabledTextColor = Color.White,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledTrailingIconColor = Color.Unspecified,
+                    disabledLabelColor = Color.Unspecified,
+                    disabledPlaceholderColor = Color.Unspecified,
+                    disabledSupportingTextColor = Color.Unspecified,
+                    disabledPrefixColor = Color.Unspecified,
+                    disabledSuffixColor = Color.Unspecified
+                ),
+                trailingIcon = {
+                    if(expanded){
+                        Icon(painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24), contentDescription ="Content Classification open" )
+                    }else{
+                        Icon(painter = painterResource(id = R.drawable.keyboard_arrow_down_24), contentDescription ="Content Classification closed" )
+                    }
                 }
-                Icon(
-                    painter = painterResource(id =R.drawable.baseline_close_24),
-                    contentDescription = "Close language menu",
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .clickable {
-                            expanded = false
-                        }
-                )
-            }
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color.DarkGray
+                    )
+            ){
+                Box(){
 
+                    Column(){
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> //expanded=newValue
+                            },
+                            title = "Drugs, Intoxication, or Excessive Tobacco Use",
+                            selectText={},
+                            subtitle = "Excessive tobacco glorification or promotion, any marijuana consumption/use,legal drug and alcohol induced intoxication" +
+                                    ", discussions of illegal drugs",
+                            checked = contentClassificationCheckBox.drugsIntoxication,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(drugsIntoxication = checked)
+                                Log.d("Changingtheclassification","checked ->${checked}")
+                                Log.d("Changingtheclassification","newClassification ->${newClassification}")
+                                changeContentClassification(newClassification)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> },
+                            title = "Gambling",
+                            selectText={},
+                            subtitle = "Participating in online or in-person gambling , poker or fantasy sports, that involve the exchange of real money",
+                            checked = contentClassificationCheckBox.gambling,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(gambling = checked)
+                                changeContentClassification(newClassification)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> },
+                            title = "Significant Profanity or Vulgarity",
+                            selectText={},
+                            subtitle = "Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part" +
+                                    "of speech",
+                            checked = contentClassificationCheckBox.significantProfanity,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(significantProfanity = checked)
+                                changeContentClassification(newClassification)
+                            }
+
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> },
+                            title = "Sexual Themes",
+                            selectText={},
+                            subtitle = "Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences" ,
+                            checked = contentClassificationCheckBox.sexualThemes,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(sexualThemes = checked)
+                                changeContentClassification(newClassification)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> },
+                            title = "Violent and Graphic depictions",
+                            selectText={},
+                            subtitle = "Simulations and/or depictions of realistic violence, gore, extreme injury or death",
+                            checked = contentClassificationCheckBox.violentGraphic,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(violentGraphic = checked)
+                                changeContentClassification(newClassification)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ContentClassificationTextMenuItem(
+                            setExpanded={newValue -> },
+                            title = "Mature-rated game",
+                            selectText={},
+                            subtitle = "Games that are rated Mature or less suitable for a younger audience",
+                            checked = contentClassificationCheckBox.matureRatedGame,
+                            changedChecked = {checked ->
+                                val newClassification = contentClassificationCheckBox.copy(matureRatedGame = checked)
+                                changeContentClassification(newClassification)
+                            }
+
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                    Icon(
+                        painter = painterResource(id =R.drawable.baseline_close_24),
+                        contentDescription = "Close language menu",
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable {
+                                expanded = false
+                            }
+                    )
+                }
+
+
+            }
 
         }
-
     }
+
 }
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -620,6 +691,8 @@ fun ChannelTagsInfo(
             Text("Tags",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
             Text("$tagTitleLength",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
         }
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f))
+        Spacer(modifier = Modifier.height(5.dp))
         CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
 
             TextField(
@@ -714,6 +787,7 @@ fun ChannelInfoTitle(
             Text("Title",color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
             Text("$titleLength",color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
         }
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(0.8f))
         Spacer(modifier = Modifier.height(5.dp))
         CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
 
