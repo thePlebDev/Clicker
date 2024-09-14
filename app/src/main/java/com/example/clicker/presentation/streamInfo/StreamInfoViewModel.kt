@@ -121,6 +121,7 @@ class StreamInfoViewModel @Inject constructor(
                     val channelInfo =data.data
                     _channelTitle.value = channelInfo.title
                     tagList.addAll(channelInfo.tags)
+                    val channelId = channelInfo.game_id // use this to get the category
                     //content classification
                     //branded content
                     val contentClassification = channelInfo.content_classification_labels
