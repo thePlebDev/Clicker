@@ -61,6 +61,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.example.clicker.R
@@ -299,8 +300,10 @@ fun GameCategory(){
                             .clip(RoundedCornerShape(15.dp))
                             .background(MaterialTheme.colorScheme.secondary)
                     ){}
-                    Spacer(modifier =Modifier.width(90.dp))
-                    Text("Fortnite",color = Color.White, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                    Spacer(modifier =Modifier.width(10.dp))
+                    Text("Fortnite and it do be kind of like that sometimes and it do be doing",
+                        color = Color.White,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_close_24),
