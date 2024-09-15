@@ -31,12 +31,12 @@ import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsColumn
 import com.example.clicker.presentation.stream.views.chat.ChatUI
-import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedBanDialog
 import com.example.clicker.presentation.stream.views.dialogs.ImprovedTimeoutDialog
 import com.example.clicker.presentation.stream.views.dialogs.WarningDialog
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
+import com.example.clicker.presentation.streamInfo.ChannelInfoLazyColumn
 import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import kotlinx.coroutines.launch
@@ -277,6 +277,9 @@ fun StreamView(
     val refreshChannelInformation:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.refreshStreamInfo()
     } }
+    val removeCategory:() -> Unit = remember(streamInfoViewModel) { {
+        streamInfoViewModel.removeCategory()
+    } }
 
 
 
@@ -332,7 +335,8 @@ fun StreamView(
                         checkedBrandedContent = streamInfoViewModel.brandedContent.value,
                         changeBrandedContent={newValue ->changeBrandedContent(newValue)},
                         categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
-                        refreshChannelInformation ={refreshChannelInformation()}
+                        refreshChannelInformation ={refreshChannelInformation()},
+                        removeCategory = {removeCategory()},
                     )
                 }
             ){

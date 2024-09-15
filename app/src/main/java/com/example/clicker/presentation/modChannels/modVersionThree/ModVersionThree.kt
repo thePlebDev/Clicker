@@ -115,8 +115,8 @@ import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDa
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
-import com.example.clicker.presentation.stream.views.chat.chatSettings.ChannelInfoLazyColumn
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamInfo.ChannelInfoLazyColumn
 import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.UnAuthorizedResponse
@@ -319,6 +319,9 @@ fun ModViewComponentVersionThree(
     val refreshChannelInformation:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.refreshStreamInfo()
     } }
+    val removeCategory:() -> Unit = remember(streamInfoViewModel) { {
+        streamInfoViewModel.removeCategory()
+    } }
 
 
     ModalBottomSheetLayout(
@@ -344,7 +347,8 @@ fun ModViewComponentVersionThree(
                 checkedBrandedContent = streamInfoViewModel.brandedContent.value,
                 changeBrandedContent={newValue ->changeBrandedContent(newValue)},
                 categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
-                refreshChannelInformation={refreshChannelInformation()}
+                refreshChannelInformation={refreshChannelInformation()},
+                removeCategory={removeCategory()}
             )
         }
     ) {

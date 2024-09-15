@@ -24,13 +24,11 @@ class StreamInfoViewModel @Inject constructor(
 
 
     /**
-     * private mutable version of [channelTitle]
+     * holds information about the logged in user
      * */
     private val _userInfo: MutableState<UserInfo> = mutableStateOf(UserInfo("","",""))
-    /**
-     * a [State] String object used to represent the name of the stream
-     * */
-    val userInfo: State<UserInfo> = _userInfo
+
+
 
     /**
      * private mutable version of [channelTitle]
@@ -86,12 +84,16 @@ class StreamInfoViewModel @Inject constructor(
     /**
      * private mutable version of [gameCategoryResponse]
      * */
-    private val _gameCategoryResponse: MutableState<Response<Game>> = mutableStateOf(Response.Loading)
+    private val _gameCategoryResponse: MutableState<Response<Game?>> = mutableStateOf(Response.Loading)
     /**
      * a [State] nullable-[Game] object
      * */
-    val gameCategoryResponse: State<Response<Game>> = _gameCategoryResponse
+    val gameCategoryResponse: State<Response<Game?>> = _gameCategoryResponse
 
+
+    fun removeCategory(){
+        _gameCategoryResponse.value = Response.Success(null)
+    }
 
 
 
@@ -192,6 +194,7 @@ class StreamInfoViewModel @Inject constructor(
                     val gameId = channelInfo.game_id
                     val gameName = channelInfo.game_name //todo: I think I actually use this to get the category info
 
+
                     Log.d("getStreamInfoTesting","gameName ->$gameName")
                     //todo: we need to
                     Log.d("getStreamInfoTesting","game_id ->$gameId")
@@ -243,6 +246,7 @@ class StreamInfoViewModel @Inject constructor(
 
 
 
+
                 }
                 is Response.Failure ->{}
             }
@@ -250,6 +254,7 @@ class StreamInfoViewModel @Inject constructor(
         }
 
     }
+
 
 }
 var languageHashMap:HashMap<String, String>
