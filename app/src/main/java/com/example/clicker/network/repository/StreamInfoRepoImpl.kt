@@ -49,8 +49,9 @@ class StreamInfoRepoImpl @Inject constructor(
     override suspend fun getCategoryInformation(
         authorizationToken: String,
         clientId: String,
-        gameName: String
-    ): Flow<Response<Game>>  = flow{
+        gameName: String,
+        gameId:String
+    ): Flow<Response<List<Game>>>  = flow{
         emit(Response.Loading)
         Log.d("getCategoryInformationRepo","CALLED")
         Log.d("getCategoryInformationRepo","gameName ->$gameName")
@@ -61,10 +62,11 @@ class StreamInfoRepoImpl @Inject constructor(
         )
         if(response.isSuccessful){
 
-            val data = response.body()?.data?.get(0)
+            val data = response.body()?.data ?: listOf()
+            val gameItemInfo = data.filter { it.id == gameId }
             Log.d("getCategoryInformationRepo","SUCCESS")
             Log.d("getCategoryInformationRepo","data -->$data")
-            emit(Response.Success(data!!))
+            emit(Response.Success(gameItemInfo))
         }else{
             emit(Response.Failure(Exception("Failed")))
             Log.d("getCategoryInformationRepo","FAILED")
