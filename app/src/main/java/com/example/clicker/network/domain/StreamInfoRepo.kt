@@ -35,8 +35,9 @@ interface StreamInfoRepo {
     suspend fun getCategoryInformation(
         authorizationToken: String,
         clientId: String,
-        gameName: String
-    ): Flow<Response<Game>>
+        gameName: String,
+        gameId:String
+    ): Flow<Response<List<Game>>>
 }
 
 

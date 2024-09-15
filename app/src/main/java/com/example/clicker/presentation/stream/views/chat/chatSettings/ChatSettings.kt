@@ -60,11 +60,15 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.Game
 import com.example.clicker.presentation.modView.ImmutableModeList
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
@@ -72,6 +76,7 @@ import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
 import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
+import com.example.clicker.util.Response
 
 
 val followerModeList =listOf(
@@ -194,7 +199,10 @@ fun ChannelInfoLazyColumn(
     closeChannelInfoModal:()->Unit,
 
     checkedBrandedContent:Boolean,
-    changeBrandedContent:(Boolean)->Unit
+    changeBrandedContent:(Boolean)->Unit,
+
+    categoryResponse: Response<Game>,
+    refreshChannelInformation:()->Unit,
 ){
 
 
@@ -215,7 +223,10 @@ fun ChannelInfoLazyColumn(
             )
         }
         item {
-            GameCategory()
+            GameCategory(
+                categoryResponse=categoryResponse,
+                refreshChannelInformation= { refreshChannelInformation() }
+            )
         }
 
         item{
@@ -273,7 +284,10 @@ fun ChannelInfoLazyColumn(
 }
 
 @Composable
-fun GameCategory(){
+fun GameCategory(
+    categoryResponse: Response<Game>,
+    refreshChannelInformation:()->Unit,
+){
     Column(
         modifier = Modifier.padding(10.dp)
     ) {
@@ -286,31 +300,68 @@ fun GameCategory(){
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 6.dp
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape =RoundedCornerShape(5.dp),
         ) {
-            Box(){
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Box(
-                        modifier = Modifier
-                            .height(100.dp)
-                            .width(100.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(MaterialTheme.colorScheme.secondary)
-                    ){}
-                    Spacer(modifier =Modifier.width(10.dp))
-                    Text("Fortnite and it do be kind of like that sometimes and it do be doing",
-                        color = Color.White,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_close_24),
-                    contentDescription ="delete category" ,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
-                    tint = Color.White
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+            ){
+                when(val data = categoryResponse){
+                    is Response.Loading ->{
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is Response.Success->{
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            SubcomposeAsyncImage(
+                                modifier = Modifier
+                                    .height(72.dp)
+                                    .width(52.dp)
+                                    .clip(RoundedCornerShape(5.dp)),
+                                model = data.data.box_art_url,
+                                loading = {
+                                    Column(modifier = Modifier
+                                        .height(72.dp)
+                                        .width(52.dp)
+                                        .background(MaterialTheme.colorScheme.primary),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ){
+                                        CircularProgressIndicator()
+                                    }
+                                },
+                                contentDescription ="Loading thumbnail of stream game"
+                            )
+
+                            Spacer(modifier =Modifier.width(10.dp))
+                            Text(data.data.name,
+                                color = Color.White,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription ="delete category" ,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(10.dp),
+                            tint = Color.White
+                        )
+                    }
+                    is Response.Failure ->{
+                        RefreshCategoryButton(
+                            refreshChannelInformation={refreshChannelInformation()}
+                        )
+                    }
+
+            }
+
+
+
+
             }
 
 
@@ -318,6 +369,28 @@ fun GameCategory(){
 
     }
 }
+
+@Composable
+fun RefreshCategoryButton(
+    refreshChannelInformation:()->Unit,
+){
+    Column(modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text("Failed to get Category",color = Color.Red)
+        Button(
+            onClick={},
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ){
+
+            Text("Refresh", color = MaterialTheme.colorScheme.onSecondary)
+        }
+        Spacer(modifier =Modifier.height(10.dp))
+    }
+}
+
 @Composable
 fun BrandedContentInfo(
     checkedBrandedContent:Boolean,

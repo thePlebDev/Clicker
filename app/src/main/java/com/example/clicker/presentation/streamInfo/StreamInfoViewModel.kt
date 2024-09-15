@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.streamInfo
 
+import android.util.JsonToken
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -7,12 +8,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.domain.StreamInfoRepo
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +22,15 @@ class StreamInfoViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
 ): ViewModel()  {
 
+
+    /**
+     * private mutable version of [channelTitle]
+     * */
+    private val _userInfo: MutableState<UserInfo> = mutableStateOf(UserInfo("","",""))
+    /**
+     * a [State] String object used to represent the name of the stream
+     * */
+    val userInfo: State<UserInfo> = _userInfo
 
     /**
      * private mutable version of [channelTitle]
@@ -61,12 +70,7 @@ class StreamInfoViewModel @Inject constructor(
         _brandedContent.value = newValue
     }
 
-    /**
-     * - _categoryGameName is the name of the category that the channel is currently using
-     * - this parameter is used when searching categories. You can read more in Twitch's official
-     * documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#search-categories)
-     * */
-    private val _categoryGameName: MutableStateFlow<String?> = MutableStateFlow(null)
+
 
 
 
@@ -78,6 +82,17 @@ class StreamInfoViewModel @Inject constructor(
      * a [State] nullable-String object used to hold the unique identifier of the Android application
      * */
     val contentClassification: State<ContentClassificationCheckBox> = _contentClassification
+
+    /**
+     * private mutable version of [gameCategoryResponse]
+     * */
+    private val _gameCategoryResponse: MutableState<Response<Game>> = mutableStateOf(Response.Loading)
+    /**
+     * a [State] nullable-[Game] object
+     * */
+    val gameCategoryResponse: State<Response<Game>> = _gameCategoryResponse
+
+
 
 
 
@@ -112,29 +127,46 @@ class StreamInfoViewModel @Inject constructor(
         )
 
     }
-    private fun monitorCategoryGameName() = viewModelScope.launch(ioDispatcher){
-        _categoryGameName.collect{nullableGameName ->
-            nullableGameName?.also { nonNullGameName ->
-                //todo:This is where I make the request to get the name
 
-            }
-
-        }
-    }
    private fun getGameInfo(
         authorizationToken: String,
         clientId: String,
-        gameName: String
+        gameName: String,
+        gameId:String,
     )=viewModelScope.launch(ioDispatcher){
         streamInfoRepo.getCategoryInformation(
             authorizationToken=authorizationToken,
             clientId=clientId,
-            gameName = gameName
-        ).collect{
+            gameName = gameName,
+            gameId = gameId
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    _gameCategoryResponse.value = Response.Loading
+                }
+                is Response.Success ->{
+                    //todo: I need to filter out the list
+                    if(response.data.isNotEmpty()){
+                        _gameCategoryResponse.value = Response.Success(response.data[0])
+                    }
+                }
+                is Response.Failure ->{
+                    _gameCategoryResponse.value = Response.Failure(Exception("Failed to get category "))
+                }
+            }
 
         }
     }
 
+
+
+    fun refreshStreamInfo(){
+        getStreamInfo(
+            authorizationToken= _userInfo.value.oAuthToken,
+            clientId= _userInfo.value.clientId,
+            broadcasterId= _userInfo.value.broadcasterId,
+        )
+    }
 
     fun getStreamInfo(
         authorizationToken: String,
@@ -153,19 +185,21 @@ class StreamInfoViewModel @Inject constructor(
                 is Response.Loading ->{}
                 is Response.Success ->{
 
+                    //https://static-cdn.jtvnw.net/ttv-boxart/5718_IGDB-52x72.jpg
                     val channelInfo =data.data
                     _channelTitle.value = channelInfo.title
                     tagList.addAll(channelInfo.tags)
-                    val channelId = channelInfo.game_id
+                    val gameId = channelInfo.game_id
                     val gameName = channelInfo.game_name //todo: I think I actually use this to get the category info
 
                     Log.d("getStreamInfoTesting","gameName ->$gameName")
                     //todo: we need to
-                    Log.d("getStreamInfoTesting","game_id ->$channelId")
+                    Log.d("getStreamInfoTesting","game_id ->$gameId")
                     getGameInfo(
                         authorizationToken=authorizationToken,
                         clientId=clientId,
-                        gameName = gameName
+                        gameName = gameName,
+                        gameId =gameId
                     )
                     //content classification
                     //branded content
@@ -263,4 +297,10 @@ data class ContentClassificationCheckBox(
     val sexualThemes:Boolean= false,
     val violentGraphic:Boolean= false,
     val matureRatedGame:Boolean= false,
+)
+
+data class UserInfo(
+    val oAuthToken: String,
+    val clientId: String,
+    val broadcasterId: String
 )

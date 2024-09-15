@@ -187,6 +187,9 @@ fun HorizontalChat(
     val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
         streamInfoViewModel.changeBrandedContent(newValue)
     } }
+    val refreshChannelInformation:() -> Unit = remember(streamInfoViewModel) { {
+        streamInfoViewModel.refreshStreamInfo()
+    } }
 
 
     //todo: Also need to refactor the dialogs
@@ -212,7 +215,9 @@ fun HorizontalChat(
                 },
                 closeChannelInfoModal={closeChannelInfoModal()},
                 checkedBrandedContent = streamInfoViewModel.brandedContent.value,
-                changeBrandedContent={newValue ->changeBrandedContent(newValue)}
+                changeBrandedContent={newValue ->changeBrandedContent(newValue)},
+                categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
+                refreshChannelInformation ={refreshChannelInformation()}
             )
         }
     ) {
