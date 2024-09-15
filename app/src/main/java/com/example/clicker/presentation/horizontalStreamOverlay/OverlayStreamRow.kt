@@ -34,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.fragment.findNavController
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
@@ -41,6 +42,7 @@ import com.example.clicker.presentation.home.HomeViewModel
 
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.NetworkNewUserResponse
 
 
@@ -53,6 +55,7 @@ fun OverlayStreamRow(
     updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
     updateModViewSettings:(String,String,String,String,)->Unit,
     updateStreamerName: (String, String, String, String) -> Unit,
+    streamInfoViewModel:StreamInfoViewModel
 ){
     val height = homeViewModel.state.value.aspectHeight
     val width = homeViewModel.state.value.width
@@ -82,6 +85,11 @@ fun OverlayStreamRow(
             )
             loadURL(newUrl)
             createNewTwitchEventWebSocket()
+            streamInfoViewModel.getStreamInfo(
+                authorizationToken = oAuthToken,
+                clientId = streamViewModel.state.value.clientId,
+                broadcasterId = streamViewModel.state.value.broadcasterId,
+            )
 
         },
         reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},

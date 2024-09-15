@@ -752,7 +752,8 @@ fun setOrientation(
                             login =homeViewModel.validatedUser.value?.login ?:"",
                             oAuthToken= homeViewModel.oAuthToken.value ?:""
                         )
-                    }
+                    },
+                    streamInfoViewModel=streamInfoViewModel
                 )
 
             }
@@ -831,6 +832,11 @@ fun setOrientation(
                             login =homeViewModel.validatedUser.value?.login ?:"",
                             oAuthToken= homeViewModel.oAuthToken.value ?:""
                         )
+                        streamInfoViewModel.getStreamInfo(
+                            authorizationToken= homeViewModel.oAuthToken.value ?:"",
+                            clientId = clientId,
+                            broadcasterId= broadcasterId
+                        )
                     }
                 )
             }
@@ -839,6 +845,7 @@ fun setOrientation(
 
     return binding.root
 }
+
 
 fun setWebView(
     myWebView: WebView,
