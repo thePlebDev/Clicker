@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.followerModeListImmutable
@@ -83,6 +84,9 @@ fun HorizontalChat(
     } }
     val removeCategory:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.removeCategory()
+    } }
+    val changeCategorySearchText:(String) -> Unit = remember(streamInfoViewModel) { { newText ->
+        streamInfoViewModel.changeCategorySearchText(newText)
     } }
 
 
@@ -193,6 +197,9 @@ fun HorizontalChat(
     val refreshChannelInformation:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.refreshStreamInfo()
     } }
+    val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
+        streamInfoViewModel.addCategory(selectedGame)
+    } }
 
 
     //todo: Also need to refactor the dialogs
@@ -221,7 +228,11 @@ fun HorizontalChat(
                 changeBrandedContent={newValue ->changeBrandedContent(newValue)},
                 categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
                 refreshChannelInformation ={refreshChannelInformation()},
-                removeCategory={removeCategory()}
+                removeCategory={removeCategory()},
+                categorySearchText = streamInfoViewModel.categorySearchText.value,
+                changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
+                categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
+                addCategory={selectedGame ->addCategory(selectedGame)}
             )
         }
     ) {

@@ -38,6 +38,19 @@ interface StreamInfoRepo {
         gameName: String,
         gameId:String
     ): Flow<Response<List<Game>>>
+
+    /**
+     * validateToken is a function that is called to validate [token] with the Twitch servers
+     *
+     * @param token a String representing a oAuth token
+     *
+     * @return a flow containing a [NetworkAuthResponse] object of type [ValidatedUser]
+     * */
+    suspend fun searchCategories(
+        authorizationToken: String,
+        clientId: String,
+        gameName: String,
+    ): Flow<Response<List<Game>>>
 }
 
 

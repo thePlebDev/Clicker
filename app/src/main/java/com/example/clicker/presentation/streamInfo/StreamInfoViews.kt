@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +21,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -88,6 +92,11 @@ fun ChannelInfoLazyColumn(
     refreshChannelInformation:()->Unit,
 
     removeCategory:() ->Unit,
+
+    categorySearchText:String,
+    changeCategorySearchText:(String)->Unit,
+    categorySearchResponse:Response<List<Game>>,
+    addCategory:(Game)->Unit,
 ){
 
 
@@ -111,7 +120,12 @@ fun ChannelInfoLazyColumn(
             GameCategory(
                 categoryResponse=categoryResponse,
                 refreshChannelInformation= { refreshChannelInformation() },
-                removeCategory={removeCategory()}
+                removeCategory={removeCategory()},
+
+                categorySearchText=categorySearchText,
+                changeCategorySearchText={text -> changeCategorySearchText(text)},
+                categorySearchResponse=categorySearchResponse,
+                addCategory ={selectedGame ->addCategory(selectedGame)}
             )
         }
 
@@ -174,6 +188,12 @@ fun GameCategory(
     categoryResponse: Response<Game?>,
     refreshChannelInformation:()->Unit,
     removeCategory:() ->Unit,
+
+    categorySearchText:String,
+    changeCategorySearchText:(String)->Unit,
+
+    categorySearchResponse:Response<List<Game>>,
+    addCategory:(Game)->Unit,
 ){
     Column(
         modifier = Modifier.padding(10.dp)
@@ -259,7 +279,12 @@ fun GameCategory(
                             }
 
                         }else{
-                            SearchCategories()
+                            SearchCategories(
+                                categorySearchText=categorySearchText,
+                                changeCategorySearchText={text -> changeCategorySearchText(text)},
+                                categorySearchResponse=categorySearchResponse,
+                                addCategory ={selectedGame ->addCategory(selectedGame)}
+                            )
                         }
 
                     }
@@ -281,8 +306,12 @@ fun GameCategory(
 }
 
 @Composable
-fun SearchCategories(){
-    var text by remember { mutableStateOf("") }
+fun SearchCategories(
+    categorySearchText:String,
+    changeCategorySearchText:(String)->Unit,
+    categorySearchResponse:Response<List<Game>>,
+    addCategory:(Game)->Unit,
+){
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
         backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
@@ -290,17 +319,19 @@ fun SearchCategories(){
 
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-        Column(){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             TextField(
                 modifier = Modifier
                     .fillMaxWidth(),
                 singleLine = true,
 
-                value = text,
+                value = categorySearchText,
 
                 shape = RoundedCornerShape(5.dp),
                 onValueChange = {
-                    text = it
+                    changeCategorySearchText(it)
                 },
                 colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
                     textColor = Color.White,
@@ -329,9 +360,33 @@ fun SearchCategories(){
             )
 
             //this will be the loading section
-            SearchCategoryItemRow()
-            SearchCategoryItemRow()
-            SearchCategoryItemRow()
+            when(categorySearchResponse){
+                is Response.Loading ->{
+                    Spacer(modifier = Modifier.height(10.dp))
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+                is Response.Success ->{
+                    val data = categorySearchResponse.data
+
+                    for(item in data){
+                        SearchCategoryItemRow(
+                            url = item.box_art_url,
+                            title = item.name,
+                            id = item.id,
+                            addCategory ={selectedGame ->addCategory(selectedGame)}
+                        )
+                    }
+
+                }
+                is Response.Failure ->{
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text("Failed to get Categories",
+                        color = Color.Red,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
 
         }
 
@@ -341,13 +396,31 @@ fun SearchCategories(){
 }
 
 @Composable
-fun SearchCategoryItemRow(){
-    Column() {
+fun SearchCategoryItemRow(
+    url:String,
+    title:String,
+    id:String,
+    addCategory:(Game)->Unit,
+){
+    Column(
+        modifier = Modifier.clickable {
+            addCategory(
+                Game(
+                    id =id,
+                    name = title,
+                    box_art_url = url
+                )
+            )
+        }
+    ) {
         Spacer(modifier = Modifier.height(10.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().border(1.dp, Color.White.copy(0.6f),
-                RoundedCornerShape(5.dp)
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    1.dp, Color.White.copy(0.6f),
+                    RoundedCornerShape(5.dp)
+                ),
             verticalAlignment = Alignment.CenterVertically
         ){
             SubcomposeAsyncImage(
@@ -355,7 +428,7 @@ fun SearchCategoryItemRow(){
                     .height(72.dp)
                     .width(52.dp)
                     .clip(RoundedCornerShape(5.dp)),
-                model = "https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg",
+                model = url,
                 loading = {
                     Column(modifier = Modifier
                         .height(72.dp)
@@ -371,7 +444,7 @@ fun SearchCategoryItemRow(){
             )
 
             Spacer(modifier = Modifier.width(10.dp))
-            Text("Fortnite",
+            Text(title,
                 color = Color.White,
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

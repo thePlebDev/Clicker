@@ -21,6 +21,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
@@ -281,6 +282,16 @@ fun StreamView(
         streamInfoViewModel.removeCategory()
     } }
 
+    val changeCategorySearchText:(String) -> Unit = remember(streamInfoViewModel) { { newText ->
+        streamInfoViewModel.changeCategorySearchText(newText)
+    } }
+
+    val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
+        streamInfoViewModel.addCategory(selectedGame)
+    } }
+
+
+
 
 
 
@@ -337,6 +348,11 @@ fun StreamView(
                         categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
                         refreshChannelInformation ={refreshChannelInformation()},
                         removeCategory = {removeCategory()},
+
+                        categorySearchText = streamInfoViewModel.categorySearchText.value,
+                        changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
+                        categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
+                        addCategory={selectedGame ->addCategory(selectedGame)}
                     )
                 }
             ){
