@@ -79,4 +79,34 @@ class StreamInfoRepoImpl @Inject constructor(
         Log.d("getCategoryInformationRepo"," ERROR")
         emit(Response.Failure(Exception("Failed")))
     }
+
+    override suspend fun searchCategories(
+        authorizationToken: String,
+        clientId: String,
+        gameName: String
+    ): Flow<Response<List<Game>>> = flow {
+        emit(Response.Loading)
+        val response = twitchStreamInfoRepo.getCategories(
+            authorization = "Bearer $authorizationToken",
+            clientId = clientId,
+            gameName = gameName
+        )
+        if(response.isSuccessful){
+
+            val data = response.body()?.data ?: listOf()
+            Log.d("getCategoryInformationRepo","SUCCESS")
+            Log.d("getCategoryInformationRepo","data -->$data")
+            emit(Response.Success(data))
+        }else{
+            emit(Response.Failure(Exception("Failed")))
+            Log.d("getCategoryInformationRepo","FAILED")
+            Log.d("getCategoryInformationRepo","message -->${response.code()}")
+            Log.d("getCategoryInformationRepo","message -->${response.message()}")
+            Log.d("getCategoryInformationRepo","message -->${response.errorBody()}")
+
+        }
+    }.catch {cause ->
+        Log.d("getCategoryInformationRepo"," ERROR")
+        emit(Response.Failure(Exception("Failed")))
+    }
 }

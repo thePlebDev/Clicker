@@ -45,6 +45,18 @@ class StreamInfoViewModel @Inject constructor(
     private val _maxLengthOfTitle: MutableState<Int> = mutableStateOf(maxStreamTitleLength)
     val maxLengthOfTitle: State<Int> = _maxLengthOfTitle
 
+    private val _categorySearchText: MutableState<String> = mutableStateOf("")
+    val categorySearchText: State<String> = _categorySearchText
+
+    private val _categorySearchResponse:  MutableState<Response<List<Game>>> = mutableStateOf(
+        Response.Failure(Exception("Another failed attempt"))
+    )
+    val categorySearchResponse: State<Response<List<Game>>> = _categorySearchResponse
+
+    fun changeCategorySearchText(newText:String){
+        _categorySearchText.value = newText
+    }
+
 
 
     private val _maxLengthOfTag: MutableState<Int> = mutableStateOf(maxTagTitleLength)
@@ -94,6 +106,11 @@ class StreamInfoViewModel @Inject constructor(
     fun removeCategory(){
         _gameCategoryResponse.value = Response.Success(null)
     }
+    fun addCategory(selectedGameCategory: Game){
+        _gameCategoryResponse.value = Response.Success(
+            selectedGameCategory
+        )
+    }
 
 
 
@@ -128,6 +145,33 @@ class StreamInfoViewModel @Inject constructor(
             matureRatedGame=newClassificationCheckBox.matureRatedGame
         )
 
+    }
+
+    fun searchCategories() = viewModelScope.launch(ioDispatcher){
+        streamInfoRepo.searchCategories(
+            authorizationToken= _userInfo.value.oAuthToken,
+            clientId= _userInfo.value.clientId,
+            gameName= _categorySearchText.value,
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    _categorySearchResponse.value = Response.Loading
+                }
+                is Response.Success ->{
+                    _categorySearchResponse.value = Response.Success(
+                        listOf(
+                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
+                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
+                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
+                        )
+                    )
+                }
+                is Response.Failure ->{
+                    _categorySearchResponse.value = Response.Failure(Exception("FAILED"))
+                }
+            }
+
+        }
     }
 
    private fun getGameInfo(

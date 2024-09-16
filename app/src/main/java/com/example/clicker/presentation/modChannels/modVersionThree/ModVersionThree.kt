@@ -87,6 +87,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.models.websockets.TwitchUserData
 
 import com.example.clicker.network.repository.models.EmoteListMap
@@ -322,6 +323,12 @@ fun ModViewComponentVersionThree(
     val removeCategory:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.removeCategory()
     } }
+    val changeCategorySearchText:(String) -> Unit = remember(streamInfoViewModel) { { newText ->
+        streamInfoViewModel.changeCategorySearchText(newText)
+    } }
+    val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
+        streamInfoViewModel.addCategory(selectedGame)
+    } }
 
 
     ModalBottomSheetLayout(
@@ -348,7 +355,11 @@ fun ModViewComponentVersionThree(
                 changeBrandedContent={newValue ->changeBrandedContent(newValue)},
                 categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
                 refreshChannelInformation={refreshChannelInformation()},
-                removeCategory={removeCategory()}
+                removeCategory={removeCategory()},
+                categorySearchText = streamInfoViewModel.categorySearchText.value,
+                changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
+                categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
+                addCategory={selectedGame ->addCategory(selectedGame)}
             )
         }
     ) {
