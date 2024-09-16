@@ -49,7 +49,7 @@ class StreamInfoViewModel @Inject constructor(
     val categorySearchText: State<String> = _categorySearchText
 
     private val _categorySearchResponse:  MutableState<Response<List<Game>>> = mutableStateOf(
-        Response.Failure(Exception("Another failed attempt"))
+        Response.Success(listOf())
     )
     val categorySearchResponse: State<Response<List<Game>>> = _categorySearchResponse
 
@@ -148,6 +148,9 @@ class StreamInfoViewModel @Inject constructor(
     }
 
     fun searchCategories() = viewModelScope.launch(ioDispatcher){
+        Log.d("searchCategories","oAuthToken -->${_userInfo.value.oAuthToken}")
+        Log.d("searchCategories","clientId -->${_userInfo.value.clientId}")
+        Log.d("searchCategories","_categorySearchText -->${_categorySearchText.value}")
         streamInfoRepo.searchCategories(
             authorizationToken= _userInfo.value.oAuthToken,
             clientId= _userInfo.value.clientId,
@@ -158,13 +161,7 @@ class StreamInfoViewModel @Inject constructor(
                     _categorySearchResponse.value = Response.Loading
                 }
                 is Response.Success ->{
-                    _categorySearchResponse.value = Response.Success(
-                        listOf(
-                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
-                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
-                            Game("","Fortnite","https://static-cdn.jtvnw.net/ttv-boxart/509658-52x72.jpg"),
-                        )
-                    )
+                    _categorySearchResponse.value = Response.Success(response.data)
                 }
                 is Response.Failure ->{
                     _categorySearchResponse.value = Response.Failure(Exception("FAILED"))
@@ -227,6 +224,11 @@ class StreamInfoViewModel @Inject constructor(
             clientId=clientId,
             broadcasterId = broadcasterId
         ).collect{response ->
+            _userInfo.value = UserInfo(
+                oAuthToken=authorizationToken,
+                clientId=clientId,
+                broadcasterId = broadcasterId
+            )
             when(val data =response){
                 is Response.Loading ->{}
                 is Response.Success ->{
@@ -287,6 +289,7 @@ class StreamInfoViewModel @Inject constructor(
                     }else{
                         _selectedStreamLanguage.value = "Other"
                     }
+
 
 
 

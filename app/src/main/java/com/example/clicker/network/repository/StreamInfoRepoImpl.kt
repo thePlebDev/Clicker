@@ -94,15 +94,15 @@ class StreamInfoRepoImpl @Inject constructor(
         if(response.isSuccessful){
 
             val data = response.body()?.data ?: listOf()
-            Log.d("getCategoryInformationRepo","SUCCESS")
-            Log.d("getCategoryInformationRepo","data -->$data")
+            Log.d("searchCategories","SUCCESS")
+            Log.d("searchCategories","data -->$data")
             emit(Response.Success(data))
         }else{
             emit(Response.Failure(Exception("Failed")))
-            Log.d("getCategoryInformationRepo","FAILED")
-            Log.d("getCategoryInformationRepo","message -->${response.code()}")
-            Log.d("getCategoryInformationRepo","message -->${response.message()}")
-            Log.d("getCategoryInformationRepo","message -->${response.errorBody()}")
+            Log.d("searchCategories","FAILED")
+            Log.d("searchCategories","message -->${response.code()}")
+            Log.d("searchCategories","message -->${response.message()}")
+            Log.d("searchCategories","message -->${response.errorBody()}")
 
         }
     }.catch {cause ->

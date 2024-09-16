@@ -200,6 +200,9 @@ fun HorizontalChat(
     val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
         streamInfoViewModel.addCategory(selectedGame)
     } }
+    val searchCategory:() -> Unit = remember(streamInfoViewModel) { {
+        streamInfoViewModel.searchCategories()
+    } }
 
 
     //todo: Also need to refactor the dialogs
@@ -232,7 +235,8 @@ fun HorizontalChat(
                 categorySearchText = streamInfoViewModel.categorySearchText.value,
                 changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
                 categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
-                addCategory={selectedGame ->addCategory(selectedGame)}
+                addCategory={selectedGame ->addCategory(selectedGame)},
+                searchCategory={searchCategory()}
             )
         }
     ) {
