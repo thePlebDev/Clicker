@@ -97,6 +97,7 @@ fun ChannelInfoLazyColumn(
     changeCategorySearchText:(String)->Unit,
     categorySearchResponse:Response<List<Game>>,
     addCategory:(Game)->Unit,
+    searchCategory:()->Unit,
 ){
 
 
@@ -125,7 +126,8 @@ fun ChannelInfoLazyColumn(
                 categorySearchText=categorySearchText,
                 changeCategorySearchText={text -> changeCategorySearchText(text)},
                 categorySearchResponse=categorySearchResponse,
-                addCategory ={selectedGame ->addCategory(selectedGame)}
+                addCategory ={selectedGame ->addCategory(selectedGame)},
+                searchCategory={searchCategory()}
             )
         }
 
@@ -194,6 +196,7 @@ fun GameCategory(
 
     categorySearchResponse:Response<List<Game>>,
     addCategory:(Game)->Unit,
+    searchCategory:()->Unit,
 ){
     Column(
         modifier = Modifier.padding(10.dp)
@@ -283,7 +286,8 @@ fun GameCategory(
                                 categorySearchText=categorySearchText,
                                 changeCategorySearchText={text -> changeCategorySearchText(text)},
                                 categorySearchResponse=categorySearchResponse,
-                                addCategory ={selectedGame ->addCategory(selectedGame)}
+                                addCategory ={selectedGame ->addCategory(selectedGame)},
+                                searchCategory={searchCategory()}
                             )
                         }
 
@@ -311,6 +315,7 @@ fun SearchCategories(
     changeCategorySearchText:(String)->Unit,
     categorySearchResponse:Response<List<Game>>,
     addCategory:(Game)->Unit,
+    searchCategory:()->Unit,
 ){
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
@@ -351,7 +356,7 @@ fun SearchCategories(
                         modifier = Modifier
                             .size(35.dp)
                             .clickable {
-                                //addTag(tagTitle)
+                                searchCategory()
                             }
                             .padding(start = 5.dp),
                         tint = MaterialTheme.colorScheme.onPrimary

@@ -289,6 +289,9 @@ fun StreamView(
     val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
         streamInfoViewModel.addCategory(selectedGame)
     } }
+    val searchCategory:() -> Unit = remember(streamInfoViewModel) { {
+        streamInfoViewModel.searchCategories()
+    } }
 
 
 
@@ -352,7 +355,8 @@ fun StreamView(
                         categorySearchText = streamInfoViewModel.categorySearchText.value,
                         changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
                         categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
-                        addCategory={selectedGame ->addCategory(selectedGame)}
+                        addCategory={selectedGame ->addCategory(selectedGame)},
+                        searchCategory={searchCategory()}
                     )
                 }
             ){
