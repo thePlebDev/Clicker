@@ -38,7 +38,7 @@ class TwitchEventSub @Inject constructor(
         Log.d("createEventSubSubscription","broadcasterId ->$broadcasterId")
         Log.d("createEventSubSubscription","moderatorId ->$moderatorId")
         Log.d("createEventSubSubscription","sessionId ->$sessionId")
-        Log.d("createEventSubSubscription","type ->$type")
+       // Log.d("createEventSubSubscription","type ->$type")
 
         val body = EvenSubSubscription(
             type = type,
@@ -61,6 +61,7 @@ class TwitchEventSub @Inject constructor(
             emit(WebSocketResponse.Success(true))
         } else {
             if(response.code() == 403){
+                Log.d("createEventSubSubscription","403 type ->$type")
                 Log.d("createEventSubSubscription","403")
                 Log.d("createEventSubSubscription", response.message())
                 Log.d("createEventSubSubscription", "body -> ${response.body() }")
@@ -76,6 +77,7 @@ class TwitchEventSub @Inject constructor(
             }
 
         }
+        Log.d("createEventSubSubscription","-----------------------END--------------------")
 
     }.catch { cause ->
         emit(WebSocketResponse.Failure(Exception("Error caught")))
@@ -116,6 +118,8 @@ class TwitchEventSub @Inject constructor(
             evenSubSubscription =body2
 
         )
+
+
 
 
         if (response.isSuccessful) {
