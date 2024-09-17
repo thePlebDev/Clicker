@@ -312,7 +312,8 @@ fun ChatUI(
                             sendMessageToWebSocket(item)
                                },
                         showModal ={
-                                   showChatSettings = !showChatSettings
+                            showModal()
+                                  // showChatSettings = !showChatSettings
 
                                    },
                     )

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.clicker.network.clients.ChannelInfo
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.GameInfo
+import com.example.clicker.network.clients.GameRequest
 import com.example.clicker.network.clients.TwitchStreamInfoClient
 import com.example.clicker.network.domain.StreamInfoRepo
 import com.example.clicker.network.repository.util.handleNetworkAuthExceptions
@@ -108,5 +109,15 @@ class StreamInfoRepoImpl @Inject constructor(
     }.catch {cause ->
         Log.d("getCategoryInformationRepo"," ERROR")
         emit(Response.Failure(Exception("Failed")))
+    }
+
+    override suspend fun updateChannelInformation(
+        authorizationToken: String,
+        clientId: String,
+        broadcasterId: String,
+        body: GameRequest
+    ): Flow<Response<Boolean>> = flow{
+        emit(Response.Loading)
+
     }
 }
