@@ -35,6 +35,7 @@ import com.example.clicker.util.Response
 import com.example.clicker.util.UnAuthorizedResponse
 import com.example.clicker.util.WebSocketResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -162,7 +163,8 @@ data class UnbanRequestItemImmutableCollection(
 class ModViewViewModel @Inject constructor(
     private val twitchEventSubWebSocket: TwitchEventSubscriptionWebSocket,
     private val twitchEventSub: TwitchEventSubscriptions,
-    private val twitchModRepo: TwitchModRepo
+    private val twitchModRepo: TwitchModRepo,
+    private val ioDispatcher: CoroutineDispatcher,
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
@@ -223,7 +225,7 @@ class ModViewViewModel @Inject constructor(
         Log.d("AutoModMessageHoldType","LOADING")
     }
 
-    fun getUserInformation(userId:String)=viewModelScope.launch(Dispatchers.IO){
+    fun getUserInformation(userId:String)=viewModelScope.launch(ioDispatcher){
         _clickedUnbanRequestInfo.value = Response.Loading
         twitchModRepo.getUserInformation(
             authorizationToken=_requestIds.value.oAuthToken,
@@ -252,7 +254,7 @@ class ModViewViewModel @Inject constructor(
     fun resolveUnbanRequest(
         unbanRequestId:String,
         status:UnbanStatusFilter
-    ) = viewModelScope.launch(Dispatchers.IO){
+    ) = viewModelScope.launch(ioDispatcher){
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
 
         //todo: I need to change _getUnbanRequestResponse in 2 separate items
@@ -322,7 +324,7 @@ class ModViewViewModel @Inject constructor(
     fun retryGetUnbanRequest(){
         getUnbanRequests()
     }
-    fun getUnbanRequests()=viewModelScope.launch(Dispatchers.IO){
+    fun getUnbanRequests()=viewModelScope.launch(ioDispatcher){
         //TODO: CLEAR THE OLD UnbanRequestItemList
         clearUnbanRequestItemList()
         Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
@@ -456,7 +458,7 @@ class ModViewViewModel @Inject constructor(
     }
 
 
-    private fun monitorForModActions() = viewModelScope.launch(Dispatchers.IO){
+    private fun monitorForModActions() = viewModelScope.launch(ioDispatcher){
         twitchEventSubWebSocket.modActions.collect{nullableModAction ->
             nullableModAction?.also {nonNullableModAction ->
                 Log.d("ModActionsHappending","action ->$nonNullableModAction")
@@ -495,7 +497,7 @@ class ModViewViewModel @Inject constructor(
 
     private fun monitorForChatSettingsUpdate(){
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSubWebSocket.updatedChatSettingsData.collect{nullableChatData->
                     nullableChatData?.also {chatSettingsData ->
                         checkSlowModeWaitTime(chatSettingsData.slowModeWaitTime)
@@ -528,7 +530,7 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun monitorForSessionId(){
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSubWebSocket.parsedSessionId.collect{nullableSessionId ->
                     nullableSessionId?.also {  sessionId ->
                         Log.d("monitorForSessionId","sessionId --> $sessionId")
@@ -588,7 +590,7 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun monitorForAutoModMessageUpdates(){
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 twitchEventSubWebSocket.messageIdForAutoModQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         Log.d(
@@ -620,7 +622,7 @@ class ModViewViewModel @Inject constructor(
      * - You can read more about this subscription type on Twitch's documentation site, [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelmoderate)
      * */
     private fun createModerationActionSubscription(){
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             _modViewStatus.value = _modViewStatus.value.copy(
                 modActions = WebSocketResponse.Loading
             )
@@ -681,7 +683,7 @@ class ModViewViewModel @Inject constructor(
         // TODO: ON SUCCESS HAVE THIS MAKE ANOTHER SUBSCIRPTION TO THE UPDATE AUTOMOD MESSAGES
         Log.d("CheckingSessionsEvents","createAutoModMessageHoldSubscriptionEvent()   oAuthToken--> ${_requestIds.value.oAuthToken}")
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 _modViewStatus.value = _modViewStatus.value.copy(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
@@ -733,7 +735,7 @@ class ModViewViewModel @Inject constructor(
     private fun createAutoModMessageUpdateSubscriptionEvent(){
         Log.d("CheckingSessionsEvents","createAutoModMessageUpdateSubscriptionEvent sessionId -->${_requestIds.value.moderatorId}")
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 _modViewStatus.value = _modViewStatus.value.copy(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
@@ -788,7 +790,7 @@ class ModViewViewModel @Inject constructor(
         Log.d("CheckingSessionsEvents","createChatSettingsSubscriptionEvent()   oAuthToken--> ${_requestIds.value.oAuthToken}")
 
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSub.createEventSubSubscriptionUserId(
                     oAuthToken =_requestIds.value.oAuthToken,
                     clientId =_requestIds.value.clientId,
@@ -828,7 +830,7 @@ class ModViewViewModel @Inject constructor(
      * */
     private fun monitorForAutoModMessages(){
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 twitchEventSubWebSocket.autoModMessageQueue.collect { nullableAutoModMessage ->
                     nullableAutoModMessage?.also { autoModMessage ->
                         autoModMessageList.add(autoModMessage)
@@ -874,7 +876,7 @@ class ModViewViewModel @Inject constructor(
         Log.d("getBlockedTerms","broadcasterId -->$broadcasterId")
         Log.d("getBlockedTerms","moderatorId -->$moderatorId")
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSub.getBlockedTerms(
                     oAuthToken=oAuthToken,
                     clientId =clientId,
@@ -909,7 +911,7 @@ class ModViewViewModel @Inject constructor(
         action:String
     ){
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
             val requestBody =ManageAutoModMessage(
                 userId =_requestIds.value.moderatorId,
                 msgId=msgId,
@@ -964,7 +966,7 @@ class ModViewViewModel @Inject constructor(
 
     fun deleteBlockedTerm(id:String){
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSub.deleteBlockedTerm(
                     oAuthToken = _requestIds.value.oAuthToken,
                     clientId = _requestIds.value.clientId,
@@ -1000,7 +1002,7 @@ class ModViewViewModel @Inject constructor(
         broadcasterId: String
     ){
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSub.getChatSettings(
                     oAuthToken = oAuthToken,
                     clientId = clientId,
@@ -1093,7 +1095,7 @@ class ModViewViewModel @Inject constructor(
             slowModeWaitTime = _uiState.value.chatSettings.slowModeWaitTime
         )
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 twitchEventSub.updateModViewChatSettings(
                     authorizationToken = _requestIds.value.oAuthToken,
                     clientId = _requestIds.value.clientId,
@@ -1151,7 +1153,7 @@ class ModViewViewModel @Inject constructor(
             subscriberOnly = subscriberValue
         )
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(ioDispatcher){
                 val body =ChatSettingsData(
                     emoteMode = _uiState.value.chatSettings.emoteMode,
                     subscriberMode = subscriberValue,
@@ -1292,7 +1294,7 @@ class ModViewViewModel @Inject constructor(
             slowMode =slowMode,
             slowModeWaitTime = slowModeWaitTime
         )
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             twitchEventSub.updateModViewChatSettings(
                 authorizationToken = _requestIds.value.oAuthToken,
                 clientId = _requestIds.value.clientId,
