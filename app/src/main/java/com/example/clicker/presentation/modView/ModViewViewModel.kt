@@ -77,7 +77,8 @@ data class ListTitleValue(
 
 data class ModViewStatus(
     val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading
+    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
+    val channelPointsRewardQueueStatus:WebSocketResponse<Boolean> = WebSocketResponse.FailureAuth403(Exception("Failed Auth")),
 )
 
 /**
@@ -580,6 +581,7 @@ class ModViewViewModel @Inject constructor(
         autoModMessageUpdateSubscription()
         autoModMessageHoldSubscription()
         chatSettingsSubscription()
+        createChannelPointsRewardSubscriptionEvent()
     }
 
 
@@ -777,6 +779,47 @@ class ModViewViewModel @Inject constructor(
                     }
                 }
             }
+            }
+        }
+    }
+
+    private fun createChannelPointsRewardSubscriptionEvent(){
+        viewModelScope.launch {
+            withContext(ioDispatcher){
+                _modViewStatus.value = _modViewStatus.value.copy(
+                    autoModMessageStatus = WebSocketResponse.Loading
+                )
+
+                twitchEventSub.createEventSubSubscription(
+                    oAuthToken =_requestIds.value.oAuthToken,
+                    clientId =_requestIds.value.clientId,
+                    broadcasterId =_requestIds.value.broadcasterId,
+                    moderatorId =_requestIds.value.moderatorId,
+                    sessionId = _requestIds.value.sessionId,
+                    type = "channel.channel_points_automatic_reward_redemption.add"
+                ).collect { response ->
+                    when (response) {
+                        is WebSocketResponse.Loading -> {
+                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->LOADING")
+                        }
+
+                        is WebSocketResponse.Success -> {
+                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->SUCCESS")
+
+
+                        }
+
+                        is WebSocketResponse.Failure -> {
+                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->NORMAL FAIL")
+
+                        }
+                        is WebSocketResponse.FailureAuth403 ->{
+                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->FailureAuth403 FAIL")
+
+
+                        }
+                    }
+                }
             }
         }
     }
@@ -1274,9 +1317,9 @@ class ModViewViewModel @Inject constructor(
             }
         }
 
-
-
     }
+
+
     fun changeSelectedSlowModeItem(selectedSlowMode: ListTitleValue){
         val oldSelectedSlowMode= _uiState.value.selectedSlowMode
         _uiState.value = _uiState.value.copy(

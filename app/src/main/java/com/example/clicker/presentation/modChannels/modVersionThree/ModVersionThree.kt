@@ -727,6 +727,7 @@ fun ModViewComponentVersionThree(
                      },
                      autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
+                     channelPointsRewardQueueStatus = modViewViewModel.modViewStatus.value.channelPointsRewardQueueStatus
 
                      )
              }
@@ -810,6 +811,8 @@ fun ModVersionThree(
     //immutable Lists
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
+
+    channelPointsRewardQueueStatus: WebSocketResponse<Boolean>
 
 
 
@@ -947,6 +950,19 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
+                    channelPointsQueue ={
+                        ChannelPointsQueue(
+                            setDragging={newValue ->
+                                setBoxOneDoubleTap(newValue)
+                                setBoxOneDragging(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse()
+                            },
+                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                        )
+                    }
                 )
                 if(boxOneDoubleTap){
                     DetectDoubleClickSpacer(
@@ -1038,6 +1054,19 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
+                    channelPointsQueue ={
+                        ChannelPointsQueue(
+                            setDragging={newValue ->
+                                setBoxTwoDoubleTap(newValue)
+                                setBoxTwoDragging(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse()
+                            },
+                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                        )
+                    }
 
 
                 )
@@ -1130,6 +1159,19 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
+                    channelPointsQueue = {
+                        ChannelPointsQueue(
+                            setDragging={newValue ->
+                                setBoxThreeDoubleTap(newValue)
+                                setBoxThreeDoubleTap(true)
+                            },
+                            doubleClickAndDrag =doubleClickAndDrag,
+                            setDoubleClickAndDragFalse={
+                                setDoubleClickAndDragFalse() //todo: this is causing a recomp
+                            },
+                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                        )
+                    }
 
                 )
                 if(boxThreeDoubleTap){
@@ -1161,6 +1203,7 @@ fun ModVersionThree(
 
 }
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DragBox(
@@ -1189,6 +1232,52 @@ fun DragBox(
         content()
 
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChannelPointsQueue(
+    setDragging: (Boolean) -> Unit,
+    setDoubleClickAndDragFalse: () -> Unit,
+    doubleClickAndDrag: Boolean,
+    channelPointsRewardQueueStatus: WebSocketResponse<Boolean>
+
+
+){
+
+    LazyColumn(
+        modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary)
+    ){
+        stickyHeader{
+            LazyColumnStickyClickableHeaderRow(
+                setDragging = { value -> setDragging(value) },
+                title = "Channel points reward queue",
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+            )
+        }
+        when(channelPointsRewardQueueStatus){
+            is WebSocketResponse.Loading ->{}
+            is WebSocketResponse.Success ->{}
+            is WebSocketResponse.Failure ->{}
+            is WebSocketResponse.FailureAuth403 ->{
+                item{
+                    Column(modifier = Modifier.fillMaxSize()){
+                        Spacer(modifier =Modifier.height(60.dp))
+                        NewIconTextRow(
+                            modifier = Modifier
+                        )
+                    }
+                }
+            }
+        }
+
+
+    }
+
+
 }
 
 @Composable
@@ -1241,6 +1330,7 @@ fun ContentDragBox(
     fullChat: @Composable ()-> Unit,
     modActions:@Composable () ->Unit,
     autoModQueue:@Composable () -> Unit,
+    channelPointsQueue:@Composable () -> Unit,
 ){
     when(contentIndex){
         1 ->{
@@ -1294,16 +1384,16 @@ fun ContentDragBox(
                 }
             }
         }
-//        4 ->{
-//            Column(modifier = Modifier
-//                .fillMaxSize()
-//                .background(MaterialTheme.colorScheme.primary)) {
-//                Box(modifier = Modifier.fillMaxSize()){
-//                    unbanRequests()
-//                }
-//            }
-//
-//        }
+        4 ->{
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)) {
+                Box(modifier = Modifier.fillMaxSize()){
+                    channelPointsQueue()
+                }
+            }
+
+        }
 
     }
 
@@ -1357,17 +1447,17 @@ fun ModViewDrawerContent(
 
 
             }
-//            item{
-//                ElevatedCardSwitchRow(
-//                    "Unban requests",
-//                    checkIndexAvailability={checkIndexAvailability(4)},
-//                    painter = painterResource(id = R.drawable.time_out_24),
-//                    checked = modActionsChecked,
-//                    changeChecked = {value ->
-//                        //changeModActionsChecked(value) todo: this needs to be its own switch function
-//                    }
-//                )
-//            }
+            item{
+                ElevatedCardSwitchRow(
+                    "Points queue",
+                    checkIndexAvailability={checkIndexAvailability(4)},
+                    painter = painterResource(id = R.drawable.sparkle_awesome_24),
+                    checked = modActionsChecked,
+                    changeChecked = {value ->
+                        //changeModActionsChecked(value) todo: this needs to be its own switch function
+                    }
+                )
+            }
 
 //            item{
 //                ElevatedCardExample(
@@ -3168,6 +3258,52 @@ fun NewErrorMessage403(
         NewIconTextRow(
             modifier = Modifier.align(Alignment.Center)
         )
+
+    }
+}
+
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LazyColumnStickyClickableHeaderRow(
+    setDragging: (Boolean) -> Unit,
+    title:String,
+    setDoubleClickAndDragFalse:() ->Unit,
+    doubleClickAndDrag:Boolean
+){
+    val hapticFeedback = LocalHapticFeedback.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .combinedClickable(
+                onDoubleClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    setDragging(true)
+                    setDoubleClickAndDragFalse()
+                },
+                onClick = {}
+            )
+            .padding(horizontal = 10.dp),
+        horizontalArrangement =Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
+    ){
+        Text(
+            title,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+
+            )
+        if(doubleClickAndDrag){
+            Text(
+                "Double click and drag",
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+
+                )
+        }
 
     }
 }
