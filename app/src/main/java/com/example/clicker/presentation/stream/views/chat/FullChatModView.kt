@@ -193,9 +193,10 @@ fun FullChatModView(
                             sendMessageToWebSocket(item)
                                },
                         showModal ={
-                            showChatSettings = !showChatSettings
-                            //todo:This needs to change
-                           // showModal()
+                            //showChatSettings is what shows the box to update the channel information
+                           // showChatSettings = !showChatSettings
+
+                            showModal()
                                    },
                     )
                 },

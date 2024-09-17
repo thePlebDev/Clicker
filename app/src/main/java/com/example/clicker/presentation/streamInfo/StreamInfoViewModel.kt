@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.network.clients.Game
+import com.example.clicker.network.clients.GameRequest
 import com.example.clicker.network.domain.StreamInfoRepo
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,6 +64,9 @@ class StreamInfoViewModel @Inject constructor(
     val maxLengthOfTag: State<Int> = _maxLengthOfTag
     private val _tagTitle: MutableState<String> = mutableStateOf("")
     val tagTitle: State<String> = _tagTitle
+
+    private val _gameId: MutableState<String> = mutableStateOf("")
+
 
      val tagList = mutableStateListOf<String>()
 
@@ -170,6 +174,25 @@ class StreamInfoViewModel @Inject constructor(
 
         }
     }
+    fun updateChannelInformation()=viewModelScope.launch(ioDispatcher){
+        val gameRequest = GameRequest(
+            game_id =_gameId.value,
+            content_classification_labels = listOf(),
+            is_branded_content = false,
+            title = _channelTitle.value,
+            tags = tagList.toList(),
+            broadcaster_language = "en"
+        )
+        streamInfoRepo.updateChannelInformation(
+            authorizationToken= _userInfo.value.oAuthToken,
+            clientId= _userInfo.value.clientId,
+            broadcasterId= _userInfo.value.broadcasterId,
+            body = gameRequest
+
+        ).collect{
+
+        }
+    }
 
    private fun getGameInfo(
         authorizationToken: String,
@@ -183,6 +206,7 @@ class StreamInfoViewModel @Inject constructor(
             gameName = gameName,
             gameId = gameId
         ).collect{response ->
+            _gameId.value = gameId
             when(response){
                 is Response.Loading ->{
                     _gameCategoryResponse.value = Response.Loading
@@ -216,89 +240,89 @@ class StreamInfoViewModel @Inject constructor(
         clientId: String,
         broadcasterId: String
     )=viewModelScope.launch(ioDispatcher){
-        Log.d("getStreamInfoTesting","autorizationTOken ->$authorizationToken")
-        Log.d("getStreamInfoTesting","clientId ->$clientId")
-        Log.d("getStreamInfoTesting","broadcasterId ->$broadcasterId")
-        streamInfoRepo.getChannelInformation(
-            authorizationToken=authorizationToken,
-            clientId=clientId,
-            broadcasterId = broadcasterId
-        ).collect{response ->
-            _userInfo.value = UserInfo(
-                oAuthToken=authorizationToken,
-                clientId=clientId,
-                broadcasterId = broadcasterId
-            )
-            when(val data =response){
-                is Response.Loading ->{}
-                is Response.Success ->{
-
-                    //https://static-cdn.jtvnw.net/ttv-boxart/5718_IGDB-52x72.jpg
-                    val channelInfo =data.data
-                    _channelTitle.value = channelInfo.title
-                    tagList.addAll(channelInfo.tags)
-                    val gameId = channelInfo.game_id
-                    val gameName = channelInfo.game_name //todo: I think I actually use this to get the category info
-
-
-                    Log.d("getStreamInfoTesting","gameName ->$gameName")
-                    //todo: we need to
-                    Log.d("getStreamInfoTesting","game_id ->$gameId")
-                    getGameInfo(
-                        authorizationToken=authorizationToken,
-                        clientId=clientId,
-                        gameName = gameName,
-                        gameId =gameId
-                    )
-                    //content classification
-                    //branded content
-                    val contentClassification = channelInfo.content_classification_labels
-                    for (item in contentClassification){
-                       when(item){
-                           "DrugsIntoxication"->{
-                               _contentClassification.value = _contentClassification.value.copy(
-                                   drugsIntoxication = true
-                               )
-                           }
-                           "Gambling"->{
-                               _contentClassification.value = _contentClassification.value.copy(
-                                   gambling = true
-                               )
-                           }
-                           "ProfanityVulgarity"->{
-                               _contentClassification.value = _contentClassification.value.copy(
-                                   significantProfanity = true
-                               )
-                           }
-                           "SexualThemes"->{
-                               _contentClassification.value = _contentClassification.value.copy(
-                                   sexualThemes = true
-                               )
-                           }
-                           "ViolentGraphic"->{
-                               _contentClassification.value = _contentClassification.value.copy(
-                                   violentGraphic = true
-                               )
-                           }
-                       }
-                    }
-
-                    val language = channelInfo.broadcaster_language
-                    if(languageHashMap.containsKey(language)){
-                        _selectedStreamLanguage.value = languageHashMap[language]
-                    }else{
-                        _selectedStreamLanguage.value = "Other"
-                    }
-
-
-
-
-
-                }
-                is Response.Failure ->{}
-            }
-
-        }
+//        Log.d("getStreamInfoTesting","autorizationTOken ->$authorizationToken")
+//        Log.d("getStreamInfoTesting","clientId ->$clientId")
+//        Log.d("getStreamInfoTesting","broadcasterId ->$broadcasterId")
+//        streamInfoRepo.getChannelInformation(
+//            authorizationToken=authorizationToken,
+//            clientId=clientId,
+//            broadcasterId = broadcasterId
+//        ).collect{response ->
+//            _userInfo.value = UserInfo(
+//                oAuthToken=authorizationToken,
+//                clientId=clientId,
+//                broadcasterId = broadcasterId
+//            )
+//            when(val data =response){
+//                is Response.Loading ->{}
+//                is Response.Success ->{
+//
+//                    //https://static-cdn.jtvnw.net/ttv-boxart/5718_IGDB-52x72.jpg
+//                    val channelInfo =data.data
+//                    _channelTitle.value = channelInfo.title
+//                    tagList.addAll(channelInfo.tags)
+//                    val gameId = channelInfo.game_id
+//                    val gameName = channelInfo.game_name //todo: I think I actually use this to get the category info
+//
+//
+//                    Log.d("getStreamInfoTesting","gameName ->$gameName")
+//                    //todo: we need to
+//                    Log.d("getStreamInfoTesting","game_id ->$gameId")
+//                    getGameInfo(
+//                        authorizationToken=authorizationToken,
+//                        clientId=clientId,
+//                        gameName = gameName,
+//                        gameId =gameId
+//                    )
+//                    //content classification
+//                    //branded content
+//                    val contentClassification = channelInfo.content_classification_labels
+//                    for (item in contentClassification){
+//                       when(item){
+//                           "DrugsIntoxication"->{
+//                               _contentClassification.value = _contentClassification.value.copy(
+//                                   drugsIntoxication = true
+//                               )
+//                           }
+//                           "Gambling"->{
+//                               _contentClassification.value = _contentClassification.value.copy(
+//                                   gambling = true
+//                               )
+//                           }
+//                           "ProfanityVulgarity"->{
+//                               _contentClassification.value = _contentClassification.value.copy(
+//                                   significantProfanity = true
+//                               )
+//                           }
+//                           "SexualThemes"->{
+//                               _contentClassification.value = _contentClassification.value.copy(
+//                                   sexualThemes = true
+//                               )
+//                           }
+//                           "ViolentGraphic"->{
+//                               _contentClassification.value = _contentClassification.value.copy(
+//                                   violentGraphic = true
+//                               )
+//                           }
+//                       }
+//                    }
+//
+//                    val language = channelInfo.broadcaster_language
+//                    if(languageHashMap.containsKey(language)){
+//                        _selectedStreamLanguage.value = languageHashMap[language]
+//                    }else{
+//                        _selectedStreamLanguage.value = "Other"
+//                    }
+//
+//
+//
+//
+//
+//                }
+//                is Response.Failure ->{}
+//            }
+//
+//        }
 
     }
 
