@@ -18,6 +18,7 @@ import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -39,7 +40,8 @@ fun ValidationView(
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
 
-    modVersionThreeViewModel: ModVersionThreeViewModel
+    modVersionThreeViewModel: ModVersionThreeViewModel,
+    modViewViewModel: ModViewViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -64,6 +66,8 @@ fun ValidationView(
         updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
             if (!lowPowerModeActive) {
                 homeViewModel.updateClickedStreamerName(streamerName)
+
+
 
 
                 Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
@@ -108,6 +112,12 @@ fun ValidationView(
                     authorizationToken = oAuthToken,
                     clientId = streamViewModel.state.value.clientId,
                     broadcasterId = streamViewModel.state.value.broadcasterId,
+                )
+                modViewViewModel.getUnbanRequests(
+                    oAuthToken =homeViewModel.oAuthToken.value ?:"",
+                    clientId=clientId,
+                    moderatorId=userId,
+                    broadcasterId=broadcasterId
                 )
             }
 

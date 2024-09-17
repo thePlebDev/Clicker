@@ -226,9 +226,7 @@ fun StreamView(
     val unBanUser:() -> Unit = remember(streamViewModel) { {
         streamViewModel.unBanUser()
     } }
-    val getUnbanRequests:() -> Unit = remember(modViewViewModel) { {
-        modViewViewModel.getUnbanRequests()
-    } }
+
     /*******ALL FUNCTIONS RELATED TO CHAT SETTINGS SIZE***********/
     val changeBadgeSize:(Float) -> Unit = remember(chatSettingsViewModel) { {newValue ->
         chatSettingsViewModel.changeBadgeSize(newValue)

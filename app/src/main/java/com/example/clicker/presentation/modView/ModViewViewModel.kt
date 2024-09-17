@@ -188,8 +188,8 @@ class ModViewViewModel @Inject constructor(
      * This is a list of all the individual unban requests
      * */
     //todo: this needs to be broken up into the response and the list
-    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Loading)
-    val getUnbanRequestResponse: State<UnAuthorizedResponse<Boolean>> = _getUnbanRequestResponse
+    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(UnAuthorizedResponse.Loading)
+    val unbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
 
 
     var unbanRequestItemList = mutableStateListOf<UnbanRequestItem>()
@@ -258,7 +258,7 @@ class ModViewViewModel @Inject constructor(
     ) = viewModelScope.launch(ioDispatcher){
         _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
 
-        //todo: I need to change _getUnbanRequestResponse in 2 separate items
+
         Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
         Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
         Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
@@ -322,10 +322,15 @@ class ModViewViewModel @Inject constructor(
 
     }
 
-    fun retryGetUnbanRequest(){
-        getUnbanRequests()
-    }
-    fun getUnbanRequests()=viewModelScope.launch(ioDispatcher){
+//    fun retryGetUnbanRequest(){
+//        getUnbanRequests()
+//    }
+    fun getUnbanRequests(
+         oAuthToken:String,
+         clientId: String,
+         moderatorId: String,
+         broadcasterId: String
+    )=viewModelScope.launch(ioDispatcher){
         //TODO: CLEAR THE OLD UnbanRequestItemList
         clearUnbanRequestItemList()
         Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
@@ -335,25 +340,31 @@ class ModViewViewModel @Inject constructor(
 
 
         twitchModRepo.getUnbanRequests(
-            authorizationToken=_requestIds.value.oAuthToken,
-            clientId =_requestIds.value.clientId ,
-            moderatorID = _requestIds.value.moderatorId,
-            broadcasterId = _requestIds.value.broadcasterId,
+            authorizationToken=oAuthToken,
+            clientId =clientId ,
+            moderatorID = moderatorId,
+            broadcasterId = broadcasterId,
             status = UnbanStatusFilter.PENDING
         ).collect{response ->
             when(response){
-                is UnAuthorizedResponse.Loading ->{}
+                is UnAuthorizedResponse.Loading ->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
+                    Log.d("getUnbanRequestsFunc","LOADING")
+                }
                 is UnAuthorizedResponse.Success ->{
                     //todo: I need to change when the response gets added
                     val data = response.data
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(true)
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(data)
                     addAllUnbanRequestItemList(data)
+                    Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
 
                 }
                 is UnAuthorizedResponse.Auth401Failure ->{
+                    Log.d("getUnbanRequestsFunc","Auth401Failure")
                     _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
                 }
                 is UnAuthorizedResponse.Failure->{
+                    Log.d("getUnbanRequestsFunc","Failure")
                     _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
 
                 }
@@ -790,6 +801,7 @@ class ModViewViewModel @Inject constructor(
                 _modViewStatus.value = _modViewStatus.value.copy(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
+
 
                 twitchEventSub.createEventSubSubscription(
                     oAuthToken =_requestIds.value.oAuthToken,
