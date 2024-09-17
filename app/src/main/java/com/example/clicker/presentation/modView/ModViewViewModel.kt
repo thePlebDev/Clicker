@@ -78,7 +78,7 @@ data class ListTitleValue(
 data class ModViewStatus(
     val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
     val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-    val channelPointsRewardQueueStatus:WebSocketResponse<Boolean> = WebSocketResponse.FailureAuth403(Exception("Failed Auth")),
+    val channelPointsRewardQueueStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
 )
 
 /**
@@ -577,10 +577,11 @@ class ModViewViewModel @Inject constructor(
         autoModMessageHoldSubscription:()->Unit,
         chatSettingsSubscription:()->Unit,
     ){
-        moderatorActionSubscription()
-        autoModMessageUpdateSubscription()
-        autoModMessageHoldSubscription()
+//        moderatorActionSubscription()
+//        autoModMessageUpdateSubscription()
+//        autoModMessageHoldSubscription()
         chatSettingsSubscription()
+
         createChannelPointsRewardSubscriptionEvent()
     }
 
@@ -800,21 +801,32 @@ class ModViewViewModel @Inject constructor(
                 ).collect { response ->
                     when (response) {
                         is WebSocketResponse.Loading -> {
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
                             Log.d("createChannelPointsRewardSubscriptionEvent", "response -->LOADING")
                         }
 
                         is WebSocketResponse.Success -> {
                             Log.d("createChannelPointsRewardSubscriptionEvent", "response -->SUCCESS")
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
 
 
                         }
 
                         is WebSocketResponse.Failure -> {
                             Log.d("createChannelPointsRewardSubscriptionEvent", "response -->NORMAL FAIL")
-
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
                         }
                         is WebSocketResponse.FailureAuth403 ->{
                             Log.d("createChannelPointsRewardSubscriptionEvent", "response -->FailureAuth403 FAIL")
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
 
 
                         }
