@@ -1240,11 +1240,12 @@ fun UnbanRequests(
     doubleClickAndDrag: Boolean,
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>
 ){
+    Log.d("UnbanRequestsRecomp","Recomping")
 
     LazyColumn(
         modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.primary)
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
     ){
         stickyHeader{
             LazyColumnStickyClickableHeaderRow(
@@ -1254,9 +1255,31 @@ fun UnbanRequests(
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
         }
+
+
         when(unbanRequestResponse){
             is UnAuthorizedResponse.Loading ->{}
-            is UnAuthorizedResponse.Success ->{}
+            is UnAuthorizedResponse.Success ->{
+                items(unbanRequestResponse.data){
+                    IndivUnbanItem()
+
+                }
+                if(unbanRequestResponse.data.isEmpty()){
+                    item{
+                        Column(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
+                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+
+                        }
+                    }
+
+                }
+            }
             is UnAuthorizedResponse.Failure ->{}
             is UnAuthorizedResponse.Auth401Failure->{
 
@@ -1265,6 +1288,41 @@ fun UnbanRequests(
             }
         }
 
+}
+
+@Composable
+fun IndivUnbanItem(){
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+    ) {
+        Box(modifier = Modifier.padding(10.dp)){
+            Column(){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+
+                    ){
+                    Icon(
+                        painter = painterResource(id =R.drawable.person_outline_24),
+                        contentDescription ="user profile",
+                        tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(35.dp) )
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text("meanermeeny", fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = Color.White)
+                }
+                Text("3hrs ago: Please, Please Please Unban me !!!", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = Color.White)
+            }
+            Text("Pending",modifier = Modifier.align(Alignment.TopEnd),color = Color.Yellow, fontSize = 13.sp)
+
+        }
+    }
 }
 
 @Composable
