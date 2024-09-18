@@ -3162,13 +3162,6 @@ fun NewContentBanner(
         Text("Account created at: 2024-09-18", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
         Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(MaterialTheme.colorScheme.secondary))
         Spacer(modifier = Modifier.height(10.dp))
-
-        Text("Subscriber: true", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text("Is Gifted: false", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text("Tier: 3", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
-        Spacer(modifier = Modifier.height(2.dp))
         Text("Unban request message: Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
         Spacer(modifier = Modifier.height(10.dp))
 
