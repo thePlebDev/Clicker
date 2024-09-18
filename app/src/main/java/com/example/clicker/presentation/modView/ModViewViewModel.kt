@@ -111,6 +111,11 @@ ListTitleValue("1 day",1440),
     ListTitleValue("3 months",129600 )
 
 )
+
+data class ClickedUnbanRequestUser(
+    val message:String,
+    val userName:String,
+)
 @Immutable
 data class ImmutableModeList(
     val modeList:List<ListTitleValue>
@@ -181,9 +186,21 @@ class ModViewViewModel @Inject constructor(
     /**
      * This is the data that is shown to in the modal once the unban request is selected
      * */
-    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Success(ClickedUnbanRequestInfo("","","","BOBBERS","")))
-    val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
+    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("",""))
+    val clickedUnbanRequestUser: State<ClickedUnbanRequestUser> = _clickedUnbanRequestUser
 
+    fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,){
+        _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
+            message=message,
+            userName = username
+        )
+        Log.d("updateClickedUnbanRequestUser","oAuthToken->${_requestIds.value.oAuthToken}")
+        Log.d("updateClickedUnbanRequestUser","clientId->${_requestIds.value.clientId}")
+        Log.d("updateClickedUnbanRequestUser","broadcasterId->${_requestIds.value.broadcasterId}")
+        getUserInformation(
+            userId
+        )
+    }
     /**
      * This is a list of all the individual unban requests
      * */
@@ -212,6 +229,10 @@ class ModViewViewModel @Inject constructor(
     }
 
 
+    private val _clickedUnbanRequestInfo: MutableState<Response<ClickedUnbanRequestInfo>> = mutableStateOf(Response.Failure(Exception("Another one")))
+    val clickedUnbanRequestInfo: State<Response<ClickedUnbanRequestInfo>> = _clickedUnbanRequestInfo
+
+
 
 
     /**
@@ -236,6 +257,7 @@ class ModViewViewModel @Inject constructor(
             when(response){
                 is Response.Loading ->{
                     //this is fine being empty. The first line of the function takes care of it
+                    _clickedUnbanRequestInfo.value = Response.Loading
                 }
                 is Response.Success ->{
 
