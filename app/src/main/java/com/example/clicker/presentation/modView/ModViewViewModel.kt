@@ -354,8 +354,16 @@ class ModViewViewModel @Inject constructor(
                 is UnAuthorizedResponse.Success ->{
                     //todo: I need to change when the response gets added
                     val data = response.data
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(data)
-                    addAllUnbanRequestItemList(data)
+                    if(data.isNotEmpty()){
+                        val newData = data.map {
+                            it.copy(
+                                created_at = it.created_at.split("T")[0]
+                            )
+                        }
+                        _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
+                        addAllUnbanRequestItemList(data)
+                    }
+
                     Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
 
                 }

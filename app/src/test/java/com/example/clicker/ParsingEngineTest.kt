@@ -376,6 +376,15 @@ class ParsingEngineTest {
         Assert.assertEquals(1, 2)
     }
 
+    @Test
+    fun `testing the time parsing`(){
+        val textToParse ="2024-09-17T21:17:14Z"
+        val expected ="2024-09-17"
+         val item = textToParse.split("T")[0]
+
+        Assert.assertEquals(expected, item)
+    }
+
 
 }
 // this function works, manualy test it when I wake up
