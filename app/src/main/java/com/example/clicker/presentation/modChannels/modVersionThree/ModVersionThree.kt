@@ -344,9 +344,14 @@ fun ModViewComponentVersionThree(
         sheetState=unbanRequestModalState,
         sheetContent = {
            Column(modifier = Modifier
-               .fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+               .fillMaxWidth()
+               .background(MaterialTheme.colorScheme.primary)
                .padding(10.dp)){
-               NewContentBanner()
+               NewContentBanner(
+                   clickedUsername = modViewViewModel.clickedUnbanRequestUser.value.userName,
+                   clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
+                   clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value
+               )
                ClickedUserMessages()
            }
         }
@@ -712,7 +717,8 @@ fun ModViewComponentVersionThree(
                      autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
                      unbanRequestResponse = modViewViewModel.unbanRequestResponse.value,
-                     showUnbanRequestModal={showUnbanRequestBottomModal()}
+                     showUnbanRequestModal={showUnbanRequestBottomModal()},
+                     updateClickedUnbanRequest={username,text,userId ->modViewViewModel.updateClickedUnbanRequestUser(username,text,userId)}
 
                      )
              }
@@ -799,6 +805,7 @@ fun ModVersionThree(
 
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
+    updateClickedUnbanRequest:(String,String,String)->Unit
 
 
 
@@ -948,6 +955,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
                         )
                     }
                 )
@@ -1053,6 +1061,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
                         )
                     }
 
@@ -1159,6 +1168,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
 
                         )
                     }
@@ -1232,6 +1242,7 @@ fun UnbanRequests(
     doubleClickAndDrag: Boolean,
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
+    updateClickedUnbanRequest: (String, String, String) -> Unit
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
 
@@ -1254,7 +1265,20 @@ fun UnbanRequests(
                 text = "Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!",
                 status = "pending",
                 time = "2024-09-17",
-                showUnbanRequestModal={showUnbanRequestModal()}
+                showUnbanRequestModal={showUnbanRequestModal()},
+                userId="949335660",
+                updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+            )
+        }
+        item{
+            IndivUnbanItem(
+                username = "tatersNMeats",
+                text = "Meatballs and taters",
+                status = "approved",
+                time = "2024-09-17",
+                showUnbanRequestModal={showUnbanRequestModal()},
+                userId="949335660",
+                updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
             )
         }
 
@@ -1303,7 +1327,9 @@ fun IndivUnbanItem(
     text:String,
     status:String,
     time:String,
-    showUnbanRequestModal: () -> Unit
+    userId:String,
+    showUnbanRequestModal: () -> Unit,
+    updateClickedUnbanRequest:(String,String,String)->Unit
 ){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -1311,10 +1337,13 @@ fun IndivUnbanItem(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp).
-                clickable {
-                    showUnbanRequestModal()
-                }
+            .padding(5.dp)
+            .clickable {
+                updateClickedUnbanRequest(
+                    username, text, userId
+                )
+                showUnbanRequestModal()
+            }
     ) {
         Box(modifier = Modifier.padding(10.dp)){
             Column(){
@@ -1323,7 +1352,6 @@ fun IndivUnbanItem(
                         .fillMaxWidth()
                         .padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-
                     ){
                     Icon(
                         painter = painterResource(id =R.drawable.person_outline_24),
@@ -3083,7 +3111,7 @@ fun ClickedUserMessages(
             Text("2024-09-18 Ok like wtf is it with all this BS",
                 fontSize =MaterialTheme.typography.headlineSmall.fontSize,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier =  Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp))
         }
@@ -3091,7 +3119,7 @@ fun ClickedUserMessages(
             Text("2024-09-18 This is actually like some bullshit. Dude like wtf are you doing",
                 fontSize =MaterialTheme.typography.headlineSmall.fontSize,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier =  Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp))
         }
@@ -3099,7 +3127,7 @@ fun ClickedUserMessages(
             Text("2024-09-18 ok Now I am mad like WTF are you doing dude. This is going to be some BS. YOur are like trash",
                 fontSize =MaterialTheme.typography.headlineSmall.fontSize,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier =  Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp))
         }
@@ -3135,12 +3163,13 @@ fun ClickedUserMessages(
 
 @Composable
 fun NewContentBanner(
-//    clickedUsername: String,
-//    hideModal:()->Unit,
+    clickedUsername:String,
+    clickedMessage:String,
+    clickedUserInfo:Response<ClickedUnbanRequestInfo>
 ){
 
 
-    Column() {
+    Column {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                Icon(
@@ -3152,17 +3181,38 @@ fun NewContentBanner(
                     tint = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    "meanermeeny",
+                    clickedUsername,
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
             }
 
 
-        Text("Account created at: 2024-09-18", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
-        Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(MaterialTheme.colorScheme.secondary))
+        when(clickedUserInfo){
+            is Response.Loading ->{
+                Row(){
+                    Text("Created at: ", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                }
+
+            }
+            is Response.Success ->{
+                Text("Created at: ${clickedUserInfo.data.profileCreatedAt}", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+            }
+            is Response.Failure ->{
+                Row(){
+                    Text("Created at: ", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+                    Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "failed request",tint = Color.Red)
+                }
+            }
+
+        }
+        Spacer(modifier = Modifier
+            .height(1.dp)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary))
         Spacer(modifier = Modifier.height(10.dp))
-        Text("Unban request message: Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Text("Unban request message: $clickedMessage", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
         Spacer(modifier = Modifier.height(10.dp))
 
         Row(
