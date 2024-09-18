@@ -340,6 +340,7 @@ fun ModViewComponentVersionThree(
     } }
 
 
+
     ModalBottomSheetLayout(
         sheetState=unbanRequestModalState,
         sheetContent = {
@@ -352,7 +353,14 @@ fun ModViewComponentVersionThree(
                    clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
                    clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value
                )
-               ClickedUserMessages()
+               ClickedUserMessages(
+                   globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                   channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                   globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                   channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                   sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                   clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+               )
            }
         }
     ) {
@@ -537,7 +545,7 @@ fun ModViewComponentVersionThree(
                                  scope.launch { clickedChatterModalState.show() }
                              },
                              updateClickedUser = { username, userId, banned, isMod ->
-                                 updateClickedUser(
+                                 updateClickedUser( //todo: I need to add this
                                      username,
                                      userId,
                                      banned,
@@ -718,7 +726,12 @@ fun ModViewComponentVersionThree(
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
                      unbanRequestResponse = modViewViewModel.unbanRequestResponse.value,
                      showUnbanRequestModal={showUnbanRequestBottomModal()},
-                     updateClickedUnbanRequest={username,text,userId ->modViewViewModel.updateClickedUnbanRequestUser(username,text,userId)}
+                     updateClickedUnbanRequest={ username,text,userId ->
+                         updateClickedUser(username,userId,false,false)
+                         modViewViewModel.updateClickedUnbanRequestUser(username,text,userId)
+                     }
+
+
 
                      )
              }
@@ -3088,14 +3101,14 @@ fun ConnectionError(
 @Composable
 fun ClickedUserMessages(
 
-//    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
-//    globalTwitchEmoteContentMap:EmoteListMap,
-//    channelTwitchEmoteContentMap:EmoteListMap,
-//    globalBetterTTVEmoteContentMap:EmoteListMap,
-//    channelBetterTTVEmoteContentMap:EmoteListMap,
-//    sharedBetterTTVEmoteContentMap:EmoteListMap,
+    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+    globalTwitchEmoteContentMap:EmoteListMap,
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap,
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
 ){
-    //val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
+    val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
 
     LazyColumn(
         modifier = Modifier
@@ -3107,57 +3120,34 @@ fun ClickedUserMessages(
                 shape = RoundedCornerShape(8.dp)
             )
     ) {
-        item{
-            Text("2024-09-18 Ok like wtf is it with all this BS",
-                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
-                color = MaterialTheme.colorScheme.onPrimary,
+
+        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+
+            val annotatedString =buildAnnotatedString {
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+                    append("${message.dateSent} ")
+                }
+
+                for(item in message.messageTokenList){
+                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+                        appendInlineContent("${item.messageValue}","${item.messageValue} ")
+                    }
+                }
+
+
+            }
+
+           Text(
+                text = annotatedString,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp))
+                    .padding(5.dp),
+               inlineContent = newMap
+            )
+
+
+
         }
-        item{
-            Text("2024-09-18 This is actually like some bullshit. Dude like wtf are you doing",
-                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp))
-        }
-        item{
-            Text("2024-09-18 ok Now I am mad like WTF are you doing dude. This is going to be some BS. YOur are like trash",
-                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp))
-        }
-//        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
-//
-//            val annotatedString =buildAnnotatedString {
-//                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-//                    append("${message.dateSent} ")
-//                }
-//
-//                for(item in message.messageTokenList){
-//                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-//                        appendInlineContent("${item.messageValue}","${item.messageValue} ")
-//                    }
-//                }
-//
-//
-//            }
-//
-//           Text(
-//                text = annotatedString,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(5.dp),
-//             //   inlineContent = newMap
-//            )
-//
-//
-//
-//        }
     }
 }
 
