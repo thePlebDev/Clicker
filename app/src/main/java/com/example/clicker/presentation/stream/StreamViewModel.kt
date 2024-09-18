@@ -894,8 +894,12 @@ class StreamViewModel @Inject constructor(
         clearAllClickedUserBadgesImmutable()
         val clickedUserChats = listChats.filter { it.displayName == clickedUsername }
         val clickedUserMessages = createClickedUsernameChats(clickedUserChats)
-        val badges = clickedUserChats.first().badges
-        addAllClickedUserBadgesImmutable(badges)
+       if(clickedUserChats.isNotEmpty()){
+           val badges = clickedUserChats.first().badges
+           addAllClickedUserBadgesImmutable(badges)
+       }
+//        val badges = clickedUserChats.first().badges
+//        addAllClickedUserBadgesImmutable(badges)
         addAllClickedUsernameChatsDateSent(clickedUserMessages)
 
         _clickedUIState.value = _clickedUIState.value.copy(
