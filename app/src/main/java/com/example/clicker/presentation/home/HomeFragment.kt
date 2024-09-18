@@ -146,7 +146,8 @@ class HomeFragment : Fragment() {
                             logoutViewModel=logoutViewModel,
                             modVersionThreeViewModel =modVersionThreeViewModel,
                             chatSettingsViewModel=chatSettingsViewModel,
-                            streamInfoViewModel=streamInfoViewModel
+                            streamInfoViewModel=streamInfoViewModel,
+                            modViewViewModel=modViewViewModel
 
                         )
                     }

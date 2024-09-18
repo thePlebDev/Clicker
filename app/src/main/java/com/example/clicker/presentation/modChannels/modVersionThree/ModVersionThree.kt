@@ -88,7 +88,9 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.Game
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 
 import com.example.clicker.network.repository.models.EmoteListMap
 import com.example.clicker.network.repository.models.EmoteNameUrl
@@ -258,10 +260,6 @@ fun ModViewComponentVersionThree(
 
     } }
 
-    val retryGetUnbanRequest:()->Unit = remember(modVersionThreeViewModel) { {
-        modViewViewModel.retryGetUnbanRequest()
-
-    } }
 
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
         streamViewModel.updateTemporaryMostFrequentList(it)
@@ -727,7 +725,7 @@ fun ModViewComponentVersionThree(
                      },
                      autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
-                     channelPointsRewardQueueStatus = modViewViewModel.modViewStatus.value.channelPointsRewardQueueStatus
+                     unbanRequestResponse = modViewViewModel.unbanRequestResponse.value
 
                      )
              }
@@ -812,7 +810,7 @@ fun ModVersionThree(
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
 
-    channelPointsRewardQueueStatus: WebSocketResponse<Boolean>
+    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>
 
 
 
@@ -950,8 +948,8 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    channelPointsQueue ={
-                        ChannelPointsQueue(
+                    unbanRequests ={
+                        UnbanRequests(
                             setDragging={newValue ->
                                 setBoxOneDoubleTap(newValue)
                                 setBoxOneDragging(true)
@@ -960,7 +958,7 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
                             },
-                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                            unbanRequestResponse=unbanRequestResponse
                         )
                     }
                 )
@@ -1054,8 +1052,8 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    channelPointsQueue ={
-                        ChannelPointsQueue(
+                    unbanRequests ={
+                        UnbanRequests(
                             setDragging={newValue ->
                                 setBoxTwoDoubleTap(newValue)
                                 setBoxTwoDragging(true)
@@ -1064,7 +1062,7 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
                             },
-                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                            unbanRequestResponse=unbanRequestResponse
                         )
                     }
 
@@ -1159,8 +1157,8 @@ fun ModVersionThree(
                             autoModMessageListImmutableCollection=autoModMessageListImmutableCollection
                         )
                     },
-                    channelPointsQueue = {
-                        ChannelPointsQueue(
+                    unbanRequests = {
+                        UnbanRequests(
                             setDragging={newValue ->
                                 setBoxThreeDoubleTap(newValue)
                                 setBoxThreeDoubleTap(true)
@@ -1169,7 +1167,7 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
                             },
-                            channelPointsRewardQueueStatus=channelPointsRewardQueueStatus
+                            unbanRequestResponse=unbanRequestResponse
                         )
                     }
 
@@ -1236,13 +1234,11 @@ fun DragBox(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ChannelPointsQueue(
+fun UnbanRequests(
     setDragging: (Boolean) -> Unit,
     setDoubleClickAndDragFalse: () -> Unit,
     doubleClickAndDrag: Boolean,
-    channelPointsRewardQueueStatus: WebSocketResponse<Boolean>
-
-
+    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>
 ){
 
     LazyColumn(
@@ -1253,30 +1249,21 @@ fun ChannelPointsQueue(
         stickyHeader{
             LazyColumnStickyClickableHeaderRow(
                 setDragging = { value -> setDragging(value) },
-                title = "Channel points reward queue",
+                title = "Unban requests",
                 doubleClickAndDrag =doubleClickAndDrag,
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
         }
-        when(channelPointsRewardQueueStatus){
-            is WebSocketResponse.Loading ->{}
-            is WebSocketResponse.Success ->{}
-            is WebSocketResponse.Failure ->{}
-            is WebSocketResponse.FailureAuth403 ->{
-                item{
-                    Column(modifier = Modifier.fillMaxSize()){
-                        Spacer(modifier =Modifier.height(60.dp))
-                        NewIconTextRow(
-                            modifier = Modifier
-                        )
-                    }
-                }
+        when(unbanRequestResponse){
+            is UnAuthorizedResponse.Loading ->{}
+            is UnAuthorizedResponse.Success ->{}
+            is UnAuthorizedResponse.Failure ->{}
+            is UnAuthorizedResponse.Auth401Failure->{
+
+            }
+
             }
         }
-
-
-    }
-
 
 }
 
@@ -1330,7 +1317,7 @@ fun ContentDragBox(
     fullChat: @Composable ()-> Unit,
     modActions:@Composable () ->Unit,
     autoModQueue:@Composable () -> Unit,
-    channelPointsQueue:@Composable () -> Unit,
+    unbanRequests:@Composable () -> Unit,
 ){
     when(contentIndex){
         1 ->{
@@ -1389,7 +1376,7 @@ fun ContentDragBox(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primary)) {
                 Box(modifier = Modifier.fillMaxSize()){
-                    channelPointsQueue()
+                    unbanRequests()
                 }
             }
 
@@ -1449,7 +1436,7 @@ fun ModViewDrawerContent(
             }
             item{
                 ElevatedCardSwitchRow(
-                    "Points queue",
+                    "Unban request",
                     checkIndexAvailability={checkIndexAvailability(4)},
                     painter = painterResource(id = R.drawable.sparkle_awesome_24),
                     checked = modActionsChecked,
@@ -2252,752 +2239,6 @@ fun ModActionsHeader(
 }
 /************************ Unban requests ****************************************************************/
 
-
-
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun UnbanRequests(
-    setDragging:(Boolean)->Unit,
-    doubleClickAndDrag:Boolean,
-    setDoubleClickAndDragFalse:()->Unit,
-    showUnbanRequestBottomModal: () -> Unit,
-    getUserInformation:(String)->Unit,
-    retryGetUnbanRequest:() ->Unit,
-    getUnbanRequestResponse:UnAuthorizedResponse<Boolean>,
-    unbanRequestList: UnbanRequestItemImmutableCollection,
-    updateClickedUnbanRequestId:(String) ->Unit
-){
-
-
-    Log.d("UnbanRequestsRecomp","RECOMP")
-    Column(){
-        UnBanRequestHeader(
-            headerText ="Unban requests",
-            setDragging ={newValue ->setDragging(newValue)},
-            doubleClickAndDrag =doubleClickAndDrag,
-            setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
-        )
-        Box(modifier = Modifier.fillMaxSize()){
-            val listState = rememberLazyListState()
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(vertical = 5.dp)
-
-            ) {
-                items(unbanRequestList.list){unbanRequest->
-
-                    IndivUnbanRequest(
-                        userId = unbanRequest.user_id,
-                        username =unbanRequest.user_name,
-                        status = unbanRequest.status,
-                        createdAt = unbanRequest.created_at.replace("T"," ").replace("Z"," UTC"),
-                        unbanMessage = unbanRequest.text,
-                        showUnbanRequestBottomModal={showUnbanRequestBottomModal()},
-                        getUserInformation={userId ->getUserInformation(userId)},
-                        updateClickedUnbanRequestId={updateClickedUnbanRequestId(unbanRequest.id)}
-                    )
-                }
-
-            }
-
-
-            //todo: now we can move this freely inside of the box
-            when(getUnbanRequestResponse){
-                is UnAuthorizedResponse.Loading ->{
-                    UnbanRequestLoading(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-
-                }
-                is UnAuthorizedResponse.Success ->{
-
-                }
-                is UnAuthorizedResponse.Failure ->{
-                    UnbanRequestFailedFailedResponse(
-                        modifier = Modifier.align(Alignment.Center),
-                        retryGetUnbanRequest={retryGetUnbanRequest()}
-                    )
-                }
-                is UnAuthorizedResponse.Auth401Failure ->{
-                    GetUnbanRequest401AuthError(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
-
-                }
-            }
-
-        }
-
-    }
-
-}
-@Composable
-fun UnbanRequestLoading(
-    modifier:Modifier
-){
-    Spacer(
-        modifier = Modifier
-            .fillMaxSize()
-            .disableClickAndRipple()
-            .background(Color.Black.copy(0.8f))
-    )
-    CircularProgressIndicator(
-        modifier = modifier
-    )
-
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun GetUnbanRequest401AuthError(
-    modifier:Modifier
-){
-    Spacer(
-        modifier = Modifier
-            .fillMaxSize()
-            .disableClickAndRipple()
-            .background(Color.Black.copy(0.8f))
-    )
-
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Icon(
-                painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-                modifier = Modifier.weight(1f)
-            )
-
-            Text(
-                "Request failed. You are missing the proper authentication. Please logout and log back in to be issued the proper authentication",
-                color = Color.White,
-                modifier = Modifier.weight(6f)
-            )
-
-            Icon(painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-                modifier = Modifier.weight(1f)
-            )
-
-        }
-
-}
-
-@Composable
-fun UnbanRequestFailedFailedResponse(
-    modifier: Modifier,
-    retryGetUnbanRequest:() ->Unit,
-
-){
-    Spacer(
-        modifier = Modifier
-            .fillMaxSize()
-            .disableClickAndRipple()
-            .background(Color.Black.copy(0.8f))
-    )
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Row(){
-            Icon(
-                painter = painterResource(id =R.drawable.error_outline_24),
-                contentDescription ="error has occurred",
-                tint = Color.Red
-            )
-            Text(
-                "Failed to make request ",
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-        }
-
-        Button(
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            onClick = {
-                retryGetUnbanRequest()
-            },
-            shape = RoundedCornerShape(4.dp)
-        ) {
-            Text("Retry request",color = MaterialTheme.colorScheme.onSecondary)
-        }
-
-    }
-}
-@Composable
-fun IndivUnbanRequest(
-    userId:String,
-    username: String,
-    status:String,
-    createdAt:String,
-    unbanMessage:String,
-    showUnbanRequestBottomModal: () -> Unit,
-    getUserInformation:(String)->Unit,
-    updateClickedUnbanRequestId:() ->Unit
-){
-    //todo: this is where I need to use the swipe to delete
-    val onPrimaryColor =MaterialTheme.colorScheme.onPrimary
-    var color by remember { mutableStateOf(onPrimaryColor) }
-    if(status == "approved"){
-        color = Color.Green
-    }
-    else if(status == "denied"){
-        color = Color.Red
-    }
-
-    Box(
-        modifier = Modifier
-
-    ){
-        Column(
-            modifier = Modifier
-                .clickable {
-                    getUserInformation(userId)
-                    showUnbanRequestBottomModal()
-                    updateClickedUnbanRequestId()
-                }
-                .background(MaterialTheme.colorScheme.primary)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                Row(verticalAlignment = Alignment.CenterVertically){
-                    Icon(painter = painterResource(id =R.drawable.person_outline_24), contentDescription = "outline of person to indicate username",modifier= Modifier.size(30.dp))
-                    Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = MaterialTheme.colorScheme.onPrimary)
-                }
-                Text(status, fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = color)
-
-            }
-
-            Spacer(modifier =Modifier.height(5.dp))
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Created at:  ")
-                    }
-                    withStyle(style = SpanStyle(fontSize =  MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append(createdAt)
-                    }
-                }
-            )
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Request message:  ")
-                    }
-                    withStyle(style = SpanStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onPrimary)) {
-                        append(unbanMessage)
-                    }
-                }
-            )
-
-            MessageDivider()
-
-        }
-    }
-
-
-}
-
-
-@Composable
-fun MessageDivider(){
-    Spacer(modifier =Modifier.height(5.dp))
-    Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-    Spacer(modifier =Modifier.height(5.dp))
-}
-@Composable
-fun ClickedIndivUnbanRequestModalLoading(){
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.primary)
-        .padding(horizontal = 5.dp)){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            //this needs to be a loading icon
-
-            Icon(
-                painter = painterResource(id =R.drawable.person_outline_24),
-                contentDescription = "person outline",
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(40.dp)
-            )
-            Column(
-                modifier = Modifier.padding(horizontal = 10.dp)
-            ){
-                CircularProgressIndicator(
-                    modifier = Modifier.size(25.dp)
-                )
-
-            }
-        }
-        Spacer(modifier =Modifier.height(5.dp))
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Account creation:  ")
-                    }
-
-                }
-            )
-            CircularProgressIndicator(
-                modifier = Modifier.size(25.dp)
-            )
-
-        }
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Description:  ")
-                    }
-
-                }
-            )
-            CircularProgressIndicator(
-                modifier = Modifier.size(25.dp)
-            )
-        }
-
-        Spacer(modifier =Modifier.height(5.dp))
-
-       // UnbanRequestSessionMessages(ClickedUsernameChatsWithDateSentImmutable(listOf()))
-
-    }
-}
-@Composable
-fun ClickedIndivUnbanRequestModalSuccess(
-    profileImageURL:String,
-    displayName:String,
-    description:String,
-    createdAt:String,
-    requestId:String,
-    approveUnbanRequest:(String)->Unit,
-    denyUnbanRequest:(String)->Unit,
-    resolveUnbanRequestResponse: UnAuthorizedResponse<Boolean>,
-
-    ){
-
-    Box() {
-
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(horizontal = 5.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                //this needs to be a loading icon
-                AsyncImage(
-                    model = profileImageURL,
-                    contentDescription = "icon for user",
-                    modifier = Modifier.size(40.dp)
-                )
-                Column(
-                    modifier = Modifier.padding(horizontal = 10.dp)
-                ) {
-
-                    Text(
-                        displayName,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Row() {
-                Text(
-                    buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
-                            )
-                        ) {
-                            append("Account creation:  ")
-                        }
-                        withStyle(
-                            style = SpanStyle(
-                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            append(createdAt)
-                        }
-                    }
-                )
-
-            }
-            Row() {
-                Text(
-                    buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
-                            )
-                        ) {
-                            append("Description:  ")
-                        }
-                        withStyle(
-                            style = SpanStyle(
-                                fontSize = 15.sp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            append(description)
-                        }
-                    }
-                )
-
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                    onClick = {
-                        denyUnbanRequest(requestId)
-                    },
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text("DENY", color = MaterialTheme.colorScheme.onSecondary)
-                }
-                Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                    onClick = {
-                        approveUnbanRequest(requestId)
-                    },
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text("APPROVE", color = MaterialTheme.colorScheme.onSecondary)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-       //     UnbanRequestSessionMessages(clickedUsernameChatsDateSentImmutable)
-
-        }
-        when(val response = resolveUnbanRequestResponse){
-            is UnAuthorizedResponse.Loading ->{
-                UnbanRequestLoading()
-            }
-            is UnAuthorizedResponse.Success ->{
-//
-            }
-            //todo: WE NEED TO ADD THAT 401 FAILURE
-            is UnAuthorizedResponse.Failure ->{
-                UnbanRequestErrorMessage()
-
-            }
-            is UnAuthorizedResponse.Auth401Failure ->{
-                UnbanRequest401ErrorMessage()
-            }
-        }
-
-
-    }
-
-}
-@Composable
-fun UnbanRequestLoading(){
-    Box {
-        Spacer(
-            modifier = Modifier
-                .fillMaxSize()
-                .disableClickAndRipple()
-                .background(Color.Black.copy(0.6f))
-        )
-        CircularProgressIndicator(
-            modifier = Modifier.align(Alignment.Center)
-        )
-    }
-
-}
-@Composable
-fun UnbanRequestErrorMessage(){
-    Box(){
-        Spacer(
-            modifier = Modifier
-                .fillMaxSize()
-                .disableClickAndRipple()
-                .background(Color.Black.copy(0.6f))
-        )
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ){
-            Icon(
-                painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-            )
-
-            Text(
-                "Request Failed!",
-                color = Color.White,
-                fontSize = 25.sp
-            )
-
-            Icon(painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-            )
-
-        }
-    }
-}
-
-@Composable
-fun UnbanRequest401ErrorMessage(
-    message:String ="Request failed. You are missing the proper authentication.Please logout and log back in to be issued the proper authentication"
-){
-    Box(){
-        Spacer(
-            modifier = Modifier
-                .fillMaxSize()
-                .disableClickAndRipple()
-                .background(Color.Black.copy(0.6f))
-        )
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Icon(
-                painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-                modifier = Modifier.weight(1f)
-            )
-
-            Text(
-                message,
-                color = Color.White,
-                modifier = Modifier.weight(6f)
-            )
-
-            Icon(painter =painterResource(R.drawable.error_outline_24),
-                contentDescription = "error",tint = Color.Red,
-                modifier = Modifier.weight(1f)
-            )
-
-        }
-    }
-
-
-}
-@Composable
-fun ClickedIndivUnbanRequestModalFailed(){
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.primary)
-        .padding(horizontal = 5.dp)){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            //this needs to be a loading icon
-
-            Icon(
-                painter = painterResource(id =R.drawable.person_outline_24),
-                contentDescription = "person outline",
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(40.dp)
-            )
-            Column(
-                modifier = Modifier.padding(horizontal = 10.dp)
-            ){
-                Icon(
-                    painter = painterResource(id =R.drawable.baseline_close_24),
-                    contentDescription ="request failed",
-                    modifier = Modifier.size(35.dp),
-                    tint = Color.Red
-                )
-
-            }
-        }
-        Spacer(modifier =Modifier.height(5.dp))
-
-        Row(){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineMedium.fontSize, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Account creation:  ")
-                    }
-
-                }
-            )
-            Icon(
-                painter = painterResource(id =R.drawable.baseline_close_24),
-                contentDescription ="request failed",
-                modifier = Modifier.size(35.dp),
-                tint = Color.Red
-            )
-
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.8f))) {
-                        append("Description:  ")
-                    }
-
-                }
-            )
-            Icon(
-                painter = painterResource(id =R.drawable.baseline_close_24),
-                contentDescription ="request failed",
-                modifier = Modifier.size(35.dp),
-                tint = Color.Red
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ){
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    // openWarnDialog()
-                },
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text("Retry request",color = MaterialTheme.colorScheme.onSecondary)
-            }
-        }
-
-        Spacer(modifier =Modifier.height(5.dp))
-      //  UnbanRequestSessionMessages(ClickedUsernameChatsWithDateSentImmutable(listOf()))
-
-
-
-    }
-
-}
-@Composable
-fun UnbanRequestSessionMessages(
-     clickedUsernameChatsDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable
-){
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(8.dp)
-            )
-    ) {
-        items(clickedUsernameChatsDateSentImmutable.clickedChats) {message->
-
-            androidx.compose.material.Text(
-
-                buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                        )
-                    ) {
-                        append("${message.dateSent} ")
-                    }
-
-
-                    withStyle(
-                        style = SpanStyle(
-                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        append(message.message)
-                    }
-
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp)
-            )
-
-
-        }
-    }
-}
-
-
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun UnBanRequestHeader(
-    setDragging:(Boolean)->Unit,
-    setDoubleClickAndDragFalse:() ->Unit,
-    doubleClickAndDrag:Boolean,
-    headerText:String,
-){
-    Log.d("ModActionsHeaderRecomp","RECOMP")
-    val hapticFeedback = LocalHapticFeedback.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondary)
-            .combinedClickable(
-                onDoubleClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    setDragging(true)
-                    setDoubleClickAndDragFalse()
-                },
-                onClick = {}
-            )
-            .padding(horizontal = 10.dp),
-        horizontalArrangement =Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-
-    ){
-        Text(
-            headerText,
-            color = MaterialTheme.colorScheme.onSecondary,
-            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-        )
-        if(doubleClickAndDrag){
-            Text(
-                "Double click and drag",
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-
-                )
-        }
-
-    }
-
-}
 
 
 
