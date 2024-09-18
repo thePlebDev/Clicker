@@ -1261,7 +1261,12 @@ fun UnbanRequests(
             is UnAuthorizedResponse.Loading ->{}
             is UnAuthorizedResponse.Success ->{
                 items(unbanRequestResponse.data){
-                    IndivUnbanItem()
+                    IndivUnbanItem(
+                        username = it.user_login,
+                        text = it.text,
+                        status = it.status,
+                        time = it.created_at
+                    )
 
                 }
                 if(unbanRequestResponse.data.isEmpty()){
@@ -1291,7 +1296,12 @@ fun UnbanRequests(
 }
 
 @Composable
-fun IndivUnbanItem(){
+fun IndivUnbanItem(
+    username:String,
+    text:String,
+    status:String,
+    time:String,
+){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
@@ -1315,11 +1325,11 @@ fun IndivUnbanItem(){
                         tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(35.dp) )
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    Text("meanermeeny", fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = Color.White)
+                    Text(username, fontSize = MaterialTheme.typography.headlineLarge.fontSize, color = Color.White)
                 }
-                Text("3hrs ago: Please, Please Please Unban me !!!", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = Color.White)
+                Text("$time: $text", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = Color.White)
             }
-            Text("Pending",modifier = Modifier.align(Alignment.TopEnd),color = Color.Yellow, fontSize = 13.sp)
+            Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color.Yellow, fontSize = 13.sp)
 
         }
     }
