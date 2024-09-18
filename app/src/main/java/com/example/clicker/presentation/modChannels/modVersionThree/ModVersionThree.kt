@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -58,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +81,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -114,6 +118,7 @@ import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.BottomModalStateImmutable
+import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
 import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
@@ -123,6 +128,7 @@ import com.example.clicker.presentation.streamInfo.ChannelInfoLazyColumn
 import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.UnAuthorizedResponse
+import kotlinx.coroutines.delay
 
 enum class Sections {
     ONE, TWO, THREE
@@ -157,14 +163,16 @@ fun ModViewComponentVersionThree(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    val editChannelInformationModalState= rememberModalBottomSheetState(
+ 
+
+    val unbanRequestModalState= rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
     val scope = rememberCoroutineScope()
-    val showChannelInformationBottomModal:()->Unit =remember(editChannelInformationModalState) { {
+    val showUnbanRequestBottomModal:()->Unit =remember(unbanRequestModalState) { {
         scope.launch {
-            editChannelInformationModalState.show()
+            unbanRequestModalState.show()
         }
     } }
     var clickedChatterModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(clickedChatterModalState)) }
@@ -307,11 +315,11 @@ fun ModViewComponentVersionThree(
     val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
         streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
     } }
-    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
-        scope.launch {
-            editChannelInformationModalState.hide()
-        }
-    } }
+//    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
+//        scope.launch {
+//            editChannelInformationModalState.hide()
+//        }
+//    } }
     val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
         streamInfoViewModel.changeBrandedContent(newValue)
     } }
@@ -333,36 +341,14 @@ fun ModViewComponentVersionThree(
 
 
     ModalBottomSheetLayout(
-        sheetState=editChannelInformationModalState,
+        sheetState=unbanRequestModalState,
         sheetContent = {
-            ChannelInfoLazyColumn(
-                changeStreamTitle = {newValue -> changeStreamTitle(newValue)},
-                streamTitle = streamInfoViewModel.channelTitle.value,
-                titleLength =streamInfoViewModel.maxLengthOfTitle.value,
-                tagList=streamInfoViewModel.tagList.toList(),
-                tagTitleLength=streamInfoViewModel.maxLengthOfTag.value,
-                tagTitle = streamInfoViewModel.tagTitle.value,
-                addTag = {newTag -> addTag(newTag)},
-                removeTag={oldTag -> removeTag(oldTag)},
-                changeTagTitle = {tagTitle ->changeTagTitle(tagTitle)},
-                contentClassificationCheckBox=streamInfoViewModel.contentClassification.value,
-                changeContentClassification = {newValue->changeContentClassification(newValue)},
-                selectedLanguage =streamInfoViewModel.selectedStreamLanguage.value,
-                changeSelectedLanguage = {newValue ->
-                    selectStreamValue(newValue)
-                },
-                closeChannelInfoModal={closeChannelInfoModal()},
-                checkedBrandedContent = streamInfoViewModel.brandedContent.value,
-                changeBrandedContent={newValue ->changeBrandedContent(newValue)},
-                categoryResponse = streamInfoViewModel.gameCategoryResponse.value,
-                refreshChannelInformation={refreshChannelInformation()},
-                removeCategory={removeCategory()},
-                categorySearchText = streamInfoViewModel.categorySearchText.value,
-                changeCategorySearchText = {newText -> changeCategorySearchText(newText)},
-                categorySearchResponse= streamInfoViewModel.categorySearchResponse.value,
-                addCategory={selectedGame ->addCategory(selectedGame)},
-                searchCategory={searchCategory()}
-            )
+           Column(modifier = Modifier
+               .fillMaxWidth().background(MaterialTheme.colorScheme.primary)
+               .padding(10.dp)){
+               NewContentBanner()
+               ClickedUserMessages()
+           }
         }
     ) {
 
@@ -699,7 +685,7 @@ fun ModViewComponentVersionThree(
                              sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                              lowPowerMode = streamViewModel.lowPowerModeActive.value,
                              channelName = streamViewModel.channelName.value ?: "",
-                             showChannelInformationModal = { showChannelInformationBottomModal() }
+                             showChannelInformationModal = {  }
 
                          )
 
@@ -725,7 +711,8 @@ fun ModViewComponentVersionThree(
                      },
                      autoModMessageListImmutableCollection = modViewViewModel.autoModMessageListImmutable.value,
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
-                     unbanRequestResponse = modViewViewModel.unbanRequestResponse.value
+                     unbanRequestResponse = modViewViewModel.unbanRequestResponse.value,
+                     showUnbanRequestModal={showUnbanRequestBottomModal()}
 
                      )
              }
@@ -810,7 +797,8 @@ fun ModVersionThree(
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
 
-    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>
+    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
+    showUnbanRequestModal:()->Unit,
 
 
 
@@ -958,7 +946,8 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
                             },
-                            unbanRequestResponse=unbanRequestResponse
+                            unbanRequestResponse=unbanRequestResponse,
+                            showUnbanRequestModal={showUnbanRequestModal()},
                         )
                     }
                 )
@@ -1062,7 +1051,8 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse()
                             },
-                            unbanRequestResponse=unbanRequestResponse
+                            unbanRequestResponse=unbanRequestResponse,
+                            showUnbanRequestModal={showUnbanRequestModal()},
                         )
                     }
 
@@ -1167,7 +1157,9 @@ fun ModVersionThree(
                             setDoubleClickAndDragFalse={
                                 setDoubleClickAndDragFalse() //todo: this is causing a recomp
                             },
-                            unbanRequestResponse=unbanRequestResponse
+                            unbanRequestResponse=unbanRequestResponse,
+                            showUnbanRequestModal={showUnbanRequestModal()},
+
                         )
                     }
 
@@ -1238,7 +1230,8 @@ fun UnbanRequests(
     setDragging: (Boolean) -> Unit,
     setDoubleClickAndDragFalse: () -> Unit,
     doubleClickAndDrag: Boolean,
-    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>
+    unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
+    showUnbanRequestModal:()->Unit,
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
 
@@ -1255,42 +1248,51 @@ fun UnbanRequests(
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
         }
+        item{
+            IndivUnbanItem(
+                username = "meanermeeny",
+                text = "Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!",
+                status = "pending",
+                time = "2024-09-17",
+                showUnbanRequestModal={showUnbanRequestModal()}
+            )
+        }
 
 
-        when(unbanRequestResponse){
-            is UnAuthorizedResponse.Loading ->{}
-            is UnAuthorizedResponse.Success ->{
-                items(unbanRequestResponse.data){
-                    IndivUnbanItem(
-                        username = it.user_login,
-                        text = it.text,
-                        status = it.status,
-                        time = it.created_at
-                    )
-
-                }
-                if(unbanRequestResponse.data.isEmpty()){
-                    item{
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
-                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
-
-                        }
-                    }
-
-                }
-            }
-            is UnAuthorizedResponse.Failure ->{}
-            is UnAuthorizedResponse.Auth401Failure->{
-
-            }
-
-            }
+//        when(unbanRequestResponse){
+//            is UnAuthorizedResponse.Loading ->{}
+//            is UnAuthorizedResponse.Success ->{
+//                items(unbanRequestResponse.data){
+//                    IndivUnbanItem(
+//                        username = it.user_login,
+//                        text = it.text,
+//                        status = it.status,
+//                        time = it.created_at
+//                    )
+//
+//                }
+//                if(unbanRequestResponse.data.isEmpty()){
+//                    item{
+//                        Column(modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(10.dp),
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ){
+//                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
+//                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+//                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+//
+//                        }
+//                    }
+//
+//                }
+//            }
+//            is UnAuthorizedResponse.Failure ->{}
+//            is UnAuthorizedResponse.Auth401Failure->{
+//
+//            }
+//
+//            }
         }
 
 }
@@ -1301,6 +1303,7 @@ fun IndivUnbanItem(
     text:String,
     status:String,
     time:String,
+    showUnbanRequestModal: () -> Unit
 ){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -1308,7 +1311,10 @@ fun IndivUnbanItem(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(5.dp).
+                clickable {
+                    showUnbanRequestModal()
+                }
     ) {
         Box(modifier = Modifier.padding(10.dp)){
             Column(){
@@ -1506,7 +1512,7 @@ fun ModViewDrawerContent(
                 ElevatedCardSwitchRow(
                     "Unban request",
                     checkIndexAvailability={checkIndexAvailability(4)},
-                    painter = painterResource(id = R.drawable.sparkle_awesome_24),
+                    painter = painterResource(id = R.drawable.autorenew_24),
                     checked = modActionsChecked,
                     changeChecked = {value ->
                         //changeModActionsChecked(value) todo: this needs to be its own switch function
@@ -3046,6 +3052,160 @@ fun ConnectionError(
                 Text("Re-connect", color = MaterialTheme.colorScheme.onSecondary)
             }
         }
+
+
+    }
+}
+
+@Composable
+fun ClickedUserMessages(
+
+//    clickedUsernameChatsWithDateSentImmutable: ClickedUsernameChatsWithDateSentImmutable,
+//    globalTwitchEmoteContentMap:EmoteListMap,
+//    channelTwitchEmoteContentMap:EmoteListMap,
+//    globalBetterTTVEmoteContentMap:EmoteListMap,
+//    channelBetterTTVEmoteContentMap:EmoteListMap,
+//    sharedBetterTTVEmoteContentMap:EmoteListMap,
+){
+    //val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(8.dp)
+            )
+    ) {
+        item{
+            Text("2024-09-18 Ok like wtf is it with all this BS",
+                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier =  Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp))
+        }
+        item{
+            Text("2024-09-18 This is actually like some bullshit. Dude like wtf are you doing",
+                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier =  Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp))
+        }
+        item{
+            Text("2024-09-18 ok Now I am mad like WTF are you doing dude. This is going to be some BS. YOur are like trash",
+                fontSize =MaterialTheme.typography.headlineSmall.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier =  Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp))
+        }
+//        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+//
+//            val annotatedString =buildAnnotatedString {
+//                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
+//                    append("${message.dateSent} ")
+//                }
+//
+//                for(item in message.messageTokenList){
+//                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
+//                        appendInlineContent("${item.messageValue}","${item.messageValue} ")
+//                    }
+//                }
+//
+//
+//            }
+//
+//           Text(
+//                text = annotatedString,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(5.dp),
+//             //   inlineContent = newMap
+//            )
+//
+//
+//
+//        }
+    }
+}
+
+@Composable
+fun NewContentBanner(
+//    clickedUsername: String,
+//    hideModal:()->Unit,
+){
+
+
+    Column() {
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+               Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = stringResource(R.string.user_icon_description),
+                    modifier = Modifier
+                        .clickable { }
+                        .size(35.dp),
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    "meanermeeny",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                )
+            }
+
+
+        Text("Account created at: 2024-09-18", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(MaterialTheme.colorScheme.secondary))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text("Subscriber: true", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text("Is Gifted: false", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text("Tier: 3", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text("Unban request message: Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ){
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    //  hideModal()
+                },
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                Text(
+                    "Approve",
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                onClick = {
+                    //  hideModal()
+                },
+                shape = RoundedCornerShape(5.dp)
+
+            ) {
+                Text(
+                    "Deny",
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+
+        }
+
+
 
 
     }
