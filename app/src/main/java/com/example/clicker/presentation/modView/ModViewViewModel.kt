@@ -622,7 +622,7 @@ class ModViewViewModel @Inject constructor(
         autoModMessageHoldSubscription:()->Unit,
         chatSettingsSubscription:()->Unit,
     ){
-//        moderatorActionSubscription()
+        moderatorActionSubscription()
 //        autoModMessageUpdateSubscription()
 //        autoModMessageHoldSubscription()
         chatSettingsSubscription()
