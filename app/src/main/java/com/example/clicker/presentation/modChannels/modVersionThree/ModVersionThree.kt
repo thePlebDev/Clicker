@@ -93,6 +93,7 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.UnbanRequestItem
+import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.ClickedUnbanRequestInfo
 
@@ -312,56 +313,86 @@ fun ModViewComponentVersionThree(
         streamInfoViewModel.changeContentClassification(newClassification)
     } }
 
-    val selectStreamValue:(String) -> Unit = remember(streamInfoViewModel) { { selectedLanguage->
-        streamInfoViewModel.changeSelectedStreamLanguage(selectedLanguage)
-    } }
-//    val closeChannelInfoModal:()->Unit =remember(editChannelInformationModalState) { {
-//        scope.launch {
-//            editChannelInformationModalState.hide()
-//        }
-//    } }
-    val changeBrandedContent:(Boolean) -> Unit = remember(streamInfoViewModel) { { newValue->
-        streamInfoViewModel.changeBrandedContent(newValue)
-    } }
-    val refreshChannelInformation:() -> Unit = remember(streamInfoViewModel) { {
-        streamInfoViewModel.refreshStreamInfo()
-    } }
-    val removeCategory:() -> Unit = remember(streamInfoViewModel) { {
-        streamInfoViewModel.removeCategory()
-    } }
-    val changeCategorySearchText:(String) -> Unit = remember(streamInfoViewModel) { { newText ->
-        streamInfoViewModel.changeCategorySearchText(newText)
-    } }
-    val addCategory:(Game) -> Unit = remember(streamInfoViewModel) { { selectedGame ->
-        streamInfoViewModel.addCategory(selectedGame)
-    } }
-    val searchCategory:() -> Unit = remember(streamInfoViewModel) { {
-        streamInfoViewModel.searchCategories()
-    } }
+
 
 
 
     ModalBottomSheetLayout(
         sheetState=unbanRequestModalState,
         sheetContent = {
-           Column(modifier = Modifier
-               .fillMaxWidth()
-               .background(MaterialTheme.colorScheme.primary)
-               .padding(10.dp)){
-               NewContentBanner(
-                   clickedUsername = modViewViewModel.clickedUnbanRequestUser.value.userName,
-                   clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
-                   clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value
-               )
-               ClickedUserMessages(
-                   globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
-                   channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
-                   globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
-                   channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
-                   sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
-                   clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
-               )
-           }
+            Box {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(10.dp)){
+                    NewContentBanner(
+                        clickedUsername = modViewViewModel.clickedUnbanRequestUser.value.userName,
+                        clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
+                        clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value,
+                        resolveUnbanRequest={id,status->
+                                modViewViewModel.resolveUnbanRequest(id,status)
+                        }
+                    )
+                    ClickedUserMessages(
+                        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+                        channelTwitchEmoteContentMap = chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+                        globalBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+                        channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+                        sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+                        clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                    )
+                }
+                val response = modViewViewModel.resolveUnbanRequest.value
+                when(response){
+                    is Response.Loading ->{
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .disableClickAndRipple()
+                                .background(
+                                    color = Color.Black.copy(alpha = .7f)
+                                )
+                        )
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is Response.Success ->{
+                        if(!response.data){
+                            Spacer(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .disableClickAndRipple()
+                                    .background(
+                                        color = Color.Black.copy(alpha = .7f)
+                                    )
+                            )
+                            Row(modifier = Modifier.align(Alignment.Center)){
+                                Icon(painter = painterResource(id =R.drawable.baseline_check_24), contentDescription = "successful request",tint = Color.Green)
+                               Text("Success",color = MaterialTheme.colorScheme.onPrimary)
+                                Icon(painter = painterResource(id =R.drawable.baseline_check_24), contentDescription = "successful request",tint = Color.Green)
+                            }
+                        }
+
+                    }
+                    is Response.Failure ->{
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .disableClickAndRipple()
+                                .background(
+                                    color = Color.Black.copy(alpha = .7f)
+                                )
+                        )
+                        Row(modifier = Modifier.align(Alignment.Center)){
+                            Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "Failed request",tint = Color.Red)
+                            Text("Failed",color = MaterialTheme.colorScheme.onPrimary)
+                            Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "Failed request",tint = Color.Red)
+                        }
+                    }
+
+                }
+
+            }
+
         }
     ) {
 
@@ -1283,53 +1314,46 @@ fun UnbanRequests(
                 updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
             )
         }
-        item{
-            IndivUnbanItem(
-                username = "tatersNMeats",
-                text = "Meatballs and taters",
-                status = "approved",
-                time = "2024-09-17",
-                showUnbanRequestModal={showUnbanRequestModal()},
-                userId="949335660",
-                updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
-            )
-        }
 
 
-//        when(unbanRequestResponse){
-//            is UnAuthorizedResponse.Loading ->{}
-//            is UnAuthorizedResponse.Success ->{
-//                items(unbanRequestResponse.data){
-//                    IndivUnbanItem(
-//                        username = it.user_login,
-//                        text = it.text,
-//                        status = it.status,
-//                        time = it.created_at
-//                    )
-//
-//                }
-//                if(unbanRequestResponse.data.isEmpty()){
-//                    item{
-//                        Column(modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(10.dp),
-//                            horizontalAlignment = Alignment.CenterHorizontally
-//                        ){
-//                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
-//                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-//                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
-//
-//                        }
-//                    }
-//
-//                }
-//            }
-//            is UnAuthorizedResponse.Failure ->{}
-//            is UnAuthorizedResponse.Auth401Failure->{
-//
-//            }
-//
-//            }
+
+        when(unbanRequestResponse){
+            is UnAuthorizedResponse.Loading ->{}
+            is UnAuthorizedResponse.Success ->{
+                items(unbanRequestResponse.data){
+                    IndivUnbanItem(
+                        username = it.user_login,
+                        text = it.text,
+                        status = it.status,
+                        time = it.created_at,
+                        userId=it.user_id,
+                        showUnbanRequestModal={showUnbanRequestModal()},
+                        updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+                    )
+
+                }
+                if(unbanRequestResponse.data.isEmpty()){
+                    item{
+                        Column(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
+                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
+
+                        }
+                    }
+
+                }
+            }
+            is UnAuthorizedResponse.Failure ->{}
+            is UnAuthorizedResponse.Auth401Failure->{
+
+            }
+
+            }
         }
 
 }
@@ -3155,7 +3179,8 @@ fun ClickedUserMessages(
 fun NewContentBanner(
     clickedUsername:String,
     clickedMessage:String,
-    clickedUserInfo:Response<ClickedUnbanRequestInfo>
+    clickedUserInfo:Response<ClickedUnbanRequestInfo>,
+    resolveUnbanRequest:(String, UnbanStatusFilter)->Unit
 ){
 
 
@@ -3212,7 +3237,7 @@ fun NewContentBanner(
             Button(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 onClick = {
-                    //  hideModal()
+                      resolveUnbanRequest("",UnbanStatusFilter.APPROVED)
                 },
                 shape = RoundedCornerShape(5.dp)
             ) {
