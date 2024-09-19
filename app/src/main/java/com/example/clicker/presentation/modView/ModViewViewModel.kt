@@ -239,8 +239,8 @@ class ModViewViewModel @Inject constructor(
      * END OF THE IMMUTABLE LIST
      * */
 
-    private val _resolveUnbanRequest: MutableState<UnAuthorizedResponse<Boolean>> = mutableStateOf(UnAuthorizedResponse.Success(false))
-    val resolveUnbanRequest: State<UnAuthorizedResponse<Boolean>> = _resolveUnbanRequest
+    private val _resolveUnbanRequest: MutableState<Response<Boolean>> = mutableStateOf(Response.Success(true))
+    val resolveUnbanRequest: State<Response<Boolean>> = _resolveUnbanRequest
 
 
     init{
@@ -278,7 +278,7 @@ class ModViewViewModel @Inject constructor(
         unbanRequestId:String,
         status:UnbanStatusFilter
     ) = viewModelScope.launch(ioDispatcher){
-        _resolveUnbanRequest.value = UnAuthorizedResponse.Loading
+        _resolveUnbanRequest.value = Response.Loading
 
 
         Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
@@ -286,58 +286,62 @@ class ModViewViewModel @Inject constructor(
         Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
         Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
         Log.d("resolveUnbanRequestViewModel","unbanRequestId ->$unbanRequestId")
+        delay(2000)
+        _resolveUnbanRequest.value = Response.Failure(Exception("failed"))
+        delay(1000)
+        _resolveUnbanRequest.value = Response.Success(true)
 
 
 
-
-        twitchModRepo.approveUnbanRequests(
-            authorizationToken=_requestIds.value.oAuthToken,
-            clientId =_requestIds.value.clientId ,
-            moderatorID = _requestIds.value.moderatorId,
-            broadcasterId = _requestIds.value.broadcasterId,
-            status = status,
-            unbanRequestId = unbanRequestId
-        ).collect{response ->
-            when(response){
-                is UnAuthorizedResponse.Loading ->{}
-                is UnAuthorizedResponse.Success ->{
-
-                    val index = unbanRequestItemList.indexOfFirst { it.id == unbanRequestId }
-                    val mutableListTesting = mutableListOf< UnbanRequestItem>()
-                    mutableListTesting.addAll(unbanRequestItemList.toList())
-
-                    if (index != -1) {
-                        // Update the item's status to "approved"
-                        if(status == UnbanStatusFilter.APPROVED){
-                            val updatedItem = mutableListTesting[index].copy(status = "approved")
-                            mutableListTesting[index] = updatedItem
-                            clearUnbanRequestItemList()
-                            addAllUnbanRequestItemList(mutableListTesting)
-                        }
-                        else if(status == UnbanStatusFilter.DENIED){
-                            val updatedItem = mutableListTesting[index].copy(status = "denied")
-                            mutableListTesting[index] = updatedItem
-                            clearUnbanRequestItemList()
-                            addAllUnbanRequestItemList(mutableListTesting)
-
-                            }
-
-                    }
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
-                }
-                is UnAuthorizedResponse.Failure ->{
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Failure(Exception("FAILED AGAIN"))
-                    delay(1000)
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
-                }
-                is UnAuthorizedResponse.Auth401Failure ->{
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED AGAIN"))
-                    delay(3000)
-                    _resolveUnbanRequest.value = UnAuthorizedResponse.Success(true)
-                }
-            }
-
-        }
+//
+//        twitchModRepo.approveUnbanRequests(
+//            authorizationToken=_requestIds.value.oAuthToken,
+//            clientId =_requestIds.value.clientId ,
+//            moderatorID = _requestIds.value.moderatorId,
+//            broadcasterId = _requestIds.value.broadcasterId,
+//            status = status,
+//            unbanRequestId = unbanRequestId
+//        ).collect{response ->
+//            when(response){
+//                is UnAuthorizedResponse.Loading ->{}
+//                is UnAuthorizedResponse.Success ->{
+//
+//                    val index = unbanRequestItemList.indexOfFirst { it.id == unbanRequestId }
+//                    val mutableListTesting = mutableListOf< UnbanRequestItem>()
+//                    mutableListTesting.addAll(unbanRequestItemList.toList())
+//
+//                    if (index != -1) {
+//                        // Update the item's status to "approved"
+//                        if(status == UnbanStatusFilter.APPROVED){
+//                            val updatedItem = mutableListTesting[index].copy(status = "approved")
+//                            mutableListTesting[index] = updatedItem
+//                            clearUnbanRequestItemList()
+//                            addAllUnbanRequestItemList(mutableListTesting)
+//                        }
+//                        else if(status == UnbanStatusFilter.DENIED){
+//                            val updatedItem = mutableListTesting[index].copy(status = "denied")
+//                            mutableListTesting[index] = updatedItem
+//                            clearUnbanRequestItemList()
+//                            addAllUnbanRequestItemList(mutableListTesting)
+//
+//                            }
+//
+//                    }
+//                    _resolveUnbanRequest.value = Response.Success(true)
+//                }
+//                is UnAuthorizedResponse.Failure ->{
+//                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
+//                    delay(1000)
+//                    _resolveUnbanRequest.value = Response.Success(true)
+//                }
+//                is UnAuthorizedResponse.Auth401Failure ->{
+//                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
+//                    delay(3000)
+//                    _resolveUnbanRequest.value = Response.Success(true)
+//                }
+//            }
+//
+//        }
 
 
 
