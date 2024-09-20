@@ -1,28 +1,16 @@
 package com.example.clicker
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.verify.domain.DomainVerificationManager
-import android.content.pm.verify.domain.DomainVerificationUserState
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
-import android.os.Build
+import android.opengl.GLSurfaceView
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.services.NetworkMonitorService
+import com.example.clicker.farmingGame.MyGLSurfaceView
+import com.example.clicker.nativeLibraryClasses.NativeLoading
+
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -30,9 +18,16 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
 
+    private lateinit var gLView: GLSurfaceView
+
+
+
+
+
 
     override fun onResume() {
         super.onResume()
+
 
     }
 
@@ -46,12 +41,16 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
 
         supportActionBar!!.hide()
+        val testing = NativeLoading()
+        testing.init()
 
         val bitmap = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888)
         bitmap.eraseColor(Color.BLACK)
         val bitmapDrawable = BitmapDrawable(resources, bitmap)
         window.setBackgroundDrawable(bitmapDrawable)
-        setContentView(R.layout.activity_main)
+        //setContentView(R.layout.activity_main) todo: this is the main feature function
+        gLView = MyGLSurfaceView(this)
+        setContentView(gLView)
 
         //reportFullyDrawn()
 
