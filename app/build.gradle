@@ -32,6 +32,12 @@ android {
         unitTests.returnDefaultValues = true
         
     }
+    //todo: this is just testing
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
 
 
     ext.initScriptRun = false
@@ -67,6 +73,13 @@ android {
         targetSdk 34
         versionCode 30
         versionName "1.29"
+
+        externalNativeBuild {
+            cmake {
+                // Available arguments are inside ${SDK}/cmake/.../android.toolchain.cmake file
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
