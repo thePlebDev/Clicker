@@ -1,10 +1,17 @@
 package com.example.clicker.nativeLibraryClasses
 
-class NativeLoading {
+object NativeLoading {
 
     init {
         System.loadLibrary("gl_code");
     }
 
-    external fun init()
+
+    /**
+     * @param width the current view width
+     * @param height the current view height
+     */
+    external fun init(width: Int, height: Int)
+    external fun step()
 }
+

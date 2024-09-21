@@ -74,12 +74,12 @@ android {
         versionCode 30
         versionName "1.29"
 
-        externalNativeBuild {
-            cmake {
-                // Available arguments are inside ${SDK}/cmake/.../android.toolchain.cmake file
-                arguments '-DANDROID_STL=c++_static'
-            }
-        }
+//        externalNativeBuild {
+//            cmake {
+//                // Available arguments are inside ${SDK}/cmake/.../android.toolchain.cmake file
+//                arguments '-DANDROID_STL=c++_static'
+//            }
+//        }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
