@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.stream
 
+import android.content.Context
 import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
@@ -18,9 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.clicker.farmingGame.GL2JNIView
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.presentation.modView.ListTitleValue
@@ -291,6 +297,7 @@ fun StreamView(
         streamInfoViewModel.searchCategories()
     } }
 
+    val context = LocalContext.current
 
 
 
@@ -363,6 +370,7 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetState = outerBottomModalState,
                 sheetContent ={
+
                     ChatSettingsColumn(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
                         changeAdvancedChatSettings = {newValue -> updateAdvancedChatSettings(newValue) },
@@ -624,8 +632,16 @@ fun TimeoutBanDialogs(
     }
 }
 
-
-
+//this is how I can use the C++ code with the Jetpack compose code
+@Composable
+fun GLSurfaceViewComposable(context: Context) {
+    AndroidView(
+        factory = {
+            GL2JNIView(context)
+        },
+        modifier = Modifier.fillMaxSize()
+    )
+}
 
 
 
