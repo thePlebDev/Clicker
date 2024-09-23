@@ -370,7 +370,8 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetState = outerBottomModalState,
                 sheetContent ={
-
+                  //  GLSurfaceViewComposable(context)
+//
                     ChatSettingsColumn(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
                         changeAdvancedChatSettings = {newValue -> updateAdvancedChatSettings(newValue) },

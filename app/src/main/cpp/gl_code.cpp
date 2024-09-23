@@ -34,6 +34,8 @@ auto gVertexShader =
         "  gl_Position = vPosition;\n"
         "}\n";
 
+
+//This is the source code for your fragment shader.
 auto gFragmentShader =
         "precision mediump float;\n"
         "void main() {\n"
@@ -47,10 +49,14 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
         glCompileShader(shader);
         GLint compiled = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+
+        //on a successful shader, the below conditional does not get ran
         if (!compiled) {
             GLint infoLen = 0;
+            //I WANT TO LOG THIS
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
             if (infoLen) {
+
                 char* buf = (char*)malloc(infoLen);
                 if (buf) {
                     glGetShaderInfoLog(shader, infoLen, NULL, buf);
@@ -61,16 +67,17 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
                 shader = 0;
             }
         }
+        LOGI("compiled data is --> %d,",  compiled);
     }
     return shader;
 }
 
 GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
+    //load up each shader and validate each of them
     GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
     if (!vertexShader) {
         return 0;
     }
-
     GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
     if (!pixelShader) {
         return 0;
@@ -78,13 +85,19 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 
     GLuint program = glCreateProgram();
     if (program) {
+        //attach the shaders to the program object. Which is how we specify what objects are to be linked together
+        //ie. attaching these shaders to the program object, tells openGL that these shaders are to be linked together
+        // when linking operations occur on the program object
         glAttachShader(program, vertexShader);
         checkGlError("glAttachShader");
         glAttachShader(program, pixelShader);
         checkGlError("glAttachShader");
+
+
         glLinkProgram(program);
         GLint linkStatus = GL_FALSE;
         glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+
         if (linkStatus != GL_TRUE) {
             GLint bufLength = 0;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
@@ -99,7 +112,9 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
             glDeleteProgram(program);
             program = 0;
         }
+        LOGI("program completed --> %d,",  program);
     }
+
     return program;
 }
 
@@ -128,14 +143,21 @@ bool setupGraphics(int w, int h) {
 }
 
 const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
+//this is a full screen triangle
+//const GLfloat triangleVertices[] = {
+//        0.0f, 1.0f,
+//        -1.0f, -1.0f,
+//        1.0f, -1.0f
+//};
 
+//responsible for drawing and the functions that link to the Kotlin layer.
 void renderFrame() {
     static float grey;
     grey += 0.01f;
     if (grey > 1.0f) {
         grey = 0.0f;
     }
-    glClearColor(grey, grey, grey, 1.0f);
+    //glClearColor(grey, grey, grey, 1.0f); //this is what causes the background to flash
     checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
@@ -152,14 +174,7 @@ void renderFrame() {
     checkGlError("glDrawArrays");
 }
 
-extern "C" {
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv* env,
-                                                              jobject obj,
-                                                              jint width,
-                                                              jint height);
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_step(JNIEnv* env,
-                                                              jobject obj);
-};
+
 
 
 

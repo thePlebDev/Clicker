@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
@@ -203,6 +204,7 @@ fun HorizontalChat(
     val searchCategory:() -> Unit = remember(streamInfoViewModel) { {
         streamInfoViewModel.searchCategories()
     } }
+    val context = LocalContext.current
 
 
     //todo: Also need to refactor the dialogs
@@ -244,6 +246,7 @@ fun HorizontalChat(
         ModalBottomSheetLayout(
             sheetState = outerBottomModalState,
             sheetContent = {
+             //   GLSurfaceViewComposable(context)
                 ChatSettingsColumn(
                     advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
                     changeAdvancedChatSettings = { newValue ->
