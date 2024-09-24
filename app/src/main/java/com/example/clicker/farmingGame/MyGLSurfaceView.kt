@@ -44,26 +44,24 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
     //todo: This is the renderer I am looking for
     private class Renderer : GLSurfaceView.Renderer {
         override fun onDrawFrame(gl: GL10) {
+            // The system calls this method on each redraw of the GLSurfaceView
+            //this is called constantly
+            // I think it gets called at whatever the device's frame rate is
+            Log.d("onDrawRenderer","DRAWINGING")
             NativeLoading.step()
         }
 
         override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
+            // The system calls this method when the GLSurfaceView geometry changes,
+            // including changes in size of the GLSurfaceView or orientation of the device screen.
             NativeLoading.init(width, height)
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+            // The system calls this method once, when creating the GLSurfaceView.
             // Do nothing.
         }
     }
 
-    companion object {
-        private const val TAG = "GL2JNIView"
-        private const val DEBUG = false
-        private fun checkEglError(prompt: String, egl: EGL10) {
-            var error: Int
-            while (egl.eglGetError().also { error = it } != EGL10.EGL_SUCCESS) {
-                Log.e(TAG, String.format("%s: EGL error: 0x%x", prompt, error))
-            }
-        }
-    }
+
 }

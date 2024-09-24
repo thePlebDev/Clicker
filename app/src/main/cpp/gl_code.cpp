@@ -22,11 +22,11 @@ static void printGLString(const char* name, GLenum s) {
     LOGI("GL %s = %s\n", name, v);
 }
 
-static void checkGlError(const char* op) {
-    for (GLint error = glGetError(); error; error = glGetError()) {
-        LOGI("after %s() glError (0x%x)\n", op, error);
-    }
-}
+//static void checkGlError(const char* op) {
+//    for (GLint error = glGetError(); error; error = glGetError()) {
+//        LOGI("after %s() glError (0x%x)\n", op, error);
+//    }
+//}
 
 auto gVertexShader =
         "attribute vec4 vPosition;\n"
@@ -89,9 +89,9 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
         //ie. attaching these shaders to the program object, tells openGL that these shaders are to be linked together
         // when linking operations occur on the program object
         glAttachShader(program, vertexShader);
-        checkGlError("glAttachShader");
+//        checkGlError("glAttachShader");
         glAttachShader(program, pixelShader);
-        checkGlError("glAttachShader");
+//        checkGlError("glAttachShader");
 
 
         glLinkProgram(program);
@@ -119,7 +119,7 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 }
 
 GLuint gProgram;
-GLuint gvPositionHandle;
+GLuint gvPositionHandle;// hold the location of where the GPU will be expecting the vertex data that is required for our shader
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -134,15 +134,31 @@ bool setupGraphics(int w, int h) {
         return false;
     }
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-    checkGlError("glGetAttribLocation");
+//    checkGlError("glGetAttribLocation");
     LOGI("glGetAttribLocation(\"vPosition\") = %d\n", gvPositionHandle);
 
     glViewport(0, 0, w, h);
-    checkGlError("glViewport");
+//    checkGlError("glViewport");
     return true;
 }
-
-const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
+//defines the verticies for the triangle that we are trying to draw
+//each of these recongize a point on an x,y grid
+//(-1.0f, 1.0f) ------- 0f -------- (1.0f, 1.0f)
+//      |                |                |
+//      |                |                |
+//      |       (0.0f, 0.5f) *            |
+//      |                / \              |
+//      |               /   \             |
+//      |              /     \            |
+//      |    (-0.5f, -0.5f) *---* (0.5f, -0.5f)
+//      |                |                |
+//(-1.0f, -1.0f) ------- 0f -------- (1.0f, -1.0f)
+//so the values seem to work as just a normal (x,y) plain. where we first define the x value and the the y value
+const GLfloat gTriangleVertices[] = {
+        0.0f, 0.5f,
+        -0.5f, -0.5f,
+        0.5f, -0.5f
+};
 //this is a full screen triangle
 //const GLfloat triangleVertices[] = {
 //        0.0f, 1.0f,
@@ -157,21 +173,27 @@ void renderFrame() {
     if (grey > 1.0f) {
         grey = 0.0f;
     }
-    //glClearColor(grey, grey, grey, 1.0f); //this is what causes the background to flash
-    checkGlError("glClearColor");
+   // glClearColor(grey, grey, grey, 1.0f); //this is what causes the background to flash
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
+
 
     glUseProgram(gProgram);
-    checkGlError("glUseProgram");
 
-    glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0,
-                          gTriangleVertices);
-    checkGlError("glVertexAttribPointer");
+ // We then need to link the attribute we mentioned in the shader to the actual triangle data defined above
+    glVertexAttribPointer(
+            gvPositionHandle,
+            2, //each vertex is going to have 2 elements to
+            GL_FLOAT, //Specifies the data type of each component in the array
+            GL_FALSE,
+            0, //no stride between our verticies
+            gTriangleVertices //pointer to the actual triangle vertices.
+            );
+
     glEnableVertexAttribArray(gvPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
+
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    checkGlError("glDrawArrays");
+
 }
 
 
