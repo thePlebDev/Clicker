@@ -13,14 +13,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "my_class.h"
+using namespace N;
+
 #define LOG_TAG "libgl2jni"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-static void printGLString(const char* name, GLenum s) {
-    const char* v = (const char*)glGetString(s);
-    LOGI("GL %s = %s\n", name, v);
-}
+//static void printGLString(const char* name, GLenum s) {
+//    const char* v = (const char*)glGetString(s);
+//    LOGI("GL %s = %s\n", name, v);
+//}
 
 //static void checkGlError(const char* op) {
 //    for (GLint error = glGetError(); error; error = glGetError()) {
@@ -28,21 +31,21 @@ static void printGLString(const char* name, GLenum s) {
 //    }
 //}
 
-auto gVertexShader =
-        "attribute vec4 vPosition;\n"
-        "void main() {\n"
-        "  gl_Position = vPosition;\n"
-        "}\n";
-
-
-//This is the source code for your fragment shader.
-auto gFragmentShader =
-        "precision mediump float;\n"
-        "void main() {\n"
-        "  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
-        "}\n";
-
+/**
+ * loadShader() is a function meant to create and compile a shader.
+ *
+ * @param shaderType Specifies the type of shader to be created.
+ * Can be GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
+ *
+ * @param pSource A C-string containing the source code of the shader.
+ * Can be gVertexShader or gFragmentShader
+ *
+ * @return The shader object handle (GLuint) if the shader is successfully compiled,
+ *         or 0 if compilation fails.
+ */
 GLuint loadShader(GLenum shaderType, const char* pSource) {
+    my_class mc;
+    mc.do_something();
     GLuint shader = glCreateShader(shaderType);
     if (shader) {
         glShaderSource(shader, 1, &pSource, NULL);
@@ -118,27 +121,35 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     return program;
 }
 
-GLuint gProgram;
+auto gVertexShader =
+        "attribute vec4 vPosition;\n"
+        "void main() {\n"
+        "  gl_Position = vPosition;\n"
+        "}\n";
+
+
+//This is the source code for your fragment shader.
+auto gFragmentShader =
+        "precision mediump float;\n"
+        "void main() {\n"
+        "  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
+        "}\n";
+
+GLuint gProgram; // the shader program
 GLuint gvPositionHandle;// hold the location of where the GPU will be expecting the vertex data that is required for our shader
 
 bool setupGraphics(int w, int h) {
-    printGLString("Version", GL_VERSION);
-    printGLString("Vendor", GL_VENDOR);
-    printGLString("Renderer", GL_RENDERER);
-    printGLString("Extensions", GL_EXTENSIONS);
 
-    LOGI("setupGraphics(%d, %d)", w, h);
     gProgram = createProgram(gVertexShader, gFragmentShader);
+
+
     if (!gProgram) {
         LOGE("Could not create program.");
         return false;
     }
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-//    checkGlError("glGetAttribLocation");
-    LOGI("glGetAttribLocation(\"vPosition\") = %d\n", gvPositionHandle);
 
     glViewport(0, 0, w, h);
-//    checkGlError("glViewport");
     return true;
 }
 //defines the verticies for the triangle that we are trying to draw
@@ -150,7 +161,7 @@ bool setupGraphics(int w, int h) {
 //      |                / \              |
 //      |               /   \             |
 //      |              /     \            |
-//      |    (-0.5f, -0.5f) *---* (0.5f, -0.5f)
+//      |(-0.5f, -0.5f) *---* (0.5f, -0.5f)
 //      |                |                |
 //(-1.0f, -1.0f) ------- 0f -------- (1.0f, -1.0f)
 //so the values seem to work as just a normal (x,y) plain. where we first define the x value and the the y value
@@ -178,12 +189,13 @@ void renderFrame() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 
-    glUseProgram(gProgram);
+    glUseProgram(gProgram);//We select which program we want to use
 
  // We then need to link the attribute we mentioned in the shader to the actual triangle data defined above
+ //so we need to link the gvPositionHandle and the gTriangleVertices data
     glVertexAttribPointer(
             gvPositionHandle,
-            2, //each vertex is going to have 2 elements to
+            2, //each vertex is going to have 2 elements to. these are the X,Y positions
             GL_FLOAT, //Specifies the data type of each component in the array
             GL_FALSE,
             0, //no stride between our verticies
