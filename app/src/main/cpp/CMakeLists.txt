@@ -17,6 +17,9 @@ cmake_minimum_required(VERSION 3.4.1)
 add_library(gl_code SHARED
         gl_code.cpp)
 
+add_library(my_class SHARED
+        my_class.cpp)
+
 # add lib dependencies
 target_link_libraries(gl_code
         android
