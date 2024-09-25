@@ -4,6 +4,7 @@ object NativeLoading {
 
     init {
         System.loadLibrary("gl_code");
+        System.loadLibrary("my_class");
     }
 
 

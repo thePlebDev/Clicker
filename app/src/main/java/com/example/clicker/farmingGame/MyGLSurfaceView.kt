@@ -47,7 +47,7 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
             // The system calls this method on each redraw of the GLSurfaceView
             //this is called constantly
             // I think it gets called at whatever the device's frame rate is
-            Log.d("onDrawRenderer","DRAWINGING")
+           // Log.d("onDrawRenderer","DRAWINGING")
             NativeLoading.step()
         }
 
