@@ -14,7 +14,8 @@
 #include <stdlib.h>
 
 #include "my_class.h"
-using namespace N;
+//using namespace N;
+
 
 #define LOG_TAG "libgl2jni"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -44,8 +45,9 @@ using namespace N;
  *         or 0 if compilation fails.
  */
 GLuint loadShader(GLenum shaderType, const char* pSource) {
-    my_class mc;
-    mc.do_something();
+
+    do_something();
+
     GLuint shader = glCreateShader(shaderType);
     if (shader) {
         glShaderSource(shader, 1, &pSource, NULL);

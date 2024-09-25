@@ -22,6 +22,15 @@ add_library(my_class SHARED
 
 # add lib dependencies
 target_link_libraries(gl_code
+        my_class  # Link my_class with gl_code
+        android
+        log
+        EGL
+        GLESv2)
+
+include_directories(my_class.h)
+# Link libraries for my_class
+target_link_libraries(my_class
         android
         log
         EGL
