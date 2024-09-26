@@ -20,6 +20,9 @@ add_library(gl_code SHARED
 add_library(my_class SHARED
         my_class.cpp)
 
+add_library(square_code SHARED
+        square_code.cpp)
+
 # add lib dependencies
 target_link_libraries(gl_code
         my_class  # Link my_class with gl_code
@@ -31,6 +34,12 @@ target_link_libraries(gl_code
 include_directories(my_class.h)
 # Link libraries for my_class
 target_link_libraries(my_class
+        android
+        log
+        EGL
+        GLESv2)
+
+target_link_libraries(square_code
         android
         log
         EGL
