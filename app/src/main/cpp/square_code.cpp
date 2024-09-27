@@ -11,7 +11,7 @@
 // Created by Tristan on 2024-09-25.
 //
 // 1) CREATE A SINGLE RED TRIANGLE                       (DONE)
-// 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (PENDING)
+// 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (DONE)
 
 
 
@@ -132,10 +132,16 @@ bool setupGraphics(int w, int h) {
     return true;
 }
 
-const GLfloat gTriangleVertices[] = {
-        0.0f, 0.5f,
-        -0.5f, -0.5f,
-        0.5f, -0.5f
+const GLfloat gSquareVertices[] = {
+        // Triangle one (top-left half of the square)
+        -0.5f, 0.25f,   // Top-left corner
+        -0.5f, -0.25f,  // Bottom-left corner
+        0.5f, -0.25f,   // Bottom-right corner
+
+        // Triangle two (bottom-right half of the square)
+        0.5f, 0.25f,    // Top-right corner
+        -0.5f, 0.25f,   // Top-left corner
+        0.5f, -0.25f    // Bottom-right corner
 };
 
 void renderFrame() {
@@ -154,12 +160,12 @@ void renderFrame() {
             GL_FLOAT, //Specifies the data type of each component in the array
             GL_FALSE,
             0, //no stride between our verticies
-            gTriangleVertices //pointer to the actual triangle vertices.
+            gSquareVertices //pointer to the actual triangle vertices.
     );
 
     glEnableVertexAttribArray(gvPositionHandle);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
 }
 
