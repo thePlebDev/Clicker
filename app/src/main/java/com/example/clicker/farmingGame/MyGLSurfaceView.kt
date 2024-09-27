@@ -5,6 +5,7 @@ import android.graphics.PixelFormat
 import android.opengl.GLSurfaceView
 import android.util.Log
 import com.example.clicker.nativeLibraryClasses.NativeLoading
+import com.example.clicker.nativeLibraryClasses.NativeSquareLoading
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.opengles.GL10
 
@@ -48,13 +49,15 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
             //this is called constantly
             // I think it gets called at whatever the device's frame rate is
            // Log.d("onDrawRenderer","DRAWINGING")
-            NativeLoading.step()
+            //NativeLoading.step()
+            NativeSquareLoading.step()
         }
 
         override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
             // The system calls this method when the GLSurfaceView geometry changes,
             // including changes in size of the GLSurfaceView or orientation of the device screen.
-            NativeLoading.init(width, height)
+           // NativeLoading.init(width, height)
+            NativeSquareLoading.init(width, height)
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
