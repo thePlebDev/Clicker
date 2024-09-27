@@ -111,8 +111,9 @@ auto gVertexShader =
 //This is the source code for your fragment shader.
 auto gFragmentShader =
         "precision mediump float;\n"
+        "uniform vec4 vColor;\n"
         "void main() {\n"
-        "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
+        "  gl_FragColor = vColor;\n"
         "}\n";
 
 
@@ -150,7 +151,12 @@ void renderFrame() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 
+
     glUseProgram(gProgram);//We select which program we want to use
+
+    // Get the location of the color uniform
+  //  GLuint colorUniform = glGetUniformLocation(gProgram, "vColor");
+    GLint colorUniform = glGetUniformLocation(gProgram, "vColor");  // Change to GLint
 
     // We then need to link the attribute we mentioned in the shader to the actual triangle data defined above
     //so we need to link the gvPositionHandle and the gTriangleVertices data
@@ -165,7 +171,12 @@ void renderFrame() {
 
     glEnableVertexAttribArray(gvPositionHandle);
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glUniform4f(colorUniform, 0.0f, 0.0f, 1.0f, 1.0f);  // Set color to blue (RGBA)
+    glDrawArrays(GL_TRIANGLES, 0, 3);  // First triangle (vertices 0, 1, 2)
+
+    glUniform4f(colorUniform, 1.0f, 0.0f, 0.0f, 1.0f);  // Set color to red (RGBA)
+    glDrawArrays(GL_TRIANGLES, 3, 3);  // Second triangle (vertices 3, 4, 5)
+
 
 }
 
