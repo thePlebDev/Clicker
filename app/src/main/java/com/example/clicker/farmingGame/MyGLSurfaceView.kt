@@ -70,7 +70,8 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
 
             MotionEvent.ACTION_UP ->{
                 //this runs when someone clicks and then releases
-                Log.d("TestingLogOnSurfaceView","ACTION_UP")
+                NativeSquareLoading.click()
+                requestRender()
             }
         }
 
