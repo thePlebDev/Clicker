@@ -7,9 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//
-// Created by Tristan on 2024-09-25.
-//
+
 // 1) CREATE A SINGLE RED TRIANGLE                       (DONE)
 // 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (DONE)
 
@@ -133,17 +131,56 @@ bool setupGraphics(int w, int h) {
 }
 
 const GLfloat gSquareVertices[] = {
-        // Triangle one (top-left half of the square)
-        -0.5f, 0.25f,   // Top-left corner
-        -0.5f, -0.25f,  // Bottom-left corner
-        0.5f, -0.25f,   // Bottom-right corner
+        // Square 1: Top-left corner
+        // Triangle one (top-left half)
+        -0.75f, 0.375f,   // Top-left
+        -0.75f, 0.125f,   // Bottom-left
+        -0.25f, 0.125f,   // Bottom-right
+        // Triangle two (bottom-right half)
+        -0.25f, 0.375f,   // Top-right
+        -0.75f, 0.375f,   // Top-left
+        -0.25f, 0.125f,   // Bottom-right
 
-        // Triangle two (bottom-right half of the square)
-        0.5f, 0.25f,    // Top-right corner
-        -0.5f, 0.25f,   // Top-left corner
-        0.5f, -0.25f    // Bottom-right corner
+        // Square 2: Top-right corner
+        // Triangle one (top-left half)
+        0.25f, 0.375f,    // Top-left
+        0.25f, 0.125f,    // Bottom-left
+        0.75f, 0.125f,    // Bottom-right
+        // Triangle two (bottom-right half)
+        0.75f, 0.375f,    // Top-right
+        0.25f, 0.375f,    // Top-left
+        0.75f, 0.125f,    // Bottom-right
+
+        // Square 3: Bottom-left corner
+        // Triangle one (top-left half)
+        -0.75f, -0.125f,  // Top-left
+        -0.75f, -0.375f,  // Bottom-left
+        -0.25f, -0.375f,  // Bottom-right
+        // Triangle two (bottom-right half)
+        -0.25f, -0.125f,  // Top-right
+        -0.75f, -0.125f,  // Top-left
+        -0.25f, -0.375f,  // Bottom-right
+
+        // Square 4: Bottom-right corner
+        // Triangle one (top-left half)
+        0.25f, -0.125f,   // Top-left
+        0.25f, -0.375f,   // Bottom-left
+        0.75f, -0.375f,   // Bottom-right
+        // Triangle two (bottom-right half)
+        0.75f, -0.125f,   // Top-right
+        0.25f, -0.125f,   // Top-left
+        0.75f, -0.375f,   // Bottom-right
+
+        // Square 5: Middle
+        // Triangle one (top-left half)
+        -0.25f, 0.125f,   // Top-left
+        -0.25f, -0.125f,  // Bottom-left
+        0.25f, -0.125f,   // Bottom-right
+        // Triangle two (bottom-right half)
+        0.25f, 0.125f,    // Top-right
+        -0.25f, 0.125f,   // Top-left
+        0.25f, -0.125f    // Bottom-right
 };
-
 void renderFrame() {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -170,8 +207,8 @@ void renderFrame() {
 
     glEnableVertexAttribArray(gvPositionHandle);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);  // First triangle (vertices 0, 1, 2)
-    glDrawArrays(GL_TRIANGLES, 3, 3);  // Second triangle (vertices 3, 4, 5)
+    glDrawArrays(GL_TRIANGLES, 0, 30);  // First triangle (vertices 0, 1, 2)
+//    glDrawArrays(GL_TRIANGLES, 3, 3);  // Second triangle (vertices 3, 4, 5)
 
 
 }

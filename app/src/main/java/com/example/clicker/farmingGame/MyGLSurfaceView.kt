@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.opengl.GLSurfaceView
 import android.util.Log
+import android.view.MotionEvent
 import com.example.clicker.nativeLibraryClasses.NativeLoading
 import com.example.clicker.nativeLibraryClasses.NativeSquareLoading
 import javax.microedition.khronos.egl.EGL10
@@ -41,16 +42,12 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
         override fun onDrawFrame(gl: GL10) {
             // The system calls this method on each redraw of the GLSurfaceView
             //this is called constantly
-            // I think it gets called at whatever the device's frame rate is
-           // Log.d("onDrawRenderer","DRAWINGING")
-            //NativeLoading.step()
             NativeSquareLoading.step()
         }
 
         override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
             // The system calls this method when the GLSurfaceView geometry changes,
             // including changes in size of the GLSurfaceView or orientation of the device screen.
-           // NativeLoading.init(width, height)
             NativeSquareLoading.init(width, height)
         }
 
@@ -58,6 +55,27 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
             // The system calls this method once, when creating the GLSurfaceView.
             // Do nothing.
         }
+    }
+
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        // MotionEvent reports input details from the touch screen
+        // and other input controls. In this case, you are only
+        // interested in events where the touch position changed.
+
+        when (e.action) {
+            MotionEvent.ACTION_MOVE -> {
+
+                requestRender()
+            }
+
+            MotionEvent.ACTION_UP ->{
+                //this runs when someone clicks and then releases
+                Log.d("TestingLogOnSurfaceView","ACTION_UP")
+            }
+        }
+
+
+        return true
     }
 
 

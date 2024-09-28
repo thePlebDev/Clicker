@@ -48,11 +48,11 @@ class MainActivity : AppCompatActivity() {
         bitmap.eraseColor(Color.BLACK)
         val bitmapDrawable = BitmapDrawable(resources, bitmap)
         window.setBackgroundDrawable(bitmapDrawable)
-       setContentView(R.layout.activity_main) //this is the normal one
+    //   setContentView(R.layout.activity_main) //this is the normal one
 //        gLView = MyGLSurfaceView(this) // Green box
 //        setContentView(gLView)
-//        val mView =  GL2JNIView(application); // flashing triangle
-//        setContentView(mView);
+        val mView =  GL2JNIView(application); // flashing triangle
+        setContentView(mView);
 
         //reportFullyDrawn() this was for testing
 
