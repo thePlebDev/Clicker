@@ -10,6 +10,9 @@
 
 // 1) CREATE A SINGLE RED TRIANGLE                       (DONE)
 // 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (DONE)
+#define LOG_TAG "libgl2jni"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 
 
@@ -109,8 +112,9 @@ auto gVertexShader =
 //This is the source code for your fragment shader.
 auto gFragmentShader =
         "precision mediump float;\n"
+        "uniform vec4 u_Color;\n"  // Uniform variable for color
         "void main() {\n"
-        "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
+        "  gl_FragColor = u_Color;\n"  // Set the color dynamically
         "}\n";
 
 
@@ -121,6 +125,8 @@ GLuint gvPositionHandle;// hold the location of where the GPU will be expecting 
 bool setupGraphics(int w, int h) {
 
     gProgram = createProgram(gVertexShader, gFragmentShader);
+
+
     if (!gProgram) {
         return false;
     }
@@ -181,36 +187,30 @@ const GLfloat gSquareVertices[] = {
         -0.25f, 0.125f,   // Top-left
         0.25f, -0.125f    // Bottom-right
 };
+GLfloat currentColor[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 void renderFrame() {
-
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+    GLint colorLocation = glGetUniformLocation(gProgram, "u_Color");
 
+    glUseProgram(gProgram);  // Use the shader program
 
-    glUseProgram(gProgram);//We select which program we want to use
+    // Set the color based on the global variable
+    glUniform4f(colorLocation, currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
 
-    // Get the location of the color uniform
-   // GLuint colorUniform = glGetUniformLocation(gProgram, "vColor");
-
-
-    // We then need to link the attribute we mentioned in the shader to the actual triangle data defined above
-    //so we need to link the gvPositionHandle and the gTriangleVertices data
+    // Bind the vertex attribute array and draw
     glVertexAttribPointer(
             gvPositionHandle,
-            2, //each vertex is going to have 2 elements to. these are the X,Y positions
-            GL_FLOAT, //Specifies the data type of each component in the array
+            2,  // 2 components per vertex (X, Y)
+            GL_FLOAT,
             GL_FALSE,
-            0, //no stride between our verticies
-            gSquareVertices //pointer to the actual triangle vertices.
+            0,
+            gSquareVertices
     );
 
     glEnableVertexAttribArray(gvPositionHandle);
-
-    glDrawArrays(GL_TRIANGLES, 0, 30);  // First triangle (vertices 0, 1, 2)
-//    glDrawArrays(GL_TRIANGLES, 3, 3);  // Second triangle (vertices 3, 4, 5)
-
-
+    glDrawArrays(GL_TRIANGLES, 0, 30);
 }
 
 
@@ -224,4 +224,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_nativeLibraryClasses_NativeSquareLoading_step(JNIEnv *env, jobject thiz) {
     renderFrame();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_nativeLibraryClasses_NativeSquareLoading_click(JNIEnv *env, jobject thiz) {
+    if (currentColor[0] == 1.0f) {
+        currentColor[0] = 0.0f;  // Red -> Green
+        currentColor[1] = 1.0f;
+        currentColor[2] = 0.0f;
+    } else {
+        currentColor[0] = 1.0f;  // Green -> Red
+        currentColor[1] = 0.0f;
+        currentColor[2] = 0.0f;
+    }
 }
