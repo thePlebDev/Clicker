@@ -26,12 +26,6 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
 
     private fun init() {
 
-
-        /* Setup the context factory for 2.0 rendering.
-         * See ContextFactory class definition below
-         */
-       // setEGLContextFactory(ContextFactory())
-
        // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2)
 

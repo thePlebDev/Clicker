@@ -370,38 +370,38 @@ fun StreamView(
             ModalBottomSheetLayout(
                 sheetState = outerBottomModalState,
                 sheetContent ={
-                  //  GLSurfaceViewComposable(context)
+                    GLSurfaceViewComposable(context)
 //
-                    ChatSettingsColumn(
-                        advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
-                        changeAdvancedChatSettings = {newValue -> updateAdvancedChatSettings(newValue) },
-                        changeNoChatMode = {newValue -> setNoChatMode(newValue) },
-                        chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
-                        followerModeListImmutable = followerModeListImmutable,
-                        slowModeListImmutable=slowModeListImmutable,
-                        selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
-                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue) },
-                        selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
-                        changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue) },
-                        emoteOnly = modViewViewModel.uiState.value.emoteOnly,
-                        setEmoteOnly = {newValue -> updateEmoteOnly(newValue) },
-                        subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
-                        setSubscriberOnly={newValue -> updateSubscriberOnly(newValue) },
-
-                        badgeSize = chatSettingsViewModel.badgeSize.value,
-                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
-                        emoteSize = chatSettingsViewModel.emoteSize.value,
-                        changeEmoteSize={newValue -> changeEmoteSize(newValue)},
-                        usernameSize = chatSettingsViewModel.usernameSize.value,
-                        changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
-                        messageSize = chatSettingsViewModel.messageSize.value,
-                        changeMessageSize={newValue ->changeMessageSize(newValue)},
-                        lineHeight = chatSettingsViewModel.lineHeight.value,
-                        changeLineHeight = {newValue -> changeLineHeight(newValue)},
-                        customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
-                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
-
-                    )
+//                    ChatSettingsColumn(
+//                        advancedChatSettings = streamViewModel.advancedChatSettingsState.value,
+//                        changeAdvancedChatSettings = {newValue -> updateAdvancedChatSettings(newValue) },
+//                        changeNoChatMode = {newValue -> setNoChatMode(newValue) },
+//                        chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
+//                        followerModeListImmutable = followerModeListImmutable,
+//                        slowModeListImmutable=slowModeListImmutable,
+//                        selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
+//                        changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue) },
+//                        selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
+//                        changeSelectedSlowModeItem ={newValue -> changeSelectedSlowModeItem(newValue) },
+//                        emoteOnly = modViewViewModel.uiState.value.emoteOnly,
+//                        setEmoteOnly = {newValue -> updateEmoteOnly(newValue) },
+//                        subscriberOnly =modViewViewModel.uiState.value.subscriberOnly,
+//                        setSubscriberOnly={newValue -> updateSubscriberOnly(newValue) },
+//
+//                        badgeSize = chatSettingsViewModel.badgeSize.value,
+//                        changeBadgeSize = {newValue-> changeBadgeSize(newValue)},
+//                        emoteSize = chatSettingsViewModel.emoteSize.value,
+//                        changeEmoteSize={newValue -> changeEmoteSize(newValue)},
+//                        usernameSize = chatSettingsViewModel.usernameSize.value,
+//                        changeUsernameSize ={newValue ->changeUsernameSize(newValue)},
+//                        messageSize = chatSettingsViewModel.messageSize.value,
+//                        changeMessageSize={newValue ->changeMessageSize(newValue)},
+//                        lineHeight = chatSettingsViewModel.lineHeight.value,
+//                        changeLineHeight = {newValue -> changeLineHeight(newValue)},
+//                        customUsernameColor = chatSettingsViewModel.customUsernameColor.value,
+//                        changeCustomUsernameColor = {newValue -> changeCustomUsernameColor(newValue)},
+//
+//                    )
                 }
             ) {
 
