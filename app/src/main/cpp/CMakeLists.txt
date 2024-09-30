@@ -23,6 +23,9 @@ add_library(my_class SHARED
 add_library(square_code SHARED
         square_code.cpp)
 
+add_library(blur_effect SHARED
+        blur_effect.cpp)
+
 # add lib dependencies
 target_link_libraries(gl_code
         my_class  # Link my_class with gl_code
@@ -40,6 +43,11 @@ target_link_libraries(my_class
         GLESv2)
 
 target_link_libraries(square_code
+        android
+        log
+        EGL
+        GLESv2)
+target_link_libraries(blur_effect
         android
         log
         EGL
