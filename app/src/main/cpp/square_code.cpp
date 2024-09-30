@@ -17,6 +17,10 @@
 
 
 
+
+/***************TESTING ENDS**************************/
+
+
 /**
  * loadShader() is a function meant to create and compile a shader.
  *
@@ -211,6 +215,7 @@ void renderFrame() {
 
     glEnableVertexAttribArray(gvPositionHandle);
     glDrawArrays(GL_TRIANGLES, 0, 30);
+
 }
 
 
@@ -218,6 +223,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_nativeLibraryClasses_NativeSquareLoading_init(JNIEnv *env, jobject thiz,
                                                                        jint width, jint height) {
+
     setupGraphics(width, height);
 }
 extern "C"
