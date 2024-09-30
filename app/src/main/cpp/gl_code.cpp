@@ -190,21 +190,6 @@ void renderFrame() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-//
-//    glUseProgram(gProgram);//We select which program we want to use
-//
-// // We then need to link the attribute we mentioned in the shader to the actual triangle data defined above
-// //so we need to link the gvPositionHandle and the gTriangleVertices data
-//    glVertexAttribPointer(
-//            gvPositionHandle,
-//            2, //each vertex is going to have 2 elements to. these are the X,Y positions
-//            GL_FLOAT, //Specifies the data type of each component in the array
-//            GL_FALSE,
-//            0, //no stride between our verticies
-//            gTriangleVertices //pointer to the actual triangle vertices.
-//            );
-//
-//    glEnableVertexAttribArray(gvPositionHandle);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
 

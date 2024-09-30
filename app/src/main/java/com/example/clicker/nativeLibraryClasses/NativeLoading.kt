@@ -34,3 +34,20 @@ object NativeSquareLoading{
 
 }
 
+
+object NativeBlurEffect{
+
+    init{
+        System.loadLibrary("blur_effect");
+    }
+
+
+    /**
+     * @param width the current view width
+     * @param height the current view height
+     */
+    external fun init(width: Int, height: Int)
+    external fun step()
+
+
+}
