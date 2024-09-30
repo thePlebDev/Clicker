@@ -78,6 +78,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
@@ -2576,6 +2577,7 @@ fun TextWithChatBadges(
     sharedBetterTTVEmoteContentMap:EmoteListMap,
 
     ){
+
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -2692,19 +2694,23 @@ fun ChatBadges(
     }
 
 
-    Row(){
-        Text(
-            text = text,
-            inlineContent = newMap,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-            color = color,
-            fontSize = textSize,
-            lineHeight = lineHeight.sp
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+    ){
+        Row(){
+            Text(
+                text = text,
+                inlineContent = newMap,
+                color = color,
+                fontSize = textSize,
+                lineHeight = lineHeight.sp,
+                modifier = Modifier.blur(10.dp)
+            )
+        }
+      //  Box(modifier =Modifier.matchParentSize().background(Color.Black.copy(0.6f)).blur(30.dp))
     }
-
 
 }
 
