@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import android.util.Log
 import android.view.MotionEvent
 import com.example.clicker.nativeLibraryClasses.NativeBlurEffect
+import com.example.clicker.nativeLibraryClasses.NativeCube
 import com.example.clicker.nativeLibraryClasses.NativeLoading
 import com.example.clicker.nativeLibraryClasses.NativeSquareLoading
 import javax.microedition.khronos.egl.EGL10
@@ -23,7 +24,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 
 internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
     init {
-        init2()
+        init()
     }
 
 
@@ -63,14 +64,16 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
             //this is called constantly
          //   NativeSquareLoading.step() // this is the checker board
 
-            NativeBlurEffect.step() // this is the blur effect
+          //  NativeBlurEffect.step() // this is the blur effect
+            NativeCube.step()
         }
 
         override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
             // The system calls this method when the GLSurfaceView geometry changes,
             // including changes in size of the GLSurfaceView or orientation of the device screen.
           //  NativeSquareLoading.init(width, height) // this is the checker board
-            NativeBlurEffect.init(width, height) // this is the blur effect
+           // NativeBlurEffect.init(width, height) // this is the blur effect
+            NativeCube.init(width,height)
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -123,3 +126,4 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
 
 
 }
+//CREATE NEW SURFACE FOR
