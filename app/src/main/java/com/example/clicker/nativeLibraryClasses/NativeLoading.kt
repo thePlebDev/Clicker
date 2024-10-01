@@ -51,3 +51,20 @@ object NativeBlurEffect{
 
 
 }
+
+object NativeCube{
+
+    init{
+        System.loadLibrary("cube_code");
+    }
+
+
+    /**
+     * @param width the current view width
+     * @param height the current view height
+     */
+    external fun init(width: Int, height: Int)
+    external fun step()
+
+
+}

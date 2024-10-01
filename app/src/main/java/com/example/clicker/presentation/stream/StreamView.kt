@@ -29,6 +29,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.farmingGame.GL2JNIView
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.presentation.home.TestingGLSurfaceViewComposable
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.slowModeListImmutable
@@ -371,6 +372,7 @@ fun StreamView(
                 sheetState = outerBottomModalState,
                 sheetContent ={
 //                    GLSurfaceViewComposable(context)
+
 
                     ChatSettingsColumn(
                         advancedChatSettings = streamViewModel.advancedChatSettingsState.value,

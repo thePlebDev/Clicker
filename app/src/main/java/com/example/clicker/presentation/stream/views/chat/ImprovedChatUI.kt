@@ -133,6 +133,7 @@ import com.example.clicker.network.websockets.models.MessageToken
 
 import com.example.clicker.network.websockets.models.MessageType
 import com.example.clicker.network.websockets.models.PrivateMessageType
+import com.example.clicker.presentation.home.TestingGLSurfaceViewComposable
 import com.example.clicker.presentation.stream.util.FilteredChatterListImmutableCollection
 import com.example.clicker.presentation.stream.util.ForwardSlashCommandsImmutableCollection
 
@@ -389,6 +390,7 @@ fun ChatUIBox(
     val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
     val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
     val chatUIScope = remember() { ImprovedChatUI() }
+    val context = LocalContext.current
 
 
 
@@ -407,6 +409,8 @@ fun ChatUIBox(
 
         with(chatUIScope) {
             Box(modifier = Modifier.fillMaxSize()) {
+              //  TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
+
                 scrollToBottom(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -2706,7 +2710,7 @@ fun ChatBadges(
                 color = color,
                 fontSize = textSize,
                 lineHeight = lineHeight.sp,
-                modifier = Modifier.blur(10.dp)
+               // modifier = Modifier.blur(10.dp)
             )
         }
       //  Box(modifier =Modifier.matchParentSize().background(Color.Black.copy(0.6f)).blur(30.dp))
