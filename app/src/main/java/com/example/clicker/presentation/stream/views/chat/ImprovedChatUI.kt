@@ -1892,6 +1892,7 @@ fun ClickableCard(
                     useCustomUsernameColors=useCustomUsernameColors,
                     channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
                     sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
+                    deleted = twitchUser.deleted
 
                 )
             }
@@ -2579,6 +2580,7 @@ fun TextWithChatBadges(
     useCustomUsernameColors:Boolean,
     channelBetterTTVEmoteContentMap:EmoteListMap,
     sharedBetterTTVEmoteContentMap:EmoteListMap,
+    deleted:Boolean
 
     ){
 
@@ -2606,6 +2608,7 @@ fun TextWithChatBadges(
             globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
             channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
             sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
+            deleted=deleted
         )
 
     } // end of the row
@@ -2646,7 +2649,8 @@ fun ChatBadges(
     usernameSize:Float,
     messageSize:Float,
     lineHeight:Float,
-    useCustomUsernameColors:Boolean
+    useCustomUsernameColors:Boolean,
+    deleted:Boolean
 ) {
     val usernameColor = if(useCustomUsernameColors) color else MaterialTheme.colorScheme.onPrimary
     Log.d("EmoteMapSize","sharedBetterTTVEmoteContentMap ->----------------START--------------------")
@@ -2710,7 +2714,7 @@ fun ChatBadges(
                 color = color,
                 fontSize = textSize,
                 lineHeight = lineHeight.sp,
-               // modifier = Modifier.blur(10.dp)
+                modifier = if(deleted) Modifier.blur(10.dp) else Modifier
             )
         }
       //  Box(modifier =Modifier.matchParentSize().background(Color.Black.copy(0.6f)).blur(30.dp))
