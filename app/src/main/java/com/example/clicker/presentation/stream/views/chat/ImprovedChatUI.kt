@@ -1170,6 +1170,10 @@ fun LazyGridEmotes(
             }
 
         }
+        //this is the spinning cube
+//        item{
+//            TestingGLSurfaceViewComposable(context,Modifier.height(100.dp).width(100.dp))
+//        }
 
             items(
                 emoteBoardMostFrequentList.list,
