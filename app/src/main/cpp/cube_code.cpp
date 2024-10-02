@@ -332,7 +332,7 @@ GLfloat colour[] = {1.0f, 0.0f, 0.0f,
 GLushort indices[] = {0, 2, 3, 0, 1, 3, 4, 6, 7, 4, 5, 7, 8, 9, 10, 11, 8, 10, 12, 13, 14, 15, 12, 14, 16, 17, 18, 16, 19, 18, 20, 21, 22, 20, 23, 22};
 
 void renderFrame(){
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     matrixIdentityFunction(modelViewMatrix);
     matrixRotateX(modelViewMatrix, angle);

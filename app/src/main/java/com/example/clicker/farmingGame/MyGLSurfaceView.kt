@@ -32,6 +32,9 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
 
        // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2)
+//        setEGLConfigChooser(8, 8, 8, 8, 16, 0) // this is needed
+//        holder.setFormat(PixelFormat.TRANSLUCENT)// this is needed
+      //  setZOrderOnTop(true)
 
         /* Set the renderer responsible for frame rendering */
         setRenderer(Renderer())
@@ -79,6 +82,8 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             // The system calls this method once, when creating the GLSurfaceView.
             // Do nothing.
+//            gl?.glEnable(GLES20.GL_BLEND)
+//            gl?.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
         }
     }

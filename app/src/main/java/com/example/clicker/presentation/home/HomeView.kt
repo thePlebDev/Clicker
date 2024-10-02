@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home
 
 import android.content.Context
+import android.graphics.PixelFormat
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -22,6 +25,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.R
@@ -80,7 +84,7 @@ fun ValidationView(
     val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
     val context = LocalContext.current
 
-//    Column {
+//    Column(Modifier.background(Color.DarkGray)) {
 //        Text(
 //            "TEST TEXT",
 //            color = Color.Blue,
@@ -96,7 +100,7 @@ fun ValidationView(
 //                color = Color.Blue,
 //                fontSize = 40.sp
 //            )
-//            TestingGLSurfaceViewComposable(context,Modifier.matchParentSize())
+////            TestingGLSurfaceViewComposable(context,Modifier.matchParentSize())
 //        }
 //        Text(
 //            "TEST TEXT",
@@ -104,8 +108,9 @@ fun ValidationView(
 //            fontSize = 40.sp,
 //            modifier = Modifier.fillMaxWidth().background(Color.Red)
 //        )
+//
 //    }
-//    TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
+
 
 
 
