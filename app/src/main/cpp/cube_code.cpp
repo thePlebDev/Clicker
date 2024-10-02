@@ -20,40 +20,58 @@ float matrixDegreesToRadians(float degrees) {
     return degrees * (M_PI / 180.0f);
 }
 
-void matrixIdentityFunction(float* matrix){
-    if(matrix == NULL)
-    {
-        return;
+/**
+ * matrixTranslate initializes a matrix. The matrix will look like this:
+ *
+ * [ 1, 0, 0, 0 ]
+ * [ 0, 1, 0, 0 ]
+ * [ 0, 0, 1, 0 ]
+ * [ 0, 0, 0, 1 ]
+ *
+ * @param matrix pointer(holds the memory address) to a sequence of float values in memory
+ *
+ * */
+void matrixIdentityFunction(float* matrix) {
+    if (matrix == NULL) {
+        return;  // Avoid null pointer dereference
     }
-    matrix[0] = 1.0f;
-    matrix[1] = 0.0f;
-    matrix[2] = 0.0f;
-    matrix[3] = 0.0f;
-    matrix[4] = 0.0f;
-    matrix[5] = 1.0f;
-    matrix[6] = 0.0f;
-    matrix[7] = 0.0f;
-    matrix[8] = 0.0f;
-    matrix[9] = 0.0f;
-    matrix[10] = 1.0f;
-    matrix[11] = 0.0f;
-    matrix[12] = 0.0f;
-    matrix[13] = 0.0f;
-    matrix[14] = 0.0f;
-    matrix[15] = 1.0f;
+    matrix[0] = 1.0f;  matrix[1] = 0.0f;  matrix[2] = 0.0f;  matrix[3] = 0.0f;
+    matrix[4] = 0.0f;  matrix[5] = 1.0f;  matrix[6] = 0.0f;  matrix[7] = 0.0f;
+    matrix[8] = 0.0f;  matrix[9] = 0.0f;  matrix[10] = 1.0f; matrix[11] = 0.0f;
+    matrix[12] = 0.0f; matrix[13] = 0.0f; matrix[14] = 0.0f; matrix[15] = 1.0f;
 }
-void matrixMultiply(float* destination, float* operand1, float* operand2){
-    float theResult[16];
+
+/**
+ * matrixMultiply
+ *
+ * [ 1, 0, 0, 0 ]       [ 1, 0, 0, 0 ]
+ * [ 0, 1, 0, 0 ]       [ 0, 1, 0, 0 ]
+ * [ 0, 0, 1, 0 ]       [ 0, 0, 1, 0 ]
+ * [ 0, 0, 0, 1 ]       [ 0, 0, 0, 1 ]
+ *
+ * @param matrix pointer(holds the memory address) to a sequence of float values in memory
+ *
+ * */
+void matrixMultiply(float* destination, float* operand1, float* operand2)
+{
+    float theResult[16]; // Temporary matrix to store the result
     int row, column = 0;
-    int i,j = 0;
-    for(i = 0; i < 4; i++)
+    int i,j = 0;// the i loop is the outer loop and j is the inner loop
+
+    // Perform matrix multiplication for each element in the 4x4 result matrix
+    for(i = 0; i < 4; i++) // For each row in the result matrix
     {
-        for(j = 0; j < 4; j++)
+        for(j = 0; j < 4; j++) // For each column in the result matrix
         {
-            theResult[4 * i + j] = operand1[j] * operand2[4 * i] + operand1[4 + j] * operand2[4 * i + 1] +
-                                   operand1[8 + j] * operand2[4 * i + 2] + operand1[12 + j] * operand2[4 * i + 3];
+            // Calculate the dot product for the (i, j) element in the result matrix
+            theResult[4 * i + j] = operand1[j] * operand2[4 * i]      // First element of the row * first element of the column
+                                   + operand1[4 + j] * operand2[4 * i + 1]  // Second element of the row * second element of the column
+                                   + operand1[8 + j] * operand2[4 * i + 2]  // Third element of the row * third element of the column
+                                   + operand1[12 + j] * operand2[4 * i + 3]; // Fourth element of the row * fourth element of the column
         }
     }
+
+    // Copy the result into the destination matrix
     for(int i = 0; i < 16; i++)
     {
         destination[i] = theResult[i];
@@ -128,14 +146,25 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 
     return program;
 }
-
-void matrixTranslate(float* matrix, float x, float y, float z){
-    float temporaryMatrix[16];
-    matrixIdentityFunction(temporaryMatrix);
-    temporaryMatrix[12] = x;
-    temporaryMatrix[13] = y;
-    temporaryMatrix[14] = z;
-    matrixMultiply(matrix,temporaryMatrix,matrix);
+/***
+ *
+ *
+ * [ 1, 0, 0, Tx ]  how far you want to move on the X axis
+ * [ 0, 1, 0, Ty ]  how far you want to move on the Y axis
+ * [ 0, 0, 1, Tz ]  how far you want to move on the Z axis
+ * [ 0, 0, 0, 1  ]  set to 1 so the math works out right
+ *
+ *
+ *
+ * */
+void matrixTranslate(float* matrix, float x, float y, float z)
+{
+    float temporaryMatrix[16];                // Create a temporary 4x4 matrix
+    matrixIdentityFunction(temporaryMatrix);  // Initialize it to the identity matrix(basic not movement matrix)
+    temporaryMatrix[12] = x;                  // Set translation on the X axis
+    temporaryMatrix[13] = y;                  // Set translation on the Y axis
+    temporaryMatrix[14] = z;                  // Set translation on the Z axis
+    matrixMultiply(matrix, temporaryMatrix, matrix);  // Apply translation to the input matrix
 }
 
 
