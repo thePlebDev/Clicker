@@ -627,7 +627,7 @@ class ModViewViewModel @Inject constructor(
 //        autoModMessageHoldSubscription()
         chatSettingsSubscription()
 
-        createChannelPointsRewardSubscriptionEvent()
+      //  createChannelPointsRewardSubscriptionEvent() // I don't think this can be done due to authentication
     }
 
 
@@ -836,6 +836,11 @@ class ModViewViewModel @Inject constructor(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
 
+                Log.d("createChannelPointsRewardSubscriptionEvent","oAuthToken-->${_requestIds.value.oAuthToken}")
+                Log.d("createChannelPointsRewardSubscriptionEvent","clientId-->${_requestIds.value.clientId}")
+                Log.d("createChannelPointsRewardSubscriptionEvent","broadcasterId-->${_requestIds.value.broadcasterId}")
+                Log.d("createChannelPointsRewardSubscriptionEvent","moderatorId-->${_requestIds.value.moderatorId}")
+                Log.d("createChannelPointsRewardSubscriptionEvent","sessionId-->${_requestIds.value.sessionId}")
 
                 twitchEventSub.createEventSubSubscription(
                     oAuthToken =_requestIds.value.oAuthToken,
