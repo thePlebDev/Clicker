@@ -359,10 +359,10 @@ class ModViewViewModel @Inject constructor(
     )=viewModelScope.launch(ioDispatcher){
         //TODO: CLEAR THE OLD UnbanRequestItemList
         clearUnbanRequestItemList()
-        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
-        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
-        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
-        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
+//        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
+//        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
+//        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
+//        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
 
 
         twitchModRepo.getUnbanRequests(

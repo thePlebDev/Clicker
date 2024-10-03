@@ -34,6 +34,7 @@ import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modChannels.views.MainModView
 import com.example.clicker.presentation.modChannels.views.ModChannelsBottomModalSheetContent
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -52,6 +53,7 @@ fun ModChannelView(
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
     logoutViewModel: LogoutViewModel,
+    modViewViewModel: ModViewViewModel
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -89,6 +91,7 @@ fun ModChannelView(
             refreshFunc = {homeViewModel.pullToRefreshModChannels()},
             showNetworkMessage = homeViewModel.state.value.networkConnectionState,
             updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                Log.d("mODvIEWnAVIGATION","tRANSFER")
                 streamViewModel.updateChannelNameAndClientIdAndUserId(
                     streamerName,
                     clientId,
@@ -124,7 +127,15 @@ fun ModChannelView(
                 )
                 streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
                 streamViewModel.clearAllChatters()
+
+                modViewViewModel.getUnbanRequests(
+                    oAuthToken =homeViewModel.oAuthToken.value ?:"",
+                    clientId=clientId,
+                    moderatorId=userId,
+                    broadcasterId=broadcasterId
+                )
                                  },
+
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={
                     destination ->onNavigate(destination)
