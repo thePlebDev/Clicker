@@ -3251,6 +3251,7 @@ fun NewContentBanner(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 onClick = {
                     //  hideModal()
+                    resolveUnbanRequest("",UnbanStatusFilter.DENIED)
                 },
                 shape = RoundedCornerShape(5.dp)
 
