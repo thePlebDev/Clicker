@@ -43,6 +43,7 @@ class ModChannelsFragment : Fragment() {
     private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +77,8 @@ class ModChannelsFragment : Fragment() {
                         },
                         createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
                         hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
-                        logoutViewModel =logoutViewModel
+                        logoutViewModel =logoutViewModel,
+                        modViewViewModel=modViewViewModel
                     )
                 }
             }
