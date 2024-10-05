@@ -627,7 +627,7 @@ class ModViewViewModel @Inject constructor(
 //        autoModMessageHoldSubscription()
         chatSettingsSubscription()
 
-      //  createChannelPointsRewardSubscriptionEvent() // I don't think this can be done due to authentication
+        createUnbanRequestResolveSubscriptionEvent() // I don't think this can be done due to authentication
     }
 
 
@@ -829,7 +829,7 @@ class ModViewViewModel @Inject constructor(
         }
     }
 
-    private fun createChannelPointsRewardSubscriptionEvent(){
+    private fun createUnbanRequestResolveSubscriptionEvent(){
         viewModelScope.launch {
             withContext(ioDispatcher){
                 _modViewStatus.value = _modViewStatus.value.copy(
@@ -848,7 +848,7 @@ class ModViewViewModel @Inject constructor(
                     broadcasterId =_requestIds.value.broadcasterId,
                     moderatorId =_requestIds.value.moderatorId,
                     sessionId = _requestIds.value.sessionId,
-                    type = "channel.channel_points_automatic_reward_redemption.add"
+                    type = "channel.unban_request.resolve"
                 ).collect { response ->
                     when (response) {
                         is WebSocketResponse.Loading -> {
