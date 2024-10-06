@@ -44,24 +44,28 @@ void matrixIdentityFunction(float* matrix) {
 /**
  * matrixMultiply
  *
- * [ 1, 0, 0, 0 ]       [ 1, 0, 0, 0 ]
- * [ 0, 1, 0, 0 ]       [ 0, 1, 0, 0 ]
- * [ 0, 0, 1, 0 ]       [ 0, 0, 1, 0 ]
- * [ 0, 0, 0, 1 ]       [ 0, 0, 0, 1 ]
+ * [ 0,  1,   2,  3 ]       [ 1, 0, 0, 0 ]          [ 1, 0, 0, 0 ]
+ * [ 4,  5,   6,  7 ]       [ 0, 1, 0, 0 ]          [ 0, 1, 0, 0 ]
+ * [ 8,  9,  10, 11 ]       [ 0, 0, 1, 0 ]          [ 0, 0, 1, 0 ]
+ * [ 12, 13, 14, 15 ]       [ 0, 0, 0, 1 ]          [ 0, 0, 0, 1 ]
+ *
  *
  * @param matrix pointer(holds the memory address) to a sequence of float values in memory
  *
  * */
+// [0] = 0*0 + 4*1 + 8*2 + 12*3
+// [1] = 1*0 + 5*1 + 9*2 + 13*3
+// [2] = 2*0 + 6*1 +10*2 + 14*3
+
+ // [5] = 1*4 + 5*5 + 9*6 + 13*7
 void matrixMultiply(float* destination, float* operand1, float* operand2)
 {
     float theResult[16]; // Temporary matrix to store the result
-    int row, column = 0;
-    int i,j = 0;// the i loop is the outer loop and j is the inner loop
 
     // Perform matrix multiplication for each element in the 4x4 result matrix
-    for(i = 0; i < 4; i++) // For each row in the result matrix
+    for(int i = 0; i < 4; i++) // For each row in the result matrix
     {
-        for(j = 0; j < 4; j++) // For each column in the result matrix
+        for(int j = 0; j < 4; j++) // For each column in the result matrix
         {
             // Calculate the dot product for the (i, j) element in the result matrix
             theResult[4 * i + j] = operand1[j] * operand2[4 * i]      // First element of the row * first element of the column

@@ -855,11 +855,11 @@ class ModViewViewModel @Inject constructor(
                             _modViewStatus.value = _modViewStatus.value.copy(
                                 channelPointsRewardQueueStatus = response
                             )
-                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->LOADING")
+                            Log.d("createUnbanRequestResolveSubscriptionEvent", "response -->LOADING")
                         }
 
                         is WebSocketResponse.Success -> {
-                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->SUCCESS")
+                            Log.d("createUnbanRequestResolveSubscriptionEvent", "response -->SUCCESS")
                             _modViewStatus.value = _modViewStatus.value.copy(
                                 channelPointsRewardQueueStatus = response
                             )
@@ -868,13 +868,13 @@ class ModViewViewModel @Inject constructor(
                         }
 
                         is WebSocketResponse.Failure -> {
-                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->NORMAL FAIL")
+                            Log.d("createUnbanRequestResolveSubscriptionEvent", "response -->NORMAL FAIL")
                             _modViewStatus.value = _modViewStatus.value.copy(
                                 channelPointsRewardQueueStatus = response
                             )
                         }
                         is WebSocketResponse.FailureAuth403 ->{
-                            Log.d("createChannelPointsRewardSubscriptionEvent", "response -->FailureAuth403 FAIL")
+                            Log.d("createUnbanRequestResolveSubscriptionEvent", "response -->FailureAuth403 FAIL")
                             _modViewStatus.value = _modViewStatus.value.copy(
                                 channelPointsRewardQueueStatus = response
                             )
