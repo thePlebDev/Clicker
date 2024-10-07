@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,11 +33,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -47,6 +52,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
@@ -59,6 +65,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
@@ -70,11 +77,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -341,6 +350,7 @@ fun ModViewComponentVersionThree(
                         sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                         clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
                     )
+
                 }
                 val response = modViewViewModel.resolveUnbanRequest.value
                 when(response){
@@ -1363,6 +1373,7 @@ fun IndivUnbanItem(
     status:String,
     time:String,
     userId:String,
+   // messageId:String,
     showUnbanRequestModal: () -> Unit,
     updateClickedUnbanRequest:(String,String,String)->Unit
 ){
@@ -2979,45 +2990,74 @@ fun ClickedUserMessages(
 ){
     val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
 
-    LazyColumn(
-        modifier = Modifier
+    // I think it should use this: .weight(1f) instead of the .fillMaxSize()
+    Column(
+        Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(8.dp)
-            )
-    ) {
+            .padding(5.dp)) {
 
-        items(clickedUsernameChatsWithDateSentImmutable.clickedChats) {message->
+       // Text("", modifier = Modifier.weight(1f))
 
-            val annotatedString =buildAnnotatedString {
-                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary, fontSize = MaterialTheme.typography.headlineSmall.fontSize)) {
-                    append("${message.dateSent} ")
-                }
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+//            .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(8.dp)
+                )
+        ) {
+            item{
+                Text("it do be like that sometimes",color = Color.Red)
+            }
 
-                for(item in message.messageTokenList){
-                    withStyle(style = SpanStyle(fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = MaterialTheme.colorScheme.onPrimary)) {
-                        appendInlineContent("${item.messageValue}","${item.messageValue} ")
+            items(clickedUsernameChatsWithDateSentImmutable.clickedChats) { message ->
+
+                val annotatedString = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                        )
+                    ) {
+                        append("${message.dateSent} ")
                     }
+
+                    for (item in message.messageTokenList) {
+                        withStyle(
+                            style = SpanStyle(
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            appendInlineContent("${item.messageValue}", "${item.messageValue} ")
+                        }
+                    }
+
+
                 }
+
+                Text(
+                    text = annotatedString,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    inlineContent = newMap
+                )
 
 
             }
-
-           Text(
-                text = annotatedString,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-               inlineContent = newMap
-            )
-
-
-
         }
-    }
+        ApproveDenyRow(
+            resolveUnbanRequest={id,status->
+              //  modViewViewModel.resolveUnbanRequest(id,status)
+            },
+            modifier = Modifier
+        )
+    }//this is the end of the column
 }
 
 @Composable
@@ -3076,42 +3116,138 @@ fun NewContentBanner(
         Text("Unban request message: $clickedMessage", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
         Spacer(modifier = Modifier.height(10.dp))
 
+    }
+}
+
+@Composable
+fun ApproveDenyRow(
+    resolveUnbanRequest:(String, UnbanStatusFilter)->Unit,
+    modifier:Modifier
+){
+
+    Column(
+        modifier =modifier.padding(5.dp)
+    ) {
+        Text("Add a note to the user (optional)",color = MaterialTheme.colorScheme.onSecondary)
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
         ){
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                      resolveUnbanRequest("",UnbanStatusFilter.APPROVED)
-                },
-                shape = RoundedCornerShape(5.dp)
-            ) {
-                Text(
-                    "Approve",
-                    color = MaterialTheme.colorScheme.onSecondary
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                onClick = {
-                    //  hideModal()
-                    resolveUnbanRequest("",UnbanStatusFilter.DENIED)
-                },
-                shape = RoundedCornerShape(5.dp)
+            CustomTextField(
+                modifier = Modifier.weight(2f).align(Alignment.CenterVertically)
+            )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ){
 
-            ) {
-                Text(
-                    "Deny",
-                    color = MaterialTheme.colorScheme.onSecondary
-                )
+                ElevatedCard(
+                    modifier = Modifier.clickable {
+
+                    },
+
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.DarkGray
+                    )
+
+                ) {
+                    Icon(
+                        painter = painterResource(id =R.drawable.baseline_check_24),
+                        contentDescription ="approve",
+                        tint = Color.Green,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+
+
+                ElevatedCard(
+                    modifier = Modifier.clickable {
+
+                    },
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.DarkGray
+                    )
+
+                ) {
+                    Icon(
+                        painter = painterResource(id =R.drawable.baseline_close_24),
+                        contentDescription ="deny",
+                        tint = Color.Red,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+
+
             }
+
 
         }
+    }
 
 
+}
+
+@Composable
+fun CustomTextField(
+    modifier: Modifier
+){
+    var text by remember { mutableStateOf("") }
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = MaterialTheme.colorScheme.secondary,
+        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
 
 
+    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+        TextField(
+            modifier = modifier,
+            singleLine = true,
+
+            value = text,
+
+            shape = RoundedCornerShape(8.dp),
+            onValueChange = { text = it },
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.White,
+                backgroundColor = Color.DarkGray,
+                cursorColor = Color.White,
+                disabledLabelColor = Color.White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            placeholder = {
+                Text("Optional note",color = Color.White)
+            }
+
+
+            )
+
+    }
+}
+
+@Composable
+fun ElevatedCardExample() {
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        ),
+        modifier = Modifier
+            .size(width = 240.dp, height = 100.dp)
+    ) {
+        Text(
+            text = "Elevated",
+            modifier = Modifier
+                .padding(16.dp),
+            textAlign = TextAlign.Center,
+        )
     }
 }
