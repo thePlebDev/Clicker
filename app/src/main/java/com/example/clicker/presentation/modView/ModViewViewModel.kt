@@ -192,7 +192,9 @@ class ModViewViewModel @Inject constructor(
     fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,){
         _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
             message=message,
-            userName = username
+            userName = username,
+
+
         )
         Log.d("updateClickedUnbanRequestUser","oAuthToken->${_requestIds.value.oAuthToken}")
         Log.d("updateClickedUnbanRequestUser","clientId->${_requestIds.value.clientId}")
@@ -315,9 +317,11 @@ class ModViewViewModel @Inject constructor(
         Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
         Log.d("resolveUnbanRequestViewModel","unbanRequestId ->$unbanRequestId")
         delay(2000)
-        _resolveUnbanRequest.value = Response.Failure(Exception("failed"))
+       // val filteredList =_getUnbanRequestList.value.list.find { it.id }
+        _resolveUnbanRequest.value = Response.Success(false)
         delay(1000)
         //this needs to be its own list
+
 
         _resolveUnbanRequest.value = Response.Success(true)
 
