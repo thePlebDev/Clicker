@@ -357,6 +357,8 @@ fun ModViewComponentVersionThree(
                     }
                     is Response.Success ->{
                         if(!response.data){
+                            Log.d("unbanrequestModalCheck","it should hide")
+
                             Spacer(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -760,7 +762,8 @@ fun ModViewComponentVersionThree(
                      updateClickedUnbanRequest={ username,text,userId ->
                          updateClickedUser(username,userId,false,false)
                          modViewViewModel.updateClickedUnbanRequestUser(username,text,userId)
-                     }
+                     },
+                     immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value
 
 
 
@@ -846,10 +849,12 @@ fun ModVersionThree(
     //immutable Lists
     autoModMessageListImmutableCollection: AutoModMessageListImmutableCollection,
     modActionListImmutableCollection: ModActionListImmutableCollection,
+    immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
 
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest:(String,String,String)->Unit
+    updateClickedUnbanRequest:(String,String,String)->Unit,
+
 
 
 
@@ -999,7 +1004,8 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            immutableUnbanRequestList=immutableUnbanRequestList
                         )
                     }
                 )
@@ -1105,7 +1111,8 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            immutableUnbanRequestList=immutableUnbanRequestList
                         )
                     }
 
@@ -1212,7 +1219,8 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            immutableUnbanRequestList=immutableUnbanRequestList
 
                         )
                     }
@@ -1286,7 +1294,8 @@ fun UnbanRequests(
     doubleClickAndDrag: Boolean,
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest: (String, String, String) -> Unit
+    updateClickedUnbanRequest: (String, String, String) -> Unit,
+    immutableUnbanRequestList:UnbanRequestItemImmutableCollection
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
 
@@ -1303,24 +1312,13 @@ fun UnbanRequests(
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
             )
         }
-        item{
-            IndivUnbanItem(
-                username = "meanermeeny",
-                text = "Please, Please let me in!!!!!!!!!!!!!!!!!! let me in. I did not do it. I did not. Oh, hi mark!",
-                status = "pending",
-                time = "2024-09-17",
-                showUnbanRequestModal={showUnbanRequestModal()},
-                userId="949335660",
-                updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
-            )
-        }
 
 
 
         when(unbanRequestResponse){
             is UnAuthorizedResponse.Loading ->{}
             is UnAuthorizedResponse.Success ->{
-                items(unbanRequestResponse.data){
+                items(immutableUnbanRequestList.list){
                     IndivUnbanItem(
                         username = it.user_login,
                         text = it.text,
@@ -1332,7 +1330,7 @@ fun UnbanRequests(
                     )
 
                 }
-                if(unbanRequestResponse.data.isEmpty()){
+                if(immutableUnbanRequestList.list.isEmpty()){
                     item{
                         Column(modifier = Modifier
                             .fillMaxWidth()
@@ -2544,49 +2542,6 @@ fun NewAutoModQueueBox(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun AutoModHeader(
-    setDragging: (Boolean) -> Unit,
-    doubleClickAndDrag:Boolean,
-    setDoubleClickAndDragFalse:()->Unit
-){
-
-    val hapticFeedback = LocalHapticFeedback.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondary)
-            .combinedClickable(
-                onDoubleClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    setDragging(true)
-                    setDoubleClickAndDragFalse()
-                },
-                onClick = {}
-            )
-            .padding(horizontal = 10.dp),
-        horizontalArrangement =Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-
-    ){
-        Text(
-            "AutoMod Queue",
-            color = MaterialTheme.colorScheme.onSecondary,
-            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-        )
-        if(doubleClickAndDrag){
-            Text(
-                "Double click and drag",
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-
-                )
-        }
-
-    }
-
-}
 /********************************** Response messages **********************************************/
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -2776,99 +2731,8 @@ fun NewIconTextRowBroken(
 
 }
 
-@Composable
-fun AutoModBoxHorizontalDragBox(
-    manageAutoModMessage:(String,String)-> Unit,
-    username:String,
-    fullText:String,
-    approved:Boolean?,
-    messageCategory:String,
-    messageId:String,
-    swiped:Boolean
 
 
-){
-    Log.d("AutoModBoxHorizontalDragBoxSwiped","swiped --->$swiped")
-//TODO: CREATE A HorizontalDragDetectionBox WITH ONLY TWO SWIPES
-//    HorizontalDragDetectionBox(
-//        itemBeingDragged ={offset ->
-//            AutoModItemRow(
-//                username,
-//                fullText,
-//                offset = offset,
-//                approved =approved,
-//                messageCategory = messageCategory
-//            )
-//        },
-//        quarterSwipeRightAction = {
-//            manageAutoModMessage(
-//                messageId,
-//                "DENY"
-//            )
-//            Log.d("AutoModQueueBoxDragDetectionBox","RIGHT")
-//        },
-//        quarterSwipeLeftAction = {
-//            Log.d("AutoModQueueBoxDragDetectionBox","LEFT")
-//            manageAutoModMessage(
-//                messageId,
-//                "ALLOW"
-//            )
-//        },
-//        twoSwipeOnly = true,
-//        quarterSwipeLeftIconResource = painterResource(id =R.drawable.baseline_check_24),
-//        quarterSwipeRightIconResource = painterResource(id =R.drawable.baseline_close_24),
-//        swipeEnabled = !swiped,
-//    )
-}
-
-/**
- * AutoModItemRow is the composable function that is used inside of [AutoModQueueBox] to represent the individual AutoModQue messages
- * shown to the user
- *
- * @param username the username of the user
- * @param message the message that is under review
- * @param offset a float used to offset this composable and animate the dragging effect
- * */
-@Composable
-fun AutoModItemRow(
-    username:String,
-    message: String,
-    offset: Float,
-    messageCategory: String,
-    approved:Boolean?,
-){
-
-    val annotatedMessageText = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = Color.White)) {
-            append("$username: ")
-        }
-        withStyle(style = SpanStyle(color = Color.White, background = Color.Red.copy(alpha = 0.6f))) {
-            append(" $message ")
-        }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .absoluteOffset { IntOffset(x = offset.roundToInt(), y = 0) }
-            .background(MaterialTheme.colorScheme.primary)
-    ){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-
-            ){
-            AutoModItemRowTesting(messageCategory)
-            AutoModItemPendingText(approved)
-
-        }
-        Text(annotatedMessageText)
-        Spacer(modifier =Modifier.height(5.dp))
-        Divider(color = Color.White.copy(alpha = 0.6f), thickness = 1.dp, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier =Modifier.height(5.dp))
-
-    }
-}
 @Composable
 fun AutoModItemPendingText(
     approved:Boolean?,
@@ -2946,25 +2810,6 @@ fun ModActionNotificationMessage(
     }
 }
 
-
-@Composable
-fun ConnectionErrorResponse(
-    connectionError: Response<Boolean>,
-    reconnect:()->Unit
-){
-    when(connectionError){
-        is Response.Loading ->{
-            SubscriptionConnectionLoading()
-        }
-        is Response.Success ->{}
-        is Response.Failure ->{
-            ConnectionError(
-                message = "AutoMod connection error",
-                reconnect ={reconnect()}
-            )
-        }
-    }
-}
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -3213,6 +3058,7 @@ fun NewContentBanner(
             }
             is Response.Success ->{
                 Text("Created at: ${clickedUserInfo.data.profileCreatedAt}", fontSize = MaterialTheme.typography.headlineSmall.fontSize,color = MaterialTheme.colorScheme.onPrimary)
+
             }
             is Response.Failure ->{
                 Row(){

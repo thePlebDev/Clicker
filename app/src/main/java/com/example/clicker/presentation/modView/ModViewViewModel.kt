@@ -205,10 +205,37 @@ class ModViewViewModel @Inject constructor(
      * This is a list of all the individual unban requests
      * */
     //todo: this needs to be broken up into the response and the list
-    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(UnAuthorizedResponse.Loading)
+    private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(
+        UnAuthorizedResponse.Success(
+            listOf(
+                UnbanRequestItem(
+                    id="111",
+                    broadcaster_name="Antoher one",
+                    broadcaster_login="Another one",
+                    broadcaster_id="34",
+                    user_id="1212",
+                    user_login="Meatballs",
+                    user_name="dave",
+                    text="Please don do me like that",
+                    status="pending",
+                    created_at="2024-09-09",
+                    moderator_id="333",
+                    moderator_login = "",
+                    moderator_name = "",
+                    resolution_text="What even is the resolution text",
+                    resolved_at = "2024-02-02"
+
+
+                )
+            )
+        )
+    )
     val unbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
 
-
+/**
+ *
+ *--------------------------------------------------- Unban request list items------------------------------------------------------------------------------------
+ * */
     var unbanRequestItemList = mutableStateListOf<UnbanRequestItem>()
     private val _getUnbanRequestList: MutableState<UnbanRequestItemImmutableCollection> = mutableStateOf(UnbanRequestItemImmutableCollection(
         unbanRequestItemList
@@ -281,6 +308,7 @@ class ModViewViewModel @Inject constructor(
         _resolveUnbanRequest.value = Response.Loading
 
 
+
         Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
         Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
         Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
@@ -289,6 +317,8 @@ class ModViewViewModel @Inject constructor(
         delay(2000)
         _resolveUnbanRequest.value = Response.Failure(Exception("failed"))
         delay(1000)
+        //this needs to be its own list
+
         _resolveUnbanRequest.value = Response.Success(true)
 
 
@@ -364,47 +394,69 @@ class ModViewViewModel @Inject constructor(
 //        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
 //        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
 
+    addAllUnbanRequestItemList(
+        listOf(
+        UnbanRequestItem(
+            id="111",
+            broadcaster_name="Antoher one",
+            broadcaster_login="Another one",
+            broadcaster_id="34",
+            user_id="1212",
+            user_login="Meatballs",
+            user_name="dave",
+            text="Please don do me like that",
+            status="pending",
+            created_at="2024-09-09",
+            moderator_id="333",
+            moderator_login = "",
+            moderator_name = "",
+            resolution_text="What even is the resolution text",
+            resolved_at = "2024-02-02"
+        )
+        )
+    )
 
-        twitchModRepo.getUnbanRequests(
-            authorizationToken=oAuthToken,
-            clientId =clientId ,
-            moderatorID = moderatorId,
-            broadcasterId = broadcasterId,
-            status = UnbanStatusFilter.PENDING
-        ).collect{response ->
-            when(response){
-                is UnAuthorizedResponse.Loading ->{
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
-                    Log.d("getUnbanRequestsFunc","LOADING")
-                }
-                is UnAuthorizedResponse.Success ->{
-                    //todo: I need to change when the response gets added
-                    val data = response.data
-                    if(data.isNotEmpty()){
-                        val newData = data.map {
-                            it.copy(
-                                created_at = it.created_at.split("T")[0]
-                            )
-                        }
-                        _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
-                        addAllUnbanRequestItemList(data)
-                    }
 
-                    Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
-
-                }
-                is UnAuthorizedResponse.Auth401Failure ->{
-                    Log.d("getUnbanRequestsFunc","Auth401Failure")
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
-                }
-                is UnAuthorizedResponse.Failure->{
-                    Log.d("getUnbanRequestsFunc","Failure")
-                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
-
-                }
-            }
-
-        }
+//        twitchModRepo.getUnbanRequests(
+//            authorizationToken=oAuthToken,
+//            clientId =clientId ,
+//            moderatorID = moderatorId,
+//            broadcasterId = broadcasterId,
+//            status = UnbanStatusFilter.PENDING
+//        ).collect{response ->
+//            when(response){
+//                is UnAuthorizedResponse.Loading ->{
+//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
+//                    Log.d("getUnbanRequestsFunc","LOADING")
+//                }
+//                is UnAuthorizedResponse.Success ->{
+//                    //todo: I need to change when the response gets added
+//                    val data = response.data
+//                    if(data.isNotEmpty()){
+//                        val newData = data.map {
+//                            it.copy(
+//                                created_at = it.created_at.split("T")[0]
+//                            )
+//                        }
+//                        _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
+//                        addAllUnbanRequestItemList(data)
+//                    }
+//
+//                    Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
+//
+//                }
+//                is UnAuthorizedResponse.Auth401Failure ->{
+//                    Log.d("getUnbanRequestsFunc","Auth401Failure")
+//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
+//                }
+//                is UnAuthorizedResponse.Failure->{
+//                    Log.d("getUnbanRequestsFunc","Failure")
+//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+//
+//                }
+//            }
+//
+//        }
 
 
     }
@@ -836,11 +888,11 @@ class ModViewViewModel @Inject constructor(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
 
-                Log.d("createChannelPointsRewardSubscriptionEvent","oAuthToken-->${_requestIds.value.oAuthToken}")
-                Log.d("createChannelPointsRewardSubscriptionEvent","clientId-->${_requestIds.value.clientId}")
-                Log.d("createChannelPointsRewardSubscriptionEvent","broadcasterId-->${_requestIds.value.broadcasterId}")
-                Log.d("createChannelPointsRewardSubscriptionEvent","moderatorId-->${_requestIds.value.moderatorId}")
-                Log.d("createChannelPointsRewardSubscriptionEvent","sessionId-->${_requestIds.value.sessionId}")
+//                Log.d("createUnbanRequestResolveSubscriptionEvent","oAuthToken-->${_requestIds.value.oAuthToken}")
+//                Log.d("createUnbanRequestResolveSubscriptionEvent","clientId-->${_requestIds.value.clientId}")
+//                Log.d("createUnbanRequestResolveSubscriptionEvent","broadcasterId-->${_requestIds.value.broadcasterId}")
+//                Log.d("createUnbanRequestResolveSubscriptionEvent","moderatorId-->${_requestIds.value.moderatorId}")
+//                Log.d("createUnbanRequestResolveSubscriptionEvent","sessionId-->${_requestIds.value.sessionId}")
 
                 twitchEventSub.createEventSubSubscription(
                     oAuthToken =_requestIds.value.oAuthToken,

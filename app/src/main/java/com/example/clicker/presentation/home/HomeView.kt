@@ -110,120 +110,120 @@ fun ValidationView(
 //        )
 //
 //    }
-    TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
+   // TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
 
 
 
 
-//
-//
-//
-//
-//
-//    HomeViewImplementation(
-//        bottomModalState =bottomModalState,
-//        loginWithTwitch ={
+
+
+
+
+
+    HomeViewImplementation(
+        bottomModalState =bottomModalState,
+        loginWithTwitch ={
+            logoutViewModel.setLoggedOutStatus("TRUE")
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
+                         },
+        onNavigate = {id -> onNavigate(id) },
+        updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
+            if (!lowPowerModeActive) {
+                homeViewModel.updateClickedStreamerName(streamerName)
+
+
+
+
+                Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
+                streamViewModel.updateChannelNameAndClientIdAndUserId(
+                    streamerName,
+                    clientId,
+                    broadcasterId,
+                    userId,
+                    login = homeViewModel.validatedUser.value?.login ?: "",
+                    oAuthToken= homeViewModel.oAuthToken.value ?:""
+                )
+                streamViewModel.getBetterTTVGlobalEmotes()
+                autoModViewModel.updateAutoModCredentials(
+                    oAuthToken = oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                    moderatorId = streamViewModel.state.value.userId,
+                    broadcasterId = streamViewModel.state.value.broadcasterId,
+                )
+                updateModViewSettings(
+                    oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                    streamViewModel.state.value.userId,
+                )
+                createNewTwitchEventWebSocket()
+                streamViewModel.getChannelEmotes(
+                    oAuthToken,
+                    streamViewModel.state.value.clientId,
+                    streamViewModel.state.value.broadcasterId,
+                )
+                chatSettingsViewModel.getGlobalChatBadges(
+                    oAuthToken = oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                )
+                chatSettingsViewModel.getGlobalEmote(
+                    oAuthToken = oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                )
+                streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+                streamViewModel.clearAllChatters()
+                streamInfoViewModel.getStreamInfo(
+                    authorizationToken = oAuthToken,
+                    clientId = streamViewModel.state.value.clientId,
+                    broadcasterId = streamViewModel.state.value.broadcasterId,
+                )
+                modViewViewModel.getUnbanRequests(
+                    oAuthToken =homeViewModel.oAuthToken.value ?:"",
+                    clientId=clientId,
+                    moderatorId=userId,
+                    broadcasterId=broadcasterId
+                )
+            }
+
+        },
+        updateClickedStreamInfo={
+            //todo: THIS IS WHAT I NEED TO UPDATE
+                clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
+                                },
+        followedStreamerList = homeViewModel.state.value.streamersListLoading,
+        clientId = clientId ?: "",
+        userId = userId ?: "",
+        height = homeViewModel.state.value.aspectHeight,
+        width = homeViewModel.state.value.width,
+        logout = {
+
+            logoutViewModel.setNavigateHome(false)
 //            logoutViewModel.setLoggedOutStatus("TRUE")
-//            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-//                         },
-//        onNavigate = {id -> onNavigate(id) },
-//        updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
-//            if (!lowPowerModeActive) {
-//                homeViewModel.updateClickedStreamerName(streamerName)
-//
-//
-//
-//
-//                Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
-//                streamViewModel.updateChannelNameAndClientIdAndUserId(
-//                    streamerName,
-//                    clientId,
-//                    broadcasterId,
-//                    userId,
-//                    login = homeViewModel.validatedUser.value?.login ?: "",
-//                    oAuthToken= homeViewModel.oAuthToken.value ?:""
-//                )
-//                streamViewModel.getBetterTTVGlobalEmotes()
-//                autoModViewModel.updateAutoModCredentials(
-//                    oAuthToken = oAuthToken,
-//                    clientId = streamViewModel.state.value.clientId,
-//                    moderatorId = streamViewModel.state.value.userId,
-//                    broadcasterId = streamViewModel.state.value.broadcasterId,
-//                )
-//                updateModViewSettings(
-//                    oAuthToken,
-//                    streamViewModel.state.value.clientId,
-//                    streamViewModel.state.value.broadcasterId,
-//                    streamViewModel.state.value.userId,
-//                )
-//                createNewTwitchEventWebSocket()
-//                streamViewModel.getChannelEmotes(
-//                    oAuthToken,
-//                    streamViewModel.state.value.clientId,
-//                    streamViewModel.state.value.broadcasterId,
-//                )
-//                chatSettingsViewModel.getGlobalChatBadges(
-//                    oAuthToken = oAuthToken,
-//                    clientId = streamViewModel.state.value.clientId,
-//                )
-//                chatSettingsViewModel.getGlobalEmote(
-//                    oAuthToken = oAuthToken,
-//                    clientId = streamViewModel.state.value.clientId,
-//                )
-//                streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
-//                streamViewModel.clearAllChatters()
-//                streamInfoViewModel.getStreamInfo(
-//                    authorizationToken = oAuthToken,
-//                    clientId = streamViewModel.state.value.clientId,
-//                    broadcasterId = streamViewModel.state.value.broadcasterId,
-//                )
-//                modViewViewModel.getUnbanRequests(
-//                    oAuthToken =homeViewModel.oAuthToken.value ?:"",
-//                    clientId=clientId,
-//                    moderatorId=userId,
-//                    broadcasterId=broadcasterId
-//                )
-//            }
-//
-//        },
-//        updateClickedStreamInfo={
-//            //todo: THIS IS WHAT I NEED TO UPDATE
-//                clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
-//                                },
-//        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-//        clientId = clientId ?: "",
-//        userId = userId ?: "",
-//        height = homeViewModel.state.value.aspectHeight,
-//        width = homeViewModel.state.value.width,
-//        logout = {
-//
-//            logoutViewModel.setNavigateHome(false)
-////            logoutViewModel.setLoggedOutStatus("TRUE")
-//            logoutViewModel.logout(
-//                clientId = clientId?:"",
-//                oAuthToken = oAuthToken
-//            )
-//            homeViewModel.hideLogoutDialog()
-//            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-//
-//        },
-//        userIsAuthenticated =userIsAuthenticated,
-//        screenDensity = homeViewModel.state.value.screenDensity,
-//        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-//        homeRefreshFunc = {homeViewModel.pullToRefreshHome()},
-//        networkMessageColor=Color.Red,
-//        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-//        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-//        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-//        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-//        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-//        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-//        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
-//        hapticFeedBackError={hapticFeedBackError()},
-//        lowPowerModeActive=lowPowerModeActive,
-//        changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
-//
-//    )
+            logoutViewModel.logout(
+                clientId = clientId?:"",
+                oAuthToken = oAuthToken
+            )
+            homeViewModel.hideLogoutDialog()
+            onNavigate(R.id.action_homeFragment_to_logoutFragment)
+
+        },
+        userIsAuthenticated =userIsAuthenticated,
+        screenDensity = homeViewModel.state.value.screenDensity,
+        homeRefreshing =homeViewModel.state.value.homeRefreshing,
+        homeRefreshFunc = {homeViewModel.pullToRefreshHome()},
+        networkMessageColor=Color.Red,
+        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+        showLogoutDialog ={homeViewModel.showLogoutDialog()},
+        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
+        hapticFeedBackError={hapticFeedBackError()},
+        lowPowerModeActive=lowPowerModeActive,
+        changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
+
+    )
 
 
 
