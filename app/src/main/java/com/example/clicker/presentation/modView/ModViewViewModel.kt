@@ -201,27 +201,7 @@ class ModViewViewModel @Inject constructor(
     //todo: this needs to be broken up into the response and the list
     private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(
         UnAuthorizedResponse.Success(
-            listOf(
-                UnbanRequestItem(
-                    id="111",
-                    broadcaster_name="Antoher one",
-                    broadcaster_login="Another one",
-                    broadcaster_id="34",
-                    user_id="1212",
-                    user_login="Meatballs",
-                    user_name="dave",
-                    text="Please don do me like that",
-                    status="pending",
-                    created_at="2024-09-09",
-                    moderator_id="333",
-                    moderator_login = "",
-                    moderator_name = "",
-                    resolution_text="What even is the resolution text",
-                    resolved_at = "2024-02-02"
-
-
-                )
-            )
+            listOf()
         )
     )
     val unbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
@@ -234,6 +214,15 @@ class ModViewViewModel @Inject constructor(
     private val _getUnbanRequestList: MutableState<UnbanRequestItemImmutableCollection> = mutableStateOf(UnbanRequestItemImmutableCollection(
         unbanRequestItemList
     ))
+    fun sortUnbanRequestList(status:String){
+        val updatedList = _getUnbanRequestList.value.list.toMutableList()
+       val frontList= _getUnbanRequestList.value.list.filter { it.status == status }
+        val backList= _getUnbanRequestList.value.list.filter { it.status != status }
+        val newList = frontList+backList
+
+        _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = newList)
+
+    }
 
     // Publicly exposed immutable state as State
     val getUnbanRequestList: State<UnbanRequestItemImmutableCollection> = _getUnbanRequestList
@@ -265,9 +254,6 @@ class ModViewViewModel @Inject constructor(
     val resolveUnbanRequest: State<Response<Boolean>> = _resolveUnbanRequest
 
 
-    init{
-        Log.d("AutoModMessageHoldType","LOADING")
-    }
 
     fun getUserInformation(userId:String)=viewModelScope.launch(ioDispatcher){
         _clickedUnbanRequestInfo.value = Response.Loading
@@ -407,23 +393,44 @@ class ModViewViewModel @Inject constructor(
 
     addAllUnbanRequestItemList(
         listOf(
-        UnbanRequestItem(
-            id="111",
-            broadcaster_name="Antoher one",
-            broadcaster_login="Another one",
-            broadcaster_id="34",
-            user_id="1212",
-            user_login="Meatballs",
-            user_name="dave",
-            text="Please don do me like that",
-            status="acknowledged",
-            created_at="2024-09-09",
-            moderator_id="333",
-            moderator_login = "",
-            moderator_name = "",
-            resolution_text="What even is the resolution text",
-            resolved_at = "2024-02-02"
-        )
+            UnbanRequestItem(
+                id="111",
+                broadcaster_name="Antoher one",
+                broadcaster_login="Another one",
+                broadcaster_id="34",
+                user_id="1212",
+                user_login="Meatballs",
+                user_name="dave",
+                text="Please don do me like that",
+                status="pending",
+                created_at="2024-09-09",
+                moderator_id="333",
+                moderator_login = "",
+                moderator_name = "",
+                resolution_text="What even is the resolution text",
+                resolved_at = "2024-02-02"
+
+
+            ),
+            UnbanRequestItem(
+                id="222",
+                broadcaster_name="Antoher one",
+                broadcaster_login="Another one",
+                broadcaster_id="34",
+                user_id="1212",
+                user_login="another one",
+                user_name="dave",
+                text="Please don do me like that",
+                status="approved",
+                created_at="2024-09-09",
+                moderator_id="333",
+                moderator_login = "",
+                moderator_name = "",
+                resolution_text="What even is the resolution text",
+                resolved_at = "2024-02-02"
+
+
+            )
         )
     )
 
