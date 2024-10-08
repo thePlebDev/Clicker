@@ -115,6 +115,7 @@ ListTitleValue("1 day",1440),
 data class ClickedUnbanRequestUser(
     val message:String,
     val userName:String,
+    val requestId: String
 )
 @Immutable
 data class ImmutableModeList(
@@ -174,27 +175,18 @@ class ModViewViewModel @Inject constructor(
 ): ViewModel() {
     private var _requestIds: MutableState<RequestIds> = mutableStateOf(RequestIds())
 
-    /**
-     * clickedUnbanRequestID
-     * */
-    private var _clickedUnbanRequestId = mutableStateOf("")
-    val clickedUnbanRequestId =_clickedUnbanRequestId
-    fun updateClickedUnbanRequestId(clickedId:String){
-        _clickedUnbanRequestId.value = clickedId
-    }
 
     /**
      * This is the data that is shown to in the modal once the unban request is selected
      * */
-    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("",""))
+    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("","",""))
     val clickedUnbanRequestUser: State<ClickedUnbanRequestUser> = _clickedUnbanRequestUser
 
-    fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,){
+    fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,requestId:String){
         _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
             message=message,
             userName = username,
-
-
+            requestId = requestId
         )
         Log.d("updateClickedUnbanRequestUser","oAuthToken->${_requestIds.value.oAuthToken}")
         Log.d("updateClickedUnbanRequestUser","clientId->${_requestIds.value.clientId}")
@@ -251,6 +243,7 @@ class ModViewViewModel @Inject constructor(
         _getUnbanRequestList.value = UnbanRequestItemImmutableCollection(unbanRequestItemList)
 
     }
+
     fun clearUnbanRequestItemList(){
         unbanRequestItemList.clear()
         _getUnbanRequestList.value = UnbanRequestItemImmutableCollection(listOf())
@@ -311,16 +304,30 @@ class ModViewViewModel @Inject constructor(
 
 
 
-        Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
-        Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
-        Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
-        Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
+//        Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
+//        Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
+//        Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
+//        Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
         Log.d("resolveUnbanRequestViewModel","unbanRequestId ->$unbanRequestId")
         delay(2000)
-       // val filteredList =_getUnbanRequestList.value.list.find { it.id }
+        val foundRequest = _getUnbanRequestList.value.list.find { it.id == unbanRequestId }
+        foundRequest?.let {
+            val index = _getUnbanRequestList.value.list.indexOf(it)
+            if (index != -1) {
+                val updatedItem = it.copy(
+                    status = "Approved"
+                )
+                // Create a new list with the updated item
+                val updatedList = _getUnbanRequestList.value.list.toMutableList()
+                updatedList[index] = updatedItem
+                _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
+            }
+        }
+
         _resolveUnbanRequest.value = Response.Success(false)
         delay(1000)
         //this needs to be its own list
+
 
 
         _resolveUnbanRequest.value = Response.Success(true)
@@ -409,7 +416,7 @@ class ModViewViewModel @Inject constructor(
             user_login="Meatballs",
             user_name="dave",
             text="Please don do me like that",
-            status="pending",
+            status="acknowledged",
             created_at="2024-09-09",
             moderator_id="333",
             moderator_login = "",
