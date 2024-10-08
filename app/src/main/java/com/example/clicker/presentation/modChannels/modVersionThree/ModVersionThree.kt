@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -55,12 +56,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -771,7 +775,8 @@ fun ModViewComponentVersionThree(
                          updateClickedUser(username,userId,false,false)
                          modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId)
                      },
-                     immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value
+                     immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value,
+                     sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)}
 
 
 
@@ -862,6 +867,7 @@ fun ModVersionThree(
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
     updateClickedUnbanRequest:(String,String,String,String)->Unit,
+    sortUnbanRequest:(String)->Unit
 
 
 
@@ -1013,7 +1019,8 @@ fun ModVersionThree(
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
-                            immutableUnbanRequestList=immutableUnbanRequestList
+                            immutableUnbanRequestList=immutableUnbanRequestList,
+                            sortUnbanRequest={status->sortUnbanRequest(status)}
                         )
                     }
                 )
@@ -1120,7 +1127,8 @@ fun ModVersionThree(
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
-                            immutableUnbanRequestList=immutableUnbanRequestList
+                            immutableUnbanRequestList=immutableUnbanRequestList,
+                            sortUnbanRequest={status->sortUnbanRequest(status)}
                         )
                     }
 
@@ -1228,7 +1236,8 @@ fun ModVersionThree(
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
-                            immutableUnbanRequestList=immutableUnbanRequestList
+                            immutableUnbanRequestList=immutableUnbanRequestList,
+                            sortUnbanRequest={status->sortUnbanRequest(status)}
 
                         )
                     }
@@ -1303,7 +1312,8 @@ fun UnbanRequests(
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
     updateClickedUnbanRequest: (String, String, String,String) -> Unit,
-    immutableUnbanRequestList:UnbanRequestItemImmutableCollection
+    immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
+    sortUnbanRequest:(String)->Unit
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
 
@@ -1318,6 +1328,11 @@ fun UnbanRequests(
                 title = "Unban requests",
                 doubleClickAndDrag =doubleClickAndDrag,
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+            )
+        }
+        stickyHeader {
+            SortingDropDownMenu(
+                sortUnbanRequest={status->sortUnbanRequest(status)}
             )
         }
 
@@ -1385,7 +1400,7 @@ fun IndivUnbanItem(
             .padding(5.dp)
             .clickable {
                 updateClickedUnbanRequest(
-                    username, text, userId,requestId
+                    username, text, userId, requestId
                 )
                 showUnbanRequestModal()
             }
@@ -2658,6 +2673,7 @@ fun LazyColumnStickyClickableHeaderRow(
             fontSize = MaterialTheme.typography.headlineMedium.fontSize,
 
             )
+
         if(doubleClickAndDrag){
             Text(
                 "Double click and drag",
@@ -2668,6 +2684,71 @@ fun LazyColumnStickyClickableHeaderRow(
         }
 
     }
+}
+
+@Composable
+fun SortingDropDownMenu(
+    sortUnbanRequest:(String)->Unit
+){
+    var expanded by remember { mutableStateOf(false) }
+    val iconId = if(expanded)R.drawable.baseline_keyboard_arrow_up_24 else R.drawable.keyboard_arrow_down_24
+    val contentDescription =if(expanded) "open" else "closed"
+    var selectedIndex by remember { mutableStateOf(0) }
+    val items = listOf("pending", "approved", "denied", "canceled", "acknowledged")
+    Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart)) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.End
+        ) {
+            Row(
+                modifier = Modifier
+                    .width(200.dp)
+                    .background(Color.DarkGray)
+                    .clickable {
+                        expanded = !expanded
+                    }
+                ,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ){
+                Text(items[selectedIndex],color = Color.White)
+
+                Icon(painter = painterResource(id =iconId),
+                    contentDescription = contentDescription,
+                    tint = Color.White,modifier = Modifier.size(30.dp))
+            }
+
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.width(300.dp)
+        ) {
+
+            items.forEachIndexed{index, name->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedIndex = index
+                        expanded = false
+                        sortUnbanRequest(items[selectedIndex])
+                    },
+                    text={
+                        Text(name,
+                            color = Color.White,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                )
+            }
+
+
+        }
+
+    }//end of the box
+
+
 }
 
 @Composable
@@ -3113,7 +3194,9 @@ fun ApproveDenyRow(
             modifier = Modifier.fillMaxWidth(),
         ){
             CustomTextField(
-                modifier = Modifier.weight(2f).align(Alignment.CenterVertically)
+                modifier = Modifier
+                    .weight(2f)
+                    .align(Alignment.CenterVertically)
             )
             Row(
                 modifier = Modifier
