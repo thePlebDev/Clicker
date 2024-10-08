@@ -323,9 +323,6 @@ fun ModViewComponentVersionThree(
     } }
 
 
-
-
-
     ModalBottomSheetLayout(
         sheetState=unbanRequestModalState,
         sheetContent = {
@@ -338,9 +335,6 @@ fun ModViewComponentVersionThree(
                         clickedUsername = modViewViewModel.clickedUnbanRequestUser.value.userName,
                         clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
                         clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value,
-                        resolveUnbanRequest={id,status->
-                                modViewViewModel.resolveUnbanRequest(id,status)
-                        }
                     )
                     ClickedUserMessages(
                         globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
@@ -349,6 +343,10 @@ fun ModViewComponentVersionThree(
                         channelBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
                         sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                         clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
+                        resolveUnbanRequest={id,status->
+                            modViewViewModel.resolveUnbanRequest(id,status)
+                        },
+                        clickedRequestId = modViewViewModel.clickedUnbanRequestUser.value.requestId
                     )
 
                 }
@@ -769,9 +767,9 @@ fun ModViewComponentVersionThree(
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
                      unbanRequestResponse = modViewViewModel.unbanRequestResponse.value,
                      showUnbanRequestModal={showUnbanRequestBottomModal()},
-                     updateClickedUnbanRequest={ username,text,userId ->
+                     updateClickedUnbanRequest={ username,text,userId,requestId ->
                          updateClickedUser(username,userId,false,false)
-                         modViewViewModel.updateClickedUnbanRequestUser(username,text,userId)
+                         modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId)
                      },
                      immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value
 
@@ -863,7 +861,7 @@ fun ModVersionThree(
 
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest:(String,String,String)->Unit,
+    updateClickedUnbanRequest:(String,String,String,String)->Unit,
 
 
 
@@ -1014,7 +1012,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList
                         )
                     }
@@ -1121,7 +1119,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList
                         )
                     }
@@ -1229,7 +1227,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList
 
                         )
@@ -1304,7 +1302,7 @@ fun UnbanRequests(
     doubleClickAndDrag: Boolean,
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest: (String, String, String) -> Unit,
+    updateClickedUnbanRequest: (String, String, String,String) -> Unit,
     immutableUnbanRequestList:UnbanRequestItemImmutableCollection
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
@@ -1335,8 +1333,9 @@ fun UnbanRequests(
                         status = it.status,
                         time = it.created_at,
                         userId=it.user_id,
+                        requestId = it.id,
                         showUnbanRequestModal={showUnbanRequestModal()},
-                        updateClickedUnbanRequest={username,text,userId ->updateClickedUnbanRequest(username,text,userId)}
+                        updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)}
                     )
 
                 }
@@ -1373,9 +1372,9 @@ fun IndivUnbanItem(
     status:String,
     time:String,
     userId:String,
-   // messageId:String,
+    requestId:String,
     showUnbanRequestModal: () -> Unit,
-    updateClickedUnbanRequest:(String,String,String)->Unit
+    updateClickedUnbanRequest:(String,String,String,String)->Unit
 ){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -1386,7 +1385,7 @@ fun IndivUnbanItem(
             .padding(5.dp)
             .clickable {
                 updateClickedUnbanRequest(
-                    username, text, userId
+                    username, text, userId,requestId
                 )
                 showUnbanRequestModal()
             }
@@ -1409,7 +1408,24 @@ fun IndivUnbanItem(
                 }
                 Text("$time: $text", fontSize = MaterialTheme.typography.headlineSmall.fontSize, color = Color.White)
             }
-            Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color.Yellow, fontSize = 13.sp)
+            when(status){
+                "pending"->{
+                    Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color.Yellow, fontSize = 13.sp)
+                }
+                "approved"->{
+                    Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color.Green, fontSize = 13.sp)
+                }
+                "denied"->{
+                    Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color.Red, fontSize = 13.sp)
+                }
+                "acknowledged"->{
+                    Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color(0xFF008080), fontSize = 13.sp)
+                }
+                "canceled"->{
+                    Text(status,modifier = Modifier.align(Alignment.TopEnd),color = Color(0xFF7F8C8D), fontSize = 13.sp)
+                }
+            }
+
 
         }
     }
@@ -2744,45 +2760,6 @@ fun NewIconTextRowBroken(
 
 
 
-@Composable
-fun AutoModItemPendingText(
-    approved:Boolean?,
-){
-    when(approved){
-        null ->{
-            Text("Pending", fontSize = MaterialTheme.typography.headlineSmall.fontSize)
-        }
-        true ->{
-            Row(){
-                Icon(painter = painterResource(id =R.drawable.baseline_check_24), contentDescription = "",tint = Color.Green)
-                Text("Approved")
-            }
-        }
-        false ->{
-            Row(){
-                Text("Denied")
-                Icon(painter = painterResource(id =R.drawable.baseline_close_24), contentDescription = "",tint = Color.Red)
-            }
-        }
-    }
-
-
-}
-@Composable
-fun AutoModItemRowTesting(
-    category:String,
-){
-    Row(){
-        Spacer(modifier =Modifier.height(5.dp))
-        Icon(painter = painterResource(id =R.drawable.mod_view_24), contentDescription = "")
-        Text(category)
-        Spacer(modifier =Modifier.height(20.dp))
-    }
-
-}
-
-
-
 
 @Composable
 fun ModActionNotificationMessage(
@@ -2987,6 +2964,8 @@ fun ClickedUserMessages(
     globalBetterTTVEmoteContentMap:EmoteListMap,
     channelBetterTTVEmoteContentMap:EmoteListMap,
     sharedBetterTTVEmoteContentMap:EmoteListMap,
+    resolveUnbanRequest: (String, UnbanStatusFilter) -> Unit,
+    clickedRequestId:String
 ){
     val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
 
@@ -3052,8 +3031,8 @@ fun ClickedUserMessages(
             }
         }
         ApproveDenyRow(
-            resolveUnbanRequest={id,status->
-              //  modViewViewModel.resolveUnbanRequest(id,status)
+            resolveUnbanRequest={status->
+                resolveUnbanRequest(clickedRequestId,status)
             },
             modifier = Modifier
         )
@@ -3065,7 +3044,6 @@ fun NewContentBanner(
     clickedUsername:String,
     clickedMessage:String,
     clickedUserInfo:Response<ClickedUnbanRequestInfo>,
-    resolveUnbanRequest:(String, UnbanStatusFilter)->Unit
 ){
 
 
@@ -3121,8 +3099,9 @@ fun NewContentBanner(
 
 @Composable
 fun ApproveDenyRow(
-    resolveUnbanRequest:(String, UnbanStatusFilter)->Unit,
-    modifier:Modifier
+    resolveUnbanRequest:(UnbanStatusFilter)->Unit,
+    modifier:Modifier,
+
 ){
 
     Column(
@@ -3146,7 +3125,7 @@ fun ApproveDenyRow(
 
                 ElevatedCard(
                     modifier = Modifier.clickable {
-
+                        resolveUnbanRequest( UnbanStatusFilter.APPROVED)
                     },
 
                     elevation = CardDefaults.cardElevation(
@@ -3168,7 +3147,7 @@ fun ApproveDenyRow(
 
                 ElevatedCard(
                     modifier = Modifier.clickable {
-
+                        resolveUnbanRequest( UnbanStatusFilter.DENIED)
                     },
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 6.dp
