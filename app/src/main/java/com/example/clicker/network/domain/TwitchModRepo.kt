@@ -76,6 +76,7 @@ interface TwitchModRepo {
         moderatorID: String,
         status: UnbanStatusFilter,
         unbanRequestId:String,
+        resolutionText:String,
     ): Flow<UnAuthorizedResponse<Boolean>>
 }
 

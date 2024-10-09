@@ -183,6 +183,13 @@ class ModViewViewModel @Inject constructor(
     private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("","","",""))
     val clickedUnbanRequestUser: State<ClickedUnbanRequestUser> = _clickedUnbanRequestUser
 
+    private val _optionalResolutionText: MutableState<String> = mutableStateOf("")
+    val optionalResolutionText: State<String> = _optionalResolutionText
+
+    fun updateOptionalResolutionText(text:String){
+        _optionalResolutionText.value = text
+    }
+
     fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,requestId:String,status:String){
         _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
             message=message,
@@ -299,7 +306,8 @@ class ModViewViewModel @Inject constructor(
             moderatorID = _requestIds.value.moderatorId,
             broadcasterId = _requestIds.value.broadcasterId,
             status = status,
-            unbanRequestId = unbanRequestId
+            unbanRequestId = unbanRequestId,
+            resolutionText = _optionalResolutionText.value
         ).collect{response ->
             when(response){
                 is UnAuthorizedResponse.Loading ->{
@@ -312,11 +320,12 @@ class ModViewViewModel @Inject constructor(
                     foundRequest?.let {
                         val index = _getUnbanRequestList.value.list.indexOf(it)
                         if (index != -1) {
+                            val updatedStatus = if (status.toString() =="approved") "approved" else "denied"
                             val updatedItem = it.copy(
-                                status = "approved"
+                                status = updatedStatus
                             )
                             _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
-                                status = "approved"
+                                status = updatedStatus
                             )
                             // Create a new list with the updated item
                             val updatedList = _getUnbanRequestList.value.list.toMutableList()
@@ -366,108 +375,28 @@ class ModViewViewModel @Inject constructor(
     )=viewModelScope.launch(ioDispatcher){
         //TODO: CLEAR THE OLD UnbanRequestItemList
         clearUnbanRequestItemList()
-//        Log.d("getUnbanRequestsFunc","oAuth ->${_requestIds.value.oAuthToken}")
-//        Log.d("getUnbanRequestsFunc","clientId ->${_requestIds.value.clientId}")
-//        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
-//        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
+        addAllUnbanRequestItemList(
+            listOf(
+                UnbanRequestItem(
+                    id = "12345",
+                    broadcaster_name = "BroadcasterName",
+                    broadcaster_login = "broadcaster_login",
+                    broadcaster_id = "broadcaster123",
+                    moderator_id = "mod123",
+                    moderator_login = "mod_login",
+                    moderator_name = "ModeratorName",
+                    user_id = "user456",
+                    user_login = "user_login",
+                    user_name = "UserName",
+                    text = "Request for unban due to misunderstanding.",
+                    status = "pending",
+                    created_at = "2024-10-09T12:34:56Z",
+                    resolved_at = null,
+                    resolution_text = null
+                )
+            )
+        )
 
-//    addAllUnbanRequestItemList(
-//        listOf(
-//            UnbanRequestItem(
-//                id="111",
-//                broadcaster_name="Antoher one",
-//                broadcaster_login="Another one",
-//                broadcaster_id="34",
-//                user_id="1212",
-//                user_login="Meatballs",
-//                user_name="dave",
-//                text="Please don do me like that",
-//                status="pending",
-//                created_at="2024-09-09",
-//                moderator_id="333",
-//                moderator_login = "",
-//                moderator_name = "",
-//                resolution_text="What even is the resolution text",
-//                resolved_at = "2024-02-02"
-//
-//
-//            ),
-//            UnbanRequestItem(
-//                id="222",
-//                broadcaster_name="Antoher one",
-//                broadcaster_login="Another one",
-//                broadcaster_id="34",
-//                user_id="1212",
-//                user_login="another one",
-//                user_name="dave",
-//                text="Please don do me like that",
-//                status="approved",
-//                created_at="2024-09-09",
-//                moderator_id="333",
-//                moderator_login = "",
-//                moderator_name = "",
-//                resolution_text="What even is the resolution text",
-//                resolved_at = "2024-02-02"
-//
-//
-//            ),
-//            UnbanRequestItem(
-//                id="222",
-//                broadcaster_name="Antoher one",
-//                broadcaster_login="Another one",
-//                broadcaster_id="34",
-//                user_id="1212",
-//                user_login="another one",
-//                user_name="dave",
-//                text="Please don do me like that",
-//                status="denied",
-//                created_at="2024-09-09",
-//                moderator_id="333",
-//                moderator_login = "",
-//                moderator_name = "",
-//                resolution_text="What even is the resolution text",
-//                resolved_at = "2024-02-02"
-//            ),
-//            UnbanRequestItem(
-//                id="222",
-//                broadcaster_name="Antoher one",
-//                broadcaster_login="Another one",
-//                broadcaster_id="34",
-//                user_id="1212",
-//                user_login="another one",
-//                user_name="dave",
-//                text="Please don do me like that",
-//                status="canceled",
-//                created_at="2024-09-09",
-//                moderator_id="333",
-//                moderator_login = "",
-//                moderator_name = "",
-//                resolution_text="What even is the resolution text",
-//                resolved_at = "2024-02-02"
-//
-//
-//            ),
-//            UnbanRequestItem(
-//                id="222",
-//            broadcaster_name="Antoher one",
-//            broadcaster_login="Another one",
-//            broadcaster_id="34",
-//            user_id="1212",
-//            user_login="another one",
-//            user_name="dave",
-//            text="Please don do me like that",
-//            status="pending",
-//            created_at="2024-09-09",
-//            moderator_id="333",
-//            moderator_login = "",
-//            moderator_name = "",
-//            resolution_text="What even is the resolution text",
-//            resolved_at = "2024-02-02"
-//
-//
-//        )
-//        )
-//    )
 
 
         twitchModRepo.getUnbanRequests(
