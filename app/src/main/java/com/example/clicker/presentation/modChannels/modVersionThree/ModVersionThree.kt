@@ -353,6 +353,8 @@ fun ModViewComponentVersionThree(
                         },
                         clickedRequestId = modViewViewModel.clickedUnbanRequestUser.value.requestId,
                         clickedStatus = modViewViewModel.clickedUnbanRequestUser.value.status,
+                        resolutionText=modViewViewModel.optionalResolutionText.value,
+                        updateResolutionText={newText->modViewViewModel.updateOptionalResolutionText(newText)}
                     )
 
                 }
@@ -3105,7 +3107,9 @@ fun ClickedUserMessages(
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     resolveUnbanRequest: (String, UnbanStatusFilter) -> Unit,
     clickedRequestId:String,
-    clickedStatus:String
+    clickedStatus:String,
+    resolutionText:String,
+    updateResolutionText: (String) -> Unit
 ){
     val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
 
@@ -3172,7 +3176,9 @@ fun ClickedUserMessages(
                 resolveUnbanRequest(clickedRequestId,status)
             },
             modifier = Modifier,
-            clickedStatus=clickedStatus
+            clickedStatus=clickedStatus,
+            resolutionText=resolutionText,
+            updateResolutionText={newText->updateResolutionText(newText)}
         )
     }//this is the end of the column
 }
@@ -3263,7 +3269,9 @@ fun NewContentBanner(
 fun ApproveDenyRow(
     resolveUnbanRequest:(UnbanStatusFilter)->Unit,
     modifier:Modifier,
-    clickedStatus:String
+    clickedStatus:String,
+    resolutionText:String,
+    updateResolutionText: (String) -> Unit
 ){
 
     Column(
@@ -3277,7 +3285,10 @@ fun ApproveDenyRow(
             CustomTextField(
                 modifier = Modifier
                     .weight(2f)
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterVertically),
+                resolutionText=resolutionText,
+                updateResolutionText={newText->updateResolutionText(newText)}
+
             )
             if(clickedStatus !in listOf("approved", "denied","canceled")){
                 Row(
@@ -3345,9 +3356,11 @@ fun ApproveDenyRow(
 
 @Composable
 fun CustomTextField(
-    modifier: Modifier
+    modifier: Modifier,
+    resolutionText:String,
+    updateResolutionText:(String) ->Unit
 ){
-    var text by remember { mutableStateOf("") }
+
     val customTextSelectionColors = TextSelectionColors(
         handleColor = MaterialTheme.colorScheme.secondary,
         backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
@@ -3359,10 +3372,14 @@ fun CustomTextField(
             modifier = modifier,
             singleLine = true,
 
-            value = text,
+            value = resolutionText,
 
             shape = RoundedCornerShape(8.dp),
-            onValueChange = { text = it },
+            onValueChange = {
+                if (resolutionText.length <= 480 || it.length < resolutionText.length) {
+                    updateResolutionText(it)
+                }
+                            },
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.White,
                 backgroundColor = Color.DarkGray,

@@ -79,6 +79,7 @@ interface TwitchModClient {
         @Query("moderator_id") moderatorID: String,
         @Query("status") status: String,
         @Query("unban_request_id") unbanRequestID: String,
+        @Query("resolution_text") resolutionText: String,
     ): Response<UnbanRequestData>
 
 
