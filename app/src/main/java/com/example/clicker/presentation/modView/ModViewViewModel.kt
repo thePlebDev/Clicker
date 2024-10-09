@@ -290,85 +290,59 @@ class ModViewViewModel @Inject constructor(
 
 
 
-//        Log.d("resolveUnbanRequestViewModel","oAuth ->${_requestIds.value.oAuthToken}")
-//        Log.d("resolveUnbanRequestViewModel","clientId ->${_requestIds.value.clientId}")
-//        Log.d("resolveUnbanRequestViewModel","moderatorId ->${_requestIds.value.moderatorId}")
-//        Log.d("resolveUnbanRequestViewModel","broadcasterId ->${_requestIds.value.broadcasterId}")
-        Log.d("resolveUnbanRequestViewModel","unbanRequestId ->$unbanRequestId")
-        delay(2000)
-        val foundRequest = _getUnbanRequestList.value.list.find { it.id == unbanRequestId }
-        foundRequest?.let {
-            val index = _getUnbanRequestList.value.list.indexOf(it)
-            if (index != -1) {
-                val updatedItem = it.copy(
-                    status = "Approved"
-                )
-                // Create a new list with the updated item
-                val updatedList = _getUnbanRequestList.value.list.toMutableList()
-                updatedList[index] = updatedItem
-                _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
+
+
+
+        twitchModRepo.approveUnbanRequests(
+            authorizationToken=_requestIds.value.oAuthToken,
+            clientId =_requestIds.value.clientId ,
+            moderatorID = _requestIds.value.moderatorId,
+            broadcasterId = _requestIds.value.broadcasterId,
+            status = status,
+            unbanRequestId = unbanRequestId
+        ).collect{response ->
+            when(response){
+                is UnAuthorizedResponse.Loading ->{
+                    Log.d("resolveUnbanRequest","Loading")
+                }
+                is UnAuthorizedResponse.Success ->{
+                    Log.d("resolveUnbanRequest","SUCCESS")
+
+                    val foundRequest = _getUnbanRequestList.value.list.find { it.id == unbanRequestId }
+                    foundRequest?.let {
+                        val index = _getUnbanRequestList.value.list.indexOf(it)
+                        if (index != -1) {
+                            val updatedItem = it.copy(
+                                status = "approved"
+                            )
+                            _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
+                                status = "approved"
+                            )
+                            // Create a new list with the updated item
+                            val updatedList = _getUnbanRequestList.value.list.toMutableList()
+                            updatedList[index] = updatedItem
+                            _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
+                        }
+                    }
+                    _resolveUnbanRequest.value = Response.Success(false)
+                    delay(1000)
+                    _resolveUnbanRequest.value = Response.Success(true)
+                }
+                is UnAuthorizedResponse.Failure ->{
+                    Log.d("resolveUnbanRequest","FAILED")
+                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
+                    delay(1000)
+                    _resolveUnbanRequest.value = Response.Success(true)
+                }
+                is UnAuthorizedResponse.Auth401Failure ->{
+                    Log.d("resolveUnbanRequest","Auth401Failure")
+                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
+                    delay(3000)
+                    _resolveUnbanRequest.value = Response.Success(true)
+                }
             }
+
         }
-
-        _resolveUnbanRequest.value = Response.Success(false)
-        delay(1000)
-        //this needs to be its own list
-
-
-
-        _resolveUnbanRequest.value = Response.Success(true)
-
-
-
-//
-//        twitchModRepo.approveUnbanRequests(
-//            authorizationToken=_requestIds.value.oAuthToken,
-//            clientId =_requestIds.value.clientId ,
-//            moderatorID = _requestIds.value.moderatorId,
-//            broadcasterId = _requestIds.value.broadcasterId,
-//            status = status,
-//            unbanRequestId = unbanRequestId
-//        ).collect{response ->
-//            when(response){
-//                is UnAuthorizedResponse.Loading ->{}
-//                is UnAuthorizedResponse.Success ->{
-//
-//                    val index = unbanRequestItemList.indexOfFirst { it.id == unbanRequestId }
-//                    val mutableListTesting = mutableListOf< UnbanRequestItem>()
-//                    mutableListTesting.addAll(unbanRequestItemList.toList())
-//
-//                    if (index != -1) {
-//                        // Update the item's status to "approved"
-//                        if(status == UnbanStatusFilter.APPROVED){
-//                            val updatedItem = mutableListTesting[index].copy(status = "approved")
-//                            mutableListTesting[index] = updatedItem
-//                            clearUnbanRequestItemList()
-//                            addAllUnbanRequestItemList(mutableListTesting)
-//                        }
-//                        else if(status == UnbanStatusFilter.DENIED){
-//                            val updatedItem = mutableListTesting[index].copy(status = "denied")
-//                            mutableListTesting[index] = updatedItem
-//                            clearUnbanRequestItemList()
-//                            addAllUnbanRequestItemList(mutableListTesting)
-//
-//                            }
-//
-//                    }
-//                    _resolveUnbanRequest.value = Response.Success(true)
-//                }
-//                is UnAuthorizedResponse.Failure ->{
-//                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
-//                    delay(1000)
-//                    _resolveUnbanRequest.value = Response.Success(true)
-//                }
-//                is UnAuthorizedResponse.Auth401Failure ->{
-//                    _resolveUnbanRequest.value = Response.Failure(Exception("FAILED AGAIN"))
-//                    delay(3000)
-//                    _resolveUnbanRequest.value = Response.Success(true)
-//                }
-//            }
-//
-//        }
 
 
 
@@ -397,145 +371,146 @@ class ModViewViewModel @Inject constructor(
 //        Log.d("getUnbanRequestsFunc","moderatorId ->${_requestIds.value.moderatorId}")
 //        Log.d("getUnbanRequestsFunc","broadcasterId ->${_requestIds.value.broadcasterId}")
 
-    addAllUnbanRequestItemList(
-        listOf(
-            UnbanRequestItem(
-                id="111",
-                broadcaster_name="Antoher one",
-                broadcaster_login="Another one",
-                broadcaster_id="34",
-                user_id="1212",
-                user_login="Meatballs",
-                user_name="dave",
-                text="Please don do me like that",
-                status="pending",
-                created_at="2024-09-09",
-                moderator_id="333",
-                moderator_login = "",
-                moderator_name = "",
-                resolution_text="What even is the resolution text",
-                resolved_at = "2024-02-02"
-
-
-            ),
-            UnbanRequestItem(
-                id="222",
-                broadcaster_name="Antoher one",
-                broadcaster_login="Another one",
-                broadcaster_id="34",
-                user_id="1212",
-                user_login="another one",
-                user_name="dave",
-                text="Please don do me like that",
-                status="approved",
-                created_at="2024-09-09",
-                moderator_id="333",
-                moderator_login = "",
-                moderator_name = "",
-                resolution_text="What even is the resolution text",
-                resolved_at = "2024-02-02"
-
-
-            ),
-            UnbanRequestItem(
-                id="222",
-                broadcaster_name="Antoher one",
-                broadcaster_login="Another one",
-                broadcaster_id="34",
-                user_id="1212",
-                user_login="another one",
-                user_name="dave",
-                text="Please don do me like that",
-                status="denied",
-                created_at="2024-09-09",
-                moderator_id="333",
-                moderator_login = "",
-                moderator_name = "",
-                resolution_text="What even is the resolution text",
-                resolved_at = "2024-02-02"
-            ),
-            UnbanRequestItem(
-                id="222",
-                broadcaster_name="Antoher one",
-                broadcaster_login="Another one",
-                broadcaster_id="34",
-                user_id="1212",
-                user_login="another one",
-                user_name="dave",
-                text="Please don do me like that",
-                status="canceled",
-                created_at="2024-09-09",
-                moderator_id="333",
-                moderator_login = "",
-                moderator_name = "",
-                resolution_text="What even is the resolution text",
-                resolved_at = "2024-02-02"
-
-
-            ),
-            UnbanRequestItem(
-                id="222",
-            broadcaster_name="Antoher one",
-            broadcaster_login="Another one",
-            broadcaster_id="34",
-            user_id="1212",
-            user_login="another one",
-            user_name="dave",
-            text="Please don do me like that",
-            status="pending",
-            created_at="2024-09-09",
-            moderator_id="333",
-            moderator_login = "",
-            moderator_name = "",
-            resolution_text="What even is the resolution text",
-            resolved_at = "2024-02-02"
-
-
-        )
-        )
-    )
-
-
-//        twitchModRepo.getUnbanRequests(
-//            authorizationToken=oAuthToken,
-//            clientId =clientId ,
-//            moderatorID = moderatorId,
-//            broadcasterId = broadcasterId,
-//            status = UnbanStatusFilter.PENDING
-//        ).collect{response ->
-//            when(response){
-//                is UnAuthorizedResponse.Loading ->{
-//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
-//                    Log.d("getUnbanRequestsFunc","LOADING")
-//                }
-//                is UnAuthorizedResponse.Success ->{
-//                    //todo: I need to change when the response gets added
-//                    val data = response.data
-//                    if(data.isNotEmpty()){
-//                        val newData = data.map {
-//                            it.copy(
-//                                created_at = it.created_at.split("T")[0]
-//                            )
-//                        }
-//                        _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
-//                        addAllUnbanRequestItemList(data)
-//                    }
+//    addAllUnbanRequestItemList(
+//        listOf(
+//            UnbanRequestItem(
+//                id="111",
+//                broadcaster_name="Antoher one",
+//                broadcaster_login="Another one",
+//                broadcaster_id="34",
+//                user_id="1212",
+//                user_login="Meatballs",
+//                user_name="dave",
+//                text="Please don do me like that",
+//                status="pending",
+//                created_at="2024-09-09",
+//                moderator_id="333",
+//                moderator_login = "",
+//                moderator_name = "",
+//                resolution_text="What even is the resolution text",
+//                resolved_at = "2024-02-02"
 //
-//                    Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
 //
-//                }
-//                is UnAuthorizedResponse.Auth401Failure ->{
-//                    Log.d("getUnbanRequestsFunc","Auth401Failure")
-//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
-//                }
-//                is UnAuthorizedResponse.Failure->{
-//                    Log.d("getUnbanRequestsFunc","Failure")
-//                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+//            ),
+//            UnbanRequestItem(
+//                id="222",
+//                broadcaster_name="Antoher one",
+//                broadcaster_login="Another one",
+//                broadcaster_id="34",
+//                user_id="1212",
+//                user_login="another one",
+//                user_name="dave",
+//                text="Please don do me like that",
+//                status="approved",
+//                created_at="2024-09-09",
+//                moderator_id="333",
+//                moderator_login = "",
+//                moderator_name = "",
+//                resolution_text="What even is the resolution text",
+//                resolved_at = "2024-02-02"
 //
-//                }
-//            }
 //
-//        }
+//            ),
+//            UnbanRequestItem(
+//                id="222",
+//                broadcaster_name="Antoher one",
+//                broadcaster_login="Another one",
+//                broadcaster_id="34",
+//                user_id="1212",
+//                user_login="another one",
+//                user_name="dave",
+//                text="Please don do me like that",
+//                status="denied",
+//                created_at="2024-09-09",
+//                moderator_id="333",
+//                moderator_login = "",
+//                moderator_name = "",
+//                resolution_text="What even is the resolution text",
+//                resolved_at = "2024-02-02"
+//            ),
+//            UnbanRequestItem(
+//                id="222",
+//                broadcaster_name="Antoher one",
+//                broadcaster_login="Another one",
+//                broadcaster_id="34",
+//                user_id="1212",
+//                user_login="another one",
+//                user_name="dave",
+//                text="Please don do me like that",
+//                status="canceled",
+//                created_at="2024-09-09",
+//                moderator_id="333",
+//                moderator_login = "",
+//                moderator_name = "",
+//                resolution_text="What even is the resolution text",
+//                resolved_at = "2024-02-02"
+//
+//
+//            ),
+//            UnbanRequestItem(
+//                id="222",
+//            broadcaster_name="Antoher one",
+//            broadcaster_login="Another one",
+//            broadcaster_id="34",
+//            user_id="1212",
+//            user_login="another one",
+//            user_name="dave",
+//            text="Please don do me like that",
+//            status="pending",
+//            created_at="2024-09-09",
+//            moderator_id="333",
+//            moderator_login = "",
+//            moderator_name = "",
+//            resolution_text="What even is the resolution text",
+//            resolved_at = "2024-02-02"
+//
+//
+//        )
+//        )
+//    )
+
+
+        twitchModRepo.getUnbanRequests(
+            authorizationToken=oAuthToken,
+            clientId =clientId ,
+            moderatorID = moderatorId,
+            broadcasterId = broadcasterId,
+            status = UnbanStatusFilter.PENDING
+        ).collect{response ->
+            when(response){
+                is UnAuthorizedResponse.Loading ->{
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Loading
+                    Log.d("getUnbanRequestsFunc","LOADING")
+                }
+                is UnAuthorizedResponse.Success ->{
+                    //todo: I need to change when the response gets added
+                    val data = response.data
+                    if(data.isNotEmpty()){
+                        val newData = data.map {
+                            it.copy(
+                                created_at = it.created_at.split("T")[0]
+                            )
+                        }
+                        _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
+                        addAllUnbanRequestItemList(data)
+                    }
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(listOf())
+
+                    Log.d("getUnbanRequestsFunc","SUCCESS -->${data}")
+
+                }
+                is UnAuthorizedResponse.Auth401Failure ->{
+                    Log.d("getUnbanRequestsFunc","Auth401Failure")
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Auth401Failure(Exception("FAILED"))
+                }
+                is UnAuthorizedResponse.Failure->{
+                    Log.d("getUnbanRequestsFunc","Failure")
+                    _getUnbanRequestResponse.value = UnAuthorizedResponse.Failure(Exception("FAILED"))
+
+                }
+            }
+
+        }
 
 
     }
