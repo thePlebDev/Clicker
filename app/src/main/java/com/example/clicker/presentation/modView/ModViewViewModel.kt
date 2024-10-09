@@ -200,9 +200,7 @@ class ModViewViewModel @Inject constructor(
      * */
     //todo: this needs to be broken up into the response and the list
     private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(
-        UnAuthorizedResponse.Success(
-            listOf()
-        )
+        UnAuthorizedResponse.Success(listOf())
     )
     val unbanRequestResponse: State<UnAuthorizedResponse<List<UnbanRequestItem>>> = _getUnbanRequestResponse
 
@@ -375,9 +373,15 @@ class ModViewViewModel @Inject constructor(
 
     }
 
-//    fun retryGetUnbanRequest(){
-//        getUnbanRequests()
-//    }
+    fun retryGetUnbanRequest(){
+
+        getUnbanRequests(
+            oAuthToken = _requestIds.value.oAuthToken,
+            clientId = _requestIds.value.clientId,
+            moderatorId=_requestIds.value.moderatorId,
+            broadcasterId=_requestIds.value.broadcasterId
+        )
+    }
     fun getUnbanRequests(
          oAuthToken:String,
          clientId: String,

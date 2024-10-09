@@ -776,7 +776,8 @@ fun ModViewComponentVersionThree(
                          modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId)
                      },
                      immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value,
-                     sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)}
+                     sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)},
+                     retryUnbanRequests={modViewViewModel.retryGetUnbanRequest()}
 
 
 
@@ -867,7 +868,8 @@ fun ModVersionThree(
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
     updateClickedUnbanRequest:(String,String,String,String)->Unit,
-    sortUnbanRequest:(String)->Unit
+    sortUnbanRequest:(String)->Unit,
+    retryUnbanRequests:()->Unit,
 
 
 
@@ -1020,7 +1022,8 @@ fun ModVersionThree(
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
-                            sortUnbanRequest={status->sortUnbanRequest(status)}
+                            sortUnbanRequest={status->sortUnbanRequest(status)},
+                            retryUnbanRequests={retryUnbanRequests()}
                         )
                     }
                 )
@@ -1128,7 +1131,8 @@ fun ModVersionThree(
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
-                            sortUnbanRequest={status->sortUnbanRequest(status)}
+                            sortUnbanRequest={status->sortUnbanRequest(status)},
+                            retryUnbanRequests={retryUnbanRequests()}
                         )
                     }
 
@@ -1237,7 +1241,8 @@ fun ModVersionThree(
                             showUnbanRequestModal={showUnbanRequestModal()},
                             updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
-                            sortUnbanRequest={status->sortUnbanRequest(status)}
+                            sortUnbanRequest={status->sortUnbanRequest(status)},
+                            retryUnbanRequests={retryUnbanRequests()}
 
                         )
                     }
@@ -1313,10 +1318,66 @@ fun UnbanRequests(
     showUnbanRequestModal:()->Unit,
     updateClickedUnbanRequest: (String, String, String,String) -> Unit,
     immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
-    sortUnbanRequest:(String)->Unit
+    sortUnbanRequest:(String)->Unit,
+    retryUnbanRequests:()->Unit,
 ){
     Log.d("UnbanRequestsRecomp","Recomping")
 
+
+    when(unbanRequestResponse){
+        is UnAuthorizedResponse.Loading ->{
+            LoadingIndicator(
+                setDragging={value -> setDragging(value)},
+                title = "Unban requests"
+            )
+        }
+        is UnAuthorizedResponse.Success ->{
+            UnbanRequestLazyColumn(
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
+                sortUnbanRequest={status->sortUnbanRequest(status)},
+                showUnbanRequestModal={showUnbanRequestModal()},
+                updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
+                setDragging = { value -> setDragging(value) },
+                immutableUnbanRequestList=immutableUnbanRequestList
+
+
+            )
+
+        }
+        is UnAuthorizedResponse.Failure ->{
+            FailedClickToTryAgainBox(
+                setDragging={value -> setDragging(value)},
+                title = "Unban requests",
+                retryRequest={retryUnbanRequests()}
+            )
+
+        }
+        is UnAuthorizedResponse.Auth401Failure->{
+            NewErrorMessage403(
+                setDragging = { value -> setDragging(value) },
+                title = "Unban requests",
+                doubleClickAndDrag =doubleClickAndDrag,
+                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
+            )
+
+        }
+
+    }
+    
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun UnbanRequestLazyColumn(
+    setDragging: (Boolean) -> Unit,
+    setDoubleClickAndDragFalse: () -> Unit,
+    doubleClickAndDrag: Boolean,
+    showUnbanRequestModal:()->Unit,
+    updateClickedUnbanRequest: (String, String, String,String) -> Unit,
+    immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
+    sortUnbanRequest:(String)->Unit,
+
+){
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1335,49 +1396,35 @@ fun UnbanRequests(
                 sortUnbanRequest={status->sortUnbanRequest(status)}
             )
         }
+        items(immutableUnbanRequestList.list){
+            IndivUnbanItem(
+                username = it.user_login,
+                text = it.text,
+                status = it.status,
+                time = it.created_at,
+                userId=it.user_id,
+                requestId = it.id,
+                showUnbanRequestModal={showUnbanRequestModal()},
+                updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)}
+            )
 
-
-
-        when(unbanRequestResponse){
-            is UnAuthorizedResponse.Loading ->{}
-            is UnAuthorizedResponse.Success ->{
-                items(immutableUnbanRequestList.list){
-                    IndivUnbanItem(
-                        username = it.user_login,
-                        text = it.text,
-                        status = it.status,
-                        time = it.created_at,
-                        userId=it.user_id,
-                        requestId = it.id,
-                        showUnbanRequestModal={showUnbanRequestModal()},
-                        updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)}
-                    )
-
-                }
-                if(immutableUnbanRequestList.list.isEmpty()){
-                    item{
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
-                            Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                            Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
-
-                        }
-                    }
-
-                }
-            }
-            is UnAuthorizedResponse.Failure ->{}
-            is UnAuthorizedResponse.Auth401Failure->{
-
-            }
-
-            }
         }
+        if(immutableUnbanRequestList.list.isEmpty()){
+            item{
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Icon(painterResource(id = R.drawable.autorenew_24),contentDescription = "no unban requests",modifier = Modifier.size(35.dp))
+                    Text("Ready to receive Unban Requests",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                    Text("Requests you receive from banned users will display here",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
 
+                }
+            }
+
+        }
+    }
 }
 
 @Composable
@@ -1517,7 +1564,7 @@ fun ContentDragBox(
         }
         99->{
             //this is meant to help with the doubles and triples
-            //The UI is the same as an empty box. However, it can not be overriden and will count as if there is
+            //The UI is the same as an empty box. However, item can not be overriden and will count as if there is
             //an actual item inside of the place
             Column(modifier = Modifier
                 .fillMaxSize()
@@ -2347,7 +2394,8 @@ fun NewModActions(
                 //should be a button to retry
                 FailedClickToTryAgainBox(
                     setDragging={value -> setDragging(value)},
-                    title = "MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size}"
+                    title = "MOD ACTIONS: ${modActionListImmutableCollection.modActionList.size}",
+                    retryRequest={}
                 )
 
             }
@@ -2695,7 +2743,9 @@ fun SortingDropDownMenu(
     val contentDescription =if(expanded) "open" else "closed"
     var selectedIndex by remember { mutableStateOf(0) }
     val items = listOf("pending", "approved", "denied", "canceled", "acknowledged")
-    Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .wrapContentSize(Alignment.TopStart)) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End
@@ -2919,7 +2969,9 @@ fun LoadingIndicator(
 @Composable
 fun FailedClickToTryAgainBox(
     setDragging: (Boolean) -> Unit,
-    title:String
+    title:String,
+    retryRequest:()->Unit
+
 ){
     val hapticFeedback = LocalHapticFeedback.current
     Box(modifier = Modifier
@@ -2944,7 +2996,9 @@ fun FailedClickToTryAgainBox(
         )
 
         ElevatedButton(
-            onClick = {  },
+            onClick = {
+                retryRequest()
+            },
             modifier = Modifier.align(Alignment.Center),
             border = BorderStroke(1.dp,Color.Red),
         ) {
@@ -3070,9 +3124,6 @@ fun ClickedUserMessages(
                     shape = RoundedCornerShape(8.dp)
                 )
         ) {
-            item{
-                Text("it do be like that sometimes",color = Color.Red)
-            }
 
             items(clickedUsernameChatsWithDateSentImmutable.clickedChats) { message ->
 
