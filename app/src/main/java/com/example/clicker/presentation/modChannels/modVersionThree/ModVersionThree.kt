@@ -339,6 +339,7 @@ fun ModViewComponentVersionThree(
                         clickedUsername = modViewViewModel.clickedUnbanRequestUser.value.userName,
                         clickedMessage = modViewViewModel.clickedUnbanRequestUser.value.message,
                         clickedUserInfo=modViewViewModel.clickedUnbanRequestInfo.value,
+                        clickedStatus = modViewViewModel.clickedUnbanRequestUser.value.status,
                     )
                     ClickedUserMessages(
                         globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
@@ -350,7 +351,8 @@ fun ModViewComponentVersionThree(
                         resolveUnbanRequest={id,status->
                             modViewViewModel.resolveUnbanRequest(id,status)
                         },
-                        clickedRequestId = modViewViewModel.clickedUnbanRequestUser.value.requestId
+                        clickedRequestId = modViewViewModel.clickedUnbanRequestUser.value.requestId,
+                        clickedStatus = modViewViewModel.clickedUnbanRequestUser.value.status,
                     )
 
                 }
@@ -771,9 +773,9 @@ fun ModViewComponentVersionThree(
                      modActionListImmutableCollection = modViewViewModel.modActionListImmutable.value,
                      unbanRequestResponse = modViewViewModel.unbanRequestResponse.value,
                      showUnbanRequestModal={showUnbanRequestBottomModal()},
-                     updateClickedUnbanRequest={ username,text,userId,requestId ->
+                     updateClickedUnbanRequest={ username,text,userId,requestId,status ->
                          updateClickedUser(username,userId,false,false)
-                         modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId)
+                         modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId,status)
                      },
                      immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value,
                      sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)},
@@ -867,7 +869,7 @@ fun ModVersionThree(
 
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest:(String,String,String,String)->Unit,
+    updateClickedUnbanRequest:(String,String,String,String,String)->Unit,
     sortUnbanRequest:(String)->Unit,
     retryUnbanRequests:()->Unit,
 
@@ -1020,7 +1022,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId,status ->updateClickedUnbanRequest(username,text,userId,requestId,status)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
                             sortUnbanRequest={status->sortUnbanRequest(status)},
                             retryUnbanRequests={retryUnbanRequests()}
@@ -1129,7 +1131,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId,status ->updateClickedUnbanRequest(username,text,userId,requestId,status)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
                             sortUnbanRequest={status->sortUnbanRequest(status)},
                             retryUnbanRequests={retryUnbanRequests()}
@@ -1239,7 +1241,7 @@ fun ModVersionThree(
                             },
                             unbanRequestResponse=unbanRequestResponse,
                             showUnbanRequestModal={showUnbanRequestModal()},
-                            updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
+                            updateClickedUnbanRequest={username,text,userId,requestId,status ->updateClickedUnbanRequest(username,text,userId,requestId,status)},
                             immutableUnbanRequestList=immutableUnbanRequestList,
                             sortUnbanRequest={status->sortUnbanRequest(status)},
                             retryUnbanRequests={retryUnbanRequests()}
@@ -1316,7 +1318,7 @@ fun UnbanRequests(
     doubleClickAndDrag: Boolean,
     unbanRequestResponse: UnAuthorizedResponse<List<UnbanRequestItem>>,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest: (String, String, String,String) -> Unit,
+    updateClickedUnbanRequest: (String, String, String,String,String) -> Unit,
     immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
     sortUnbanRequest:(String)->Unit,
     retryUnbanRequests:()->Unit,
@@ -1337,7 +1339,7 @@ fun UnbanRequests(
                 setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()},
                 sortUnbanRequest={status->sortUnbanRequest(status)},
                 showUnbanRequestModal={showUnbanRequestModal()},
-                updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)},
+                updateClickedUnbanRequest={username,text,userId,requestId,status ->updateClickedUnbanRequest(username,text,userId,requestId,status)},
                 setDragging = { value -> setDragging(value) },
                 immutableUnbanRequestList=immutableUnbanRequestList
 
@@ -1364,7 +1366,7 @@ fun UnbanRequests(
         }
 
     }
-    
+
 }
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1373,7 +1375,7 @@ fun UnbanRequestLazyColumn(
     setDoubleClickAndDragFalse: () -> Unit,
     doubleClickAndDrag: Boolean,
     showUnbanRequestModal:()->Unit,
-    updateClickedUnbanRequest: (String, String, String,String) -> Unit,
+    updateClickedUnbanRequest: (String, String, String,String,String) -> Unit,
     immutableUnbanRequestList:UnbanRequestItemImmutableCollection,
     sortUnbanRequest:(String)->Unit,
 
@@ -1384,18 +1386,20 @@ fun UnbanRequestLazyColumn(
             .background(MaterialTheme.colorScheme.primary)
     ){
         stickyHeader{
-            LazyColumnStickyClickableHeaderRow(
-                setDragging = { value -> setDragging(value) },
-                title = "Unban requests",
-                doubleClickAndDrag =doubleClickAndDrag,
-                setDoubleClickAndDragFalse={setDoubleClickAndDragFalse()}
-            )
+            Column() {
+
+                LazyColumnStickyClickableHeaderRow(
+                    setDragging = { value -> setDragging(value) },
+                    title = "Unban requests",
+                    doubleClickAndDrag = doubleClickAndDrag,
+                    setDoubleClickAndDragFalse = { setDoubleClickAndDragFalse() }
+                )
+                SortingDropDownMenu(
+                    sortUnbanRequest={status->sortUnbanRequest(status)}
+                )
+            }
         }
-        stickyHeader {
-            SortingDropDownMenu(
-                sortUnbanRequest={status->sortUnbanRequest(status)}
-            )
-        }
+
         items(immutableUnbanRequestList.list){
             IndivUnbanItem(
                 username = it.user_login,
@@ -1405,7 +1409,7 @@ fun UnbanRequestLazyColumn(
                 userId=it.user_id,
                 requestId = it.id,
                 showUnbanRequestModal={showUnbanRequestModal()},
-                updateClickedUnbanRequest={username,text,userId,requestId ->updateClickedUnbanRequest(username,text,userId,requestId)}
+                updateClickedUnbanRequest={username,text,userId,requestId,status ->updateClickedUnbanRequest(username,text,userId,requestId,status)}
             )
 
         }
@@ -1436,7 +1440,7 @@ fun IndivUnbanItem(
     userId:String,
     requestId:String,
     showUnbanRequestModal: () -> Unit,
-    updateClickedUnbanRequest:(String,String,String,String)->Unit
+    updateClickedUnbanRequest:(String,String,String,String,String)->Unit
 ){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -1447,7 +1451,7 @@ fun IndivUnbanItem(
             .padding(5.dp)
             .clickable {
                 updateClickedUnbanRequest(
-                    username, text, userId, requestId
+                    username, text, userId, requestId,status
                 )
                 showUnbanRequestModal()
             }
@@ -3100,7 +3104,8 @@ fun ClickedUserMessages(
     channelBetterTTVEmoteContentMap:EmoteListMap,
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     resolveUnbanRequest: (String, UnbanStatusFilter) -> Unit,
-    clickedRequestId:String
+    clickedRequestId:String,
+    clickedStatus:String
 ){
     val newMap = globalTwitchEmoteContentMap.map +channelTwitchEmoteContentMap.map + globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map +sharedBetterTTVEmoteContentMap.map
 
@@ -3166,7 +3171,8 @@ fun ClickedUserMessages(
             resolveUnbanRequest={status->
                 resolveUnbanRequest(clickedRequestId,status)
             },
-            modifier = Modifier
+            modifier = Modifier,
+            clickedStatus=clickedStatus
         )
     }//this is the end of the column
 }
@@ -3175,26 +3181,50 @@ fun ClickedUserMessages(
 fun NewContentBanner(
     clickedUsername:String,
     clickedMessage:String,
+    clickedStatus:String,
     clickedUserInfo:Response<ClickedUnbanRequestInfo>,
 ){
 
 
     Column {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-               Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = stringResource(R.string.user_icon_description),
-                    modifier = Modifier
-                        .clickable { }
-                        .size(35.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Text(
-                    clickedUsername,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically){
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = stringResource(R.string.user_icon_description),
+                        modifier = Modifier
+                            .clickable { }
+                            .size(35.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        clickedUsername,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    )
+                }
+                when(clickedStatus){
+                    "pending"->{
+                        Text(clickedStatus,color = Color.Yellow, fontSize = 13.sp)
+                    }
+                    "approved"->{
+                        Text(clickedStatus,color = Color.Green, fontSize = 13.sp)
+                    }
+                    "denied"->{
+                        Text(clickedStatus,color = Color.Red, fontSize = 13.sp)
+                    }
+                    "acknowledged"->{
+                        Text(clickedStatus,color = Color(0xFF008080), fontSize = 13.sp)
+                    }
+                    "canceled"->{
+                        Text(clickedStatus,color = Color(0xFF7F8C8D), fontSize = 13.sp)
+                    }
+                }
             }
 
 
@@ -3233,7 +3263,7 @@ fun NewContentBanner(
 fun ApproveDenyRow(
     resolveUnbanRequest:(UnbanStatusFilter)->Unit,
     modifier:Modifier,
-
+    clickedStatus:String
 ){
 
     Column(
@@ -3249,58 +3279,62 @@ fun ApproveDenyRow(
                     .weight(2f)
                     .align(Alignment.CenterVertically)
             )
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ){
+            if(clickedStatus !in listOf("approved", "denied","canceled")){
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
 
-                ElevatedCard(
-                    modifier = Modifier.clickable {
-                        resolveUnbanRequest( UnbanStatusFilter.APPROVED)
-                    },
 
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
-                    ),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.DarkGray
-                    )
+                    ElevatedCard(
+                        modifier = Modifier.clickable {
+                            resolveUnbanRequest( UnbanStatusFilter.APPROVED)
+                        },
 
-                ) {
-                    Icon(
-                        painter = painterResource(id =R.drawable.baseline_check_24),
-                        contentDescription ="approve",
-                        tint = Color.Green,
-                        modifier = Modifier.size(40.dp)
-                    )
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 6.dp
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.DarkGray
+                        )
+
+                    ) {
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_check_24),
+                            contentDescription ="approve",
+                            tint = Color.Green,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+
+                    ElevatedCard(
+                        modifier = Modifier.clickable {
+                            resolveUnbanRequest( UnbanStatusFilter.DENIED)
+                        },
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 6.dp
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.DarkGray
+                        )
+
+                    ) {
+                        Icon(
+                            painter = painterResource(id =R.drawable.baseline_close_24),
+                            contentDescription ="deny",
+                            tint = Color.Red,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+
                 }
-
-
-                ElevatedCard(
-                    modifier = Modifier.clickable {
-                        resolveUnbanRequest( UnbanStatusFilter.DENIED)
-                    },
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
-                    ),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.DarkGray
-                    )
-
-                ) {
-                    Icon(
-                        painter = painterResource(id =R.drawable.baseline_close_24),
-                        contentDescription ="deny",
-                        tint = Color.Red,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-
-
             }
+
 
 
         }

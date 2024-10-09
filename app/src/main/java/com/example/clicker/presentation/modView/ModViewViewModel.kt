@@ -115,7 +115,8 @@ ListTitleValue("1 day",1440),
 data class ClickedUnbanRequestUser(
     val message:String,
     val userName:String,
-    val requestId: String
+    val requestId: String,
+    val status:String
 )
 @Immutable
 data class ImmutableModeList(
@@ -179,14 +180,15 @@ class ModViewViewModel @Inject constructor(
     /**
      * This is the data that is shown to in the modal once the unban request is selected
      * */
-    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("","",""))
+    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("","","",""))
     val clickedUnbanRequestUser: State<ClickedUnbanRequestUser> = _clickedUnbanRequestUser
 
-    fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,requestId:String){
+    fun updateClickedUnbanRequestUser(username:String,message:String,userId:String,requestId:String,status:String){
         _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
             message=message,
             userName = username,
-            requestId = requestId
+            requestId = requestId,
+            status = status
         )
         Log.d("updateClickedUnbanRequestUser","oAuthToken->${_requestIds.value.oAuthToken}")
         Log.d("updateClickedUnbanRequestUser","clientId->${_requestIds.value.clientId}")
@@ -434,7 +436,62 @@ class ModViewViewModel @Inject constructor(
                 resolved_at = "2024-02-02"
 
 
-            )
+            ),
+            UnbanRequestItem(
+                id="222",
+                broadcaster_name="Antoher one",
+                broadcaster_login="Another one",
+                broadcaster_id="34",
+                user_id="1212",
+                user_login="another one",
+                user_name="dave",
+                text="Please don do me like that",
+                status="denied",
+                created_at="2024-09-09",
+                moderator_id="333",
+                moderator_login = "",
+                moderator_name = "",
+                resolution_text="What even is the resolution text",
+                resolved_at = "2024-02-02"
+            ),
+            UnbanRequestItem(
+                id="222",
+                broadcaster_name="Antoher one",
+                broadcaster_login="Another one",
+                broadcaster_id="34",
+                user_id="1212",
+                user_login="another one",
+                user_name="dave",
+                text="Please don do me like that",
+                status="canceled",
+                created_at="2024-09-09",
+                moderator_id="333",
+                moderator_login = "",
+                moderator_name = "",
+                resolution_text="What even is the resolution text",
+                resolved_at = "2024-02-02"
+
+
+            ),
+            UnbanRequestItem(
+                id="222",
+            broadcaster_name="Antoher one",
+            broadcaster_login="Another one",
+            broadcaster_id="34",
+            user_id="1212",
+            user_login="another one",
+            user_name="dave",
+            text="Please don do me like that",
+            status="pending",
+            created_at="2024-09-09",
+            moderator_id="333",
+            moderator_login = "",
+            moderator_name = "",
+            resolution_text="What even is the resolution text",
+            resolved_at = "2024-02-02"
+
+
+        )
         )
     )
 
