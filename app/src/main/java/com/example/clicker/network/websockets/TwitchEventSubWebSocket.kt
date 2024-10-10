@@ -159,7 +159,7 @@ class TwitchEventSubWebSocket @Inject constructor(
                             user_name =parseUserNameData(parsedEventData),
                             text=parseTextData(parsedEventData),
                             status = "pending",
-                            created_at = parseCreatedAtData(parsedEventData),
+                            created_at = parseCreatedAtData(parsedEventData).split("T")[0],
                             resolved_at = null,
                             resolution_text = null
                         )
