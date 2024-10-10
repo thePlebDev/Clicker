@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.clicker.R
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.AutoModMessageParsing
@@ -55,6 +56,10 @@ class TwitchEventSubWebSocket @Inject constructor(
     private val _mostRecentResolvedUnbanRequest: MutableStateFlow<ResolvedUnBanRequestStatusNId?> = MutableStateFlow(null)
     // The UI collects from this StateFlow to get its state updates
     override val mostRecentResolvedUnbanRequest: StateFlow<ResolvedUnBanRequestStatusNId?> = _mostRecentResolvedUnbanRequest
+
+    private val _mostRecentUnbanRequest: MutableStateFlow<UnbanRequestItem?> = MutableStateFlow(null)
+    // The UI collects from this StateFlow to get its state updates
+    override val mostRecentUnbanRequest: StateFlow<UnbanRequestItem?> = _mostRecentUnbanRequest
 
     private val _modActions: MutableStateFlow<ModActionData?> = MutableStateFlow(null)
     override val modActions: StateFlow<ModActionData?> = _modActions
@@ -133,6 +138,33 @@ class TwitchEventSubWebSocket @Inject constructor(
                         )
                     }else{
                         _mostRecentResolvedUnbanRequest.tryEmit(null)
+                    }
+
+                }
+                "channel.unban_request.create"->{
+                    Log.d("unbanRequestCreateEvent","text---->$text")
+
+                    val parsedEventData =parseEventData(text)
+                    if(parsedEventData !=null){
+                       val item= UnbanRequestItem(
+                            id = parseIdData(parsedEventData),
+                            broadcaster_name= parseBroadcasterNameData(parsedEventData),
+                            broadcaster_login="",
+                            broadcaster_id="",
+                            moderator_id=null,
+                            moderator_login=null,
+                            moderator_name=null,
+                            user_id = parseUserIdData(parsedEventData),
+                            user_login = parseUserNameData(parsedEventData),
+                            user_name =parseUserNameData(parsedEventData),
+                            text=parseTextData(parsedEventData),
+                            status = "pending",
+                            created_at = parseCreatedAtData(parsedEventData),
+                            resolved_at = null,
+                            resolution_text = null
+                        )
+                        _mostRecentUnbanRequest.tryEmit(item)
+
                     }
 
                 }
@@ -298,4 +330,40 @@ data class ResolvedUnBanRequestStatusNId(
     val status:String
 )
 
+fun parseEventData(stringToParse:String):String?{
+    val pattern =""""event"\s*:\s*\{([^}]+)""".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?.replace("\"","")
+}
+fun parseIdData(stringToParse:String):String{
+    val pattern = "id:([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)?.replace(" ","")
+    return messageId?:""
+}
+fun parseBroadcasterNameData(stringToParse:String):String{
+    val pattern = "broadcaster_user_name:([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?:""
+}
+fun parseUserIdData(stringToParse:String):String{
+    val pattern = "user_id:([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?:""
+}
+fun parseUserNameData(stringToParse:String):String{
+    val pattern = "\\buser_name:([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?:""
+}
+fun parseTextData(stringToParse:String):String{
+    val pattern = "text:(.*?)(?:,created_at|$)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?:""
+}
+
+fun parseCreatedAtData(stringToParse:String):String{
+    val pattern = "created_at:([^,]+)".toRegex()
+    val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+    return messageId?:""
+}
 

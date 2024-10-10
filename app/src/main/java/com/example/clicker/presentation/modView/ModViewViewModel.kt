@@ -474,6 +474,9 @@ class ModViewViewModel @Inject constructor(
     init{
         monitorForMostRecentResolvedUnbanRequests()
     }
+    init{
+        monitorForMostRecentUnbanRequests()
+    }
 
     fun createNewTwitchEventWebSocket(){
        // modActionsList.clear()
@@ -690,6 +693,21 @@ class ModViewViewModel @Inject constructor(
                                 _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
                             }
                         }
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun monitorForMostRecentUnbanRequests(){
+        viewModelScope.launch {
+            withContext(ioDispatcher) {
+                twitchEventSubWebSocket.mostRecentUnbanRequest.collect { nullableUnbanReqeust ->
+                    nullableUnbanReqeust?.also { nonNullableUnbanReqeust ->
+                        Log.d("monitorForMostRecentResolvedUnbanRequests","nonNull -->$nonNullableUnbanReqeust")
+                        addAllUnbanRequestItemList(listOf(nonNullableUnbanReqeust))
+
 
                     }
                 }
