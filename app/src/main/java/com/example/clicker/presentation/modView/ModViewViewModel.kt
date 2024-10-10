@@ -207,7 +207,7 @@ class ModViewViewModel @Inject constructor(
     /**
      * This is a list of all the individual unban requests
      * */
-    //todo: this needs to be broken up into the response and the list
+
     private val _getUnbanRequestResponse: MutableState<UnAuthorizedResponse<List<UnbanRequestItem>>> = mutableStateOf(
         UnAuthorizedResponse.Success(listOf())
     )
@@ -313,23 +313,8 @@ class ModViewViewModel @Inject constructor(
                 is UnAuthorizedResponse.Success ->{
                     Log.d("resolveUnbanRequest","SUCCESS")
 
-                    val foundRequest = _getUnbanRequestList.value.list.find { it.id == unbanRequestId }
-                    foundRequest?.let {
-                        val index = _getUnbanRequestList.value.list.indexOf(it)
-                        if (index != -1) {
-                            val updatedStatus = if (status.toString() =="approved") "approved" else "denied"
-                            val updatedItem = it.copy(
-                                status = updatedStatus
-                            )
-                            _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
-                                status = updatedStatus
-                            )
-                            // Create a new list with the updated item
-                            val updatedList = _getUnbanRequestList.value.list.toMutableList()
-                            updatedList[index] = updatedItem
-                            _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
-                        }
-                    }
+                    //todo: this needs to be removed from the UI
+
                     _resolveUnbanRequest.value = Response.Success(false)
                     delay(1000)
                     _resolveUnbanRequest.value = Response.Success(true)
@@ -485,6 +470,9 @@ class ModViewViewModel @Inject constructor(
     }
     init{
         monitorForAutoModMessageUpdates()
+    }
+    init{
+        monitorForMostRecentResolvedUnbanRequests()
     }
 
     fun createNewTwitchEventWebSocket(){
@@ -669,6 +657,38 @@ class ModViewViewModel @Inject constructor(
                             )
                         }
                         addAllAutoModMessageList(autoModMessageList.toList())
+                    }
+                }
+            }
+        }
+    }
+    private fun monitorForMostRecentResolvedUnbanRequests(){
+        viewModelScope.launch {
+            withContext(ioDispatcher) {
+                twitchEventSubWebSocket.mostRecentResolvedUnbanRequest.collect { nullableUnbanReqeust ->
+                    nullableUnbanReqeust?.also { nonNullableUnbanReqeust ->
+                        Log.d("monitorForMostRecentResolvedUnbanRequests","nonNull -->$nonNullableUnbanReqeust")
+                        val unbanRequestId =nonNullableUnbanReqeust.id
+                        val status =nonNullableUnbanReqeust.status
+                        val foundRequest = _getUnbanRequestList.value.list.find { it.id == unbanRequestId }
+                        foundRequest?.let {
+                            val index = _getUnbanRequestList.value.list.indexOf(it)
+
+                            if (index != -1) {
+                                val updatedStatus = if (status =="approved") "approved" else "denied"
+                                val updatedItem = it.copy(
+                                    status = updatedStatus
+                                )
+                                _clickedUnbanRequestUser.value = _clickedUnbanRequestUser.value.copy(
+                                    status = updatedStatus
+                                )
+                                // Create a new list with the updated item
+                                val updatedList = _getUnbanRequestList.value.list.toMutableList()
+                                updatedList[index] = updatedItem
+                                _getUnbanRequestList.value = _getUnbanRequestList.value.copy(list = updatedList)
+                            }
+                        }
+
                     }
                 }
             }
