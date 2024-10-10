@@ -1,6 +1,7 @@
 package com.example.clicker.network.domain
 
 import androidx.compose.runtime.State
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.AutoModMessageUpdate
 import com.example.clicker.network.repository.util.AutoModQueueMessage
@@ -33,6 +34,7 @@ interface TwitchEventSubscriptionWebSocket {
     val messageIdForAutoModQueue: StateFlow<AutoModMessageUpdate?>
     val updatedChatSettingsData: StateFlow<ChatSettingsData?>
     val mostRecentResolvedUnbanRequest: StateFlow<ResolvedUnBanRequestStatusNId?>
+    val mostRecentUnbanRequest: StateFlow<UnbanRequestItem?>
 
     val modActions: StateFlow<ModActionData?>
 

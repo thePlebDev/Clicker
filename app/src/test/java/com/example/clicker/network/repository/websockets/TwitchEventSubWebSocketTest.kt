@@ -1,5 +1,6 @@
 package com.example.clicker.network.repository.websockets
 
+import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.AutoModMessageParsing
 import com.example.clicker.network.repository.util.ChatSettingsParsing
@@ -344,13 +345,13 @@ class TwitchEventSubWebSocketTest {
         val EXPECTED_STATUS ="approved"
         val stringToParse ="{\"metadata\":{\"message_id\":\"9K4wz7BQu9apkuukQZ907WBx28k6US-83YMsPfu857U=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-10-10T00:06:43.226760688Z\",\"subscription_type\":\"channel.unban_request.resolve\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"e427191d-c26c-4689-86f7-8fc6046e7fbe\",\"status\":\"enabled\",\"type\":\"channel.unban_request.resolve\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQmj4Q67aDST-OjDGxAO1WshIGY2VsbC1i\"},\"created_at\":\"2024-10-10T00:05:35.362652503Z\",\"cost\":0},\"event\":{\"id\":\"c6aa6c42-c8a6-479f-a14f-f5b01f5ab110\",\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"moderator_user_id\":\"946933663\",\"moderator_user_login\":\"themodymoder\",\"moderator_user_name\":\"themodymoder\",\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"resolution_text\":\"ight you can come in\",\"status\":\"approved\"}}}"
 
-//        val result = transportParsing(stringToParse) ?: ""
-//
-//        val id = parseResolveUnbanRequestId(result)
-//        val status = parseResolveUnbanRequestStatus(result)
-//
-//        Assert.assertEquals(EXPECTED_STATUS, status)
-//        Assert.assertEquals(EXPECTED_ID, id)
+        val result = transportParsing(stringToParse) ?: ""
+
+        val id = parseResolveUnbanRequestId(result)
+        val status = parseResolveUnbanRequestStatus(result)
+
+        Assert.assertEquals(EXPECTED_STATUS, status)
+        Assert.assertEquals(EXPECTED_ID, id)
     }
 
     fun parseResolveUnbanRequestId(stringToParse:String):String?{
@@ -369,6 +370,82 @@ class TwitchEventSubWebSocketTest {
         val parsedMessageId = transportData?.replace("\"","")
 
         return parsedMessageId
+    }
+
+
+    @Test
+    fun `parsing data from create unban request event`(){
+        val stringToParse ="{\"metadata\":{\"message_id\":\"Gm9U4sI-jrnh4GTrusz472ce7FoVXdHP_jg8RMy7oZw=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-10-10T21:55:51.614276009Z\",\"subscription_type\":\"channel.unban_request.create\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"976f1f12-7fc2-428e-9921-85adfae6c54c\",\"status\":\"enabled\",\"type\":\"channel.unban_request.create\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"520593641\",\"moderator_user_id\":\"946933663\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQnBzFNAvRSluMoMMaQEZtpBIGY2VsbC1i\"},\"created_at\":\"2024-10-10T21:55:17.309037491Z\",\"cost\":0},\"event\":{\"id\":\"bf21f90f-3026-4877-8cff-76f66273f785\",\"broadcaster_user_id\":\"520593641\",\"broadcaster_user_login\":\"theplebdev\",\"broadcaster_user_name\":\"theplebdev\",\"user_id\":\"949335660\",\"user_login\":\"meanermeeny\",\"user_name\":\"meanermeeny\",\"text\":\"please man. just let me back in. I won't be doing it again\",\"created_at\":\"2024-10-10T21:55:51.614276009Z\"}}}"
+
+        //please oh please let me in!!!!!
+        val parsedEventData =parseEventData(stringToParse)?:""
+        println("data ---> $parsedEventData")
+//        println("name ---> ${parseBroadcasterNameData(parsedEventData)}")
+        val item = UnbanRequestItem(
+            id = parseIdData(parsedEventData),
+            broadcaster_name= parseBroadcasterNameData(parsedEventData),
+            broadcaster_login="",
+            broadcaster_id="",
+            moderator_id=null,
+            moderator_login=null,
+            moderator_name=null,
+            user_id = parseUserIdData(parsedEventData),
+            user_login = parseUserNameData(parsedEventData),
+            user_name =parseUserNameData(parsedEventData),
+            text=parseTextData(parsedEventData),
+            status = "pending",
+            created_at = parseCreatedAtData(parsedEventData).split("T")[0],
+            resolved_at = null,
+            resolution_text = null
+        )
+        println("user_id   ---> ${item.id}")
+        println("user_login ---> ${item.user_login}")
+        println("user_name ---> ${item.user_name}")
+        println("text      ---> ${item.text}")
+        println("status    ---> ${item.status}")
+        println("createdAt ---> ${item.created_at}")
+
+
+        Assert.assertEquals(1, 2)
+    }
+
+    fun parseEventData(stringToParse:String):String?{
+        val pattern =""""event"\s*:\s*\{([^}]+)""".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?.replace("\"","")
+    }
+    fun parseIdData(stringToParse:String):String{
+        val pattern = "id:([^,]+)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)?.replace(" ","")
+        return messageId?:""
+    }
+    fun parseBroadcasterNameData(stringToParse:String):String{
+        val pattern = "broadcaster_user_name:([^,]+)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?:""
+    }
+    fun parseUserIdData(stringToParse:String):String{
+        val pattern = "user_id:([^,]+)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?:""
+    }
+    fun parseUserNameData(stringToParse:String):String{
+        val pattern = "\\buser_name:([^,]+)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?:""
+    }
+    fun parseTextData(stringToParse:String):String{
+       // val pattern = "text:([^,]+)".toRegex()
+      //  val pattern = """text:([^,]+)""".toRegex()
+        val pattern = "text:(.*?)(?:,created_at|$)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?:""
+    }
+
+    fun parseCreatedAtData(stringToParse:String):String{
+        val pattern = "created_at:([^,]+)".toRegex()
+        val messageId = pattern.find(stringToParse)?.groupValues?.get(1)
+        return messageId?:""
     }
 
 
