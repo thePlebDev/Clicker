@@ -294,10 +294,7 @@ class ModViewViewModel @Inject constructor(
         status:UnbanStatusFilter
     ) = viewModelScope.launch(ioDispatcher){
         _resolveUnbanRequest.value = Response.Loading
-
-
-
-
+        Log.d("resolveUnbanRequestId","Testing --->$unbanRequestId")
 
 
         twitchModRepo.approveUnbanRequests(
@@ -375,27 +372,6 @@ class ModViewViewModel @Inject constructor(
     )=viewModelScope.launch(ioDispatcher){
         //TODO: CLEAR THE OLD UnbanRequestItemList
         clearUnbanRequestItemList()
-        addAllUnbanRequestItemList(
-            listOf(
-                UnbanRequestItem(
-                    id = "12345",
-                    broadcaster_name = "BroadcasterName",
-                    broadcaster_login = "broadcaster_login",
-                    broadcaster_id = "broadcaster123",
-                    moderator_id = "mod123",
-                    moderator_login = "mod_login",
-                    moderator_name = "ModeratorName",
-                    user_id = "user456",
-                    user_login = "user_login",
-                    user_name = "UserName",
-                    text = "Request for unban due to misunderstanding.",
-                    status = "pending",
-                    created_at = "2024-10-09T12:34:56Z",
-                    resolved_at = null,
-                    resolution_text = null
-                )
-            )
-        )
 
 
 
@@ -416,12 +392,15 @@ class ModViewViewModel @Inject constructor(
                     val data = response.data
                     if(data.isNotEmpty()){
                         val newData = data.map {
+                            Log.d("getUnbanRequestsTesting","id -->${it.id}")
+                            Log.d("getUnbanRequestsTesting","user_id -->${it.user_id}")
                             it.copy(
+
                                 created_at = it.created_at.split("T")[0]
                             )
                         }
                         _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(newData)
-                        addAllUnbanRequestItemList(data)
+                        addAllUnbanRequestItemList(newData)
                     }
                     _getUnbanRequestResponse.value = UnAuthorizedResponse.Success(listOf())
 
