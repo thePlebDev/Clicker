@@ -629,7 +629,9 @@ class ModViewViewModel @Inject constructor(
 //        autoModMessageHoldSubscription()
         chatSettingsSubscription()
 
-        createUnbanRequestResolveSubscriptionEvent() // I don't think this can be done due to authentication
+        createUnbanRequestResolveSubscriptionEvent()
+        createUnbanRequestCreateSubscriptionEvent()
+
     }
 
 
@@ -870,11 +872,6 @@ class ModViewViewModel @Inject constructor(
                     autoModMessageStatus = WebSocketResponse.Loading
                 )
 
-//                Log.d("createUnbanRequestResolveSubscriptionEvent","oAuthToken-->${_requestIds.value.oAuthToken}")
-//                Log.d("createUnbanRequestResolveSubscriptionEvent","clientId-->${_requestIds.value.clientId}")
-//                Log.d("createUnbanRequestResolveSubscriptionEvent","broadcasterId-->${_requestIds.value.broadcasterId}")
-//                Log.d("createUnbanRequestResolveSubscriptionEvent","moderatorId-->${_requestIds.value.moderatorId}")
-//                Log.d("createUnbanRequestResolveSubscriptionEvent","sessionId-->${_requestIds.value.sessionId}")
 
                 twitchEventSub.createEventSubSubscription(
                     oAuthToken =_requestIds.value.oAuthToken,
@@ -909,6 +906,59 @@ class ModViewViewModel @Inject constructor(
                         }
                         is WebSocketResponse.FailureAuth403 ->{
                             Log.d("createUnbanRequestResolveSubscriptionEvent", "response -->FailureAuth403 FAIL")
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
+
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createUnbanRequestCreateSubscriptionEvent(){
+        viewModelScope.launch {
+            withContext(ioDispatcher){
+                _modViewStatus.value = _modViewStatus.value.copy(
+                    autoModMessageStatus = WebSocketResponse.Loading
+                )
+
+
+                twitchEventSub.createEventSubSubscription(
+                    oAuthToken =_requestIds.value.oAuthToken,
+                    clientId =_requestIds.value.clientId,
+                    broadcasterId =_requestIds.value.broadcasterId,
+                    moderatorId =_requestIds.value.moderatorId,
+                    sessionId = _requestIds.value.sessionId,
+                    type = "channel.unban_request.create"
+                ).collect { response ->
+                    when (response) {
+                        is WebSocketResponse.Loading -> {
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
+                            Log.d("createUnbanRequestCreateSubscriptionEvent", "response -->LOADING")
+                        }
+
+                        is WebSocketResponse.Success -> {
+                            Log.d("createUnbanRequestCreateSubscriptionEvent", "response -->SUCCESS")
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
+
+
+                        }
+
+                        is WebSocketResponse.Failure -> {
+                            Log.d("createUnbanRequestCreateSubscriptionEvent", "response -->NORMAL FAIL")
+                            _modViewStatus.value = _modViewStatus.value.copy(
+                                channelPointsRewardQueueStatus = response
+                            )
+                        }
+                        is WebSocketResponse.FailureAuth403 ->{
+                            Log.d("createUnbanRequestCreateSubscriptionEvent", "response -->FailureAuth403 FAIL")
                             _modViewStatus.value = _modViewStatus.value.copy(
                                 channelPointsRewardQueueStatus = response
                             )

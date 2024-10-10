@@ -135,9 +135,10 @@ class TwitchEventSubWebSocket @Inject constructor(
                         _mostRecentResolvedUnbanRequest.tryEmit(null)
                     }
 
-
-
                 }
+
+
+
             }
 
         }
