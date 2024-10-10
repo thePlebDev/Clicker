@@ -64,6 +64,7 @@ data class ModViewViewModelUIState(
 
     val modActionNotifications:Boolean = true,
     val autoModMessagesNotifications:Boolean = true,
+    val unbanRequestNotifications:Boolean = true,
 
 
     val emoteOnly:Boolean = false, //todo: THESE TWO ARE REALLY MESSING THINGS UP
@@ -539,6 +540,11 @@ class ModViewViewModel @Inject constructor(
             autoModMessagesNotifications = value
         )
     }
+    fun changeUnbanRequestChecked(value:Boolean){
+        _uiState.value =_uiState.value.copy(
+            unbanRequestNotifications = value
+        )
+    }
 
     fun changeModActionsChecked(value:Boolean){
         _uiState.value =_uiState.value.copy(
@@ -707,6 +713,13 @@ class ModViewViewModel @Inject constructor(
                     nullableUnbanReqeust?.also { nonNullableUnbanReqeust ->
                         Log.d("monitorForMostRecentResolvedUnbanRequests","nonNull -->$nonNullableUnbanReqeust")
                         addAllUnbanRequestItemList(listOf(nonNullableUnbanReqeust))
+                        val updatedMessage=_uiState.value.modViewTotalNotifications +1
+                        if(_uiState.value.unbanRequestNotifications){
+                            _uiState.value =_uiState.value.copy(
+                                modViewTotalNotifications =updatedMessage
+                            )
+                        }
+
 
 
                     }

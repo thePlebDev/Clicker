@@ -781,7 +781,11 @@ fun ModViewComponentVersionThree(
                      },
                      immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value,
                      sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)},
-                     retryUnbanRequests={modViewViewModel.retryGetUnbanRequest()}
+                     retryUnbanRequests={modViewViewModel.retryGetUnbanRequest()},
+                     unbanRequestChecked = modViewViewModel.uiState.value.unbanRequestNotifications,
+                     changeUnbanRequestChecked = {value ->
+                         modViewViewModel.changeUnbanRequestChecked(value)
+                     }
 
 
 
@@ -875,6 +879,9 @@ fun ModVersionThree(
     sortUnbanRequest:(String)->Unit,
     retryUnbanRequests:()->Unit,
 
+    unbanRequestChecked:Boolean,
+    changeUnbanRequestChecked:(Boolean)->Unit,
+
 
 
 
@@ -906,6 +913,10 @@ fun ModVersionThree(
                                               },
                     changeModActionsChecked={newValue ->
                         changeModActionsChecked(newValue)
+                    },
+                    unbanRequestChecked = unbanRequestChecked,
+                    changeUnbanRequestChecked = {value ->
+                        changeUnbanRequestChecked(value)
                     }
                 )
             }
@@ -1631,6 +1642,8 @@ fun ModViewDrawerContent(
     changeAutoModQueueChecked:(Boolean)->Unit,
 
     modActionsChecked:Boolean,
+    unbanRequestChecked:Boolean,
+    changeUnbanRequestChecked:(Boolean)->Unit,
     changeModActionsChecked:(Boolean)->Unit,
 ){
     Log.d("ModViewDrawerContentRecomp","Recomp")
@@ -1671,9 +1684,9 @@ fun ModViewDrawerContent(
                     "Unban request",
                     checkIndexAvailability={checkIndexAvailability(4)},
                     painter = painterResource(id = R.drawable.autorenew_24),
-                    checked = modActionsChecked,
+                    checked = unbanRequestChecked,
                     changeChecked = {value ->
-                        //changeModActionsChecked(value) todo: this needs to be its own switch function
+                        changeUnbanRequestChecked(value)
                     }
                 )
             }
