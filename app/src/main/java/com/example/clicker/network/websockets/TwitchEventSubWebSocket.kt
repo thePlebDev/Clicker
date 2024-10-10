@@ -52,6 +52,10 @@ class TwitchEventSubWebSocket @Inject constructor(
     // The UI collects from this StateFlow to get its state updates
     override val updatedChatSettingsData: StateFlow<ChatSettingsData?> = _updatedChatSettingsData
 
+    private val _mostRecentResolvedUnbanRequest: MutableStateFlow<ResolvedUnBanRequestStatusNId?> = MutableStateFlow(null)
+    // The UI collects from this StateFlow to get its state updates
+    override val mostRecentResolvedUnbanRequest: StateFlow<ResolvedUnBanRequestStatusNId?> = _mostRecentResolvedUnbanRequest
+
     private val _modActions: MutableStateFlow<ModActionData?> = MutableStateFlow(null)
     override val modActions: StateFlow<ModActionData?> = _modActions
 
@@ -110,6 +114,29 @@ class TwitchEventSubWebSocket @Inject constructor(
                     Log.d("ChatSettingsParsing",text)
                     val parsedChatSettingsData = channelSettingsParsing.parseChatSettingsData(text)
                     _updatedChatSettingsData.tryEmit(parsedChatSettingsData)
+                }
+
+                "channel.unban_request.resolve"->{
+                    Log.d("unbanRequestrecolveEvent","Resolve event")
+
+                    //todo: THIS NEEDS TO IMPLEMENTED AND MONITORED INSIDE OF THE UI
+                    val transportData =transportParsing(text)?:""
+                    val id =parseResolveUnbanRequestId(transportData)
+                    val status = parseResolveUnbanRequestStatus(transportData)
+                    if(id != null && status != null){
+                        Log.d("unbanRequestrecolveEvent","statue->$status || id -->$id")
+                        _mostRecentResolvedUnbanRequest.tryEmit(
+                            ResolvedUnBanRequestStatusNId(
+                                id= id,
+                                status= status
+                            )
+                        )
+                    }else{
+                        _mostRecentResolvedUnbanRequest.tryEmit(null)
+                    }
+
+
+
                 }
             }
 
@@ -247,5 +274,27 @@ fun parseStatusType(stringToParse:String):String?{
 
 
 
+fun parseResolveUnbanRequestId(stringToParse:String):String?{
+    val pattern = "event:\\{id:([^,]+)".toRegex()
+    val wantedEvent = pattern.find(stringToParse)?.groupValues?.get(1)
+    return wantedEvent
+}
+fun parseResolveUnbanRequestStatus(stringToParse:String):String?{
+    val pattern = "status:([^}]+)".toRegex()
+    val wantedStatus = pattern.find(stringToParse)?.groupValues?.get(1)
+    return wantedStatus
+}
+fun transportParsing(stringToParse:String):String?{
+    val pattern =""""transport"\s*:\s*\{(.+)""".toRegex()
+    val transportData = pattern.find(stringToParse)?.groupValues?.get(1)
+    val parsedTransportData = transportData?.replace("\"","")
+
+    return parsedTransportData
+}
+
+data class ResolvedUnBanRequestStatusNId(
+    val id:String,
+    val status:String
+)
 
 

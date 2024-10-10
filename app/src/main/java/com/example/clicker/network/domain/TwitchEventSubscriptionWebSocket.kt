@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.AutoModMessageUpdate
 import com.example.clicker.network.repository.util.AutoModQueueMessage
+import com.example.clicker.network.websockets.ResolvedUnBanRequestStatusNId
 
 import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,8 @@ interface TwitchEventSubscriptionWebSocket {
     val autoModMessageQueue: StateFlow<AutoModQueueMessage?>
     val messageIdForAutoModQueue: StateFlow<AutoModMessageUpdate?>
     val updatedChatSettingsData: StateFlow<ChatSettingsData?>
+    val mostRecentResolvedUnbanRequest: StateFlow<ResolvedUnBanRequestStatusNId?>
+
     val modActions: StateFlow<ModActionData?>
 
 
