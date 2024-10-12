@@ -10,6 +10,7 @@ import com.example.clicker.nativeLibraryClasses.NativeBlurEffect
 import com.example.clicker.nativeLibraryClasses.NativeCube
 import com.example.clicker.nativeLibraryClasses.NativeLoading
 import com.example.clicker.nativeLibraryClasses.NativeSquareLoading
+import com.example.clicker.nativeLibraryClasses.NativeUnderstandTriangle
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.opengles.GL10
 
@@ -132,3 +133,41 @@ internal class GL2JNIView(context: Context?) : GLSurfaceView(context) {
 
 }
 //CREATE NEW SURFACE FOR
+
+internal class NewTestingGLSurfaceView(context: Context):GLSurfaceView(context){
+
+    init {
+        init()
+    }
+
+
+    private fun init() {
+
+        // Create an OpenGL ES 2.0 context
+        setEGLContextClientVersion(2)
+
+
+        /* Set the renderer responsible for frame rendering */
+        setRenderer(Renderer())
+    }
+
+    private class Renderer : GLSurfaceView.Renderer {
+        override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+            //nothing is done here
+        }
+
+        override fun onDrawFrame(gl: GL10?) {
+            // this is constantly called during the refresh rate.
+
+            NativeUnderstandTriangle.step()
+
+            // Your rendering code here
+        }
+
+        override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
+            NativeUnderstandTriangle.init(width, height)
+        }
+
+    }
+
+}
