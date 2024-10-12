@@ -68,3 +68,20 @@ object NativeCube{
 
 
 }
+
+object NativeUnderstandTriangle{
+
+    init{
+        System.loadLibrary("understand_triangle");
+    }
+
+
+    /**
+     * @param width the current view width
+     * @param height the current view height
+     */
+    external fun init(width: Int, height: Int)
+    external fun step()
+
+
+}

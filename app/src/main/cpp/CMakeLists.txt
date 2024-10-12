@@ -28,6 +28,15 @@ add_library(blur_effect SHARED
 
 add_library(cube_code SHARED
         cube_code.cpp)
+#TODO: I NEED TO ADD THE TARGET LINK LIBRARIES
+add_library(understand_triangle SHARED
+        understand_triangle.cpp)
+# Link libraries for understand_triangle
+target_link_libraries(understand_triangle
+        android
+        log
+        EGL
+        GLESv2)
 
 # add lib dependencies
 target_link_libraries(gl_code
