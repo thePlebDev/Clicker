@@ -153,10 +153,10 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 /***
  *
  *
- * [ 1, 0, 0, Tx ]  how far you want to move on the X axis
- * [ 0, 1, 0, Ty ]  how far you want to move on the Y axis
- * [ 0, 0, 1, Tz ]  how far you want to move on the Z axis
- * [ 0, 0, 0, 1  ]  set to 1 so the math works out right
+ * [ 1  0  0  0 ]
+ * [ 0  1  0  0 ]
+ * [ 0  0  1  0 ]
+ * [ x  y  z  1 ]   <-- x, y, z values represent the new position along X, Y, Z axes
  *
  *
  *
@@ -338,10 +338,14 @@ GLushort indices[] = {0, 2, 3, 0, 1, 3, 4, 6, 7, 4, 5, 7, 8, 9, 10, 11, 8, 10, 1
 void renderFrame(){
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
     matrixIdentityFunction(modelViewMatrix);
+    // Apply scaling to make the cube larger or smaller
+   // matrixScale(modelViewMatrix, 1.0f, 0.1f, 1.0f); // Flattens the cube along the y-axis
     matrixRotateX(modelViewMatrix, angle);
-    matrixRotateY(modelViewMatrix, angle);
-    matrixTranslate(modelViewMatrix, 0.0f, 0.0f, -10.0f);
+//   matrixRotateY(modelViewMatrix, angle);
+//    matrixRotateZ(modelViewMatrix, angle);
+    matrixTranslate(modelViewMatrix, 0.0f, 0.0f, -9.0f);
     glUseProgram(simpleCubeProgram);
     glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cubeVertices);
     glEnableVertexAttribArray(vertexLocation);
