@@ -20,6 +20,7 @@ float matrixDegreesToRadians(float degrees) {
     return degrees * (M_PI / 180.0f);
 }
 
+
 /**
  * matrixTranslate initializes a matrix. The matrix will look like this:
  *
@@ -35,6 +36,7 @@ void matrixIdentityFunction(float* matrix) {
     if (matrix == NULL) {
         return;  // Avoid null pointer dereference
     }
+    //this is the special identify matrix
     matrix[0] = 1.0f;  matrix[1] = 0.0f;  matrix[2] = 0.0f;  matrix[3] = 0.0f;
     matrix[4] = 0.0f;  matrix[5] = 1.0f;  matrix[6] = 0.0f;  matrix[7] = 0.0f;
     matrix[8] = 0.0f;  matrix[9] = 0.0f;  matrix[10] = 1.0f; matrix[11] = 0.0f;
@@ -185,6 +187,7 @@ void matrixScale(float* matrix, float x, float y, float z){
 void matrixRotateX(float* matrix, float angle){
     float tempMatrix[16];
     matrixIdentityFunction(tempMatrix);
+    //I need to understand all of this
     tempMatrix[5] = cos(matrixDegreesToRadians(angle));
     tempMatrix[9] = -sin(matrixDegreesToRadians(angle));
     tempMatrix[6] = sin(matrixDegreesToRadians(angle));
@@ -276,6 +279,7 @@ bool setupGraphics(int width, int height){
     vertexColourLocation = glGetAttribLocation(simpleCubeProgram, "vertexColour");
     projectionLocation = glGetUniformLocation(simpleCubeProgram, "projection");
     modelViewLocation = glGetUniformLocation(simpleCubeProgram, "modelView");
+
     /* Setup the perspective */
     matrixPerspective(projectionMatrix, 45, (float)width / (float)height, 0.1f, 100);
     glEnable(GL_DEPTH_TEST);
@@ -287,22 +291,27 @@ GLfloat cubeVertices[] = {-1.0f,  1.0f, -1.0f, /* Back. */
                           1.0f,  1.0f, -1.0f,
                           -1.0f, -1.0f, -1.0f,
                           1.0f, -1.0f, -1.0f,
+
                           -1.0f,  1.0f,  1.0f, /* Front. */
                           1.0f,  1.0f,  1.0f,
                           -1.0f, -1.0f,  1.0f,
                           1.0f, -1.0f,  1.0f,
+
                           -1.0f,  1.0f, -1.0f, /* Left. */
                           -1.0f, -1.0f, -1.0f,
                           -1.0f, -1.0f,  1.0f,
                           -1.0f,  1.0f,  1.0f,
+
                           1.0f,  1.0f, -1.0f, /* Right. */
                           1.0f, -1.0f, -1.0f,
                           1.0f, -1.0f,  1.0f,
                           1.0f,  1.0f,  1.0f,
+
                           -1.0f, -1.0f, -1.0f, /* Top. */
                           -1.0f, -1.0f,  1.0f,
                           1.0f, -1.0f,  1.0f,
                           1.0f, -1.0f, -1.0f,
+
                           -1.0f,  1.0f, -1.0f, /* Bottom. */
                           -1.0f,  1.0f,  1.0f,
                           1.0f,  1.0f,  1.0f,
@@ -339,21 +348,29 @@ void renderFrame(){
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    matrixIdentityFunction(modelViewMatrix);
+    matrixIdentityFunction(modelViewMatrix); //this is just loading up the matrix
     // Apply scaling to make the cube larger or smaller
    // matrixScale(modelViewMatrix, 1.0f, 0.1f, 1.0f); // Flattens the cube along the y-axis
-    matrixRotateX(modelViewMatrix, angle);
-//   matrixRotateY(modelViewMatrix, angle);
+   // matrixRotateX(modelViewMatrix, angle);
+    //angle goes from 1.000000 -> 360.000000 -> 1.000000 and repeats
+    LOGI("-----------ANGLE -----------> %f,", angle);
+   //matrixRotateY(modelViewMatrix, angle);
 //    matrixRotateZ(modelViewMatrix, angle);
-    matrixTranslate(modelViewMatrix, 0.0f, 0.0f, -9.0f);
+    matrixTranslate(modelViewMatrix, 0.0f, 0.0f, -9.0f); //just moving on the x,y,z coordinates
+
     glUseProgram(simpleCubeProgram);
+
     glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cubeVertices);
     glEnableVertexAttribArray(vertexLocation);
     glVertexAttribPointer(vertexColourLocation, 3, GL_FLOAT, GL_FALSE, 0, colour);
     glEnableVertexAttribArray(vertexColourLocation);
+
+    //We also need to link the projection matrix and the model view matrix up with their counterparts in the shader.
     glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, projectionMatrix);
     glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, modelViewMatrix);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, indices);
+
+    // incredibly straight forward rotation code
     angle += 1;
     if (angle > 360)
     {
