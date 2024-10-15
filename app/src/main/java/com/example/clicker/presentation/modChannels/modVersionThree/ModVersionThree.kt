@@ -115,6 +115,7 @@ import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.modView.AutoModMessageListImmutableCollection
+import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
@@ -326,6 +327,45 @@ fun ModViewComponentVersionThree(
         streamInfoViewModel.changeContentClassification(newClassification)
     } }
 
+    val resolveUnbanRequest:(String,UnbanStatusFilter)->Unit = remember(modViewViewModel) { {id,status->
+        modViewViewModel.resolveUnbanRequest(id,status)
+
+    } }
+    val updateOptionalResolutionText:(String)->Unit = remember(modViewViewModel) { {newText->
+        modViewViewModel.updateOptionalResolutionText(newText)
+
+    } }
+
+    val changeSelectedFollowersModeItem:(ListTitleValue)->Unit = remember(modViewViewModel) { { newValue->
+        modViewViewModel.changeSelectedFollowersModeItem(newValue)
+
+    } }
+    val changeSelectedSlowModeItem:(ListTitleValue)->Unit = remember(modViewViewModel) { { newValue->
+        modViewViewModel.changeSelectedSlowModeItem(newValue)
+
+    } }
+    val updateSubscriberOnly:(Boolean)->Unit = remember(modViewViewModel) { { newValue->
+        modViewViewModel.updateSubscriberOnly(newValue)
+
+    } }
+    val sortUnbanRequestList:(String)->Unit = remember(modViewViewModel) { { status->
+        modViewViewModel.sortUnbanRequestList(status)
+
+    } }
+    val retryGetUnbanRequest:()->Unit = remember(modViewViewModel) { {
+        modViewViewModel.retryGetUnbanRequest()
+
+    } }
+    val changeUnbanRequestChecked:(Boolean)->Unit = remember(modViewViewModel) { { newValue->
+        modViewViewModel.changeUnbanRequestChecked(newValue)
+
+    } }
+
+
+
+
+
+
 
     ModalBottomSheetLayout(
         sheetState=unbanRequestModalState,
@@ -349,12 +389,14 @@ fun ModViewComponentVersionThree(
                         sharedBetterTTVEmoteContentMap = chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
                         clickedUsernameChatsWithDateSentImmutable = streamViewModel.clickedUsernameChatsDateSentImmutable.value,
                         resolveUnbanRequest={id,status->
-                            modViewViewModel.resolveUnbanRequest(id,status)
+                            resolveUnbanRequest(id,status)
                         },
                         clickedRequestId = modViewViewModel.clickedUnbanRequestUser.value.requestId,
                         clickedStatus = modViewViewModel.clickedUnbanRequestUser.value.status,
                         resolutionText=modViewViewModel.optionalResolutionText.value,
-                        updateResolutionText={newText->modViewViewModel.updateOptionalResolutionText(newText)}
+                        updateResolutionText={newText->
+                           updateOptionalResolutionText(newText)
+                        }
                     )
 
                 }
@@ -434,14 +476,15 @@ fun ModViewComponentVersionThree(
 
                      selectedFollowersModeItem = modViewViewModel.uiState.value.selectedFollowerMode,
                      changeSelectedFollowersModeItem = { newValue ->
-                         modViewViewModel.changeSelectedFollowersModeItem(
+                         changeSelectedFollowersModeItem(
                              newValue
                          )
                      },
 
                      selectedSlowModeItem = modViewViewModel.uiState.value.selectedSlowMode,
                      changeSelectedSlowModeItem = { newValue ->
-                         modViewViewModel.changeSelectedSlowModeItem(
+
+                         changeSelectedSlowModeItem(
                              newValue
                          )
                      },
@@ -449,7 +492,7 @@ fun ModViewComponentVersionThree(
                      setEmoteOnly = { newValue -> modViewViewModel.updateEmoteOnly(newValue) },
                      subscriberOnly = modViewViewModel.uiState.value.subscriberOnly,
                      setSubscriberOnly = { newValue ->
-                         modViewViewModel.updateSubscriberOnly(
+                         updateSubscriberOnly(
                              newValue
                          )
                      },
@@ -780,11 +823,16 @@ fun ModViewComponentVersionThree(
                          modViewViewModel.updateClickedUnbanRequestUser(username,text,userId,requestId,status)
                      },
                      immutableUnbanRequestList = modViewViewModel.getUnbanRequestList.value,
-                     sortUnbanRequest={status ->modViewViewModel.sortUnbanRequestList(status)},
-                     retryUnbanRequests={modViewViewModel.retryGetUnbanRequest()},
+                     sortUnbanRequest={status ->
+                        sortUnbanRequestList(status)
+                                      },
+                     retryUnbanRequests={
+                             retryGetUnbanRequest()
+                                        },
                      unbanRequestChecked = modViewViewModel.uiState.value.unbanRequestNotifications,
                      changeUnbanRequestChecked = {value ->
-                         modViewViewModel.changeUnbanRequestChecked(value)
+                         //todo: WRAP THIS----------------------------------------
+                       changeUnbanRequestChecked(value)
                      }
 
 
