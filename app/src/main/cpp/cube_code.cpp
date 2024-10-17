@@ -220,11 +220,14 @@ void matrixRotateZ(float *matrix, float angle){
  * */
 void matrixFrustum(float* matrix, float left, float right, float bottom, float top, float zNear, float zFar){
     float temp, xDistance, yDistance, zDistance;
+    // Convert to screen space
     temp = 2.0 *zNear;
     xDistance = right - left;
     yDistance = top - bottom;
     zDistance = zFar - zNear;
     matrixIdentityFunction(matrix);
+
+    // Convert point from screen space to NDC space (range [-1, 1])
     matrix[0] = temp / xDistance;
     matrix[5] = temp / yDistance;
     matrix[8] = (right + left) / xDistance;
@@ -237,7 +240,7 @@ void matrixFrustum(float* matrix, float left, float right, float bottom, float t
 
 void matrixPerspective(float* matrix, float fieldOfView, float aspectRatio, float zNear, float zFar){
     float ymax, xmax;
-    ymax = zNear * tanf(fieldOfView * M_PI / 360.0);
+    ymax = zNear * tanf(fieldOfView/2.0 * M_PI / 180.0); //convert the degrees to radians and then take the tangent
     xmax = ymax * aspectRatio;
     matrixFrustum(matrix, -xmax, xmax, -ymax, ymax, zNear, zFar);
 }
@@ -357,10 +360,10 @@ void renderFrame(){
     matrixIdentityFunction(modelViewMatrix); //this is just loading up the matrix
     // Apply scaling to make the cube larger or smaller
    // matrixScale(modelViewMatrix, 1.0f, 0.1f, 1.0f); // Flattens the cube along the y-axis
-   // matrixRotateX(modelViewMatrix, angle);
+    matrixRotateX(modelViewMatrix, angle);
     //angle goes from 1.000000 -> 360.000000 -> 1.000000 and repeats
     LOGI("-----------ANGLE -----------> %f,", angle);
-   //matrixRotateY(modelViewMatrix, angle);
+   matrixRotateY(modelViewMatrix, angle);
 //    matrixRotateZ(modelViewMatrix, angle);
     matrixTranslate(modelViewMatrix, 0.0f, 0.0f, -9.0f); //just moving on the x,y,z coordinates
 
