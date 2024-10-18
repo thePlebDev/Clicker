@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
@@ -154,7 +155,7 @@ import kotlinx.coroutines.launch
                 )
             },
             bottomBar = {
-                DualButtonNavigationBottomBarRow(
+                TripleButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
@@ -174,6 +175,16 @@ import kotlinx.coroutines.launch
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
                             onClick ={onNavigate(R.id.action_homeFragment_to_modChannelsFragment)},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    },
+                    thirdButton = {
+                        IconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Search",
+                            imageVector = Icons.Default.Search,
+                            iconContentDescription = "Navigate to search bar",
+                            onClick = {onNavigate(R.id.action_homeFragment_to_searchFragment)},
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },

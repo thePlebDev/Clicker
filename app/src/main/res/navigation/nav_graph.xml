@@ -28,6 +28,9 @@
             app:popUpTo="@+id/homeFragment"
             app:popUpToInclusive="true"
             />
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
@@ -54,6 +57,9 @@
             app:popUpTo="@+id/modChannelsFragment"
             app:popUpToInclusive="true"
             />
+        <action
+            android:id="@+id/action_modChannelsFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/newUserFragment"
@@ -78,5 +84,23 @@
             app:popUpTo="@+id/logoutFragment"
             app:popUpToInclusive="true"
             />
+        <action
+            android:id="@+id/action_logoutFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.clicker.presentation.search.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_modChannelsFragment"
+            app:destination="@id/modChannelsFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_logoutFragment"
+            app:destination="@id/logoutFragment" />
     </fragment>
 </navigation>

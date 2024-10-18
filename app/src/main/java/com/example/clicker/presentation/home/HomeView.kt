@@ -98,32 +98,7 @@ fun ValidationView(
     val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
     val context = LocalContext.current
 
-//    Column(Modifier.background(Color.DarkGray)) {
-//        Text(
-//            "TEST TEXT",
-//            color = Color.Blue,
-//            fontSize = 40.sp,
-//            modifier = Modifier.fillMaxWidth().background(Color.Red)
-//        )
-//        Box(modifier = Modifier.fillMaxWidth()) {
-//            // OpenGL surface behind the text
-//
-//            // Text on top of OpenGL surface
-//            Text(
-//                "THIS IS A TESTING TO SEE IF THE TRIANGLE COVERS UP THIS TEXT AND TO SEE WHAT IT LOOKS LIKE",
-//                color = Color.Blue,
-//                fontSize = 40.sp
-//            )
-////            TestingGLSurfaceViewComposable(context,Modifier.matchParentSize())
-//        }
-//        Text(
-//            "TEST TEXT",
-//            color = Color.Blue,
-//            fontSize = 40.sp,
-//            modifier = Modifier.fillMaxWidth().background(Color.Red)
-//        )
-//
-//    }
+
     //TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
     //TestingGLSurfaceViewUnderstandingTriangle(context,Modifier.fillMaxSize())
 
