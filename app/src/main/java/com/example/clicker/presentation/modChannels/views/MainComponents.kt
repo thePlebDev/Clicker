@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -128,7 +129,7 @@ import kotlinx.coroutines.launch
                     )
             }
             , bottomBar={
-                DualButtonNavigationBottomBarRow(
+                TripleButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
@@ -149,6 +150,16 @@ import kotlinx.coroutines.launch
                             iconContentDescription = "Click to stay on mod page",
                             onClick ={},
                             fontColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    },
+                    thirdButton = {
+                        IconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Search",
+                            imageVector = Icons.Default.Search,
+                            iconContentDescription = "Navigate to search bar",
+                            onClick = {onNavigate(R.id.action_modChannelsFragment_to_searchFragment)},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
                 )
