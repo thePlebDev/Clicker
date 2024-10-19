@@ -95,20 +95,9 @@ fun SearchMainComponent(
     DrawerScaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            //todo: I need to implement a back button
-            //todo: I need to implement a search button
-            IconTextTopBarRow(
-                icon ={
-                    BasicIcon(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Navigate back to home page",
-                        onClick = {onNavigate(R.id.action_searchFragment_to_homeFragment)}
-                    )
-                },
-                text =""
 
-            )
+            //todo: I need to implement a search button
+         
         },
         bottomBar = {
             TripleButtonNavigationBottomBarRow(
