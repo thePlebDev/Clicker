@@ -138,7 +138,7 @@ import kotlinx.coroutines.launch
                             text = "Home",
                             imageVector = Icons.Default.Home,
                             iconContentDescription = "Navigate back to home page",
-                            onClick = {popBackStackNavigation()},
+                            onClick = {onNavigate(R.id.action_modChannelsFragment_to_homeFragment)},
                             fontColor = MaterialTheme.colorScheme.onPrimary
                         )
                     },
