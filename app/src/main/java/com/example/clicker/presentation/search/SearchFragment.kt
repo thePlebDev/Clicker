@@ -10,10 +10,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSearchBinding
 import com.example.clicker.databinding.FragmentStreamBinding
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.search.views.SearchMainComponent
+import com.example.clicker.presentation.search.views.SearchView
+import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.ui.theme.AppTheme
 
 
 /**
@@ -25,6 +33,9 @@ class SearchFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
+    private val homeViewModel: HomeViewModel by activityViewModels()
+    private val streamViewModel: StreamViewModel by activityViewModels()
+    private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +54,14 @@ class SearchFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                TestingSearchPage()
+                AppTheme{
+                    SearchView(
+                        onNavigate = { dest -> findNavController().navigate(dest) },
+                        homeViewModel=homeViewModel,
+                        streamViewModel=streamViewModel,
+                        logoutViewModel=logoutViewModel
+                    )
+                }
             }
 
         }
@@ -56,9 +74,4 @@ class SearchFragment : Fragment() {
     }
 
 
-}
-
-@Composable
-fun TestingSearchPage(){
-    Text(text ="THIS IS THE SEARCH TEXT",color = Color.Red, fontSize = 40.sp)
 }
