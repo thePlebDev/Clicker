@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -94,20 +95,19 @@ fun SearchMainComponent(
     DrawerScaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            //todo: I need to implement a new search Icon
+            //todo: I need to implement a back button
+            //todo: I need to implement a search button
             IconTextTopBarRow(
-                icon={
+                icon ={
                     BasicIcon(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "Open left side drawer",
-                        onClick = {
-                            scope.launch { scaffoldState.drawerState.open() }
-                        }
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Navigate back to home page",
+                        onClick = {onNavigate(R.id.action_searchFragment_to_homeFragment)}
                     )
                 },
-                text= stringResource(R.string.live_channels),
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                text =""
+
             )
         },
         bottomBar = {
