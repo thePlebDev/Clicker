@@ -44,6 +44,8 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.views.LoginLogoutScaffoldDrawer
+import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
+import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -155,104 +157,10 @@ fun SearchMainComponent(
                 },
             )
         },
-        drawerContent = {
-            LoginLogoutScaffoldDrawer(
-                showLogoutDialog = {
-                    showLogoutDialog()
-                },
-                loginWithTwitch = {
-                    loginWithTwitch()
-                },
-                scaffoldState = scaffoldState,
-                userIsLoggedIn = userIsLoggedIn,
-                lowPowerModeActive=lowPowerModeActive,
-                changeLowPowerMode={newValue ->changeLowPowerMode(newValue)}
-            )
-
-        }
+        drawerContent = {}
     ) {
         //THIS IS WHERE THE MODAL SHOULD GO
-        Text("THIS IS THE SEARCH PAGE",color = Color.Red,fontSize =30.sp)
-        LogoutDialog(
-            logoutDialogIsOpen =logoutDialogIsOpen,
-            closeDialog = {hideLogoutDialog()},
-            logout={
-
-                logout()
-            },
-            currentUsername =currentUsername
-        )
+        SearchViewComponent()
     }
 }
 
-@Composable
-fun SearchBarUI(){
-    StylizedTextField()
-}
-//after THis needs to go inside of a new file
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun StylizedTextField(){
-
-    Log.d("StylizedTextFieldRecomp","RECOMP")
-
-
-
-    val customTextSelectionColors = TextSelectionColors(
-        handleColor = MaterialTheme.colorScheme.secondary,
-        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-    )
-    var text by remember { mutableStateOf("") }
-
-
-
-    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-
-        Box(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)
-        ){
-
-
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                singleLine = true,
-                maxLines = 5,
-                value = text,
-
-                shape = RoundedCornerShape(8.dp),
-                onValueChange = { newText ->
-                    text = newText
-
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search // This sets the search icon on the keyboard
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedContainerColor = Color.DarkGray,
-                    focusedContainerColor =Color.DarkGray,
-                    cursorColor = Color.White,
-                    disabledLabelColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        "Search",
-                        tint = Color.White
-
-                    )
-                }
-            )
-
-
-        }
-
-
-
-    }
-
-
-}
