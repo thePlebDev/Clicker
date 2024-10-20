@@ -49,6 +49,7 @@ import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
 import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.LogoutDialog
+import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
@@ -71,6 +72,8 @@ fun SearchView(
         topGamesListResponse = homeViewModel.topGames.value,
         adjustedHeight = homeViewModel.state.value.aspectHeight,
         adjustedWidth = homeViewModel.state.value.width,
+        searchRefreshing = homeViewModel.state.value.searchRefreshing,
+        searchRefreshFunc ={homeViewModel.pullToRefreshTopGames()}
 
     )
 }
@@ -80,7 +83,9 @@ fun SearchMainComponent(
     onNavigate: (Int) -> Unit,
     topGamesListResponse: Response<List<TopGame>>,
     adjustedHeight:Int,
-    adjustedWidth:Int
+    adjustedWidth:Int,
+    searchRefreshing:Boolean,
+    searchRefreshFunc:()->Unit
 
 ){
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -131,13 +136,21 @@ fun SearchMainComponent(
             )
         },
         drawerContent = {}
-    ) {
-        //THIS IS WHERE THE MODAL SHOULD GO
-        SearchViewComponent(
-            topGamesListResponse=topGamesListResponse,
-            adjustedHeight = adjustedHeight,
-            adjustedWidth=adjustedWidth
-        )
+    ) {contentPadding ->
+        PullToRefreshComponent(
+            padding = contentPadding,
+            refreshing = searchRefreshing,
+            refreshFunc = {searchRefreshFunc()},
+            showNetworkMessage=false,
+            networkStatus = {modifier ->}
+        ) {
+            //THIS IS WHERE THE MODAL SHOULD GO
+            SearchViewComponent(
+                topGamesListResponse = topGamesListResponse,
+                adjustedHeight = adjustedHeight,
+                adjustedWidth = adjustedWidth
+            )
+        }
     }
 }
 
