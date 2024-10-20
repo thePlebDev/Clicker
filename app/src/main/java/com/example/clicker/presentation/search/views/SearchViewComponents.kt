@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
+import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
@@ -51,6 +52,7 @@ import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
+import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
 @Composable
@@ -66,32 +68,9 @@ fun SearchView(
 
     SearchMainComponent(
         onNavigate={action -> onNavigate(action)},
-        showLogoutDialog = {
-            homeViewModel.showLogoutDialog()
-        },
-        changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
-        userIsLoggedIn=homeViewModel.validatedUser.collectAsState().value?.clientId != null,
-        loginWithTwitch ={
-            logoutViewModel.setLoggedOutStatus("TRUE")
-            onNavigate(R.id.action_searchFragment_to_logoutFragment)
-        },
-        lowPowerModeActive = streamViewModel.lowPowerModeActive.value,
-
-        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-        logout = {
-
-            logoutViewModel.setNavigateHome(false)
-            logoutViewModel.logout(
-                clientId = clientId?:"",
-                oAuthToken = oAuthToken
-            )
-            homeViewModel.hideLogoutDialog()
-            onNavigate(R.id.action_searchFragment_to_logoutFragment)
-
-        },
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-
+        topGamesListResponse = homeViewModel.topGames.value,
+        adjustedHeight = homeViewModel.state.value.aspectHeight,
+        adjustedWidth = homeViewModel.state.value.width,
 
     )
 }
@@ -99,16 +78,10 @@ fun SearchView(
 @Composable
 fun SearchMainComponent(
     onNavigate: (Int) -> Unit,
-    showLogoutDialog:()->Unit,
-    userIsLoggedIn: Boolean,
-    loginWithTwitch:() ->Unit,
-    lowPowerModeActive:Boolean,
-    changeLowPowerMode:(Boolean)->Unit,
-    logoutDialogIsOpen:Boolean,
-    hideLogoutDialog:()->Unit,
+    topGamesListResponse: Response<List<TopGame>>,
+    adjustedHeight:Int,
+    adjustedWidth:Int
 
-    logout: () -> Unit,
-    currentUsername: String
 ){
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
     val scope = rememberCoroutineScope()
@@ -160,7 +133,11 @@ fun SearchMainComponent(
         drawerContent = {}
     ) {
         //THIS IS WHERE THE MODAL SHOULD GO
-        SearchViewComponent()
+        SearchViewComponent(
+            topGamesListResponse=topGamesListResponse,
+            adjustedHeight = adjustedHeight,
+            adjustedWidth=adjustedWidth
+        )
     }
 }
 

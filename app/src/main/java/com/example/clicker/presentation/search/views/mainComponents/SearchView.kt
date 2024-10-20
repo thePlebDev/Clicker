@@ -9,15 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,50 +33,125 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
+import com.example.clicker.R
+import com.example.clicker.network.clients.TopGame
 import com.example.clicker.presentation.sharedViews.LogoutDialog
+import com.example.clicker.util.Response
 
 
 @Composable
-fun SearchViewComponent(){
+fun SearchViewComponent(
+    topGamesListResponse:Response<List<TopGame>>,
+    adjustedHeight:Int,
+    adjustedWidth:Int
+){
     //still need to add the pager and the header
-    val listOfThings = listOf<String>("One","Two","Three","Four","Five","size","seven","One","Two","Three","Four","Five","size","seven")
-    Box(
-        modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)
-    ){
-        LazyVerticalGrid(
 
-            columns = GridCells.Fixed(3),
-            modifier= Modifier
-                .fillMaxSize()
-                .padding(horizontal = 5.dp)
-                .background(MaterialTheme.colorScheme.primary),
-            verticalArrangement = Arrangement.spacedBy(15.dp),
-            horizontalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            items(listOfThings.size) { photo ->
-                Column(){
-                    Column(
-                        modifier = Modifier.height(200.dp).width(180.dp).background(Color.Red)
-                    ){}
-                    Text("Software and Game Development",
-                        maxLines=1,
-                        color = Color.Red,
-                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                        overflow = TextOverflow.Ellipsis)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ){
+        when(topGamesListResponse){
+            is Response.Loading->{
+                Log.d("topGamesListResponse","LOADING")
+                CircularProgressIndicator(
+                    modifier =Modifier.align(Alignment.TopCenter).size(40.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+            }
+            is Response.Success->{
+                Log.d("topGamesListResponse","SUCCESS")
+                TopGamesLazyGrid(
+                    modifier = Modifier.matchParentSize(),
+                    topGamesList = topGamesListResponse.data,
+                    adjustedHeight = adjustedHeight,
+                    adjustedWidth=adjustedWidth
+                )
+
+            }
+            is Response.Failure->{
+                Log.d("topGamesListResponse","FAILED")
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Icon(
+                        painterResource(id = R.drawable.baseline_close_24),
+                        contentDescription = "no unban requests",
+                        modifier = Modifier.size(35.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
+                    )
+                    Text("Request failed",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+                    Text("Pull to refresh and try again",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
 
                 }
 
             }
         }
+
     }
 
+}
 
+@Composable
+fun TopGamesLazyGrid(
+    modifier:Modifier,
+    topGamesList:List<TopGame>,
+    adjustedHeight:Int,
+    adjustedWidth:Int
+){
+    LazyVerticalGrid(
+
+        columns = GridCells.Fixed(3),
+        modifier= modifier
+            .padding(horizontal = 5.dp)
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.spacedBy(15.dp),
+        horizontalArrangement = Arrangement.spacedBy(15.dp)
+    ) {
+        items(topGamesList){ topGame ->
+            Column(){
+                SubcomposeAsyncImage(
+                    modifier = Modifier.height(200.dp).width(180.dp),
+                    model = topGame.box_art_url,
+                    loading = {
+                        Column(modifier = Modifier
+                            .height((200).dp)
+                            .width((180).dp)
+                            .background(MaterialTheme.colorScheme.primary),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            CircularProgressIndicator()
+                        }
+                    },
+                    contentDescription = stringResource(R.string.sub_compose_async_image_description)
+                )
+                Text("${topGame.name}",
+                    maxLines=1,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    overflow = TextOverflow.Ellipsis)
+
+            }
+
+        }
+
+    }
 }
 
 @Composable

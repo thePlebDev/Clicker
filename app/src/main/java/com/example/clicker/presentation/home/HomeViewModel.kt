@@ -265,11 +265,13 @@ class HomeViewModel @Inject constructor(
         clientId: String,
         oAuthToken: String
     )=viewModelScope.launch(ioDispatcher){
+        Log.d("getTopGamesTesting","oAuthToken -->$oAuthToken")
         twitchSearch.getTopGames(
             authorizationToken = oAuthToken,
             clientId=clientId
 
         ).collect{response ->
+            _topGames.value = Response.Failure(Exception("This failed the exception"))
             when(response){
                 is Response.Loading ->{
                     _topGames.value = Response.Loading
@@ -279,8 +281,8 @@ class HomeViewModel @Inject constructor(
                   //  _topGames.value = Response.Success
                     val updatedList = response.data.map {
                         changeTopGameUrlWidthHeight(
-                            aspectWidth=_uiState.value.width,
-                            aspectHeight=_uiState.value.aspectHeight,
+                            aspectWidth=138,
+                            aspectHeight=190,
                             topGame=it
                         )
                     }
