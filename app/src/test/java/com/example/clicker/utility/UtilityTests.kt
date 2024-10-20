@@ -1,5 +1,7 @@
 package com.example.clicker.utility
 
+import com.example.clicker.network.clients.TopGame
+import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.util.replaceChannelName
 import org.junit.Assert
 import org.junit.Test
@@ -19,6 +21,9 @@ class UtilityTests {
     }
 
 
+
+
 }
+
 
 

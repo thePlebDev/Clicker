@@ -3,10 +3,12 @@ package com.example.clicker.presentation.home
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
+import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.models.twitchClient.GetModChannelsData
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
@@ -20,6 +22,7 @@ import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.home.util.createOfflineAndOnlineLists
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
+import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import javax.inject.Inject
@@ -66,6 +69,9 @@ class HomeViewModel @Inject constructor(
 
     private var _clickedStreamerName: MutableState<String> = mutableStateOf("")
     val clickedStreamerName: State<String> = _clickedStreamerName
+
+    private var _topGames: MutableState<Response<List<TopGame>>> = mutableStateOf(Response.Loading)
+    val topGames:State<Response<List<TopGame>>> = _topGames
 
     fun updateClickedStreamerName(clickedUsername:String){
         _clickedStreamerName.value = clickedUsername
@@ -263,7 +269,36 @@ class HomeViewModel @Inject constructor(
             authorizationToken = oAuthToken,
             clientId=clientId
 
-        ).collect{}
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+                    _topGames.value = Response.Loading
+                }
+                is Response.Success ->{
+                    //todo: I NEED TO PARSE THE DATA AND REPLACE THE WIDTH AND HEIGHT
+                  //  _topGames.value = Response.Success
+                    val updatedList = response.data.map {
+                        changeTopGameUrlWidthHeight(
+                            aspectWidth=_uiState.value.width,
+                            aspectHeight=_uiState.value.aspectHeight,
+                            topGame=it
+                        )
+                    }
+                    _topGames.value = Response.Success(updatedList)
+                }
+                is Response.Failure ->{
+                    _topGames.value = Response.Failure(Exception("This failed the exception"))
+                }
+            }
+
+        }
+    }
+    fun changeTopGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int,topGame: TopGame): TopGame {
+
+        return topGame.copy(
+            box_art_url = topGame.box_art_url.replace("{width}", "$aspectWidth")
+                .replace("{height}", "$aspectHeight")
+        )
     }
 
     /**
