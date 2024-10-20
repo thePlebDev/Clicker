@@ -42,6 +42,7 @@ data class HomeUIState(
     val networkConnectionState:Boolean = true,
 
     val homeRefreshing:Boolean = false,
+    val searchRefreshing:Boolean = false,
     val homeNetworkErrorMessage:String ="Disconnected from network",
     val logoutDialogIsOpen:Boolean=false,
     val horizontalLongHoldStreamList: NetworkNewUserResponse<List<StreamData>> = NetworkNewUserResponse.Loading,

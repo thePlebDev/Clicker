@@ -271,10 +271,8 @@ class HomeViewModel @Inject constructor(
             clientId=clientId
 
         ).collect{response ->
-            _topGames.value = Response.Failure(Exception("This failed the exception"))
             when(response){
                 is Response.Loading ->{
-                    _topGames.value = Response.Loading
                 }
                 is Response.Success ->{
                     //todo: I NEED TO PARSE THE DATA AND REPLACE THE WIDTH AND HEIGHT
@@ -286,11 +284,36 @@ class HomeViewModel @Inject constructor(
                             topGame=it
                         )
                     }
+                    _uiState.value = _uiState.value.copy(
+                        searchRefreshing = false,
+                    )
                     _topGames.value = Response.Success(updatedList)
                 }
                 is Response.Failure ->{
                     _topGames.value = Response.Failure(Exception("This failed the exception"))
+                    _uiState.value = _uiState.value.copy(
+                        searchRefreshing = false,
+                    )
                 }
+            }
+
+        }
+    }
+
+    fun pullToRefreshTopGames(){
+        viewModelScope.launch(ioDispatcher) {
+            _uiState.value = _uiState.value.copy(
+                searchRefreshing = true,
+            )
+
+            if(_validatedUser.value?.clientId == null){
+                validateOAuthToken(_oAuthToken.value ?: "")
+            }
+            else{
+                getTopGames(
+                    clientId = _validatedUser.value?.clientId ?:"",
+                    oAuthToken = _oAuthToken.value ?: "",
+                )
             }
 
         }
