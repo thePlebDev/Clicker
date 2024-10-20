@@ -10,6 +10,7 @@ import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.models.twitchClient.GetModChannelsData
 import com.example.clicker.network.domain.TwitchAuthentication
 import com.example.clicker.network.domain.TwitchRepo
+import com.example.clicker.network.domain.TwitchSearch
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.models.twitchRepo.changeUrlWidthHeight
@@ -41,6 +42,7 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
+    private val twitchSearch: TwitchSearch,
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -245,9 +247,23 @@ class HomeViewModel @Inject constructor(
                         oAuthToken = _oAuthToken.value ?:""
                     )
                    // getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
+                    getTopGames(
+                        clientId = nonNullValidatedUser.clientId,
+                        oAuthToken = _oAuthToken.value ?:""
+                    )
                 }
             }
         }
+    }
+    private fun getTopGames(
+        clientId: String,
+        oAuthToken: String
+    )=viewModelScope.launch(ioDispatcher){
+        twitchSearch.getTopGames(
+            authorizationToken = oAuthToken,
+            clientId=clientId
+
+        ).collect{}
     }
 
     /**
