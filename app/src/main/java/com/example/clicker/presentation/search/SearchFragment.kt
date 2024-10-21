@@ -36,6 +36,7 @@ class SearchFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val logoutViewModel: LogoutViewModel by activityViewModels()
+    private val searchViewModel: SearchViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,8 +59,7 @@ class SearchFragment : Fragment() {
                     SearchView(
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         homeViewModel=homeViewModel,
-                        streamViewModel=streamViewModel,
-                        logoutViewModel=logoutViewModel
+                        searchViewModel=searchViewModel,
                     )
                 }
             }

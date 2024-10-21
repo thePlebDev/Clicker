@@ -131,6 +131,7 @@ import kotlinx.coroutines.launch
         hapticFeedBackError:() ->Unit,
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
+        getTopGames:()->Unit
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -184,7 +185,10 @@ import kotlinx.coroutines.launch
                             text = "Search",
                             imageVector = Icons.Default.Search,
                             iconContentDescription = "Navigate to search bar",
-                            onClick = {onNavigate(R.id.action_homeFragment_to_searchFragment)},
+                            onClick = {
+                                getTopGames()
+                                onNavigate(R.id.action_homeFragment_to_searchFragment)
+                                      },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },

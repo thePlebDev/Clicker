@@ -45,7 +45,6 @@ class HomeViewModel @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val tokenDataStore: TwitchDataStore,
     private val authentication: TwitchAuthentication,
-    private val twitchSearch: TwitchSearch,
 ) : ViewModel() {
 
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
@@ -70,8 +69,6 @@ class HomeViewModel @Inject constructor(
     private var _clickedStreamerName: MutableState<String> = mutableStateOf("")
     val clickedStreamerName: State<String> = _clickedStreamerName
 
-    private var _topGames: MutableState<Response<List<TopGame>>> = mutableStateOf(Response.Loading)
-    val topGames:State<Response<List<TopGame>>> = _topGames
 
     fun updateClickedStreamerName(clickedUsername:String){
         _clickedStreamerName.value = clickedUsername
@@ -253,78 +250,15 @@ class HomeViewModel @Inject constructor(
                         oAuthToken = _oAuthToken.value ?:""
                     )
                    // getGlobalEmote(_uiState.value.oAuthToken,nonNullValidatedUser.clientId)
-                    getTopGames(
-                        clientId = nonNullValidatedUser.clientId,
-                        oAuthToken = _oAuthToken.value ?:""
-                    )
+
                 }
             }
         }
     }
-    private fun getTopGames(
-        clientId: String,
-        oAuthToken: String
-    )=viewModelScope.launch(ioDispatcher){
-        Log.d("getTopGamesTesting","oAuthToken -->$oAuthToken")
-        twitchSearch.getTopGames(
-            authorizationToken = oAuthToken,
-            clientId=clientId
 
-        ).collect{response ->
-            when(response){
-                is Response.Loading ->{
-                }
-                is Response.Success ->{
-                    //todo: I NEED TO PARSE THE DATA AND REPLACE THE WIDTH AND HEIGHT
-                  //  _topGames.value = Response.Success
-                    val updatedList = response.data.map {
-                        changeTopGameUrlWidthHeight(
-                            aspectWidth=138,
-                            aspectHeight=190,
-                            topGame=it
-                        )
-                    }
-                    _uiState.value = _uiState.value.copy(
-                        searchRefreshing = false,
-                    )
-                    _topGames.value = Response.Success(updatedList)
-                }
-                is Response.Failure ->{
-                    _topGames.value = Response.Failure(Exception("This failed the exception"))
-                    _uiState.value = _uiState.value.copy(
-                        searchRefreshing = false,
-                    )
-                }
-            }
 
-        }
-    }
 
-    fun pullToRefreshTopGames(){
-        viewModelScope.launch(ioDispatcher) {
-            _uiState.value = _uiState.value.copy(
-                searchRefreshing = true,
-            )
 
-            if(_validatedUser.value?.clientId == null){
-                validateOAuthToken(_oAuthToken.value ?: "")
-            }
-            else{
-                getTopGames(
-                    clientId = _validatedUser.value?.clientId ?:"",
-                    oAuthToken = _oAuthToken.value ?: "",
-                )
-            }
-
-        }
-    }
-    fun changeTopGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int,topGame: TopGame): TopGame {
-
-        return topGame.copy(
-            box_art_url = topGame.box_art_url.replace("{width}", "$aspectWidth")
-                .replace("{height}", "$aspectHeight")
-        )
-    }
 
     /**
      * monitorForOAuthToken is a private function that upon the initialization of this viewModel is meant to monitor the [_oAuthToken] hot flow for any non null values. Once
