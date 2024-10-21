@@ -3,6 +3,7 @@ package com.example.clicker.presentation.search.views.mainComponents
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -26,9 +28,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -54,6 +59,7 @@ import com.example.clicker.R
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.LogoutDialog
+import com.example.clicker.presentation.stream.views.chat.chatSettings.TextMenuItem
 import com.example.clicker.util.Response
 
 
@@ -211,6 +217,9 @@ fun PinnedAnimation(
 
 @Composable
 fun SearchBarUI(){
+    var expanded by remember {
+        mutableStateOf(false)
+    }
     Column( modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)){
         StylizedTextField()
         Spacer(modifier =Modifier.size(10.dp))
@@ -221,10 +230,18 @@ fun SearchBarUI(){
         ){
             Text("Categories",color = MaterialTheme.colorScheme.onPrimary)
             Icon(painter = painterResource(id =R.drawable.menu_open_24),
-                contentDescription ="Open filter" , tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(20.dp)
+                contentDescription ="Open filter" , tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable {
+                        expanded = !expanded
+                    }
             )
         }
+        SearchFilterDropDownMenu(
+            expanded=expanded,
+            setExpanded = {newValue ->expanded = newValue}
+        )
     }
 
 }
@@ -313,3 +330,67 @@ fun SearchNetworkErrorMessage(
     }
 
 }
+
+@Composable
+fun SearchFilterDropDownMenu(
+    expanded:Boolean,
+    setExpanded: (Boolean) -> Unit
+) {
+
+    Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)) {
+
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { setExpanded(false) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Color.DarkGray
+                )
+        ) {
+
+            SearchTextMenuItem(
+                    setExpanded = { newValue -> setExpanded(newValue) },
+                    title = "Filter pinned categories",
+
+                )
+
+
+        }
+    }
+}
+@Composable
+fun SearchTextMenuItem(
+    setExpanded: (Boolean) -> Unit,
+    title:String,
+){
+    DropdownMenuItem(
+        onClick = {
+            setExpanded(false)
+        },
+        text = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                    painter = painterResource(id =R.drawable.push_pin_24),
+                    contentDescription = "filter for pinned categories",
+                    tint=Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+                Spacer(modifier =Modifier.width(10.dp))
+                Column() {
+                    Text(title, color = Color.White)
+                    Text("Double click on categories to pin and unpin",
+                        color = Color.White.copy(0.6f),
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize
+                    )
+                }
+
+            }
+
+        }
+    )
+}
+
