@@ -61,7 +61,8 @@ import kotlinx.coroutines.launch
 fun SearchView(
     onNavigate: (Int) -> Unit,
     homeViewModel:HomeViewModel,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    hapticFeedBackError:() ->Unit,
 
 ){
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
@@ -72,7 +73,10 @@ fun SearchView(
         topGamesListResponse = searchViewModel.topGames.value,
 
         searchRefreshing = searchViewModel.searchRefreshing.value,
-        searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()}
+        searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
+        showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
+        networkMessage=searchViewModel.searchNetworkStatus.value.message,
+        hapticFeedBackError={hapticFeedBackError()}
 
     )
 }
@@ -82,7 +86,10 @@ fun SearchMainComponent(
     onNavigate: (Int) -> Unit,
     topGamesListResponse: Response<List<TopGame>>,
     searchRefreshing:Boolean,
-    searchRefreshFunc:()->Unit
+    searchRefreshFunc:()->Unit,
+    showNetworkMessage:Boolean,
+    networkMessage:String,
+    hapticFeedBackError:() ->Unit,
 
 ){
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -138,12 +145,17 @@ fun SearchMainComponent(
             padding = contentPadding,
             refreshing = searchRefreshing,
             refreshFunc = {searchRefreshFunc()},
-            showNetworkMessage=false,
-            networkStatus = {modifier ->}
+            showNetworkMessage=showNetworkMessage,
+            networkStatus = {modifier ->
+
+
+            }
         ) {
             //THIS IS WHERE THE MODAL SHOULD GO
             SearchViewComponent(
                 topGamesListResponse = topGamesListResponse,
+                showNetworkRefreshError = showNetworkMessage,
+                hapticFeedBackError={hapticFeedBackError()}
             )
         }
     }

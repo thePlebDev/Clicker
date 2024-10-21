@@ -1,10 +1,13 @@
 package com.example.clicker.presentation.search
 
+import android.os.Build
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -44,6 +47,7 @@ class SearchFragment : Fragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,6 +57,7 @@ class SearchFragment : Fragment() {
 
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            //hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},this is wha tis needed
 
             setContent {
                 AppTheme{
@@ -60,6 +65,7 @@ class SearchFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         homeViewModel=homeViewModel,
                         searchViewModel=searchViewModel,
+                        hapticFeedBackError={ view?.performHapticFeedback(HapticFeedbackConstants.REJECT) }
                     )
                 }
             }

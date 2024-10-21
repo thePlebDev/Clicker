@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TopGame
+import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.util.Response
 
@@ -56,8 +58,12 @@ import com.example.clicker.util.Response
 @Composable
 fun SearchViewComponent(
     topGamesListResponse:Response<List<TopGame>>,
+    showNetworkRefreshError:Boolean,
+    hapticFeedBackError:()->Unit
+
 ){
     //still need to add the pager and the header
+    val fontSize =MaterialTheme.typography.headlineMedium.fontSize
 
 
     Box(
@@ -86,26 +92,24 @@ fun SearchViewComponent(
             }
             is Response.Failure->{
                 Log.d("topGamesListResponse","FAILED")
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    Icon(
-                        painterResource(id = R.drawable.baseline_close_24),
-                        contentDescription = "no unban requests",
-                        modifier = Modifier.size(35.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
-                    )
-                    Text("Request failed",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                    Text("Pull to refresh and try again",color = MaterialTheme.colorScheme.onPrimary.copy(0.8f),fontSize = MaterialTheme.typography.headlineSmall.fontSize)
-
-                }
+                TopGamesLazyGrid(
+                    modifier = Modifier.matchParentSize(),
+                    topGamesList = listOf(),
+                )
 
             }
         }
+        if(showNetworkRefreshError){
+            Box(modifier = Modifier.align(Alignment.BottomCenter)){
+                hapticFeedBackError()
+                SearchNetworkErrorMessage(
+                    "Error! Please try again"
+                )
+            }
 
-    }
+        }
+
+    }//end of the box
 
 }
 
@@ -116,7 +120,6 @@ fun TopGamesLazyGrid(
 ){
 
     LazyVerticalGrid(
-
         columns = GridCells.Fixed(3),
         modifier= modifier
             .padding(horizontal = 5.dp)
@@ -271,5 +274,29 @@ fun StylizedTextField(){
 
     }
 
+
+}
+
+@Composable
+fun SearchNetworkErrorMessage(
+    errorMessage:String
+){
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+
+    ) {
+        Column(
+            modifier = Modifier.padding(15.dp)
+        ) {
+            Text(
+                errorMessage,
+                color = Color.Red.copy(alpha = 0.9f),
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize
+            )
+
+        }
+    }
 
 }

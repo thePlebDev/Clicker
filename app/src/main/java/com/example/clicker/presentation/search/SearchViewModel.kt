@@ -15,6 +15,7 @@ import com.example.clicker.network.websockets.models.MessageToken
 import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +23,10 @@ import javax.inject.Inject
 data class ClickedValidatedUser(
     val oAuthToken:String,
     val clientId:String,
+)
+data class SearchNetworkStatus(
+    val showMessage: Boolean,
+    val message:String,
 )
 
 @HiltViewModel
@@ -36,6 +41,9 @@ class SearchViewModel @Inject constructor(
     val topGames:State<Response<List<TopGame>>> = _topGames
     private val _searchRefreshing = mutableStateOf(false)
     val searchRefreshing: State<Boolean> = _searchRefreshing
+
+    private val _searchNetworkStatus = mutableStateOf(SearchNetworkStatus(false,""))
+    val searchNetworkStatus: State<SearchNetworkStatus> = _searchNetworkStatus
 
 
 
@@ -74,8 +82,35 @@ class SearchViewModel @Inject constructor(
                     _topGames.value = Response.Success(updatedList)
                 }
                 is Response.Failure ->{
-                    _topGames.value = Response.Failure(Exception("This failed the exception"))
-                    _searchRefreshing.value = false
+                   when(_topGames.value){
+                       is Response.Success->{
+                           _searchRefreshing.value = false
+                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
+                               showMessage = true,
+                               message = "Error! Please try again"
+                           )
+                           delay(1000)
+                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
+                               showMessage = false,
+
+                               )
+                       }
+                       else ->{
+                           _searchRefreshing.value = false
+                           _topGames.value = Response.Failure(Exception("Error! Please try again"))
+                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
+                               showMessage = true,
+                               message = "Error! Please try again"
+                           )
+                           delay(1000)
+                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
+                               showMessage = false,
+
+                               )
+
+                       }
+                   }
+
                 }
             }
 
