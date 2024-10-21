@@ -50,6 +50,7 @@ import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
 import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.LogoutDialog
+import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
@@ -92,12 +93,10 @@ fun SearchMainComponent(
     hapticFeedBackError:() ->Unit,
 
 ){
-    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
     val scope = rememberCoroutineScope()
 
 
-    DrawerScaffold(
-        scaffoldState = scaffoldState,
+    NoDrawerScaffold(
         topBar = {
 
             SearchBarUI()
@@ -139,7 +138,6 @@ fun SearchMainComponent(
                 },
             )
         },
-        drawerContent = {}
     ) {contentPadding ->
         PullToRefreshComponent(
             padding = contentPadding,
