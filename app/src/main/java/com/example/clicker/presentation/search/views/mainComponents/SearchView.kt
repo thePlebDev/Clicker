@@ -56,8 +56,6 @@ import com.example.clicker.util.Response
 @Composable
 fun SearchViewComponent(
     topGamesListResponse:Response<List<TopGame>>,
-    adjustedHeight:Int,
-    adjustedWidth:Int
 ){
     //still need to add the pager and the header
 
@@ -83,15 +81,13 @@ fun SearchViewComponent(
                 TopGamesLazyGrid(
                     modifier = Modifier.matchParentSize(),
                     topGamesList = topGamesListResponse.data,
-                    adjustedHeight = adjustedHeight,
-                    adjustedWidth=adjustedWidth
                 )
 
             }
             is Response.Failure->{
                 Log.d("topGamesListResponse","FAILED")
                 Column(modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
@@ -117,8 +113,6 @@ fun SearchViewComponent(
 fun TopGamesLazyGrid(
     modifier:Modifier,
     topGamesList:List<TopGame>,
-    adjustedHeight:Int,
-    adjustedWidth:Int
 ){
 
     LazyVerticalGrid(
@@ -214,7 +208,6 @@ fun SearchBarUI(){
     StylizedTextField()
 }
 //after THis needs to go inside of a new file
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StylizedTextField(){
 

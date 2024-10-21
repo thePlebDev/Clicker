@@ -45,6 +45,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.views.LoginLogoutScaffoldDrawer
+import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
 import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
@@ -60,8 +61,7 @@ import kotlinx.coroutines.launch
 fun SearchView(
     onNavigate: (Int) -> Unit,
     homeViewModel:HomeViewModel,
-    streamViewModel:StreamViewModel,
-    logoutViewModel:LogoutViewModel,
+    searchViewModel: SearchViewModel
 
 ){
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
@@ -69,11 +69,10 @@ fun SearchView(
 
     SearchMainComponent(
         onNavigate={action -> onNavigate(action)},
-        topGamesListResponse = homeViewModel.topGames.value,
-        adjustedHeight = homeViewModel.state.value.aspectHeight,
-        adjustedWidth = homeViewModel.state.value.width,
-        searchRefreshing = homeViewModel.state.value.searchRefreshing,
-        searchRefreshFunc ={homeViewModel.pullToRefreshTopGames()}
+        topGamesListResponse = searchViewModel.topGames.value,
+
+        searchRefreshing = searchViewModel.searchRefreshing.value,
+        searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()}
 
     )
 }
@@ -82,8 +81,6 @@ fun SearchView(
 fun SearchMainComponent(
     onNavigate: (Int) -> Unit,
     topGamesListResponse: Response<List<TopGame>>,
-    adjustedHeight:Int,
-    adjustedWidth:Int,
     searchRefreshing:Boolean,
     searchRefreshFunc:()->Unit
 
@@ -147,8 +144,6 @@ fun SearchMainComponent(
             //THIS IS WHERE THE MODAL SHOULD GO
             SearchViewComponent(
                 topGamesListResponse = topGamesListResponse,
-                adjustedHeight = adjustedHeight,
-                adjustedWidth = adjustedWidth
             )
         }
     }

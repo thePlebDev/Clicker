@@ -36,6 +36,7 @@ import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
 import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.search.SearchViewModel
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -43,6 +44,7 @@ import com.example.clicker.presentation.stream.GLSurfaceViewComposable
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
+import com.example.clicker.util.Response
 
 
 @Composable
@@ -84,8 +86,8 @@ fun ValidationView(
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
 
-    modVersionThreeViewModel: ModVersionThreeViewModel,
-    modViewViewModel: ModViewViewModel
+    modViewViewModel: ModViewViewModel,
+    searchViewModel: SearchViewModel
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -204,6 +206,18 @@ fun ValidationView(
         hapticFeedBackError={hapticFeedBackError()},
         lowPowerModeActive=lowPowerModeActive,
         changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
+        getTopGames = {
+            when(searchViewModel.topGames.value){
+
+                is Response.Success ->{}
+                else->{
+                    searchViewModel.getTopGames(
+                        oAuthToken = oAuthToken,
+                        clientId = clientId?:""
+                    )
+                }
+            }
+        }
 
     )
 
