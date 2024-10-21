@@ -7,6 +7,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -127,6 +129,7 @@ fun TopGamesLazyGrid(
         verticalArrangement = Arrangement.spacedBy(15.dp),
         horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
+
         items(topGamesList){ topGame ->
             var isVisible by remember { mutableStateOf(false) }
             // Animate the scale for smooth appearance
@@ -208,7 +211,22 @@ fun PinnedAnimation(
 
 @Composable
 fun SearchBarUI(){
-    StylizedTextField()
+    Column( modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)){
+        StylizedTextField()
+        Spacer(modifier =Modifier.size(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text("Categories",color = MaterialTheme.colorScheme.onPrimary)
+            Icon(painter = painterResource(id =R.drawable.menu_open_24),
+                contentDescription ="Open filter" , tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+
 }
 //after THis needs to go inside of a new file
 @Composable
@@ -228,9 +246,7 @@ fun StylizedTextField(){
 
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
 
-        Box(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)
-        ){
+
 
 
             TextField(
@@ -266,9 +282,6 @@ fun StylizedTextField(){
                     )
                 }
             )
-
-
-        }
 
 
 
