@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.search.views.mainComponents
 
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -67,7 +71,9 @@ fun SearchViewComponent(
             is Response.Loading->{
                 Log.d("topGamesListResponse","LOADING")
                 CircularProgressIndicator(
-                    modifier =Modifier.align(Alignment.TopCenter).size(40.dp),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .size(40.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
 
@@ -114,6 +120,7 @@ fun TopGamesLazyGrid(
     adjustedHeight:Int,
     adjustedWidth:Int
 ){
+
     LazyVerticalGrid(
 
         columns = GridCells.Fixed(3),
@@ -124,33 +131,81 @@ fun TopGamesLazyGrid(
         horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         items(topGamesList){ topGame ->
-            Column(){
-                SubcomposeAsyncImage(
-                    modifier = Modifier.height(200.dp).width(180.dp),
-                    model = topGame.box_art_url,
-                    loading = {
-                        Column(modifier = Modifier
-                            .height((200).dp)
-                            .width((180).dp)
-                            .background(MaterialTheme.colorScheme.primary),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            CircularProgressIndicator()
-                        }
-                    },
-                    contentDescription = stringResource(R.string.sub_compose_async_image_description)
-                )
-                Text("${topGame.name}",
-                    maxLines=1,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    overflow = TextOverflow.Ellipsis)
+            var isVisible by remember { mutableStateOf(false) }
+            // Animate the scale for smooth appearance
+            Box(){
+                Column(
+                    modifier =Modifier .pointerInput(Unit) {
+                        detectTapGestures(
+                            onDoubleTap = {
+                                isVisible = !isVisible // Show the icon on double tap
+                            }
+                        )
+                    }
+                ){
+                    SubcomposeAsyncImage(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .width(180.dp),
+                        model = topGame.box_art_url,
+                        loading = {
+                            Column(modifier = Modifier
+                                .height((200).dp)
+                                .width((180).dp)
+                                .background(MaterialTheme.colorScheme.primary),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ){
+                                CircularProgressIndicator()
+                            }
+                        },
+                        contentDescription = stringResource(R.string.sub_compose_async_image_description)
+                    )
+                    Text("${topGame.name}",
+                        maxLines=1,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                        overflow = TextOverflow.Ellipsis)
 
+                }
+                PinnedAnimation(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    isVisible = isVisible
+                )
             }
 
         }
 
+    }
+}
+
+@Composable
+fun PinnedAnimation(
+    modifier: Modifier,
+    isVisible:Boolean
+){
+    val scale by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f // Animate from 0 to 1
+    )
+
+    // Animate the opacity for smooth appearance
+    val alphaTesting by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f // Animate from 0 to 1
+    )
+    if (isVisible || scale > 0f) { // Keep showing the icon while animating
+        Icon(
+            modifier = modifier
+                .size(30.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = alphaTesting
+                    rotationZ = 45f // Rotate left by 45 degrees
+                },
+            painter = painterResource(id = R.drawable.push_pin_24),
+            contentDescription = "Push Pin",
+            tint = MaterialTheme.colorScheme.onPrimary,
+        )
     }
 }
 
