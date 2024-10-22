@@ -76,8 +76,13 @@ fun SearchView(
         searchRefreshing = searchViewModel.searchRefreshing.value,
         searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
         showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
-        networkMessage=searchViewModel.searchNetworkStatus.value.message,
-        hapticFeedBackError={hapticFeedBackError()}
+        topGamesList=searchViewModel.topGamesList.value,
+        hapticFeedBackError={hapticFeedBackError()},
+        categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
+        categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryRemove(topGame)},
+        pinnedList = searchViewModel.topGamesPinnedList.toList(),
+        pinned = searchViewModel.pinnedFilter.value,
+        changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()}
 
     )
 }
@@ -85,12 +90,18 @@ fun SearchView(
 @Composable
 fun SearchMainComponent(
     onNavigate: (Int) -> Unit,
-    topGamesListResponse: Response<List<TopGame>>,
+    topGamesListResponse: Response<Boolean>,
     searchRefreshing:Boolean,
     searchRefreshFunc:()->Unit,
     showNetworkMessage:Boolean,
-    networkMessage:String,
     hapticFeedBackError:() ->Unit,
+    topGamesList: List<TopGame>,
+    categoryDoubleClickedAdd:(String)->Unit,
+    categoryDoubleClickedRemove:(TopGame)->Unit,
+    pinned:Boolean,
+    pinnedList:List<TopGame>,
+    changePinnedListFilterStatus:()->Unit,
+
 
 ){
     val scope = rememberCoroutineScope()
@@ -99,7 +110,10 @@ fun SearchMainComponent(
     NoDrawerScaffold(
         topBar = {
 
-            SearchBarUI()
+            SearchBarUI(
+                changePinnedListFilterStatus={changePinnedListFilterStatus()},
+                pinned=pinned
+            )
 
         },
         bottomBar = {
@@ -153,7 +167,13 @@ fun SearchMainComponent(
             SearchViewComponent(
                 topGamesListResponse = topGamesListResponse,
                 showNetworkRefreshError = showNetworkMessage,
-                hapticFeedBackError={hapticFeedBackError()}
+                hapticFeedBackError={hapticFeedBackError()},
+                topGamesList=topGamesList,
+                categoryDoubleClickedAdd={id -> categoryDoubleClickedAdd(id)},
+                categoryDoubleClickedRemove ={topGame -> categoryDoubleClickedRemove(topGame)},
+                pinned = pinned,
+                pinnedList = pinnedList
+
             )
         }
     }

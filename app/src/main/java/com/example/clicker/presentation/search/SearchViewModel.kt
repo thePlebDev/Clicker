@@ -37,17 +37,29 @@ class SearchViewModel @Inject constructor(
 
 
     private val _validatedUser = mutableStateOf(ClickedValidatedUser("",""))
-    private var _topGames: MutableState<Response<List<TopGame>>> = mutableStateOf(Response.Loading)
-    val topGames:State<Response<List<TopGame>>> = _topGames
+    private var _topGames: MutableState<Response<Boolean>> = mutableStateOf(Response.Loading)
+    val topGames:State<Response<Boolean>> = _topGames
     private val _searchRefreshing = mutableStateOf(false)
     val searchRefreshing: State<Boolean> = _searchRefreshing
 
     private val _searchNetworkStatus = mutableStateOf(SearchNetworkStatus(false,""))
     val searchNetworkStatus: State<SearchNetworkStatus> = _searchNetworkStatus
 
+    private var _topGamesList: MutableState<List<TopGame>> = mutableStateOf(listOf())
+    val topGamesList:State<List<TopGame>> = _topGamesList
+
+     var topGamesPinnedList = mutableStateListOf<TopGame>()
+
+
+    private var _pinnedFilter: MutableState<Boolean> = mutableStateOf(false)
+    val pinnedFilter:State<Boolean> = _pinnedFilter
 
 
 
+
+    fun updatePinnedFilter(){
+        _pinnedFilter.value =!_pinnedFilter.value
+    }
 
 
      fun getTopGames(
@@ -78,24 +90,12 @@ class SearchViewModel @Inject constructor(
                         )
                     }
 
+                    _topGamesList.value = updatedList
                     _searchRefreshing.value = false
-                    _topGames.value = Response.Success(updatedList)
+                    _topGames.value = Response.Success(true)
                 }
                 is Response.Failure ->{
-                   when(_topGames.value){
-                       is Response.Success->{
-                           _searchRefreshing.value = false
-                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
-                               showMessage = true,
-                               message = "Error! Please try again"
-                           )
-                           delay(1000)
-                           _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
-                               showMessage = false,
 
-                               )
-                       }
-                       else ->{
                            _searchRefreshing.value = false
                            _topGames.value = Response.Failure(Exception("Error! Please try again"))
                            _searchNetworkStatus.value = _searchNetworkStatus.value.copy(
@@ -108,8 +108,6 @@ class SearchViewModel @Inject constructor(
 
                                )
 
-                       }
-                   }
 
                 }
             }
@@ -130,6 +128,45 @@ class SearchViewModel @Inject constructor(
 
         }
     }
+    fun doubleClickedCategoryAdd(id:String){
+
+        _topGamesList.value =_topGamesList.value.map { topGames->
+            if(topGames.id == id){
+                filterPinnedClickedListAdd(topGames)
+                topGames.copy(
+                    clicked= true
+                )
+            }else{
+                topGames
+            }
+        }
+    }
+    fun doubleClickedCategoryRemove(topGame:TopGame){
+
+        _topGamesList.value =_topGamesList.value.map { topGames->
+            if(topGames.id == topGame.id){
+                filterPinnedClickedListRemove(topGame)
+                topGames.copy(
+                    clicked= false
+                )
+            }else{
+                topGames
+            }
+        }
+    }
+
+    private fun filterPinnedClickedListRemove(topGame: TopGame){
+        Log.d("FilterPinnedItem","REMOVE")
+        Log.d("FilterPinnedItem","${topGame.id}")
+        topGamesPinnedList.removeIf { it.id == topGame.id }
+        Log.d("FilterPinnedItem","topGamesPinnedList-->${topGamesPinnedList.toList()}")
+    }
+    private fun filterPinnedClickedListAdd(topGame: TopGame){
+        Log.d("FilterPinnedItem","ADD")
+        topGamesPinnedList.add(topGame)
+        //Log.d("FilterPinnedItem","topGamesPinnedList ->${topGamesPinnedList.toList()}")
+    }
+
 
 
 

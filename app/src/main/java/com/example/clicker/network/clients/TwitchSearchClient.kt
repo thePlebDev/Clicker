@@ -30,5 +30,6 @@ data class TopGame(
     val id: String,
     val name: String,
     val box_art_url: String,
-    val igdb_id: String
+    val igdb_id: String,
+    val clicked:Boolean = false
 )
