@@ -65,13 +65,17 @@ import com.example.clicker.util.Response
 
 @Composable
 fun SearchViewComponent(
-    topGamesListResponse:Response<List<TopGame>>,
+    topGamesListResponse: Response<Boolean>,
     showNetworkRefreshError:Boolean,
-    hapticFeedBackError:()->Unit
+    hapticFeedBackError:()->Unit,
+    topGamesList: List<TopGame>,
+    categoryDoubleClickedAdd:(String)->Unit,
+    categoryDoubleClickedRemove:(TopGame)->Unit,
+    pinned:Boolean,
+    pinnedList:List<TopGame>,
 
 ){
     //still need to add the pager and the header
-    val fontSize =MaterialTheme.typography.headlineMedium.fontSize
 
 
     Box(
@@ -94,7 +98,11 @@ fun SearchViewComponent(
                 Log.d("topGamesListResponse","SUCCESS")
                 TopGamesLazyGrid(
                     modifier = Modifier.matchParentSize(),
-                    topGamesList = topGamesListResponse.data,
+                    topGamesList = topGamesList,
+                    categoryDoubleClickedAdd={id -> categoryDoubleClickedAdd(id)},
+                    pinned = pinned,
+                    pinnedList = pinnedList,
+                    categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)}
                 )
 
             }
@@ -102,7 +110,11 @@ fun SearchViewComponent(
                 Log.d("topGamesListResponse","FAILED")
                 TopGamesLazyGrid(
                     modifier = Modifier.matchParentSize(),
-                    topGamesList = listOf(),
+                    topGamesList = topGamesList,
+                    categoryDoubleClickedAdd={id -> },
+                    pinned = false,
+                    pinnedList = pinnedList,
+                    categoryDoubleClickedRemove={}
                 )
 
             }
@@ -125,6 +137,10 @@ fun SearchViewComponent(
 fun TopGamesLazyGrid(
     modifier:Modifier,
     topGamesList:List<TopGame>,
+    categoryDoubleClickedAdd:(String)->Unit,
+    categoryDoubleClickedRemove:(TopGame)->Unit,
+    pinned:Boolean,
+    pinnedList:List<TopGame>,
 ){
 
     LazyVerticalGrid(
@@ -136,51 +152,106 @@ fun TopGamesLazyGrid(
         horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
 
-        items(topGamesList){ topGame ->
-            var isVisible by remember { mutableStateOf(false) }
-            // Animate the scale for smooth appearance
-            Box(){
-                Column(
-                    modifier =Modifier .pointerInput(Unit) {
-                        detectTapGestures(
-                            onDoubleTap = {
-                                isVisible = !isVisible // Show the icon on double tap
+        if(!pinned){
+            items(topGamesList){ topGame ->
+                var isVisible by remember { mutableStateOf(false) }
+                // Animate the scale for smooth appearance
+                Box(){
+                    Column(
+                        modifier =Modifier .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    categoryDoubleClickedAdd(topGame.id) // Show the icon on double tap
+                                }
+                            )
+                        }
+                    ){
+                        SubcomposeAsyncImage(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .width(180.dp),
+                            model = topGame.box_art_url,
+                            loading = {
+                                Column(modifier = Modifier
+                                    .height((200).dp)
+                                    .width((180).dp)
+                                    .background(MaterialTheme.colorScheme.primary),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ){
+                                    CircularProgressIndicator()
+                                }
+                            },
+                            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+                        )
+                        Text("${topGame.name}",
+                            maxLines=1,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                            overflow = TextOverflow.Ellipsis)
+
+                    }
+                    PinnedAnimation(
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        isVisible = topGame.clicked
+                    )
+                }
+
+            }
+        }else{
+            items(pinnedList, key ={topGame ->topGame.id} ){ topGame ->
+                Log.d("PinnedListEmptyCHeck","${pinnedList.isEmpty()}")
+
+
+                // Animate the scale for smooth appearance
+                Box(){
+
+
+                        Column(
+                            modifier =Modifier .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onDoubleTap = {
+                                        categoryDoubleClickedRemove(topGame) // Show the icon on double tap
+                                    }
+                                )
                             }
+                        ){
+                            SubcomposeAsyncImage(
+                                modifier = Modifier
+                                    .height(200.dp)
+                                    .width(180.dp),
+                                model = topGame.box_art_url,
+                                loading = {
+                                    Column(modifier = Modifier
+                                        .height((200).dp)
+                                        .width((180).dp)
+                                        .background(MaterialTheme.colorScheme.primary),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ){
+                                        CircularProgressIndicator()
+                                    }
+                                },
+                                contentDescription = stringResource(R.string.sub_compose_async_image_description)
+                            )
+                            Text(
+                                topGame.name,
+                                maxLines=1,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                                overflow = TextOverflow.Ellipsis)
+
+                        }
+                        PinnedAnimation(
+                            modifier = Modifier.align(Alignment.TopEnd),
+                            isVisible = true
                         )
                     }
-                ){
-                    SubcomposeAsyncImage(
-                        modifier = Modifier
-                            .height(200.dp)
-                            .width(180.dp),
-                        model = topGame.box_art_url,
-                        loading = {
-                            Column(modifier = Modifier
-                                .height((200).dp)
-                                .width((180).dp)
-                                .background(MaterialTheme.colorScheme.primary),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                CircularProgressIndicator()
-                            }
-                        },
-                        contentDescription = stringResource(R.string.sub_compose_async_image_description)
-                    )
-                    Text("${topGame.name}",
-                        maxLines=1,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                        overflow = TextOverflow.Ellipsis)
 
                 }
-                PinnedAnimation(
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    isVisible = isVisible
-                )
-            }
 
         }
+
 
     }
 }
@@ -216,7 +287,10 @@ fun PinnedAnimation(
 }
 
 @Composable
-fun SearchBarUI(){
+fun SearchBarUI(
+    changePinnedListFilterStatus:()->Unit,
+    pinned: Boolean,
+){
     var expanded by remember {
         mutableStateOf(false)
     }
@@ -240,7 +314,9 @@ fun SearchBarUI(){
         }
         SearchFilterDropDownMenu(
             expanded=expanded,
-            setExpanded = {newValue ->expanded = newValue}
+            setExpanded = {newValue ->expanded = newValue},
+            changePinnedListFilterStatus={changePinnedListFilterStatus()},
+            pinned=pinned
         )
     }
 
@@ -334,7 +410,10 @@ fun SearchNetworkErrorMessage(
 @Composable
 fun SearchFilterDropDownMenu(
     expanded:Boolean,
-    setExpanded: (Boolean) -> Unit
+    setExpanded: (Boolean) -> Unit,
+    changePinnedListFilterStatus:()->Unit,
+    pinned: Boolean,
+
 ) {
 
     Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)) {
@@ -351,8 +430,10 @@ fun SearchFilterDropDownMenu(
         ) {
 
             SearchTextMenuItem(
-                    setExpanded = { newValue -> setExpanded(newValue) },
-                    title = "Filter pinned categories",
+                setExpanded = { newValue -> setExpanded(newValue) },
+                title = "Filter pinned categories",
+                changePinnedListFilterStatus={changePinnedListFilterStatus()},
+                pinned=pinned
 
                 )
 
@@ -364,10 +445,14 @@ fun SearchFilterDropDownMenu(
 fun SearchTextMenuItem(
     setExpanded: (Boolean) -> Unit,
     title:String,
+    changePinnedListFilterStatus:()->Unit,
+    pinned: Boolean
+
 ){
     DropdownMenuItem(
         onClick = {
             setExpanded(false)
+            changePinnedListFilterStatus()
         },
         text = {
             Row(
@@ -376,7 +461,7 @@ fun SearchTextMenuItem(
                 Icon(
                     painter = painterResource(id =R.drawable.push_pin_24),
                     contentDescription = "filter for pinned categories",
-                    tint=Color.White,
+                    tint=if(pinned) MaterialTheme.colorScheme.secondary else Color.White,
                     modifier = Modifier.size(30.dp)
                 )
                 Spacer(modifier =Modifier.width(10.dp))
