@@ -5,12 +5,16 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface TwitchSearch {
 
     suspend fun getTopGames(
         authorizationToken: String,
         clientId: String,
+        after:String
 
     ): Flow<Response<List<TopGame>>>
+
+    val mostRecentPaginationRequestId: StateFlow<String?>
 }

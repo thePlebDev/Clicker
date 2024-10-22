@@ -19,11 +19,15 @@ interface TwitchSearchClient {
     suspend fun getTopGames(
         @Header("Authorization") authorization: String,
         @Header("Client-Id") clientId: String,
+        @Query("after") after: String
     ): Response<TopGameResponse>
+
+
 }
 
 data class TopGameResponse(
     val data: List<TopGame>,
+    val pagination: Pagination
 )
 
 data class TopGame(
@@ -32,4 +36,8 @@ data class TopGame(
     val box_art_url: String,
     val igdb_id: String,
     val clicked:Boolean = false
+)
+
+data class Pagination(
+    val cursor: String
 )

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -30,19 +31,20 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,13 +55,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TopGame
-import com.example.clicker.presentation.sharedViews.ErrorScope
-import com.example.clicker.presentation.sharedViews.LogoutDialog
-import com.example.clicker.presentation.stream.views.chat.chatSettings.TextMenuItem
 import com.example.clicker.util.Response
 
 
@@ -73,6 +71,8 @@ fun SearchViewComponent(
     categoryDoubleClickedRemove:(TopGame)->Unit,
     pinned:Boolean,
     pinnedList:List<TopGame>,
+    fetchMoreTopGames:()->Unit,
+    topGameListSize:Int
 
 ){
     //still need to add the pager and the header
@@ -102,7 +102,9 @@ fun SearchViewComponent(
                     categoryDoubleClickedAdd={id -> categoryDoubleClickedAdd(id)},
                     pinned = pinned,
                     pinnedList = pinnedList,
-                    categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)}
+                    categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)},
+                    fetchMoreTopGames={fetchMoreTopGames()},
+                    topGameListSize=topGameListSize
                 )
 
             }
@@ -114,7 +116,9 @@ fun SearchViewComponent(
                     categoryDoubleClickedAdd={id -> },
                     pinned = false,
                     pinnedList = pinnedList,
-                    categoryDoubleClickedRemove={}
+                    categoryDoubleClickedRemove={},
+                    fetchMoreTopGames={},
+                    topGameListSize=0
                 )
 
             }
@@ -141,9 +145,25 @@ fun TopGamesLazyGrid(
     categoryDoubleClickedRemove:(TopGame)->Unit,
     pinned:Boolean,
     pinnedList:List<TopGame>,
+    fetchMoreTopGames:()->Unit,
+    topGameListSize:Int
 ){
+    Log.d("topGameListSizeTesting","$topGameListSize")
+    val scrollState = rememberLazyGridState()
+
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
+            .collect { lastVisibleIndex ->
+                val totalItems = scrollState.layoutInfo.totalItemsCount
+                if (totalItems - lastVisibleIndex <= 2 && totalItems >= topGamesList.size) {
+                    Log.d("FetchingList","Fetching")
+                    fetchMoreTopGames()
+                }
+            }
+    }
 
     LazyVerticalGrid(
+        state=scrollState,
         columns = GridCells.Fixed(3),
         modifier= modifier
             .padding(horizontal = 5.dp)

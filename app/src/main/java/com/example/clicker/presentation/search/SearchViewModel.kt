@@ -45,20 +45,37 @@ class SearchViewModel @Inject constructor(
     private val _searchNetworkStatus = mutableStateOf(SearchNetworkStatus(false,""))
     val searchNetworkStatus: State<SearchNetworkStatus> = _searchNetworkStatus
 
-    private var _topGamesList: MutableState<List<TopGame>> = mutableStateOf(listOf())
-    val topGamesList:State<List<TopGame>> = _topGamesList
-
+     var topGamesList = mutableStateListOf<TopGame>()
      var topGamesPinnedList = mutableStateListOf<TopGame>()
+
+
+
 
 
     private var _pinnedFilter: MutableState<Boolean> = mutableStateOf(false)
     val pinnedFilter:State<Boolean> = _pinnedFilter
+
+    private var _paginationId: MutableState<String> = mutableStateOf("")
+
+    init{
+        monitorMostRecentPaginationRequestId()
+    }
 
 
 
 
     fun updatePinnedFilter(){
         _pinnedFilter.value =!_pinnedFilter.value
+    }
+
+    private fun monitorMostRecentPaginationRequestId()=viewModelScope.launch(ioDispatcher){
+        twitchSearch.mostRecentPaginationRequestId.collect{nullablePaginationId->
+            nullablePaginationId?.also { paginationId ->
+                Log.d("PaginationIdMonito","id ->${paginationId}")
+                _paginationId.value = paginationId
+            }
+        }
+
     }
 
 
@@ -73,8 +90,8 @@ class SearchViewModel @Inject constructor(
          )
         twitchSearch.getTopGames(
             authorizationToken = oAuthToken,
-            clientId=clientId
-
+            clientId=clientId,
+            after=""
         ).collect{response ->
             when(response){
                 is Response.Loading ->{
@@ -90,7 +107,8 @@ class SearchViewModel @Inject constructor(
                         )
                     }
 
-                    _topGamesList.value = updatedList
+                    topGamesList.clear()        // Clear the existing items in topGamesList
+                    topGamesList.addAll(updatedList)
                     _searchRefreshing.value = false
                     _topGames.value = Response.Success(true)
                 }
@@ -115,6 +133,32 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun fetchMoreTopGames()=viewModelScope.launch(ioDispatcher){
+
+        twitchSearch.getTopGames(
+            authorizationToken = _validatedUser.value.oAuthToken,
+            clientId=_validatedUser.value.clientId,
+            after=_paginationId.value
+        ).collect{response ->
+
+            Log.d("fetchMoreTopGames","response ->$response")
+            when(response){
+                is Response.Success->{
+                    val updatedList = response.data.map {
+                        changeTopGameUrlWidthHeight(
+                            aspectWidth=138,
+                            aspectHeight=190,
+                            topGame=it
+                        )
+                    }
+                    topGamesList.addAll(updatedList)
+                }
+                else ->{}
+            }
+
+        }
+    }
+
 
     fun pullToRefreshTopGames(){
         viewModelScope.launch(ioDispatcher) {
@@ -130,7 +174,7 @@ class SearchViewModel @Inject constructor(
     }
     fun doubleClickedCategoryAdd(id:String){
 
-        _topGamesList.value =_topGamesList.value.map { topGames->
+        topGamesList.map { topGames->
             if(topGames.id == id){
                 filterPinnedClickedListAdd(topGames)
                 topGames.copy(
@@ -143,7 +187,7 @@ class SearchViewModel @Inject constructor(
     }
     fun doubleClickedCategoryRemove(topGame:TopGame){
 
-        _topGamesList.value =_topGamesList.value.map { topGames->
+        topGamesList.map { topGames->
             if(topGames.id == topGame.id){
                 filterPinnedClickedListRemove(topGame)
                 topGames.copy(
