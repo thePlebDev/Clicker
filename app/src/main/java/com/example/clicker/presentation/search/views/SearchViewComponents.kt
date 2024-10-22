@@ -76,13 +76,17 @@ fun SearchView(
         searchRefreshing = searchViewModel.searchRefreshing.value,
         searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
         showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
-        topGamesList=searchViewModel.topGamesList.value,
+        topGamesList=searchViewModel.topGamesList.toList(),
         hapticFeedBackError={hapticFeedBackError()},
         categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
         categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryRemove(topGame)},
         pinnedList = searchViewModel.topGamesPinnedList.toList(),
         pinned = searchViewModel.pinnedFilter.value,
-        changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()}
+        changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
+        fetchMoreTopGames={
+            searchViewModel.fetchMoreTopGames()
+        },
+        topGameListSize=searchViewModel.topGamesList.size
 
     )
 }
@@ -101,7 +105,8 @@ fun SearchMainComponent(
     pinned:Boolean,
     pinnedList:List<TopGame>,
     changePinnedListFilterStatus:()->Unit,
-
+    fetchMoreTopGames:()->Unit,
+    topGameListSize:Int
 
 ){
     val scope = rememberCoroutineScope()
@@ -172,7 +177,9 @@ fun SearchMainComponent(
                 categoryDoubleClickedAdd={id -> categoryDoubleClickedAdd(id)},
                 categoryDoubleClickedRemove ={topGame -> categoryDoubleClickedRemove(topGame)},
                 pinned = pinned,
-                pinnedList = pinnedList
+                pinnedList = pinnedList,
+                fetchMoreTopGames={fetchMoreTopGames()},
+                topGameListSize=topGameListSize
 
             )
         }
