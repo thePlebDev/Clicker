@@ -72,7 +72,8 @@ fun SearchViewComponent(
     pinned:Boolean,
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
-    topGameListSize:Int
+    openCategoryModal:()->Unit,
+
 
 ){
     //still need to add the pager and the header
@@ -104,7 +105,8 @@ fun SearchViewComponent(
                     pinnedList = pinnedList,
                     categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)},
                     fetchMoreTopGames={fetchMoreTopGames()},
-                    topGameListSize=topGameListSize
+                    openCategoryModal={openCategoryModal()},
+
                 )
 
             }
@@ -118,7 +120,8 @@ fun SearchViewComponent(
                     pinnedList = pinnedList,
                     categoryDoubleClickedRemove={},
                     fetchMoreTopGames={},
-                    topGameListSize=0
+                    openCategoryModal={openCategoryModal()},
+
                 )
 
             }
@@ -146,9 +149,10 @@ fun TopGamesLazyGrid(
     pinned:Boolean,
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
-    topGameListSize:Int
+    openCategoryModal:()->Unit,
+
 ){
-    Log.d("topGameListSizeTesting","$topGameListSize")
+
     val scrollState = rememberLazyGridState()
 
     LaunchedEffect(scrollState) {
@@ -174,7 +178,7 @@ fun TopGamesLazyGrid(
 
         if(!pinned){
             items(topGamesList){ topGame ->
-                var isVisible by remember { mutableStateOf(false) }
+
                 // Animate the scale for smooth appearance
                 Box(){
                     Column(
@@ -182,6 +186,9 @@ fun TopGamesLazyGrid(
                             detectTapGestures(
                                 onDoubleTap = {
                                     categoryDoubleClickedAdd(topGame.id) // Show the icon on double tap
+                                },
+                                onTap = {
+                                    openCategoryModal()
                                 }
                             )
                         }
@@ -232,7 +239,8 @@ fun TopGamesLazyGrid(
                                 detectTapGestures(
                                     onDoubleTap = {
                                         categoryDoubleClickedRemove(topGame) // Show the icon on double tap
-                                    }
+                                    },
+
                                 )
                             }
                         ){
