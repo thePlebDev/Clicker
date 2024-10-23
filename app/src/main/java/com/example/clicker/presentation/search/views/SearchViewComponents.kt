@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.DrawerValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
@@ -24,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material.rememberModalBottomSheetState
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -58,6 +64,7 @@ import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun SearchView(
     onNavigate: (Int) -> Unit,
@@ -69,26 +76,51 @@ fun SearchView(
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
     val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
 
-    SearchMainComponent(
-        onNavigate={action -> onNavigate(action)},
-        topGamesListResponse = searchViewModel.topGames.value,
+    // This is where the modal should be
 
-        searchRefreshing = searchViewModel.searchRefreshing.value,
-        searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
-        showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
-        topGamesList=searchViewModel.topGamesList.toList(),
-        hapticFeedBackError={hapticFeedBackError()},
-        categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
-        categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryRemove(topGame)},
-        pinnedList = searchViewModel.topGamesPinnedList.toList(),
-        pinned = searchViewModel.pinnedFilter.value,
-        changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
-        fetchMoreTopGames={
-            searchViewModel.fetchMoreTopGames()
-        },
-        topGameListSize=searchViewModel.topGamesList.size
+    val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden,skipHalfExpanded =true)
+    val scope = rememberCoroutineScope()
+    ModalBottomSheetLayout(
+        sheetBackgroundColor= MaterialTheme.colorScheme.primary,
+        sheetState = state,
+        sheetContent = {
+            LazyColumn {
+                items(50) {
+                    Text("THIS IS TEXT THAT SHOULD BE FULL SCREEN",color = Color.Red, fontSize = 30.sp)
+                }
+            }
+        }
+    ) {
 
-    )
+        SearchMainComponent(
+            onNavigate={action -> onNavigate(action)},
+            topGamesListResponse = searchViewModel.topGames.value,
+
+            searchRefreshing = searchViewModel.searchRefreshing.value,
+            searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
+            showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
+            topGamesList=searchViewModel.topGamesList.toList(),
+            hapticFeedBackError={hapticFeedBackError()},
+            categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
+            categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryRemove(topGame)},
+            pinnedList = searchViewModel.topGamesPinnedList.toList(),
+            pinned = searchViewModel.pinnedFilter.value,
+            changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
+            fetchMoreTopGames={
+                searchViewModel.fetchMoreTopGames()
+            },
+            openCategoryModal={
+                scope.launch {
+                    state.show()
+                }
+            }
+
+        )
+
+    }
+
+
+
 }
 
 @Composable
@@ -106,7 +138,8 @@ fun SearchMainComponent(
     pinnedList:List<TopGame>,
     changePinnedListFilterStatus:()->Unit,
     fetchMoreTopGames:()->Unit,
-    topGameListSize:Int
+    openCategoryModal:()->Unit,
+
 
 ){
     val scope = rememberCoroutineScope()
@@ -179,7 +212,7 @@ fun SearchMainComponent(
                 pinned = pinned,
                 pinnedList = pinnedList,
                 fetchMoreTopGames={fetchMoreTopGames()},
-                topGameListSize=topGameListSize
+                openCategoryModal={openCategoryModal()}
 
             )
         }

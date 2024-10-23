@@ -173,34 +173,52 @@ class SearchViewModel @Inject constructor(
         }
     }
     fun doubleClickedCategoryAdd(id:String){
+        val foundGame = topGamesList.find { it.id==id }
 
-        topGamesList.map { topGames->
-            if(topGames.id == id){
-                filterPinnedClickedListAdd(topGames)
-                topGames.copy(
-                    clicked= true
-                )
+        foundGame?.also { topGame ->
+            val updatedTopGame = topGame.copy(clicked = !topGame.clicked)
+            val foundGameIndex = topGamesList.indexOf(topGame)
+            if(topGame.clicked){
+                // remove from pinned
+                if(foundGameIndex >=0){
+                    doubleClickedCategoryRemove(foundGame)
+                    topGamesList[foundGameIndex]= updatedTopGame
+                }
             }else{
-                topGames
+                //add to the pinnedList
+                // avoids the edge case of being -1
+                if(foundGameIndex >=0){
+                    filterPinnedClickedListAdd(updatedTopGame)
+                    topGamesList[foundGameIndex]= updatedTopGame
+                }
+
+
             }
         }
+
+
+
     }
+    //this gets called on the pinnedList
     fun doubleClickedCategoryRemove(topGame:TopGame){
+        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
+        val foundGame = topGamesList.find { it.id==topGame.id }
+        val foundGameIndex = topGamesList.indexOf(topGame)
+        filterPinnedClickedListRemove(topGame)//this needs to be called to remove it from pinnedList
+        //I still need to find and update the topGamesList to cause a recomposigion
+        if(foundGameIndex >=0){
+           foundGame?.also {
+               val newTopGame = it.copy(clicked = false)
+               topGamesList[foundGameIndex]= newTopGame
+           }
 
-        topGamesList.map { topGames->
-            if(topGames.id == topGame.id){
-                filterPinnedClickedListRemove(topGame)
-                topGames.copy(
-                    clicked= false
-                )
-            }else{
-                topGames
-            }
         }
+
+
     }
 
     private fun filterPinnedClickedListRemove(topGame: TopGame){
-        Log.d("FilterPinnedItem","REMOVE")
+        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
         Log.d("FilterPinnedItem","${topGame.id}")
         topGamesPinnedList.removeIf { it.id == topGame.id }
         Log.d("FilterPinnedItem","topGamesPinnedList-->${topGamesPinnedList.toList()}")
