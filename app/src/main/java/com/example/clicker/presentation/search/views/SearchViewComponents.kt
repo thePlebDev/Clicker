@@ -52,6 +52,7 @@ import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.views.LoginLogoutScaffoldDrawer
 import com.example.clicker.presentation.search.SearchViewModel
+import com.example.clicker.presentation.search.views.mainComponents.CategoryModal
 import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
 import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
@@ -84,11 +85,7 @@ fun SearchView(
         sheetBackgroundColor= MaterialTheme.colorScheme.primary,
         sheetState = state,
         sheetContent = {
-            LazyColumn {
-                items(50) {
-                    Text("THIS IS TEXT THAT SHOULD BE FULL SCREEN",color = Color.Red, fontSize = 30.sp)
-                }
-            }
+            CategoryModal()
         }
     ) {
 
