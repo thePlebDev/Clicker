@@ -17,10 +17,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -28,6 +31,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -47,17 +51,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.TopGame
+import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.presentation.home.views.ImageWithViewCount
+import com.example.clicker.presentation.home.views.StreamTitleWithInfo
+import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.Response
 
 
@@ -505,5 +517,203 @@ fun SearchTextMenuItem(
 
         }
     )
+}
+
+@Composable
+fun CategoryModal(){
+    Column(
+        modifier= Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+    ){
+        CategoryModalHeader()
+        LazyColumn(){
+            items(20){
+                CategoryModalBody()
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
+    }
+
+}
+
+@Composable
+fun CategoryModalHeader(){
+
+    Row(modifier= Modifier
+        .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Column(modifier = Modifier
+            .background(Color.Red)
+            .height(200.dp)
+            .width(150.dp)) {}
+        Spacer(modifier = Modifier.width(10.dp))
+        Text("Fortnite",color = Color.Red, fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+    }
+}
+
+@Composable
+fun CategoryModalBody(){
+    SearchLiveChannelRowItem(
+        updateStreamerName={one,two,three,four ->},
+        updateClickedStreamInfo={item ->},
+        streamItem=StreamData(id="52256588445", userId="415858333", userLogin="beterbabbit", userName="BeterBabbit", gameId="138585", gameName="Hearthstone", type="live", title="good morning | !youtube", viewerCount=1454, startedAt="2024-10-23T16:46:07Z", language="en", thumbNailUrl="https://static-cdn.jtvnw.net/previews-ttv/live_user_beterbabbit-540x303.jpg", tagIds= listOf(), tags=listOf("English", "bgs", "Battlegrounds", "BG", "battleground"), isMature=false),
+        clientId="",
+        userId="",
+        onNavigate={item->},
+        height=303,
+        width=540,
+        density=2.625f
+
+    )
+}
+
+@Composable
+fun SearchLiveChannelRowItem(
+    updateStreamerName: (String, String, String, String) -> Unit,
+    updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+    streamItem: StreamData,
+    clientId: String,
+    userId:String,
+    onNavigate: (Int) -> Unit,
+    height: Int,
+    width: Int,
+    density:Float
+
+){
+
+    Row(
+        modifier = Modifier.clickable {
+            updateClickedStreamInfo(
+                ClickedStreamInfo(
+                    channelName = streamItem.userLogin,
+                    streamTitle = streamItem.title,
+                    category =  streamItem.gameName,
+                    tags = streamItem.tags,
+                    adjustedUrl = streamItem.thumbNailUrl
+                )
+            )
+
+            updateStreamerName(
+                streamItem.userLogin,
+                clientId,
+                streamItem.userId,
+                userId
+            )
+            onNavigate(R.id.action_homeFragment_to_streamFragment)
+        }
+    ){
+        SearchImageWithViewCount(
+            url = streamItem.thumbNailUrl,
+            height = height,
+            width = width,
+            viewCount = streamItem.viewerCount,
+            density =density
+        )
+        SearchTitleWithInfo(
+            streamerName = streamItem.userLogin,
+            streamTitle = streamItem.title,
+            gameTitle = streamItem.gameName,
+            tags= streamItem.tags
+        )
+
+    }
+    Spacer(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(10.dp)
+    )
+}
+
+
+@Composable
+fun SearchImageWithViewCount(
+    url: String,
+    height: Int,
+    width: Int,
+    viewCount:Int,
+    density:Float
+){
+    Log.d("ImageHeightWidth","url -> $url")
+    Box() {
+        val adjustedHeight = height/density
+        val adjustedWidth = width/density
+        SubcomposeAsyncImage(
+            model = url,
+            loading = {
+                Column(modifier = Modifier
+                    .height((adjustedHeight).dp)
+                    .width((adjustedWidth).dp)
+                    .background(MaterialTheme.colorScheme.primary),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    CircularProgressIndicator()
+                }
+            },
+            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+        )
+        Text(
+            "${viewCount}",
+            style = TextStyle(
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                fontWeight = FontWeight.ExtraBold
+            ),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(5.dp)
+        )
+    }
+}
+
+@Composable
+fun SearchTitleWithInfo(
+    streamerName:String,
+    streamTitle:String,
+    gameTitle:String,
+    tags:List<String>
+){
+    Column(modifier = Modifier.padding(start = 10.dp)) {
+        Text(
+            streamerName,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Text(
+            streamTitle,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            modifier = Modifier.alpha(0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        Text(
+            gameTitle,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            modifier = Modifier.alpha(0.7f),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        LazyRow(){
+            items(tags){tag->
+                Row(){
+                    Card(
+                        shape = RoundedCornerShape(5.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.DarkGray
+                        ),
+
+                    ) {
+                        Text(tag,color = Color.White,modifier = Modifier.padding(5.dp))
+                    }
+                    Spacer(modifier= Modifier.width(5.dp))
+                }
+
+            }
+
+
+        }
+    }
 }
 

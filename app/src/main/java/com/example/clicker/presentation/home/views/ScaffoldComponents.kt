@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -327,6 +328,10 @@ import kotlinx.coroutines.launch
             density:Float
 
         ){
+            Log.d("LiveChannelRowItem","height->$height")
+            Log.d("LiveChannelRowItem","width->$width")
+            Log.d("LiveChannelRowItem","density->$density")
+            Log.d("LiveChannelRowItem","StreamData->${streamItem}")
 
             Row(
                 modifier = Modifier.clickable {
@@ -475,7 +480,9 @@ import kotlinx.coroutines.launch
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)){
             Column(
-                modifier= Modifier.matchParentSize().padding(horizontal = 15.dp)
+                modifier= Modifier
+                    .matchParentSize()
+                    .padding(horizontal = 15.dp)
             ){
 
                 if (userIsLoggedIn) {
@@ -524,7 +531,9 @@ import kotlinx.coroutines.launch
             ),
             exit = slideOutVertically() + shrinkVertically() + fadeOut()
         ) {
-            Column(modifier = Modifier.fillMaxWidth().padding(15.dp)){
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)){
                 Text("Status: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
                 Text("   - Active", Modifier.fillMaxWidth(),color = Color.Green,fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(10.dp))
@@ -549,7 +558,8 @@ import kotlinx.coroutines.launch
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(15.dp)
-                .clickable {changeCheckedValue(!checkedValue)
+                .clickable {
+                    changeCheckedValue(!checkedValue)
 
                 },
             elevation = 10.dp
@@ -860,7 +870,8 @@ class LiveChannelsLazyColumnScope(){
 fun StreamTitleWithInfo(
     streamerName:String,
     streamTitle:String,
-    gameTitle:String
+    gameTitle:String,
+
 ){
     Column(modifier = Modifier.padding(start = 10.dp)) {
         Text(
@@ -882,6 +893,7 @@ fun StreamTitleWithInfo(
             modifier = Modifier.alpha(0.7f),
             color = MaterialTheme.colorScheme.onPrimary
         )
+
     }
 }
 /**
