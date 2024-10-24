@@ -86,7 +86,7 @@ fun SearchView(
         sheetState = state,
         sheetContent = {
             CategoryModal(
-                gameTitle="Fortnite",
+                gameTitle=searchViewModel.clickedGameTitle.value,
                 gameInfoResponse=searchViewModel.searchGameInfo.value,
             )
         }
@@ -113,7 +113,8 @@ fun SearchView(
                 scope.launch {
                     state.show()
                 }
-            }
+            },
+            getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)}
 
         )
 
@@ -139,6 +140,7 @@ fun SearchMainComponent(
     changePinnedListFilterStatus:()->Unit,
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
+    getGameInfo:(String,String)->Unit,
 
 
 ){
@@ -212,7 +214,8 @@ fun SearchMainComponent(
                 pinned = pinned,
                 pinnedList = pinnedList,
                 fetchMoreTopGames={fetchMoreTopGames()},
-                openCategoryModal={openCategoryModal()}
+                openCategoryModal={openCategoryModal()},
+                getGameInfo={id,gameName ->getGameInfo(id,gameName)}
 
             )
         }

@@ -87,6 +87,7 @@ fun SearchViewComponent(
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
+    getGameInfo:(String,String)->Unit
 
 
 ){
@@ -120,6 +121,7 @@ fun SearchViewComponent(
                     categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)},
                     fetchMoreTopGames={fetchMoreTopGames()},
                     openCategoryModal={openCategoryModal()},
+                    getGameInfo={id,gameName ->getGameInfo(id,gameName)}
 
                 )
 
@@ -135,6 +137,7 @@ fun SearchViewComponent(
                     categoryDoubleClickedRemove={},
                     fetchMoreTopGames={},
                     openCategoryModal={openCategoryModal()},
+                    getGameInfo={id,gameName ->}
 
                 )
 
@@ -164,6 +167,7 @@ fun TopGamesLazyGrid(
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
+    getGameInfo:(String,String)->Unit
 
 ){
 
@@ -202,6 +206,7 @@ fun TopGamesLazyGrid(
                                     categoryDoubleClickedAdd(topGame.id) // Show the icon on double tap
                                 },
                                 onTap = {
+                                    getGameInfo(topGame.id,topGame.name)
                                     openCategoryModal()
                                 }
                             )
@@ -252,8 +257,10 @@ fun TopGamesLazyGrid(
                                 detectTapGestures(
                                     onDoubleTap = {
                                         categoryDoubleClickedRemove(topGame) // Show the icon on double tap
+
                                     },
                                     onTap = {
+                                        getGameInfo(topGame.id,topGame.name)
                                         openCategoryModal()
                                     }
                                 )

@@ -52,6 +52,9 @@ class SearchViewModel @Inject constructor(
     private val _searchGameInfo = mutableStateOf<Response<Game?>>(Response.Loading)
     val searchGameInfo: State<Response<Game?>> = _searchGameInfo
 
+    private val _clickedGameTitle = mutableStateOf<String>("")
+    val clickedGameTitle: State<String> = _clickedGameTitle
+
 
 
 
@@ -82,8 +85,43 @@ class SearchViewModel @Inject constructor(
 
     }
 
-    fun getGameInfo(gameId:String)=viewModelScope.launch(ioDispatcher){
+    fun getGameInfo(
+        gameId:String,
+        gameTitle:String
+    )=viewModelScope.launch(ioDispatcher){
+        _clickedGameTitle.value = gameTitle
+        _searchGameInfo.value = Response.Loading
 
+        twitchSearch.getGameInfo(
+            authorizationToken = _validatedUser.value.oAuthToken,
+            clientId=_validatedUser.value.clientId,
+            id=gameId
+        ).collect{response ->
+            when(response){
+                is Response.Loading ->{
+
+                }
+                is Response.Success ->{
+                   val data = response.data
+                    if(data !=null){
+                        val newGame =changeGameUrlWidthHeight(
+                            aspectWidth=138,
+                            aspectHeight=190,
+                            game=data
+                        )
+                        _searchGameInfo.value = Response.Success(newGame)
+                    }else{
+                        _searchGameInfo.value = Response.Success(null)
+                    }
+
+                }
+                is Response.Failure ->{
+                    _searchGameInfo.value = Response.Failure(Exception("Failed request"))
+
+                }
+            }
+
+        }
     }
 
 
@@ -244,6 +282,13 @@ class SearchViewModel @Inject constructor(
 
         return topGame.copy(
             box_art_url = topGame.box_art_url.replace("{width}", "$aspectWidth")
+                .replace("{height}", "$aspectHeight")
+        )
+    }
+    fun changeGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int,game: Game): Game {
+
+        return game.copy(
+            box_art_url = game.box_art_url.replace("{width}", "$aspectWidth")
                 .replace("{height}", "$aspectHeight")
         )
     }
