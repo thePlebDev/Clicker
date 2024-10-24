@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.domain.TwitchSearch
 import com.example.clicker.network.repository.models.EmoteNameUrl
@@ -48,6 +49,9 @@ class SearchViewModel @Inject constructor(
      var topGamesList = mutableStateListOf<TopGame>()
      var topGamesPinnedList = mutableStateListOf<TopGame>()
 
+    private val _searchGameInfo = mutableStateOf<Response<Game?>>(Response.Loading)
+    val searchGameInfo: State<Response<Game?>> = _searchGameInfo
+
 
 
 
@@ -75,6 +79,10 @@ class SearchViewModel @Inject constructor(
                 _paginationId.value = paginationId
             }
         }
+
+    }
+
+    fun getGameInfo(gameId:String)=viewModelScope.launch(ioDispatcher){
 
     }
 

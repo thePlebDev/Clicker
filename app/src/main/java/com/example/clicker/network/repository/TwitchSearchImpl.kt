@@ -1,6 +1,7 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.clients.TwitchSearchClient
@@ -62,6 +63,40 @@ class TwitchSearchImpl @Inject constructor(
         }
     }.catch { cause ->
         Log.d("getTopGames","CAUGHT EXCEPTION")
+        emit(Response.Failure(Exception("Exception caught")))
+    }
+
+    override suspend fun getGameInfo(
+        authorizationToken: String,
+        clientId: String,
+        id: String
+    ): Flow<Response<Game?>>  = flow{
+
+        val response = twitchHomeClient.getGameInfo(
+            authorization = "Bearer $authorizationToken",
+            clientId = clientId,
+            id = id
+        )
+
+        val body = response.body()?.data ?: listOf()
+
+        if (response.isSuccessful) {
+            Log.d("getGameInfo","SUCCESS")
+            if (body.isEmpty()){
+                Log.d("getGameInfo","EMPTY BODY")
+                //I should make this nullable
+                emit(Response.Success(null))
+            }else{
+                Log.d("getGameInfo","BODY->${body[0]}")
+                emit(Response.Success(body[0]))
+            }
+
+        } else {
+            Log.d("getGameInfo","FAILED")
+            emit(Response.Failure(Exception("Error!, Please try again")))
+        }
+    }.catch { cause ->
+        Log.d("getGameInfo","CAUGHT EXCEPTION")
         emit(Response.Failure(Exception("Exception caught")))
     }
 }

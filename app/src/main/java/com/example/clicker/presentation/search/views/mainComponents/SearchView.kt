@@ -65,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
+import com.example.clicker.network.clients.Game
+import com.example.clicker.network.clients.GameInfoResponse
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.views.ImageWithViewCount
@@ -245,14 +247,15 @@ fun TopGamesLazyGrid(
                 // Animate the scale for smooth appearance
                 Box(){
 
-
                         Column(
                             modifier =Modifier .pointerInput(Unit) {
                                 detectTapGestures(
                                     onDoubleTap = {
                                         categoryDoubleClickedRemove(topGame) // Show the icon on double tap
                                     },
-
+                                    onTap = {
+                                        openCategoryModal()
+                                    }
                                 )
                             }
                         ){
@@ -520,13 +523,19 @@ fun SearchTextMenuItem(
 }
 
 @Composable
-fun CategoryModal(){
+fun CategoryModal(
+    gameInfoResponse: Response<Game?>,
+    gameTitle: String
+){
     Column(
         modifier= Modifier
             .fillMaxWidth()
             .padding(horizontal = 10.dp)
     ){
-        CategoryModalHeader()
+        CategoryModalHeader(
+            gameTitle=gameTitle,
+            gameInfoResponse=gameInfoResponse,
+        )
         LazyColumn(){
             items(20){
                 CategoryModalBody()
@@ -538,18 +547,135 @@ fun CategoryModal(){
 }
 
 @Composable
-fun CategoryModalHeader(){
+fun CategoryModalHeader(
+    gameInfoResponse: Response<Game?>,
+    gameTitle: String
+){
+    Box(
+        modifier = Modifier.padding(bottom = 10.dp)
+    ){
+        when(gameInfoResponse){
+            is Response.Loading->{
+                GameInformationHeaderLoading(gameTitle)
+            }
+            is Response.Success->{
+                val data = gameInfoResponse.data
+                if(data != null){
+                    GameInformationHeaderSuccess(gameTitle,data)
+                }else{
+                    GameInformationHeaderFailed(gameTitle)
 
+                }
+            }
+            is Response.Failure->{
+                GameInformationHeaderFailed(gameTitle)
+            }
+        }
+    }
+
+}
+@Composable
+fun GameInformationHeaderLoading(
+    gameTitle: String
+){
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ){
-        Column(modifier = Modifier
-            .background(Color.Red)
-            .height(200.dp)
-            .width(150.dp)) {}
+        SubcomposeAsyncImage(
+            modifier = Modifier.height(200.dp).width(180.dp),
+            model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
+            loading = {
+                Column(modifier = Modifier
+                    .height((200).dp)
+                    .width((150).dp)
+                    .background(MaterialTheme.colorScheme.primary),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    CircularProgressIndicator()
+                }
+            },
+            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+        )
         Spacer(modifier = Modifier.width(10.dp))
-        Text("Fortnite",color = Color.Red, fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+        Column() {
+            Text(gameTitle,color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+            Text("Loading....",
+                color = MaterialTheme.colorScheme.onPrimary.copy(0.6f),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                lineHeight = 15.sp
+            )
+        }
+
+    }
+}
+@Composable
+fun GameInformationHeaderSuccess(
+    gameTitle: String,
+    game:Game
+){
+    Row(modifier= Modifier
+        .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        SubcomposeAsyncImage(
+            modifier = Modifier.height(200.dp).width(180.dp),
+            model = game.box_art_url,
+            loading = {
+                Column(modifier = Modifier
+                    .height((200).dp)
+                    .width((150).dp)
+                    .background(MaterialTheme.colorScheme.primary),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    CircularProgressIndicator()
+                }
+            },
+            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column() {
+            Text(gameTitle,color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+        }
+
+    }
+}
+@Composable
+fun GameInformationHeaderFailed(
+    gameTitle: String
+){
+    Row(modifier= Modifier
+        .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        SubcomposeAsyncImage(
+            modifier = Modifier.height(200.dp).width(180.dp),
+            model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
+            loading = {
+                Column(modifier = Modifier
+                    .height((200).dp)
+                    .width((150).dp)
+                    .background(MaterialTheme.colorScheme.primary),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    androidx.compose.material.CircularProgressIndicator()
+                }
+            },
+            contentDescription = stringResource(R.string.sub_compose_async_image_description)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column() {
+            Text(gameTitle,color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineLarge.fontSize)
+            Text("Failed to get information about $gameTitle",
+                color = MaterialTheme.colorScheme.onPrimary.copy(0.6f),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                lineHeight = 15.sp
+            )
+        }
+
     }
 }
 
@@ -558,7 +684,7 @@ fun CategoryModalBody(){
     SearchLiveChannelRowItem(
         updateStreamerName={one,two,three,four ->},
         updateClickedStreamInfo={item ->},
-        streamItem=StreamData(id="52256588445", userId="415858333", userLogin="beterbabbit", userName="BeterBabbit", gameId="138585", gameName="Hearthstone", type="live", title="good morning | !youtube", viewerCount=1454, startedAt="2024-10-23T16:46:07Z", language="en", thumbNailUrl="https://static-cdn.jtvnw.net/previews-ttv/live_user_beterbabbit-540x303.jpg", tagIds= listOf(), tags=listOf("English", "bgs", "Battlegrounds", "BG", "battleground"), isMature=false),
+        streamItem=StreamData(id="52256588445", userId="415858333", userLogin="beterbabbit", userName="BeterBabbit", gameId="138585", gameName="Hearthstone", type="live", title="good morning | !youtube and more things", viewerCount=1454, startedAt="2024-10-23T16:46:07Z", language="en", thumbNailUrl="https://static-cdn.jtvnw.net/previews-ttv/live_user_beterbabbit-540x303.jpg", tagIds= listOf(), tags=listOf("English", "bgs", "Battlegrounds", "BG", "battleground"), isMature=false),
         clientId="",
         userId="",
         onNavigate={item->},

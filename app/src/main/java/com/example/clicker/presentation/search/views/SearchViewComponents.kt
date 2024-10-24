@@ -85,7 +85,10 @@ fun SearchView(
         sheetBackgroundColor= MaterialTheme.colorScheme.primary,
         sheetState = state,
         sheetContent = {
-            CategoryModal()
+            CategoryModal(
+                gameTitle="Fortnite",
+                gameInfoResponse=searchViewModel.searchGameInfo.value,
+            )
         }
     ) {
 
