@@ -32,7 +32,7 @@ interface TwitchSearchClient {
      * @param authorization a String used to represent the OAuth token that uniquely identifies this user's granted abilities
      * @param clientId a String used to represent the clientId(unique identifier) of this application
      * @param id a String used to represent the unique id of the game we want to get information about
-     *  scrolling feature
+     *
      * */
     @GET("games")
     suspend fun getGameInfo(
@@ -40,6 +40,28 @@ interface TwitchSearchClient {
         @Header("Client-Id") clientId: String,
         @Query("id") id: String
     ): Response<GameInfoResponse>
+
+    /**
+     * - getStreams represents a GET method. A function meant to get all the live streams
+     * - you can read more on the official documentation, [HERE](https://dev.twitch.tv/docs/api/reference/#get-streams)
+     *
+     * @param authorization a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param gameId a String used to represent the unique id of the game we want to get information about
+     * @param type  a String used to represent the type of streams we want. The two options being, live or all
+     * @param language a String used to represent the language of the streams we want
+     * @param after a String used to represent the pagination id and allow endless scrolling
+     *
+     * */
+    @GET("streams")
+    suspend fun getStreams(
+        @Header("Authorization") authorization: String,
+        @Header("Client-Id") clientId: String,
+        @Query("game_id") gameId: String,
+        @Query("type") type: String,
+        @Query("language") language: String,
+        @Query("after") after: String,
+    ): Response<GetStreamResponseData>
 
 
 
@@ -74,3 +96,27 @@ data class GameInfoSearch(
 data class GameInfoResponse(
     val data: List<Game>
 )
+
+data class GetStreamResponseData(
+    val data: List<SearchStreamData>,
+    val pagination: Pagination
+)
+
+data class SearchStreamData(
+    val id: String,
+    val user_id: String,
+    val user_login: String,
+    val user_name: String,
+    val game_id: String,
+    val game_name: String,
+    val type: String,
+    val title: String,
+    val tags: List<String>,
+    val viewer_count: Int,
+    val started_at: String,
+    val language: String,
+    val thumbnail_url: String,
+    val tag_ids: List<String>,
+    val is_mature: Boolean
+)
+

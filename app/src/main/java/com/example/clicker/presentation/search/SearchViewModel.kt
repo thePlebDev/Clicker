@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.network.clients.Game
+import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
+import com.example.clicker.network.domain.StreamType
 import com.example.clicker.network.domain.TwitchSearch
 import com.example.clicker.network.repository.models.EmoteNameUrl
 import com.example.clicker.network.repository.models.EmoteNameUrlList
@@ -54,6 +56,10 @@ class SearchViewModel @Inject constructor(
 
     private val _clickedGameTitle = mutableStateOf<String>("")
     val clickedGameTitle: State<String> = _clickedGameTitle
+
+
+    private val _searchStreamData: MutableState<Response<List<SearchStreamData>>>  = mutableStateOf(Response.Loading)
+    val searchStreamData: State<Response<List<SearchStreamData>>> = _searchStreamData
 
 
 
@@ -119,6 +125,24 @@ class SearchViewModel @Inject constructor(
                     _searchGameInfo.value = Response.Failure(Exception("Failed request"))
 
                 }
+            }
+
+        }
+    }
+
+    fun getStreams(gameId: String)= viewModelScope.launch{
+        twitchSearch.getStreams(
+            authorization = _validatedUser.value.oAuthToken,
+            clientId = _validatedUser.value.clientId,
+            gameId=gameId,
+            type = StreamType.LIVE,
+            language="",
+            after=""
+        ).collect{response ->
+            when(response){
+                is Response.Loading->{}
+                is Response.Success->{}
+                is Response.Failure->{}
             }
 
         }
