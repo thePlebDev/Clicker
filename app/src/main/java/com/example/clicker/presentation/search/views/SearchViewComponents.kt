@@ -88,6 +88,7 @@ fun SearchView(
             CategoryModal(
                 gameTitle=searchViewModel.clickedGameTitle.value,
                 gameInfoResponse=searchViewModel.searchGameInfo.value,
+                liveGameStreams = searchViewModel.searchStreamData.value
             )
         }
     ) {
@@ -114,7 +115,8 @@ fun SearchView(
                     state.show()
                 }
             },
-            getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)}
+            getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)},
+            getGameStreams={id ->searchViewModel.getStreams(id)}
 
         )
 
@@ -141,6 +143,7 @@ fun SearchMainComponent(
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
     getGameInfo:(String,String)->Unit,
+    getGameStreams:(String)->Unit
 
 
 ){
@@ -215,7 +218,8 @@ fun SearchMainComponent(
                 pinnedList = pinnedList,
                 fetchMoreTopGames={fetchMoreTopGames()},
                 openCategoryModal={openCategoryModal()},
-                getGameInfo={id,gameName ->getGameInfo(id,gameName)}
+                getGameInfo={id,gameName ->getGameInfo(id,gameName)},
+                getGameStreams={id->getGameStreams(id)}
 
             )
         }

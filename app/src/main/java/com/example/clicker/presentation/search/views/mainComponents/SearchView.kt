@@ -67,6 +67,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.GameInfoResponse
+import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.home.views.ImageWithViewCount
@@ -87,7 +88,8 @@ fun SearchViewComponent(
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
-    getGameInfo:(String,String)->Unit
+    getGameInfo:(String,String)->Unit,
+    getGameStreams:(String)->Unit
 
 
 ){
@@ -121,7 +123,8 @@ fun SearchViewComponent(
                     categoryDoubleClickedRemove={id->categoryDoubleClickedRemove(id)},
                     fetchMoreTopGames={fetchMoreTopGames()},
                     openCategoryModal={openCategoryModal()},
-                    getGameInfo={id,gameName ->getGameInfo(id,gameName)}
+                    getGameInfo={id,gameName ->getGameInfo(id,gameName)},
+                    getGameStreams={id->getGameStreams(id)}
 
                 )
 
@@ -137,7 +140,8 @@ fun SearchViewComponent(
                     categoryDoubleClickedRemove={},
                     fetchMoreTopGames={},
                     openCategoryModal={openCategoryModal()},
-                    getGameInfo={id,gameName ->}
+                    getGameInfo={id,gameName ->},
+                    getGameStreams={id->}
 
                 )
 
@@ -167,7 +171,8 @@ fun TopGamesLazyGrid(
     pinnedList:List<TopGame>,
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
-    getGameInfo:(String,String)->Unit
+    getGameInfo:(String,String)->Unit,
+    getGameStreams:(String)->Unit,
 
 ){
 
@@ -207,7 +212,9 @@ fun TopGamesLazyGrid(
                                 },
                                 onTap = {
                                     getGameInfo(topGame.id,topGame.name)
+                                    getGameStreams(topGame.id)
                                     openCategoryModal()
+
                                 }
                             )
                         }
@@ -529,29 +536,45 @@ fun SearchTextMenuItem(
     )
 }
 
+//TODO: this is where the response needs to go
 @Composable
 fun CategoryModal(
     gameInfoResponse: Response<Game?>,
-    gameTitle: String
+    gameTitle: String,
+    liveGameStreams:Response<List<SearchStreamData>>
 ){
     Column(
         modifier= Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp)
+            .padding(horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
         CategoryModalHeader(
             gameTitle=gameTitle,
             gameInfoResponse=gameInfoResponse,
         )
-        LazyColumn(){
-            items(20){
-                CategoryModalBody()
-                Spacer(modifier = Modifier.height(10.dp))
+        when(liveGameStreams){
+            is Response.Loading ->{
+
+            }
+            is Response.Success ->{
+
+            }
+            is Response.Failure ->{
+
             }
         }
-    }
 
+    }
 }
+
+@Composable
+fun LiveGameLoading(){
+    Spacer(modifier =Modifier.height(20.dp))
+    CircularProgressIndicator(modifier=Modifier.size(45.dp), color = MaterialTheme.colorScheme.secondary)
+    Spacer(modifier =Modifier.fillMaxSize())
+}
+
 
 @Composable
 fun CategoryModalHeader(
@@ -590,7 +613,9 @@ fun GameInformationHeaderLoading(
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
-            modifier = Modifier.height(200.dp).width(180.dp),
+            modifier = Modifier
+                .height(200.dp)
+                .width(180.dp),
             model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
             loading = {
                 Column(modifier = Modifier
@@ -627,7 +652,9 @@ fun GameInformationHeaderSuccess(
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
-            modifier = Modifier.height(200.dp).width(180.dp),
+            modifier = Modifier
+                .height(200.dp)
+                .width(180.dp),
             model = game.box_art_url,
             loading = {
                 Column(modifier = Modifier
@@ -658,7 +685,9 @@ fun GameInformationHeaderFailed(
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
-            modifier = Modifier.height(200.dp).width(180.dp),
+            modifier = Modifier
+                .height(200.dp)
+                .width(180.dp),
             model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
             loading = {
                 Column(modifier = Modifier
@@ -686,6 +715,7 @@ fun GameInformationHeaderFailed(
     }
 }
 
+//this is the individual items
 @Composable
 fun CategoryModalBody(){
     SearchLiveChannelRowItem(

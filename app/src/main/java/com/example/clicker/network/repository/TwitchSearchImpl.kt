@@ -2,10 +2,12 @@ package com.example.clicker.network.repository
 
 import android.util.Log
 import com.example.clicker.network.clients.Game
+import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.clients.TwitchHomeClient
 import com.example.clicker.network.clients.TwitchSearchClient
 import com.example.clicker.network.clients.UnbanRequestItem
+import com.example.clicker.network.domain.StreamType
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.domain.TwitchSearch
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
@@ -97,6 +99,42 @@ class TwitchSearchImpl @Inject constructor(
         }
     }.catch { cause ->
         Log.d("getGameInfo","CAUGHT EXCEPTION")
+        emit(Response.Failure(Exception("Exception caught")))
+    }
+
+    override suspend fun getStreams(
+        authorization: String,
+        clientId: String,
+        gameId: String,
+        type: StreamType,
+        language: String,
+        after: String
+    ): Flow<Response<List<SearchStreamData>>> = flow{
+        emit(Response.Loading)
+        Log.d("getStreamsSearch","LOADING")
+        val response = twitchHomeClient.getStreams(
+            authorization = "Bearer $authorization",
+            clientId = clientId,
+            gameId = gameId,
+            type=type.toString(),
+            language="en",
+            after=""
+        )
+
+        val body = response.body()?.data ?: listOf()
+        if (response.isSuccessful) {
+            Log.d("getStreamsSearch","SUCCESS")
+            Log.d("getStreamsSearch","body->$body")
+            Log.d("getStreamsSearch","scroll pagination->${response.body()?.pagination?.cursor}")
+
+            emit(Response.Success(body))
+
+        } else {
+            Log.d("getStreamsSearch","FAILED")
+            emit(Response.Failure(Exception("Error!, Please try again")))
+        }
+    }.catch { cause ->
+        Log.d("getStreamsSearch","CAUGHT EXCEPTION")
         emit(Response.Failure(Exception("Exception caught")))
     }
 }
