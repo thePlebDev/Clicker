@@ -112,6 +112,7 @@ import kotlinx.coroutines.launch
         showLoginModal:()->Unit,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
+        getTopGames:()->Unit,
     ){
         NoDrawerScaffold(
             topBar = {
@@ -153,13 +154,17 @@ import kotlinx.coroutines.launch
                         )
                     },
                     thirdButton = {
-                        IconOverTextColumn(
+
+                        this.PainterResourceIconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Search",
-                            imageVector = Icons.Default.Search,
+                            painter = painterResource(id = R.drawable.baseline_category_24),
                             iconContentDescription = "Navigate to search bar",
-                            onClick = {onNavigate(R.id.action_modChannelsFragment_to_searchFragment)},
                             fontColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Category",
+                            onClick = {
+                                getTopGames()
+                                onNavigate(R.id.action_modChannelsFragment_to_searchFragment)
+                            },
                         )
                     },
                 )

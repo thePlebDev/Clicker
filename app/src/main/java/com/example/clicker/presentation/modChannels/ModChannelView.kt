@@ -35,9 +35,11 @@ import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modChannels.views.MainModView
 import com.example.clicker.presentation.modChannels.views.ModChannelsBottomModalSheetContent
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.sharedViews.ButtonScope
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
 
@@ -53,7 +55,8 @@ fun ModChannelView(
     createNewTwitchEventWebSocket:()->Unit,
     hapticFeedBackError:() ->Unit,
     logoutViewModel: LogoutViewModel,
-    modViewViewModel: ModViewViewModel
+    modViewViewModel: ModViewViewModel,
+    searchViewModel: SearchViewModel
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -150,7 +153,19 @@ fun ModChannelView(
                 }
             },
             showNetworkRefreshError =showNetworkRefreshError,
-            hapticFeedBackError={hapticFeedBackError()}
+            hapticFeedBackError={hapticFeedBackError()},
+            getTopGames={
+                    when(searchViewModel.topGames.value){
+
+                        is Response.Success ->{}
+                        else->{
+                            searchViewModel.getTopGames(
+                                oAuthToken = oAuthToken,
+                                clientId = clientId?:""
+                            )
+                        }
+                    }
+            }
 
 
         )
