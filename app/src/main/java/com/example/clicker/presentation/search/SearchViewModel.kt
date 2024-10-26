@@ -63,14 +63,17 @@ class SearchViewModel @Inject constructor(
     val clickedGameTitle: State<String> = _clickedGameTitle
 
 
-    private val _searchStreamData: MutableState<Response<List<SearchStreamData>>>  = mutableStateOf(
+    private val _searchStreamData: MutableState<Response<Boolean>> = mutableStateOf(
         Response.Loading
     )
-    val searchStreamData: State<Response<List<SearchStreamData>>> = _searchStreamData
+    val searchStreamData: State<Response<Boolean>> = _searchStreamData
+    var searchStreamDataList = mutableStateListOf<SearchStreamData>()
 
 
     private val _aspectHeightAndWdith = mutableStateOf(AspectHeightAndWidth(0,0))
-    val aspectHeightAndWdith: State<AspectHeightAndWidth> = _aspectHeightAndWdith
+
+    private val _modalGameId = mutableStateOf("")
+
 
 
 
@@ -81,8 +84,13 @@ class SearchViewModel @Inject constructor(
 
     private var _paginationId: MutableState<String> = mutableStateOf("")
 
+    private var _modalPaginationId: MutableState<String> = mutableStateOf("")
+
     init{
         monitorMostRecentPaginationRequestId()
+    }
+    init{
+        monitorModalMostRecentPaginationRequestId()
     }
 
 
@@ -104,6 +112,17 @@ class SearchViewModel @Inject constructor(
             nullablePaginationId?.also { paginationId ->
                 Log.d("PaginationIdMonito","id ->${paginationId}")
                 _paginationId.value = paginationId
+            }
+        }
+
+    }
+
+    private fun monitorModalMostRecentPaginationRequestId()=viewModelScope.launch(ioDispatcher){
+        twitchSearch.mostRecentStreamModalPaginationRequestId.collect{nullablePaginationId->
+            nullablePaginationId?.also { paginationId ->
+                Log.d("PaginationIdMonito","id ->${paginationId}")
+
+                _modalPaginationId.value = paginationId
             }
         }
 
@@ -148,7 +167,10 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun getStreams(gameId: String)= viewModelScope.launch{
+    fun getStreams(gameId: String)= viewModelScope.launch(ioDispatcher){
+        _modalGameId.value = gameId
+        _searchStreamData.value = Response.Loading
+        searchStreamDataList.clear()
         twitchSearch.getStreams(
             authorization = _validatedUser.value.oAuthToken,
             clientId = _validatedUser.value.clientId,
@@ -157,9 +179,9 @@ class SearchViewModel @Inject constructor(
             language="",
             after=""
         ).collect{response ->
-            _searchStreamData.value = Response.Loading
             when(response){
                 is Response.Loading->{
+
 
                 }
                 is Response.Success->{
@@ -170,12 +192,43 @@ class SearchViewModel @Inject constructor(
                             searchStreamData=it
                         )
                     }
-                    _searchStreamData.value = Response.Success(
-                        updatedList
-                    )
+                    searchStreamDataList.addAll(updatedList)
+                    _searchStreamData.value = Response.Success(true)
                 }
                 is Response.Failure->{
                     _searchStreamData.value = Response.Failure(Exception("Failed"))
+                }
+            }
+
+        }
+    }
+    fun getMoreStreams()=viewModelScope.launch(ioDispatcher){
+        twitchSearch.getStreams(
+            authorization = _validatedUser.value.oAuthToken,
+            clientId = _validatedUser.value.clientId,
+            gameId=_modalGameId.value,
+            type = StreamType.LIVE,
+            language="",
+            after=_modalPaginationId.value
+        ).collect{response ->
+            when(response){
+                is Response.Loading->{
+
+
+                }
+                is Response.Success->{
+                    val updatedList = response.data.map {
+                        changeSearchStreamDataUrlWidthHeight(
+                            aspectWidth=_aspectHeightAndWdith.value.width,
+                            aspectHeight=_aspectHeightAndWdith.value.height,
+                            searchStreamData=it
+                        )
+                    }
+                    searchStreamDataList.addAll(updatedList)
+
+                }
+                is Response.Failure->{
+
                 }
             }
 
@@ -344,10 +397,29 @@ class SearchViewModel @Inject constructor(
         )
     }
     private fun changeSearchStreamDataUrlWidthHeight(aspectWidth: Int, aspectHeight: Int, searchStreamData: SearchStreamData): SearchStreamData {
+     Log.d("TestingTheCrash","body->${searchStreamData.id}")
+        Log.d("TestingTheCrash","body->${searchStreamData.user_id}")
+        Log.d("TestingTheCrash","body->${searchStreamData.user_login}")
+        Log.d("TestingTheCrash","body->${searchStreamData.user_name}")
+        Log.d("TestingTheCrash","body->${searchStreamData.game_id}")
+        Log.d("TestingTheCrash","body->${searchStreamData.game_name}")
+        Log.d("TestingTheCrash","body->${searchStreamData.title}")
+        Log.d("TestingTheCrash","body->${searchStreamData.tags}")
+        Log.d("TestingTheCrash","body->${searchStreamData.tag_ids}")
+
+        Log.d("TestingTheCrash","body->${searchStreamData.language}")
+        Log.d("TestingTheCrash","body->${searchStreamData.type}")
+        Log.d("TestingTheCrash","body->${searchStreamData.is_mature}")
+        Log.d("TestingTheCrash","body->${searchStreamData.started_at}")
+        Log.d("TestingTheCrash","body->${searchStreamData.viewer_count}")
+        Log.d("TestingTheCrash","body->${searchStreamData.thumbnail_url}")
+
+
 
         return searchStreamData.copy(
             thumbnail_url = searchStreamData.thumbnail_url.replace("{width}", "$aspectWidth")
-                .replace("{height}", "$aspectHeight")
+                .replace("{height}", "$aspectHeight"),
+            type="live"
         )
     }
 

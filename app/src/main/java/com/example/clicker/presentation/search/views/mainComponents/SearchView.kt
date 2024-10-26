@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -543,9 +545,11 @@ fun SearchTextMenuItem(
 fun CategoryModal(
     gameInfoResponse: Response<Game?>,
     gameTitle: String,
-    liveGameStreams:Response<List<SearchStreamData>>,
+    liveGameStreamsResponse:Response<Boolean>,
+    streamDataList: List<SearchStreamData>,
     updateStreamerName: (String, String, String, String) -> Unit,
     updateClickedStreamInfo: (ClickedStreamInfo) -> Unit,
+    getMoreStreams:()->Unit,
     clientId: String,
     userId: String,
     onNavigate: (Int) -> Unit,
@@ -563,14 +567,14 @@ fun CategoryModal(
             gameTitle=gameTitle,
             gameInfoResponse=gameInfoResponse,
         )
-        when(liveGameStreams){
+        when(liveGameStreamsResponse){
             is Response.Loading ->{
                 LiveGameLoading()
 
             }
             is Response.Success ->{
                 LiveGameSuccess(
-                    streamData=liveGameStreams.data,
+                    streamData=streamDataList,
                     updateStreamerName={streamerName,clientId,broadcasterId,userId ->
                         updateStreamerName(streamerName,clientId,broadcasterId,userId)
                     },
@@ -580,7 +584,8 @@ fun CategoryModal(
                     onNavigate={navItem->onNavigate(navItem)},
                     height=height,
                     width=width,
-                    density=density
+                    density=density,
+                    getMoreStreams={getMoreStreams()}
 
                 )
 
@@ -603,9 +608,23 @@ fun LiveGameSuccess(
     onNavigate: (Int) -> Unit,
     height: Int,
     width: Int,
-    density: Float
+    density: Float,
+    getMoreStreams:()->Unit,
 ){
-    LazyColumn{
+
+    val scrollStateColumn = rememberLazyListState()
+
+    LaunchedEffect(scrollStateColumn) {
+        snapshotFlow { scrollStateColumn.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
+            .collect { lastVisibleIndex ->
+                val totalItems = scrollStateColumn.layoutInfo.totalItemsCount
+                if (totalItems - lastVisibleIndex <= 2 && totalItems >= streamData.size) {
+                    Log.d("FetchingList","Fetching")
+                    getMoreStreams()
+                }
+            }
+    }
+    LazyColumn(state = scrollStateColumn){
         items(streamData){searchStreamItem->
             CategoryModalBody(
                 updateStreamerName={streamerName,clientId,broadcasterId,userId ->
@@ -677,7 +696,7 @@ fun SearchLiveChannelRowItem(
                     channelName = searchStreamItem.user_login,
                     streamTitle = searchStreamItem.title,
                     category =  searchStreamItem.game_name,
-                    tags = searchStreamItem.tags,
+                    tags = searchStreamItem.tags ?: listOf(),
                     adjustedUrl = searchStreamItem.thumbnail_url
                 )
             )
@@ -703,7 +722,7 @@ fun SearchLiveChannelRowItem(
             streamerName = searchStreamItem.user_login,
             streamTitle = searchStreamItem.title,
             gameTitle = searchStreamItem.game_name,
-            tags= searchStreamItem.tags
+            tags= searchStreamItem.tags ?: listOf()
         )
 
     }

@@ -102,7 +102,7 @@ fun SearchView(
             CategoryModal(
                 gameTitle=searchViewModel.clickedGameTitle.value,
                 gameInfoResponse=searchViewModel.searchGameInfo.value,
-                liveGameStreams = searchViewModel.searchStreamData.value,
+                liveGameStreamsResponse = searchViewModel.searchStreamData.value,
                 userId=userId,
                 clientId=clientId,
                 onNavigate = {navItem ->onNavigate(navItem)},
@@ -170,7 +170,9 @@ fun SearchView(
                         )
                     }
 
-                }
+                },
+                getMoreStreams = {searchViewModel.getMoreStreams()},
+                streamDataList= searchViewModel.searchStreamDataList.toList()
 
 
 
