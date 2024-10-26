@@ -2,6 +2,7 @@ package com.example.clicker.presentation.search.views.mainComponents
 
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -555,7 +556,8 @@ fun CategoryModal(
     onNavigate: (Int) -> Unit,
     height: Int,
     width: Int,
-    density: Float
+    density: Float,
+    closeModal:()->Unit,
 ){
     Column(
         modifier= Modifier
@@ -566,6 +568,7 @@ fun CategoryModal(
         CategoryModalHeader(
             gameTitle=gameTitle,
             gameInfoResponse=gameInfoResponse,
+            closeModal={closeModal()}
         )
         when(liveGameStreamsResponse){
             is Response.Loading ->{
@@ -598,6 +601,7 @@ fun CategoryModal(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LiveGameSuccess(
     streamData:List<SearchStreamData>,
@@ -625,6 +629,14 @@ fun LiveGameSuccess(
             }
     }
     LazyColumn(state = scrollStateColumn){
+        stickyHeader {
+            Text(
+                "Live Channels",
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier =Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(5.dp),
+                fontSize = MaterialTheme.typography.headlineMedium.fontSize
+            )
+        }
         items(streamData){searchStreamItem->
             CategoryModalBody(
                 updateStreamerName={streamerName,clientId,broadcasterId,userId ->
@@ -775,11 +787,18 @@ fun LiveGameFailure(){
 @Composable
 fun CategoryModalHeader(
     gameInfoResponse: Response<Game?>,
-    gameTitle: String
+    gameTitle: String,
+    closeModal:()->Unit,
 ){
     Box(
         modifier = Modifier.padding(bottom = 10.dp)
     ){
+        Icon(
+            painter = painterResource(id =R.drawable.baseline_close_24),
+            contentDescription = "closing the modal",
+            modifier = Modifier.align(Alignment.TopEnd).size(35.dp).clickable { closeModal() },
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
         when(gameInfoResponse){
             is Response.Loading->{
                 GameInformationHeaderLoading(gameTitle)

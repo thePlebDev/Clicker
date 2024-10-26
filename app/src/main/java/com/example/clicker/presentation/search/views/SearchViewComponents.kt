@@ -172,7 +172,8 @@ fun SearchView(
 
                 },
                 getMoreStreams = {searchViewModel.getMoreStreams()},
-                streamDataList= searchViewModel.searchStreamDataList.toList()
+                streamDataList= searchViewModel.searchStreamDataList.toList(),
+                closeModal={scope.launch { state.hide() }}
 
 
 
