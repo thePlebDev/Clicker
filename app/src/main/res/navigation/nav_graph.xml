@@ -102,5 +102,8 @@
         <action
             android:id="@+id/action_searchFragment_to_logoutFragment"
             app:destination="@id/logoutFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_streamFragment"
+            app:destination="@id/streamFragment" />
     </fragment>
 </navigation>

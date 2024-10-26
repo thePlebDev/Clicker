@@ -32,6 +32,11 @@ data class SearchNetworkStatus(
     val message:String,
 )
 
+data class AspectHeightAndWidth(
+    val width:Int,
+    val height:Int
+)
+
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val twitchSearch: TwitchSearch,
@@ -59,9 +64,13 @@ class SearchViewModel @Inject constructor(
 
 
     private val _searchStreamData: MutableState<Response<List<SearchStreamData>>>  = mutableStateOf(
-        Response.Failure(Exception("Another one"))
+        Response.Loading
     )
     val searchStreamData: State<Response<List<SearchStreamData>>> = _searchStreamData
+
+
+    private val _aspectHeightAndWdith = mutableStateOf(AspectHeightAndWidth(0,0))
+    val aspectHeightAndWdith: State<AspectHeightAndWidth> = _aspectHeightAndWdith
 
 
 
@@ -77,6 +86,13 @@ class SearchViewModel @Inject constructor(
     }
 
 
+    fun updateAspectHeightWidthSearchView(width: Int, height:Int){
+        _aspectHeightAndWdith.value = _aspectHeightAndWdith.value.copy(
+            width = width,
+            height = height
+        )
+
+    }
 
 
     fun updatePinnedFilter(){
@@ -141,10 +157,26 @@ class SearchViewModel @Inject constructor(
             language="",
             after=""
         ).collect{response ->
+            _searchStreamData.value = Response.Loading
             when(response){
-                is Response.Loading->{}
-                is Response.Success->{}
-                is Response.Failure->{}
+                is Response.Loading->{
+
+                }
+                is Response.Success->{
+                    val updatedList = response.data.map {
+                        changeSearchStreamDataUrlWidthHeight(
+                            aspectWidth=_aspectHeightAndWdith.value.width,
+                            aspectHeight=_aspectHeightAndWdith.value.height,
+                            searchStreamData=it
+                        )
+                    }
+                    _searchStreamData.value = Response.Success(
+                        updatedList
+                    )
+                }
+                is Response.Failure->{
+                    _searchStreamData.value = Response.Failure(Exception("Failed"))
+                }
             }
 
         }
@@ -304,14 +336,22 @@ class SearchViewModel @Inject constructor(
 
 
 
-    fun changeTopGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int,topGame: TopGame): TopGame {
+    private fun changeTopGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int, topGame: TopGame): TopGame {
 
         return topGame.copy(
             box_art_url = topGame.box_art_url.replace("{width}", "$aspectWidth")
                 .replace("{height}", "$aspectHeight")
         )
     }
-    fun changeGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int,game: Game): Game {
+    private fun changeSearchStreamDataUrlWidthHeight(aspectWidth: Int, aspectHeight: Int, searchStreamData: SearchStreamData): SearchStreamData {
+
+        return searchStreamData.copy(
+            thumbnail_url = searchStreamData.thumbnail_url.replace("{width}", "$aspectWidth")
+                .replace("{height}", "$aspectHeight")
+        )
+    }
+
+    private fun changeGameUrlWidthHeight(aspectWidth: Int, aspectHeight: Int, game: Game): Game {
 
         return game.copy(
             box_art_url = game.box_art_url.replace("{width}", "$aspectWidth")

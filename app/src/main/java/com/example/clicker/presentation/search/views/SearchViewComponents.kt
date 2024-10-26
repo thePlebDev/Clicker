@@ -51,6 +51,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.home.views.LoginLogoutScaffoldDrawer
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.search.views.mainComponents.CategoryModal
 import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
@@ -59,8 +60,11 @@ import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
@@ -72,10 +76,20 @@ fun SearchView(
     homeViewModel:HomeViewModel,
     searchViewModel: SearchViewModel,
     hapticFeedBackError:() ->Unit,
+    streamViewModel:StreamViewModel,
+    streamInfoViewModel: StreamInfoViewModel,
+    modViewViewModel: ModViewViewModel,
+    chatSettingsViewModel: ChatSettingsViewModel,
+    autoModViewModel: AutoModViewModel,
+    createNewTwitchEventWebSocket:()->Unit,
+    updateModViewSettings:(String,String,String,String,)->Unit,
 
-){
-    val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
+    ){
+
     val oAuthToken = homeViewModel.oAuthToken.collectAsState().value ?:""
+    val userId = homeViewModel.validatedUser.collectAsState().value?.userId ?:""
+    val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId ?:""
+    val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
 
     // This is where the modal should be
 
@@ -88,7 +102,78 @@ fun SearchView(
             CategoryModal(
                 gameTitle=searchViewModel.clickedGameTitle.value,
                 gameInfoResponse=searchViewModel.searchGameInfo.value,
-                liveGameStreams = searchViewModel.searchStreamData.value
+                liveGameStreams = searchViewModel.searchStreamData.value,
+                userId=userId,
+                clientId=clientId,
+                onNavigate = {navItem ->onNavigate(navItem)},
+                height = homeViewModel.state.value.aspectHeight,
+                width = homeViewModel.state.value.width,
+                density = homeViewModel.state.value.screenDensity,
+                updateClickedStreamInfo={
+                    //todo: THIS IS WHAT I NEED TO UPDATE
+                        clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
+                },
+                updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
+                    if (!lowPowerModeActive) {
+                        homeViewModel.updateClickedStreamerName(streamerName)
+
+
+                        Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
+                        streamViewModel.updateChannelNameAndClientIdAndUserId(
+                            streamerName,
+                            clientId,
+                            broadcasterId,
+                            userId,
+                            login = homeViewModel.validatedUser.value?.login ?: "",
+                            oAuthToken= homeViewModel.oAuthToken.value ?:""
+                        )
+                        streamViewModel.getBetterTTVGlobalEmotes()
+                        autoModViewModel.updateAutoModCredentials(
+                            oAuthToken = oAuthToken,
+                            clientId = streamViewModel.state.value.clientId,
+                            moderatorId = streamViewModel.state.value.userId,
+                            broadcasterId = streamViewModel.state.value.broadcasterId,
+                        )
+                        updateModViewSettings(
+                            oAuthToken,
+                            streamViewModel.state.value.clientId,
+                            streamViewModel.state.value.broadcasterId,
+                            streamViewModel.state.value.userId,
+                        )
+                        createNewTwitchEventWebSocket()
+                        streamViewModel.getChannelEmotes(
+                            oAuthToken,
+                            streamViewModel.state.value.clientId,
+                            streamViewModel.state.value.broadcasterId,
+                        )
+                        chatSettingsViewModel.getGlobalChatBadges(
+                            oAuthToken = oAuthToken,
+                            clientId = streamViewModel.state.value.clientId,
+                        )
+                        chatSettingsViewModel.getGlobalEmote(
+                            oAuthToken = oAuthToken,
+                            clientId = streamViewModel.state.value.clientId,
+                        )
+                        streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+                        streamViewModel.clearAllChatters()
+                        streamInfoViewModel.getStreamInfo(
+                            authorizationToken = oAuthToken,
+                            clientId = streamViewModel.state.value.clientId,
+                            broadcasterId = streamViewModel.state.value.broadcasterId,
+                        )
+                        //todo: this needs to be added to the
+                        modViewViewModel.getUnbanRequests(
+                            oAuthToken =homeViewModel.oAuthToken.value ?:"",
+                            clientId=clientId,
+                            moderatorId=userId,
+                            broadcasterId=broadcasterId
+                        )
+                    }
+
+                }
+
+
+
             )
         }
     ) {

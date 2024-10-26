@@ -543,7 +543,15 @@ fun SearchTextMenuItem(
 fun CategoryModal(
     gameInfoResponse: Response<Game?>,
     gameTitle: String,
-    liveGameStreams:Response<List<SearchStreamData>>
+    liveGameStreams:Response<List<SearchStreamData>>,
+    updateStreamerName: (String, String, String, String) -> Unit,
+    updateClickedStreamInfo: (ClickedStreamInfo) -> Unit,
+    clientId: String,
+    userId: String,
+    onNavigate: (Int) -> Unit,
+    height: Int,
+    width: Int,
+    density: Float
 ){
     Column(
         modifier= Modifier
@@ -561,6 +569,20 @@ fun CategoryModal(
 
             }
             is Response.Success ->{
+                LiveGameSuccess(
+                    streamData=liveGameStreams.data,
+                    updateStreamerName={streamerName,clientId,broadcasterId,userId ->
+                        updateStreamerName(streamerName,clientId,broadcasterId,userId)
+                    },
+                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                    clientId=clientId,
+                    userId=userId,
+                    onNavigate={navItem->onNavigate(navItem)},
+                    height=height,
+                    width=width,
+                    density=density
+
+                )
 
             }
             is Response.Failure ->{
@@ -570,6 +592,128 @@ fun CategoryModal(
 
     }
 }
+
+@Composable
+fun LiveGameSuccess(
+    streamData:List<SearchStreamData>,
+    updateStreamerName: (String, String, String, String) -> Unit,
+    updateClickedStreamInfo: (ClickedStreamInfo) -> Unit,
+    clientId: String,
+    userId: String,
+    onNavigate: (Int) -> Unit,
+    height: Int,
+    width: Int,
+    density: Float
+){
+    LazyColumn{
+        items(streamData){searchStreamItem->
+            CategoryModalBody(
+                updateStreamerName={streamerName,clientId,broadcasterId,userId ->
+                    updateStreamerName(streamerName,clientId,broadcasterId,userId)
+                },
+                updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                searchStreamItem=searchStreamItem,
+                clientId=clientId,
+                userId=userId,
+                onNavigate={navItem->onNavigate(navItem)},
+                height=height,
+                width=width,
+                density=density
+            )
+        }
+
+    }
+}
+
+
+//this is the individual items
+@Composable
+fun CategoryModalBody(
+    updateStreamerName: (String, String, String, String) -> Unit,
+    updateClickedStreamInfo: (ClickedStreamInfo) -> Unit,
+    searchStreamItem: SearchStreamData,
+    clientId: String,
+    userId: String,
+    onNavigate: (Int) -> Unit,
+    height: Int,
+    width: Int,
+    density: Float
+
+){
+    SearchLiveChannelRowItem(
+        updateStreamerName={streamerName,clientId,broadcasterId,userId ->
+            updateStreamerName(streamerName,clientId,broadcasterId,userId)
+                           },
+        updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+        searchStreamItem=searchStreamItem,
+        clientId=clientId,
+        userId=userId,
+        onNavigate={navItem->onNavigate(navItem)},
+        height=height,
+        width=width,
+        density=density
+
+    )
+}
+
+@Composable
+fun SearchLiveChannelRowItem(
+    updateStreamerName: (String, String, String, String) -> Unit,
+    updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
+    searchStreamItem: SearchStreamData,
+    clientId: String,
+    userId:String,
+    onNavigate: (Int) -> Unit,
+    height: Int,
+    width: Int,
+    density:Float
+
+){
+
+    Row(
+        modifier = Modifier.clickable {
+            updateClickedStreamInfo(
+                ClickedStreamInfo(
+                    channelName = searchStreamItem.user_login,
+                    streamTitle = searchStreamItem.title,
+                    category =  searchStreamItem.game_name,
+                    tags = searchStreamItem.tags,
+                    adjustedUrl = searchStreamItem.thumbnail_url
+                )
+            )
+
+            updateStreamerName(
+                searchStreamItem.user_login,
+                clientId,
+                searchStreamItem.user_id,
+                userId
+            )
+            // this needs to go to the home page
+            onNavigate(R.id.action_searchFragment_to_streamFragment)
+        }
+    ){
+        SearchImageWithViewCount(
+            url = searchStreamItem.thumbnail_url,
+            height = height,
+            width = width,
+            viewCount = searchStreamItem.viewer_count,
+            density =density
+        )
+        SearchTitleWithInfo(
+            streamerName = searchStreamItem.user_login,
+            streamTitle = searchStreamItem.title,
+            gameTitle = searchStreamItem.game_name,
+            tags= searchStreamItem.tags
+        )
+
+    }
+    Spacer(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(10.dp)
+    )
+}
+
 
 
 
@@ -748,79 +892,9 @@ fun GameInformationHeaderFailed(
     }
 }
 
-//this is the individual items
-@Composable
-fun CategoryModalBody(){
-    SearchLiveChannelRowItem(
-        updateStreamerName={one,two,three,four ->},
-        updateClickedStreamInfo={item ->},
-        streamItem=StreamData(id="52256588445", userId="415858333", userLogin="beterbabbit", userName="BeterBabbit", gameId="138585", gameName="Hearthstone", type="live", title="good morning | !youtube and more things", viewerCount=1454, startedAt="2024-10-23T16:46:07Z", language="en", thumbNailUrl="https://static-cdn.jtvnw.net/previews-ttv/live_user_beterbabbit-540x303.jpg", tagIds= listOf(), tags=listOf("English", "bgs", "Battlegrounds", "BG", "battleground"), isMature=false),
-        clientId="",
-        userId="",
-        onNavigate={item->},
-        height=303,
-        width=540,
-        density=2.625f
 
-    )
-}
 
-@Composable
-fun SearchLiveChannelRowItem(
-    updateStreamerName: (String, String, String, String) -> Unit,
-    updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-    streamItem: StreamData,
-    clientId: String,
-    userId:String,
-    onNavigate: (Int) -> Unit,
-    height: Int,
-    width: Int,
-    density:Float
 
-){
-
-    Row(
-        modifier = Modifier.clickable {
-            updateClickedStreamInfo(
-                ClickedStreamInfo(
-                    channelName = streamItem.userLogin,
-                    streamTitle = streamItem.title,
-                    category =  streamItem.gameName,
-                    tags = streamItem.tags,
-                    adjustedUrl = streamItem.thumbNailUrl
-                )
-            )
-
-            updateStreamerName(
-                streamItem.userLogin,
-                clientId,
-                streamItem.userId,
-                userId
-            )
-            onNavigate(R.id.action_homeFragment_to_streamFragment)
-        }
-    ){
-        SearchImageWithViewCount(
-            url = streamItem.thumbNailUrl,
-            height = height,
-            width = width,
-            viewCount = streamItem.viewerCount,
-            density =density
-        )
-        SearchTitleWithInfo(
-            streamerName = streamItem.userLogin,
-            streamTitle = streamItem.title,
-            gameTitle = streamItem.gameName,
-            tags= streamItem.tags
-        )
-
-    }
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(10.dp)
-    )
-}
 
 
 @Composable

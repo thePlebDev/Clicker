@@ -223,6 +223,7 @@ class HomeFragment : Fragment() {
         Log.d("onResumeHeight","width->$width")
 
         homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
+        searchViewModel.updateAspectHeightWidthSearchView(width,aspectHeight)
 
         Log.d("Twitchval", "uri -> $uri")
 
