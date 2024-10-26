@@ -1,6 +1,8 @@
 package com.example.clicker.network.repository
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
@@ -29,6 +31,15 @@ class TwitchSearchImpl @Inject constructor(
     private val _mostRecentPaginationRequestId: MutableStateFlow<String?> = MutableStateFlow(null)
     // The UI collects from this StateFlow to get its state updates
     override val mostRecentPaginationRequestId: StateFlow<String?> = _mostRecentPaginationRequestId
+
+    //todo: change this to be like [_mostRecentPaginationRequestId] and [mostRecentPaginationRequestId]
+    private val _mostRecentStreamModalPaginationRequestId: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    override val mostRecentStreamModalPaginationRequestId: StateFlow<String?> = _mostRecentStreamModalPaginationRequestId
+    // The UI collects from this StateFlow to get its state updates
+
+
+
 
 
 
@@ -112,20 +123,22 @@ class TwitchSearchImpl @Inject constructor(
     ): Flow<Response<List<SearchStreamData>>> = flow{
         emit(Response.Loading)
         Log.d("getStreamsSearch","LOADING")
+        Log.d("getStreamsSearchPagination","paginationId->${_mostRecentStreamModalPaginationRequestId.value}")
         val response = twitchHomeClient.getStreams(
             authorization = "Bearer $authorization",
             clientId = clientId,
             gameId = gameId,
             type=type.toString(),
             language="en",
-            after=""
+            after=after
         )
 
         val body = response.body()?.data ?: listOf()
+        val paginationId =response.body()?.pagination?.cursor ?:""
         if (response.isSuccessful) {
             Log.d("getStreamsSearch","SUCCESS")
             Log.d("getStreamsSearch","body->$body")
-            Log.d("getStreamsSearch","scroll pagination->${response.body()?.pagination?.cursor}")
+            _mostRecentStreamModalPaginationRequestId.tryEmit(paginationId)
 
             emit(Response.Success(body))
 

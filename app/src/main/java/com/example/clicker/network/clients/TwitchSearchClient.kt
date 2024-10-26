@@ -111,7 +111,7 @@ data class SearchStreamData(
     val game_name: String,
     val type: String,
     val title: String,
-    val tags: List<String>,
+    val tags: List<String>?,
     val viewer_count: Int,
     val started_at: String,
     val language: String,

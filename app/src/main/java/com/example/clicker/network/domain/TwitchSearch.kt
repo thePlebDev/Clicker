@@ -28,6 +28,8 @@ interface TwitchSearch {
      * */
     val mostRecentPaginationRequestId: StateFlow<String?>
 
+    val mostRecentStreamModalPaginationRequestId: StateFlow<String?>
+
 
     /**
      * - getTopGames represents a GET method. A function meant to get a list of all the tops games on Twitch
