@@ -21,9 +21,14 @@ import com.example.clicker.databinding.FragmentSearchBinding
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
+import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.search.views.SearchMainComponent
 import com.example.clicker.presentation.search.views.SearchView
+import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -38,8 +43,12 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding!!
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val streamViewModel: StreamViewModel by activityViewModels()
-    private val logoutViewModel: LogoutViewModel by activityViewModels()
     private val searchViewModel: SearchViewModel by activityViewModels()
+    private val autoModViewModel: AutoModViewModel by activityViewModels()
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
+    private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
+    private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +74,24 @@ class SearchFragment : Fragment() {
                         onNavigate = { dest -> findNavController().navigate(dest) },
                         homeViewModel=homeViewModel,
                         searchViewModel=searchViewModel,
-                        hapticFeedBackError={ view?.performHapticFeedback(HapticFeedbackConstants.REJECT) }
+                        hapticFeedBackError={ view?.performHapticFeedback(HapticFeedbackConstants.REJECT) },
+
+                        streamViewModel = streamViewModel,
+
+                        autoModViewModel =autoModViewModel,
+                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                            modViewViewModel.updateAutoModTokens(
+                                oAuthToken =oAuthToken,
+                                clientId =clientId,
+                                broadcasterId=broadcasterId,
+                                moderatorId =moderatorId
+                            )
+                        },
+                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                        chatSettingsViewModel=chatSettingsViewModel,
+                        streamInfoViewModel=streamInfoViewModel,
+                        modViewViewModel=modViewViewModel,
+
                     )
                 }
             }
