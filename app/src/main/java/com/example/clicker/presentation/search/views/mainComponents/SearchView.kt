@@ -196,13 +196,14 @@ fun TopGamesLazyGrid(
 
     LazyVerticalGrid(
         state=scrollState,
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Adaptive(minSize = 100.dp),
         modifier= modifier
             .padding(horizontal = 5.dp)
             .background(MaterialTheme.colorScheme.primary),
         verticalArrangement = Arrangement.spacedBy(15.dp),
         horizontalArrangement = Arrangement.spacedBy(15.dp)
     ) {
+
 
         if(!pinned){
             items(topGamesList){ topGame ->
@@ -357,8 +358,6 @@ fun SearchBarUI(
         mutableStateOf(false)
     }
     Column( modifier = Modifier.padding(horizontal = 10.dp, vertical =5.dp)){
-        StylizedTextField()
-        Spacer(modifier =Modifier.size(10.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -568,7 +567,10 @@ fun CategoryModal(
         CategoryModalHeader(
             gameTitle=gameTitle,
             gameInfoResponse=gameInfoResponse,
-            closeModal={closeModal()}
+            closeModal={closeModal()},
+            height=height,
+            width=width,
+            density=density,
         )
         when(liveGameStreamsResponse){
             is Response.Loading ->{
@@ -789,6 +791,9 @@ fun CategoryModalHeader(
     gameInfoResponse: Response<Game?>,
     gameTitle: String,
     closeModal:()->Unit,
+    height:Int,
+    width: Int,
+    density: Float,
 ){
     Box(
         modifier = Modifier.padding(bottom = 10.dp)
@@ -801,19 +806,23 @@ fun CategoryModalHeader(
         )
         when(gameInfoResponse){
             is Response.Loading->{
-                GameInformationHeaderLoading(gameTitle)
+                GameInformationHeaderLoading(gameTitle,height, width, density)
             }
             is Response.Success->{
                 val data = gameInfoResponse.data
                 if(data != null){
-                    GameInformationHeaderSuccess(gameTitle,data)
+                    GameInformationHeaderSuccess(
+                        gameTitle,
+                        data,
+                        height, width, density
+                    )
                 }else{
-                    GameInformationHeaderFailed(gameTitle)
+                    GameInformationHeaderFailed(gameTitle,height, width, density)
 
                 }
             }
             is Response.Failure->{
-                GameInformationHeaderFailed(gameTitle)
+                GameInformationHeaderFailed(gameTitle,height, width, density)
             }
         }
     }
@@ -821,21 +830,26 @@ fun CategoryModalHeader(
 }
 @Composable
 fun GameInformationHeaderLoading(
-    gameTitle: String
+    gameTitle: String,
+    height:Int,
+    width:Int,
+    density:Float
 ){
+    val adjustedHeight = (height/density) * 1.2
+    val adjustedWidth = (width/density) * 1.2
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
             modifier = Modifier
-                .height(200.dp)
-                .width(180.dp),
+                .height(adjustedHeight.dp)
+                .width(adjustedWidth.dp),
             model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
             loading = {
                 Column(modifier = Modifier
-                    .height((200).dp)
-                    .width((150).dp)
+                    .height((adjustedHeight).dp)
+                    .width((adjustedWidth).dp)
                     .background(MaterialTheme.colorScheme.primary),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -860,21 +874,26 @@ fun GameInformationHeaderLoading(
 @Composable
 fun GameInformationHeaderSuccess(
     gameTitle: String,
-    game:Game
+    game:Game,
+    height:Int,
+    width:Int,
+    density:Float
 ){
+    val adjustedHeight = (height/density) * 1.2
+    val adjustedWidth = (width/density) * 1.2
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
             modifier = Modifier
-                .height(200.dp)
-                .width(180.dp),
+                .height(adjustedHeight.dp)
+                .width(adjustedWidth.dp),
             model = game.box_art_url,
             loading = {
                 Column(modifier = Modifier
-                    .height((200).dp)
-                    .width((150).dp)
+                    .height((adjustedHeight).dp)
+                    .width((adjustedWidth).dp)
                     .background(MaterialTheme.colorScheme.primary),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -893,21 +912,28 @@ fun GameInformationHeaderSuccess(
 }
 @Composable
 fun GameInformationHeaderFailed(
-    gameTitle: String
+    gameTitle: String,
+    height:Int,
+    width:Int,
+    density:Float
 ){
+
+    val adjustedHeight = (height/density) * 1.2
+    val adjustedWidth = (width/density) * 1.2
+
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ){
         SubcomposeAsyncImage(
             modifier = Modifier
-                .height(200.dp)
-                .width(180.dp),
+                .height(adjustedHeight.dp)
+                .width(adjustedWidth.dp),
             model = "https://static-cdn.jtvnw.net/ttv-static/404_boxart.jpg",
             loading = {
                 Column(modifier = Modifier
-                    .height((200).dp)
-                    .width((150).dp)
+                    .height((adjustedHeight).dp)
+                    .width((adjustedWidth).dp)
                     .background(MaterialTheme.colorScheme.primary),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally

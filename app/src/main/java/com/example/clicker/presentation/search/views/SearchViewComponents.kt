@@ -210,8 +210,6 @@ fun SearchView(
 
     }
 
-
-
 }
 
 @Composable
@@ -235,23 +233,12 @@ fun SearchMainComponent(
 
 
 ){
-    val scope = rememberCoroutineScope()
-
-
     NoDrawerScaffold(
         topBar = {
-
-//            SearchBarUI(
-//                changePinnedListFilterStatus={changePinnedListFilterStatus()},
-//                pinned=pinned
-//            )
-            Text(
-                modifier = Modifier.padding(start = 50.dp,top = 10.dp,bottom=10.dp),
-                text = "Categories",
-                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                color = MaterialTheme.colorScheme.onPrimary
+            SearchBarUI(
+                changePinnedListFilterStatus={changePinnedListFilterStatus()},
+                pinned=pinned
             )
-
         },
         bottomBar = {
             TripleButtonNavigationBottomBarRow(
@@ -295,10 +282,7 @@ fun SearchMainComponent(
             refreshing = searchRefreshing,
             refreshFunc = {searchRefreshFunc()},
             showNetworkMessage=showNetworkMessage,
-            networkStatus = {modifier ->
-
-
-            }
+            networkStatus = {modifier -> }
         ) {
             //THIS IS WHERE THE MODAL SHOULD GO
             SearchViewComponent(
