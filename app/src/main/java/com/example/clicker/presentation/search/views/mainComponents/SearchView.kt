@@ -30,6 +30,8 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -555,24 +557,55 @@ fun CategoryModal(
         )
         when(liveGameStreams){
             is Response.Loading ->{
+                LiveGameLoading()
 
             }
             is Response.Success ->{
 
             }
             is Response.Failure ->{
-
+                LiveGameFailure()
             }
         }
 
     }
 }
 
+
+
 @Composable
 fun LiveGameLoading(){
     Spacer(modifier =Modifier.height(20.dp))
     CircularProgressIndicator(modifier=Modifier.size(45.dp), color = MaterialTheme.colorScheme.secondary)
     Spacer(modifier =Modifier.fillMaxSize())
+}
+
+@Composable
+fun LiveGameFailure(){
+    Column(
+        modifier=Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier =Modifier.height(20.dp))
+        Icon(
+            modifier = Modifier.size(40.dp),
+            painter = painterResource(id =R.drawable.baseline_close_24),
+            contentDescription = "failed request",
+            tint =MaterialTheme.colorScheme.onPrimary.copy(0.6f),
+        )
+        Text("Failed Request. Please try again",color =MaterialTheme.colorScheme.onPrimary.copy(0.6f),)
+        Button(
+            onClick = {  },
+            colors =  ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            shape = RoundedCornerShape(4.dp)
+        )
+        {
+            Text(text = "Retry", color = MaterialTheme.colorScheme.onSecondary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        }
+
+        Spacer(modifier =Modifier.fillMaxSize())
+    }
+
 }
 
 

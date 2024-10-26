@@ -23,6 +23,7 @@ import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 
@@ -41,6 +42,7 @@ class ModChannelsFragment : Fragment() {
     private val autoModViewModel: AutoModViewModel by activityViewModels()
     private val modViewViewModel: ModViewViewModel by activityViewModels()
     private val logoutViewModel: LogoutViewModel by activityViewModels()
+    private val searchViewModel: SearchViewModel by activityViewModels()
 
 
 
@@ -78,7 +80,8 @@ class ModChannelsFragment : Fragment() {
                         createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
                         hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
                         logoutViewModel =logoutViewModel,
-                        modViewViewModel=modViewViewModel
+                        modViewViewModel=modViewViewModel,
+                        searchViewModel=searchViewModel
                     )
                 }
             }

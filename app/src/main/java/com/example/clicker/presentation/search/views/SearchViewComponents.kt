@@ -153,9 +153,15 @@ fun SearchMainComponent(
     NoDrawerScaffold(
         topBar = {
 
-            SearchBarUI(
-                changePinnedListFilterStatus={changePinnedListFilterStatus()},
-                pinned=pinned
+//            SearchBarUI(
+//                changePinnedListFilterStatus={changePinnedListFilterStatus()},
+//                pinned=pinned
+//            )
+            Text(
+                modifier = Modifier.padding(start = 50.dp,top = 10.dp,bottom=10.dp),
+                text = "Categories",
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                color = MaterialTheme.colorScheme.onPrimary
             )
 
         },
@@ -184,13 +190,13 @@ fun SearchMainComponent(
                     )
                 },
                 thirdButton = {
-                    IconOverTextColumn(
+                    this.PainterResourceIconOverTextColumn(
                         iconColor = MaterialTheme.colorScheme.secondary,
-                        text = "Search",
-                        imageVector = Icons.Default.Search,
-                        iconContentDescription = "Stay on search page",
-                        onClick = {onNavigate(R.id.action_homeFragment_to_searchFragment)},
+                        painter = painterResource(id = R.drawable.baseline_category_24),
+                        iconContentDescription = "Stay on category page ",
                         fontColor = MaterialTheme.colorScheme.onPrimary,
+                        text = "Category",
+                        onClick = {},
                     )
                 },
             )

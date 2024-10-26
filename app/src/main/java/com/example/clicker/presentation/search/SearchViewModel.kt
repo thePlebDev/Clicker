@@ -58,7 +58,9 @@ class SearchViewModel @Inject constructor(
     val clickedGameTitle: State<String> = _clickedGameTitle
 
 
-    private val _searchStreamData: MutableState<Response<List<SearchStreamData>>>  = mutableStateOf(Response.Loading)
+    private val _searchStreamData: MutableState<Response<List<SearchStreamData>>>  = mutableStateOf(
+        Response.Failure(Exception("Another one"))
+    )
     val searchStreamData: State<Response<List<SearchStreamData>>> = _searchStreamData
 
 
