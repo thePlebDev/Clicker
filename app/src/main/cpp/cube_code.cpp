@@ -240,6 +240,7 @@ void matrixFrustum(float* matrix, float left, float right, float bottom, float t
 
 void matrixPerspective(float* matrix, float fieldOfView, float aspectRatio, float zNear, float zFar){
     float ymax, xmax;
+    //tangent is used becuse of its unit circle identity
     ymax = zNear * tanf(fieldOfView/2.0 * M_PI / 180.0); //convert the degrees to radians and then take the tangent
     xmax = ymax * aspectRatio;
     matrixFrustum(matrix, -xmax, xmax, -ymax, ymax, zNear, zFar);
