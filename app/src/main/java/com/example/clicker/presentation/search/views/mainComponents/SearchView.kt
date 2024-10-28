@@ -563,6 +563,8 @@ fun CategoryModal(
     width: Int,
     density: Float,
     closeModal:()->Unit,
+    selectedLanguage:String?,
+    changeSelectedLanguage: (String) -> Unit
 ){
     Column(
         modifier= Modifier
@@ -596,7 +598,9 @@ fun CategoryModal(
                     height=height,
                     width=width,
                     density=density,
-                    getMoreStreams={getMoreStreams()}
+                    getMoreStreams={getMoreStreams()},
+                    selectedLanguage=selectedLanguage,
+                    changeSelectedLanguage={newValue ->changeSelectedLanguage(newValue)}
 
                 )
 
@@ -622,10 +626,12 @@ fun LiveGameSuccess(
     width: Int,
     density: Float,
     getMoreStreams:()->Unit,
+    selectedLanguage:String?,
+    changeSelectedLanguage: (String) -> Unit
 ){
 
     val scrollStateColumn = rememberLazyListState()
-    var selectedLanguage:String? by remember { mutableStateOf(null) }
+
 
     LaunchedEffect(scrollStateColumn) {
         snapshotFlow { scrollStateColumn.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
@@ -655,7 +661,7 @@ fun LiveGameSuccess(
                     )
                     SearchStreamLanguage(
                         selectedLanguage=selectedLanguage,
-                        changeSelectedLanguage={newValue ->selectedLanguage = newValue}
+                        changeSelectedLanguage={newValue ->changeSelectedLanguage(newValue)}
                     )
                 }
             }
@@ -819,7 +825,7 @@ fun CategoryModalHeader(
     density: Float,
 ){
     Box(
-        
+
     ){
         Icon(
             painter = painterResource(id =R.drawable.baseline_close_24),
@@ -987,7 +993,7 @@ fun SearchStreamLanguage(
     var expanded by remember { mutableStateOf(false) }
     val languages = listOf("American Sign Language","Arabic","Bulgarian","Catalan","Chinese","Czech","Danish","Dutch","English","Finish","French","German",
         "German","Greek","Hindi","Hungarian","Indonesian","Italian","Japanese","Korean","Malay","Norwegian","Polish","Portuguese","Romanian",
-        "Russian","Slovak","Spanish","Swedish","Tagalog","Thai","Turkish","Ukrainian","Vietnamese","Other")
+        "Russian","Slovak","Spanish","Swedish","Tagalog","Thai","Turkish","Ukrainian","Vietnamese")
 
     val ellipsisTransformation = remember {
         VisualTransformation { text ->
