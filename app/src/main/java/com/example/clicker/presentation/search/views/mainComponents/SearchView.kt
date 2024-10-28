@@ -38,10 +38,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -62,9 +64,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,6 +84,7 @@ import com.example.clicker.presentation.home.views.ImageWithViewCount
 import com.example.clicker.presentation.home.views.StreamTitleWithInfo
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.Response
+import androidx.compose.ui.text.input.TransformedText
 
 
 @Composable
@@ -619,6 +625,7 @@ fun LiveGameSuccess(
 ){
 
     val scrollStateColumn = rememberLazyListState()
+    var selectedLanguage:String? by remember { mutableStateOf(null) }
 
     LaunchedEffect(scrollStateColumn) {
         snapshotFlow { scrollStateColumn.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
@@ -632,12 +639,28 @@ fun LiveGameSuccess(
     }
     LazyColumn(state = scrollStateColumn){
         stickyHeader {
-            Text(
-                "Live Channels",
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier =Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(5.dp),
-                fontSize = MaterialTheme.typography.headlineMedium.fontSize
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(5.dp)
+            ){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(
+                        "Live Channels",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier =Modifier.padding(5.dp),
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    )
+                    SearchStreamLanguage(
+                        selectedLanguage=selectedLanguage,
+                        changeSelectedLanguage={newValue ->selectedLanguage = newValue}
+                    )
+                }
+            }
+
+
         }
         items(streamData){searchStreamItem->
             CategoryModalBody(
@@ -796,7 +819,7 @@ fun CategoryModalHeader(
     density: Float,
 ){
     Box(
-        modifier = Modifier.padding(bottom = 10.dp)
+        
     ){
         Icon(
             painter = painterResource(id =R.drawable.baseline_close_24),
@@ -836,7 +859,7 @@ fun GameInformationHeaderLoading(
     density:Float
 ){
     val adjustedHeight = (height/density) * 1.2
-    val adjustedWidth = (width/density) * 1.2
+    val adjustedWidth = (width/density) /1.5
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -879,8 +902,8 @@ fun GameInformationHeaderSuccess(
     width:Int,
     density:Float
 ){
-    val adjustedHeight = (height/density) * 1.2
-    val adjustedWidth = (width/density) * 1.2
+    val adjustedHeight = (height/density) *1.2
+    val adjustedWidth = (width/density) /1.5
     Row(modifier= Modifier
         .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -919,7 +942,7 @@ fun GameInformationHeaderFailed(
 ){
 
     val adjustedHeight = (height/density) * 1.2
-    val adjustedWidth = (width/density) * 1.2
+    val adjustedWidth = (width/density) /1.5
 
     Row(modifier= Modifier
         .fillMaxWidth(),
@@ -951,6 +974,117 @@ fun GameInformationHeaderFailed(
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 lineHeight = 15.sp
             )
+        }
+
+    }
+}
+
+@Composable
+fun SearchStreamLanguage(
+    selectedLanguage:String?,
+    changeSelectedLanguage:(String)->Unit,
+){
+    var expanded by remember { mutableStateOf(false) }
+    val languages = listOf("American Sign Language","Arabic","Bulgarian","Catalan","Chinese","Czech","Danish","Dutch","English","Finish","French","German",
+        "German","Greek","Hindi","Hungarian","Indonesian","Italian","Japanese","Korean","Malay","Norwegian","Polish","Portuguese","Romanian",
+        "Russian","Slovak","Spanish","Swedish","Tagalog","Thai","Turkish","Ukrainian","Vietnamese","Other")
+
+    val ellipsisTransformation = remember {
+        VisualTransformation { text ->
+            val trimmedText = if (text.text.length > 10) {
+                text.text.take(10) + "…" // Adjust the character limit as needed
+            } else {
+                text.text
+            }
+
+            TransformedText(
+                text = AnnotatedString(trimmedText),
+                offsetMapping = OffsetMapping.Identity
+            )
+        }
+    }
+    Column(){
+        Box(modifier = Modifier) {
+
+            OutlinedTextField(
+                modifier = Modifier.width(200.dp)
+                    .clickable {
+                        expanded = true
+                    },
+                enabled = false,
+                //todo: this is what is shown to the user as the selected choice
+                value = selectedLanguage ?: "English",
+                onValueChange = { },
+                label = { },
+                colors = TextFieldDefaults.colors(
+                    disabledTextColor = Color.White,
+                    disabledContainerColor = Color.DarkGray,
+                    disabledTrailingIconColor = Color.Unspecified,
+                    disabledLabelColor = Color.Unspecified,
+                    disabledPlaceholderColor = Color.Unspecified,
+                    disabledSupportingTextColor = Color.Unspecified,
+                    disabledPrefixColor = Color.Unspecified,
+                    disabledSuffixColor = Color.Unspecified
+                ),
+                trailingIcon = {
+                    if (expanded) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_keyboard_arrow_up_24),
+                            contentDescription = "Content Classification open"
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.keyboard_arrow_down_24),
+                            contentDescription = "Content Classification closed"
+                        )
+                    }
+                },
+                maxLines = 1,
+                visualTransformation = ellipsisTransformation
+
+
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color.DarkGray
+                    )
+                    .padding(horizontal = 10.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column() {
+                        for (item in languages) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                item,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .clickable {
+                                        changeSelectedLanguage(item)
+                                        expanded = false
+                                    }
+                            )
+
+                        }
+                    }
+
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_close_24),
+                        contentDescription = "Close language menu",
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable {
+                                expanded = false
+                            }
+                    )
+                }
+
+            }
         }
 
     }
