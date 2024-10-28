@@ -19,9 +19,44 @@ import com.example.clicker.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.Language
 import javax.inject.Inject
-
+val languageHashMap: HashMap<String, String> = hashMapOf(
+    "Arabic" to "ar",
+    "Bulgarian" to "bg",
+    "Catalan" to "ca",
+    "Chinese" to "zh",
+    "Czech" to "cs",
+    "Danish" to "da",
+    "Dutch" to "nl",
+    "English" to "en",
+    "Finnish" to "fi",
+    "French" to "fr",
+    "German" to "de",
+    "Greek" to "el",
+    "Hindi" to "hi",
+    "Hungarian" to "hu",
+    "Indonesian" to "id",
+    "Italian" to "it",
+    "Japanese" to "ja",
+    "Korean" to "Ko",
+    "Malay" to "ms",
+    "Norwegian" to "no",
+    "Polish" to "pl",
+    "Portuguese" to "pt",
+    "Romanian" to "ro",
+    "Russian" to "ru",
+    "Slovak" to "sk",
+    "Spanish" to "es",
+    "Swedish" to "sv",
+    "Tagalog" to "tl",
+    "Thai" to "th",
+    "Turkish" to "tr",
+    "Ukrainian" to "uk",
+    "American Sign Language" to "ase"
+)
 
 data class ClickedValidatedUser(
     val oAuthToken:String,
@@ -76,9 +111,6 @@ class SearchViewModel @Inject constructor(
 
 
 
-
-
-
     private var _pinnedFilter: MutableState<Boolean> = mutableStateOf(false)
     val pinnedFilter:State<Boolean> = _pinnedFilter
 
@@ -86,13 +118,37 @@ class SearchViewModel @Inject constructor(
 
     private var _modalPaginationId: MutableState<String> = mutableStateOf("")
 
+    private var _selectedLanguage: MutableState<String?> = mutableStateOf(null)
+    val selectedLanguage:State<String?> = _selectedLanguage
+
+    private val _selectedLanguageStateFlow: MutableStateFlow<String?> = MutableStateFlow(null)
+
+
     init{
         monitorMostRecentPaginationRequestId()
     }
     init{
         monitorModalMostRecentPaginationRequestId()
     }
+    init {
+        monitorSelectedLanguage()
+    }
 
+    fun changeSelectedLanguage(language: String){
+
+        _selectedLanguage.value = language //this is update the UI
+        _selectedLanguageStateFlow.tryEmit(languageHashMap[language]) //this is the map value
+        getStreams(_modalGameId.value)
+    }
+    private fun monitorSelectedLanguage()=viewModelScope.launch(ioDispatcher){
+        _selectedLanguageStateFlow.collect{nullableSelectedLanguage->
+            nullableSelectedLanguage?.also { selectedLanguage ->
+
+                getStreams(_modalGameId.value)
+            }
+        }
+
+    }
 
     fun updateAspectHeightWidthSearchView(width: Int, height:Int){
         _aspectHeightAndWdith.value = _aspectHeightAndWdith.value.copy(
@@ -176,7 +232,7 @@ class SearchViewModel @Inject constructor(
             clientId = _validatedUser.value.clientId,
             gameId=gameId,
             type = StreamType.LIVE,
-            language="",
+            language=_selectedLanguageStateFlow.value?:"en",
             after=""
         ).collect{response ->
             when(response){

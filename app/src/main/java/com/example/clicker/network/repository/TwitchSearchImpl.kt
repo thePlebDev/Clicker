@@ -129,7 +129,7 @@ class TwitchSearchImpl @Inject constructor(
             clientId = clientId,
             gameId = gameId,
             type=type.toString(),
-            language="en",
+            language=language,
             after=after
         )
 

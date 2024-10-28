@@ -173,7 +173,9 @@ fun SearchView(
                 },
                 getMoreStreams = {searchViewModel.getMoreStreams()},
                 streamDataList= searchViewModel.searchStreamDataList.toList(),
-                closeModal={scope.launch { state.hide() }}
+                closeModal={scope.launch { state.hide() }},
+                selectedLanguage=searchViewModel.selectedLanguage.value,
+                changeSelectedLanguage={newValue ->searchViewModel.changeSelectedLanguage(newValue)}
 
 
 
