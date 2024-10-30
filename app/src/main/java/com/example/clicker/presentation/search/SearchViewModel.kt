@@ -7,6 +7,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.data.domains.PinnedItemInter
+import com.example.clicker.data.repos.PinnedItemRepo
+import com.example.clicker.data.room.toPinnedItem
+import com.example.clicker.data.room.toTopGame
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
@@ -76,6 +80,7 @@ data class AspectHeightAndWidth(
 class SearchViewModel @Inject constructor(
     private val twitchSearch: TwitchSearch,
     private val ioDispatcher: CoroutineDispatcher,
+    private val pinnedItemRepo: PinnedItemInter
 ): ViewModel(){
 
 
@@ -137,6 +142,7 @@ class SearchViewModel @Inject constructor(
 
 
 
+
     fun changeSelectedLanguage(language: String){
 
         _selectedLanguage.value = language //this is update the UI
@@ -187,6 +193,42 @@ class SearchViewModel @Inject constructor(
 
     }
 
+
+    //this is constantly called during updates do to the flow and needs to be changed
+    private fun getAllPinnedItems()= viewModelScope.launch(ioDispatcher){
+        pinnedItemRepo.getAllPinnedItems.collect{pinnedItems->
+            val list = pinnedItems.toList().map { it.toTopGame() }
+            Log.d("getAllPinnedItemsList","LIST -->$list")
+            Log.d("getAllPinnedItemsList","topGamesList -->${topGamesList.toList()}")
+            topGamesPinnedList.clear()
+            topGamesPinnedList.addAll(list)
+
+            list.forEach { pinnedItem ->
+                val foundGame =topGamesList.find { it.id == pinnedItem.id}
+                foundGame?.also {
+                    val foundIndex =topGamesList.indexOf(foundGame)
+                    if(foundIndex>=0){
+                        Log.d("FOundTHeIndex","FOUND")
+                        val updatedGame = foundGame.copy(clicked = true)
+                        topGamesList[foundIndex] = updatedGame
+
+                    }
+                }
+            }
+
+        }
+    }
+    fun addPinnedItem(topGame: TopGame)= viewModelScope.launch(ioDispatcher){
+        val pinnedItem = topGame.toPinnedItem()
+        pinnedItemRepo.insertPinnedItem(pinnedItem)
+    }
+
+    fun removePinnedItem(topGame: TopGame)= viewModelScope.launch(ioDispatcher){
+        val pinnedItem = topGame.toPinnedItem()
+        pinnedItemRepo.deletePinnedItem(pinnedItem)
+    }
+
+
     fun getGameInfo(
         gameId:String,
         gameTitle:String
@@ -221,6 +263,8 @@ class SearchViewModel @Inject constructor(
                     _searchGameInfo.value = Response.Failure(Exception("Failed request"))
 
                 }
+
+                else -> {}
             }
 
         }
@@ -327,6 +371,7 @@ class SearchViewModel @Inject constructor(
                     topGamesList.addAll(updatedList)
                     _searchRefreshing.value = false
                     _topGames.value = Response.Success(true)
+                    getAllPinnedItems()
                 }
                 is Response.Failure ->{
 
@@ -399,6 +444,7 @@ class SearchViewModel @Inject constructor(
                 if(foundGameIndex >=0){
                     doubleClickedCategoryRemove(foundGame)
                     topGamesList[foundGameIndex]= updatedTopGame
+                    removePinnedItem(updatedTopGame)
                 }
             }else{
                 //add to the pinnedList
@@ -406,6 +452,7 @@ class SearchViewModel @Inject constructor(
                 if(foundGameIndex >=0){
                     filterPinnedClickedListAdd(updatedTopGame)
                     topGamesList[foundGameIndex]= updatedTopGame
+                    addPinnedItem(updatedTopGame)
                 }
 
 

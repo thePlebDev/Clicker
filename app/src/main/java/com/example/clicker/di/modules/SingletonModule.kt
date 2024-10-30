@@ -3,6 +3,10 @@ package com.example.clicker.di.modules
 import android.content.Context
 import android.util.Log
 import com.example.clicker.data.TokenDataStore
+import com.example.clicker.data.domains.PinnedItemInter
+import com.example.clicker.data.repos.PinnedItemRepo
+import com.example.clicker.data.room.PinnedItemRoomDatabase
+
 import com.example.clicker.domain.ChatSettingsDataStore
 import com.example.clicker.domain.TwitchDataStore
 import com.example.clicker.network.clients.BetterTTVEmoteClient
@@ -246,6 +250,22 @@ object SingletonModule {
     @Provides
     fun providesNetworkMonitorRepo(): NetworkMonitorRepo {
         return NetworkMonitorImpl()
+    }
+
+    //the roomDatabase
+    @Singleton
+    @Provides
+    fun providePinnedItemDatabase(@ApplicationContext context: Context): PinnedItemRoomDatabase {
+        return PinnedItemRoomDatabase.getDatabase(context)
+    }
+    @Singleton
+    @Provides
+    fun providesPinnedItemRepo(
+        database: PinnedItemRoomDatabase
+    ): PinnedItemInter {
+        val dao = database.pinnedItemsDAO()
+        return PinnedItemRepo(dao)
+
     }
 
 
