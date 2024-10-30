@@ -383,7 +383,8 @@ fun SearchBarUI(
             expanded=expanded,
             setExpanded = {newValue ->expanded = newValue},
             changePinnedListFilterStatus={changePinnedListFilterStatus()},
-            pinned=pinned
+            pinned=pinned,
+
         )
     }
 
@@ -481,6 +482,7 @@ fun SearchFilterDropDownMenu(
     changePinnedListFilterStatus:()->Unit,
     pinned: Boolean,
 
+
 ) {
 
     Box(modifier = Modifier.wrapContentSize(Alignment.BottomCenter)) {
@@ -500,7 +502,7 @@ fun SearchFilterDropDownMenu(
                 setExpanded = { newValue -> setExpanded(newValue) },
                 title = "Filter pinned categories",
                 changePinnedListFilterStatus={changePinnedListFilterStatus()},
-                pinned=pinned
+                pinned=pinned,
 
                 )
 
@@ -513,7 +515,8 @@ fun SearchTextMenuItem(
     setExpanded: (Boolean) -> Unit,
     title:String,
     changePinnedListFilterStatus:()->Unit,
-    pinned: Boolean
+    pinned: Boolean,
+
 
 ){
     DropdownMenuItem(

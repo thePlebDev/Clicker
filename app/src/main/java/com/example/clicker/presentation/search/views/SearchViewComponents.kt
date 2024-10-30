@@ -206,7 +206,8 @@ fun SearchView(
                 }
             },
             getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)},
-            getGameStreams={id ->searchViewModel.getStreams(id)}
+            getGameStreams={id ->searchViewModel.getStreams(id)},
+
 
         )
 
@@ -231,7 +232,8 @@ fun SearchMainComponent(
     fetchMoreTopGames:()->Unit,
     openCategoryModal:()->Unit,
     getGameInfo:(String,String)->Unit,
-    getGameStreams:(String)->Unit
+    getGameStreams:(String)->Unit,
+
 
 
 ){
@@ -239,7 +241,8 @@ fun SearchMainComponent(
         topBar = {
             SearchBarUI(
                 changePinnedListFilterStatus={changePinnedListFilterStatus()},
-                pinned=pinned
+                pinned=pinned,
+
             )
         },
         bottomBar = {

@@ -108,6 +108,7 @@ import com.example.clicker.util.Response
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
         getTopGames:()->Unit,
+        getPinnedList:()->Unit
 
         ){
 
@@ -152,7 +153,8 @@ import com.example.clicker.util.Response
                     hapticFeedBackError={hapticFeedBackError()},
                     lowPowerModeActive=lowPowerModeActive,
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
-                    getTopGames={getTopGames()}
+                    getTopGames={getTopGames()},
+                    getPinnedList={getPinnedList()}
 
                 )
 

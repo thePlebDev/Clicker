@@ -101,6 +101,8 @@ fun ValidationView(
     val context = LocalContext.current
 
 
+
+
     //TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
     //TestingGLSurfaceViewUnderstandingTriangle(context,Modifier.fillMaxSize())
 
@@ -217,7 +219,8 @@ fun ValidationView(
                     )
                 }
             }
-        }
+        },
+        getPinnedList={}
 
     )
 
