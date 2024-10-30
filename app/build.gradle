@@ -17,6 +17,7 @@ plugins {
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
     id "org.jlleitschuh.gradle.ktlint" version "11.6.1"
+
 }
 
 android {
@@ -262,6 +263,14 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil-gif:2.2.0")
+
+    // ROOM DATABASE
+    def roomVersion = "2.6.1"
+
+    // Room components
+    implementation "androidx.room:room-ktx:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
 
 

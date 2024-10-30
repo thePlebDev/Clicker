@@ -134,6 +134,9 @@ class SearchViewModel @Inject constructor(
         monitorSelectedLanguage()
     }
 
+
+
+
     fun changeSelectedLanguage(language: String){
 
         _selectedLanguage.value = language //this is update the UI
