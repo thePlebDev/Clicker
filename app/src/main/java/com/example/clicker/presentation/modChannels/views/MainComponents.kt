@@ -160,7 +160,7 @@ import kotlinx.coroutines.launch
                             painter = painterResource(id = R.drawable.baseline_category_24),
                             iconContentDescription = "Navigate to search bar",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Category",
+                            text = "Categories",
                             onClick = {
                                 getTopGames()
                                 onNavigate(R.id.action_modChannelsFragment_to_searchFragment)

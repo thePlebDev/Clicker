@@ -223,7 +223,7 @@ class SearchViewModel @Inject constructor(
         pinnedItemRepo.insertPinnedItem(pinnedItem)
     }
 
-    fun removePinnedItem(topGame: TopGame)= viewModelScope.launch(ioDispatcher){
+    private fun removePinnedItem(topGame: TopGame)= viewModelScope.launch(ioDispatcher){
         val pinnedItem = topGame.toPinnedItem()
         pinnedItemRepo.deletePinnedItem(pinnedItem)
     }
@@ -434,15 +434,18 @@ class SearchViewModel @Inject constructor(
         }
     }
     fun doubleClickedCategoryAdd(id:String){
-        val foundGame = topGamesList.find { it.id==id }
+        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
+        val foundTopGame = topGamesList.find { it.id==id }
+        val foundPinnedItem = topGamesPinnedList.find { it.id==id }
 
-        foundGame?.also { topGame ->
-            val updatedTopGame = topGame.copy(clicked = !topGame.clicked)
-            val foundGameIndex = topGamesList.indexOf(topGame)
-            if(topGame.clicked){
+        if(foundTopGame!= null){
+            val updatedTopGame = foundTopGame.copy(clicked = !foundTopGame.clicked)
+            val foundGameIndex = topGamesList.indexOf(foundTopGame)
+            if(foundTopGame.clicked){
                 // remove from pinned
                 if(foundGameIndex >=0){
-                    doubleClickedCategoryRemove(foundGame)
+                    Log.d("FilterPinnedItemTesting","REMOVE")
+                    filterPinnedClickedListRemove(updatedTopGame)
                     topGamesList[foundGameIndex]= updatedTopGame
                     removePinnedItem(updatedTopGame)
                 }
@@ -450,8 +453,35 @@ class SearchViewModel @Inject constructor(
                 //add to the pinnedList
                 // avoids the edge case of being -1
                 if(foundGameIndex >=0){
+                    Log.d("FilterPinnedItemTesting","ADD")
                     filterPinnedClickedListAdd(updatedTopGame)
                     topGamesList[foundGameIndex]= updatedTopGame
+                    addPinnedItem(updatedTopGame)
+                }
+
+
+            }
+        }
+        if(foundPinnedItem !=null){
+            Log.d("FfoundPinnedItemTesting","FOUND")
+            val updatedTopGame = foundPinnedItem.copy(clicked = !foundPinnedItem.clicked)
+            val foundGameIndex = topGamesPinnedList.indexOf(foundPinnedItem)
+            Log.d("FfoundPinnedItemTesting","foundGameIndex ->$foundGameIndex")
+            if(foundPinnedItem.clicked){
+                // remove from pinned
+                if(foundGameIndex >=0){
+                    Log.d("FfoundPinnedItemTesting","REMOVE")
+                    filterPinnedClickedListRemove(updatedTopGame)
+                  //  topGamesPinnedList[foundGameIndex]= updatedTopGame
+                    removePinnedItem(updatedTopGame)
+                }
+            }else{
+                //add to the pinnedList
+                // avoids the edge case of being -1
+                if(foundGameIndex >=0){
+                    Log.d("foundPinnedItemTesting","ADD")
+                    filterPinnedClickedListAdd(updatedTopGame)
+                    topGamesPinnedList[foundGameIndex]= updatedTopGame
                     addPinnedItem(updatedTopGame)
                 }
 
@@ -463,26 +493,25 @@ class SearchViewModel @Inject constructor(
 
     }
     //this gets called on the pinnedList
-    fun doubleClickedCategoryRemove(topGame:TopGame){
-        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
-        val foundGame = topGamesList.find { it.id==topGame.id }
-        val foundGameIndex = topGamesList.indexOf(topGame)
-        filterPinnedClickedListRemove(topGame)//this needs to be called to remove it from pinnedList
-        //I still need to find and update the topGamesList to cause a recomposigion
-        if(foundGameIndex >=0){
-           foundGame?.also {
-               val newTopGame = it.copy(clicked = false)
-               topGamesList[foundGameIndex]= newTopGame
-           }
-
-        }
-
-
-    }
+//    private fun doubleClickedCategoryRemove(topGame:TopGame){
+//        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
+//        val foundGame = topGamesList.find { it.id==topGame.id }
+//        val foundGameIndex = topGamesList.indexOf(topGame)
+//        filterPinnedClickedListRemove(topGame)//this needs to be called to remove it from pinnedList
+//        //I still need to find and update the topGamesList to cause a recomposigion
+//        if(foundGameIndex >=0){
+//           foundGame?.also {
+//               val newTopGame = it.copy(clicked = false)
+//               topGamesList[foundGameIndex]= newTopGame
+//           }
+//
+//        }
+//
+//
+//    }
 
     private fun filterPinnedClickedListRemove(topGame: TopGame){
-        Log.d("FilterPinnedItemTesting","filterPinnedClickedListRemove")
-        Log.d("FilterPinnedItem","${topGame.id}")
+        Log.d("FilterPinnedItemRemoving","${topGame.id}")
         topGamesPinnedList.removeIf { it.id == topGame.id }
         Log.d("FilterPinnedItem","topGamesPinnedList-->${topGamesPinnedList.toList()}")
     }

@@ -193,7 +193,7 @@ fun SearchView(
             topGamesList=searchViewModel.topGamesList.toList(),
             hapticFeedBackError={hapticFeedBackError()},
             categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
-            categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryRemove(topGame)},
+            categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryAdd(topGame.id)},
             pinnedList = searchViewModel.topGamesPinnedList.toList(),
             pinned = searchViewModel.pinnedFilter.value,
             changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
@@ -275,7 +275,7 @@ fun SearchMainComponent(
                         painter = painterResource(id = R.drawable.baseline_category_24),
                         iconContentDescription = "Stay on category page ",
                         fontColor = MaterialTheme.colorScheme.onPrimary,
-                        text = "Category",
+                        text = "Categories",
                         onClick = {},
                     )
                 },
