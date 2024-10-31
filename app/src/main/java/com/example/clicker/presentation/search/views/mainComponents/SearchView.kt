@@ -280,6 +280,7 @@ fun TopGamesLazyGrid(
                                     },
                                     onTap = {
                                         getGameInfo(topGame.id,topGame.name)
+                                        getGameStreams(topGame.id)
                                         openCategoryModal()
                                     }
                                 )
