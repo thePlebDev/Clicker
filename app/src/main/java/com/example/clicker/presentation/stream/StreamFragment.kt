@@ -882,7 +882,10 @@ fun setOrientation(
         setContent {
             if(streamViewModel.advancedChatSettingsState.value.horizontalClearChat && streamViewModel.immersiveMode.value){
 
-                ClearHorizontalChatView(streamViewModel)
+                ClearHorizontalChatView(
+                    streamViewModel,
+                    chatSettingsViewModel=chatSettingsViewModel
+                )
             }
 
 
