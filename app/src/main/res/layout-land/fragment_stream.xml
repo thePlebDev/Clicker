@@ -98,5 +98,10 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/horizontal_clear_chat"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
 
 </FrameLayout>

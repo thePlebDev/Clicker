@@ -3,6 +3,7 @@ package com.example.clicker.presentation.stream
 import android.animation.LayoutTransition
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -19,15 +20,22 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
@@ -114,10 +122,13 @@ class StreamFragment : Fragment() {
         composeView: ComposeView,
         longPressComposeView: View,
         rootConstraintLayout: ConstraintLayout,
-        viewToBeDragged:View
+        viewToBeDragged:View,
+        activity: Activity?
     ){
         horizontalClickableWebView.expandedMethod = {
             Log.d("lOGGGINTHEDOUBLECLICK", "called to make view expanded")
+            streamViewModel.setImmersiveMode(true)
+
             horizontalClickableWebView.evaluateJavascript(
                 "(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();",
                 null
@@ -341,6 +352,8 @@ class StreamFragment : Fragment() {
         horizontalClickableWebView.collapsedMethodLongPress = {
             unsetImmersiveMode(requireActivity().window)
             Log.d("collapsedMethodAgain","LONG COLLAPSE")
+            streamViewModel.setImmersiveMode(false)
+
 
             val webViewWidth =(rootConstraintLayout.width * 0.6).toInt()
             val overlayComposeParams = overlayComposeView.layoutParams as ConstraintLayout.LayoutParams
@@ -381,6 +394,7 @@ class StreamFragment : Fragment() {
         viewToBeDragged: View,
         ){
         horizontalClickableWebView.collapsedMethodDoubleClick = {
+            streamViewModel.setImmersiveMode(false)
 
             unsetImmersiveMode(requireActivity().window)
             Log.d("collapsedMethodAgain","DOUBLE COLLAPSE")
@@ -433,7 +447,8 @@ class StreamFragment : Fragment() {
         longPressComposeView: View,
         rootConstraintLayout: ConstraintLayout,
         overlapView: View,
-        viewToBeDragged: View
+        viewToBeDragged: View,
+        activity: Activity?
     ){
 
         setHorizontalExpandedClick(
@@ -443,7 +458,8 @@ class StreamFragment : Fragment() {
             composeView =composeView,
             longPressComposeView =longPressComposeView,
             rootConstraintLayout = rootConstraintLayout,
-            viewToBeDragged=viewToBeDragged
+            viewToBeDragged=viewToBeDragged,
+            activity=activity
         )
 
 
@@ -519,8 +535,10 @@ class StreamFragment : Fragment() {
 
 
 
+
         val view = setOrientation(
             resources = resources,
+            activity=activity,
             binding = binding,
             streamViewModel = streamViewModel,
             autoModViewModel = autoModViewModel,
@@ -576,7 +594,8 @@ class StreamFragment : Fragment() {
                 longPressComposeView =longPressComposeView,
                 rootConstraintLayout =rootConstraintLayout,
                 overlapView =overlapView,
-                viewToBeDragged=viewToBeDragged
+                viewToBeDragged=viewToBeDragged,
+                activity=activity
             )
 
 
@@ -664,6 +683,7 @@ fun unsetImmersiveMode(window: Window) {
 @OptIn(ExperimentalComposeUiApi::class)
 fun setOrientation(
     resources: Resources,
+    activity: FragmentActivity?,
     binding: FragmentStreamBinding,
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
@@ -842,9 +862,30 @@ fun setOrientation(
             }
         }
     }
+    binding.horizontalClearChat?.apply {
+        val activity2 = activity as? Activity
+
+
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        setContent {
+            if(streamViewModel.advancedChatSettingsState.value.horizontalClearChat && streamViewModel.immersiveMode.value){
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Red.copy(alpha = 0.7f))
+                ) {
+                    // Your content here
+                }
+            }
+
+
+        }
+    }
 
     return binding.root
 }
+
 
 
 fun setWebView(
