@@ -46,6 +46,7 @@ import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionTh
 import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.stream.clearHorizontalChat.ClearHorizontalChatView
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.customWebViews.HorizontalClickableWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
@@ -870,13 +871,7 @@ fun setOrientation(
         setContent {
             if(streamViewModel.advancedChatSettingsState.value.horizontalClearChat && streamViewModel.immersiveMode.value){
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Red.copy(alpha = 0.7f))
-                ) {
-                    // Your content here
-                }
+                ClearHorizontalChatView()
             }
 
 
