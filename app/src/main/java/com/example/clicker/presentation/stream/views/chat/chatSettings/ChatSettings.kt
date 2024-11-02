@@ -324,12 +324,12 @@ fun AdvancedChatSettings(
     changeAdvancedChatSettings: (AdvancedChatSettings)->Unit,
     changeNoChatMode:(Boolean)->Unit
 ){
-    var horizontalClearChat by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxWidth()) {
 
         ClearHorizontalChatSwitch(
-            horizontalClearChat=horizontalClearChat,
-            changeHorizontalClearChat = {newValue ->horizontalClearChat=newValue}
+            advancedChatSettings=advancedChatSettings,
+            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)}
         )
 
        ReSubsSwitch(
@@ -819,8 +819,8 @@ fun NoChatSwitch(
 
 @Composable
 fun ClearHorizontalChatSwitch(
-    horizontalClearChat: Boolean,
-    changeHorizontalClearChat:(Boolean)->Unit,
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) -> Unit
 ){
     Row(
         modifier = Modifier
@@ -834,9 +834,10 @@ fun ClearHorizontalChatSwitch(
             color = MaterialTheme.colorScheme.onPrimary
         )
         SwitchWithIcon(
-            checkedValue = horizontalClearChat,
+            checkedValue = advancedChatSettings.horizontalClearChat,
             changeCheckedValue = {newValue->
-                changeHorizontalClearChat(newValue)
+                val value =advancedChatSettings.copy(horizontalClearChat = newValue)
+                changeAdvancedChatSettings(value)
             },
             icon = Icons.Filled.Check,
         )

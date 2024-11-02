@@ -280,6 +280,14 @@ class StreamViewModel @Inject constructor(
     private val allChatters = mutableStateListOf<String>()
 
 
+    private val _immersiveMode = mutableStateOf(false)
+    val immersiveMode:State<Boolean> = _immersiveMode
+
+    fun setImmersiveMode(newValue: Boolean){
+        _immersiveMode.value = newValue
+    }
+
+
 
     init{
         monitorForWebSocketFailure()

@@ -69,6 +69,7 @@ data class ModChatSettings(
  * @param showReSubs a boolean determining if the user should be shown re-subscription messages or not
  * @param showAnonSubs a boolean determining if the user should be shown anonymous subscription messages or not
  * @param showGiftSubs a boolean determining if the user should be shown gift subscription messages or not
+ * @param horizontalClearChat a boolean determining if the user should be show the horizontal clear chat or not
  * */
 data class AdvancedChatSettings(
     val noChatMode:Boolean = false,
@@ -76,6 +77,7 @@ data class AdvancedChatSettings(
     val showReSubs:Boolean = true,
     val showAnonSubs:Boolean = true,
     val showGiftSubs:Boolean = true,
+    val horizontalClearChat:Boolean =false
 )
 data class StreamUIState(
     val chatSettings: Response<ChatSettingsData> = Response.Loading, //websocket twitchImpl
