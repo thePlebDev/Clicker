@@ -24,6 +24,11 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintWidth_percent="0.6"
             />
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/horizontal_clear_chat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/overlapView"
             android:layout_width="match_parent"
@@ -45,11 +50,13 @@
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/dragOverlapView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-
             android:animateLayoutChanges="true"
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -98,10 +105,6 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/horizontal_clear_chat"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+
 
 </FrameLayout>
