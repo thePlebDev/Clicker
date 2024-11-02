@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Icon
@@ -55,6 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
+import com.example.clicker.network.repository.models.EmoteListMap
+import com.example.clicker.network.websockets.models.MessageToken
+import com.example.clicker.network.websockets.models.PrivateMessageType
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.DualIconsButton
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
@@ -73,6 +77,14 @@ fun ClearHorizontalChatView(
         (streamViewModel.fullImmersionWidth.value)*-1,
         twitchUserChat=twitchUserChat,
         usernameSize = chatSettingsViewModel.usernameSize.value,
+        badgeListMap =chatSettingsViewModel.globalChatBadgesMap.value,
+        messageSize = chatSettingsViewModel.messageSize.value,
+        globalTwitchEmoteContentMap = chatSettingsViewModel.globalEmoteMap.value,
+        channelTwitchEmoteContentMap= chatSettingsViewModel.inlineContentMapChannelEmoteList.value,
+        globalBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVGlobalInlineContentMapChannelEmoteList.value,
+        channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
+        sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
+        useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
     )
 
 }
@@ -81,7 +93,15 @@ fun ClearHorizontalChatView(
 fun DraggableClearChat(
     fullImmersionWidth:Int,
     twitchUserChat: List<TwitchUserData>,
-    usernameSize:Float
+    usernameSize:Float,
+    badgeListMap: EmoteListMap,
+    messageSize:Float,
+    globalTwitchEmoteContentMap:EmoteListMap, //this is 0
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
+    useCustomUsernameColors:Boolean,
 ){
     var offsetX by remember { mutableStateOf(0f) }
 
@@ -145,7 +165,15 @@ fun DraggableClearChat(
             // this is where the chat needs to go
             ClearChatLazyColumn(
                 twitchUserChat=twitchUserChat,
-                usernameSize=usernameSize
+                usernameSize=usernameSize,
+                badgeListMap=badgeListMap,
+                messageSize=messageSize,
+                globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
+                useCustomUsernameColors=useCustomUsernameColors
             )
 
 
@@ -156,7 +184,15 @@ fun DraggableClearChat(
 @Composable
 fun ClearChatLazyColumn(
     twitchUserChat: List<TwitchUserData>,
-    usernameSize:Float
+    usernameSize:Float,
+    badgeListMap: EmoteListMap,
+    messageSize:Float,
+    globalTwitchEmoteContentMap:EmoteListMap, //this is 0
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
+    useCustomUsernameColors:Boolean,
 ){
 
     var autoscroll by remember { mutableStateOf(true) }
@@ -178,7 +214,17 @@ fun ClearChatLazyColumn(
             items(twitchUserChat){twitchUser->
                 ClearChatMessage(
                     twitchChatMessage=twitchUser,
-                    usernameSize=usernameSize
+                    usernameSize=usernameSize,
+                    badgeListMap=badgeListMap,
+                    badgeList=twitchUser.badges,
+                    messageList = twitchUser.messageList,
+                    messageSize=messageSize,
+                    globalTwitchEmoteContentMap=globalTwitchEmoteContentMap,
+                    channelTwitchEmoteContentMap=channelTwitchEmoteContentMap,
+                    globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
+                    channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
+                    sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
+                    useCustomUsernameColors=useCustomUsernameColors
                 )
             }
 
@@ -203,22 +249,50 @@ fun ClearChatLazyColumn(
 fun ClearChatMessage(
     twitchChatMessage: TwitchUserData,
     usernameSize:Float,
+    badgeList:List<String>,
+    badgeListMap: EmoteListMap,
+    globalTwitchEmoteContentMap:EmoteListMap, //this is 0
+    channelTwitchEmoteContentMap:EmoteListMap,
+    globalBetterTTVEmoteContentMap:EmoteListMap,
+    channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
+    sharedBetterTTVEmoteContentMap:EmoteListMap,
+    messageList:List<MessageToken>,
+    messageSize:Float,
+    useCustomUsernameColors:Boolean,
 ){
+    val newMap = globalTwitchEmoteContentMap.map +badgeListMap.map +channelTwitchEmoteContentMap.map +globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map+sharedBetterTTVEmoteContentMap.map
     val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
     if(color.value == Color.Black){
         color.value = MaterialTheme.colorScheme.secondary
     }
+    val usernameColor = if(useCustomUsernameColors) color.value else MaterialTheme.colorScheme.onPrimary
     val text = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = color.value, fontSize = usernameSize.sp)) {
+        for(item in badgeList){
+            if(badgeListMap.map.containsKey(item)){
+                withStyle(style = SpanStyle(fontSize = 15.sp)) {
+                    appendInlineContent(item, item)
+                }
+            }
+        }
+        withStyle(style = SpanStyle(color = usernameColor, fontSize = usernameSize.sp)) {
             append("${twitchChatMessage.displayName} ")
         }
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary)) {
-            append("${twitchChatMessage.userType}")
+        for(messageToken in messageList){
+
+            if(messageToken.messageType == PrivateMessageType.MESSAGE){
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onPrimary, fontSize = messageSize.sp)) {
+
+                    appendInlineContent(messageToken.messageValue, "${messageToken.messageValue} ")
+                }
+            }else{
+                appendInlineContent(messageToken.messageValue, "[${messageToken.messageValue}]")
+            }
         }
 
     }
     Text(
         text = text,
+        inlineContent = newMap,
     )
 }
 
