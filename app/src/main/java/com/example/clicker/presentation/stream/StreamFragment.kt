@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.Window
+import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -129,6 +130,10 @@ class StreamFragment : Fragment() {
         horizontalClickableWebView.expandedMethod = {
             Log.d("lOGGGINTHEDOUBLECLICK", "called to make view expanded")
             streamViewModel.setImmersiveMode(true)
+
+            Log.d("TestingFullWidth", "${binding.root.rootView.width}")
+            streamViewModel.setFullImmersionWidth(binding.root.rootView.width)
+
 
             horizontalClickableWebView.evaluateJavascript(
                 "(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();",
@@ -676,11 +681,16 @@ fun unsetImmersiveMode(window: Window) {
     WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
     val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
     windowInsetsController.let {
+
         it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
         it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
     }
 }
 
+
+
+
+@RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalComposeUiApi::class)
 fun setOrientation(
     resources: Resources,
@@ -828,6 +838,7 @@ fun setOrientation(
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         val webView:WebView = binding.root.findViewById(R.id.webView)
 
+
         setContent {
             AppTheme{
                 HorizontalLongPressView(
@@ -871,7 +882,7 @@ fun setOrientation(
         setContent {
             if(streamViewModel.advancedChatSettingsState.value.horizontalClearChat && streamViewModel.immersiveMode.value){
 
-                ClearHorizontalChatView()
+                ClearHorizontalChatView(streamViewModel)
             }
 
 
