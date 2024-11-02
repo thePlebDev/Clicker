@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream.clearHorizontalChat
 
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -7,9 +8,7 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,19 +23,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
-import kotlinx.coroutines.launch
+import com.example.clicker.presentation.stream.StreamViewModel
 import kotlin.math.roundToInt
 
 
 @Composable
-fun ClearHorizontalChatView(){
+fun ClearHorizontalChatView(
+    streamViewModel:StreamViewModel
+){
+    DraggableClearChat(
+        (streamViewModel.fullImmersionWidth.value)*-1
+    )
+
+}
+
+@Composable
+fun DraggableClearChat(
+    fullImmersionWidth:Int
+){
     var offsetX by remember { mutableStateOf(0f) }
+
+    val maxWidthHalf = (Resources.getSystem().displayMetrics.widthPixels/2.5)*-1
+    var clearChatWidth by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
     val draggableState = DraggableState { delta ->
         offsetX += delta
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,27 +62,44 @@ fun ClearHorizontalChatView(){
             .fillMaxHeight()
             .fillMaxWidth(.25f)
             .align(Alignment.CenterEnd)
-            .background(Color.Black.copy(alpha = 0.7f))
+            .background(Color.Red.copy(alpha = 0.7f))
             .draggable(
                 orientation = Orientation.Horizontal,
                 state = draggableState,
                 onDragStopped = {
-                    draggableState.drag(MutatePriority.PreventUserInput) {
-                        Animatable(offsetX).animateTo(
-                            targetValue = 0f,
-                            tween(durationMillis = 300)
-                        ) {
-                            dragBy(value - offsetX)
+
+                    Log.d("TestingMaxWidthClear","threshold crossed-->${offsetX<=maxWidthHalf}")
+                    if(offsetX<=maxWidthHalf){
+                        draggableState.drag(MutatePriority.PreventUserInput) {
+                            Animatable(offsetX).animateTo(
+                                targetValue = (fullImmersionWidth + clearChatWidth).toFloat(),
+                                tween(durationMillis = 300)
+                            ) {
+                                dragBy(value - offsetX)
+                            }
+                        }
+
+                    }else{
+                        draggableState.drag(MutatePriority.PreventUserInput) {
+                            Animatable(offsetX).animateTo(
+                                targetValue = 0f,
+                                tween(durationMillis = 300)
+                            ) {
+                                dragBy(value - offsetX)
+                            }
                         }
                     }
 
+
                 }
-            )
+            ).onGloballyPositioned {
+                clearChatWidth = it.size.width
+            }
+
         ){
 
         }
         // Your content here
     }
 }
-
 

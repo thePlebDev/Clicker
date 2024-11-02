@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.stream
 
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -285,6 +286,13 @@ class StreamViewModel @Inject constructor(
 
     fun setImmersiveMode(newValue: Boolean){
         _immersiveMode.value = newValue
+    }
+
+    private val _fullImmersionWidth = mutableStateOf(Resources.getSystem().displayMetrics.widthPixels)
+    val fullImmersionWidth:State<Int> = _fullImmersionWidth
+
+    fun setFullImmersionWidth(newValue:Int){
+        _fullImmersionWidth.value = newValue
     }
 
 
