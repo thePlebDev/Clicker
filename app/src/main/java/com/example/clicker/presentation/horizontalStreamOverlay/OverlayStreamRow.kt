@@ -90,6 +90,7 @@ fun OverlayStreamRow(
                 clientId = streamViewModel.state.value.clientId,
                 broadcasterId = streamViewModel.state.value.broadcasterId,
             )
+            
 
         },
         reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},

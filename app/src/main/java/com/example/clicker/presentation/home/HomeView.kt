@@ -170,6 +170,7 @@ fun ValidationView(
                     broadcasterId=broadcasterId
                 )
             }
+            streamViewModel.setImmersiveMode(false)
 
         },
         updateClickedStreamInfo={

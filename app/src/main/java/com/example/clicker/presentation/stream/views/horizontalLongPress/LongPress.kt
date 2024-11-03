@@ -120,6 +120,7 @@ fun HorizontalLongPressView(
                                     )
                                     loadURL(newUrl)
                                     createNewTwitchEventWebSocket()
+                                    streamViewModel.setImmersiveMode(false)
 
                                          },
                                 reconnectWebSocketChat ={channelName -> streamViewModel.restartWebSocketFromLongClickMenu(channelName)},
