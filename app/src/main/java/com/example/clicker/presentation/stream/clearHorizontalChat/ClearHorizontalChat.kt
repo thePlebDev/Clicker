@@ -4,9 +4,11 @@ import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.models.EmoteListMap
@@ -73,6 +76,9 @@ fun ClearHorizontalChatView(
     chatSettingsViewModel:ChatSettingsViewModel
 ){
     val twitchUserChat = streamViewModel.listChats.toList()
+    val doubleClickChat:(String)->Unit =remember(streamViewModel) { {
+        streamViewModel.sendDoubleTapEmote(it)
+    } }
     DraggableClearChat(
         (streamViewModel.fullImmersionWidth.value)*-1,
         twitchUserChat=twitchUserChat,
@@ -85,6 +91,7 @@ fun ClearHorizontalChatView(
         channelBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVChannelInlineContentMapChannelEmoteList.value,
         sharedBetterTTVEmoteContentMap =chatSettingsViewModel.betterTTVSharedInlineContentMapChannelEmoteList.value,
         useCustomUsernameColors = chatSettingsViewModel.customUsernameColor.value,
+        doubleClickMessage={username ->doubleClickChat(username)}
     )
 
 }
@@ -102,6 +109,7 @@ fun DraggableClearChat(
     channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     useCustomUsernameColors:Boolean,
+    doubleClickMessage:(String)->Unit,
 ){
     var offsetX by remember { mutableStateOf(0f) }
 
@@ -173,7 +181,9 @@ fun DraggableClearChat(
                 globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
                 channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
                 sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
-                useCustomUsernameColors=useCustomUsernameColors
+                useCustomUsernameColors=useCustomUsernameColors,
+                doubleClickMessage={username ->doubleClickMessage(username)}
+
             )
 
 
@@ -193,6 +203,7 @@ fun ClearChatLazyColumn(
     channelBetterTTVEmoteContentMap:EmoteListMap, // this is 0
     sharedBetterTTVEmoteContentMap:EmoteListMap,
     useCustomUsernameColors:Boolean,
+    doubleClickMessage:(String)->Unit,
 ){
 
     var autoscroll by remember { mutableStateOf(true) }
@@ -224,7 +235,8 @@ fun ClearChatLazyColumn(
                     globalBetterTTVEmoteContentMap=globalBetterTTVEmoteContentMap,
                     channelBetterTTVEmoteContentMap=channelBetterTTVEmoteContentMap,
                     sharedBetterTTVEmoteContentMap=sharedBetterTTVEmoteContentMap,
-                    useCustomUsernameColors=useCustomUsernameColors
+                    useCustomUsernameColors=useCustomUsernameColors,
+                    doubleClickMessage={username ->doubleClickMessage(username)}
                 )
             }
 
@@ -245,6 +257,7 @@ fun ClearChatLazyColumn(
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ClearChatMessage(
     twitchChatMessage: TwitchUserData,
@@ -259,7 +272,9 @@ fun ClearChatMessage(
     messageList:List<MessageToken>,
     messageSize:Float,
     useCustomUsernameColors:Boolean,
+    doubleClickMessage:(String)->Unit,
 ){
+    val showIcon = remember { mutableStateOf(false) }
     val newMap = globalTwitchEmoteContentMap.map +badgeListMap.map +channelTwitchEmoteContentMap.map +globalBetterTTVEmoteContentMap.map +channelBetterTTVEmoteContentMap.map+sharedBetterTTVEmoteContentMap.map
     val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
     if(color.value == Color.Black){
@@ -290,10 +305,23 @@ fun ClearChatMessage(
         }
 
     }
-    Text(
-        text = text,
-        inlineContent = newMap,
-    )
+    Box(modifier = Modifier.combinedClickable(
+        enabled = true,
+        onDoubleClick = {
+            showIcon.value = true
+            doubleClickMessage(twitchChatMessage.displayName?:"")
+        },
+        onClick = {}
+    )){
+        Text(
+            text = text,
+            inlineContent = newMap,
+        )
+        if(showIcon.value){
+            ClearChatDoubleClickSeemsGoodIcon()
+        }
+    }
+
 }
 
 @Composable
@@ -364,5 +392,26 @@ fun ClearChatScrollToBottom(
 
             }
         }
+
+}
+
+@Composable
+fun ClearChatDoubleClickSeemsGoodIcon(){
+
+    val size = remember { Animatable(10F) }
+    LaunchedEffect(true){
+        size.animateTo(40f)
+    }
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(end = 30.dp)){
+        AsyncImage(
+            model = "https://static-cdn.jtvnw.net/emoticons/v2/64138/static/light/1.0",
+            contentDescription = stringResource(R.string.moderator_badge_icon_description),
+            modifier = Modifier
+                .size(size.value.dp)
+                .align(Alignment.CenterEnd)
+        )
+    }
 
 }
