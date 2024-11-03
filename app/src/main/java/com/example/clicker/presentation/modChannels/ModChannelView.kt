@@ -142,6 +142,7 @@ fun ModChannelView(
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
             onNavigate ={
                     destination ->onNavigate(destination)
+                streamViewModel.setImmersiveMode(false)
                         },
             clientId=clientId,
             userId=userId,
