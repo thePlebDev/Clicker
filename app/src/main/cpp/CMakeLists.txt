@@ -28,6 +28,15 @@ add_library(blur_effect SHARED
 
 add_library(cube_code SHARED
         cube_code.cpp)
+
+add_library(camera_stream SHARED
+        camera_stream.cpp)
+
+find_library( camera-lib camera2ndk )
+find_library( media-lib mediandk )
+find_library( android-lib android )
+find_library( gl-lib GLESv2 )
+
 #TODO: I NEED TO ADD THE TARGET LINK LIBRARIES
 add_library(understand_triangle SHARED
         understand_triangle.cpp)
@@ -37,6 +46,13 @@ target_link_libraries(understand_triangle
         log
         EGL
         GLESv2)
+target_link_libraries(camera_stream
+        android
+        log
+        EGL
+        GLESv2
+        ${camera-lib} ${media-lib} ${android-lib} ${gl-lib}
+        )
 
 # add lib dependencies
 target_link_libraries(gl_code
