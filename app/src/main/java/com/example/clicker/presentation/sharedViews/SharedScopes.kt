@@ -113,6 +113,41 @@ class ScaffoldBottomBarScope(
 
         }
     }
+    @Composable
+    fun FourButtonNavigationBottomBarRow(
+        fontSize: TextUnit,
+        horizontalArrangement: Arrangement.Horizontal,
+        firstButton:@Composable IconScope.() -> Unit,
+        secondButton:@Composable IconScope.() -> Unit,
+        thirdButton:@Composable IconScope.() -> Unit,
+        fourthButton:@Composable IconScope.() -> Unit,
+
+        ){
+        val firstButtonScope = remember(){IconScope(iconSize,fontSize)}
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = horizontalArrangement
+        ){
+            with(firstButtonScope){
+                firstButton()
+            }
+
+            with(firstButtonScope){
+                secondButton()
+            }
+            with(firstButtonScope){
+                thirdButton()
+            }
+            with(firstButtonScope){
+                fourthButton()
+            }
+
+
+        }
+    }
 }
 
 /**
