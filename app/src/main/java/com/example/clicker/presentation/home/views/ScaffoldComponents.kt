@@ -39,6 +39,7 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
@@ -158,7 +159,7 @@ import kotlinx.coroutines.launch
                 )
             },
             bottomBar = {
-                TripleButtonNavigationBottomBarRow(
+                FourButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
@@ -196,6 +197,16 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
+                    fourthButton = {
+                        IconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Stream",
+                            imageVector = Icons.Default.Add,
+                            iconContentDescription = "Navigate the stream page",
+                            onClick = {},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
                 )
             },
             drawerContent = {
