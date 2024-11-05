@@ -39,6 +39,11 @@ import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,6 +67,13 @@ class HomeFragment : Fragment() {
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
     private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
     private val searchViewModel: SearchViewModel by activityViewModels()
+
+    private var PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,7 +161,8 @@ class HomeFragment : Fragment() {
                             chatSettingsViewModel=chatSettingsViewModel,
                             streamInfoViewModel=streamInfoViewModel,
                             modViewViewModel=modViewViewModel,
-                            searchViewModel=searchViewModel
+                            searchViewModel=searchViewModel,
+                            permissionCheck = {takePhoto()}
 
                         )
                     }
@@ -201,6 +214,43 @@ class HomeFragment : Fragment() {
         super.onPause()
         Log.d("HomeFragmentLifeCycle","onPause")
     }
+
+
+
+    private val permReqLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions.entries.all {
+                it.value == true
+            }
+            if (granted) {
+                displayCameraFragment()
+            }
+        }
+
+    private fun takePhoto() {
+        activity?.let {
+            if (hasPermissions(activity as Context, PERMISSIONS)) {
+                displayCameraFragment()
+            } else {
+                permReqLauncher.launch(
+                    PERMISSIONS
+                )
+            }
+        }
+    }
+
+    // util method
+    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
+        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun displayCameraFragment() {
+        // open camera fragment
+    }
+
+
+
+    /******END*****************/
 
 
     override fun onResume() {

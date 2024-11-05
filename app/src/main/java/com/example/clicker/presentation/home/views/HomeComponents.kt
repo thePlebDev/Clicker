@@ -108,7 +108,8 @@ import com.example.clicker.util.Response
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
         getTopGames:()->Unit,
-        getPinnedList:()->Unit
+        getPinnedList:()->Unit,
+        permissionCheck:()->Unit,
 
         ){
 
@@ -154,7 +155,8 @@ import com.example.clicker.util.Response
                     lowPowerModeActive=lowPowerModeActive,
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
                     getTopGames={getTopGames()},
-                    getPinnedList={getPinnedList()}
+                    getPinnedList={getPinnedList()},
+                    permissionCheck={permissionCheck()}
 
                 )
 

@@ -87,7 +87,8 @@ fun ValidationView(
     hapticFeedBackError:() ->Unit,
 
     modViewViewModel: ModViewViewModel,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    permissionCheck:()->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -221,7 +222,8 @@ fun ValidationView(
                 }
             }
         },
-        getPinnedList={}
+        getPinnedList={},
+        permissionCheck={permissionCheck()}
 
     )
 
