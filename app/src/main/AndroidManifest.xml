@@ -59,4 +59,5 @@
     <uses-permission android:name="android.permission.CAMERA" android:required="false"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"/>
 
+
 </manifest>

@@ -70,8 +70,7 @@ class HomeFragment : Fragment() {
 
     private var PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.RECORD_AUDIO
         )
 
 
@@ -246,6 +245,7 @@ class HomeFragment : Fragment() {
 
     private fun displayCameraFragment() {
         // open camera fragment
+        //
     }
 
 
