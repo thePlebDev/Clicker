@@ -14,51 +14,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define LOG_TAG "streamLogging"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 
-
-void swap(){
-    // this is a pointer
-    ACameraManager *cameraManager = ACameraManager_create();
-
-    ACameraIdList *cameraIds = nullptr;
-    ACameraManager_getCameraIdList(cameraManager, &cameraIds);
-
-
-
-    for (int i = 0; i < cameraIds->numCameras; ++i)
-    {
-        const char* id = cameraIds->cameraIds[i];
-
-        ACameraMetadata* metadataObj;
-        ACameraManager_getCameraCharacteristics(cameraManager, id, &metadataObj);
-
-        int32_t count = 0;
-        const uint32_t* tags = nullptr;
-        ACameraMetadata_getAllTags(metadataObj, &count, &tags);
-
-        for (int tagIdx = 0; tagIdx < count; ++tagIdx)
-        {
-            // We are interested in entry that describes the facing of camera
-            if (ACAMERA_LENS_FACING == tags[tagIdx]) {
-                ACameraMetadata_const_entry lensInfo = { 0 };
-                ACameraMetadata_getConstEntry(metadataObj, tags[tagIdx], &lensInfo);
-
-                auto facing = static_cast<acamera_metadata_enum_android_lens_facing_t>(
-                        lensInfo.data.u8[0]);
-
-                // Found a back-facing camera
-                if (facing == ACAMERA_LENS_FACING_BACK)
-                //...
-
-                break;
-            }
-         //   ...
-        }
-
-        ACameraMetadata_free(metadataObj);
-    }
-    ACameraManager_deleteCameraIdList(cameraIds);
-    ACameraManager_delete(cameraManager);
-
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_notifyCameraPermission(JNIEnv *env,
+                                                                                     jobject thiz,
+                                                                                     jboolean granted) {
+    LOGI ("PERMISSION IS ------> %hhu",granted);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_TakePhoto(JNIEnv *env, jobject thiz) {
+    //this is what should run when they try to take the actual photo
 }

@@ -44,6 +44,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -67,6 +68,7 @@ class HomeFragment : Fragment() {
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
     private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
     private val searchViewModel: SearchViewModel by activityViewModels()
+    private val ndkCamera = CameraStreamNDK()
 
     private var PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
@@ -245,7 +247,8 @@ class HomeFragment : Fragment() {
 
     private fun displayCameraFragment() {
         // open camera fragment
-        //
+        // THis is where the request for the native methods are to be made
+        ndkCamera.notifyCameraPermission(true)
     }
 
 
