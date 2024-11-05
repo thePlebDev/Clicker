@@ -134,7 +134,8 @@ import kotlinx.coroutines.launch
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
         getTopGames:()->Unit,
-        getPinnedList:()->Unit
+        getPinnedList:()->Unit,
+        permissionCheck:()->Unit,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -203,7 +204,9 @@ import kotlinx.coroutines.launch
                             text = "Stream",
                             imageVector = Icons.Default.Add,
                             iconContentDescription = "Navigate the stream page",
-                            onClick = {},
+                            onClick = {
+                                      permissionCheck()
+                            },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
