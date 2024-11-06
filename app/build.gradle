@@ -33,9 +33,18 @@ android {
         unitTests.returnDefaultValues = true
         
     }
+    defaultConfig {
+        // Ensure the NDK is set up properly
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11"
+            }
+        }
+    }
     //todo: this is just testing
     externalNativeBuild {
         cmake {
+
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
