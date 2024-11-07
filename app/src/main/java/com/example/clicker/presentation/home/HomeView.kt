@@ -237,15 +237,15 @@ fun ValidationView(
         },
         getPinnedList={},
         permissionCheck={
-            isBoxVisible = true
+          //  isBoxVisible = true
             permissionCheck()
         }
 
     )
-    AnimatedFullScreenBox(
-        isVisible = isBoxVisible,
-        close = {isBoxVisible = false}
-    )
+//    AnimatedFullScreenBox(
+//        isVisible = isBoxVisible,
+//        close = {isBoxVisible = false}
+//    )
 
 
 

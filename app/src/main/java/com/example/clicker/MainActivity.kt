@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.clicker.farmingGame.GL2JNIView
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         // Registers BroadcastReceiver to track network connection changes.
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         installSplashScreen()
+
 
         supportActionBar!!.hide()
 //        val testing = NativeLoading()
