@@ -166,5 +166,5 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jboolean granted) {
-    // TODO: implement notifyCameraPermission()
+
 }
