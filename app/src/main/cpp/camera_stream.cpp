@@ -9,6 +9,9 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <media/NdkImageReader.h>
+#include <android_native_app_glue.h>
+#include <functional>
+#include <thread>
 
 
 
@@ -26,145 +29,92 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-int GetDeviceRotation(ANativeActivity* activity) {
-    JNIEnv* env;
-    activity->vm->AttachCurrentThread(&env, NULL);
-
-    jobject activityObj = env->NewGlobalRef(activity->clazz);
-    jclass clz = env->GetObjectClass(activityObj);
-
-    // Assuming you have a method getRotationDegree() in your Java code that returns the rotation as an int
-    jmethodID methodID = env->GetMethodID(clz, "getRotationDegree", "()I");
-    jint rotation = env->CallIntMethod(activityObj, methodID);
-
-    env->DeleteGlobalRef(activityObj);
-    activity->vm->DetachCurrentThread();
-
-    return rotation;
-}
-ACameraDevice *cameraDevice = nullptr;
-static void onDisconnected(void* context, ACameraDevice* device)
-{
-    // ...
-}
-
-static void onError(void* context, ACameraDevice* device, int error)
-{
-    // ...
-}
-/**********START OF THE NEW***********/
-//AImageReader* reader_;
-
-
-
 /**
- * Handle Android System APP_CMD_INIT_WINDOW message
- *   Request camera persmission from Java side
- *   Create camera object if camera has been granted
+ * The main function rendering a frame. In our case, it is yuv to RGBA8888
+ * converter
  */
-int rotation_;
-//int GetDisplayRotation() {
-//    ASSERT(app_, "Application is not initialized");
-//
-//    JNIEnv *env;
-//    ANativeActivity *activity = app_->activity;
-//    activity->vm->GetEnv((void **)&env, JNI_VERSION_1_6);
-//
-//    activity->vm->AttachCurrentThread(&env, NULL);
-//
-//    jobject activityObj = env->NewGlobalRef(activity->clazz);
-//    jclass clz = env->GetObjectClass(activityObj);
-//    jint newOrientation = env->CallIntMethod(
-//            activityObj, env->GetMethodID(clz, "getRotationDegree", "()I"));
-//    env->DeleteGlobalRef(activityObj);
-//
-//    activity->vm->DetachCurrentThread();
-//    return newOrientation;
-//}
-void OnAppInitWindow(void) {
-//    if (!cameraGranted_) { //this should be used to handle when the permissions are not granted. However, we will deal with this later. only happy path right now
-//        // Not permitted to use camera yet, ask(again) and defer other events
-//        RequestCameraPermission();
+void drawFrame(void) {
+//    if (!cameraReady_ || !yuvReader_) return;
+//    AImage* image = yuvReader_->GetNextImage();
+//    if (!image) {
 //        return;
 //    }
-//todo: need to get the display rotation()
-  //  rotation_ = GetDisplayRotation();
-
-
+//
+//    ANativeWindow_acquire(app_->window);
+//    ANativeWindow_Buffer buf;
+//    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
+//        yuvReader_->DeleteImage(image);
+//        return;
+//    }
+//
+//    yuvReader_->DisplayImage(&buf, image);
+//    ANativeWindow_unlockAndPost(app_->window);
+//    ANativeWindow_release(app_->window);
 }
 
 
+//todo: this will run instead of android_main if implemented
+//extern "C" void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize) {
+//    // Initialization code for NativeActivity
+//    LOGI("NativeActivity created");
+//
+//    // Set up app state, attach events, etc.
+//    // ...
+//
+//}
+static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
 
+    switch (cmd) {
+        case APP_CMD_INIT_WINDOW:
+            LOGI("NativeActivity APP_CMD_INIT_WINDOW");
 
-
-/**********END OF THE NEW***********/
-
-extern "C" void android_main(struct android_app* state) {
-    LOGI ("THE FUNCTION IS ------> %s", "CALLED");
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
-//    LOGI ("PERMISSION IS ------> %hhu", granted);
-//    LOGI("PERMISSION IS ------> %hhu", granted);
-
-    ACameraManager *camManager = ACameraManager_create();
-    ACameraIdList *cameraIds = nullptr;
-
-    // Get the list of camera IDs
-    ACameraManager_getCameraIdList(camManager, &cameraIds);
-
-    if (cameraIds->numCameras == 0) {
-        LOGI("No cameras available");
-        ACameraManager_delete(camManager);
-        return;
-    }
-
-    for (int i = 0; i < cameraIds->numCameras; ++i) {
-        const char *id = cameraIds->cameraIds[i];
-
-        // Get camera characteristics
-        ACameraMetadata *metadataObj;
-        ACameraManager_getCameraCharacteristics(camManager, id, &metadataObj);
-
-        // Work with metadata here
-        // ...
-
-        ACameraMetadata_free(metadataObj);
-
-        // Define the camera device callbacks
-        static ACameraDevice_StateCallbacks cameraDeviceCallbacks = {
-                .context = nullptr,
-                .onDisconnected = onDisconnected,
-                .onError = onError,
-        };
-
-        // Open the camera using the camera ID
-        ACameraManager_openCamera(camManager, id, &cameraDeviceCallbacks, &cameraDevice);
-        if (cameraDevice != nullptr) {
-            LOGI("Successfully opened camera: %s", id);
             break;
-        } else {
-            LOGI("Failed to open camera: %s", id);
-        }
+        case APP_CMD_TERM_WINDOW:
+            LOGI("NativeActivity APP_CMD_TERM_WINDOW");
+            break;
+        case APP_CMD_CONFIG_CHANGED:
+            LOGI("NativeActivity APP_CMD_CONFIG_CHANGED");
+
+            break;
+        case APP_CMD_LOST_FOCUS:
+            LOGI("NativeActivity APP_CMD_LOST_FOCUS");
+            break;
     }
-    // Clean up
-
-
-    ACameraManager_delete(camManager);
-    ACameraManager_deleteCameraIdList(cameraIds);
-
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_TakePhoto(JNIEnv *env, jobject thiz) {
-    //this is what should run when they try to take the actual photo
+
+
+extern "C" void android_main(struct android_app* app) {
+    LOGI("NativeActivity ANDROID_MAIN");
+    app->onAppCmd = [](android_app* app, int32_t cmd) {
+        if (cmd == APP_CMD_INIT_WINDOW) {
+            __android_log_print(ANDROID_LOG_INFO, "NativeActivity", "Window initialized.");
+        }
+    };
+
+    while (true) {
+        int events;
+        android_poll_source* source;
+
+        // Process events
+        while (ALooper_pollAll(0, nullptr, &events, (void**)&source) >= 0) {
+            if (source != nullptr) {
+                source->process(app, source);
+            }
+            if (app->destroyRequested != 0) {
+                return;
+            }
+        }
+        // Your main loop work here
+    }
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jboolean granted) {
+//    std::thread permissionHandler();
+//    permissionHandler().detach();
 
+    LOGI("PERMISSION GRANTED");
 }

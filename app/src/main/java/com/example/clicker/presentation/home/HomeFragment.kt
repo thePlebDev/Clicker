@@ -82,7 +82,7 @@ class HomeFragment : Fragment(){
         super.onCreate(savedInstanceState)
         val currentOrientation = getResources().getConfiguration().orientation;
         Log.d("HomeFragmentLifeCycle","onCreate")
-        TestingTHings()
+
     }
 
 
@@ -168,12 +168,9 @@ class HomeFragment : Fragment(){
                             searchViewModel=searchViewModel,
                             permissionCheck = {
                                // takePhoto()
-                                val intent = Intent(activity, CameraNDKNativeActivity::class.java)
-
-                                // Optionally, you can pass data to the activity using Intent extras
+                                val intent = Intent(requireActivity(), CameraNDKNativeActivity::class.java)
 
 
-                                // Start the activity
                                 startActivity(intent)
                             }
 
@@ -337,6 +334,3 @@ class HomeFragment : Fragment(){
 
 }
 
-class TestingTHings() : NativeActivity() {
-
-}
