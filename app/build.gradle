@@ -37,8 +37,9 @@ android {
         // Ensure the NDK is set up properly
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++11"
+                arguments '-DANDROID_STL=c++_static'
             }
+
         }
     }
     //todo: this is just testing

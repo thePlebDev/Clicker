@@ -16,6 +16,12 @@ cmake_minimum_required(VERSION 3.4.1)
 #Add a library to the project using the specified source files.
 add_library(gl_code SHARED
         gl_code.cpp)
+# build native_app_glue as a static lib
+include_directories(${ANDROID_NDK}/sources/android/native_app_glue
+        ${COMMON_SOURCE_DIR})
+
+add_library(app_glue STATIC
+        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
 add_library(my_class SHARED
         my_class.cpp)
@@ -51,6 +57,8 @@ target_link_libraries(camera_stream
         log
         EGL
         GLESv2
+        m
+        app_glue
         ${camera-lib} ${media-lib} ${android-lib} ${gl-lib}
         )
 

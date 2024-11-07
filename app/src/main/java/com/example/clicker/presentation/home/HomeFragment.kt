@@ -40,10 +40,12 @@ import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 import android.Manifest
+import android.app.NativeActivity
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import com.example.clicker.cameraNDK.CameraNDKNativeActivity
 import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
 
 // TODO: Rename parameter arguments, choose names that match
@@ -55,7 +57,7 @@ import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
  * create an instance of this fragment.
  */
 @AndroidEntryPoint
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(){
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -68,7 +70,7 @@ class HomeFragment : Fragment() {
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
     private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
     private val searchViewModel: SearchViewModel by activityViewModels()
-    private val ndkCamera = CameraStreamNDK()
+//    private val ndkCamera = CameraStreamNDK()
 
     private var PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
@@ -80,6 +82,7 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val currentOrientation = getResources().getConfiguration().orientation;
         Log.d("HomeFragmentLifeCycle","onCreate")
+        TestingTHings()
     }
 
 
@@ -163,7 +166,16 @@ class HomeFragment : Fragment() {
                             streamInfoViewModel=streamInfoViewModel,
                             modViewViewModel=modViewViewModel,
                             searchViewModel=searchViewModel,
-                            permissionCheck = {takePhoto()}
+                            permissionCheck = {
+                               // takePhoto()
+                                val intent = Intent(activity, CameraNDKNativeActivity::class.java)
+
+                                // Optionally, you can pass data to the activity using Intent extras
+
+
+                                // Start the activity
+                                startActivity(intent)
+                            }
 
                         )
                     }
@@ -248,7 +260,7 @@ class HomeFragment : Fragment() {
     private fun displayCameraFragment() {
         // open camera fragment
         // THis is where the request for the native methods are to be made
-        ndkCamera.notifyCameraPermission(true)
+        //ndkCamera.notifyCameraPermission(true)
     }
 
 
@@ -322,5 +334,9 @@ class HomeFragment : Fragment() {
             }
         )
     }
+
+}
+
+class TestingTHings() : NativeActivity() {
 
 }
