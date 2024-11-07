@@ -6,6 +6,11 @@
 #include <camera/NdkCameraMetadataTags.h>
 #include <camera/NdkCameraMetadata.h>
 #include <android/native_activity.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+#include <media/NdkImageReader.h>
+
+
 
 
 
@@ -46,6 +51,56 @@ static void onDisconnected(void* context, ACameraDevice* device)
 static void onError(void* context, ACameraDevice* device, int error)
 {
     // ...
+}
+/**********START OF THE NEW***********/
+//AImageReader* reader_;
+
+
+
+/**
+ * Handle Android System APP_CMD_INIT_WINDOW message
+ *   Request camera persmission from Java side
+ *   Create camera object if camera has been granted
+ */
+int rotation_;
+//int GetDisplayRotation() {
+//    ASSERT(app_, "Application is not initialized");
+//
+//    JNIEnv *env;
+//    ANativeActivity *activity = app_->activity;
+//    activity->vm->GetEnv((void **)&env, JNI_VERSION_1_6);
+//
+//    activity->vm->AttachCurrentThread(&env, NULL);
+//
+//    jobject activityObj = env->NewGlobalRef(activity->clazz);
+//    jclass clz = env->GetObjectClass(activityObj);
+//    jint newOrientation = env->CallIntMethod(
+//            activityObj, env->GetMethodID(clz, "getRotationDegree", "()I"));
+//    env->DeleteGlobalRef(activityObj);
+//
+//    activity->vm->DetachCurrentThread();
+//    return newOrientation;
+//}
+void OnAppInitWindow(void) {
+//    if (!cameraGranted_) { //this should be used to handle when the permissions are not granted. However, we will deal with this later. only happy path right now
+//        // Not permitted to use camera yet, ask(again) and defer other events
+//        RequestCameraPermission();
+//        return;
+//    }
+//todo: need to get the display rotation()
+  //  rotation_ = GetDisplayRotation();
+
+
+}
+
+
+
+
+
+/**********END OF THE NEW***********/
+
+extern "C" void android_main(struct android_app* state) {
+    LOGI ("THE FUNCTION IS ------> %s", "CALLED");
 }
 
 extern "C"
@@ -89,15 +144,27 @@ Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_notifyCameraPermis
         ACameraManager_openCamera(camManager, id, &cameraDeviceCallbacks, &cameraDevice);
         if (cameraDevice != nullptr) {
             LOGI("Successfully opened camera: %s", id);
+            break;
         } else {
             LOGI("Failed to open camera: %s", id);
         }
     }
     // Clean up
+
+
     ACameraManager_delete(camManager);
+    ACameraManager_deleteCameraIdList(cameraIds);
+
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_nativeLibraryClasses_CameraStreamNDK_TakePhoto(JNIEnv *env, jobject thiz) {
     //this is what should run when they try to take the actual photo
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,
+                                                                                  jobject thiz,
+                                                                                  jboolean granted) {
+    // TODO: implement notifyCameraPermission()
 }
