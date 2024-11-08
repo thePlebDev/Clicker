@@ -30,27 +30,47 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 /**
- * The main function rendering a frame. In our case, it is yuv to RGBA8888
- * converter
+ * basic CameraAppEngine
  */
-void drawFrame(void) {
-//    if (!cameraReady_ || !yuvReader_) return;
-//    AImage* image = yuvReader_->GetNextImage();
-//    if (!image) {
-//        return;
-//    }
-//
-//    ANativeWindow_acquire(app_->window);
-//    ANativeWindow_Buffer buf;
-//    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
-//        yuvReader_->DeleteImage(image);
-//        return;
-//    }
-//
-//    yuvReader_->DisplayImage(&buf, image);
-//    ANativeWindow_unlockAndPost(app_->window);
-//    ANativeWindow_release(app_->window);
+class CameraEngine {
+    struct android_app* app_;
+public:
+    explicit CameraEngine(android_app *app);// Declare the constructor
+
+    ~CameraEngine(); // Declare the destructor
+
+
+    // Interfaces to android application framework
+    void DrawFrame(void);
+};
+
+CameraEngine::CameraEngine(android_app* app)
+        :app_(app) //to avoid the automatic default constructor creation
+           {
+
 }
+
+CameraEngine::~CameraEngine() {
+    //cameraReady_ = false;
+    //  DeleteCamera();
+
+}
+
+void CameraEngine::DrawFrame(void) {
+
+}
+
+
+/*
+ * SampleEngine global object
+ */
+static CameraEngine* pEngineObj = nullptr;
+
+
+
+
+
+
 
 
 //todo: this will run instead of android_main if implemented
@@ -65,7 +85,7 @@ void drawFrame(void) {
 static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
 
     switch (cmd) {
-        case APP_CMD_INIT_WINDOW:
+        case APP_CMD_INIT_WINDOW: //Called when the NativeActivity is created
             LOGI("NativeActivity APP_CMD_INIT_WINDOW");
 
             break;
@@ -82,30 +102,34 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
     }
 }
 
-
-extern "C" void android_main(struct android_app* app) {
+/**
+ * Called when the NativeActivity is created
+ * */
+extern "C" void android_main(struct android_app* state) {
     LOGI("NativeActivity ANDROID_MAIN");
-    app->onAppCmd = [](android_app* app, int32_t cmd) {
-        if (cmd == APP_CMD_INIT_WINDOW) {
-            __android_log_print(ANDROID_LOG_INFO, "NativeActivity", "Window initialized.");
-        }
-    };
+    CameraEngine engine(state);
+    pEngineObj = &engine;
 
-    while (true) {
-        int events;
-        android_poll_source* source;
 
-        // Process events
-        while (ALooper_pollAll(0, nullptr, &events, (void**)&source) >= 0) {
-            if (source != nullptr) {
-                source->process(app, source);
-            }
-            if (app->destroyRequested != 0) {
-                return;
-            }
+    //state->userData = reinterpret_cast<void*>(&engine);
+    state->onAppCmd = ProcessAndroidCmd;
+//
+//    // loop waiting for stuff to do.
+    while (!state->destroyRequested) {
+        struct android_poll_source* source = nullptr;
+
+        ALooper_pollOnce(0, NULL, nullptr, (void**)&source);
+        if (source != NULL) {
+            source->process(state, source);
         }
-        // Your main loop work here
+        pEngineObj->DrawFrame();
+        //drawFrame(state);
+
     }
+
+    LOGI("CameraEngine thread destroy requested!");
+//    engine.DeleteCamera();
+//    pEngineObj = nullptr;
 }
 
 extern "C"
