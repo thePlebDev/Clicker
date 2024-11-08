@@ -13,6 +13,9 @@
 #include <functional>
 #include <thread>
 
+#include "camera_manager.h"
+#include "camera_engine.h"
+
 
 
 
@@ -29,38 +32,8 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-struct ImageFormat {
-    int32_t width;
-    int32_t height;
-
-    int32_t format;  // Through out this demo, the format is fixed to
-    // YUV_420 format
-};
-/**
- * basic CameraAppEngine
- */
-class CameraEngine {
-    struct android_app* app_;
-    ImageFormat savedNativeWinRes_;
-public:
-    explicit CameraEngine(android_app *app);// Declare the constructor
-
-    ~CameraEngine(); // Declare the destructor
 
 
-    // Interfaces to android application framework
-    void DrawFrame(void);
-    struct android_app* AndroidApp(void) const;
-    void OnAppInitWindow(void);
-
-
-    // Native Window handlers
-    void SaveNativeWinRes(int32_t w, int32_t h, int32_t format);
-
-private:
-    int GetDisplayRotation(void);
-    int rotation_;
-};
 
 CameraEngine::CameraEngine(android_app* app)
         :app_(app) //to avoid the automatic default constructor creation
@@ -104,7 +77,7 @@ void CameraEngine::OnAppInitWindow(void) {
     rotation_ = GetDisplayRotation();
     LOGI("GettingDeviceRotation ---> %d",rotation_);
 
-//    CreateCamera();
+    CreateCamera();
 //    ASSERT(camera_, "CameraCreation Failed");
 //
 //    EnableUI();
@@ -122,20 +95,80 @@ void CameraEngine::OnAppInitWindow(void) {
 int CameraEngine::GetDisplayRotation() {
 
 
-    JNIEnv *env;
-    ANativeActivity *activity = app_->activity;
-    activity->vm->GetEnv((void **)&env, JNI_VERSION_1_6);
+    JNIEnv *env; // access to the JNI functions
+    ANativeActivity *activity = app_->activity; //access to the ANativeActivity
+    activity->vm->GetEnv((void **)&env, JNI_VERSION_1_6); //get hold of the JVM environment context and set env
 
+    //attaches the current thread to the JVM, setting up env as the JNI environment
+    // only threads attached to the JVM can make JNI calls
     activity->vm->AttachCurrentThread(&env, NULL);
 
-    jobject activityObj = env->NewGlobalRef(activity->clazz);
-    jclass clz = env->GetObjectClass(activityObj);
+    jobject activityObj = env->NewGlobalRef(activity->clazz); //getting a reference to the Activity
+    jclass clz = env->GetObjectClass(activityObj); //retrieves the actual class
+    //calls the actual method and stores it newOrientation
     jint newOrientation = env->CallIntMethod(
             activityObj, env->GetMethodID(clz, "getRotationDegree", "()I"));
-    env->DeleteGlobalRef(activityObj);
 
+    //clean up to avoid memory leaks
+    env->DeleteGlobalRef(activityObj);
     activity->vm->DetachCurrentThread();
+
     return newOrientation;
+}
+
+/**
+ * Create a camera object for onboard BACK_FACING camera
+ */
+void CameraEngine::CreateCamera(void) {
+    // Camera needed to be requested at the run-time from Java SDK
+    // if Not granted, do nothing.
+    //this can be implemented later
+//    if (!cameraGranted_ || !app_->window) {
+//        LOGW("Camera Sample requires Full Camera access");
+//        return;
+//    }
+
+    int32_t displayRotation = GetDisplayRotation();
+    rotation_ = displayRotation;
+
+//    camera_ = new NDKCamera();
+//
+//
+//    int32_t facing = 0, angle = 0, imageRotation = 0;
+//    if (camera_->GetSensorOrientation(&facing, &angle)) {
+//        if (facing == ACAMERA_LENS_FACING_FRONT) {
+//            imageRotation = (angle + rotation_) % 360;
+//            imageRotation = (360 - imageRotation) % 360;
+//        } else {
+//            imageRotation = (angle - rotation_ + 360) % 360;
+//        }
+//    }
+//    LOGI("Phone Rotation: %d, Present Rotation Angle: %d", rotation_,
+//         imageRotation);
+//    ImageFormat view{0, 0, 0}, capture{0, 0, 0};
+//    camera_->MatchCaptureSizeRequest(app_->window, &view, &capture);
+//
+//    ASSERT(view.width && view.height, "Could not find supportable resolution");
+//
+//    // Request the necessary nativeWindow to OS
+//    bool portraitNativeWindow =
+//            (savedNativeWinRes_.width < savedNativeWinRes_.height);
+//    ANativeWindow_setBuffersGeometry(
+//            app_->window, portraitNativeWindow ? view.height : view.width,
+//            portraitNativeWindow ? view.width : view.height, WINDOW_FORMAT_RGBA_8888);
+//
+//    yuvReader_ = new ImageReader(&view, AIMAGE_FORMAT_YUV_420_888);
+//    yuvReader_->SetPresentRotation(imageRotation);
+//    jpgReader_ = new ImageReader(&capture, AIMAGE_FORMAT_JPEG);
+//    jpgReader_->SetPresentRotation(imageRotation);
+//    jpgReader_->RegisterCallback(
+//            this, [this](void* ctx, const char* str) -> void {
+//                reinterpret_cast<CameraEngine*>(ctx)->OnPhotoTaken(str);
+//            });
+//
+//    // now we could create session
+//    camera_->CreateSession(yuvReader_->GetNativeWindow(),
+//                           jpgReader_->GetNativeWindow(), imageRotation);
 }
 
 
