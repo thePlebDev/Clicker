@@ -4,11 +4,15 @@ package com.example.clicker.cameraNDK
 import android.Manifest
 import android.app.NativeActivity
 import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.Log
+import android.view.Display
+import android.view.WindowManager
 import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 
 
 class CameraNDKNativeActivity : NativeActivity() {
@@ -39,6 +43,12 @@ class CameraNDKNativeActivity : NativeActivity() {
 
             notifyCameraPermission(true)
         }
+    }
+
+    // get current rotation method
+    fun getRotationDegree(): Int {
+        val defaultDisplay = getSystemService<DisplayManager>()?.getDisplay(Display.DEFAULT_DISPLAY)?.rotation?:0
+        return 90 * defaultDisplay
     }
 
 
