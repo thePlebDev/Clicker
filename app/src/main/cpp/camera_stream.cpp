@@ -31,9 +31,124 @@
 #define LOG_TAG "streamLogging"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+/**
+ * EnumerateCamera()
+ *     Loop through cameras on the system, pick up
+ *     1) back facing one if available
+ *     2) otherwise pick the first one reported to us
+ */
+void NDKCamera::EnumerateCamera() {
+    ACameraIdList* cameraIds = nullptr;
+    ACameraManager_getCameraIdList(cameraMgr_, &cameraIds); //retrieves and stores cameraIds
+//
+    for (int i = 0; i < cameraIds->numCameras; ++i) {
+        const char* id = cameraIds->cameraIds[i];
+        LOGI("CAMERA ID CHECK-----> %8s", id);
+
+        //retrieves and stores cameraIds
+        ACameraMetadata* metadataObj;
+        ACameraManager_getCameraCharacteristics(cameraMgr_, id, &metadataObj);//retrieves and stores metadata
+
+
+        int32_t count = 0;
+        const uint32_t* tags = nullptr;
+        ACameraMetadata_getAllTags(metadataObj, &count, &tags);
+        for (int tagIdx = 0; tagIdx < count; ++tagIdx) {
+            if (ACAMERA_LENS_FACING == tags[tagIdx]) {
+                ACameraMetadata_const_entry lensInfo = {
+                        0,
+                };
+                CALL_METADATA(getConstEntry(metadataObj, tags[tagIdx], &lensInfo));
+                CameraId cam(id);
+                cam.facing_ = static_cast<acamera_metadata_enum_android_lens_facing_t>(
+                        lensInfo.data.u8[0]);
+
+                cam.owner_ = false;
+                cam.device_ = nullptr;
+                cameras_[cam.id_] = cam;
+                if (cam.facing_ == ACAMERA_LENS_FACING_BACK) {
+                    activeCameraId_ = cam.id_;
+                }
+                break;
+            }
+        }
+        ACameraMetadata_free(metadataObj);
+    }
+
+//    ASSERT(cameras_.size(), "No Camera Available on the device");
+    if (activeCameraId_.length() == 0) {
+        // if no back facing camera found, pick up the first one to use...
+        activeCameraId_ = cameras_.begin()->second.id_;
+    }
+    ACameraManager_deleteCameraIdList(cameraIds);
+}
+
+
+NDKCamera::NDKCamera()
+        :cameraMgr_(nullptr),
+         activeCameraId_(""),
+         cameraFacing_(ACAMERA_LENS_FACING_BACK),
+         cameraOrientation_(0){
 
 
 
+    cameraMgr_ = ACameraManager_create();
+
+    // Pick up a back-facing camera to preview
+    EnumerateCamera();
+
+    // Create back facing camera device
+//    CALL_MGR(openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
+//                        &cameras_[activeCameraId_].device_));
+
+
+
+}
+
+NDKCamera::~NDKCamera() {
+    //cameras_.clear();
+    if (cameraMgr_) {
+        //CALL_MGR(unregisterAvailabilityCallback(cameraMgr_, GetManagerListener()));
+        ACameraManager_delete(cameraMgr_);
+        cameraMgr_ = nullptr;
+    }
+}
+/**
+ * GetSensorOrientation()
+ *     Retrieve current sensor orientation regarding to the phone device
+ * orientation
+ *     SensorOrientation is NOT settable.
+ */
+bool NDKCamera::GetSensorOrientation(int32_t* facing, int32_t* angle) {
+    if (!cameraMgr_) {
+        return false;
+    }
+
+//    ACameraMetadata* metadataObj;
+//    ACameraMetadata_const_entry face, orientation;
+//    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
+//                                      &metadataObj));
+//
+//    cameraFacing_ = static_cast<int32_t>(face.data.u8[0]);
+//
+//
+//
+//    LOGI("Current SENSOR_ORIENTATION-----> %8d", orientation.data.i32[0]);
+//
+//
+//    ACameraMetadata_free(metadataObj);
+//    cameraOrientation_ = orientation.data.i32[0];
+////
+//    if (facing) *facing = cameraFacing_;
+//    if (angle) *angle = cameraOrientation_;
+    return true;
+}
+
+
+/**
+ *
+ * end of CAMERA_MANAGER
+ * */
 
 CameraEngine::CameraEngine(android_app* app)
         :app_(app) //to avoid the automatic default constructor creation
@@ -116,10 +231,12 @@ int CameraEngine::GetDisplayRotation() {
     return newOrientation;
 }
 
+
 /**
  * Create a camera object for onboard BACK_FACING camera
  */
 void CameraEngine::CreateCamera(void) {
+    ACameraMetadata* metadataObj;
     // Camera needed to be requested at the run-time from Java SDK
     // if Not granted, do nothing.
     //this can be implemented later
@@ -131,18 +248,19 @@ void CameraEngine::CreateCamera(void) {
     int32_t displayRotation = GetDisplayRotation();
     rotation_ = displayRotation;
 
-//    camera_ = new NDKCamera();
+    camera_ = new NDKCamera();
+
 //
-//
-//    int32_t facing = 0, angle = 0, imageRotation = 0;
-//    if (camera_->GetSensorOrientation(&facing, &angle)) {
+    int32_t facing = 0, angle = 0, imageRotation = 0;
+
+    if (camera_->GetSensorOrientation(&facing, &angle)) {
 //        if (facing == ACAMERA_LENS_FACING_FRONT) {
 //            imageRotation = (angle + rotation_) % 360;
 //            imageRotation = (360 - imageRotation) % 360;
 //        } else {
 //            imageRotation = (angle - rotation_ + 360) % 360;
 //        }
-//    }
+    }
 //    LOGI("Phone Rotation: %d, Present Rotation Angle: %d", rotation_,
 //         imageRotation);
 //    ImageFormat view{0, 0, 0}, capture{0, 0, 0};

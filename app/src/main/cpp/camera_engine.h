@@ -7,6 +7,7 @@
 
 #include <android/native_window.h>
 #include <android_native_app_glue.h>
+#include "camera_manager.h"
 
 #include <functional>
 #include <thread>
