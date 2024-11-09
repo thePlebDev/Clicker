@@ -32,6 +32,8 @@ private:
     std::string activeCameraId_;
     uint32_t cameraFacing_;
     uint32_t cameraOrientation_;
+    ACameraDevice_stateCallbacks* GetDeviceListener();
+
 
 public:
     NDKCamera();
@@ -39,6 +41,9 @@ public:
     void EnumerateCamera(void);
 //
     bool GetSensorOrientation(int32_t* facing, int32_t* angle);
+
+    void OnDeviceState(ACameraDevice* dev);
+    void OnDeviceError(ACameraDevice* dev, int err);
 
 };
 // helper classes to hold enumerated camera

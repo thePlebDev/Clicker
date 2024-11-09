@@ -45,20 +45,24 @@ void NDKCamera::EnumerateCamera() {
         const char* id = cameraIds->cameraIds[i];
         LOGI("CAMERA ID CHECK-----> %8s", id);
 
-        //retrieves and stores cameraIds
+
+        //retrieves and stores metadata
         ACameraMetadata* metadataObj;
-        ACameraManager_getCameraCharacteristics(cameraMgr_, id, &metadataObj);//retrieves and stores metadata
+        ACameraManager_getCameraCharacteristics(cameraMgr_, id, &metadataObj);
 
 
         int32_t count = 0;
         const uint32_t* tags = nullptr;
+        //List all the entry tags in input ACameraMetadata and stores in tags.
         ACameraMetadata_getAllTags(metadataObj, &count, &tags);
         for (int tagIdx = 0; tagIdx < count; ++tagIdx) {
             if (ACAMERA_LENS_FACING == tags[tagIdx]) {
                 ACameraMetadata_const_entry lensInfo = {
                         0,
                 };
-                CALL_METADATA(getConstEntry(metadataObj, tags[tagIdx], &lensInfo));
+                //Get a metadata entry from an input ACameraMetadata.
+                ACameraMetadata_getConstEntry(metadataObj, tags[tagIdx], &lensInfo);
+                //Storing camera information:
                 CameraId cam(id);
                 cam.facing_ = static_cast<acamera_metadata_enum_android_lens_facing_t>(
                         lensInfo.data.u8[0]);
@@ -84,6 +88,69 @@ void NDKCamera::EnumerateCamera() {
 }
 
 
+/*
+ * CameraDevice callbacks
+ */
+void OnDeviceStateChanges(void* ctx, ACameraDevice* dev) {
+    reinterpret_cast<NDKCamera*>(ctx)->OnDeviceState(dev);
+}
+
+void OnDeviceErrorChanges(void* ctx, ACameraDevice* dev, int err) {
+    reinterpret_cast<NDKCamera*>(ctx)->OnDeviceError(dev, err);
+}
+ACameraDevice_stateCallbacks* NDKCamera::GetDeviceListener() {
+    static ACameraDevice_stateCallbacks cameraDeviceListener = {
+            .context = this,
+            .onDisconnected = ::OnDeviceStateChanges,
+            .onError = ::OnDeviceErrorChanges,
+    };
+    return &cameraDeviceListener;
+}
+
+/**
+ * Handle Camera DeviceStateChanges msg, notify device is disconnected
+ * simply close the camera
+ */
+void NDKCamera::OnDeviceState(ACameraDevice* dev) {
+    std::string id(ACameraDevice_getId(dev));
+    LOGI("device %s is disconnected", id.c_str());
+
+    cameras_[id].available_ = false;
+    ACameraDevice_close(cameras_[id].device_);
+    cameras_.erase(id);
+}
+/**
+ * Handles Camera's deviceErrorChanges message, no action;
+ * mainly debugging purpose
+ *
+ *
+ */
+void NDKCamera::OnDeviceError(ACameraDevice* dev, int err) {
+    std::string id(ACameraDevice_getId(dev));
+
+    LOGI("CameraDevice %s is in error %#x", id.c_str(), err);
+   // PrintCameraDeviceError(err);
+
+    CameraId& cam = cameras_[id];
+
+    switch (err) {
+        case ERROR_CAMERA_IN_USE:
+            cam.available_ = false;
+            cam.owner_ = false;
+            break;
+        case ERROR_CAMERA_SERVICE:
+        case ERROR_CAMERA_DEVICE:
+        case ERROR_CAMERA_DISABLED:
+        case ERROR_MAX_CAMERAS_IN_USE:
+            cam.available_ = false;
+            cam.owner_ = false;
+            break;
+        default:
+            LOGI("Unknown Camera Device Error: %#x", err);
+    }
+}
+
+
 NDKCamera::NDKCamera()
         :cameraMgr_(nullptr),
          activeCameraId_(""),
@@ -98,8 +165,8 @@ NDKCamera::NDKCamera()
     EnumerateCamera();
 
     // Create back facing camera device
-//    CALL_MGR(openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
-//                        &cameras_[activeCameraId_].device_));
+   ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
+                        &cameras_[activeCameraId_].device_);
 
 
 
