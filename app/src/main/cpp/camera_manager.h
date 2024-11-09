@@ -33,6 +33,8 @@ private:
     uint32_t cameraFacing_;
     uint32_t cameraOrientation_;
     ACameraDevice_stateCallbacks* GetDeviceListener();
+    ACameraManager_AvailabilityCallbacks* GetManagerListener();
+    volatile bool valid_;
 
 
 public:
@@ -44,6 +46,7 @@ public:
 
     void OnDeviceState(ACameraDevice* dev);
     void OnDeviceError(ACameraDevice* dev, int err);
+    void OnCameraStatusChanged(const char* id, bool available);
 
 };
 // helper classes to hold enumerated camera
