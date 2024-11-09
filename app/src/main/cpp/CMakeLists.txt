@@ -61,7 +61,18 @@ target_link_libraries(understand_triangle
         EGL
         GLESv2)
 
+#This got rid of the UI errors I was having with the types inside of camera_manager.cpp
+add_library(camera_manager SHARED
+        camera_manager.cpp)
+
+target_link_libraries(camera_manager
+        android
+        log
+        EGL
+        GLESv2)
+
 target_link_libraries(camera_stream
+        ${CMAKE_CURRENT_SOURCE_DIR}/camera_manager.cpp
         android
         log
         EGL
