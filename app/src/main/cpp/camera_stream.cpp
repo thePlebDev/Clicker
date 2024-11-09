@@ -269,28 +269,34 @@ NDKCamera::~NDKCamera() {
  * orientation
  *     SensorOrientation is NOT settable.
  */
-bool NDKCamera::GetSensorOrientation(int32_t* facing, int32_t* angle) {
+bool NDKCamera::GetSensorOrientation(int32_t* facing, int32_t* angle) { //working on this right now
     if (!cameraMgr_) {
         return false;
     }
 
-//    ACameraMetadata* metadataObj;
-//    ACameraMetadata_const_entry face, orientation;
-//    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
-//                                      &metadataObj));
+    ACameraMetadata* metadataObj;
+    ACameraMetadata_const_entry face, orientation;
+
+    //Query the capabilities of a camera device.
+    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
+                                      &metadataObj));
+    CALL_METADATA(
+            getConstEntry(metadataObj, ACAMERA_SENSOR_ORIENTATION, &orientation)
+            );
+
+    cameraFacing_ = static_cast<int32_t>(face.data.u8[0]);
 //
-//    cameraFacing_ = static_cast<int32_t>(face.data.u8[0]);
 //
 //
+    LOGI("Current SENSOR_ORIENTATION-----> %8d", orientation.data.i32[0]);
+    LOGI("Current SENSOR_ORIENTATION cameraFacing_-----> %8d", cameraFacing_);
 //
-//    LOGI("Current SENSOR_ORIENTATION-----> %8d", orientation.data.i32[0]);
-//
-//
-//    ACameraMetadata_free(metadataObj);
-//    cameraOrientation_ = orientation.data.i32[0];
+
+    ACameraMetadata_free(metadataObj); // to free the memory of the output characteristics.
+    cameraOrientation_ = orientation.data.i32[0];
 ////
-//    if (facing) *facing = cameraFacing_;
-//    if (angle) *angle = cameraOrientation_;
+    if (facing) *facing = cameraFacing_;
+    if (angle) *angle = cameraOrientation_;
     return true;
 }
 
@@ -340,14 +346,13 @@ void CameraEngine::OnAppInitWindow(void) {
 //    }
 
     rotation_ = GetDisplayRotation();
-    LOGI("GettingDeviceRotation ---> %d",rotation_);
 
-    CreateCamera();
-//    ASSERT(camera_, "CameraCreation Failed");
-//
+    CreateCamera(); // working on this section
+
+
 //    EnableUI();
-//
-//    // NativeActivity end is ready to display, start pulling images
+
+    // NativeActivity end is ready to display, start pulling images
 //    cameraReady_ = true;
 //    camera_->StartPreview(true);
 }
@@ -398,8 +403,7 @@ void CameraEngine::CreateCamera(void) {
     int32_t displayRotation = GetDisplayRotation();
     rotation_ = displayRotation;
 
-    camera_ = new NDKCamera(); //so we are working on this section right now
-
+    camera_ = new NDKCamera();
 //
     int32_t facing = 0, angle = 0, imageRotation = 0;
 
