@@ -87,7 +87,9 @@ void NDKCamera::EnumerateCamera() {
     ACameraManager_deleteCameraIdList(cameraIds);
 }
 
-
+/**
+ * ---------------------------------------- START OF LISTENERS ----------------------------------------
+ * */
 /*
  * CameraDevice callbacks
  */
@@ -98,6 +100,30 @@ void OnDeviceStateChanges(void* ctx, ACameraDevice* dev) {
 void OnDeviceErrorChanges(void* ctx, ACameraDevice* dev, int err) {
     reinterpret_cast<NDKCamera*>(ctx)->OnDeviceError(dev, err);
 }
+/**
+ * OnCameraStatusChanged()
+ *  handles Callback from ACameraManager
+ */
+void NDKCamera::OnCameraStatusChanged(const char* id, bool available) {
+    if (valid_) {
+        cameras_[std::string(id)].available_ = available ? true : false;
+    }
+}
+
+/*
+ * Camera Manager Listener object
+ */
+void OnCameraAvailable(void* ctx, const char* id) {
+    reinterpret_cast<NDKCamera*>(ctx)->OnCameraStatusChanged(id, true);
+}
+void OnCameraUnavailable(void* ctx, const char* id) {
+    reinterpret_cast<NDKCamera*>(ctx)->OnCameraStatusChanged(id, false);
+}
+
+/**
+ * ---------------------------------------- END OF LISTENERS ----------------------------------------
+ * */
+
 ACameraDevice_stateCallbacks* NDKCamera::GetDeviceListener() {
     static ACameraDevice_stateCallbacks cameraDeviceListener = {
             .context = this,
@@ -149,6 +175,19 @@ void NDKCamera::OnDeviceError(ACameraDevice* dev, int err) {
             LOGI("Unknown Camera Device Error: %#x", err);
     }
 }
+/**
+ * Construct a camera manager listener on the fly and return to caller
+ *
+ * @return ACameraManager_AvailabilityCallback
+ */
+ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
+    static ACameraManager_AvailabilityCallbacks cameraMgrListener = {
+            .context = this,
+            .onCameraAvailable = ::OnCameraAvailable,
+            .onCameraUnavailable = ::OnCameraUnavailable,
+    };
+    return &cameraMgrListener;
+}
 
 
 NDKCamera::NDKCamera()
@@ -167,6 +206,9 @@ NDKCamera::NDKCamera()
     // Create back facing camera device
    ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
                         &cameras_[activeCameraId_].device_);
+
+   //Register camera availability callbacks.
+    ACameraManager_registerAvailabilityCallback(cameraMgr_, GetManagerListener());
 
 
 
@@ -315,7 +357,7 @@ void CameraEngine::CreateCamera(void) {
     int32_t displayRotation = GetDisplayRotation();
     rotation_ = displayRotation;
 
-    camera_ = new NDKCamera();
+    camera_ = new NDKCamera(); //so we are working on this section right now
 
 //
     int32_t facing = 0, angle = 0, imageRotation = 0;
