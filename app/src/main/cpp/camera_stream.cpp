@@ -195,6 +195,7 @@ NDKCamera::NDKCamera()
         :cameraMgr_(nullptr),
          activeCameraId_(""),
          cameraFacing_(ACAMERA_LENS_FACING_BACK),
+         captureSessionState_(CaptureSessionState::MAX_STATE),
          cameraOrientation_(0){
 
 
@@ -486,6 +487,8 @@ bool NDKCamera::MatchCaptureSizeRequest(ANativeWindow* display,
     resCap->format = AIMAGE_FORMAT_JPEG;
     return foundIt;
 }
+
+
 /**
  * -----------------------------IMAGE READER---------------------------
  *
@@ -608,10 +611,132 @@ ImageReader::ImageReader(ImageFormat *res, enum AIMAGE_FORMATS format)
     };
     AImageReader_setImageListener(reader_, &listener);
 }
+/**
+ * Handles capture session state changes.
+ *   Update into internal session state.
+ */
+void NDKCamera::OnSessionState(ACameraCaptureSession* ses,
+                               CaptureSessionState state) {
+    if (!ses || ses != captureSession_) {
+      //  LOGW("CaptureSession is %s", (ses ? "NOT our session" : "NULL"));
+        return;
+    }
+
+//    ASSERT(state < CaptureSessionState::MAX_STATE, "Wrong state %d",
+//           static_cast<int>(state));
+
+    captureSessionState_ = state;
+}
+// CaptureSession state callbacks
+void OnSessionClosed(void* ctx, ACameraCaptureSession* ses) {
+    //LOGW("session %p closed", ses);
+    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(
+            ses, CaptureSessionState::CLOSED);
+}
+void OnSessionReady(void* ctx, ACameraCaptureSession* ses) {
+    //LOGW("session %p ready", ses);
+    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(ses,
+                                                      CaptureSessionState::READY);
+}
+void OnSessionActive(void* ctx, ACameraCaptureSession* ses) {
+    //LOGW("session %p active", ses);
+    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(
+            ses, CaptureSessionState::ACTIVE);
+}
+ACameraCaptureSession_stateCallbacks* NDKCamera::GetSessionListener() {
+    static ACameraCaptureSession_stateCallbacks sessionListener = {
+            .context = this,
+            .onClosed = ::OnSessionClosed,
+            .onReady = ::OnSessionReady,
+            .onActive = ::OnSessionActive,
+    };
+    return &sessionListener;
+}
 
 
+void ImageReader::SetPresentRotation(int32_t angle) {
+    presentRotation_ = angle;
+}
+void ImageReader::RegisterCallback(
+        void *ctx, std::function<void(void *ctx, const char *fileName)> func) {
+    callbackCtx_ = ctx;
+    callback_ = func;
+}
+
+void CameraEngine::OnPhotoTaken(const char *fileName) {
+    JNIEnv *jni;
+    app_->activity->vm->AttachCurrentThread(&jni, NULL);
+
+    // Default class retrieval
+    jclass clazz = jni->GetObjectClass(app_->activity->clazz);
+    jmethodID methodID =
+            jni->GetMethodID(clazz, "OnPhotoTaken", "(Ljava/lang/String;)V");
+    jstring javaName = jni->NewStringUTF(fileName);
+
+    jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
+    app_->activity->vm->DetachCurrentThread();
+}
+//TODO: FIX THE CRASHING ERROR
+//TODO: READ ABOUT HOW TO READ C++ CRASH LOGS
+//todo: So the error is SOMEWHERE IN HERE
+void NDKCamera::CreateSession(ANativeWindow* previewWindow,
+                              ANativeWindow* jpgWindow, int32_t imageRotation) {
+    // Create output from this app's ANativeWindow, and add into output container
+//    requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_ = previewWindow;
+//    requests_[PREVIEW_REQUEST_IDX].template_ = TEMPLATE_PREVIEW;
+//    requests_[JPG_CAPTURE_REQUEST_IDX].outputNativeWindow_ = jpgWindow;
+//    requests_[JPG_CAPTURE_REQUEST_IDX].template_ = TEMPLATE_STILL_CAPTURE;
+//
+//    CALL_CONTAINER(create(&outputContainer_));
+//    for (auto& req : requests_) {
+//        ANativeWindow_acquire(req.outputNativeWindow_);
+//        CALL_OUTPUT(create(req.outputNativeWindow_, &req.sessionOutput_));
+//        CALL_CONTAINER(add(outputContainer_, req.sessionOutput_));
+//        CALL_TARGET(create(req.outputNativeWindow_, &req.target_));
+//        CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
+//                                      req.template_, &req.request_));
+//        CALL_REQUEST(addTarget(req.request_, req.target_));
+//    }
+//
+//    // Create a capture session for the given preview request
+//    captureSessionState_ = CaptureSessionState::READY;
+//    CALL_DEV(createCaptureSession(cameras_[activeCameraId_].device_,
+//                                  outputContainer_, GetSessionListener(),
+//                                  &captureSession_));
+//
+//    ACaptureRequest_setEntry_i32(requests_[JPG_CAPTURE_REQUEST_IDX].request_,
+//                                 ACAMERA_JPEG_ORIENTATION, 1, &imageRotation);
+//
+//    /*
+//     * Only preview request is in manual mode, JPG is always in Auto mode
+//     * JPG capture mode could also be switch into manual mode and control
+//     * the capture parameters, this sample leaves JPG capture to be auto mode
+//     * (auto control has better effect than author's manual control)
+//     */
+//    uint8_t aeModeOff = ACAMERA_CONTROL_AE_MODE_OFF;
+//    CALL_REQUEST(setEntry_u8(requests_[PREVIEW_REQUEST_IDX].request_,
+//                             ACAMERA_CONTROL_AE_MODE, 1, &aeModeOff));
+    //todo:DON'T THINK i NEED THESE RIGHT NOW
+//    CALL_REQUEST(setEntry_i32(requests_[PREVIEW_REQUEST_IDX].request_,
+//                              ACAMERA_SENSOR_SENSITIVITY, 1, &sensitivity_));
+//    CALL_REQUEST(setEntry_i64(requests_[PREVIEW_REQUEST_IDX].request_,
+//                              ACAMERA_SENSOR_EXPOSURE_TIME, 1, &exposureTime_));
+}
 
 
+ANativeWindow *ImageReader::GetNativeWindow(void) {
+    if (!reader_) return nullptr;
+    ANativeWindow *nativeWindow;
+    media_status_t status = AImageReader_getWindow(reader_, &nativeWindow);
+    //ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow");
+    if (status == AMEDIA_OK) {
+        LOGI("Successfully obtained ANativeWindow");
+    } else {
+        LOGE("Could not get ANativeWindow: status = %d", status);
+    }
+
+    return nativeWindow;
+}
 
 /**
  * Create a camera object for onboard BACK_FACING camera
@@ -658,17 +783,28 @@ void CameraEngine::CreateCamera(void) {
 //
     yuvReader_ = new ImageReader(&view, AIMAGE_FORMAT_YUV_420_888);
     //todo: this is what I am currently working on
-//    yuvReader_->SetPresentRotation(imageRotation);
-//    jpgReader_ = new ImageReader(&capture, AIMAGE_FORMAT_JPEG);
-//    jpgReader_->SetPresentRotation(imageRotation);
-//    jpgReader_->RegisterCallback(
-//            this, [this](void* ctx, const char* str) -> void {
-//                reinterpret_cast<CameraEngine*>(ctx)->OnPhotoTaken(str);
-//            });
+    yuvReader_->SetPresentRotation(imageRotation);
+    jpgReader_ = new ImageReader(&capture, AIMAGE_FORMAT_JPEG);
+    jpgReader_->SetPresentRotation(imageRotation);
+    jpgReader_->RegisterCallback(
+            this, [this](void* ctx, const char* str) -> void {
+                reinterpret_cast<CameraEngine*>(ctx)->OnPhotoTaken(str);
+            });
+
+    ANativeWindow* testingWindow = yuvReader_->GetNativeWindow();
+
+    if(testingWindow == nullptr){
+        LOGI("Testing the pointer ---> null pointer");
+    }else{
+        LOGI("Testing the pointer ---> not null");
+    }
+
+
 //
 //    // now we could create session
-//    camera_->CreateSession(yuvReader_->GetNativeWindow(),
-//                           jpgReader_->GetNativeWindow(), imageRotation);
+    camera_->CreateSession(yuvReader_->GetNativeWindow(),
+                           jpgReader_->GetNativeWindow(), imageRotation);
+
 }
 
 
