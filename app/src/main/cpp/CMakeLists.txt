@@ -64,7 +64,7 @@ target_link_libraries(understand_triangle
 #This got rid of the UI errors I was having with the types inside of camera_manager.cpp
 add_library(camera_manager SHARED
         camera_manager.cpp)
-
+include_directories(camera_manager.h)
 target_link_libraries(camera_manager
         android
         log
