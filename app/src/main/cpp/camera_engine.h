@@ -13,6 +13,12 @@
 #include <thread>
 
 
+#define CALL_CONTAINER(func) CALL_CAMERA(ACaptureSessionOutputContainer_##func)
+#define CALL_OUTPUT(func) CALL_CAMERA(ACaptureSessionOutput_##func)
+#define CALL_TARGET(func) CALL_CAMERA(ACameraOutputTarget_##func)
+#define CALL_DEV(func) CALL_CAMERA(ACameraDevice_##func)
+#define CALL_REQUEST(func) CALL_CAMERA(ACaptureRequest_##func)
+#define CALL_DEV(func) CALL_CAMERA(ACameraDevice_##func)
 /*
  * A set of macros to call into Camera APIs. The API is grouped with a few
  * objects, with object name as the prefix of function names.
@@ -40,6 +46,28 @@ struct ImageFormat {
     // YUV_420 format
 };
 
+enum class CaptureSessionState : int32_t {
+    READY = 0,  // session is ready
+    ACTIVE,     // session is busy
+    CLOSED,     // session is closed(by itself or a new session evicts)
+    MAX_STATE
+};
+
+enum PREVIEW_INDICES {
+    PREVIEW_REQUEST_IDX = 0,
+    JPG_CAPTURE_REQUEST_IDX,
+    CAPTURE_REQUEST_COUNT,
+};
+
+struct CaptureRequestInfo {
+    ANativeWindow* outputNativeWindow_;
+    ACaptureSessionOutput* sessionOutput_;
+    ACameraOutputTarget* target_;
+    ACaptureRequest* request_;
+    ACameraDevice_request_template template_;
+    int sessionSequenceId_;
+};
+
 class CameraId; // Forward declaration, not a complete definition
 class NDKCamera {
 
@@ -52,6 +80,11 @@ private:
     ACameraDevice_stateCallbacks* GetDeviceListener();
     ACameraManager_AvailabilityCallbacks* GetManagerListener();
     volatile bool valid_;
+    std::vector<CaptureRequestInfo> requests_;
+    ACaptureSessionOutputContainer* outputContainer_;
+    CaptureSessionState captureSessionState_;
+    ACameraCaptureSession* captureSession_;
+    ACameraCaptureSession_stateCallbacks* GetSessionListener();
 
 
 public:
@@ -66,6 +99,10 @@ public:
     void OnCameraStatusChanged(const char* id, bool available);
     bool MatchCaptureSizeRequest(ANativeWindow* display, ImageFormat* view,
                                  ImageFormat* capture);
+
+    void CreateSession(ANativeWindow* previewWindow, ANativeWindow* jpgWindow,
+                       int32_t imageRotation);
+    void OnSessionState(ACameraCaptureSession* ses, CaptureSessionState state);
 
 };
 // helper classes to hold enumerated camera
@@ -110,11 +147,38 @@ public:
   */
     void ImageCallback(AImageReader* reader);
 
+    /**
+   * Report cached ANativeWindow, which was used to create camera's capture
+   * session output.
+   */
+    ANativeWindow* GetNativeWindow(void);
+
+    /**
+   * Configure the rotation angle necessary to apply to
+   * Camera image when presenting: all rotations should be accumulated:
+   *    CameraSensorOrientation + Android Device Native Orientation +
+   *    Human Rotation (rotated degree related to Phone native orientation
+   */
+    void SetPresentRotation(int32_t angle);
+
+    /**
+   * regsiter a callback function for client to be notified that jpeg already
+   * written out.
+   * @param ctx is client context when callback is invoked
+   * @param callback is the actual callback function
+   */
+    void RegisterCallback(void* ctx,
+                          std::function<void(void* ctx, const char* fileName)>);
+
+
+
 private:
     int32_t presentRotation_;
     AImageReader* reader_;
     std::function<void(void* ctx, const char* fileName)> callback_;
     void* callbackCtx_;
+
+
 
 
     void WriteFile(AImage* image);
@@ -157,11 +221,19 @@ public:
     // Manage NDKCamera Object
     void CreateCamera(void);
 
+
+
+
+
+
 private:
     int GetDisplayRotation(void);
     int rotation_;
     NDKCamera* camera_;
     ImageReader* yuvReader_;
+    ImageReader* jpgReader_;
+    void OnPhotoTaken(const char* fileName);
+
 };
 
 #endif //CLICKER_CAMERA_ENGINE_H
