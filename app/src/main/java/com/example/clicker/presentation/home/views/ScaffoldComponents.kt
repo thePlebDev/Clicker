@@ -160,7 +160,8 @@ import kotlinx.coroutines.launch
                 )
             },
             bottomBar = {
-                FourButtonNavigationBottomBarRow(
+
+                TripleButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
@@ -198,18 +199,19 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
-                    fourthButton = {
-                        IconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Stream",
-                            imageVector = Icons.Default.Add,
-                            iconContentDescription = "Navigate the stream page",
-                            onClick = {
-                                      permissionCheck()
-                            },
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    }
+                    //this is what I am going to use for the stream feature
+//                    fourthButton = {
+//                        IconOverTextColumn(
+//                            iconColor = MaterialTheme.colorScheme.onPrimary,
+//                            text = "Stream",
+//                            imageVector = Icons.Default.Add,
+//                            iconContentDescription = "Navigate the stream page",
+//                            onClick = {
+//                                      permissionCheck()
+//                            },
+//                            fontColor = MaterialTheme.colorScheme.onPrimary,
+//                        )
+//                    }
                 )
             },
             drawerContent = {
