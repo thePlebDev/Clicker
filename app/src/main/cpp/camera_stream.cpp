@@ -15,6 +15,7 @@
 
 #include "camera_manager.h"
 #include "camera_engine.h"
+#include <dirent.h>
 
 
 
@@ -385,6 +386,231 @@ int CameraEngine::GetDisplayRotation() {
 
     return newOrientation;
 }
+/**
+ * A helper class to assist image size comparison, by comparing the absolute
+ * size
+ * regardless of the portrait or landscape mode.
+ */
+class DisplayDimension {
+    public:
+    DisplayDimension(int32_t w, int32_t h) : w_(w), h_(h), portrait_(false) {
+        if (h > w) {
+            // make it landscape
+            w_ = h;
+            h_ = w;
+            portrait_ = true;
+        }
+    }
+    void Flip(void) { portrait_ = !portrait_; }
+    bool IsSameRatio(DisplayDimension& other) {
+        return (w_ * other.h_ == h_ * other.w_);
+    }
+    bool operator>(DisplayDimension& other) {
+        return (w_ >= other.w_ & h_ >= other.h_);
+    }
+    bool operator==(DisplayDimension& other) {
+        return (w_ == other.w_ && h_ == other.h_ && portrait_ == other.portrait_);
+    }
+    int32_t org_width(void) { return (portrait_ ? h_ : w_); }
+    int32_t org_height(void) { return (portrait_ ? w_ : h_); }
+    bool IsPortrait(void) { return portrait_; }
+
+private:
+    int32_t w_, h_;
+    bool portrait_;
+};
+
+
+
+/**
+ * Find a compatible camera modes:
+ *    1) the same aspect ration as the native display window, which should be a
+ *       rotated version of the physical device
+ *    2) the smallest resolution in the camera mode list
+ * This is to minimize the later color space conversion workload.
+ */
+bool NDKCamera::MatchCaptureSizeRequest(ANativeWindow* display,
+                                        ImageFormat* resView,
+                                        ImageFormat* resCap) {
+    DisplayDimension disp(ANativeWindow_getWidth(display),
+                          ANativeWindow_getHeight(display));
+    if (cameraOrientation_ == 90 || cameraOrientation_ == 270) {
+        disp.Flip();
+    }
+
+    ACameraMetadata* metadata;
+    CALL_MGR(
+            getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(), &metadata));
+    ACameraMetadata_const_entry entry;
+    CALL_METADATA(getConstEntry(
+            metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry));
+    // format of the data: format, width, height, input?, type int32
+    bool foundIt = false;
+    DisplayDimension foundRes(4000, 4000);
+    DisplayDimension maxJPG(0, 0);
+
+    for (int i = 0; i < entry.count; i += 4) {
+        int32_t input = entry.data.i32[i + 3];
+        int32_t format = entry.data.i32[i + 0];
+        if (input) continue;
+
+        if (format == AIMAGE_FORMAT_YUV_420_888 || format == AIMAGE_FORMAT_JPEG) {
+            DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
+            if (!disp.IsSameRatio(res)) continue;
+            if (format == AIMAGE_FORMAT_YUV_420_888 && foundRes > res) {
+                foundIt = true;
+                foundRes = res;
+            } else if (format == AIMAGE_FORMAT_JPEG && res > maxJPG) {
+                maxJPG = res;
+            }
+        }
+    }
+
+    if (foundIt) {
+        resView->width = foundRes.org_width();
+        resView->height = foundRes.org_height();
+        resCap->width = maxJPG.org_width();
+        resCap->height = maxJPG.org_height();
+    } else {
+        LOGI("Did not find any compatible camera resolution, taking 640x480");
+        if (disp.IsPortrait()) {
+            resView->width = 480;
+            resView->height = 640;
+        } else {
+            resView->width = 640;
+            resView->height = 480;
+        }
+        *resCap = *resView;
+    }
+    resView->format = AIMAGE_FORMAT_YUV_420_888;
+    resCap->format = AIMAGE_FORMAT_JPEG;
+    return foundIt;
+}
+/**
+ * -----------------------------IMAGE READER---------------------------
+ *
+ * */
+/**
+* MAX_BUF_COUNT:
+*   Max buffers in this ImageReader.
+*/
+#define MAX_BUF_COUNT 4
+
+/*
+ * For JPEG capture, captured files are saved under
+ *     DirName
+ * File names are incrementally appended an index number as
+ *     capture0.jpg, capture1.jpg, capture2.jpg
+ */
+static const char *kDirName = "/sdcard/DCIM/Camera/";
+static const char *kFileName = "capture";
+
+/**
+ * Write out jpeg files to kDirName directory
+ * @param image point capture jpg image
+ */
+void ImageReader::WriteFile(AImage *image) {
+    int planeCount;
+    media_status_t status = AImage_getNumberOfPlanes(image, &planeCount);
+
+    uint8_t *data = nullptr;
+    int len = 0;
+    AImage_getPlaneData(image, 0, &data, &len);
+
+    DIR *dir = opendir(kDirName);
+    if (dir) {
+        closedir(dir);
+    } else {
+        std::string cmd = "mkdir -p ";
+        cmd += kDirName;
+        system(cmd.c_str());
+    }
+
+    struct timespec ts {
+            0, 0
+    };
+    clock_gettime(CLOCK_REALTIME, &ts);
+    struct tm localTime;
+    localtime_r(&ts.tv_sec, &localTime);
+
+    std::string fileName = kDirName;
+    std::string dash("-");
+    fileName += kFileName + std::to_string(localTime.tm_mon) +
+                std::to_string(localTime.tm_mday) + dash +
+                std::to_string(localTime.tm_hour) +
+                std::to_string(localTime.tm_min) +
+                std::to_string(localTime.tm_sec) + ".jpg";
+    FILE *file = fopen(fileName.c_str(), "wb");
+    if (file && data && len) {
+        fwrite(data, 1, len, file);
+        fclose(file);
+
+        if (callback_) {
+            callback_(callbackCtx_, fileName.c_str());
+        }
+    } else {
+        if (file) fclose(file);
+    }
+    AImage_delete(image);
+}
+
+
+void ImageReader::ImageCallback(AImageReader *reader) {
+    int32_t format;
+    media_status_t status = AImageReader_getFormat(reader, &format);
+
+    if (format == AIMAGE_FORMAT_JPEG) {
+        AImage *image = nullptr;
+        media_status_t status = AImageReader_acquireNextImage(reader, &image);
+
+
+        // Create a thread and write out the jpeg files
+        std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
+        writeFileHandler.detach();
+    }
+}
+/**
+ * ImageReader listener: called by AImageReader for every frame captured
+ * We pass the event to ImageReader class, so it could do some housekeeping
+ * about
+ * the loaded queue. For example, we could keep a counter to track how many
+ * buffers are full and idle in the queue. If camera almost has no buffer to
+ * capture
+ * we could release ( skip ) some frames by AImageReader_getNextImage() and
+ * AImageReader_delete().
+ */
+void OnImageCallback(void *ctx, AImageReader *reader) {
+    reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
+}
+/**
+ * Constructor
+ */
+ImageReader::ImageReader(ImageFormat *res, enum AIMAGE_FORMATS format)
+        : presentRotation_(0), reader_(nullptr) {
+    callback_ = nullptr;
+    callbackCtx_ = nullptr;
+
+    media_status_t status = AImageReader_new(res->width, res->height, format,
+                                             MAX_BUF_COUNT, &reader_);
+    bool a = reader_ && status == AMEDIA_OK;
+
+
+    if(a){
+        LOGI("Failed to create AImageReader");
+    }else{
+        LOGI("Failed to CREATED!!!!!!!");
+    }
+
+
+    AImageReader_ImageListener listener{
+            .context = this,
+            .onImageAvailable = OnImageCallback,
+    };
+    AImageReader_setImageListener(reader_, &listener);
+}
+
+
+
 
 
 /**
@@ -408,28 +634,30 @@ void CameraEngine::CreateCamera(void) {
     int32_t facing = 0, angle = 0, imageRotation = 0;
 
     if (camera_->GetSensorOrientation(&facing, &angle)) {
-//        if (facing == ACAMERA_LENS_FACING_FRONT) {
-//            imageRotation = (angle + rotation_) % 360;
-//            imageRotation = (360 - imageRotation) % 360;
-//        } else {
-//            imageRotation = (angle - rotation_ + 360) % 360;
-//        }
+        //todo: THIS IS WHAT I START NEXT
+        if (facing == ACAMERA_LENS_FACING_FRONT) {
+            imageRotation = (angle + rotation_) % 360;
+            imageRotation = (360 - imageRotation) % 360;
+        } else {
+            imageRotation = (angle - rotation_ + 360) % 360;
+        }
     }
-//    LOGI("Phone Rotation: %d, Present Rotation Angle: %d", rotation_,
-//         imageRotation);
-//    ImageFormat view{0, 0, 0}, capture{0, 0, 0};
-//    camera_->MatchCaptureSizeRequest(app_->window, &view, &capture);
+    LOGI("Phone Rotation: %d, Present Rotation Angle: %d", rotation_,
+         imageRotation);
+    ImageFormat view{0, 0, 0}, capture{0, 0, 0};
+    camera_->MatchCaptureSizeRequest(app_->window, &view, &capture);
 //
 //    ASSERT(view.width && view.height, "Could not find supportable resolution");
 //
 //    // Request the necessary nativeWindow to OS
-//    bool portraitNativeWindow =
-//            (savedNativeWinRes_.width < savedNativeWinRes_.height);
-//    ANativeWindow_setBuffersGeometry(
-//            app_->window, portraitNativeWindow ? view.height : view.width,
-//            portraitNativeWindow ? view.width : view.height, WINDOW_FORMAT_RGBA_8888);
+    bool portraitNativeWindow =
+            (savedNativeWinRes_.width < savedNativeWinRes_.height);
+    ANativeWindow_setBuffersGeometry(
+            app_->window, portraitNativeWindow ? view.height : view.width,
+            portraitNativeWindow ? view.width : view.height, WINDOW_FORMAT_RGBA_8888);
 //
-//    yuvReader_ = new ImageReader(&view, AIMAGE_FORMAT_YUV_420_888);
+    yuvReader_ = new ImageReader(&view, AIMAGE_FORMAT_YUV_420_888);
+    //todo: this is what I am currently working on
 //    yuvReader_->SetPresentRotation(imageRotation);
 //    jpgReader_ = new ImageReader(&capture, AIMAGE_FORMAT_JPEG);
 //    jpgReader_->SetPresentRotation(imageRotation);
