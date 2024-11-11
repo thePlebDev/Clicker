@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
 class VerticalWebView: WebView {
@@ -16,6 +17,11 @@ class VerticalWebView: WebView {
     var expanded = false
     init{
         Log.d("onScrollDistanceDetection","INIT")
+    }
+
+    @JavascriptInterface
+    fun postMessage(data: String) {
+        Log.d("StreamQualitiesTesting", "Available stream qualities: $data")
     }
 
 
