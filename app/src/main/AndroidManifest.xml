@@ -37,10 +37,10 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
-        <activity android:name=".cameraNDK.CameraNDKNativeActivity" >
-            <meta-data android:name="android.app.lib_name"
-                android:value="camera_stream" />
-        </activity>
+<!--        <activity android:name=".cameraNDK.CameraNDKNativeActivity" >-->
+<!--            <meta-data android:name="android.app.lib_name"-->
+<!--                android:value="camera_stream" />-->
+<!--        </activity>-->
 
         <meta-data
             android:name="android.webkit.WebView.MetricsOptOut"
@@ -59,9 +59,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
-    <uses-permission android:name="android.permission.CAMERA" android:required="false"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"/>
+<!--    <uses-feature android:name="android.hardware.camera" android:required="false"/>-->
+<!--    <uses-permission android:name="android.permission.CAMERA" android:required="false"/>-->
+<!--    <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"/>-->
 
 
 </manifest>
