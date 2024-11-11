@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,6 +63,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -464,7 +466,8 @@ fun ChatUIBox(
 
                 }
 
-                    Box(modifier = Modifier.align(Alignment.BottomEnd)
+                    Box(modifier = Modifier
+                        .align(Alignment.BottomEnd)
                         .padding(bottom = 80.dp)
                     ){
                         AnimatedVisibility(
@@ -504,7 +507,7 @@ fun ChatSettingsChannelInfo(
         Column(modifier = Modifier
             .clip(RoundedCornerShape(5.dp))
             .background(MaterialTheme.colorScheme.secondary)
-            .padding(vertical =5.dp, horizontal = 10.dp)){
+            .padding(vertical = 5.dp, horizontal = 10.dp)){
             Row(
                 modifier = Modifier.clickable {
                     showChatSettingsModal()
@@ -1297,28 +1300,34 @@ fun LazyGridEmotes(
 
         }
 
-        items(emoteBoardGlobalList.list){
+           items(emoteBoardGlobalList.list){
 //            Log.d("GlobalEmotesLoaded","name ->${it.name}")
-//            Log.d("GlobalEmotesLoaded","url ->${it.url}")
+                Log.d("GlobalEmotesLoadedPopulate","populate ->${it.name}")
 //
-            AsyncImage(
-                model = it.url,
-                contentDescription = it.name,
-                imageLoader =imageLoader,
-                modifier = Modifier
-                    .width(60.dp)
-                    .height(60.dp)
-                    .padding(5.dp)
-                    .clickable {
-                        updateTextWithEmote(it.name)
-                        updateTempararyMostFrequentEmoteList(
-                            EmoteNameUrl(it.name, it.url, "GLOBAL")
-                        )
-                    }
-            )
-        }
+                AsyncImage(
+                    model = it.url,
+                    contentDescription = it.name,
+                    imageLoader =imageLoader,
+                    modifier = Modifier
+                        .width(60.dp)
+                        .height(60.dp)
+                        .padding(5.dp)
+                        .clickable {
+                            updateTextWithEmote(it.name)
+                            updateTempararyMostFrequentEmoteList(
+                                EmoteNameUrl(it.name, it.url, "GLOBAL")
+                            )
+                        }
+                )
+            }
+
+
+
+
     }
 } /********END OF LazyGridEmotes**********/
+
+
 
 
 @Stable

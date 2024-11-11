@@ -17,6 +17,7 @@ import android.view.ViewTreeObserver
 import android.view.Window
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -635,6 +636,7 @@ class StreamFragment : Fragment() {
         verticalClickableWebView: VerticalWebView
     ){
         verticalClickableWebView.singleTapMethod={
+
             if(autoModViewModel.verticalOverlayIsVisible.value){
                 autoModViewModel.setVerticalOverlayToHidden()
             }else{
@@ -642,6 +644,14 @@ class StreamFragment : Fragment() {
             }
             verticalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
 
+
+            val jsCode2 = """
+                 function printClickedToAndroid(quantities) {
+        AndroidConsole.logMessage(quantities);
+    }
+    printClickedToAndroid("Log to the console from Javascript")
+ """
+            verticalClickableWebView.evaluateJavascript(jsCode2, null)
         }
     }
 
@@ -897,7 +907,12 @@ fun setOrientation(
     return binding.root
 }
 
-
+class AndroidConsoleInterface {
+    @JavascriptInterface
+    fun logMessage(message: String) {
+        Log.d("JavaScriptLog", message)
+    }
+}
 
 fun setWebView(
     myWebView: WebView,
@@ -906,7 +921,9 @@ fun setWebView(
     Log.d("setWebViewURL","url -->$url")
     myWebView.settings.mediaPlaybackRequiresUserGesture = false
 
+
     myWebView.settings.javaScriptEnabled = true
+    myWebView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
     myWebView.isClickable = true
     myWebView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
 
