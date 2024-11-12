@@ -2,6 +2,7 @@ package com.example.clicker.presentation.stream
 
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -67,6 +68,16 @@ import kotlinx.coroutines.withContext
 
 
 
+
+/**
+ * EmoteNameUrlList is the immutable wrapper for [list]
+ *
+ * @param list a list of [EmoteNameUrl] objects where each one represents an individual emote
+ * */
+@Immutable
+data class TagListStable(
+    val list:List<String> = listOf()
+)
 
 
 
@@ -140,6 +151,24 @@ class StreamViewModel @Inject constructor(
         _lowPowerModeActive.value = newValue
     }
 
+    /**
+     * ----------------------------------
+     * TAGS THAT i AM TRYING TO MAKE EFFICIENT
+     * ----------------------------------
+     * */
+
+    private var _tagsImmutable by mutableStateOf(
+        TagListStable(listOf())
+    )
+    // Publicly exposed immutable state as State
+    val tagsImmutable: State<TagListStable>
+        get() = mutableStateOf(_tagsImmutable)
+
+    //todo: SEE IF THIS UPDATES
+    private fun addAllTagsImmutable(tags:List<String>){
+      //  tagsImmutable.addAll(tagsImmutable)
+        _tagsImmutable = TagListStable(tags)
+    }
 
     /**
      * A list representing all the most recent clicked emotes
@@ -580,6 +609,8 @@ class StreamViewModel @Inject constructor(
      * */
     fun updateClickedStreamInfo(clickedStreamInfo:ClickedStreamInfo){
         _clickedStreamInfo.value =clickedStreamInfo
+
+        addAllTagsImmutable(clickedStreamInfo.tags)
         _channelName.value = clickedStreamInfo.channelName
     }
 
