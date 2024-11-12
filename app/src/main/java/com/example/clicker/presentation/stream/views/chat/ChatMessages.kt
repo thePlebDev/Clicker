@@ -216,58 +216,62 @@ class ChatScope(
             startX = 0.0f,
             endX = 130.0f
         )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-        ){
-            Spacer(modifier = Modifier
-                .align(Alignment.CenterStart)
-                .width(130.dp)
-                .fadingEdge(sideFade)
-                .clip(RoundedCornerShape(4.dp))
-                .background(color)
-                .height(height)
-
-            )
-            Row(){
+        Column(){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+            ){
                 Spacer(modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .width(130.dp)
+                    .fadingEdge(sideFade)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(color)
                     .height(height)
 
                 )
-                Spacer(modifier = Modifier
-                    .width(17.dp)
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        //todo: this should be message type
-                        Text("$messageType", color = MaterialTheme.colorScheme.onPrimary,fontSize=titleFontSize)
-                        Spacer(modifier = Modifier
-                            .width(6.dp)
-                        )
-                        Icon(
-                            painter = painter,
-                            contentDescription = messageType,
-                            tint = color,
-                            modifier = Modifier.size(25.dp)
+                Row(){
+                    Spacer(modifier = Modifier
+                        .height(height)
+
+                    )
+                    Spacer(modifier = Modifier
+                        .width(17.dp)
+                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically){
+                            //todo: this should be message type
+                            Text("$messageType", color = MaterialTheme.colorScheme.onPrimary,fontSize=titleFontSize)
+                            Spacer(modifier = Modifier
+                                .width(6.dp)
+                            )
+                            Icon(
+                                painter = painter,
+                                contentDescription = messageType,
+                                tint = color,
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+                        Text(
+                            //todo: this should be message type
+                            "$systemMessage $message",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize=messageFontSize,
+                            modifier = Modifier.onGloballyPositioned {
+                                height = with(localDensity) { it.size.height.toDp() + 30.dp }
+                            }
                         )
                     }
-                    Text(
-                        //todo: this should be message type
-                        "$systemMessage $message",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize=messageFontSize,
-                        modifier = Modifier.onGloballyPositioned {
-                            height = with(localDensity) { it.size.height.toDp() + 30.dp }
-                        }
-                    )
                 }
-            }
 
-        }
+            }//end of the box scope
+            Spacer(modifier = Modifier.height(5.dp))
+        } //end of the colum scope
+
 
     }
 
