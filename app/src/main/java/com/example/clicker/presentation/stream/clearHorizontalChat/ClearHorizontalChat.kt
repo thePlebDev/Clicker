@@ -36,11 +36,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,6 +99,17 @@ fun ClearHorizontalChatView(
 }
 
 @Composable
+fun rememberDraggableState(
+    offsetX: MutableState<Float>
+): DraggableState {
+    return remember {
+        DraggableState { delta ->
+            offsetX.value += delta
+        }
+    }
+}
+
+@Composable
 fun DraggableClearChat(
     fullImmersionWidth:Int,
     twitchUserChat: List<TwitchUserData>,
@@ -111,15 +124,14 @@ fun DraggableClearChat(
     useCustomUsernameColors:Boolean,
     doubleClickMessage:(String)->Unit,
 ){
-    var offsetX by remember { mutableStateOf(0f) }
+    val offsetX = rememberSaveable { mutableStateOf(0f) }
 
     val maxWidthHalf = (Resources.getSystem().displayMetrics.widthPixels/2.5)*-1
     var clearChatWidth by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
 
-    val draggableState = DraggableState { delta ->
-        offsetX += delta
-    }
+    val draggableState = rememberDraggableState(offsetX)
+    Log.d("OffSetTestingagain","offsetRecomp --->$offsetX")
 
     Box(
         modifier = Modifier
@@ -127,7 +139,7 @@ fun DraggableClearChat(
 
     ) {
         Box(modifier = Modifier
-            .offset { IntOffset(offsetX.roundToInt(), 0) }
+            .offset { IntOffset(offsetX.value.roundToInt(), 0) }
             .fillMaxHeight()
             .fillMaxWidth(.25f)
             .align(Alignment.CenterEnd)
@@ -136,24 +148,24 @@ fun DraggableClearChat(
                 state = draggableState,
                 onDragStopped = {
 
-                    Log.d("TestingMaxWidthClear", "threshold crossed-->${offsetX <= maxWidthHalf}")
-                    if (offsetX <= maxWidthHalf) {
+                    Log.d("TestingMaxWidthClear", "threshold crossed-->${offsetX.value <= maxWidthHalf}")
+                    if (offsetX.value <= maxWidthHalf) {
                         draggableState.drag(MutatePriority.PreventUserInput) {
-                            Animatable(offsetX).animateTo(
+                            Animatable(offsetX.value).animateTo(
                                 targetValue = (fullImmersionWidth + clearChatWidth).toFloat(),
                                 tween(durationMillis = 300)
                             ) {
-                                dragBy(value - offsetX)
+                                dragBy(value - offsetX.value)
                             }
                         }
 
                     } else {
                         draggableState.drag(MutatePriority.PreventUserInput) {
-                            Animatable(offsetX).animateTo(
+                            Animatable(offsetX.value).animateTo(
                                 targetValue = 0f,
                                 tween(durationMillis = 300)
                             ) {
-                                dragBy(value - offsetX)
+                                dragBy(value - offsetX.value)
                             }
                         }
                     }
