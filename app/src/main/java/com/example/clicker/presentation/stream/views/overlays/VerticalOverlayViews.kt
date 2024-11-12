@@ -51,7 +51,7 @@ fun VerticalOverlayView(
             modifier = Modifier.fillMaxWidth().background(Color.Black)
         ){
             VerticalTestingOverlayUI(
-                channelName, streamTitle, category, //tags
+                channelName, streamTitle, category, tags
             )
         }
     }
@@ -67,9 +67,11 @@ fun VerticalTestingOverlayUI(
     channelName:String,
     streamTitle:String,
     category: String,
-   // tags:List<String>
+    tags:List<String>
 ){
+    Log.d("VerticalTestingOverlayUI","RECOMPING")
 
+  //  val tags = listOf("meat ball", " tagerine","gabagool")
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -93,14 +95,13 @@ fun VerticalTestingOverlayUI(
             color = Color.White.copy(alpha = 0.8f),
             modifier = Modifier.padding(vertical = 5.dp)
         )
-//        FlowRow(
-//            modifier = Modifier.background(Color.Transparent).padding(bottom = 10.dp)
-//        ) {
-//            tags.forEach { tagTitle ->
-//                VerticalTagText(tagTitle)
-//            }
-//        }
-
+        LazyRow(
+            modifier = Modifier.background(Color.Transparent).padding(bottom = 10.dp)
+        ) {
+            items(tags){tagTitle->
+                VerticalTagText(tagTitle)
+            }
+        }
     }
 
 }
