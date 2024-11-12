@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.clicker.presentation.stream.TagListStable
 
 
 @Composable
@@ -32,7 +33,7 @@ fun VerticalOverlayView(
     channelName:String,
     streamTitle:String,
     category:String,
-    tags:List<String>,
+    tags: TagListStable,
     showStreamDetails:Boolean
 ){
     Log.d("VerticalOverlayView","RECOMP")
@@ -51,7 +52,7 @@ fun VerticalOverlayView(
             modifier = Modifier.fillMaxWidth().background(Color.Black)
         ){
             VerticalTestingOverlayUI(
-                channelName, streamTitle, category, //tags
+                channelName, streamTitle, category, tags
             )
         }
     }
@@ -67,9 +68,11 @@ fun VerticalTestingOverlayUI(
     channelName:String,
     streamTitle:String,
     category: String,
-   // tags:List<String>
+    tags: TagListStable
 ){
+    Log.d("VerticalTestingOverlayUI","RECOMPING")
 
+  //  val tags = listOf("meat ball", " tagerine","gabagool")
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -93,14 +96,13 @@ fun VerticalTestingOverlayUI(
             color = Color.White.copy(alpha = 0.8f),
             modifier = Modifier.padding(vertical = 5.dp)
         )
-//        FlowRow(
-//            modifier = Modifier.background(Color.Transparent).padding(bottom = 10.dp)
-//        ) {
-//            tags.forEach { tagTitle ->
-//                VerticalTagText(tagTitle)
-//            }
-//        }
-
+        LazyRow(
+            modifier = Modifier.background(Color.Transparent).padding(bottom = 10.dp)
+        ) {
+            items(tags.list){tagTitle->
+                VerticalTagText(tagTitle)
+            }
+        }
     }
 
 }
