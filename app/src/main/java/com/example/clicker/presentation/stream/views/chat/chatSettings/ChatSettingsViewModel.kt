@@ -84,6 +84,14 @@ class ChatSettingsViewModel @Inject constructor(
     val customUsernameColor: State<Boolean> = _customUsernameColor
 
 
+    private val _clearChatOffsetX = mutableStateOf(0f)  // Initial value
+    val clearChatOffsetX: State<Float> = _clearChatOffsetX
+
+    fun changeOffsetXClearChat(delta:Float){
+        _clearChatOffsetX.value +=  delta
+    }
+
+
 
 
 

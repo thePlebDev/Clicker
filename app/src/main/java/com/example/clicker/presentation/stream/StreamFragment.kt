@@ -895,7 +895,10 @@ fun setOrientation(
                 AppTheme{
                     ClearHorizontalChatView(
                         streamViewModel,
-                        chatSettingsViewModel=chatSettingsViewModel
+                        chatSettingsViewModel=chatSettingsViewModel,
+//                        offsetX = chatSettingsViewModel.clearChatOffsetX.value,
+//                        changeOffsetXClearChat = {delta-> chatSettingsViewModel.changeOffsetXClearChat(delta) }
+
                     )
                 }
             }
