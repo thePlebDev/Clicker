@@ -59,31 +59,7 @@ import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.Response
 
 
-@Composable
-fun TestingGLSurfaceViewComposable(
-    context: Context,
-    modifier:Modifier
-) {
-    AndroidView(
-        factory = {
-            GL2JNIView(context)
-        },
-        modifier = modifier
-    )
-}
 
-@Composable
-fun TestingGLSurfaceViewUnderstandingTriangle(
-    context: Context,
-    modifier:Modifier
-) {
-    AndroidView(
-        factory = {
-            NewTestingGLSurfaceView(context)
-        },
-        modifier = modifier
-    )
-}
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ValidationView(
@@ -117,9 +93,6 @@ fun ValidationView(
 
 
 
-    //TestingGLSurfaceViewComposable(context,Modifier.fillMaxSize())
-    //TestingGLSurfaceViewUnderstandingTriangle(context,Modifier.fillMaxSize())
-
 
     HomeViewImplementation(
         bottomModalState =bottomModalState,
@@ -129,6 +102,7 @@ fun ValidationView(
                          },
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
+
             if (!lowPowerModeActive) {
                 homeViewModel.updateClickedStreamerName(streamerName)
 
@@ -237,62 +211,14 @@ fun ValidationView(
         },
         getPinnedList={},
         permissionCheck={
-          //  isBoxVisible = true
-            permissionCheck()
+
         }
 
     )
-//    AnimatedFullScreenBox(
-//        isVisible = isBoxVisible,
-//        close = {isBoxVisible = false}
-//    )
-
-
-
-
-
-
 
 }/******END OF THE VALIDATION VIEW********/
 
 
-@Composable
-fun AnimatedFullScreenBox(
-    isVisible: Boolean,
-    close:()->Unit,
-) {
-    AnimatedVisibility(
-        visible = isVisible,
-        enter = scaleIn(
-            initialScale = 0.0f,
-            animationSpec = tween(durationMillis = 200),
-            transformOrigin = TransformOrigin(0.5f, 1f) // Bottom-center pivot
-        ),
-        exit = scaleOut(
-            targetScale = 0.0f,
-            animationSpec = tween(durationMillis = 200),
-            transformOrigin = TransformOrigin(0.5f, 1f) // Bottom-center pivot
-        )
-    ) {
-//        Box( modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color.Blue).disableClickAndRipple()){}
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue).disableClickAndRipple(),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id =R.drawable.baseline_close_24),
-                contentDescription = "close",
-                tint = Color.Red,
-                modifier = Modifier.size(30.dp).clickable { close() }.align(Alignment.TopStart)
-            )
-            Text(text = "Full-Screen Box", color = Color.White, modifier = Modifier.align(Alignment.Center))
-        }
-    }
-}
 
 fun Modifier.disableClickAndRipple(): Modifier = composed {
     clickable(

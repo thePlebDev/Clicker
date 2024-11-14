@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.home.views
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,29 +52,43 @@ import com.example.clicker.util.Response
 
 
     /**
-     * - Implementation of [Builder.HomeModalBottomSheet].
-     * - Contains 3 parts:
-     * 1) [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
-     * 2) [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * 3) [Parts.DisableForceRegister][Parts.DisableForceRegister]
+     * - HomeViewImplementation is the main compose component for the [HomeFragment][com.example.clicker.presentation.home.HomeFragment].
+     * - All the UI that is shown to the user on the home page is implemented in this composable
      *
      * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
-     * @param modalText a String passed to [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
-     * @param loginWithTwitch a function passed to [LoginWithTwitchBottomModalButton][Parts.LoginWithTwitchBottomModalButton]
-     * @param addToLinks a function passed to [Parts.DisableForceRegister][Parts.DisableForceRegister]
-     * @param onNavigate a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param quarterTotalScreenHeight a Int passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param streamersListLoading a value passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param urlList a list of [com.example.clicker.presentation.home.StreamInfo] passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param clientId a String passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param userId a String passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param pullToRefreshRequest a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param showFailedNetworkRequestMessage a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     * @param loginWithTwitch a function when called, will log the user out
+     * @param updateStreamerName a function when called, will update the information about the stream clicked on by the user
+     * and execute all of the necessary network calls to the Twitch backend
+     * @param onNavigate a function when called, will navigate the user to their chosen destination within the application
+     * @param updateClickedStreamInfo a function when called with a [ClickedStreamInfo] object,
+     * will populate the view model with the needed [ClickedStreamInfo] information
+     * @param followedStreamerList a [NetworkNewUserResponse] object representing the list of the user's followed streams
+     * @param clientId a String representing the unique id that identifies this application to the Twitch servers
+     * @param userId a String that uniquely identifies the user to the Twitch application servers
      * @param height a Int representing the height in a aspect ratio that will make the images look nice
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
-     * @param logout a function passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
-     * @param userIsAuthenticated a Boolean passed to [MainScaffoldComponent][ScaffoldComponents.MainScaffoldComponent]
+     *
+     * @param userIsAuthenticated a Boolean used to determine if the user is logged in or not
      * @param screenDensity a float meant to represent the screen density of the current device
+     * @param homeRefreshing a Boolean used to determine if the user has pulled the refreshing code or not
+     * @param homeRefreshFunc a function, when called, will refresh the user's home page
+     *
+     * @param networkMessageColor a Color object that will determine the UI for [networkMessage]
+     * @param networkMessage a String used to represent a message shown to the user when there was a problem with the network
+     * @param showNetworkMessage a Boolean used to determine if [networkMessage] should be shown or not
+     *
+     * @param logout a function when called, will log the user out of their current session
+     * @param logoutDialogIsOpen a Boolean used to determine if the logout dialog should be shown to the user or not
+     * @param hideLogoutDialog a function, when called, will hide the logout dialog from the user.
+     * @param showLogoutDialog a function, when called, will show the logout dialog from the user
+     * @param currentUsername a String used to show the username of the user currently logged in
+     * @param showNetworkRefreshError a Boolean used to determine if the user should see a network related error or not
+     * @param hapticFeedBackError a function, when called, will trigger haptic feedback inside of the device
+     * @param lowPowerModeActive a Boolean used to determine if the user is in --low power mode-- or not
+     * @param changeLowPowerMode a function, when called with a Boolean, will determine the state of [lowPowerModeActive]
+     * @param getTopGames a function, when called, will make a request to the Twitch servers requesting the top games on Twitch
+     * @param getPinnedList a function, when called, will query the native sql lite data base to check for any pinned games
+     * @param permissionCheck a function, when called, will check to determine if the user needs cetrain permission or not
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -93,6 +108,7 @@ import com.example.clicker.util.Response
         screenDensity:Float,
         homeRefreshing:Boolean,
         homeRefreshFunc:()->Unit,
+
         networkMessageColor:Color,
         networkMessage: String,
         showNetworkMessage:Boolean,
@@ -123,6 +139,7 @@ import com.example.clicker.util.Response
                 HomeViewScaffold(
                     onNavigate = {id -> onNavigate(id) },
                     updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                        Log.d("CheckingUpdatedINfor","streamerName -> $streamerName")
                         updateStreamerName(
                             streamerName,
                             clientId,
@@ -130,7 +147,11 @@ import com.example.clicker.util.Response
                             userId
                         )
                     },
-                    updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                    updateClickedStreamInfo={
+                            clickedStreamInfo ->
+                        Log.d("CheckingUpdatedINfor","clickedStreamInfo -> ${clickedStreamInfo.channelName}")
+                        updateClickedStreamInfo(clickedStreamInfo)
+                                            },
                     followedStreamerList = followedStreamerList,
 
                     clientId = clientId,
@@ -191,6 +212,7 @@ import com.example.clicker.util.Response
          *
          * @param loginBottomModal a composable function that will be shown on the bottom modal
          * @param scaffoldHomeView a composable function that will be covered by the bottom modal
+         * @param logoutDialog a composable function that will shown the user a dialog prompting them to logout from the application
          * @param bottomModalState the state of the [ModalBottomSheetLayout]
          * */
         @OptIn(ExperimentalMaterialApi::class)
@@ -212,41 +234,6 @@ import com.example.clicker.util.Response
         }
 
 
-/**
-
- *
- * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
- *
- * @param modalText a String that will be displayed on the button and will tell the user what the button does
- * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
- * to log in with Twitch
- * */
-@Composable
-fun LoginWithTwitchBottomModalButton(
-    loginWithTwitch:()->Unit
-){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(MaterialTheme.colorScheme.primary),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "Log out to be issued a new Twitch authentication token",
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-            modifier = Modifier
-                .padding(bottom = 10.dp)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Button(onClick = { loginWithTwitch() }) {
-            Text(text = "Log out of Twitch")
-        }
-    }
-}
 
 
 
