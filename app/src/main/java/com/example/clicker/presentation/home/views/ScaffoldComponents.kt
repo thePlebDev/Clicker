@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerValue
@@ -68,6 +69,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -301,6 +303,43 @@ import kotlinx.coroutines.launch
         }
     }
 
+
+
+/**
+
+ *
+ * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
+ *
+ * @param modalText a String that will be displayed on the button and will tell the user what the button does
+ * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
+ * to log in with Twitch
+ * */
+@Composable
+fun LoginWithTwitchBottomModalButton(
+    loginWithTwitch:()->Unit
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(MaterialTheme.colorScheme.primary),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Log out to be issued a new Twitch authentication token",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Button(onClick = { loginWithTwitch() }) {
+            Text(text = "Log out of Twitch")
+        }
+    }
+}
 
 
 
