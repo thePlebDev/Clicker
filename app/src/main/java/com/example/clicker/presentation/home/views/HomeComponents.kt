@@ -56,7 +56,7 @@ import com.example.clicker.util.Response
      * - All the UI that is shown to the user on the home page is implemented in this composable
      *
      * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
-     * @param loginWithTwitch a function when called, will log the user out
+     * @param loginWithTwitch a function, when called, will log the user out
      * @param updateStreamerName a function when called, will update the information about the stream clicked on by the user
      * and execute all of the necessary network calls to the Twitch backend
      * @param onNavigate a function when called, will navigate the user to their chosen destination within the application
@@ -88,7 +88,7 @@ import com.example.clicker.util.Response
      * @param changeLowPowerMode a function, when called with a Boolean, will determine the state of [lowPowerModeActive]
      * @param getTopGames a function, when called, will make a request to the Twitch servers requesting the top games on Twitch
      * @param getPinnedList a function, when called, will query the native sql lite data base to check for any pinned games
-     * @param permissionCheck a function, when called, will check to determine if the user needs cetrain permission or not
+     * @param permissionCheck a function, when called, will check to determine if the user needs certain permission or not
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -131,7 +131,7 @@ import com.example.clicker.util.Response
 
         HomeModalBottomSheetBuilder(
             loginBottomModal = {
-                LoginWithTwitchBottomModalButton(
+                LoginWithTwitchBottomModalButtonColumn(
                     loginWithTwitch = { loginWithTwitch() }
                 )
             },

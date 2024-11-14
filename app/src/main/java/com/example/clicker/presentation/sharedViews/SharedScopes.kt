@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.clicker.R
-import com.example.clicker.presentation.home.views.LiveChannelsLazyColumnScope
 
 /**
  * ScaffoldBottomBarScope represents all the available components to a [Scaffold's](https://developer.android.com/jetpack/compose/components/scaffold)
@@ -461,11 +460,11 @@ fun PullToRefreshComponent(
     showNetworkMessage:Boolean,
 
     networkStatus:@Composable NotificationsScope.(modifier:Modifier) -> Unit,
-    content:@Composable LiveChannelsLazyColumnScope.() -> Unit,
+    content:@Composable () -> Unit,
 ){
 
     val mediumFontSize = MaterialTheme.typography.headlineMedium.fontSize
-    val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
+
     val networkStatusScope = remember() { NotificationsScope(fontSize = mediumFontSize,iconSize=30.dp) }
 
 
@@ -477,10 +476,7 @@ fun PullToRefreshComponent(
         Box(modifier= Modifier
             .fillMaxSize()
             .padding(padding)){
-
-            with(lazyColumnScope){
                 content()
-            }
             if(!showNetworkMessage){
                 with(networkStatusScope){
                     networkStatus(Modifier.align(Alignment.BottomCenter))
