@@ -50,7 +50,7 @@ import com.example.clicker.network.clients.TopGame
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.HomeViewModel
-import com.example.clicker.presentation.home.views.LoginLogoutScaffoldDrawer
+
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.search.views.mainComponents.CategoryModal

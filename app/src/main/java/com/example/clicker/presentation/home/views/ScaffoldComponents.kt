@@ -96,10 +96,11 @@ import kotlinx.coroutines.launch
      * Essentially it is what the user sees when the data loads from the twitch server plus a
      * Scaffold drawer which allows the user to login and logout
      *
-     * @param login a function that is used to log in the current user into their twitch account
-     * @param userIsLoggedIn a boolean to determine if the user is logged in or not
-     * @param urlList it is a nullable list of all the live channels returned by the twitch server
-     * @param urlListLoading a [Response][com.example.clicker.util.Response] class to represent which state the request to the twitch server is
+     * @param showLogoutDialog  a function, when called, will show the logout dialog from the user.
+     * @param userIsLoggedIn a Boolean  used to determine if the user is logged in or not
+     * @param followedStreamerList a [NetworkNewUserResponse] object representing the list of the user's followed streams
+     * @param updateClickedStreamInfo a function when called with a [ClickedStreamInfo] object,
+     * will populate the view model with the needed [ClickedStreamInfo] information
      * @param onNavigate a function used to navigate from the home page to the individual stream view
      * @param updateStreamerName a function used to update the current streamer the user has clicked on. This information is used
      * to connect the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] to the Twitch servers
@@ -107,8 +108,21 @@ import kotlinx.coroutines.launch
      * @param userId a string representing the userId of the streamer that is being viewed
      * @param height a Int representing the height in a aspect ratio that will make the images look nice
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
-     * @param showFailedNetworkRequestMessage a boolean that is used to determine if the user should show a error message or not
-     * to determine when the pull to refresh icon should change
+     * @param screenDensity a float meant to represent the screen density of the current device
+     * @param homeRefreshing a Boolean used to determine if the user has pulled the refreshing code or not
+     * @param homeRefreshFunc a function, when called, will refresh the user's home page
+     * @param networkMessageColor a Color object that will determine the UI for [networkMessage]
+     * @param networkMessage a String used to represent a message shown to the user when there was a problem with the network
+     * @param showNetworkMessage a Boolean used to determine if [networkMessage] should be shown or not
+     * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
+     * @param loginWithTwitch a function, when called, will log the user out
+     * @param showNetworkRefreshError a Boolean used to determine if the user should see a network related error or not
+     * @param hapticFeedBackError a function, when called, will trigger haptic feedback inside of the device
+     * @param lowPowerModeActive a Boolean used to determine if the user is in --low power mode-- or not
+     * @param changeLowPowerMode a function, when called with a Boolean, will determine the state of [lowPowerModeActive]
+     * @param getTopGames a function, when called, will make a request to the Twitch servers requesting the top games on Twitch
+     * @param getPinnedList a function, when called, will query the native sql lite data base to check for any pinned games
+     * @param permissionCheck a function, when called, will check to determine if the user needs certain permission or not
      * */
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -201,23 +215,11 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
-                    //this is what I am going to use for the stream feature
-//                    fourthButton = {
-//                        IconOverTextColumn(
-//                            iconColor = MaterialTheme.colorScheme.onPrimary,
-//                            text = "Stream",
-//                            imageVector = Icons.Default.Add,
-//                            iconContentDescription = "Navigate the stream page",
-//                            onClick = {
-//                                      permissionCheck()
-//                            },
-//                            fontColor = MaterialTheme.colorScheme.onPrimary,
-//                        )
-//                    }
+
                 )
             },
             drawerContent = {
-                LoginLogoutScaffoldDrawer(
+                LoginLogoutScaffoldDrawerBox(
                     showLogoutDialog = {
                         showLogoutDialog()
                     },
@@ -253,7 +255,7 @@ import kotlinx.coroutines.launch
                         LazyListLoadingIndicator()
                     },
                     emptyList={
-                        EmptyFollowingList()
+                        EmptyFollowingListCard()
                     },
                     liveChannelRowItem = {streamItem ->
                         LiveChannelRowItem(
@@ -273,7 +275,7 @@ import kotlinx.coroutines.launch
                         )
                     },
                     gettingStreamError = {message ->
-                        this.GettingStreamsError(errorMessage = message)
+                        GettingStreamsErrorCard(errorMessage = message)
                     },
                     newUserAlert={responseMessage ->
                         NewUserAlert(
@@ -308,14 +310,12 @@ import kotlinx.coroutines.launch
 /**
 
  *
- * - LoginWithTwitchBottomModalButton is the Button and text that is shown to the user when they are not logged in
+ *  **LoginWithTwitchBottomModalButtonColumn** is a composable function representing a Button and text that is shown to the user when they are not logged in
  *
- * @param modalText a String that will be displayed on the button and will tell the user what the button does
- * @param loginWithTwitch a function that will be called when the Button is clicked. This button should be used
- * to log in with Twitch
+ * @param loginWithTwitch a function, when called, will log the user out
  * */
 @Composable
-fun LoginWithTwitchBottomModalButton(
+fun LoginWithTwitchBottomModalButtonColumn(
     loginWithTwitch:()->Unit
 ){
     Column(
@@ -342,22 +342,6 @@ fun LoginWithTwitchBottomModalButton(
 }
 
 
-
-
-
-    /**
-     * Parts represents the most individual parts of [ScaffoldComponents] and should be thought of as the individual
-     * pieces that are used inside of a [Builders] to create a [ScaffoldComponents] implementation
-     * */
-
-        @OptIn(ExperimentalComposeUiApi::class)
-        fun Modifier.setTagAndId(tag: String): Modifier {
-            return this
-                .semantics { this.testTagsAsResourceId = true }
-                .testTag(tag)
-        }
-
-
         /**
          *
          * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
@@ -372,6 +356,9 @@ fun LoginWithTwitchBottomModalButton(
          * @param onNavigate a function used to navigate to the StreamView
          * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
          * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+         * @param density a float meant to represent the screen density of the current device
+         * @param updateClickedStreamInfo a function when called with a [ClickedStreamInfo] object,
+         * will populate the view model with the needed [ClickedStreamInfo] information
          * */
         @Composable
         fun LiveChannelRowItem(
@@ -412,14 +399,14 @@ fun LoginWithTwitchBottomModalButton(
                     onNavigate(R.id.action_homeFragment_to_streamFragment)
                 }
             ){
-                ImageWithViewCount(
+                ImageWithViewCountBox(
                     url = streamItem.thumbNailUrl,
                     height = height,
                     width = width,
                     viewCount = streamItem.viewerCount,
                     density =density
                 )
-                StreamTitleWithInfo(
+                StreamTitleWithInfoColumn(
                     streamerName = streamItem.userLogin,
                     streamTitle = streamItem.title,
                     gameTitle = streamItem.gameName
@@ -434,98 +421,19 @@ fun LoginWithTwitchBottomModalButton(
         }
 
 
-
-
-
-        /**
-         *
-         * - GettingStreamsError is a composable function that will appear to the user when there was an error
-         * retrieving the streams from the Twitch server
-         *
-         * */
-        @Composable
-        fun GettingStreamsError(
-            errorMessage: String
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp)
-                    .clickable { },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.secondary)
-                        .padding(5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    Text(errorMessage, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color=MaterialTheme.colorScheme.onSecondary)
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-            }
-        }
-        /**
-         *
-         * - EmptyFollowingList is a composable function that will appear to the user when there are no live channels
-         *
-         * */
-        @Composable
-        fun EmptyFollowingList() {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .clickable { },
-                elevation = 10.dp
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                    Text(stringResource(R.string.no_live_streams), fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = stringResource(R.string.pull_to_refresh_icon_description),
-                        tint = Color.Black,
-                        modifier = Modifier.size(35.dp)
-                    )
-                }
-            }
-        }
-
-
-
-
-
     /**
      *
-     * - ScaffoldDrawer is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+     * **LoginLogoutScaffoldDrawerBox** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
      *
      * @param userIsLoggedIn a boolean to determine if the user is logged in or not
+     * @param loginWithTwitch a function, when called, will log the user out
+     * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
+     * @param userIsLoggedIn a boolean to determine if the user is logged in or not
+     * @param lowPowerModeActive a Boolean used to determine if the user is in --low power mode-- or not
+     * @param changeLowPowerMode a function, when called with a Boolean, will determine the state of [lowPowerModeActive]
      * */
     @Composable
-    fun LoginLogoutScaffoldDrawer(
+    fun LoginLogoutScaffoldDrawerBox(
         showLogoutDialog: () -> Unit,
         loginWithTwitch: () -> Unit,
         scaffoldState: ScaffoldState,
@@ -560,11 +468,11 @@ fun LoginWithTwitchBottomModalButton(
 
                 }
 
-                AccountActionCardWithSwitch(
+                AccountActionSwitchCard(
                     checkedValue =lowPowerModeActive,
                     changeCheckedValue={newValue ->changeLowPowerMode(newValue)}
                 )
-                LowPowerModeAnimatedColumn(lowPowerModeActive)
+                LowPowerModeAnimatedColumnAnimatedVisibility(lowPowerModeActive)
 
 
             }
@@ -572,8 +480,16 @@ fun LoginWithTwitchBottomModalButton(
         }
 
     }
+
+
+/**
+ *
+ * **LowPowerModeAnimatedColumnAnimatedVisibility** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+ *
+ * @param checked a Boolean  used to determine if there should be an animation or not
+ * */
     @Composable
-    fun LowPowerModeAnimatedColumn(checked:Boolean){
+    fun LowPowerModeAnimatedColumnAnimatedVisibility(checked:Boolean){
         val density = LocalDensity.current
         AnimatedVisibility(
             visible = checked,
@@ -606,8 +522,16 @@ fun LoginWithTwitchBottomModalButton(
         }
 
     }
+
+/**
+ *
+ * **AccountActionSwitchCard** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+ *
+ * @param checkedValue a Boolean used to determine if the internal switch should change its state
+ * @param changeCheckedValue a function, when called, will change the value of the [checkedValue]
+ * */
     @Composable
-    fun AccountActionCardWithSwitch(
+    fun AccountActionSwitchCard(
         checkedValue:Boolean,
         changeCheckedValue:(Boolean)->Unit
     ) {
@@ -692,24 +616,24 @@ fun LoginWithTwitchBottomModalButton(
 
 
 
-@Stable
-class LiveChannelsLazyColumnScope(){
+
 
     /**
-     * - Contains 3 extra parts:
-     * 1) [EmptyFollowingList]
-     * 2) [LiveChannelRowItem]
-     * 3) [GettingStreamsError]
      *
-     * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
+     * - **LiveChannelsLazyColumn** is a composable function that will show the individual information for each live stream
      * retrieved from the Twitch server
      *
-     * @param urlList it is a nullable list of all the live channels returned by the twitch server
-     * @param urlListLoading a [Response][com.example.clicker.util.Response] class to represent which state the request to the twitch server is
-     * @param userId a String representing the userId of the user
-     * @param onNavigate a function used to navigate to the StreamView
-     * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
-     * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+     * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
+     * @param followedStreamerList a [NetworkNewUserResponse] object representing the list of the user's followed streams
+     * @param contentPadding a [PaddingValues] object meant to be used to determine the necessary space needed to properly display
+     * the composable to the user
+     * @param loadingIndicator a composable function that will be show to the user when [followedStreamerList] enters a loading state
+     * @param emptyList a composable function that will be shown to the user when [followedStreamerList] is a success state but has no data
+     * @param liveChannelRowItem a composable function that will show the individual information for each live stream retrieved from the Twitch server
+     * @param gettingStreamError a composable function that will be shown to the user to the user when [followedStreamerList] enters a Failed state
+     * @param newUserAlert a composable function that will be show to the user if [followedStreamerList]  enters a new user state
+     * @param showNetworkRefreshError a composable function that will be show to the user if [followedStreamerList] enters a network error state
+     * @param hapticFeedBackError a composable function that will be run when there is an error of anykind from [followedStreamerList]
      * */
     @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
@@ -717,18 +641,18 @@ class LiveChannelsLazyColumnScope(){
         bottomModalState: ModalBottomSheetState,
         followedStreamerList: NetworkNewUserResponse<List<StreamData>>,
         contentPadding: PaddingValues,
-        loadingIndicator:@Composable () -> Unit,
-        emptyList:@Composable LiveChannelsLazyColumnScope.() -> Unit,
-        liveChannelRowItem:@Composable LiveChannelsLazyColumnScope.(streamItem: StreamData) -> Unit,
-        gettingStreamError:@Composable LiveChannelsLazyColumnScope.(message:String) -> Unit,
-        newUserAlert:@Composable (message:String) ->Unit,
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
+        loadingIndicator:@Composable () -> Unit,
+        emptyList:@Composable () -> Unit,
+        liveChannelRowItem:@Composable (streamItem: StreamData) -> Unit,
+        gettingStreamError:@Composable (message:String) -> Unit,
+        newUserAlert:@Composable (message:String) ->Unit,
+
 
         ){
         val fontSize =MaterialTheme.typography.headlineMedium.fontSize
         val scope = rememberCoroutineScope()
-        val lazyColumnScope = remember() { LiveChannelsLazyColumnScope() }
 
         val errorScope = remember(){ ErrorScope(fontSize) }
 
@@ -762,19 +686,14 @@ class LiveChannelsLazyColumnScope(){
 
                             if (listData.isEmpty()) {
                                 item {
-                                    with(lazyColumnScope){
+
                                         emptyList()
-                                    }
+
                                 }
                             }
                             items(listData,key = { streamItem -> streamItem.userId }) { streamItem ->
 
-
-                                with(lazyColumnScope){
-
                                     liveChannelRowItem(streamItem)
-                                }
-
                             }
 
 
@@ -787,18 +706,18 @@ class LiveChannelsLazyColumnScope(){
                         item {
 
                             val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
-                            with(lazyColumnScope){
+
                                 gettingStreamError(message)
-                            }
+
                         }
                     }
                     is NetworkNewUserResponse.NetworkFailure -> {
                         val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
 
                         item{
-                            with(lazyColumnScope){
+
                                 gettingStreamError(message)
-                            }
+
                         }
 
                     }
@@ -831,13 +750,12 @@ class LiveChannelsLazyColumnScope(){
 
 
     /**
-     * - Contains 0 extra parts
      *
-     * - EmptyFollowingList is a composable function that will appear to the user when there are no live channels
+     * - **EmptyFollowingListCard** is a composable function that will appear to the user when there are no live channels
      *
      * */
     @Composable
-    fun EmptyFollowingList() {
+    fun EmptyFollowingListCard() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -871,14 +789,15 @@ class LiveChannelsLazyColumnScope(){
 
 
     /**
-     * - Contains 0 extra parts
      *
-     * - GettingStreamsError is a composable function that will appear to the user when there was an error
+     * - **GettingStreamsErrorCard** is a composable function that will appear to the user when there was an error
      * retrieving the streams from the Twitch server
+     *
+     * @param errorMessage a String representing what the user sees when this composable is shown
      *
      * */
     @Composable
-    fun GettingStreamsError(
+    fun GettingStreamsErrorCard(
         errorMessage: String
     ) {
         Card(
@@ -913,19 +832,18 @@ class LiveChannelsLazyColumnScope(){
         }
     }
 
-}/**END OF LAZYCOLUMNSCOPE*/
 
 
 /**
  *
- * - StreamTitleWithInfo is a Column that shows information about the streamer and the game they are playing
+ * - **StreamTitleWithInfoColumn** is a Column that shows information about the streamer and the game they are playing
  *
  * @param streamerName a String representing the name of the live streamer
  * @param streamTitle a String representing the title of the streamer's stream
  * @param gameTitle a String representing the title of the game they are playing
  * */
 @Composable
-fun StreamTitleWithInfo(
+fun StreamTitleWithInfoColumn(
     streamerName:String,
     streamTitle:String,
     gameTitle:String,
@@ -956,7 +874,7 @@ fun StreamTitleWithInfo(
 }
 /**
  *
- * - ImageWithViewCount is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
+ * - **ImageWithViewCountBox** is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
  * It will show the thumbnail for the stream and their current viewer count
  *
  * @param url a String representing the thumbnail image
@@ -965,7 +883,7 @@ fun StreamTitleWithInfo(
  * @param viewCount a Int representing the number of current viewers the streamer has
  * */
 @Composable
-fun ImageWithViewCount(
+fun ImageWithViewCountBox(
     url: String,
     height: Int,
     width: Int,
@@ -1005,6 +923,18 @@ fun ImageWithViewCount(
     }
 }
 
+
+
+/**
+ *  **setTagAndId** is a custom [semantics][androidx.compose.ui.semantics.semantics] modifier used to
+ *  help with accessibility and testing
+ * */
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.setTagAndId(tag: String): Modifier {
+    return this
+        .semantics { this.testTagsAsResourceId = true }
+        .testTag(tag)
+}
 
 
 
