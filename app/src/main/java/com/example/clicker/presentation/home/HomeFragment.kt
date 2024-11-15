@@ -1,21 +1,17 @@
 package com.example.clicker.presentation.home
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
-import android.graphics.Insets
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -28,7 +24,6 @@ import com.example.clicker.databinding.FragmentHomeBinding
 
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.models.UserTypes
-import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -38,15 +33,6 @@ import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-
-import android.Manifest
-import android.app.NativeActivity
-import android.content.Context
-import android.content.pm.PackageManager
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
-import com.example.clicker.cameraNDK.CameraNDKNativeActivity
-import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

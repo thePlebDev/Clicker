@@ -1,25 +1,16 @@
-package com.example.clicker.presentation.modChannels
+package com.example.clicker.presentation.moderatedChannelsHome
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import com.example.clicker.R
-import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentModChannelsBinding
 import com.example.clicker.ui.theme.AppTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.clicker.BuildConfig
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel

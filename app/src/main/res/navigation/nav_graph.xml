@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/modChannelsFragment"
-        android:name="com.example.clicker.presentation.modChannels.ModChannelsFragment"
+        android:name="com.example.clicker.presentation.moderatedChannelsHome.ModChannelsFragment"
         android:label="ModChannelsFragment" >
         <action
             android:id="@+id/action_modChannelsFragment_to_homeFragment"
