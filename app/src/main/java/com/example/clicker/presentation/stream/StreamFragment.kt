@@ -15,22 +15,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.Window
-import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.zIndex
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -44,8 +37,8 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.horizontalStreamOverlay.OverlayStreamRow
-import com.example.clicker.presentation.modChannels.modVersionThree.ModVersionThreeViewModel
-import com.example.clicker.presentation.modChannels.modVersionThree.ModViewComponentVersionThree
+import com.example.clicker.presentation.enhancedModView.ModVersionThreeViewModel
+import com.example.clicker.presentation.enhancedModView.ModViewComponentVersionThree
 import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.stream.clearHorizontalChat.ClearHorizontalChatView
@@ -72,7 +65,7 @@ class StreamFragment : Fragment() {
     private val autoModViewModel:AutoModViewModel by activityViewModels()
     private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
     private val modViewViewModel:ModViewViewModel by activityViewModels()
-    private val modVersionThreeViewModel:ModVersionThreeViewModel by activityViewModels()
+    private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
     private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
 
@@ -713,7 +706,7 @@ fun setOrientation(
     modViewDragStateViewModel: ModViewDragStateViewModel,
     modViewViewModel: ModViewViewModel,
     orientationIsLandscape:Boolean,
-    modVersionThreeViewModel:ModVersionThreeViewModel,
+    modVersionThreeViewModel: ModVersionThreeViewModel,
     hideSoftKeyboard:() ->Unit,
     showSoftKeyboard:()->Unit,
     streamInfoViewModel:StreamInfoViewModel
@@ -821,9 +814,6 @@ fun setOrientation(
                     ModViewComponentVersionThree(
                         closeModView ={
                             modViewDragStateViewModel.setShowModView(false)
-//                            val streamManagerUI: View = binding.root.findViewById(R.id.nested_draggable_compose_view)
-//                            val height = Resources.getSystem().displayMetrics.heightPixels.toFloat()
-//                            streamManagerUI.translationY = height
                         },
                         twitchUserChat=streamViewModel.listChats.toList(),
                         modViewViewModel=modViewViewModel,
@@ -832,9 +822,7 @@ fun setOrientation(
                             hideSoftKeyboard()
                         },
                         modVersionThreeViewModel =modVersionThreeViewModel,
-                        modViewDragStateViewModel=modViewDragStateViewModel,
                         chatSettingsViewModel=chatSettingsViewModel,
-                        streamInfoViewModel=streamInfoViewModel
                     )
 
 

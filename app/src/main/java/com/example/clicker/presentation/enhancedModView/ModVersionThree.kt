@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.modChannels.modVersionThree
+package com.example.clicker.presentation.enhancedModView
 
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,7 +35,6 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -53,7 +50,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -64,14 +60,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,20 +75,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -102,9 +93,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.UnbanStatusFilter
 import com.example.clicker.network.models.websockets.TwitchUserData
@@ -118,7 +107,6 @@ import com.example.clicker.presentation.modView.AutoModMessageListImmutableColle
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModActionData
 import com.example.clicker.presentation.modView.ModActionListImmutableCollection
-import com.example.clicker.presentation.modView.ModViewDragStateViewModel
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.UnbanRequestItemImmutableCollection
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -132,49 +120,35 @@ import kotlin.math.roundToInt
 import com.example.clicker.presentation.modView.slowModeListImmutable
 import com.example.clicker.presentation.modView.followerModeListImmutable
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
-import com.example.clicker.presentation.stream.BottomModalStateImmutable
-import com.example.clicker.presentation.stream.models.ClickedUserBadgesImmutable
 import com.example.clicker.presentation.stream.models.ClickedUsernameChatsWithDateSentImmutable
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
 import com.example.clicker.util.Response
 import com.example.clicker.util.WebSocketResponse
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
-import com.example.clicker.presentation.streamInfo.ChannelInfoLazyColumn
-import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
-import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.UnAuthorizedResponse
-import kotlinx.coroutines.delay
 
-enum class Sections {
-    ONE, TWO, THREE
-}
 
 //todo: this need to go inside of the Fragment, where the old modView is
 
 /**
- * - restartable
+ * - **ModViewComponentVersionThree**
  *
  * */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ModViewComponentVersionThree(
     closeModView:()->Unit,
-    modViewDragStateViewModel: ModViewDragStateViewModel,// unstable
     twitchUserChat: List<TwitchUserData>, // unstable this is the only one I am going to fix
     streamViewModel: StreamViewModel,// unstable
     modViewViewModel: ModViewViewModel,// unstable
     hideSoftKeyboard:()->Unit,
-    modVersionThreeViewModel:ModVersionThreeViewModel,// unstable
+    modVersionThreeViewModel: ModVersionThreeViewModel,// unstable
     chatSettingsViewModel: ChatSettingsViewModel,
-    streamInfoViewModel: StreamInfoViewModel
 ){
 
+    val scope = rememberCoroutineScope()
 
-    val clickedChatterModalState = androidx.compose.material.rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    val clickedUnbanRequestModalState = androidx.compose.material.rememberModalBottomSheetState(
+    val clickedChatterModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
@@ -184,16 +158,13 @@ fun ModViewComponentVersionThree(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    val scope = rememberCoroutineScope()
     val showUnbanRequestBottomModal:()->Unit =remember(unbanRequestModalState) { {
         scope.launch {
             unbanRequestModalState.show()
         }
     } }
-    var clickedChatterModalStateImmutable by remember { mutableStateOf(BottomModalStateImmutable(clickedChatterModalState)) }
 
-    val clickedUsernameChatsWithDateSent = streamViewModel.clickedUsernameChatsWithDateSent.toList()
-    val chatSettingsModalState = androidx.compose.material.rememberModalBottomSheetState(
+    val chatSettingsModalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
@@ -271,17 +242,7 @@ fun ModViewComponentVersionThree(
         modViewViewModel.changeModActionsChecked(newValue)
 
     } }
-    val getUserInformation:(String)->Unit = remember(modVersionThreeViewModel) { {userId->
-        modViewViewModel.getUserInformation(userId)
 
-    } }
-
-    val showUnbanRequestsBottomModal:()->Unit = remember() { {
-        scope.launch {
-            clickedUnbanRequestModalState.show()
-        }
-
-    } }
 
 
     val updateMostFrequentEmoteList:(EmoteNameUrl)->Unit =remember(streamViewModel) { {
@@ -308,24 +269,6 @@ fun ModViewComponentVersionThree(
         chatSettingsViewModel.changeCustomUsernameColor(newValue)
     } }
 
-    val changeStreamTitle:(String) -> Unit = remember(streamInfoViewModel) { { newTitle->
-        streamInfoViewModel.changeChannelTitle(newTitle)
-    } }
-
-
-    val addTag:(String) -> Unit = remember(streamInfoViewModel) { { newTagTitle->
-        streamInfoViewModel.addToTagList(newTagTitle)
-    } }
-    val removeTag:(String) -> Unit = remember(streamInfoViewModel) { { oldTag->
-        streamInfoViewModel.removeTagFromList(oldTag)
-    } }
-    val changeTagTitle:(String) -> Unit = remember(streamInfoViewModel) { { tagTitle->
-        streamInfoViewModel.changeTagTitle(tagTitle)
-    } }
-
-    val changeContentClassification:(ContentClassificationCheckBox) -> Unit = remember(streamInfoViewModel) { { newClassification->
-        streamInfoViewModel.changeContentClassification(newClassification)
-    } }
 
     val resolveUnbanRequest:(String,UnbanStatusFilter)->Unit = remember(modViewViewModel) { {id,status->
         modViewViewModel.resolveUnbanRequest(id,status)
@@ -360,12 +303,6 @@ fun ModViewComponentVersionThree(
         modViewViewModel.changeUnbanRequestChecked(newValue)
 
     } }
-
-
-
-
-
-
 
     ModalBottomSheetLayout(
         sheetState=unbanRequestModalState,
@@ -570,6 +507,8 @@ fun ModViewComponentVersionThree(
                      },
 
                      /*************** BOX TWO PARAMETERS***************************************************************/
+
+                     /*************** BOX TWO PARAMETERS***************************************************************/
                      boxTwoOffsetY = modVersionThreeViewModel.boxTwoOffsetY,
                      setBoxTwoOffset = { newValue ->
                          modVersionThreeViewModel.setBoxTwoOffset(
@@ -591,6 +530,8 @@ fun ModViewComponentVersionThree(
                      setBoxTwoDoubleTap = { newValue ->
                          setBoxTwoDoubleTap(newValue)
                      },
+
+                     /*************** BOX THREE PARAMETERS*****************************************************************/
 
                      /*************** BOX THREE PARAMETERS*****************************************************************/
                      boxThreeOffsetY = modVersionThreeViewModel.boxThreeOffsetY,
@@ -617,6 +558,9 @@ fun ModViewComponentVersionThree(
                          setBoxThreeDoubleTap(newValue)
 
                      },
+
+
+                     /*************** GENERICS PARAMETERS*****************************************************************/
 
 
                      /*************** GENERICS PARAMETERS*****************************************************************/
@@ -863,7 +807,7 @@ fun ModVersionThree(
     boxOneDoubleTap:Boolean,
     setBoxOneDoubleTap: (Boolean) -> Unit,
 
-/*************** BOX TWO PARAMETERS***********************************/
+    /*************** BOX TWO PARAMETERS***********************************/
     boxTwoOffsetY: Float,
     setBoxTwoOffset:(Float) ->Unit,
     boxTwoDragState: DraggableState,//unstable
@@ -934,7 +878,7 @@ fun ModVersionThree(
 
 
 
-) {
+    ) {
     //TODO: TAKE ALL OF THIS CODE AND MOVE IT TO A VIEWMODEL
 
 
@@ -985,7 +929,6 @@ fun ModVersionThree(
         bottomBar = {},
         floatingActionButton = {}
     ) { innerPadding ->
-        val scope = rememberCoroutineScope()
         Box(
             modifier = Modifier
                 .padding(innerPadding)
@@ -1739,29 +1682,6 @@ fun ModViewDrawerContent(
                 )
             }
 
-//            item{
-//                ElevatedCardExample(
-//                    Color.Yellow,
-//                    "Un-ban requests",
-//                    checkIndexAvailability={checkIndexAvailability(4)}
-//                )
-//            }
-//
-//            item{
-//                ElevatedCardExample(
-//                    Color.LightGray,
-//                    "Discord",
-//                    checkIndexAvailability={checkIndexAvailability(5)}
-//                )
-//            }
-//
-//            item{
-//                ElevatedCardExample(
-//                    Color.Cyan,
-//                    "Moderators",
-//                    checkIndexAvailability={checkIndexAvailability(6)}
-//                )
-//            }
 
         }
 
@@ -3459,20 +3379,3 @@ fun CustomTextField(
     }
 }
 
-@Composable
-fun ElevatedCardExample() {
-    ElevatedCard(
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
-        modifier = Modifier
-            .size(width = 240.dp, height = 100.dp)
-    ) {
-        Text(
-            text = "Elevated",
-            modifier = Modifier
-                .padding(16.dp),
-            textAlign = TextAlign.Center,
-        )
-    }
-}
