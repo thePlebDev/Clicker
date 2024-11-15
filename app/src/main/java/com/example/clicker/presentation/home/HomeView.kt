@@ -59,6 +59,26 @@ import com.example.clicker.util.Response
 
 
 
+
+/**
+ * - **ValidationView** is the external wrapper for all the compose code that will be shown inside of the [HomeFragment].
+ * It will handle all the UI related interactions when the user is on the homepage. It also act as the main api between
+ * ViewModels and the [HomeFragment] compose code
+ *
+ * @param homeViewModel a [HomeViewModel] object containing access to all the parameters and functions of the  [HomeViewModel]
+ * @param streamViewModel a [StreamViewModel] object containing access to all the parameters and functions of the  [StreamViewModel]
+ * @param streamInfoViewModel a [StreamInfoViewModel] object containing access to all the parameters and functions of the  [StreamInfoViewModel]
+ * @param chatSettingsViewModel a [ChatSettingsViewModel] object containing access to all the parameters and functions of the  [ChatSettingsViewModel]
+ * @param onNavigate a function, when called with an Integer, will navigate the user to the appropriate fragment
+ * @param autoModViewModel a [AutoModViewModel] object containing access to all the parameters and functions of the  [AutoModViewModel]
+ * @param updateModViewSettings a function, when called with an 4 String, will update information related to the current user
+ * @param createNewTwitchEventWebSocket a function, when called, will create a websocket to connect to the desired Twitch chat
+ * @param hapticFeedBackError a function, when called, will create a haptic feedback on the user's device. This function is
+ * meant to be called when an error occurs
+ * @param modViewViewModel a [ModViewViewModel] object containing access to all the parameters and functions of the  [ModViewViewModel]
+ * @param searchViewModel a [SearchViewModel] object containing access to all the parameters and functions of the  [SearchViewModel]
+ *
+ * */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ValidationView(
@@ -75,7 +95,6 @@ fun ValidationView(
 
     modViewViewModel: ModViewViewModel,
     searchViewModel: SearchViewModel,
-    permissionCheck:()->Unit,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -218,7 +237,10 @@ fun ValidationView(
 }/******END OF THE VALIDATION VIEW********/
 
 
-
+/**
+ * - **disableClickAndRipple** is a custom modifier that makes a composable function un-clickable
+ *
+ * */
 fun Modifier.disableClickAndRipple(): Modifier = composed {
     clickable(
         enabled = false,
