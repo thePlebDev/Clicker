@@ -52,7 +52,7 @@ import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
 /**
- * **HomeFragment** is a [Fragment] subclass. This class acts as the main entry point for a returning user
+ * **HomeFragment** is a [Fragment] subclass. This class acts as the main entry point for a returning user, both in UI and functionality
  *
  *
  */
@@ -157,13 +157,6 @@ class HomeFragment : Fragment(){
                             streamInfoViewModel=streamInfoViewModel,
                             modViewViewModel=modViewViewModel,
                             searchViewModel=searchViewModel,
-                            permissionCheck = {
-                               // takePhoto()
-                                val intent = Intent(requireActivity(), CameraNDKNativeActivity::class.java)
-
-
-                                startActivity(intent)
-                            }
 
                         )
                     }
