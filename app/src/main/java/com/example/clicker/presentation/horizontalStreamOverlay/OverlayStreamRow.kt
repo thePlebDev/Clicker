@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +47,19 @@ import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.NetworkNewUserResponse
 
 
+/**
+ * - **OverlayStreamRow** is the main compose component for additional UI when the user is in horizontal mode and shows
+ * drags up
+ *
+ * @param homeViewModel a [HomeViewModel] object containing access to all the parameters and functions of the  [HomeViewModel]
+ * @param streamViewModel a [StreamViewModel] object containing access to all the parameters and functions of the  [StreamViewModel]
+ * @param loadURL a function, when called with a String, updates the Stream UI to show a new Stream
+ * @param createNewTwitchEventWebSocket a function, when called, will create a new websocket to connect to the stream
+ * @param updateClickedStreamInfo a function, when called with a [ClickedStreamInfo] object, will update necessary stream info
+ * @param updateModViewSettings a function, when called with 4 Strings, will update necessary mod info
+ * @param updateStreamerName a function, when called with 4 Strings, will update necessary stream related info
+ * @param streamInfoViewModel  a [StreamInfoViewModel] object containing access to all the parameters and functions of the  [StreamInfoViewModel]
+ * */
 @Composable
 fun OverlayStreamRow(
     homeViewModel:HomeViewModel,
@@ -192,6 +206,22 @@ fun LazyRowViewTesting(
 
 
 
+
+/**
+ * - **ImageWithViewCount** is a composable meant to show the thumbnail of the a stream with its current stream viewership
+ *
+ * @param url a String that represents the URL needed to load the stream
+ * @param loadURL a function, when called with a String, updates the Stream UI to show a new Stream
+ * @param height a Int representing the height in a aspect ratio that will make the images look nice
+ * @param width a Int representing the width in a aspect ratio that will make the images look nice
+ * @param viewCount A Int representing the amount of individuals currently watching a stream
+ * @param density a Float meant to represent the screen density of the current device
+ * @param streamTitle a String meant to represent the current title of the stream
+ * @param streamerName a String meant to represent the current username of the streamer
+ * @param clickedStreamName a String meant to represent the current username of clicked stream
+ * @param reconnectWebSocketChat a function, when called with a String, will attempt to reconnect with the previously dissconected websocket
+ * @param updateClickedStreamerName a function, when called with a String, will update the [clickedStreamName] name
+ * */
 @Composable
 fun ImageWithViewCount(
     url: String,
@@ -250,7 +280,7 @@ fun ImageWithViewCount(
                     },
                     contentDescription = stringResource(R.string.sub_compose_async_image_description)
                 )
-                androidx.compose.material.Text(
+                Text(
                     "${viewCount}",
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.onPrimary,

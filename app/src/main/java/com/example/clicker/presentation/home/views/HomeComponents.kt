@@ -52,7 +52,7 @@ import com.example.clicker.util.Response
 
 
     /**
-     * - HomeViewImplementation is the main compose component for the [HomeFragment][com.example.clicker.presentation.home.HomeFragment].
+     * - **HomeViewImplementation** is the main compose component for the [HomeFragment][com.example.clicker.presentation.home.HomeFragment].
      * - All the UI that is shown to the user on the home page is implemented in this composable
      *
      * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
@@ -69,7 +69,7 @@ import com.example.clicker.util.Response
      * @param width a Int representing the width in a aspect ratio that will make the images look nice
      *
      * @param userIsAuthenticated a Boolean used to determine if the user is logged in or not
-     * @param screenDensity a float meant to represent the screen density of the current device
+     * @param screenDensity a Float meant to represent the screen density of the current device
      * @param homeRefreshing a Boolean used to determine if the user has pulled the refreshing code or not
      * @param homeRefreshFunc a function, when called, will refresh the user's home page
      *
@@ -207,7 +207,7 @@ import com.example.clicker.util.Response
 
 
         /**
-         * - HomeModalBottomSheetBuilder uses [Slotting](https://chrisbanes.me/posts/slotting-in-with-compose-ui/)
+         * - **HomeModalBottomSheetBuilder** uses [Slotting](https://chrisbanes.me/posts/slotting-in-with-compose-ui/)
          * to create what a logged in user sees when they open the application
          *
          * @param loginBottomModal a composable function that will be shown on the bottom modal

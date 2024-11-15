@@ -92,7 +92,7 @@ import kotlinx.coroutines.launch
 
     /**
      *
-     * - HomeViewScaffold is used to create the scaffold home view.
+     * - **HomeViewScaffold** is used to create the scaffold home view.
      * Essentially it is what the user sees when the data loads from the twitch server plus a
      * Scaffold drawer which allows the user to login and logout
      *
@@ -344,7 +344,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
 
         /**
          *
-         * - LiveChannelRowItem is a composable function that will show the individual information for each live stream
+         * - **LiveChannelRowItem** is a composable function that will show the individual information for each live stream
          * retrieved from the Twitch server
          *
          * @param updateStreamerName a function used to update the current streamer the user has clicked on. This information is used
@@ -568,7 +568,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
 
     /**
      *
-     * - AccountActionCard is a clickable card that can be clicked on the trigger the action of [onCardClick]
+     * - **AccountActionCard** is a clickable card that can be clicked on the trigger the action of [onCardClick]
      *
      * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
      * @param onCardClick a function will be run once the Card is clicked
