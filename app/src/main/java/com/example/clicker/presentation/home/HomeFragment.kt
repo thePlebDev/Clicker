@@ -52,36 +52,61 @@ import com.example.clicker.nativeLibraryClasses.CameraStreamNDK
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
 /**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * **HomeFragment** is a [Fragment] subclass. This class acts as the main entry point for a returning user
+ *
+ *
  */
 @AndroidEntryPoint
 class HomeFragment : Fragment(){
 
+    /**
+     * - the internal  varible for this class's [view binding](https://developer.android.com/topic/libraries/view-binding) implementation
+     * */
     private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
-    private val homeViewModel: HomeViewModel by activityViewModels()
-    private val streamViewModel: StreamViewModel by activityViewModels()
-    private val autoModViewModel: AutoModViewModel by activityViewModels()
-    private val modViewViewModel: ModViewViewModel by activityViewModels()
-    private val logoutViewModel: LogoutViewModel by activityViewModels()
-    private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
-    private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
-    private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
-    private val searchViewModel: SearchViewModel by activityViewModels()
-//    private val ndkCamera = CameraStreamNDK()
 
-    private var PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO
-        )
+    /**
+     * - The external version of [_binding]
+     * */
+    private val binding get() = _binding!!
+
+
+    /**
+     * the variable that acts as access to all the home ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val homeViewModel: HomeViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the stream ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val streamViewModel: StreamViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the autoMod ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val autoModViewModel: AutoModViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the modView ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the logout ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val logoutViewModel: LogoutViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the chat ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the streamInfo ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the search ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val searchViewModel: SearchViewModel by activityViewModels()
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val currentOrientation = getResources().getConfiguration().orientation;
-        Log.d("HomeFragmentLifeCycle","onCreate")
 
     }
 
@@ -100,48 +125,14 @@ class HomeFragment : Fragment(){
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
-       // checkIfUserIsNew(view)
-        //checkUserType(view)
+
         val value = homeViewModel.determineUserType()
-        view.viewTreeObserver.addOnPreDrawListener(
-            object : ViewTreeObserver.OnPreDrawListener {
-                override fun onPreDraw(): Boolean {
-                    // Check if the initial data is ready.
-                    return when(value){
-                        UserTypes.NEW ->{
-                            Log.d("HomeFragmentCheck","NEW")
-                            findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
-                            view.viewTreeObserver.removeOnPreDrawListener(this)
-                            true
-                        }
-                        UserTypes.RETURNING ->{
-                            Log.d("HomeFragmentCheck","RETURNING")
-                            view.viewTreeObserver.removeOnPreDrawListener(this)
-                            true
-                        }
-                        UserTypes.LOGGEDOUT ->{
-                            Log.d("HomeFragmentCheck","LOGGEDOUT")
-                            view.viewTreeObserver.removeOnPreDrawListener(this)
-                            findNavController().navigate(R.id.action_homeFragment_to_logoutFragment)
-                            true
-                        }
-                    }
-                }
-            }
-        )
+        checkUserType(view,value)
+
         if(value !=UserTypes.NEW){
             binding.composeView.apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
                 setContent {
-
-                    // twitchIntent.setPackage("com.example.clicker")
-
-
-                    val height = getScreenHeight(requireActivity())
-                    val quarterTotalScreenHeight = height/8
-                    val loadingPadding = quarterTotalScreenHeight/14
-
-
 
                     AppTheme{
                         ValidationView(
@@ -186,109 +177,31 @@ class HomeFragment : Fragment(){
         return view
     }
 
-    //screen width taking into account any space occupied by system bars.
-    fun getScreenWidth(activity: Activity): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val windowMetrics = activity.windowManager.currentWindowMetrics
-            val insets: Insets = windowMetrics.windowInsets
-                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
-            windowMetrics.bounds.width() - insets.left - insets.right //width of the content area of the current window or activity
-        } else {
-            val displayMetrics = DisplayMetrics()
-            activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
-            displayMetrics.widthPixels // total width of the screen, regardless of the current activity,
-        }
-    }
-
-    //screen height taking into account any space occupied by system bars.
-    fun getScreenHeight(activity: Activity): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val windowMetrics = activity.windowManager.currentWindowMetrics
-            val insets: Insets = windowMetrics.windowInsets
-                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
-            windowMetrics.bounds.height() - insets.top - insets.bottom
-        } else {
-            val displayMetrics = DisplayMetrics()
-            activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
-            displayMetrics.heightPixels
-        }
-    }
-
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
     override fun onPause() {
         super.onPause()
-        Log.d("HomeFragmentLifeCycle","onPause")
+
     }
-
-
-
-    private val permReqLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val granted = permissions.entries.all {
-                it.value == true
-            }
-            if (granted) {
-                displayCameraFragment()
-            }
-        }
-
-    private fun takePhoto() {
-        activity?.let {
-            if (hasPermissions(activity as Context, PERMISSIONS)) {
-                displayCameraFragment()
-            } else {
-                permReqLauncher.launch(
-                    PERMISSIONS
-                )
-            }
-        }
-    }
-
-    // util method
-    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
-        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun displayCameraFragment() {
-        // open camera fragment
-        // THis is where the request for the native methods are to be made
-        //ndkCamera.notifyCameraPermission(true)
-    }
-
-
-
-    /******END*****************/
-
 
     override fun onResume() {
         super.onResume()
         Log.d("HomeFragmentLifeCycle","onResume")
         logoutViewModel.setShowLogin(false)
-        //networkMonitorViewModel.startService()
-       // setImmersiveEdgeToEdgeMode(requireActivity().window)
-        val screenDensity =Resources.getSystem().displayMetrics.density
-        //networkMonitorViewModel.startService(serviceIntent)
-        val height = Resources.getSystem().displayMetrics.heightPixels
+        checkForUri()
+        setAspectRatio()
 
+    }
 
-
+    /**
+     * - **checkForUri** is a function that runs on every call to [onResume].
+     * This function will check for any incoming uri's and extract the OAuthToken if any Uri's are found
+     * */
+    private fun checkForUri(){
         val uri: Uri? = activity?.intent?.data
-
-        val width = Resources.getSystem().displayMetrics.widthPixels / 2
-        val aspectHeight = (width * 0.5625).toInt()
-        Log.d("onResumeHeight","height->$aspectHeight")
-        Log.d("onResumeHeight","width->$width")
-
-        homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
-        searchViewModel.updateAspectHeightWidthSearchView(width,aspectHeight)
-
         Log.d("Twitchval", "uri -> $uri")
-
         if (uri != null && uri.toString().startsWith(BuildConfig.REDIRECT_URL)) {
             Log.d("Twitchval", uri.toString())
 
@@ -299,29 +212,46 @@ class HomeFragment : Fragment(){
         }
     }
 
+    /**
+     * - **setAspectRatio** is a function that runs on every call to [onResume].
+     * This function will identify the device's screen density use to to properly calculate the screen's aspect ratio
+     * */
+    private fun setAspectRatio(){
+        val screenDensity =Resources.getSystem().displayMetrics.density
+        val width = Resources.getSystem().displayMetrics.widthPixels / 2
+        val aspectHeight = (width * 0.5625).toInt()
+        Log.d("onResumeHeight","height->$aspectHeight")
+        Log.d("onResumeHeight","width->$width")
+
+        homeViewModel.updateAspectWidthHeight(width, aspectHeight,screenDensity)
+        searchViewModel.updateAspectHeightWidthSearchView(width,aspectHeight)
+
+    }
 
 
     /**
      * checkUserType() is a thread blocking function that is used to determine if the user is a new user, returning user or a
      * logged out user
      * */
-    private fun checkUserType(view: FrameLayout){
+    private fun checkUserType(view: FrameLayout,value: UserTypes){
         view.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     // Check if the initial data is ready.
-
-                    return when(homeViewModel.determineUserType()){
+                    return when(value){
                         UserTypes.NEW ->{
+                            Log.d("HomeFragmentCheck","NEW")
                             findNavController().navigate(R.id.action_homeFragment_to_newUserFragment)
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             true
                         }
                         UserTypes.RETURNING ->{
+                            Log.d("HomeFragmentCheck","RETURNING")
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             true
                         }
                         UserTypes.LOGGEDOUT ->{
+                            Log.d("HomeFragmentCheck","LOGGEDOUT")
                             view.viewTreeObserver.removeOnPreDrawListener(this)
                             findNavController().navigate(R.id.action_homeFragment_to_logoutFragment)
                             true
