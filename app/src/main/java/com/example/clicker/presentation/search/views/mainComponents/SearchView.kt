@@ -79,9 +79,7 @@ import com.example.clicker.network.clients.Game
 import com.example.clicker.network.clients.GameInfoResponse
 import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
-import com.example.clicker.network.models.twitchRepo.StreamData
-import com.example.clicker.presentation.home.views.ImageWithViewCount
-import com.example.clicker.presentation.home.views.StreamTitleWithInfo
+
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.Response
 import androidx.compose.ui.text.input.TransformedText

@@ -41,8 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.R
-import com.example.clicker.farmingGame.GL2JNIView
-import com.example.clicker.farmingGame.NewTestingGLSurfaceView
+
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
@@ -52,7 +51,7 @@ import com.example.clicker.presentation.search.SearchViewModel
 
 
 import com.example.clicker.presentation.stream.AutoModViewModel
-import com.example.clicker.presentation.stream.GLSurfaceViewComposable
+
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel

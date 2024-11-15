@@ -26,9 +26,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.clicker.farmingGame.GL2JNIView
+
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.presentation.home.testing3DCode.GL2JNIView
 import com.example.clicker.presentation.modView.ListTitleValue
 import com.example.clicker.presentation.modView.ModViewViewModel
 import com.example.clicker.presentation.modView.slowModeListImmutable
