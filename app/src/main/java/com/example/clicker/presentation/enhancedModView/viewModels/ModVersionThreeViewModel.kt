@@ -26,10 +26,18 @@ import javax.inject.Inject
 
 
 
+/**
+ *  - **ModVersionThreeViewModel** is a [ViewModel] responsible for handling all of the UI and positioning data
+ *  related to the enhanced mod view feature
+ *
+ * */
 @HiltViewModel
 class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
-    //This stateList is what represents the states position relative to each other
+    /**
+     * - **stateLis** is a [MutableStateFlow] object, containing a List of [ModArrayData] objects
+     *  It  represents  the metadata of the box states position relative to each other
+     * */
     private val stateList = MutableStateFlow(listOf(
         ModArrayData((Resources.getSystem().displayMetrics.heightPixels / 8.4).dp,1,
             Positions.TOP,
@@ -44,33 +52,84 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
     )
 
 
-    //Todo: this should get changed over to z-index
+    /**
+     * - **_boxesZIndex** is a [MutableState][androidx.compose.runtime.MutableState] object, containing a  [BoxZIndexs] object
+     *  It  represents  the z-indexes of all the positioned boxes. false means a z-index of 0 and true means a z-index of 1
+     * */
     private val _boxesZIndex = mutableStateOf(BoxZIndexs(false,false,false))
+    /**
+     * - **boxesZIndex** public non-mutable version of [_boxesZIndex]
+     * */
     val boxesZIndex: State<BoxZIndexs> = _boxesZIndex
 
-    //todo: this should get changed to the boxesDragging
+    /**
+     * - **_doubleTap** is a [MutableState][androidx.compose.runtime.MutableState] object, containing a [DoubleTap] object
+     *  It  represents if the box is being dragged or not
+     * */
     private val _doubleTap = mutableStateOf(DoubleTap(false,false,false))
+    /**
+     * - **boxesZIndex** public non-mutable version of [_doubleTap]
+     * */
     val doubleTap: State<DoubleTap> = _doubleTap
 
+    /**
+     * - **_showPlacementError** is a [MutableState][androidx.compose.runtime.MutableState] object, Boolean
+     *  It is used to determine if the user has any room left to place. true indicated that the user has no space
+     *  left to place the any more boxes and a UI should be shown
+     * */
     private val _showPlacementError = mutableStateOf(false)
+    /**
+     * - **showPlacementError** public non-mutable version of [_showPlacementError]
+     * */
     val showPlacementError: State<Boolean> = _showPlacementError
 
+
+    /**
+     * - **section2height** is a Float meant to represent the initial position of box two
+     * */
     val section2height =(Resources.getSystem().displayMetrics.heightPixels / 3.17).toFloat()
+    /**
+     * - **section3Height** is a Float meant to represent the initial position of box three
+     * */
     val section3Height =((Resources.getSystem().displayMetrics.heightPixels / 3.17)*2).toFloat()
+    /**
+     * - **deleteOffset** is a Float meant to represent the delete section for the UI(where user can drag to be removed)
+     * */
     val deleteOffset = section3Height +100
 
+    /**
+     * - **_fullChat** is a [MutableState][androidx.compose.runtime.MutableState] object, containing a Boolean
+     *  It  represents if the box is in full chat mode or not
+     * */
     private val _fullChat = mutableStateOf(false)
+    /**
+     * - **fullChat** public non-mutable version of [_fullChat]
+     * */
     val fullChat:State<Boolean> = _fullChat
 
 
+    /**
+     * - **_doubleClickAndDrag** is a [MutableState][androidx.compose.runtime.MutableState] object, containing a Boolean
+     *  It  represents if any box has been double tapped
+     * */
     private val _doubleClickAndDrag = mutableStateOf(true)
+    /**
+     * - **doubleClickAndDrag** public non-mutable version of [_doubleClickAndDrag]
+     * */
     val doubleClickAndDrag: State<Boolean> = _doubleClickAndDrag
 
+    /**
+     * - **updateDoubleClickAndDrag** a function called with a Boolean, which is used to change the value of [_doubleClickAndDrag]
+     * */
+    fun updateDoubleClickAndDrag(newValue:Boolean){
+        _doubleClickAndDrag.value = newValue
+    }
 
 
-
-    init{
-
+    /**
+     * - **logHeightsNWidths** is used as a utility function that when called logs necessary heights and widths
+     * */
+    private fun logHeightsNWidths(){
         val height =((Resources.getSystem().displayMetrics.heightPixels / 8.4)).dp // height for the indiv boxes. 264.dp
         val nonDPHeight =((Resources.getSystem().displayMetrics.heightPixels / 3.17))  // animation height. When dragging stops. 700.0
         Log.d("TheIndivHeight","height of indiv box DP--> $height")
@@ -87,9 +146,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         Log.d("TheIndivHeight","density -> ${((heightPixels / density)/3.2).dp}")
         Log.d("TheIndivHeight","boxOneHeight -> ${((Resources.getSystem().displayMetrics.heightPixels / 8.4)).dp }")
     }
-    fun updateDoubleClickAndDrag(newValue:Boolean){
-        _doubleClickAndDrag.value = newValue
-    }
+
 
     /****************************************BOX ONE RELATED STATE*********************************************************/
     var boxOneOffsetY by mutableStateOf(0f)
