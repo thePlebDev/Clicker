@@ -18,9 +18,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
-import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.modView.followerModeListImmutable
-import com.example.clicker.presentation.modView.slowModeListImmutable
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.followerModeListImmutable
+import com.example.clicker.presentation.enhancedModView.viewModels.slowModeListImmutable
 
 
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
@@ -43,7 +43,7 @@ fun HorizontalChat(
     streamViewModel: StreamViewModel,
     autoModViewModel:AutoModViewModel,
     chatSettingsViewModel: ChatSettingsViewModel,
-    modViewViewModel:ModViewViewModel,
+    modViewViewModel: ModViewViewModel,
     hideSoftKeyboard:()->Unit,
     streamInfoViewModel: StreamInfoViewModel
 ){

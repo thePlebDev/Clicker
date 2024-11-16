@@ -1,9 +1,6 @@
-package com.example.clicker.presentation.modView
+package com.example.clicker.presentation.enhancedModView.viewModels
 
-import android.content.res.Resources
-import android.os.MessageQueue
 import android.util.Log
-import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -12,10 +9,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.clicker.R
 import com.example.clicker.network.clients.BlockedTerm
 import com.example.clicker.network.clients.ManageAutoModMessage
 import com.example.clicker.network.clients.UnbanRequestItem
@@ -23,105 +18,42 @@ import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
 import com.example.clicker.network.domain.TwitchEventSubscriptions
 import com.example.clicker.network.domain.TwitchModRepo
 import com.example.clicker.network.domain.UnbanStatusFilter
-import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
-import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.network.repository.ClickedUnbanRequestInfo
-import com.example.clicker.network.repository.TwitchEventSub
 import com.example.clicker.network.repository.util.AutoModQueueMessage
-import com.example.clicker.network.websockets.TwitchEventSubWebSocket
-import com.example.clicker.presentation.stream.util.FilteredChatterListImmutableCollection
+import com.example.clicker.presentation.enhancedModView.AutoModMessageListImmutableCollection
+import com.example.clicker.presentation.enhancedModView.ClickedUnbanRequestUser
+import com.example.clicker.presentation.enhancedModView.ImmutableModeList
+import com.example.clicker.presentation.enhancedModView.ListTitleValue
+import com.example.clicker.presentation.enhancedModView.ModActionData
+import com.example.clicker.presentation.enhancedModView.ModActionListImmutableCollection
+import com.example.clicker.presentation.enhancedModView.ModViewStatus
+import com.example.clicker.presentation.enhancedModView.ModViewViewModelUIState
+import com.example.clicker.presentation.enhancedModView.RequestIds
+import com.example.clicker.presentation.enhancedModView.UnbanRequestItemImmutableCollection
 import com.example.clicker.util.Response
 import com.example.clicker.util.UnAuthorizedResponse
 import com.example.clicker.util.WebSocketResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.Flow.Subscriber
 import javax.inject.Inject
 
 
-data class RequestIds(
-    val oAuthToken:String ="",
-    val clientId:String="",
-    val broadcasterId:String="",
-    val moderatorId:String ="",
-    val sessionId:String =""
-)
-data class ModViewViewModelUIState(
-    val showSubscriptionEventError:Response<Boolean> = Response.Loading,
-    val showAutoModMessageQueueErrorMessage:Boolean = false,
-    val chatSettings: ChatSettingsData = ChatSettingsData(false,null,false,null,false,false),
-    val enabledChatSettings:Boolean = true,
-    val selectedSlowMode:ListTitleValue =ListTitleValue("Off",null),
-    val selectedFollowerMode:ListTitleValue =ListTitleValue("Off",null),
-    val modViewTotalNotifications:Int =0,
-
-    val modActionNotifications:Boolean = true,
-    val autoModMessagesNotifications:Boolean = true,
-    val unbanRequestNotifications:Boolean = true,
 
 
-    val emoteOnly:Boolean = false, //todo: THESE TWO ARE REALLY MESSING THINGS UP
-    val subscriberOnly:Boolean = false,//todo: THESE TWO ARE REALLY MESSING THINGS UP
-
-)
-data class ListTitleValue(
-    val title:String,
-    val value:Int?
-)
-
-data class ModViewStatus(
-    val modActions:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-    val autoModMessageStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-    val channelPointsRewardQueueStatus:WebSocketResponse<Boolean> = WebSocketResponse.Loading,
-)
-
-/**
- * - ModActionData represents an individual event sent by the Twitch servers when a moderator takes action inside of the chat
- * - You can read more about the moderation action [HERE](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelmoderate)
- *
- * @param title a String that represents the main information shown to the user when a moderation action takes place. This should be as short as possible
- * @param message a String that represents information that needs to be shown to the user. It is meant to elaborate on [title].
- * Should tell the details of this moderation action
- * @param iconId a Int that represents the id of the drawable resource that is going to be used as the icon.
- * This will be turned into a [Painter] object and shown to the user as an icon next to [title]
- * @param secondaryMessage a nullable String object that represents a message that can be shown to the user. The text is shown in red.
- * This is mainly only used for displaying text that was deleted during a message deleted moderation event.
- *
- * */
-data class ModActionData(
-    val title:String,
-    val message:String,
-    val iconId: Int,
-    val secondaryMessage:String? =null
-)
 
 val followerModeList =listOf(
-ListTitleValue("Off",null),ListTitleValue("0 minutes(any followers)",0),
+ListTitleValue("Off",null), ListTitleValue("0 minutes(any followers)",0),
 ListTitleValue("10 minutes(most used)",10),
-ListTitleValue("30 minutes",30),ListTitleValue( "1 hour",60),
+ListTitleValue("30 minutes",30), ListTitleValue( "1 hour",60),
 ListTitleValue("1 day",1440),
     ListTitleValue("1 week",10080 ),
     ListTitleValue("1 month",43200 ),
     ListTitleValue("3 months",129600 )
 
-)
-
-data class ClickedUnbanRequestUser(
-    val message:String,
-    val userName:String,
-    val requestId: String,
-    val status:String
-)
-@Immutable
-data class ImmutableModeList(
-    val modeList:List<ListTitleValue>
 )
 val followerModeListImmutable = ImmutableModeList(followerModeList)
 
@@ -140,33 +72,6 @@ val slowModeList =listOf(
 )
 val slowModeListImmutable = ImmutableModeList(slowModeList)
 
-/**
- * AutoModMessageListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
- *  always marking  List as unstable.
- *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
- *
- * */
-@Immutable
-data class AutoModMessageListImmutableCollection(
-    val autoModList: List<AutoModQueueMessage>
-)
-
-/**
- * ModActionListImmutableCollection is a Wrapper object created specifically to handle the problem of the Compose compiler
- *  always marking List as unstable.
- *  - You can read more about this Wrapper solution, [HERE](https://developer.android.com/develop/ui/compose/performance/stability/fix#annotated-classes)
- *
- * @param modActionList a list of [ModActionData] objects.
- * */
-@Immutable
-data class ModActionListImmutableCollection(
-    val modActionList: List<ModActionData>
-)
-
-@Immutable
-data class UnbanRequestItemImmutableCollection(
-    val list:List<UnbanRequestItem>
-)
 
 @HiltViewModel
 class ModViewViewModel @Inject constructor(
@@ -181,7 +86,9 @@ class ModViewViewModel @Inject constructor(
     /**
      * This is the data that is shown to in the modal once the unban request is selected
      * */
-    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(ClickedUnbanRequestUser("","","",""))
+    private val _clickedUnbanRequestUser: MutableState<ClickedUnbanRequestUser> = mutableStateOf(
+        ClickedUnbanRequestUser("","","","")
+    )
     val clickedUnbanRequestUser: State<ClickedUnbanRequestUser> = _clickedUnbanRequestUser
 
     private val _optionalResolutionText: MutableState<String> = mutableStateOf("")
@@ -219,9 +126,11 @@ class ModViewViewModel @Inject constructor(
  *--------------------------------------------------- Unban request list items------------------------------------------------------------------------------------
  * */
     var unbanRequestItemList = mutableStateListOf<UnbanRequestItem>()
-    private val _getUnbanRequestList: MutableState<UnbanRequestItemImmutableCollection> = mutableStateOf(UnbanRequestItemImmutableCollection(
+    private val _getUnbanRequestList: MutableState<UnbanRequestItemImmutableCollection> = mutableStateOf(
+        UnbanRequestItemImmutableCollection(
         unbanRequestItemList
-    ))
+    )
+    )
     fun sortUnbanRequestList(status:String){
         val updatedList = _getUnbanRequestList.value.list.toMutableList()
        val frontList= _getUnbanRequestList.value.list.filter { it.status == status }
@@ -432,7 +341,9 @@ class ModViewViewModel @Inject constructor(
 
 
     /*****autoModMessageList END*****/
-    private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(ModViewViewModelUIState())
+    private val _uiState: MutableState<ModViewViewModelUIState> = mutableStateOf(
+        ModViewViewModelUIState()
+    )
     val uiState: State<ModViewViewModelUIState> = _uiState
 
      val blockedTermsList = mutableStateListOf<BlockedTerm>()

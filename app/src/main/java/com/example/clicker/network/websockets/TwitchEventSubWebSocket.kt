@@ -1,8 +1,6 @@
 package com.example.clicker.network.websockets
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.example.clicker.R
 import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.domain.TwitchEventSubscriptionWebSocket
@@ -12,7 +10,8 @@ import com.example.clicker.network.repository.util.AutoModMessageUpdate
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.repository.util.ChatSettingsParsing
 import com.example.clicker.network.repository.util.ModActionParsing
-import com.example.clicker.presentation.modView.ModActionData
+import com.example.clicker.presentation.enhancedModView.ModActionData
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
@@ -20,12 +19,6 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

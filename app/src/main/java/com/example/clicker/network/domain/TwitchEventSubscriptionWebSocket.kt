@@ -1,13 +1,12 @@
 package com.example.clicker.network.domain
 
-import androidx.compose.runtime.State
 import com.example.clicker.network.clients.UnbanRequestItem
 import com.example.clicker.network.models.twitchStream.ChatSettingsData
 import com.example.clicker.network.repository.util.AutoModMessageUpdate
 import com.example.clicker.network.repository.util.AutoModQueueMessage
 import com.example.clicker.network.websockets.ResolvedUnBanRequestStatusNId
+import com.example.clicker.presentation.enhancedModView.ModActionData
 
-import com.example.clicker.presentation.modView.ModActionData
 import kotlinx.coroutines.flow.StateFlow
 
 
