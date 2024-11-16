@@ -24,7 +24,7 @@ import com.example.clicker.databinding.FragmentHomeBinding
 
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.models.UserTypes
-import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel

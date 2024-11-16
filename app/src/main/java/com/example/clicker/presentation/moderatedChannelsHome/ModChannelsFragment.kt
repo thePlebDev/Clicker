@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel

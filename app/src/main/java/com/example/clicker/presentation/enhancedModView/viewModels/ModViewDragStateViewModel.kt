@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.modView
+package com.example.clicker.presentation.enhancedModView.viewModels
 
 import android.content.res.Resources
 import android.util.Log
@@ -10,38 +10,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.presentation.enhancedModView.BoxDragStateOffsets
+import com.example.clicker.presentation.enhancedModView.BoxTypeIndex
+import com.example.clicker.presentation.enhancedModView.BoxZIndexes
+import com.example.clicker.presentation.enhancedModView.IndivBoxHeight
+import com.example.clicker.presentation.enhancedModView.IsBoxDragging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class BoxDragStateOffsets(
-    val boxOneOffsetY:Float = 0f,
-    val boxTwoOffsetY:Float = 700f,
-    val boxThreeOffsetY:Float = 700f *2,
-)
-data class IsBoxDragging(
-    val boxOneDragging:Boolean = false,
-    val boxTwoDragging:Boolean = false,
-    val boxThreeDragging:Boolean = false,
-)
-data class BoxZIndexes(
-    val boxOneZIndex:Float = 0F,
-    val boxTwoZIndex:Float = 0F,
-    val boxThreeZIndex:Float = 0F,
-
-    )
-data class BoxTypeIndex(
-    val boxOneIndex:Int = 1,
-    val boxTwoIndex:Int = 2,
-    val boxThreeIndex:Int = 3,
-)
-data class IndivBoxHeight(
-    val boxOne:Dp = 0.dp,
-    val boxTwo:Dp = 0.dp,
-    val boxThree:Dp = 0.dp
-)
 
 @HiltViewModel
 class ModViewDragStateViewModel @Inject constructor(): ViewModel(){

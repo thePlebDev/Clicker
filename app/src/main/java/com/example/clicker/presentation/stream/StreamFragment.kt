@@ -37,10 +37,10 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentStreamBinding
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.horizontalStreamOverlay.OverlayStreamRow
-import com.example.clicker.presentation.enhancedModView.ModVersionThreeViewModel
-import com.example.clicker.presentation.enhancedModView.ModViewComponentVersionThree
-import com.example.clicker.presentation.modView.ModViewDragStateViewModel
-import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModVersionThreeViewModel
+import com.example.clicker.presentation.enhancedModView.views.EnhancedModViewMainView
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewDragStateViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.stream.clearHorizontalChat.ClearHorizontalChatView
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.customWebViews.HorizontalClickableWebView
@@ -63,8 +63,8 @@ class StreamFragment : Fragment() {
     private val streamViewModel: StreamViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val autoModViewModel:AutoModViewModel by activityViewModels()
-    private val modViewDragStateViewModel:ModViewDragStateViewModel by activityViewModels()
-    private val modViewViewModel:ModViewViewModel by activityViewModels()
+    private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
+    private val modViewViewModel: ModViewViewModel by activityViewModels()
     private val modVersionThreeViewModel: ModVersionThreeViewModel by activityViewModels()
     private val chatSettingsViewModel: ChatSettingsViewModel by activityViewModels()
     private val streamInfoViewModel: StreamInfoViewModel by activityViewModels()
@@ -811,7 +811,7 @@ fun setOrientation(
             if(modViewDragStateViewModel.showModView.value){
                 AppTheme{
 
-                    ModViewComponentVersionThree(
+                    EnhancedModViewMainView(
                         closeModView ={
                             modViewDragStateViewModel.setShowModView(false)
                         },

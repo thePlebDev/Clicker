@@ -2,7 +2,8 @@ package com.example.clicker.network.repository.util
 
 import android.util.Log
 import com.example.clicker.R
-import com.example.clicker.presentation.modView.ModActionData
+import com.example.clicker.presentation.enhancedModView.ModActionData
+
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date

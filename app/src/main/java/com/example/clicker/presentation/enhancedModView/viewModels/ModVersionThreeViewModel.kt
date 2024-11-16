@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.enhancedModView
+package com.example.clicker.presentation.enhancedModView.viewModels
 
 import android.content.res.Resources
 import android.util.Log
@@ -12,47 +12,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.presentation.enhancedModView.BoxNumber
+import com.example.clicker.presentation.enhancedModView.BoxZIndexs
+import com.example.clicker.presentation.enhancedModView.DoubleTap
+import com.example.clicker.presentation.enhancedModView.ModArrayData
+import com.example.clicker.presentation.enhancedModView.Positions
+import com.example.clicker.presentation.enhancedModView.Sections
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class Positions{
-    TOP,CENTER, BOTTOM
-}
-enum class BoxNumber{
-    ONE,TWO,THREE
-}
 
-data class BoxZIndexs(
-    val boxOneIndex: Boolean,
-    val boxTwoIndex: Boolean,
-    val boxThreeIndex: Boolean,
-)
-
-//todo: set up the data class called double tap. make it work. Then change its name to BoxDragging and
-//switch the original BoxDragging data class to z-index themed name
-data class DoubleTap(
-    val boxOneDoubleTap: Boolean,
-    val boxTwoDoubleTap: Boolean,
-    val boxThreeDoubleTap: Boolean,
-)
-
-
-
-
-//ok, so we have an array of this and when one drag state crosses a threshold, a value will be emitted with this data
-// it will be a hot flow and we move the boxes based on this data
-data class ModArrayData(
-    val height:Dp,
-    val index:Int,
-    val position: Positions, // this would be top center or bottom
-    val boxNumber: BoxNumber,
-    val dragging:Boolean,
-    val doubleSize:Boolean,
-    val tripleSize:Boolean
-)
 
 @HiltViewModel
 class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
@@ -320,7 +292,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             if(deleteBoxOne){
                 deleteBoxOne = false
             }
-            if(boxOneSection!=Sections.TWO){
+            if(boxOneSection!= Sections.TWO){
 
                 if(0<=delta) { //true means dragging down when entering section 2
                     Log.d("BOXONEDOUBLEDRAGESTATE","sectionTwoEnter")
@@ -673,7 +645,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             if(deleteBoxTwo){
                 deleteBoxTwo = false
             }
-            if(boxTwoSection!=Sections.TWO){
+            if(boxTwoSection!= Sections.TWO){
                 Log.d("StateListUpdate","sectionTwoEnter")
                 if(0<=delta) { //true means dragging down when entering section 2
                     val boxThree = stateList.value.find { it.boxNumber == BoxNumber.THREE }!!
@@ -752,7 +724,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                if(deleteBoxTwo){
                    deleteBoxTwo = false
                }
-               if(boxTwoSection !=Sections.THREE){
+               if(boxTwoSection != Sections.THREE){
                    val newTop =  stateList.value.find { it.position == Positions.CENTER }!!.copy(dragging = false, position = Positions.TOP)
                    val newCenter =  stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER)
                    val newBottom  = ModArrayData(700f.dp,boxTwoIndex,
@@ -768,7 +740,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
            /********* ENTERING SECTION ONE(TOP) ************/
             else if(boxTwoOffsetY <= (0.6*(section2height))){
                 Log.d("SingleMovingWhenDouble","TOP")
-               if(boxTwoSection !=Sections.ONE){
+               if(boxTwoSection != Sections.ONE){
                    val newTop  = ModArrayData(700f.dp,boxTwoIndex,
                        Positions.TOP,
                        BoxNumber.TWO,true,false,false)
@@ -799,7 +771,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                 deleteBoxTwo = false
             }
 
-            if(boxTwoSection !=Sections.THREE){
+            if(boxTwoSection != Sections.THREE){
                 val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
                 val newCenter = stateList.value.find { it.position == Positions.BOTTOM }!!.copy(dragging = false, position = Positions.CENTER)
                 val doubleSize = stateList.value.find{it.boxNumber == BoxNumber.TWO }!!.doubleSize
@@ -817,7 +789,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
         }
         /********* ENTERING SECTION TWO ************/
         else if(boxTwoOffsetY >= (0.6*(section2height)) && boxTwoOffsetY<=(0.6*(section3Height))){
-            if(boxTwoSection!=Sections.TWO){
+            if(boxTwoSection!= Sections.TWO){
                 if(0>=delta) { //true means dragging up when entering section 2
                     Log.d("boxTwoDragStateLOGGING","SECTION 2 UP")
                     val top = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false)
@@ -850,7 +822,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
 
         /********* ENTERING SECTION ONE ************/
         else if(boxTwoOffsetY <= (0.6*(section2height))){
-            if(boxTwoSection!=Sections.ONE){
+            if(boxTwoSection!= Sections.ONE){
                 val newTop  =
                     ModArrayData(700f.dp,boxTwoIndex, Positions.TOP, BoxNumber.TWO,true,false,false)
                 val newCenter = stateList.value.find { it.position == Positions.TOP }!!.copy(dragging = false, position = Positions.CENTER)
@@ -1078,7 +1050,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
                     deleteBoxThree = false
                 }
 
-                if(boxThreeSection!=Sections.TWO){
+                if(boxThreeSection!= Sections.TWO){
                     Log.d("boxThreeStateSizeDoublingLogs","BOTTOM")
                     Log.d("boxThreeStateSizeDoublingLogs","boxOne index ->$boxOneIndex")
                     Log.d("boxThreeStateSizeDoublingLogs","boxOne section ->$boxOneSection")
@@ -1199,7 +1171,7 @@ class ModVersionThreeViewModel @Inject constructor(): ViewModel(){
             /********* ENTERING SECTION ONE(TOP) ************/
             else if(boxThreeOffsetY <= (0.6*(section2height))){
                 Log.d("Box3SingleMovingWhenDouble","TOP")
-                if(boxThreeSection !=Sections.ONE){
+                if(boxThreeSection != Sections.ONE){
                     val newTop  = ModArrayData(700f.dp,boxThreeIndex,
                         Positions.TOP,
                         BoxNumber.THREE,true,false,false)

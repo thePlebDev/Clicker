@@ -12,8 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,30 +23,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,23 +48,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
-import com.example.clicker.network.clients.Game
-import com.example.clicker.presentation.modView.ImmutableModeList
-import com.example.clicker.presentation.modView.ListTitleValue
+import com.example.clicker.presentation.enhancedModView.ImmutableModeList
+import com.example.clicker.presentation.enhancedModView.ListTitleValue
+
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
-import com.example.clicker.presentation.streamInfo.ContentClassificationCheckBox
-import com.example.clicker.util.Response
 
 
 val followerModeList =listOf(
@@ -138,7 +119,7 @@ fun ChatSettingsColumn(
     changeCustomUsernameColor: (Boolean)->Unit,
 
 
-){
+    ){
     Log.d("ChatSettingsColumn","Recomping")
 
 
@@ -444,7 +425,7 @@ fun SubscriberOnlySwitch(
 fun SlowModeCheck(
     setExpanded: (Boolean) -> Unit,
     chatSettingsEnabled:Boolean,
-    selectedSlowModeItem:ListTitleValue,
+    selectedSlowModeItem: ListTitleValue,
     changeSelectedSlowModeItem:(ListTitleValue)->Unit,
     slowModeList: List<ListTitleValue>,
     titleListImmutable: ImmutableModeList,
@@ -484,7 +465,7 @@ fun FollowersOnlyCheck(
     chatSettingsEnabled:Boolean,
     followersOnlyList: List<ListTitleValue>,
     titleListImmutable: ImmutableModeList,
-    selectedFollowersModeItem:ListTitleValue,
+    selectedFollowersModeItem: ListTitleValue,
     changeSelectedFollowersModeItem:(ListTitleValue)->Unit,
 ){
     DropdownMenuItem(
@@ -519,7 +500,7 @@ fun FollowersOnlyCheck(
 fun EmbeddedDropDownMenu(
     titleList: List<ListTitleValue>, //this is the list shown to the user
     titleListImmutable: ImmutableModeList,
-    selectedItem:ListTitleValue,
+    selectedItem: ListTitleValue,
     changeSelectedItem:(ListTitleValue)->Unit,
     chatSettingsEnabled:Boolean
 ) {

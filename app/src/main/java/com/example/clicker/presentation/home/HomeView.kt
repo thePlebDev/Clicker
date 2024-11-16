@@ -22,7 +22,7 @@ import com.example.clicker.R
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
-import com.example.clicker.presentation.modView.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.search.SearchViewModel
 
 

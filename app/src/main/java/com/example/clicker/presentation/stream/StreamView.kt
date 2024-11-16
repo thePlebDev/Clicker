@@ -29,11 +29,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 import com.example.clicker.network.clients.Game
 import com.example.clicker.network.repository.models.EmoteNameUrl
+import com.example.clicker.presentation.enhancedModView.ListTitleValue
 import com.example.clicker.presentation.home.testing3DCode.GL2JNIView
-import com.example.clicker.presentation.modView.ListTitleValue
-import com.example.clicker.presentation.modView.ModViewViewModel
-import com.example.clicker.presentation.modView.slowModeListImmutable
-import com.example.clicker.presentation.modView.followerModeListImmutable
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.slowModeListImmutable
+import com.example.clicker.presentation.enhancedModView.viewModels.followerModeListImmutable
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 
 import com.example.clicker.presentation.stream.views.TestingNewBottomModal
@@ -380,7 +380,7 @@ fun StreamView(
                         changeNoChatMode = {newValue -> setNoChatMode(newValue) },
                         chatSettingsEnabled = streamViewModel.state.value.loggedInUserData?.mod ?: false,
                         followerModeListImmutable = followerModeListImmutable,
-                        slowModeListImmutable=slowModeListImmutable,
+                        slowModeListImmutable= slowModeListImmutable,
                         selectedFollowersModeItem=modViewViewModel.uiState.value.selectedFollowerMode,
                         changeSelectedFollowersModeItem ={newValue -> changeSelectedFollowersModeItem(newValue) },
                         selectedSlowModeItem=modViewViewModel.uiState.value.selectedSlowMode,
