@@ -53,8 +53,11 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -474,8 +477,10 @@ fun LoginWithTwitchBottomModalButtonColumn(
                 )
                 LowPowerModeAnimatedColumnAnimatedVisibility(lowPowerModeActive)
 
+                CreatingBackgroundServiceSwitch()
 
-            }
+
+            }//end of the column
 
         }
 
@@ -522,6 +527,43 @@ fun LoginWithTwitchBottomModalButtonColumn(
         }
 
     }
+
+@Composable
+fun CreatingBackgroundServiceSwitch(){
+
+    var checkedState by remember { mutableStateOf(true) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp).clickable {
+                Log.d("CreatingBackgroundServiceSwitch","CARD CLICKING AGAIN")
+                checkedState = !checkedState
+            },
+        elevation = 10.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Text("Background audio", fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
+            SwitchWithIcon(
+                checkedValue =checkedState,
+                changeCheckedValue={newValue ->
+
+                    Log.d("CreatingBackgroundServiceSwitch","SWITCH ")
+                    checkedState = !checkedState
+                },
+                icon = Icons.Filled.Check,
+            )
+
+        }
+    }
+
+}
 
 /**
  *
