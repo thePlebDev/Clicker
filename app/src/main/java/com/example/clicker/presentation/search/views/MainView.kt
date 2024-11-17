@@ -7,40 +7,52 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.rememberModalBottomSheetState
-
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.painterResource
 import com.example.clicker.R
-import com.example.clicker.network.clients.TopGame
-import com.example.clicker.presentation.home.HomeViewModel
-
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.search.SearchViewModel
-import com.example.clicker.presentation.search.views.mainComponents.CategoryModal
-import com.example.clicker.presentation.search.views.mainComponents.SearchBarUI
-import com.example.clicker.presentation.search.views.mainComponents.SearchViewComponent
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
-import com.example.clicker.util.Response
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+
+/**
+ * - **SearchView** is the external wrapper for all the compose code that will be shown inside of the [SearchFragment][com.example.clicker.presentation.search.SearchFragment] .
+ * It will handle all the UI related interactions when the user is on the homepage. It also act as the main api between
+ * ViewModels and the [SearchFragment][com.example.clicker.presentation.search.SearchFragment] compose code
+ *
+ * @param homeViewModel a [HomeViewModel] object containing access to all the parameters and functions of the  [HomeViewModel]
+ * @param streamViewModel a [StreamViewModel] object containing access to all the parameters and functions of the  [StreamViewModel]
+ * @param chatSettingsViewModel a [ChatSettingsViewModel] object containing access to all the parameters and functions of the  [ChatSettingsViewModel]
+ * @param onNavigate a function, when called with an Integer, will navigate the user to the appropriate fragment
+ * @param autoModViewModel a [AutoModViewModel] object containing access to all the parameters and functions of the  [AutoModViewModel]
+ * @param updateModViewSettings a function, when called with an 4 String, will update information related to the current user
+ * @param createNewTwitchEventWebSocket a function, when called, will create a websocket to connect to the desired Twitch chat
+ * @param hapticFeedBackError a function, when called, will create a haptic feedback on the user's device. This function is
+ * meant to be called when an error occurs
+ * @param modViewViewModel a [ModViewViewModel] object containing access to all the parameters and functions of the  [ModViewViewModel]
+ * @param searchViewModel a [SearchViewModel] object containing access to all the parameters and functions of the  [SearchViewModel]
+ * @param streamInfoViewModel a [StreamInfoViewModel] object containing access to all the parameters and functions of the  [StreamInfoViewModel]
+ *
+ * */
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SearchView(
     onNavigate: (Int) -> Unit,
-    homeViewModel:HomeViewModel,
+    homeViewModel: HomeViewModel,
     searchViewModel: SearchViewModel,
     hapticFeedBackError:() ->Unit,
-    streamViewModel:StreamViewModel,
+    streamViewModel: StreamViewModel,
     streamInfoViewModel: StreamInfoViewModel,
     modViewViewModel: ModViewViewModel,
     chatSettingsViewModel: ChatSettingsViewModel,
@@ -147,129 +159,84 @@ fun SearchView(
         }
     ) {
 
-        SearchMainComponent(
-            onNavigate={action -> onNavigate(action)},
-            topGamesListResponse = searchViewModel.topGames.value,
 
-            searchRefreshing = searchViewModel.searchRefreshing.value,
-            searchRefreshFunc ={searchViewModel.pullToRefreshTopGames()},
-            showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
-            topGamesList=searchViewModel.topGamesList.toList(),
-            hapticFeedBackError={hapticFeedBackError()},
-            categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
-            categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryAdd(topGame.id)},
-            pinnedList = searchViewModel.topGamesPinnedList.toList(),
-            pinned = searchViewModel.pinnedFilter.value,
-            changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
-            fetchMoreTopGames={
-                searchViewModel.fetchMoreTopGames()
+        NoDrawerScaffold(
+            topBar = {
+                SearchBarUI(
+                    pinned = searchViewModel.pinnedFilter.value,
+                    changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
+
+                    )
             },
-            openCategoryModal={
-                scope.launch {
-                    state.show()
-                }
+            bottomBar = {
+                TripleButtonNavigationBottomBarRow(
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    horizontalArrangement= Arrangement.SpaceAround,
+                    firstButton = {
+                        IconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Home",
+                            imageVector = Icons.Default.Home,
+                            iconContentDescription = "Navigate to home page",
+                            onClick ={onNavigate(R.id.action_searchFragment_to_homeFragment)},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    },
+                    secondButton = {
+                        PainterResourceIconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Mod Channels",
+                            painter = painterResource(R.drawable.moderator_white),
+                            iconContentDescription = "Navigate to mod channel page",
+                            onClick ={onNavigate(R.id.action_searchFragment_to_modChannelsFragment)},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    },
+                    thirdButton = {
+                        this.PainterResourceIconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.secondary,
+                            painter = painterResource(id = R.drawable.baseline_category_24),
+                            iconContentDescription = "Stay on category page ",
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Categories",
+                            onClick = {},
+                        )
+                    },
+                )
             },
-            getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)},
-            getGameStreams={id ->searchViewModel.getStreams(id)},
+        ) {contentPadding ->
+            PullToRefreshComponent(
+                padding = contentPadding,
+                refreshing = searchViewModel.searchRefreshing.value,
+                refreshFunc = {searchViewModel.pullToRefreshTopGames()},
+                showNetworkMessage=searchViewModel.searchNetworkStatus.value.showMessage,
+                networkStatus = {modifier -> }
+            ) {
+                //THIS IS WHERE THE MODAL SHOULD GO
+                SearchViewComponent(
+                    topGamesListResponse = searchViewModel.topGames.value,
+                    showNetworkRefreshError = searchViewModel.searchNetworkStatus.value.showMessage,
+                    hapticFeedBackError={hapticFeedBackError()},
+                    topGamesList=searchViewModel.topGamesList.toList(),
+                    categoryDoubleClickedAdd={id->searchViewModel.doubleClickedCategoryAdd(id)},
+                    categoryDoubleClickedRemove ={topGame->searchViewModel.doubleClickedCategoryAdd(topGame.id)},
+                    pinnedList = searchViewModel.topGamesPinnedList.toList(),
+                    pinned = searchViewModel.pinnedFilter.value,
+                    fetchMoreTopGames={
+                        searchViewModel.fetchMoreTopGames()
+                    },
+                    openCategoryModal={
+                        scope.launch {
+                            state.show()
+                        }
+                    },
+                    getGameInfo={id,gameName ->searchViewModel.getGameInfo(id,gameName)},
+                    getGameStreams={id ->searchViewModel.getStreams(id)},
 
-
-        )
-
-    }
-
-}
-
-@Composable
-fun SearchMainComponent(
-    onNavigate: (Int) -> Unit,
-    topGamesListResponse: Response<Boolean>,
-    searchRefreshing:Boolean,
-    searchRefreshFunc:()->Unit,
-    showNetworkMessage:Boolean,
-    hapticFeedBackError:() ->Unit,
-    topGamesList: List<TopGame>,
-    categoryDoubleClickedAdd:(String)->Unit,
-    categoryDoubleClickedRemove:(TopGame)->Unit,
-    pinned:Boolean,
-    pinnedList:List<TopGame>,
-    changePinnedListFilterStatus:()->Unit,
-    fetchMoreTopGames:()->Unit,
-    openCategoryModal:()->Unit,
-    getGameInfo:(String,String)->Unit,
-    getGameStreams:(String)->Unit,
-
-
-
-){
-    NoDrawerScaffold(
-        topBar = {
-            SearchBarUI(
-                changePinnedListFilterStatus={changePinnedListFilterStatus()},
-                pinned=pinned,
-
-            )
-        },
-        bottomBar = {
-            TripleButtonNavigationBottomBarRow(
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                horizontalArrangement= Arrangement.SpaceAround,
-                firstButton = {
-                    IconOverTextColumn(
-                        iconColor = MaterialTheme.colorScheme.onPrimary,
-                        text = "Home",
-                        imageVector = Icons.Default.Home,
-                        iconContentDescription = "Navigate to home page",
-                        onClick ={onNavigate(R.id.action_searchFragment_to_homeFragment)},
-                        fontColor = MaterialTheme.colorScheme.onPrimary,
-                    )
-                },
-                secondButton = {
-                    PainterResourceIconOverTextColumn(
-                        iconColor = MaterialTheme.colorScheme.onPrimary,
-                        text = "Mod Channels",
-                        painter = painterResource(R.drawable.moderator_white),
-                        iconContentDescription = "Navigate to mod channel page",
-                        onClick ={onNavigate(R.id.action_searchFragment_to_modChannelsFragment)},
-                        fontColor = MaterialTheme.colorScheme.onPrimary,
-                    )
-                },
-                thirdButton = {
-                    this.PainterResourceIconOverTextColumn(
-                        iconColor = MaterialTheme.colorScheme.secondary,
-                        painter = painterResource(id = R.drawable.baseline_category_24),
-                        iconContentDescription = "Stay on category page ",
-                        fontColor = MaterialTheme.colorScheme.onPrimary,
-                        text = "Categories",
-                        onClick = {},
-                    )
-                },
-            )
-        },
-    ) {contentPadding ->
-        PullToRefreshComponent(
-            padding = contentPadding,
-            refreshing = searchRefreshing,
-            refreshFunc = {searchRefreshFunc()},
-            showNetworkMessage=showNetworkMessage,
-            networkStatus = {modifier -> }
-        ) {
-            //THIS IS WHERE THE MODAL SHOULD GO
-            SearchViewComponent(
-                topGamesListResponse = topGamesListResponse,
-                showNetworkRefreshError = showNetworkMessage,
-                hapticFeedBackError={hapticFeedBackError()},
-                topGamesList=topGamesList,
-                categoryDoubleClickedAdd={id -> categoryDoubleClickedAdd(id)},
-                categoryDoubleClickedRemove ={topGame -> categoryDoubleClickedRemove(topGame)},
-                pinned = pinned,
-                pinnedList = pinnedList,
-                fetchMoreTopGames={fetchMoreTopGames()},
-                openCategoryModal={openCategoryModal()},
-                getGameInfo={id,gameName ->getGameInfo(id,gameName)},
-                getGameStreams={id->getGameStreams(id)}
-
-            )
+                )
+            }
         }
-    }
-}
 
+    }
+
+}
