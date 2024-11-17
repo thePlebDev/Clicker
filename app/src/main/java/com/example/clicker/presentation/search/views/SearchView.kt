@@ -1,4 +1,4 @@
-package com.example.clicker.presentation.search.views.mainComponents
+package com.example.clicker.presentation.search.views
 
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
@@ -26,19 +26,18 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -50,7 +49,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,14 +74,32 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.R
 import com.example.clicker.network.clients.Game
-import com.example.clicker.network.clients.GameInfoResponse
 import com.example.clicker.network.clients.SearchStreamData
 import com.example.clicker.network.clients.TopGame
 
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.Response
 import androidx.compose.ui.text.input.TransformedText
+import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
+import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 
+
+/**
+ * - **SearchViewComponent** is the
+ *
+ * @param showNetworkRefreshError
+ * @param topGamesListResponse
+ * @param hapticFeedBackError
+ * @param topGamesList
+ * @param categoryDoubleClickedAdd
+ * @param categoryDoubleClickedRemove
+ * @param pinned
+ * @param pinnedList
+ * @param fetchMoreTopGames
+ * @param openCategoryModal
+ * @param getGameInfo
+ * @param getGameStreams
+ * */
 
 @Composable
 fun SearchViewComponent(
@@ -388,67 +404,7 @@ fun SearchBarUI(
     }
 
 }
-//after THis needs to go inside of a new file
-@Composable
-fun StylizedTextField(){
 
-    Log.d("StylizedTextFieldRecomp","RECOMP")
-
-
-
-    val customTextSelectionColors = TextSelectionColors(
-        handleColor = MaterialTheme.colorScheme.secondary,
-        backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-    )
-    var text by remember { mutableStateOf("") }
-
-
-
-    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-
-
-
-
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                singleLine = true,
-                maxLines = 5,
-                value = text,
-
-                shape = RoundedCornerShape(8.dp),
-                onValueChange = { newText ->
-                    text = newText
-
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search // This sets the search icon on the keyboard
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedContainerColor = Color.DarkGray,
-                    focusedContainerColor = Color.DarkGray,
-                    cursorColor = Color.White,
-                    disabledLabelColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        "Search",
-                        tint = Color.White
-
-                    )
-                }
-            )
-
-
-
-    }
-
-
-}
 
 @Composable
 fun SearchNetworkErrorMessage(
