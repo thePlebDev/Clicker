@@ -37,13 +37,23 @@
 
 ## Screenshots
 
+
 <img src="https://github.com/thePlebDev/Clicker/assets/47083513/0cc911a8-f74e-4fd1-b0c4-c1432dd91859" alt="Screenshot" height="500"/>
 
 
-<img src="https://github.com/thePlebDev/Clicker/assets/47083513/0c55eb1a-403f-4a10-a28b-23481ed41be2" alt="Screenshot" height="500"/>
+<img src="https://github.com/user-attachments/assets/c46a0ca1-ffc7-4227-80f6-6837db0297a4" alt="Screenshot" height="500"/>
 
 
 <img src="https://github.com/thePlebDev/Clicker/assets/47083513/cdf1cfbc-f0b4-45f3-9f2d-475620a8dc33" alt="Screenshot" height="500"/>
+
+
+
+
+<img src="https://github.com/user-attachments/assets/e3442df0-3f14-4b21-86db-99b784a385f3" alt="Screenshot" height="500"/>
+<img src="https://github.com/user-attachments/assets/b66f9c1b-a96b-4e28-8e6a-743bdf1935aa" alt="Screenshot" height="500"/>
+
+
+
 
 
 <img src="https://github.com/thePlebDev/Clicker/assets/47083513/23618d66-e3cb-48f8-b61b-a09b94284ffd" alt="Screenshot" height="500"/>
@@ -62,7 +72,8 @@
 
 <img src="https://github.com/user-attachments/assets/99df4e8a-6783-40df-a4ff-49bd8823bef5" alt="Screenshot" height="400"/>
 
-
+<img src="https://github.com/user-attachments/assets/73109f33-cdf4-4695-9823-dbc3f163cc4a" alt="Screenshot" height="400"/>
+<img src="https://github.com/user-attachments/assets/ddb5b671-60cb-4234-aebf-b1d6dc67ce9b" alt="Screenshot" height="400"/>
 
 
 
