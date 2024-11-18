@@ -128,6 +128,7 @@ import com.example.clicker.util.Response
         permissionCheck:()->Unit,
         startService:()->Unit,
         endService:()->Unit,
+        checkIfServiceRunning:()->Boolean,
 
         ){
 
@@ -181,7 +182,8 @@ import com.example.clicker.util.Response
                     getPinnedList={getPinnedList()},
                     permissionCheck={permissionCheck()},
                     startService={startService()},
-                    endService={endService()}
+                    endService={endService()},
+                    checkIfServiceRunning={checkIfServiceRunning()}
 
                 )
 

@@ -1,7 +1,11 @@
 package com.example.clicker.presentation.home
 
+import android.Manifest
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -15,16 +19,18 @@ import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
-
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -34,6 +40,7 @@ import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -146,15 +153,25 @@ class HomeFragment : Fragment(){
                             searchViewModel=searchViewModel,
                             startService={
                              //   val startIntent = Intent(this,BackgroundStreamService::class.java)
+
                                 val startIntent = Intent(context, BackgroundStreamService::class.java)
                                 startIntent.action = BackgroundStreamService.Actions.START.toString()
                                 context.startService(startIntent)
+
+                               // testingPermissionAgain(requireContext())
                                          },
                             endService={
                                 val startIntent = Intent(context, BackgroundStreamService::class.java)
                                 startIntent.action = BackgroundStreamService.Actions.END.toString()
                                 context.startService(startIntent)
+                            },
+                            checkIfServiceRunning= {
+                                isServiceRunning(
+                                    context,
+                                    BackgroundStreamService::class.java
+                                )
                             }
+
 
                         )
                     }
@@ -166,6 +183,65 @@ class HomeFragment : Fragment(){
 
 
         return view
+    }
+    fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
+        for (service in runningServices) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * so this does 3 checks:
+     * 1) check if permission granted. if true, normal feature
+     *
+     * 2) shouldShowRequestPermissionRationale() if permission is denied, call this method, if this method
+     * returns true show an educational UI to the user.
+     *
+     * 3) request permission
+     *
+     * */
+    private fun testingPermissionAgain(context: Context){
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // You can use the API that requires the permission.
+                // performAction(...)
+                Log.d("testingPermissionAgainCalle","GRANTED")
+                //permission granted this is run.
+                val startIntent = Intent(context, BackgroundStreamService::class.java)
+                startIntent.action = BackgroundStreamService.Actions.START.toString()
+                context.startService(startIntent)
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(), Manifest.permission.POST_NOTIFICATIONS) -> {
+                Log.d("testingPermissionAgainCalle","DENIED, SHOW UI TO INFORM USER")
+                //permission was denied
+                //show the UI telling the individual that they need to allow notifications
+
+            }
+            else -> {
+                // You can directly ask for the permission.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    Log.d("testingPermissionAgainCalle","request attempt")
+                    requestPermissions(
+                        arrayOf(
+                            //this is a normal permission and will be granted automatically
+                            Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK,
+                            Manifest.permission.POST_NOTIFICATIONS,
+                        ),
+                        1001 // Request code
+                    )
+                }
+
+            }
+        }
     }
 
     override fun onDestroyView() {

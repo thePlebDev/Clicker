@@ -73,6 +73,7 @@ fun ValidationView(
     searchViewModel: SearchViewModel,
     startService:()->Unit,
     endService:()->Unit,
+    checkIfServiceRunning:()->Boolean,
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -208,7 +209,8 @@ fun ValidationView(
         getPinnedList={},
         permissionCheck={},
         startService={startService()},
-        endService={endService()}
+        endService={endService()},
+        checkIfServiceRunning={checkIfServiceRunning()}
 
     )
 
