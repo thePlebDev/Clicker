@@ -57,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -155,6 +156,8 @@ import kotlinx.coroutines.launch
         getTopGames:()->Unit,
         getPinnedList:()->Unit,
         permissionCheck:()->Unit,
+        startService:()->Unit,
+        endService:()->Unit,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -232,7 +235,9 @@ import kotlinx.coroutines.launch
                     scaffoldState = scaffoldState,
                     userIsLoggedIn = userIsLoggedIn,
                     lowPowerModeActive=lowPowerModeActive,
-                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)}
+                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
+                    startService={startService()},
+                    endService={endService()}
                 )
 
             }
@@ -443,6 +448,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
         userIsLoggedIn: Boolean,
         lowPowerModeActive:Boolean,
         changeLowPowerMode:(Boolean)->Unit,
+        startService:()->Unit,
+        endService:()->Unit,
     ) {
 
         Box(modifier = Modifier
@@ -477,7 +484,10 @@ fun LoginWithTwitchBottomModalButtonColumn(
                 )
                 LowPowerModeAnimatedColumnAnimatedVisibility(lowPowerModeActive)
 
-                CreatingBackgroundServiceSwitch()
+                CreatingBackgroundServiceSwitch(
+                    startService={startService()},
+                    endService={endService()}
+                )
 
 
             }//end of the column
@@ -529,17 +539,17 @@ fun LoginWithTwitchBottomModalButtonColumn(
     }
 
 @Composable
-fun CreatingBackgroundServiceSwitch(){
+fun CreatingBackgroundServiceSwitch(
+    startService:()->Unit,
+    endService:()->Unit,
+){
 
-    var checkedState by remember { mutableStateOf(true) }
+    var checkedState by rememberSaveable { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp).clickable {
-                Log.d("CreatingBackgroundServiceSwitch","CARD CLICKING AGAIN")
-                checkedState = !checkedState
-            },
+            .padding(15.dp),
         elevation = 10.dp
     ) {
         Row(
@@ -553,8 +563,13 @@ fun CreatingBackgroundServiceSwitch(){
             SwitchWithIcon(
                 checkedValue =checkedState,
                 changeCheckedValue={newValue ->
+                    if(newValue){
+                        startService()
+                    }else{
+                        endService()
+                    }
 
-                    Log.d("CreatingBackgroundServiceSwitch","SWITCH ")
+
                     checkedState = !checkedState
                 },
                 icon = Icons.Filled.Check,

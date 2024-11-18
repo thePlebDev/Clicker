@@ -1,13 +1,19 @@
 package com.example.clicker
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.opengl.GLSurfaceView
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 
@@ -33,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    @RequiresApi(34)
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -40,6 +47,15 @@ class MainActivity : AppCompatActivity() {
         // Registers BroadcastReceiver to track network connection changes.
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         installSplashScreen()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 14+
+
+                requestPermissions(
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS,Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK),
+                    1001 // Request code
+                )
+
+        }
 
 
         supportActionBar!!.hide()
@@ -61,6 +77,8 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
