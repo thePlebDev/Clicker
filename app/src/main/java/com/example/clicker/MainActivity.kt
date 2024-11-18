@@ -2,6 +2,10 @@ package com.example.clicker
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -12,8 +16,11 @@ import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 
@@ -48,14 +55,9 @@ class MainActivity : AppCompatActivity() {
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         installSplashScreen()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 14+
+        testingPermissionAgain(this)
+        createNotificationChannel()
 
-                requestPermissions(
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS,Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK),
-                    1001 // Request code
-                )
-
-        }
 
 
         supportActionBar!!.hide()
@@ -77,11 +79,61 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+//    /**
+//     * so this does 3 checks:
+//     * 1) check if permission granted. if true, normal feature
+//     *
+//     * 2) shouldShowRequestPermissionRationale() if permission is denied, call this method, if this method
+//     * returns true show an educational UI to the user.
+//     *
+//     * 3) request permission
+//     *
+//     * */
+private fun testingPermissionAgain(context: Context) {
+    when {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
+            Log.d("testingPermissionAgain", "POST_NOTIFICATIONS granted")
+
+        }
+        ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS) -> {
+            Log.d("testingPermissionAgain", "Show UI to inform user why POST_NOTIFICATIONS is needed")
+        }
+        else -> {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+        }
+    }
+}
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+
+        }
+        Log.d("RequestPermissionCheck","requestCode-->$requestCode")
+    }
 
 
 
     override fun onDestroy() {
         super.onDestroy()
     }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "CHANNEL_ID",
+                "Media Playback",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notification for media playback service"
+            }
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+
+
+
 
 }

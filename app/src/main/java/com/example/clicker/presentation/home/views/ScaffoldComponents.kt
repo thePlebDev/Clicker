@@ -158,6 +158,7 @@ import kotlinx.coroutines.launch
         permissionCheck:()->Unit,
         startService:()->Unit,
         endService:()->Unit,
+        checkIfServiceRunning:()->Boolean,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -237,7 +238,8 @@ import kotlinx.coroutines.launch
                     lowPowerModeActive=lowPowerModeActive,
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
                     startService={startService()},
-                    endService={endService()}
+                    endService={endService()},
+                    checkIfServiceRunning={checkIfServiceRunning()}
                 )
 
             }
@@ -450,6 +452,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
         changeLowPowerMode:(Boolean)->Unit,
         startService:()->Unit,
         endService:()->Unit,
+        checkIfServiceRunning:()->Boolean,
     ) {
 
         Box(modifier = Modifier
@@ -486,7 +489,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
 
                 CreatingBackgroundServiceSwitch(
                     startService={startService()},
-                    endService={endService()}
+                    endService={endService()},
+                    checkIfServiceRunning={checkIfServiceRunning()}
                 )
 
 
@@ -542,6 +546,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
 fun CreatingBackgroundServiceSwitch(
     startService:()->Unit,
     endService:()->Unit,
+    checkIfServiceRunning:()->Boolean,
 ){
 
     var checkedState by rememberSaveable { mutableStateOf(false) }
@@ -549,7 +554,10 @@ fun CreatingBackgroundServiceSwitch(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp),
+            .padding(15.dp).clickable {
+                Log.d("BackgroundStreamServiceOnStartCommand","running --->${checkIfServiceRunning()}")
+
+            },
         elevation = 10.dp
     ) {
         Row(

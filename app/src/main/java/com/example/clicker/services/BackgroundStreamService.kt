@@ -1,16 +1,21 @@
 package com.example.clicker.services
 
+import android.Manifest
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import com.example.clicker.R
 
@@ -72,9 +77,10 @@ class BackgroundStreamService: Service() {
 
         Log.d("BackgroundStreamServiceOnStartCommand", "startForeground()")
         val notification = NotificationCompat.Builder(this, "CHANNEL_ID")
-            .setContentTitle("Playback in Progress")
-            .setContentText("Your audio/video is playing")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with a valid drawable
+            .setContentTitle("Background audio mode is active")
+            .setContentText("The stream audio will continue even when app is closed")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
         ServiceCompat.startForeground(
             /* service = */ this,
