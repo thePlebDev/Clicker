@@ -1,11 +1,17 @@
 package com.example.clicker.services
 
+import android.app.ForegroundServiceStartNotAllowedException
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.example.clicker.R
 
 class BackgroundStreamService: Service() {
@@ -18,22 +24,25 @@ class BackgroundStreamService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action){
             Actions.START.toString()->{
-                Log.d("BackgroundStreamService", "onStartCommand START")
-                start()
+                Log.d("BackgroundStreamServiceOnStartCommand", "onStartCommand START")
+                createNotificationChannel()
+                startForeground()
             }
             Actions.END.toString() ->{
-                Log.d("BackgroundStreamService", "onStartCommand END")
+                Log.d("BackgroundStreamServiceOnStartCommand", "onStartCommand END")
                 stopSelf()
             }
         }
         return super.onStartCommand(intent, flags, startId)
     }
     private fun start(){
-        val notification = NotificationCompat.Builder(this,"running_channel")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("RUnning")
-            .build()
-        startForeground(1,notification)
+//        val notification = NotificationCompat.Builder(this,"running_channel")
+//            .setSmallIcon(R.drawable.ic_launcher_foreground)
+//            .setContentTitle("RUnning")
+//            .setContentText("This is another one")
+//            .build()
+//        startForeground(1,notification)
+        startForeground()
     }
 
     enum class Actions{
@@ -54,6 +63,43 @@ class BackgroundStreamService: Service() {
         super.onDestroy()
         Log.d("BackgroundStreamService", "Service DESTROY")
 
+    }
+
+    private fun startForeground() {
+        // Before starting the service as foreground check that the app has the
+        // appropriate runtime permissions. In this case, verify that the user has
+        // granted the CAMERA permission.
+
+        Log.d("BackgroundStreamServiceOnStartCommand", "startForeground()")
+        val notification = NotificationCompat.Builder(this, "CHANNEL_ID")
+            .setContentTitle("Playback in Progress")
+            .setContentText("Your audio/video is playing")
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with a valid drawable
+            .build()
+        ServiceCompat.startForeground(
+            /* service = */ this,
+            /* id = */ 100, // Cannot be 0
+            /* notification = */ notification,
+            /* foregroundServiceType = */
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            } else {
+                0
+            },
+        )
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "CHANNEL_ID",
+                "Media Playback",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notification for media playback service"
+            }
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
 }

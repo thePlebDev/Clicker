@@ -126,6 +126,8 @@ import com.example.clicker.util.Response
         getTopGames:()->Unit,
         getPinnedList:()->Unit,
         permissionCheck:()->Unit,
+        startService:()->Unit,
+        endService:()->Unit,
 
         ){
 
@@ -177,7 +179,9 @@ import com.example.clicker.util.Response
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
                     getTopGames={getTopGames()},
                     getPinnedList={getPinnedList()},
-                    permissionCheck={permissionCheck()}
+                    permissionCheck={permissionCheck()},
+                    startService={startService()},
+                    endService={endService()}
 
                 )
 

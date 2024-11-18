@@ -30,6 +30,7 @@ import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
+import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -143,6 +144,17 @@ class HomeFragment : Fragment(){
                             streamInfoViewModel=streamInfoViewModel,
                             modViewViewModel=modViewViewModel,
                             searchViewModel=searchViewModel,
+                            startService={
+                             //   val startIntent = Intent(this,BackgroundStreamService::class.java)
+                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+                                startIntent.action = BackgroundStreamService.Actions.START.toString()
+                                context.startService(startIntent)
+                                         },
+                            endService={
+                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+                                startIntent.action = BackgroundStreamService.Actions.END.toString()
+                                context.startService(startIntent)
+                            }
 
                         )
                     }
