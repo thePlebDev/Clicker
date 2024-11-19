@@ -160,7 +160,7 @@ class HomeFragment : Fragment(){
                                 startIntent.action = BackgroundStreamService.Actions.START.toString()
                                 context.startService(startIntent)
 
-                               // testingPermissionAgain(requireContext())
+
                                          },
                             endService={
                                 val startIntent = Intent(context, BackgroundStreamService::class.java)

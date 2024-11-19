@@ -58,6 +58,10 @@
             android:foregroundServiceType="mediaPlayback"
             android:exported="false">
         </service>
+        <!-- If this receiver listens for broadcasts sent from the system or from
+     other apps, even other apps that you own, set android:exported to "true". -->
+        <receiver android:name=".broadcastReceivers.ShutDownBroadcastReceiver" android:exported="false">
+        </receiver>
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />

@@ -33,6 +33,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.clicker.MainActivity
 import com.example.clicker.R
+import com.example.clicker.broadcastReceivers.ShutDownBroadcastReceiver
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -171,22 +172,37 @@ class BackgroundStreamService: Service() {
 
             webView.loadUrl("https://player.twitch.tv/?channel=piratesoftware&controls=false&muted=false&parent=modderz")
         }
+       //todo: should be some kind of close method
     }
 
     private fun createNotification2(contentText: String): Notification {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            action = ServiceActions.ACTION_SERVICE_AUDIO.toString()
+        val intent = Intent(this, ShutDownBroadcastReceiver::class.java).apply {
+            action = "com.example.broadcast.MY_NOTIFICATION"
+            putExtra("data", "Nothing to see here, move along.")
         }
 
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent: PendingIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, "CHANNEL_ID")
             .setContentTitle("Background audio")
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true) // Makes it non-dismissible
-            .addAction(pauseBtnIcon, "CANCEL", pendingIntent)
+            .addAction(pauseBtnIcon, "CANCEL", pendingIntent) // Action triggers broadcast
             .build()
     }
+
+
+
+
+
+
+
     private fun createNotification(): Notification {
         val intent = Intent(this, MainActivity::class.java).apply {
             action = ServiceActions.ACTION_SERVICE_AUDIO.toString()
