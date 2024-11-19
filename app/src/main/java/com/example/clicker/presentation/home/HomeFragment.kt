@@ -38,6 +38,7 @@ import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSetti
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
+import com.example.clicker.services.ServiceActions
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -122,6 +123,7 @@ class HomeFragment : Fragment(){
 
         val value = homeViewModel.determineUserType()
         checkUserType(view,value)
+        // Get the activity's intent
 
         if(value !=UserTypes.NEW){
             binding.composeView.apply {
@@ -259,7 +261,22 @@ class HomeFragment : Fragment(){
         logoutViewModel.setShowLogin(false)
         checkForUri()
         setAspectRatio()
+        val textMessage = requireActivity().intent.action
 
+        when(textMessage){
+            ServiceActions.ACTION_SERVICE_AUDIO.toString()->{
+                val checked =isServiceRunning(
+                    requireContext(),
+                    BackgroundStreamService::class.java
+                )
+                if(checked){
+                    homeViewModel.changeBackgroundServiceChecked(true)
+
+                }
+
+            }
+        }
+        // Use the data
     }
 
     /**
@@ -328,6 +345,7 @@ class HomeFragment : Fragment(){
             }
         )
     }
+
 
 }
 

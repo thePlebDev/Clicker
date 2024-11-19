@@ -159,6 +159,8 @@ import kotlinx.coroutines.launch
         startService:()->Unit,
         endService:()->Unit,
         checkIfServiceRunning:()->Boolean,
+        backgroundServiceChecked:Boolean,
+        changeBackgroundServiceChecked:(Boolean)->Unit
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -239,7 +241,10 @@ import kotlinx.coroutines.launch
                     changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
                     startService={startService()},
                     endService={endService()},
-                    checkIfServiceRunning={checkIfServiceRunning()}
+                    checkIfServiceRunning={checkIfServiceRunning()},
+                    backgroundServiceChecked=backgroundServiceChecked,
+                    changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)}
+
                 )
 
             }
@@ -453,6 +458,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
         startService:()->Unit,
         endService:()->Unit,
         checkIfServiceRunning:()->Boolean,
+        backgroundServiceChecked:Boolean,
+        changeBackgroundServiceChecked:(Boolean)->Unit
     ) {
 
         Box(modifier = Modifier
@@ -490,7 +497,9 @@ fun LoginWithTwitchBottomModalButtonColumn(
                 CreatingBackgroundServiceSwitch(
                     startService={startService()},
                     endService={endService()},
-                    checkIfServiceRunning={checkIfServiceRunning()}
+                    checkIfServiceRunning={checkIfServiceRunning()},
+                    backgroundServiceChecked=backgroundServiceChecked,
+                    changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)}
                 )
 
 
@@ -547,9 +556,11 @@ fun CreatingBackgroundServiceSwitch(
     startService:()->Unit,
     endService:()->Unit,
     checkIfServiceRunning:()->Boolean,
+    backgroundServiceChecked:Boolean,
+    changeBackgroundServiceChecked:(Boolean)->Unit
 ){
 
-    var checkedState by rememberSaveable { mutableStateOf(false) }
+
 
     Card(
         modifier = Modifier
@@ -569,16 +580,9 @@ fun CreatingBackgroundServiceSwitch(
         ) {
             Text("Background audio", fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
             SwitchWithIcon(
-                checkedValue =checkedState,
+                checkedValue =backgroundServiceChecked,
                 changeCheckedValue={newValue ->
-                    if(newValue){
-                        startService()
-                    }else{
-                        endService()
-                    }
-
-
-                    checkedState = !checkedState
+                    changeBackgroundServiceChecked(newValue)
                 },
                 icon = Icons.Filled.Check,
             )

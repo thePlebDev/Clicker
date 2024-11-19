@@ -130,6 +130,9 @@ import com.example.clicker.util.Response
         endService:()->Unit,
         checkIfServiceRunning:()->Boolean,
 
+        backgroundServiceChecked:Boolean,
+        changeBackgroundServiceChecked:(Boolean)->Unit
+
         ){
 
         HomeModalBottomSheetBuilder(
@@ -183,7 +186,16 @@ import com.example.clicker.util.Response
                     permissionCheck={permissionCheck()},
                     startService={startService()},
                     endService={endService()},
-                    checkIfServiceRunning={checkIfServiceRunning()}
+                    checkIfServiceRunning={checkIfServiceRunning()},
+                    backgroundServiceChecked=backgroundServiceChecked,
+                    changeBackgroundServiceChecked={newValue ->
+                        if(newValue){
+                            startService()
+                        }else{
+                            endService()
+                        }
+                        changeBackgroundServiceChecked(newValue)
+                    }
 
                 )
 
