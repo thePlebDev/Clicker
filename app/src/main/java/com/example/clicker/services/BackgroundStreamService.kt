@@ -17,8 +17,12 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Icon
 import android.os.Binder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.ui.text.font.FontVariation.italic
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -29,9 +33,12 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.clicker.MainActivity
 import com.example.clicker.R
+import com.example.clicker.presentation.stream.AndroidConsoleInterface
 
 class BackgroundStreamService: Service() {
-    private val binder = LocalBinder()
+    private lateinit var webView: WebView
+
+
     override fun onBind(p0: Intent?): IBinder? {
         // We don't provide binding, so return null
         return null
@@ -90,6 +97,28 @@ class BackgroundStreamService: Service() {
                 0
             },
         )
+        //https://player.twitch.tv/?channel=piratesoftware&controls=false&muted=false&parent=modderz
+
+        // Initialize WebView on the main thread
+        Handler(Looper.getMainLooper()).post {
+            webView = WebView(applicationContext)
+            webView.settings.javaScriptEnabled = true
+           // Log.d("setWebViewURL","url -->$url")
+            webView.settings.mediaPlaybackRequiresUserGesture = false
+
+
+            webView.settings.javaScriptEnabled = true
+            webView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
+            webView.isClickable = true
+            webView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+            webView.settings.allowContentAccess = true
+            webView.settings.allowFileAccess = true
+
+            webView.settings.setSupportZoom(true)
+
+            webView.loadUrl("https://player.twitch.tv/?channel=piratesoftware&controls=false&muted=false&parent=modderz")
+        }
     }
 
     private fun createNotification(): Notification {
