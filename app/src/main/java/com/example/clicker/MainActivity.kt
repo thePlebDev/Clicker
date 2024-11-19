@@ -132,6 +132,7 @@ private fun testingPermissionAgain(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
 
+
             val channel = NotificationChannel(
                 "CHANNEL_ID",
                 "Background Audio",
@@ -142,6 +143,15 @@ private fun testingPermissionAgain(context: Context) {
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    fun deleteNotificationChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val id: String = "CHANNEL_ID"
+            notificationManager.deleteNotificationChannel(id)
+        }
+
     }
 
 
