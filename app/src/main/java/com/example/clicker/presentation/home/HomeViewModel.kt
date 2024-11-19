@@ -53,6 +53,13 @@ class HomeViewModel @Inject constructor(
     private var _modChannelUIState: MutableState<ModChannelUIState> = mutableStateOf(ModChannelUIState())
     val modChannelUIState: State<ModChannelUIState> = _modChannelUIState
 
+    private var _backgroundServiceChecked: MutableState<Boolean> = mutableStateOf(false)
+    val backgroundServiceChecked: State<Boolean> = _backgroundServiceChecked
+
+    fun changeBackgroundServiceChecked(newValue:Boolean){
+        _backgroundServiceChecked.value = newValue
+    }
+
     /**
      * _validatedUser private mutable version of [validatedUser]
      * */

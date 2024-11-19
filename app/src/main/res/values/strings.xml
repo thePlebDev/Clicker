@@ -14,6 +14,7 @@
     <string name="package_name">com.example.clicker</string>
     <string name="enable_login_with_Android_12">to links to enable login with Twitch on Android 12 and higher</string>
     <string name="add_to_links">Add to links</string>
+    <string name="Peanuts"> <big><b>Cancel </b></big> !</string>
 
 
     <!-- HomeView CustomTopBar composable -->

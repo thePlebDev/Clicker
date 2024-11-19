@@ -58,6 +58,16 @@ class MainActivity : AppCompatActivity() {
         testingPermissionAgain(this)
         createNotificationChannel()
 
+        val textMessage = intent?.action
+
+        // Use the data
+        textMessage?.let {
+            Log.d("ExampleFragmentINtentGrab", "Received message: $it")
+        } ?: run {
+            Log.d("ExampleFragmentINtentGrab", "No message received")
+        }
+
+
 
 
         supportActionBar!!.hide()
@@ -120,12 +130,14 @@ private fun testingPermissionAgain(context: Context) {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+
             val channel = NotificationChannel(
                 "CHANNEL_ID",
-                "Media Playback",
+                "Background Audio",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notification for media playback service"
+                description = "Notification for media playback service. Allows stream audio to continue to play when application is closed"
             }
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
