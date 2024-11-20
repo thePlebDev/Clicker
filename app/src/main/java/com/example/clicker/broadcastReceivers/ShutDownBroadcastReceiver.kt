@@ -10,6 +10,7 @@ class ShutDownBroadcastReceiver : BroadcastReceiver() {
 
 
     override fun onReceive(p0: Context?, p1: Intent?) {
+
         Log.d("ShutDownBroadcastReceiver","SHUT IT DOWN!!!!!!!!!!")
         p0?.let{context ->
             val startIntent = Intent(context, BackgroundStreamService::class.java)
@@ -18,4 +19,10 @@ class ShutDownBroadcastReceiver : BroadcastReceiver() {
         }
 
     }
+
 }
+
+
+
+
+

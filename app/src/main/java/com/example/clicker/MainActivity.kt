@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         installSplashScreen()
 
+
         testingPermissionAgain(this)
         createNotificationChannel()
 
