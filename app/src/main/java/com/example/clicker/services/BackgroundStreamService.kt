@@ -115,7 +115,7 @@ class BackgroundStreamService: Service() {
         channelName:String
     ) {
 
-        startForeground(100, createNotification2("Timer: 0s",channelName))
+        startForeground(100, createNotification("Timer: 0s",channelName))
         startTimer(channelName)
         testLoadWebViewURL(channelName)
 
@@ -151,7 +151,7 @@ class BackgroundStreamService: Service() {
     }
     private fun updateNotification(contentText: String,channelName: String) {
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify( 100, createNotification2(contentText,channelName))
+        notificationManager.notify( 100, createNotification(contentText,channelName))
     }
 
     fun testLoadWebViewURL(channelName: String){
@@ -177,7 +177,7 @@ class BackgroundStreamService: Service() {
        //todo: should be some kind of close method
     }
 
-    private fun createNotification2(contentText: String,channelName: String): Notification {
+    private fun createNotification(contentText: String,channelName: String): Notification {
         val intent = Intent(this, ShutDownBroadcastReceiver::class.java).apply {
             action = "com.example.broadcast.MY_NOTIFICATION"
             putExtra("data", "Nothing to see here, move along.")
@@ -191,36 +191,16 @@ class BackgroundStreamService: Service() {
         )
 
         return NotificationCompat.Builder(this, "CHANNEL_ID")
-            .setContentTitle("$channelName audio")
+            .setContentTitle("$channelName stream audio")
             .setContentText(contentText)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setOngoing(true) // Makes it non-dismissible
-            .addAction(pauseBtnIcon, "CANCEL", pendingIntent) // Action triggers broadcast
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with your app's icon
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Full content on lock screen
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // Match channel's importance
+            .setOngoing(true) // Non-dismissible
+            .addAction(pauseBtnIcon, "CANCEL", pendingIntent) // Add cancel action
             .build()
     }
 
-
-
-
-
-
-
-    private fun createNotification(): Notification {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            action = ServiceActions.ACTION_SERVICE_AUDIO.toString()
-        }
-
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        return NotificationCompat.Builder(this, "CHANNEL_ID")
-            .setContentTitle("Background audio mode is active")
-            .setContentText("The stream audio will continue even when app is closed")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) //this is the icon that gets showed at the top of the screen. Should be the same as the logog
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            // Set the intent that fires when the user taps the notification.
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-    }
 
 
 
