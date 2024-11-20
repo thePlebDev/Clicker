@@ -79,6 +79,16 @@ class StreamFragment : Fragment() {
         _binding = null
     }
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("STreamFragmentOnPause","onPause()")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("STreamFragmentOnPause","onStop()")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

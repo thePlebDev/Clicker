@@ -47,6 +47,11 @@ class HomeViewModel @Inject constructor(
     private val authentication: TwitchAuthentication,
 ) : ViewModel() {
 
+    init{
+        Log.d("CREATINGHOMEvIEWMODE","CREATED")
+    }
+
+
     private var _uiState: MutableState<HomeUIState> = mutableStateOf(HomeUIState())
     val state: State<HomeUIState> = _uiState
 
