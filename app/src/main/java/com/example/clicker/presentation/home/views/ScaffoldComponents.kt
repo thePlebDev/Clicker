@@ -160,7 +160,8 @@ import kotlinx.coroutines.launch
         endService:()->Unit,
         checkIfServiceRunning:()->Boolean,
         backgroundServiceChecked:Boolean,
-        changeBackgroundServiceChecked:(Boolean)->Unit
+        changeBackgroundServiceChecked:(Boolean)->Unit,
+        grantedNotifications:Boolean,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -243,7 +244,8 @@ import kotlinx.coroutines.launch
                     endService={endService()},
                     checkIfServiceRunning={checkIfServiceRunning()},
                     backgroundServiceChecked=backgroundServiceChecked,
-                    changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)}
+                    changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)},
+                    grantedNotification= grantedNotifications
 
                 )
 
@@ -459,7 +461,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
         endService:()->Unit,
         checkIfServiceRunning:()->Boolean,
         backgroundServiceChecked:Boolean,
-        changeBackgroundServiceChecked:(Boolean)->Unit
+        changeBackgroundServiceChecked:(Boolean)->Unit,
+        grantedNotification:Boolean,
     ) {
 
         Box(modifier = Modifier
@@ -501,6 +504,9 @@ fun LoginWithTwitchBottomModalButtonColumn(
                     backgroundServiceChecked=backgroundServiceChecked,
                     changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)}
                 )
+                if(backgroundServiceChecked){
+                    WhichNotification(grantedNotification)
+                }
 
 
             }//end of the column
@@ -508,6 +514,41 @@ fun LoginWithTwitchBottomModalButtonColumn(
         }
 
     }
+
+@Composable
+fun WhichNotification(grantedNotification:Boolean){
+    if(grantedNotification){
+        FullGrantedNotification()
+    }else{
+        DeniedNotification()
+    }
+}
+@Composable
+fun FullGrantedNotification(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(15.dp)){
+        Text("Status: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Text("   - Active", Modifier.fillMaxWidth(),color = Color.Green,fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(10.dp))
+        Text("Benefits: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Text("   - Stream will now continue to play when the application is closed", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+        Text("   - Notification will be shown", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+    }
+}
+@Composable
+fun DeniedNotification(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(15.dp)){
+        Text("Status: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Text("   - Active", Modifier.fillMaxWidth(),color = Color.Green,fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(10.dp))
+        Text("Benefits: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Text("   - Stream will now continue to play when the application is closed", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+        Text("   - No notifications will be shown. Check notification permissions in settings", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+    }
+}
 
 
 /**

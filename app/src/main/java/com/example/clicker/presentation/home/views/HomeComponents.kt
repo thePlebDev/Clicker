@@ -131,7 +131,8 @@ import com.example.clicker.util.Response
         checkIfServiceRunning:()->Boolean,
 
         backgroundServiceChecked:Boolean,
-        changeBackgroundServiceChecked:(Boolean)->Unit
+        changeBackgroundServiceChecked:(Boolean)->Unit,
+        grantedNotifications:Boolean,
 
         ){
 
@@ -195,7 +196,8 @@ import com.example.clicker.util.Response
                             endService()
                         }
                         changeBackgroundServiceChecked(newValue)
-                    }
+                    },
+                    grantedNotifications=grantedNotifications
 
                 )
 

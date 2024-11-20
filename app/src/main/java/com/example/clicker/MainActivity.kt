@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
 
 
-        testingPermissionAgain(this)
+
         createNotificationChannel()
 
         val textMessage = intent?.action
@@ -100,20 +100,7 @@ class MainActivity : AppCompatActivity() {
 //     * 3) request permission
 //     *
 //     * */
-private fun testingPermissionAgain(context: Context) {
-    when {
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
-            Log.d("testingPermissionAgain", "POST_NOTIFICATIONS granted")
 
-        }
-        ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS) -> {
-            Log.d("testingPermissionAgain", "Show UI to inform user why POST_NOTIFICATIONS is needed")
-        }
-        else -> {
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
-        }
-    }
-}
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
