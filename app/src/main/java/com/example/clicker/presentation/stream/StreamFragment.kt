@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
@@ -48,6 +49,7 @@ import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSetti
 import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.stream.views.overlays.HorizontalOverlayView
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
+import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -73,6 +75,9 @@ class StreamFragment : Fragment() {
         super.onResume()
         autoModViewModel.setHorizontalOverlayToVisible()
         autoModViewModel.setVerticalOverlayToVisible()
+        val startIntent = Intent(requireActivity(), BackgroundStreamService::class.java)
+        startIntent.action = BackgroundStreamService.Actions.END.toString()
+        requireActivity().startService(startIntent)
     }
     override fun onDestroyView() {
         super.onDestroyView()
