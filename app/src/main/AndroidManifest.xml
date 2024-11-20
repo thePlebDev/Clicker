@@ -62,6 +62,7 @@
      other apps, even other apps that you own, set android:exported to "true". -->
         <receiver android:name=".broadcastReceivers.ShutDownBroadcastReceiver" android:exported="false">
         </receiver>
+
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />

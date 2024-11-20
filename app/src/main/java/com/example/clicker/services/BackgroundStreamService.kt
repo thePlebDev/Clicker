@@ -87,13 +87,13 @@ class BackgroundStreamService: Service() {
 
 
     }
-    inner class LocalBinder : Binder() {
-        fun getService(): BackgroundStreamService = this@BackgroundStreamService
-    }
+
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("BackgroundStreamService", "Service DESTROY")
+        Log.d("shutdownReceiverContextRegistered","Service DESTROY")
+
         job?.cancel()
 
     }

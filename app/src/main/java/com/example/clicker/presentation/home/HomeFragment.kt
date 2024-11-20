@@ -2,8 +2,10 @@ package com.example.clicker.presentation.home
 
 import android.Manifest
 import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -21,7 +23,9 @@ import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -100,8 +104,14 @@ class HomeFragment : Fragment(){
 
 
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("HomeFragmentLifeCycle","onCreate")
+
+
+
 
     }
 
@@ -116,6 +126,7 @@ class HomeFragment : Fragment(){
         //networkMonitorViewModel.startService()
         context?.startService(Intent(context, NetworkMonitorService::class.java))
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
 
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -252,6 +263,7 @@ class HomeFragment : Fragment(){
     }
     override fun onPause() {
         super.onPause()
+        Log.d("HomeFragmentLifeCycle","onPause")
 
     }
 
@@ -261,20 +273,16 @@ class HomeFragment : Fragment(){
         logoutViewModel.setShowLogin(false)
         checkForUri()
         setAspectRatio()
-        val textMessage = requireActivity().intent.action
 
-        when(textMessage){
-            ServiceActions.ACTION_SERVICE_AUDIO.toString()->{
-                val checked =isServiceRunning(
-                    requireContext(),
-                    BackgroundStreamService::class.java
-                )
-                if(checked){
-                    homeViewModel.changeBackgroundServiceChecked(true)
+        val checked =isServiceRunning(
+            requireContext(),
+            BackgroundStreamService::class.java
+        )
+        if(checked){
+            homeViewModel.changeBackgroundServiceChecked(true)
 
-                }
-
-            }
+        }else{
+            homeViewModel.changeBackgroundServiceChecked(false)
         }
         // Use the data
     }
