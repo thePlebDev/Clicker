@@ -28,7 +28,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DrawerValue
@@ -162,6 +164,7 @@ import kotlinx.coroutines.launch
         backgroundServiceChecked:Boolean,
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
+        openAppSettings:() ->Unit,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -245,7 +248,8 @@ import kotlinx.coroutines.launch
                     checkIfServiceRunning={checkIfServiceRunning()},
                     backgroundServiceChecked=backgroundServiceChecked,
                     changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)},
-                    grantedNotification= grantedNotifications
+                    grantedNotification= grantedNotifications,
+                    openAppSettings={openAppSettings()}
 
                 )
 
@@ -463,6 +467,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
         backgroundServiceChecked:Boolean,
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotification:Boolean,
+        openAppSettings:() ->Unit,
     ) {
 
         Box(modifier = Modifier
@@ -505,7 +510,10 @@ fun LoginWithTwitchBottomModalButtonColumn(
                     changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)}
                 )
                 if(backgroundServiceChecked){
-                    WhichNotification(grantedNotification)
+                    WhichNotification(
+                        grantedNotification,
+                        openAppSettings={openAppSettings()}
+                    )
                 }
 
 
@@ -516,11 +524,16 @@ fun LoginWithTwitchBottomModalButtonColumn(
     }
 
 @Composable
-fun WhichNotification(grantedNotification:Boolean){
+fun WhichNotification(
+    grantedNotification:Boolean,
+    openAppSettings:()->Unit
+){
     if(grantedNotification){
         FullGrantedNotification()
     }else{
-        DeniedNotification()
+        DeniedNotification(
+            openAppSettings={openAppSettings()}
+        )
     }
 }
 @Composable
@@ -537,7 +550,9 @@ fun FullGrantedNotification(){
     }
 }
 @Composable
-fun DeniedNotification(){
+fun DeniedNotification(
+    openAppSettings:()->Unit
+){
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(15.dp)){
@@ -547,6 +562,16 @@ fun DeniedNotification(){
         Text("Benefits: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
         Text("   - You must allow notifications before background audio can play", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
         Text("   - Check notification permissions in settings", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+
+        Button(
+            onClick = { openAppSettings() },
+            colors =  ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+            modifier = Modifier.padding(5.dp),
+            shape = RoundedCornerShape(4.dp)
+        )
+        {
+            Text(text = "Open Settings", color = MaterialTheme.colorScheme.onSecondary, fontSize = MaterialTheme.typography.bodyMedium.fontSize)
+        }
     }
 }
 

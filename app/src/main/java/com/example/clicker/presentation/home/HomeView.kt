@@ -74,6 +74,7 @@ fun ValidationView(
     startService:()->Unit,
     endService:()->Unit,
     checkIfServiceRunning:()->Boolean,
+    openAppSettings:() ->Unit,
 
 
 ) {
@@ -215,7 +216,8 @@ fun ValidationView(
         checkIfServiceRunning={checkIfServiceRunning()},
         backgroundServiceChecked=homeViewModel.backgroundServiceChecked.value,
         changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)},
-        grantedNotifications =homeViewModel.grantedNotifications.value
+        grantedNotifications =homeViewModel.grantedNotifications.value,
+        openAppSettings={openAppSettings()}
 
     )
 
