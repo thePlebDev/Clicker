@@ -141,19 +141,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-
-
             val channel = NotificationChannel(
                 "CHANNEL_ID",
                 "Background Audio",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notification for media playback service. Allows stream audio to continue to play when application is closed"
+                description = "Notification for media playback service. Allows stream audio to continue to play when the application is closed."
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC // Full content on lock screen
             }
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
+     
     }
 
     fun deleteNotificationChannel(){
