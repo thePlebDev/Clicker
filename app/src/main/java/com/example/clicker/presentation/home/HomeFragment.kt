@@ -316,11 +316,13 @@ class HomeFragment : Fragment(){
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
                 // This is straight up granted
                 Log.d("testingPermissionAgain", "POST_NOTIFICATIONS granted")
+
                 homeViewModel.changeGrantedNotifications(true)
 
             }
             ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.POST_NOTIFICATIONS) -> {
                 // This will show If the user has granted them before but now has denied them
+
                 Log.d("testingPermissionAgain", "Show UI to inform user why POST_NOTIFICATIONS is needed")
                 homeViewModel.changeGrantedNotifications(false)
 

@@ -6,6 +6,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -14,6 +15,7 @@ import android.opengl.GLSurfaceView
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -22,7 +24,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-
+import androidx.fragment.app.activityViewModels
+import com.example.clicker.presentation.home.HomeViewModel
+import androidx.fragment.app.activityViewModels
+import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.services.BackgroundStreamService
 
 
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,6 +39,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var gLView: GLSurfaceView
+
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val streamViewModel: StreamViewModel by viewModels()
 
 
 
@@ -114,6 +123,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    override fun onPause() {
+        super.onPause()
+       val backgroundServiceChecked = homeViewModel.backgroundServiceChecked.value
+        val channelName = streamViewModel.channelName.value
+        if(channelName !=null && backgroundServiceChecked){
+            Log.d("MainActivityOnPause","SEND THE REQUEST")
+            val startIntent = Intent(this, BackgroundStreamService::class.java)
+            startIntent.action = BackgroundStreamService.Actions.START.toString()
+            startIntent.putExtra("channelName", channelName)
+            this.startService(startIntent)
+        }
+        Log.d("MainActivityOnPause","onPause()")
     }
 
     private fun createNotificationChannel() {

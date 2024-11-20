@@ -47,7 +47,7 @@ import java.io.Closeable
 import kotlin.coroutines.CoroutineContext
 
 class BackgroundStreamService: Service() {
-    private lateinit var webView: WebView
+    private  var webView: WebView? = null
 
     private var pauseBtnIcon: Int= R.drawable.back_arrow
     private var timeInSeconds =0
@@ -66,7 +66,13 @@ class BackgroundStreamService: Service() {
         when(intent?.action){
             Actions.START.toString()->{
                 Log.d("BackgroundStreamServiceOnStartCommand", "onStartCommand START")
-                startForeground()
+                intent.extras.toString()
+                Log.d("BackgroundStreamServiceOnStartCommand", "extras ${intent?.getStringExtra("channelName")}")
+                val channelName = intent.getStringExtra("channelName")
+                channelName?.let {
+                    startForeground(it)
+                }
+
             }
             Actions.END.toString() ->{
                 Log.d("BackgroundStreamServiceOnStartCommand", "onStartCommand END")
@@ -95,29 +101,23 @@ class BackgroundStreamService: Service() {
         Log.d("shutdownReceiverContextRegistered","Service DESTROY")
 
         job?.cancel()
+        webView?.let {
+            it.loadUrl("about:blank")
+            it.clearHistory()
+            it.removeAllViews()
+            it.destroy()
+        }
+        webView = null
 
     }
 
-    private fun startForeground() {
-        // Before starting the service as foreground check that the app has the
-        // appropriate runtime permissions. In this case, verify that the user has
-        // granted the CAMERA permission.
+    private fun startForeground(
+        channelName:String
+    ) {
 
-        Log.d("BackgroundStreamServiceOnStartCommand", "startForeground()")
-//        val notification = createNotification()
-//        ServiceCompat.startForeground(
-//            /* service = */ this,
-//            /* id = */ 100, // Cannot be 0
-//            /* notification = */ notification,
-//            /* foregroundServiceType = */
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-//            } else {
-//                0
-//            },
-//        )
         startForeground(100, createNotification2("Timer: 0s"))
         startTimer()
+        testLoadWebViewURL(channelName)
 
     }
 
@@ -152,25 +152,25 @@ class BackgroundStreamService: Service() {
         notificationManager.notify( 100, createNotification2(contentText))
     }
 
-    fun testLoadWebViewURL(){
+    fun testLoadWebViewURL(channelName: String){
         //https://player.twitch.tv/?channel=piratesoftware&controls=false&muted=false&parent=modderz
 
-        // Initialize WebView on the main thread
-        Handler(Looper.getMainLooper()).post {
+        // Initialize WebView on the Job
+        job.apply {
             webView = WebView(applicationContext)
-            webView.settings.javaScriptEnabled = true
+            webView?.settings?.javaScriptEnabled = true
             // Log.d("setWebViewURL","url -->$url")
-            webView.settings.mediaPlaybackRequiresUserGesture = false
-            webView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
-            webView.isClickable = true
-            webView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+            webView?.settings?.mediaPlaybackRequiresUserGesture = false
+            webView?.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
+            webView?.isClickable = true
+            webView?.settings?.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
 
-            webView.settings.allowContentAccess = true
-            webView.settings.allowFileAccess = true
+            webView?.settings?.allowContentAccess = true
+            webView?.settings?.allowFileAccess = true
 
-            webView.settings.setSupportZoom(true)
+            webView?.settings?.setSupportZoom(true)
 
-            webView.loadUrl("https://player.twitch.tv/?channel=piratesoftware&controls=false&muted=false&parent=modderz")
+            webView?.loadUrl("https://player.twitch.tv/?channel=${channelName}&controls=false&muted=false&parent=modderz")
         }
        //todo: should be some kind of close method
     }
