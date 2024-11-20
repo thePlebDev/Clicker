@@ -115,13 +115,15 @@ class BackgroundStreamService: Service() {
         channelName:String
     ) {
 
-        startForeground(100, createNotification2("Timer: 0s"))
-        startTimer()
+        startForeground(100, createNotification2("Timer: 0s",channelName))
+        startTimer(channelName)
         testLoadWebViewURL(channelName)
 
     }
 
-    private fun startTimer() {
+    private fun startTimer(
+        channelName:String
+    ) {
 
 
         // Define CoroutineScope tied to the service lifecycle
@@ -143,13 +145,13 @@ class BackgroundStreamService: Service() {
 
                 // Update notification with formatted time
                 val formattedTime = String.format("%02d:%02d:%02d", timeInHours, timeInMinutes, timeInSeconds)
-                updateNotification("Active: $formattedTime")
+                updateNotification("Active: $formattedTime",channelName)
             }
         }
     }
-    private fun updateNotification(contentText: String) {
+    private fun updateNotification(contentText: String,channelName: String) {
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify( 100, createNotification2(contentText))
+        notificationManager.notify( 100, createNotification2(contentText,channelName))
     }
 
     fun testLoadWebViewURL(channelName: String){
@@ -175,7 +177,7 @@ class BackgroundStreamService: Service() {
        //todo: should be some kind of close method
     }
 
-    private fun createNotification2(contentText: String): Notification {
+    private fun createNotification2(contentText: String,channelName: String): Notification {
         val intent = Intent(this, ShutDownBroadcastReceiver::class.java).apply {
             action = "com.example.broadcast.MY_NOTIFICATION"
             putExtra("data", "Nothing to see here, move along.")
@@ -189,7 +191,7 @@ class BackgroundStreamService: Service() {
         )
 
         return NotificationCompat.Builder(this, "CHANNEL_ID")
-            .setContentTitle("Background audio")
+            .setContentTitle("$channelName audio")
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true) // Makes it non-dismissible
