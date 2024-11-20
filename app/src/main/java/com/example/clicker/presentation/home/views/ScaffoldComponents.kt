@@ -542,11 +542,11 @@ fun DeniedNotification(){
         .fillMaxWidth()
         .padding(15.dp)){
         Text("Status: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-        Text("   - Active", Modifier.fillMaxWidth(),color = Color.Green,fontSize = 18.sp)
+        Text("   - Denied", Modifier.fillMaxWidth(),color = Color.Red,fontSize = 18.sp)
         Spacer(modifier = Modifier.height(10.dp))
         Text("Benefits: ", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary,fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-        Text("   - Stream will now continue to play when the application is closed", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
-        Text("   - No notifications will be shown. Check notification permissions in settings", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+        Text("   - You must allow notifications before background audio can play", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
+        Text("   - Check notification permissions in settings", Modifier.fillMaxWidth(),color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp)
     }
 }
 

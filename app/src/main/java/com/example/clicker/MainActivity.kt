@@ -128,8 +128,9 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
        val backgroundServiceChecked = homeViewModel.backgroundServiceChecked.value
+        val grantedPermissions = homeViewModel.grantedNotifications.value
         val channelName = streamViewModel.channelName.value
-        if(channelName !=null && backgroundServiceChecked){
+        if(channelName !=null && backgroundServiceChecked && grantedPermissions){
             Log.d("MainActivityOnPause","SEND THE REQUEST")
             val startIntent = Intent(this, BackgroundStreamService::class.java)
             startIntent.action = BackgroundStreamService.Actions.START.toString()
@@ -152,7 +153,7 @@ class MainActivity : AppCompatActivity() {
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
-     
+
     }
 
     fun deleteNotificationChannel(){
