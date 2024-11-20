@@ -133,6 +133,7 @@ import com.example.clicker.util.Response
         backgroundServiceChecked:Boolean,
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
+        openAppSettings:() ->Unit,
 
         ){
 
@@ -197,7 +198,8 @@ import com.example.clicker.util.Response
                         }
                         changeBackgroundServiceChecked(newValue)
                     },
-                    grantedNotifications=grantedNotifications
+                    grantedNotifications=grantedNotifications,
+                    openAppSettings={openAppSettings()}
 
                 )
 
