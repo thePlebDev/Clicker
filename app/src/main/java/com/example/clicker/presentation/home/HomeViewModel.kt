@@ -56,6 +56,12 @@ class HomeViewModel @Inject constructor(
     private var _backgroundServiceChecked: MutableState<Boolean> = mutableStateOf(false)
     val backgroundServiceChecked: State<Boolean> = _backgroundServiceChecked
 
+    private var _grantedNotifications: MutableState<Boolean> = mutableStateOf(false)
+    val grantedNotifications: State<Boolean> = _grantedNotifications
+    fun changeGrantedNotifications(newValue: Boolean){
+        _grantedNotifications.value = newValue
+    }
+
     fun changeBackgroundServiceChecked(newValue:Boolean){
         _backgroundServiceChecked.value = newValue
     }

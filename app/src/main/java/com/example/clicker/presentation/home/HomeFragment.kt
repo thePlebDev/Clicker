@@ -129,6 +129,9 @@ class HomeFragment : Fragment(){
 
 
 
+
+
+
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
 
@@ -166,10 +169,11 @@ class HomeFragment : Fragment(){
                             searchViewModel=searchViewModel,
                             startService={
                              //   val startIntent = Intent(this,BackgroundStreamService::class.java)
+                                testingPermissionAgain(requireContext())
 
-                                val startIntent = Intent(context, BackgroundStreamService::class.java)
-                                startIntent.action = BackgroundStreamService.Actions.START.toString()
-                                context.startService(startIntent)
+//                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+//                                startIntent.action = BackgroundStreamService.Actions.START.toString()
+//                                context.startService(startIntent)
 
 
                                          },
@@ -208,54 +212,6 @@ class HomeFragment : Fragment(){
         return false
     }
 
-    /**
-     * so this does 3 checks:
-     * 1) check if permission granted. if true, normal feature
-     *
-     * 2) shouldShowRequestPermissionRationale() if permission is denied, call this method, if this method
-     * returns true show an educational UI to the user.
-     *
-     * 3) request permission
-     *
-     * */
-    private fun testingPermissionAgain(context: Context){
-        when {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
-                // performAction(...)
-                Log.d("testingPermissionAgainCalle","GRANTED")
-                //permission granted this is run.
-                val startIntent = Intent(context, BackgroundStreamService::class.java)
-                startIntent.action = BackgroundStreamService.Actions.START.toString()
-                context.startService(startIntent)
-            }
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                requireActivity(), Manifest.permission.POST_NOTIFICATIONS) -> {
-                Log.d("testingPermissionAgainCalle","DENIED, SHOW UI TO INFORM USER")
-                //permission was denied
-                //show the UI telling the individual that they need to allow notifications
-
-            }
-            else -> {
-                // You can directly ask for the permission.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    Log.d("testingPermissionAgainCalle","request attempt")
-                    requestPermissions(
-                        arrayOf(
-                            //this is a normal permission and will be granted automatically
-                            Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK,
-                            Manifest.permission.POST_NOTIFICATIONS,
-                        ),
-                        1001 // Request code
-                    )
-                }
-
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -352,6 +308,62 @@ class HomeFragment : Fragment(){
                 }
             }
         )
+    }
+
+    //this needs to be called when the user switches
+    private fun testingPermissionAgain(context: Context) {
+        when {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
+                // This is straight up granted
+                Log.d("testingPermissionAgain", "POST_NOTIFICATIONS granted")
+                homeViewModel.changeGrantedNotifications(true)
+
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.POST_NOTIFICATIONS) -> {
+                // This will show If the user has granted them before but now has denied them
+                Log.d("testingPermissionAgain", "Show UI to inform user why POST_NOTIFICATIONS is needed")
+                homeViewModel.changeGrantedNotifications(false)
+
+            }
+            else -> {
+                // first time never seen them
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+                }
+            }
+        }
+    }
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        Log.d("onRequestPermissionsResult","onRequest call back")
+        when (requestCode) {
+            1001 -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // Permission is granted. Continue the action or workflow
+                    // in your app.
+                    Log.d("onRequestPermissionsResult","Granted")
+                } else {
+                    //this runs on the deny
+                    Log.d("onRequestPermissionsResult","INFORM USER")
+                    // Explain to the user that the feature is unavailable because
+                    // the feature requires a permission that the user has denied.
+                    // At the same time, respect the user's decision. Don't link to
+                    // system settings in an effort to convince the user to change
+                    // their decision.
+                }
+                return
+            }
+
+            // Add other 'when' lines to check for other
+            // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+                Log.d("onRequestPermissionsResult","ELSE")
+            }
+        }
+
     }
 
 

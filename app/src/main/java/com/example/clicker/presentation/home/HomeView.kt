@@ -75,6 +75,7 @@ fun ValidationView(
     endService:()->Unit,
     checkIfServiceRunning:()->Boolean,
 
+
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -213,7 +214,8 @@ fun ValidationView(
         endService={endService()},
         checkIfServiceRunning={checkIfServiceRunning()},
         backgroundServiceChecked=homeViewModel.backgroundServiceChecked.value,
-        changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)}
+        changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)},
+        grantedNotifications =homeViewModel.grantedNotifications.value
 
     )
 
