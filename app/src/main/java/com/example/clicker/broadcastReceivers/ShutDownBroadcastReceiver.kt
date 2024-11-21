@@ -5,7 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.clicker.services.BackgroundStreamService
+import com.example.clicker.services.ServiceActions
 
+/**
+ * - **ShutDownBroadcastReceiver** is a [BroadcastReceiver] object meant to capture the action from the
+ * notification and send a [END][com.example.clicker.services.BackgroundStreamService.Actions.END] action to
+ * the [BackgroundStreamService] object
+ *
+ * */
 class ShutDownBroadcastReceiver : BroadcastReceiver() {
 
 
