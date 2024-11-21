@@ -12,6 +12,14 @@ import com.example.clicker.network.clients.TopGame
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+/**
+ * - **PinnedItemRepo** is the repository layer for interacting with the underlying room database. This class is meant to
+ * help users interact with the room database and store [PinnedItem] objects
+ *
+ * @param pinnedItemDao injected [PinnedItemsDAO] that is the room database. Users will interact with the in order to store and
+ * remove the [PinnedItem] objects
+ *
+ * */
 class PinnedItemRepo @Inject constructor(
     private val pinnedItemDao: PinnedItemsDAO
     ): PinnedItemInter {
