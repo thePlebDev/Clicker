@@ -25,7 +25,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "to
  * - **TokenDataStore** is a [DataStore] object used to store and retrieve simple data from the Android system
  * - you can read more about DataStore, [HERE](https://developer.android.com/topic/libraries/architecture/datastore)
  *
- * @param context a [Context] object that represents the App's instance 
+ * @param context a [Context] object that represents the App's instance
  *
  * */
 class TokenDataStore @Inject constructor(
