@@ -21,6 +21,13 @@ import kotlinx.coroutines.flow.map
 // At the top level of your kotlin file:
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "tokens")
 
+/**
+ * - **TokenDataStore** is a [DataStore] object used to store and retrieve simple data from the Android system
+ * - you can read more about DataStore, [HERE](https://developer.android.com/topic/libraries/architecture/datastore)
+ *
+ * @param context a [Context] object that represents the App's instance 
+ *
+ * */
 class TokenDataStore @Inject constructor(
     private val context: Context
 ):TwitchDataStore,ChatSettingsDataStore {
