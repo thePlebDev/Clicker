@@ -7,8 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 
+/**
+ * - **PinnedItemRoomDatabase** acts as the actual database. It extends [RoomDatabase] class to tell Android this class is to be
+ * treated as underlying database
+ *
+ * @property pinnedItemsDAO a function that when called will give an API to interact with the database. This function is abstract
+ * but it gets instantiated upon creation of this class do to an internal companion object
+ *
+ * */
 @Database(entities = [PinnedItem::class], version = 1, exportSchema = false)
-
 public abstract class PinnedItemRoomDatabase : RoomDatabase(){
 
     //For each DAO class that is associated with the database,
