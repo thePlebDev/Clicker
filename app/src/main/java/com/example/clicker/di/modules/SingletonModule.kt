@@ -78,7 +78,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 /**
  * - **SingletonModule** is an object that acts as a hilt module for singleton components that need to be instantiated only once and
- * the same instance reused 
+ * the same instance reused
  *
  * - You can read about modules, [HERE](https://developer.android.com/training/dependency-injection/hilt-android#hilt-modules) and [HERE](https://dagger.dev/hilt/modules.html)
  * */
