@@ -21,17 +21,53 @@ import kotlinx.coroutines.flow.Flow
  * */
 interface TwitchDataStore {
 
+    /**
+     * - **setOAuthToken** a function, when called with a String, will set the Authentication token representing the Twitch
+     * authentication session
+     *
+     * @param oAuthToken a String representing the Twitch Authentication token
+     *
+     * */
     suspend fun setOAuthToken(oAuthToken: String)
 
+    /**
+     * - **setOAuthToken** a function, when called with a String, will set the Authentication token representing the Twitch
+     * authentication session
+     *
+     * @return a [Flow] containing a String representing the Twitch authentication system
+     *
+     * */
     fun getOAuthToken(): Flow<String>
 
+    /**
+     * - **setUsername** a function, when called with a String, will set the locally stored username of the logged in user
+     * @param username a String representing the logged in user's name
+     *
+     * */
     suspend fun setUsername(username: String)
 
+
+    /**
+     * - **getUsername** a function, when called, will get the locally stored username of the logged in user
+     *
+     * @return a [Flow] a String representing the logged in user's name
+     *
+     * */
     fun getUsername(): Flow<String>
 
-    //so that means that these should be used to set the state of the current user. ie: are the logged in or not
-    //so both of these should be changed to strings
+    /**
+     * - **setLoggedOutStatus** a function, when called with a String, will determine if the user is logged in or not
+     * @param loggedOut a String representing the status of the logged in user
+     *
+     * */
     suspend fun setLoggedOutStatus(loggedOut:String)
+
+    /**
+     * - **getLoggedOutStatus** a function, when called, will get the logged in users status
+     *
+     * @return a [Flow] a String? representing the logged in user's status
+     *
+     * */
     fun getLoggedOutStatus(): Flow<String?>
 
     /**
@@ -49,7 +85,17 @@ interface TwitchDataStore {
      * */
     fun getLoggedOutLoading(): Flow<Boolean>
 
+
+    /**
+     * - **setClientId** is used to store the uniqie device id for this application
+     * @param clientId A String representing the device's unique id
+     * */
     suspend fun setClientId(clientId:String)
+
+    /**
+     * - **getClientId** is used to store the uniqie device id for this application
+     * @return a [Flow] containing a  String representing the device's unique id
+     * */
     fun getClientId(): Flow<String>
 
 
