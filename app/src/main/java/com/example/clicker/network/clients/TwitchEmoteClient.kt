@@ -1,5 +1,8 @@
 package com.example.clicker.network.clients
 
+import com.example.clicker.network.models.emotes.ChannelEmoteResponse
+import com.example.clicker.network.models.emotes.EmoteData
+import com.example.clicker.network.models.emotes.GlobalChatBadgesData
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.google.gson.annotations.SerializedName
@@ -40,67 +43,5 @@ interface TwitchEmoteClient {
     ):Response<GlobalChatBadgesData>
 }
 
-data class GlobalChatBadgesData(
-    val data: List<GlobalBadgesSet>
-)
 
-data class GlobalBadgesSet(
-    val set_id: String,
-    val versions: List<GlobalBadgesVersion>
-)
-
-data class GlobalBadgesVersion(
-    val id: String,
-    val image_url_1x: String,
-    val image_url_2x: String,
-    val image_url_4x: String,
-    val title: String,
-    val description: String,
-    val click_action: String,
-    val click_url: String
-)
-
-
-
-
-//below
-data class Emote(
-    val id: String,
-    val name: String,
-    val images: Images,
-    val format: List<String>,
-    val scale: List<String>,
-    val theme_mode: List<String>
-)
-
-data class Images(
-    val url_1x: String,
-    val url_2x: String,
-    val url_4x: String
-)
-
-data class EmoteData(
-    val data: List<Emote>
-)
-
-
-data class ChannelEmoteResponse(
-    val data: List<ChannelEmote>
-)
-
-data class ChannelEmote(
-    val id: String,
-    val name: String,
-    val images: ChannelImages,
-    val format: List<String>,
-    val scale: List<String>,
-    val theme_mode: List<String>,
-    val emote_type:String
-)
-
-data class ChannelImages(
-    val url_1x: String,
-    val url_2x: String,
-    val url_4x: String
-)
 
