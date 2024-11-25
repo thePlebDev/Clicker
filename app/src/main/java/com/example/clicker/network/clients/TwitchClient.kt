@@ -155,7 +155,6 @@ interface TwitchClient {
         @Body body: WarnUserBody
     ):Response<WarnUserResponse>
 
-    //todo: These need to be changed out when I get the functions working
 
 
 
@@ -191,8 +190,19 @@ interface TwitchClient {
         @Body autoModSettings: IndividualAutoModSettings
     ):Response<AutoModSettings>
 
+/**-------------------------------------- DOCUMENT EVERY THING BELOW THIS ----------------------------------------------------------------------*/
 
 
+    /**
+     * - **createEventSubSubscription** represents a POST method meant to register a websocket subscription
+     *  - you can read more about websocket subscriptions, [HERE](https://dev.twitch.tv/docs/api/reference/#create-eventsub-subscription)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param evenSubSubscription a [EvenSubSubscription] object representing the event we are subscribing to on the the websocket
+     *
+     * */
     @Headers("Content-Type: application/json")
     @POST("eventsub/subscriptions")
     suspend fun createEventSubSubscription(
@@ -201,6 +211,19 @@ interface TwitchClient {
         @Query("broadcaster_id") broadcasterId: String,
         @Body evenSubSubscription: EvenSubSubscription
     ):Response<EvenSubSubscriptionResponse>
+
+
+    /**
+     * - **createEventSubSubscription** represents a POST method meant to register a websocket subscription. It differs from [createEventSubSubscription]
+     * by user a unique user id inside of the [evenSubSubscription] object
+     *  - you can read more about websocket subscriptions, [HERE](https://dev.twitch.tv/docs/api/reference/#create-eventsub-subscription)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param evenSubSubscription a [TwitchEventSub.EvenSubSubscriptionUserId] object representing the event we are subscribing to on the the websocket
+     *
+     * */
     @Headers("Content-Type: application/json")
     @POST("eventsub/subscriptions")
     suspend fun createEventSubSubscriptionUserId(
@@ -210,6 +233,17 @@ interface TwitchClient {
         @Body evenSubSubscription: TwitchEventSub.EvenSubSubscriptionUserId
     ):Response<EvenSubSubscriptionResponse>
 
+
+    /**
+     * - **manageAutoModMessage** represents a POST method meant to update a message being held by auto mod
+     *
+     * - you can read more about managing auto mod messages, [HERE](https://dev.twitch.tv/docs/api/reference/#manage-held-automod-messages)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param manageAutoModMessageData a [ManageAutoModMessage] object used to represent the new automod actions
+     *
+     * */
     @Headers("Content-Type: application/json")
     @POST("moderation/automod/message")
     suspend fun manageAutoModMessage(
@@ -218,6 +252,17 @@ interface TwitchClient {
         @Body manageAutoModMessageData: ManageAutoModMessage
     ):Response<Void>
 
+    /**
+     * - **getBlockedTerms** represents a GET method meant to get the get all the blocked terms that a channel has set
+     *
+     * - you can read more about blocked terms, [HERE](https://dev.twitch.tv/docs/api/reference/#get-blocked-terms)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     *
+     * */
     @GET("moderation/blocked_terms")
     suspend fun getBlockedTerms(
         @Header("Authorization") authorizationToken: String,
@@ -226,6 +271,17 @@ interface TwitchClient {
         @Query("moderator_id") moderatorId: String,
     ):Response<BlockedTermsData>
 
+    /**
+     * - **deleteBlockedTerm** represents a DELETE method meant to delete a  blocked terms that a channel has set
+     *
+     * - you can read more about deleting blocked terms, [HERE](https://dev.twitch.tv/docs/api/reference/#remove-blocked-term)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     *
+     * */
     @DELETE("moderation/blocked_terms")
     suspend fun deleteBlockedTerm(
         @Header("Authorization") authorizationToken: String,
@@ -236,6 +292,19 @@ interface TwitchClient {
     ):Response<Void>
 
 
+
+    /**
+     * - **updateModViewChatSettings** represents a PATCH method update the current chat settings
+     *
+     * - you can read more about updating chat settings, [HERE](https://dev.twitch.tv/docs/api/reference/#update-chat-settings)
+     *
+     * @param authorizationToken a String used to represent the OAuth token that uniquely identifies this user's granted abilities
+     * @param clientId a String used to represent the clientId(unique identifier) of this application
+     * @param broadcasterId a String used to represent the unique identifier of the streamer being currently viewed
+     * @param moderatorId A String used to represent the unique identifier of the current user and their moderator abilities
+     * @param body  a [ChatSettingsData] object representing all the update settings
+     *
+     * */
     @Headers("Content-Type: application/json")
     @PATCH("chat/settings")
     suspend fun updateModViewChatSettings(
@@ -247,24 +316,31 @@ interface TwitchClient {
 
     ): Response<ModViewChatSettings>
 
-    @GET("chat/emotes/global")
-    suspend fun getGlobalEmotes(
-        @Header("Authorization") authorization: String,
-        @Header("Client-Id") clientId: String,
-    ): Response<EmoteData>
-
-
-
-
-
-
-
 }
 
+
+/**
+ * - **ModViewChatSettings** represents a list of settings data used to update the user's chat settings
+ *
+ * @param data a List of [UpdatedModViewChatSetting] objects representing the settings that are to get changed
+ * */
 data class ModViewChatSettings(
     val data: List<UpdatedModViewChatSetting>
 )
 
+/**
+ * - **UpdatedModViewChatSetting** represents all the chat settings available on Twitch
+ *
+ * @param broadcaster_id a String representing the id of the broadcaster(streamer)
+ * @param moderator_id a String representing if the user is a moderator or not
+ * @param slow_mode a  Boolean used to determine if the chat is in slow mode or not
+ * @param slow_mode_wait_time a Nullable Integer used to represent how long slow mode is set to
+ * @param follower_mode a Boolean used to determine if the chat is in follower mode or not
+ * @param follower_mode_duration a Nullable Integer used to represent how long follower mode is set to
+ * @param subscriber_mode a Boolean used to determine if the chat is in subscriber mode or not
+ * @param emote_mode a Boolean used to determine if the chat is in emote mode or not
+ * @param unique_chat_mode a Boolean used to determine if the chat is in unique chat mode or not
+ * */
 data class UpdatedModViewChatSetting(
     val broadcaster_id: String,
     val moderator_id: String,
@@ -276,6 +352,12 @@ data class UpdatedModViewChatSetting(
     val emote_mode: Boolean,
     val unique_chat_mode: Boolean,
 )
+
+/**
+ * - **BlockedTermsData** represents a list of blocked terms the user has set
+ *
+ * @param data a List of [BlockedTerm] objects representing all the blocked terms
+ * */
 data class BlockedTermsData(
     val data:List<BlockedTerm>
 )
@@ -308,7 +390,11 @@ data class ManageAutoModMessage(
 )
 
 
-
+/**
+ * - **BanUser** represents a list of blocked users
+ *
+ * @param data a List of [BanUserData] objects representing all the blocked user data
+ * */
 data class BanUser(
     val data: BanUserData
 )
@@ -326,7 +412,14 @@ data class BanUserData(
     val duration: Int? = null
 )
 
-
+/**
+ * - **EvenSubSubscription** represents a single event we want to subscriber to on a Twitch web socket
+ *
+ * @param type a String used to represent which type of event we want to subscribe to
+ * @param version a String used to represent the version of event we want to subscribe to
+ * @param condition a [Condition] object used to pass the streamer and moderator info
+ * @param transport a [Transport] object used to determine how we want to subscribe to the event
+ * */
 data class EvenSubSubscription(
     val type: String,
     val version: String,
@@ -334,17 +427,37 @@ data class EvenSubSubscription(
     val transport: Transport
 )
 
+/**
+ * - **Condition** represents a the unique identification used to subscribe to a event
+ *
+ * @param broadcaster_user_id a String representing the identity of the broadcaster(Streamer)
+ * @param moderator_user_id a String representing the ability to subscribe to the event or not
+ * */
 data class Condition(
     val broadcaster_user_id: String,
     val moderator_user_id:String,
 )
 
+/**
+ * - **Transport** represents a the unique identification used to subscribe to a event
+ *
+ * @param method a String representing how we want to connect to the event. The default is a `WebSocket`
+ * @param session_id a String representing the websocket session we are subscribing to
+ * */
 data class Transport(
     val method: String ="websocket",
     val session_id: String
 )
-// This i
 
+
+/**
+ * - **EvenSubSubscriptionResponse** represents the response to event subscription end point
+ *
+ * @param data a List of [UserUpdateItem] objects representing the status of the attempted subscription event
+ * @param total a Int representing the the initial cost of events
+ * @param total_cost a Int representing the total cost of the events
+ * @param max_total_cost a Int representing the max limit of the subscription events
+ * */
 data class EvenSubSubscriptionResponse(
     val data: List<UserUpdateItem>,
     val total: Int,
@@ -352,6 +465,18 @@ data class EvenSubSubscriptionResponse(
     val max_total_cost: Int
 )
 
+/**
+ * - **UserUpdateItem** represents the response meta data to a event subscription event
+ *
+ * @param id a String representing the unique identifier of this item
+ * @param status a String representing the status of this item
+ * @param type a String representing the type of this item
+ * @param version a String representing the version of this item
+ * @param condition a [Condition] object
+ * @param created_at a String representing the date this item was created
+ * @param transport a [Transport] object
+ * @param cost a Integer representing the cost of this item
+ * */
 data class UserUpdateItem(
     val id: String,
     val status: String,
@@ -364,16 +489,44 @@ data class UserUpdateItem(
 )
 
 
+/**
+ * - **WarnUserBody** represents a attempt to warn a chat user
+ * - you can read more about warning users, [HERE](https://dev.twitch.tv/docs/api/reference/#warn-chat-user)
+ *
+ * @param data a [WarnData] objects representing all the data related to the warn attempt
+ * */
 data class WarnUserBody(
     val data: WarnData
 )
+/**
+ * - **WarnData** represents a
+ *
+ * @param user_id a String representing the user's id of who you want to warn
+ * @param reason a String representing the reason as to why this user was warned
+ * */
 data class WarnData(
     val user_id: String,
     val reason: String
 )
+
+/**
+ * - **WarnUserResponse** represents a response for a attempt to warn a chat user
+ * - you can read more about warning users, [HERE](https://dev.twitch.tv/docs/api/reference/#warn-chat-user)
+ *
+ * @param data a [WarnUserResponseData] objects representing all the data related to the warn attempt
+ * */
 data class WarnUserResponse(
     val data: List<WarnUserResponseData>
 )
+
+/**
+ * - **WarnUserResponseData** represents a single reponse of attempting to warn a chatting user
+ *
+ * @param broadcaster_id a String representing the id of the broacaster(streamer)
+ * @param user_id a String representing representing the id of the chatter attempting to warn
+ * @param moderator_id a String representing the user's ability to warn
+ * @param reason a String representing the reason for the war
+ * */
 data class WarnUserResponseData(
     val broadcaster_id: String,
     val user_id: String,

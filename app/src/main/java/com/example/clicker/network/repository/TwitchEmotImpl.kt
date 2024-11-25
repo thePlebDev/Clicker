@@ -22,13 +22,13 @@ import coil.compose.AsyncImage
 import com.example.clicker.R
 
 import com.example.clicker.network.clients.BetterTTVEmoteClient
-import com.example.clicker.network.clients.ChannelEmote
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.BetterTTVEmotes
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.models.emotes.BetterTTVIndivChannelEmote
 import com.example.clicker.network.models.emotes.BetterTTVChannelEmotes
 import com.example.clicker.network.models.emotes.BetterTTVSharedEmote
+import com.example.clicker.network.models.emotes.ChannelEmote
 import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
 import com.example.clicker.network.repository.models.EmoteListMap
 import com.example.clicker.network.repository.models.EmoteNameUrl
