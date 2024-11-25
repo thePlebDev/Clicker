@@ -11,6 +11,14 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
 
+/**
+ * TwitchEmoteClient is the interface that Retrofit will use and turn into a HTTP client. Specifically, this interface
+ * is meant to interact with the Twitch API Emote servers
+ *
+ * @property getGlobalEmotes a function, when called, will get the Twitch global emotes
+ * @property getChannelEmotes a function, when called, will get the channel specific Twitch emotes
+ * @property getGlobalChatBadges a function, when called, will get the Twitch global subscriber badges
+ * */
 interface TwitchEmoteClient {
 
     /**

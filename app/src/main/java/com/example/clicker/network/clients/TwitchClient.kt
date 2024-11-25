@@ -1,6 +1,7 @@
 package com.example.clicker.network.clients
 
 
+import com.example.clicker.network.models.emotes.EmoteData
 import com.example.clicker.network.models.twitchStream.ChatSettings
 import com.example.clicker.network.models.twitchStream.ChatSettingsResponse
 import com.example.clicker.network.models.twitchRepo.FollowedLiveStreams
