@@ -190,7 +190,8 @@ import kotlinx.coroutines.launch
             },
             bottomBar = {
 
-                TripleButtonNavigationBottomBarRow(
+                this.
+                FourButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement=Arrangement.SpaceAround,
                     firstButton = {
@@ -228,6 +229,16 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
+                    fourthButton={
+                        IconOverTextColumn(
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Stream",
+                            imageVector = Icons.Default.Add,
+                            iconContentDescription = "Navigate to stream page",
+                            onClick = {},
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
 
                 )
             },
