@@ -134,6 +134,7 @@ import com.example.clicker.util.Response
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
         openAppSettings:() ->Unit,
+        navigateToStream:()->Unit
 
         ){
 
@@ -199,7 +200,8 @@ import com.example.clicker.util.Response
                         changeBackgroundServiceChecked(newValue)
                     },
                     grantedNotifications=grantedNotifications,
-                    openAppSettings={openAppSettings()}
+                    openAppSettings={openAppSettings()},
+                    navigateToStream={navigateToStream()}
 
                 )
 
