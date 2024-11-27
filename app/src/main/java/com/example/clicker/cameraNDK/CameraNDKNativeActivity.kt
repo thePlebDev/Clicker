@@ -30,10 +30,11 @@ class CameraNDKNativeActivity : NativeActivity() {
         val mainLayout = RelativeLayout(this)
 
         this.setContentView(mainLayout)
-       // checkCameraPermission()
+       checkCameraPermission()
     }
 
     private fun checkCameraPermission() {
+        Log.d("PermissionCheckingNative","CHECKING")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // Request camera permission
             Log.d("PermissionCheckingNative","not GRANTED")
@@ -41,7 +42,8 @@ class CameraNDKNativeActivity : NativeActivity() {
         } else {
             // Permission already granted
 
-            notifyCameraPermission(true)
+            Log.d("PermissionCheckingNative","ALREADY GRANTED")
+           // notifyCameraPermission(true)
         }
     }
 
