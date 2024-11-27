@@ -2,10 +2,8 @@ package com.example.clicker.presentation.home
 
 import android.Manifest
 import android.app.ActivityManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -24,14 +22,12 @@ import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
+import com.example.clicker.cameraNDK.CameraNDKNativeActivity
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
@@ -43,7 +39,6 @@ import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSetti
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
-import com.example.clicker.services.ServiceActions
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -194,6 +189,10 @@ class HomeFragment : Fragment(){
                                     putExtra(Settings.EXTRA_APP_PACKAGE, "elliott.software.clicker")  // Use your app's package name
                                 }
                                 startActivity(intent)
+                            },
+                            navigateToStream = {
+                                val myIntent = Intent(requireActivity(), CameraNDKNativeActivity::class.java)
+                                startActivity(myIntent)
                             }
 
 

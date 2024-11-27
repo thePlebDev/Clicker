@@ -165,6 +165,7 @@ import kotlinx.coroutines.launch
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
         openAppSettings:() ->Unit,
+        navigateToStream:()->Unit
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -235,7 +236,9 @@ import kotlinx.coroutines.launch
                             text = "Stream",
                             imageVector = Icons.Default.Add,
                             iconContentDescription = "Navigate to stream page",
-                            onClick = {},
+                            onClick = {
+                                navigateToStream()
+                            },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
