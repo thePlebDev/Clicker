@@ -199,6 +199,12 @@ NDKCamera::NDKCamera()
          cameraOrientation_(0){
 
 
+    valid_ = false;
+    requests_.resize(CAPTURE_REQUEST_COUNT); //resize the vector to 2
+    memset(requests_.data(), 0, requests_.size() * sizeof(requests_[0]));
+    cameras_.clear();
+    cameraMgr_ = ACameraManager_create();
+
 
     cameraMgr_ = ACameraManager_create();
 
@@ -214,8 +220,20 @@ NDKCamera::NDKCamera()
 
     // Initialize camera controls(exposure time and sensitivity), pick
     // up value of 2% * range + min as starting value (just a number, no magic)
-    //todo: I DO NOT NEED THE CONTROLS RIGHT NOW
-    //todo: BUT I WILL MAKE IT UP AGAIN LATER
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //TODO: I THINK i CAN IGNORE THE REQUESTS
 //    ACameraMetadata* metadataObj;
 //    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
 //                                      &metadataObj));
@@ -346,8 +364,9 @@ void CameraEngine::OnAppInitWindow(void) {
 //    }
 
     rotation_ = GetDisplayRotation(); //TODO: MAKING SURE THAT THIS WORKS
+    LOGI("Present Rotation Angle: %d", rotation_);
 
- //   CreateCamera(); // working on this section
+    CreateCamera(); // working on this section
 
 
 //    EnableUI();
@@ -627,7 +646,7 @@ void NDKCamera::OnSessionState(ACameraCaptureSession* ses,
 }
 // CaptureSession state callbacks
 void OnSessionClosed(void* ctx, ACameraCaptureSession* ses) {
-    //LOGW("session %p closed", ses);
+    //LF
     reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(
             ses, CaptureSessionState::CLOSED);
 }
@@ -680,7 +699,17 @@ void CameraEngine::OnPhotoTaken(const char *fileName) {
 void NDKCamera::CreateSession(ANativeWindow* previewWindow,
                               ANativeWindow* jpgWindow, int32_t imageRotation) {
     // Create output from this app's ANativeWindow, and add into output container
-//    requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_ = previewWindow;
+    if(previewWindow == nullptr){ // previewWindow is not null
+        LOGI("Testing previewWindow pointer ---> null pointer");
+    }else{
+        LOGI("Testing previewWindow pointer ---> not null");
+    }
+    //todo: IT LOOKS LIKE THIS ASSIGNMENT IS CAUSING THE CRASH
+    requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_ = previewWindow;
+
+
+
+
 //    requests_[PREVIEW_REQUEST_IDX].template_ = TEMPLATE_PREVIEW;
 //    requests_[JPG_CAPTURE_REQUEST_IDX].outputNativeWindow_ = jpgWindow;
 //    requests_[JPG_CAPTURE_REQUEST_IDX].template_ = TEMPLATE_STILL_CAPTURE;
