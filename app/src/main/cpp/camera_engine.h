@@ -52,7 +52,7 @@ enum class CaptureSessionState : int32_t {
     CLOSED,     // session is closed(by itself or a new session evicts)
     MAX_STATE
 };
-
+//these values automatically increment since we set PREVIEW_REQUEST_IDX = 0
 enum PREVIEW_INDICES {
     PREVIEW_REQUEST_IDX = 0,
     JPG_CAPTURE_REQUEST_IDX,
