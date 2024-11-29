@@ -305,11 +305,9 @@ bool NDKCamera::GetSensorOrientation(int32_t* facing, int32_t* angle) { //workin
 
 /**
  *
- * end of CAMERA_MANAGER
  * */
-
 CameraEngine::CameraEngine(android_app* app)
-        :app_(app) //to avoid the automatic default constructor creation
+        :app_(app) //to avoid the automatic default constructor creation, member initializer list.
            {
 
 }
@@ -340,16 +338,16 @@ struct android_app* CameraEngine::AndroidApp(void) const { return app_; }
  *   Create camera object if camera has been granted
  */
 void CameraEngine::OnAppInitWindow(void) {
-    //this can be re-implemented later
+    //TODO: REIMPLEMENT THIS CONDITIONAL AFTER THE CAMERA IS ACTUALLY WORKING
 //    if (!cameraGranted_) {
 //        // Not permitted to use camera yet, ask(again) and defer other events
 //        RequestCameraPermission();
 //        return;
 //    }
 
-    rotation_ = GetDisplayRotation();
+    rotation_ = GetDisplayRotation(); //TODO: MAKING SURE THAT THIS WORKS
 
-    CreateCamera(); // working on this section
+ //   CreateCamera(); // working on this section
 
 
 //    EnableUI();
@@ -829,6 +827,10 @@ static CameraEngine* pEngineObj = nullptr;
 //    // ...
 //
 //}
+
+
+
+
 static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
     CameraEngine* engine = reinterpret_cast<CameraEngine*>(app->userData);
 
@@ -862,16 +864,18 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
 extern "C" void android_main(struct android_app* state) {
     LOGI("NativeActivity android_main()");
     CameraEngine engine(state);
-    pEngineObj = &engine;
+    pEngineObj = &engine; //pEngineObj is defined as the global object
 
 
     state->userData = reinterpret_cast<void*>(&engine);
     state->onAppCmd = ProcessAndroidCmd;
-//
-//    // loop waiting for stuff to do.
+////
+////    // loop waiting for stuff to do.
+//WITHOUT THE WHILE LOOP BELOW THE APP WILL FREEZE AND CRASH
     while (!state->destroyRequested) {
         struct android_poll_source* source = nullptr;
 
+        // both ALooper_pollOnce and source->process(state, source) need to be called or it will crash the app
         ALooper_pollOnce(0, NULL, nullptr, (void**)&source);
         if (source != NULL) {
             source->process(state, source);
@@ -891,7 +895,7 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jboolean granted) {
-//    std::thread permissionHandler();
+    //std::thread permissionHandler();
 //    permissionHandler().detach();
 
     LOGI("PERMISSION GRANTED");

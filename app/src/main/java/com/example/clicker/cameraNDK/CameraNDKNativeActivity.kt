@@ -30,7 +30,8 @@ class CameraNDKNativeActivity : NativeActivity() {
         val mainLayout = RelativeLayout(this)
 
         this.setContentView(mainLayout)
-       checkCameraPermission()
+       //checkCameraPermission()
+        notifyCameraPermission(true)
     }
 
     private fun checkCameraPermission() {
@@ -43,7 +44,7 @@ class CameraNDKNativeActivity : NativeActivity() {
             // Permission already granted
 
             Log.d("PermissionCheckingNative","ALREADY GRANTED")
-           // notifyCameraPermission(true)
+            notifyCameraPermission(true)
         }
     }
 
