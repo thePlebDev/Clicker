@@ -204,7 +204,7 @@ class CameraEngine {
     struct android_app* app_;
     ImageFormat savedNativeWinRes_;
 public:
-    explicit CameraEngine(android_app *app);// Declare the constructor
+    explicit CameraEngine(android_app *app);// Declare the constructor,make it explicit to avoid the implicit conversion
 
     ~CameraEngine(); // Declare the destructor
 
