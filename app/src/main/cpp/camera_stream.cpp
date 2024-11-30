@@ -699,40 +699,31 @@ void CameraEngine::OnPhotoTaken(const char *fileName) {
 void NDKCamera::CreateSession(ANativeWindow* previewWindow,
                               ANativeWindow* jpgWindow, int32_t imageRotation) {
     // Create output from this app's ANativeWindow, and add into output container
-    if(previewWindow == nullptr){ // previewWindow is not null
-        LOGI("Testing previewWindow pointer ---> null pointer");
-    }else{
-        LOGI("Testing previewWindow pointer ---> not null");
-    }
     //todo: IT LOOKS LIKE THIS ASSIGNMENT IS CAUSING THE CRASH
     requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_ = previewWindow;
-
-
-
-
-//    requests_[PREVIEW_REQUEST_IDX].template_ = TEMPLATE_PREVIEW;
-//    requests_[JPG_CAPTURE_REQUEST_IDX].outputNativeWindow_ = jpgWindow;
-//    requests_[JPG_CAPTURE_REQUEST_IDX].template_ = TEMPLATE_STILL_CAPTURE;
+    requests_[PREVIEW_REQUEST_IDX].template_ = TEMPLATE_PREVIEW;
+    requests_[JPG_CAPTURE_REQUEST_IDX].outputNativeWindow_ = jpgWindow;
+    requests_[JPG_CAPTURE_REQUEST_IDX].template_ = TEMPLATE_STILL_CAPTURE;
 //
-//    CALL_CONTAINER(create(&outputContainer_));
-//    for (auto& req : requests_) {
-//        ANativeWindow_acquire(req.outputNativeWindow_);
-//        CALL_OUTPUT(create(req.outputNativeWindow_, &req.sessionOutput_));
-//        CALL_CONTAINER(add(outputContainer_, req.sessionOutput_));
-//        CALL_TARGET(create(req.outputNativeWindow_, &req.target_));
-//        CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
-//                                      req.template_, &req.request_));
-//        CALL_REQUEST(addTarget(req.request_, req.target_));
-//    }
+    CALL_CONTAINER(create(&outputContainer_));
+    for (auto& req : requests_) {
+        ANativeWindow_acquire(req.outputNativeWindow_);
+        CALL_OUTPUT(create(req.outputNativeWindow_, &req.sessionOutput_));
+        CALL_CONTAINER(add(outputContainer_, req.sessionOutput_));
+        CALL_TARGET(create(req.outputNativeWindow_, &req.target_));
+        CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
+                                      req.template_, &req.request_));
+        CALL_REQUEST(addTarget(req.request_, req.target_));
+    }
 //
 //    // Create a capture session for the given preview request
-//    captureSessionState_ = CaptureSessionState::READY;
-//    CALL_DEV(createCaptureSession(cameras_[activeCameraId_].device_,
-//                                  outputContainer_, GetSessionListener(),
-//                                  &captureSession_));
+    captureSessionState_ = CaptureSessionState::READY;
+    CALL_DEV(createCaptureSession(cameras_[activeCameraId_].device_,
+                                  outputContainer_, GetSessionListener(),
+                                  &captureSession_));
 //
-//    ACaptureRequest_setEntry_i32(requests_[JPG_CAPTURE_REQUEST_IDX].request_,
-//                                 ACAMERA_JPEG_ORIENTATION, 1, &imageRotation);
+    ACaptureRequest_setEntry_i32(requests_[JPG_CAPTURE_REQUEST_IDX].request_,
+                                 ACAMERA_JPEG_ORIENTATION, 1, &imageRotation);
 //
 //    /*
 //     * Only preview request is in manual mode, JPG is always in Auto mode
@@ -740,9 +731,9 @@ void NDKCamera::CreateSession(ANativeWindow* previewWindow,
 //     * the capture parameters, this sample leaves JPG capture to be auto mode
 //     * (auto control has better effect than author's manual control)
 //     */
-//    uint8_t aeModeOff = ACAMERA_CONTROL_AE_MODE_OFF;
-//    CALL_REQUEST(setEntry_u8(requests_[PREVIEW_REQUEST_IDX].request_,
-//                             ACAMERA_CONTROL_AE_MODE, 1, &aeModeOff));
+    uint8_t aeModeOff = ACAMERA_CONTROL_AE_MODE_OFF;
+    CALL_REQUEST(setEntry_u8(requests_[PREVIEW_REQUEST_IDX].request_,
+                             ACAMERA_CONTROL_AE_MODE, 1, &aeModeOff));
     //todo:DON'T THINK i NEED THESE RIGHT NOW
 //    CALL_REQUEST(setEntry_i32(requests_[PREVIEW_REQUEST_IDX].request_,
 //                              ACAMERA_SENSOR_SENSITIVITY, 1, &sensitivity_));
