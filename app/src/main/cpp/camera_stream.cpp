@@ -190,6 +190,22 @@ ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
     return &cameraMgrListener;
 }
 
+/**
+ * StartPreview()
+ *   Toggle preview start/stop
+ */
+void NDKCamera::StartPreview(bool start) {
+    if (start) {
+        CALL_SESSION(setRepeatingRequest(captureSession_, nullptr, 1,
+                                         &requests_[PREVIEW_REQUEST_IDX].request_,
+                                         nullptr));
+    } else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
+        ACameraCaptureSession_stopRepeating(captureSession_);
+    } else {
+//        ASSERT(false, "Conflict states(%s, %d)", (start ? "true" : "false"),
+//               static_cast<int>(captureSessionState_));
+    }
+}
 
 NDKCamera::NDKCamera()
         :cameraMgr_(nullptr),
@@ -369,11 +385,12 @@ void CameraEngine::OnAppInitWindow(void) {
     CreateCamera(); // working on this section
 
 
-//    EnableUI();
+    //This seems to deal with the sesitivity Ui that I do not need right now
+   // EnableUI();
 
     // NativeActivity end is ready to display, start pulling images
-//    cameraReady_ = true;
-//    camera_->StartPreview(true);
+    cameraReady_ = true;
+    camera_->StartPreview(true);
 }
 
 /**

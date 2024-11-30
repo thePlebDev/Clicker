@@ -19,6 +19,7 @@
 #define CALL_DEV(func) CALL_CAMERA(ACameraDevice_##func)
 #define CALL_REQUEST(func) CALL_CAMERA(ACaptureRequest_##func)
 #define CALL_DEV(func) CALL_CAMERA(ACameraDevice_##func)
+#define CALL_SESSION(func) CALL_CAMERA(ACameraCaptureSession_##func)
 /*
  * A set of macros to call into Camera APIs. The API is grouped with a few
  * objects, with object name as the prefix of function names.
@@ -103,6 +104,7 @@ public:
     void CreateSession(ANativeWindow* previewWindow, ANativeWindow* jpgWindow,
                        int32_t imageRotation);
     void OnSessionState(ACameraCaptureSession* ses, CaptureSessionState state);
+    void StartPreview(bool start);
 
 };
 // helper classes to hold enumerated camera
@@ -221,6 +223,9 @@ public:
     // Manage NDKCamera Object
     void CreateCamera(void);
 
+    // UI handlers
+    void EnableUI(void);
+
 
 
 
@@ -233,6 +238,7 @@ private:
     ImageReader* yuvReader_;
     ImageReader* jpgReader_;
     void OnPhotoTaken(const char* fileName);
+    volatile bool cameraReady_;
 
 };
 
