@@ -225,6 +225,7 @@ public:
 
     // UI handlers
     void EnableUI(void);
+    void OnCameraPermission(jboolean granted);
 
 
 
@@ -239,6 +240,7 @@ private:
     ImageReader* jpgReader_;
     void OnPhotoTaken(const char* fileName);
     volatile bool cameraReady_;
+    bool cameraGranted_;
 
 };
 
