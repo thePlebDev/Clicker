@@ -926,14 +926,26 @@ extern "C" void android_main(struct android_app* state) {
 //    engine.DeleteCamera();
 //    pEngineObj = nullptr;
 }
+/**
+ * Process user camera and disk writing permission
+ * Resume application initialization after user granted camera and disk usage
+ * If user denied permission, do nothing: no camera
+ *
+ * @param granted user's authorization for camera and disk usage.
+ * @return none
+ */
+void CameraEngine::OnCameraPermission(jboolean granted) {
+    cameraGranted_ = (granted != JNI_FALSE);
+
+    OnAppInitWindow();
+}
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,
-                                                                                  jobject thiz,
-                                                                                  jboolean granted) {
-    //std::thread permissionHandler();
-//    permissionHandler().detach();
+Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
+    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
+                                  GetAppEngine(), permission);
+    permissionHandler.detach();
 
     LOGI("PERMISSION GRANTED");
 }
