@@ -899,22 +899,6 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
     }
 }
 
-void CameraEngine::DeleteCamera(void) {
-    cameraReady_ = false;
-    if (camera_) {
-        delete camera_;
-        camera_ = nullptr;
-    }
-//    if (yuvReader_) {
-//        delete yuvReader_;
-//        yuvReader_ = nullptr;
-//    }
-//    if (jpgReader_) {
-//        delete jpgReader_;
-//        jpgReader_ = nullptr;
-//    }
-}
-
 /**
  * Called when the NativeActivity is created
  * */
@@ -943,8 +927,8 @@ extern "C" void android_main(struct android_app* state) {
     }
 
     LOGI("CameraEngine thread destroy requested!");
-    engine.DeleteCamera();
-    pEngineObj = nullptr;
+//    engine.DeleteCamera();
+//    pEngineObj = nullptr;
 }
 /**
  * Process user camera and disk writing permission
@@ -963,9 +947,9 @@ void CameraEngine::OnCameraPermission(jboolean granted) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
-    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
-                                  GetAppEngine(), granted);
-    permissionHandler.detach();
+//    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
+//                                  GetAppEngine(), permission);
+//    permissionHandler.detach();
 
     LOGI("PERMISSION GRANTED");
 }
