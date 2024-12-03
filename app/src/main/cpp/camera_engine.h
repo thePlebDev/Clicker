@@ -222,6 +222,7 @@ public:
 
     // Manage NDKCamera Object
     void CreateCamera(void);
+    void DeleteCamera(void);
 
     // UI handlers
     void EnableUI(void);
@@ -243,6 +244,12 @@ private:
     bool cameraGranted_;
 
 };
+
+/**
+ * retrieve global singleton CameraEngine instance
+ * @return the only instance of CameraEngine in the app
+ */
+CameraEngine* GetAppEngine(void);
 
 #endif //CLICKER_CAMERA_ENGINE_H
 
