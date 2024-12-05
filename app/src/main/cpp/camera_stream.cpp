@@ -879,11 +879,13 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_INIT_WINDOW: //Called when the NativeActivity is created
             LOGI("NativeActivity APP_CMD_INIT_WINDOW");
 
+
             if (engine->AndroidApp()->window != NULL) {
                 engine->SaveNativeWinRes(ANativeWindow_getWidth(app->window),
                                          ANativeWindow_getHeight(app->window),
                                          ANativeWindow_getFormat(app->window));
                 engine->OnAppInitWindow();
+
             }
             break;
         case APP_CMD_TERM_WINDOW:
@@ -941,7 +943,7 @@ extern "C" void android_main(struct android_app* state) {
 void CameraEngine::OnCameraPermission(jboolean granted) {
     cameraGranted_ = (granted != JNI_FALSE);
 
-    OnAppInitWindow();
+//    OnAppInitWindow();
 }
 
 extern "C"
