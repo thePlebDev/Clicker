@@ -195,11 +195,13 @@ ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
  *   Toggle preview start/stop
  */
 void NDKCamera::StartPreview(bool start) {
+    //TODO: THIS CONDITIONAL IS WHAT ACTUALLY activating the camera and shows the camera in the top right
     if (start) {
-        CALL_SESSION(setRepeatingRequest(captureSession_, nullptr, 1,
+        ACameraCaptureSession_setRepeatingRequest(captureSession_, nullptr, 1,
                                          &requests_[PREVIEW_REQUEST_IDX].request_,
-                                         nullptr));
-    } else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
+                                         nullptr);
+    }
+    else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
         ACameraCaptureSession_stopRepeating(captureSession_);
     } else {
 //        ASSERT(false, "Conflict states(%s, %d)", (start ? "true" : "false"),
