@@ -204,8 +204,8 @@ void NDKCamera::StartPreview(bool start) {
     else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
         ACameraCaptureSession_stopRepeating(captureSession_);
     } else {
-//        ASSERT(false, "Conflict states(%s, %d)", (start ? "true" : "false"),
-//               static_cast<int>(captureSessionState_));
+        ASSERT(false, "Conflict states(%s, %d)", (start ? "true" : "false"),
+               static_cast<int>(captureSessionState_));
     }
 }
 
