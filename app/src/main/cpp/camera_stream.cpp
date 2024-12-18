@@ -204,8 +204,7 @@ void NDKCamera::StartPreview(bool start) {
     else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
         ACameraCaptureSession_stopRepeating(captureSession_);
     } else {
-        ASSERT(false, "Conflict states(%s, %d)", (start ? "true" : "false"),
-               static_cast<int>(captureSessionState_));
+
     }
 }
 
@@ -354,8 +353,16 @@ CameraEngine::~CameraEngine() {
 
 }
 
+/**
+ * The main function rendering a frame. In our case, it is yuv to RGBA8888
+ * converter
+ */
 void CameraEngine::DrawFrame(void) {
-
+    if (!cameraReady_ || !yuvReader_) return;
+    AImage *image = yuvReader_->GetNextImage();
+    if (!image) {
+        return;
+    }
 }
 
 void CameraEngine::SaveNativeWinRes(int32_t w, int32_t h, int32_t format) {
@@ -945,15 +952,15 @@ extern "C" void android_main(struct android_app* state) {
 void CameraEngine::OnCameraPermission(jboolean granted) {
     cameraGranted_ = (granted != JNI_FALSE);
 
-//    OnAppInitWindow();
+    OnAppInitWindow();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
-//    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
-//                                  GetAppEngine(), permission);
-//    permissionHandler.detach();
+    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
+                                  GetAppEngine(), granted);
+    permissionHandler.detach();
 
     LOGI("PERMISSION GRANTED");
 }
