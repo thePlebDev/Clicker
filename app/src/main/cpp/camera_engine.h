@@ -156,6 +156,11 @@ public:
     ANativeWindow* GetNativeWindow(void);
 
     /**
+   * Retrieve Image on the top of Reader's queue
+   */
+    AImage* GetNextImage(void);
+
+    /**
    * Configure the rotation angle necessary to apply to
    * Camera image when presenting: all rotations should be accumulated:
    *    CameraSensorOrientation + Android Device Native Orientation +
