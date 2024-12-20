@@ -616,6 +616,21 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     }
 }
 /**
+ * GetNextImage()
+ *   Retrieve the next image in ImageReader's bufferQueue, NOT the last image so
+ * no image is skipped. Recommended for batch/background processing.
+ */
+AImage *ImageReader::GetNextImage(void) {
+    AImage *image;
+    media_status_t status = AImageReader_acquireNextImage(reader_, &image);
+    if (status != AMEDIA_OK) {
+        return nullptr;
+    }
+    return image;
+}
+
+
+/**
  * ImageReader listener: called by AImageReader for every frame captured
  * We pass the event to ImageReader class, so it could do some housekeeping
  * about
@@ -932,7 +947,7 @@ extern "C" void android_main(struct android_app* state) {
         if (source != NULL) {
             source->process(state, source);
         }
-        pEngineObj->DrawFrame();
+      //  pEngineObj->DrawFrame();
 
 
     }
