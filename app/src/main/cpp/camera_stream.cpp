@@ -196,6 +196,9 @@ ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
  */
 void NDKCamera::StartPreview(bool start) {
     //TODO: THIS CONDITIONAL IS WHAT ACTUALLY activating the camera and shows the camera in the top right
+
+
+
     if (start) {
         ACameraCaptureSession_setRepeatingRequest(captureSession_, nullptr, 1,
                                          &requests_[PREVIEW_REQUEST_IDX].request_,
@@ -398,8 +401,8 @@ void CameraEngine::OnAppInitWindow(void) {
    // EnableUI();
 
     // NativeActivity end is ready to display, start pulling images
-    cameraReady_ = true;
-    camera_->StartPreview(true);
+//    cameraReady_ = true;
+//    camera_->StartPreview(true);
 }
 
 /**
