@@ -358,15 +358,36 @@ CameraEngine::~CameraEngine() {
  * The main function rendering a frame. In our case, it is yuv to RGBA8888
  * converter
  */
+//void CameraEngine::DrawFrame(void) {
+//    if (!cameraReady_ || !yuvReader_) return;
+//    AImage *image = yuvReader_->GetNextImage();
+//    if (!image) {
+//        LOGI("IMAGE POINTER IS NULL");
+//
+//        return;
+//    }
+//}
+
 void CameraEngine::DrawFrame(void) {
     if (!cameraReady_ || !yuvReader_) return;
-    AImage *image = yuvReader_->GetNextImage();
+    AImage* image = yuvReader_->GetNextImage();
     if (!image) {
-        LOGI("IMAGE POINTER IS NULL");
-
         return;
     }
+
+
+    ANativeWindow_acquire(app_->window);// Specify actual surfaces that should be used for output
+    ANativeWindow_Buffer buf;
+    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
+        yuvReader_->DeleteImage(image);
+        return;
+    }
+
+    yuvReader_->DisplayImage(&buf, image);
+    ANativeWindow_unlockAndPost(app_->window);
+    ANativeWindow_release(app_->window);
 }
+
 
 void CameraEngine::SaveNativeWinRes(int32_t w, int32_t h, int32_t format) {
     savedNativeWinRes_.width = w;
@@ -618,6 +639,97 @@ void ImageReader::ImageCallback(AImageReader *reader) {
         writeFileHandler.detach();
     }
 }
+void LogMediaStatus(media_status_t status) {
+    switch (status) {
+        case AMEDIA_OK:
+            LOGI("Media operation succeeded.");
+            break;
+        case AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE:
+            LOGE("AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE: Unable to allocate required resources.");
+            break;
+        case AMEDIACODEC_ERROR_RECLAIMED:
+            LOGE("AMEDIACODEC_ERROR_RECLAIMED: Codec resource was reclaimed. Release codec.");
+            break;
+        case AMEDIA_DRM_DEVICE_REVOKED:
+            LOGE("AMEDIA_DRM_DEVICE_REVOKED: DRM device revoked.");
+            break;
+        case AMEDIA_DRM_ERROR_BASE:
+            LOGE("AMEDIA_DRM_ERROR_BASE: General DRM error.");
+            break;
+        case AMEDIA_DRM_LICENSE_EXPIRED:
+            LOGE("AMEDIA_DRM_LICENSE_EXPIRED: DRM license has expired.");
+            break;
+        case AMEDIA_DRM_NEED_KEY:
+            LOGE("AMEDIA_DRM_NEED_KEY: DRM key is required for operation.");
+            break;
+        case AMEDIA_DRM_NOT_PROVISIONED:
+            LOGE("AMEDIA_DRM_NOT_PROVISIONED: DRM not provisioned.");
+            break;
+        case AMEDIA_DRM_RESOURCE_BUSY:
+            LOGE("AMEDIA_DRM_RESOURCE_BUSY: DRM resource is busy.");
+            break;
+        case AMEDIA_DRM_SESSION_NOT_OPENED:
+            LOGE("AMEDIA_DRM_SESSION_NOT_OPENED: DRM session not opened.");
+            break;
+        case AMEDIA_DRM_SHORT_BUFFER:
+            LOGE("AMEDIA_DRM_SHORT_BUFFER: DRM buffer too short.");
+            break;
+        case AMEDIA_DRM_TAMPER_DETECTED:
+            LOGE("AMEDIA_DRM_TAMPER_DETECTED: DRM tampering detected.");
+            break;
+        case AMEDIA_DRM_VERIFY_FAILED:
+            LOGE("AMEDIA_DRM_VERIFY_FAILED: DRM verification failed.");
+            break;
+        case AMEDIA_ERROR_BASE:
+            LOGE("AMEDIA_ERROR_BASE: General media error.");
+            break;
+        case AMEDIA_ERROR_END_OF_STREAM:
+            LOGI("AMEDIA_ERROR_END_OF_STREAM: End of media stream.");
+            break;
+        case AMEDIA_ERROR_INVALID_OBJECT:
+            LOGE("AMEDIA_ERROR_INVALID_OBJECT: Invalid or closed object used.");
+            break;
+        case AMEDIA_ERROR_INVALID_OPERATION:
+            LOGE("AMEDIA_ERROR_INVALID_OPERATION: Invalid operation for current media state.");
+            break;
+        case AMEDIA_ERROR_INVALID_PARAMETER:
+            LOGE("AMEDIA_ERROR_INVALID_PARAMETER: Invalid parameter used.");
+            break;
+        case AMEDIA_ERROR_IO:
+            LOGE("AMEDIA_ERROR_IO: IO error during media operation.");
+            break;
+        case AMEDIA_ERROR_MALFORMED:
+            LOGE("AMEDIA_ERROR_MALFORMED: Malformed or corrupt media data.");
+            break;
+        case AMEDIA_ERROR_UNSUPPORTED:
+            LOGE("AMEDIA_ERROR_UNSUPPORTED: Unsupported media format or operation.");
+            break;
+        case AMEDIA_ERROR_WOULD_BLOCK:
+            LOGE("AMEDIA_ERROR_WOULD_BLOCK: Operation would block, but blocking is disabled.");
+            break;
+        case AMEDIA_IMGREADER_CANNOT_LOCK_IMAGE:
+            LOGE("AMEDIA_IMGREADER_CANNOT_LOCK_IMAGE: Image buffer lock failed.");
+            break;
+        case AMEDIA_IMGREADER_CANNOT_UNLOCK_IMAGE:
+            LOGE("AMEDIA_IMGREADER_CANNOT_UNLOCK_IMAGE: Failed to unlock image buffer.");
+            break;
+        case AMEDIA_IMGREADER_ERROR_BASE:
+            LOGE("AMEDIA_IMGREADER_ERROR_BASE: General ImageReader error.");
+            break;
+        case AMEDIA_IMGREADER_IMAGE_NOT_LOCKED:
+            LOGE("AMEDIA_IMGREADER_IMAGE_NOT_LOCKED: Image not locked for required operation.");
+            break;
+        case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED:
+            LOGE("AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED: Maximum images acquired, release one first.");
+            break;
+        case AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE:
+            LOGE("AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE: No available image buffers.");
+            break;
+        default:
+            LOGE("Unknown media status: %d", status);
+            break;
+    }
+}
 /**
  * GetNextImage()
  *   Retrieve the next image in ImageReader's bufferQueue, NOT the last image so
@@ -626,15 +738,24 @@ void ImageReader::ImageCallback(AImageReader *reader) {
 AImage *ImageReader::GetNextImage(void) {
     //todo: THE CURRENT PROBLEM IS THAT THE IMAGE THAT IS BEING RETURNED IS BEING NULL
     AImage *image;
-//    when i come back i need to check on the reader_ variable
     if (!reader_) {
-        LOGE("ImageReader::GetNextImage: reader_ is null");
+        LOGE("READER IS NULL");
+
     }
+//    when i come back i need to check on the reader_ variable
     media_status_t status = AImageReader_acquireNextImage(reader_, &image);
+    LogMediaStatus(status);
+
+    if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) {
+        LOGE("No image buffer available.");
+        return nullptr;
+    }
     if (status != AMEDIA_OK) {
+        LOGE("ImageReader::GetNextImage: status != AMEDIA_OK");
 
         return nullptr;
     }
+
     return image;
 }
 
