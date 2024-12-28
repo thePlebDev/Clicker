@@ -197,8 +197,6 @@ ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
 void NDKCamera::StartPreview(bool start) {
     //TODO: THIS CONDITIONAL IS WHAT ACTUALLY activating the camera and shows the camera in the top right
 
-
-
     if (start) {
         ACameraCaptureSession_setRepeatingRequest(captureSession_, nullptr, 1,
                                          &requests_[PREVIEW_REQUEST_IDX].request_,
@@ -364,6 +362,8 @@ void CameraEngine::DrawFrame(void) {
     if (!cameraReady_ || !yuvReader_) return;
     AImage *image = yuvReader_->GetNextImage();
     if (!image) {
+        LOGI("IMAGE POINTER IS NULL");
+
         return;
     }
 }
@@ -391,7 +391,7 @@ void CameraEngine::OnAppInitWindow(void) {
 //        return;
 //    }
 
-    rotation_ = GetDisplayRotation(); //TODO: MAKING SURE THAT THIS WORKS
+    rotation_ = GetDisplayRotation();
     LOGI("Present Rotation Angle: %d", rotation_);
 
     CreateCamera(); // working on this section
@@ -401,8 +401,8 @@ void CameraEngine::OnAppInitWindow(void) {
    // EnableUI();
 
     // NativeActivity end is ready to display, start pulling images
-//    cameraReady_ = true;
-//    camera_->StartPreview(true);
+    cameraReady_ = true;
+    camera_->StartPreview(true);
 }
 
 /**
@@ -624,9 +624,15 @@ void ImageReader::ImageCallback(AImageReader *reader) {
  * no image is skipped. Recommended for batch/background processing.
  */
 AImage *ImageReader::GetNextImage(void) {
+    //todo: THE CURRENT PROBLEM IS THAT THE IMAGE THAT IS BEING RETURNED IS BEING NULL
     AImage *image;
+//    when i come back i need to check on the reader_ variable
+    if (!reader_) {
+        LOGE("ImageReader::GetNextImage: reader_ is null");
+    }
     media_status_t status = AImageReader_acquireNextImage(reader_, &image);
     if (status != AMEDIA_OK) {
+
         return nullptr;
     }
     return image;
@@ -950,7 +956,7 @@ extern "C" void android_main(struct android_app* state) {
         if (source != NULL) {
             source->process(state, source);
         }
-      //  pEngineObj->DrawFrame();
+        pEngineObj->DrawFrame();
 
 
     }
