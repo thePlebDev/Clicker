@@ -150,6 +150,20 @@ public:
     void ImageCallback(AImageReader* reader);
 
     /**
+  * DisplayImage()
+  *   Present camera image to the given display buffer. Avaliable image is
+  * converted
+  *   to display buffer format. Supported display format:
+  *      WINDOW_FORMAT_RGBX_8888
+  *      WINDOW_FORMAT_RGBA_8888
+  *   @param buf {@link ANativeWindow_Buffer} for image to display to.
+  *   @param image a {@link AImage} instance, source of image conversion.
+  *            it will be deleted via {@link AImage_delete}
+  *   @return true on success, false on failure
+  */
+    bool DisplayImage(ANativeWindow_Buffer* buf, AImage* image);
+
+    /**
    * Report cached ANativeWindow, which was used to create camera's capture
    * session output.
    */
@@ -159,6 +173,12 @@ public:
    * Retrieve Image on the top of Reader's queue
    */
     AImage* GetNextImage(void);
+
+    /**
+   * Delete Image
+   * @param image {@link AImage} instance to be deleted
+   */
+    void DeleteImage(AImage* image);
 
     /**
    * Configure the rotation angle necessary to apply to
@@ -184,6 +204,10 @@ private:
     AImageReader* reader_;
     std::function<void(void* ctx, const char* fileName)> callback_;
     void* callbackCtx_;
+    void PresentImage(ANativeWindow_Buffer* buf, AImage* image);
+    void PresentImage90(ANativeWindow_Buffer* buf, AImage* image);
+    void PresentImage180(ANativeWindow_Buffer* buf, AImage* image);
+    void PresentImage270(ANativeWindow_Buffer* buf, AImage* image);
 
 
 
