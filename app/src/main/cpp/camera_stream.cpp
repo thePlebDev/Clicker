@@ -32,6 +32,19 @@
 #define LOG_TAG "streamLogging"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+#define MAX(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a > _b ? _a : _b;      \
+  })
+#define MIN(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a < _b ? _a : _b;      \
+  })
 /**
  * EnumerateCamera()
  *     Loop through cameras on the system, pick up
@@ -359,6 +372,7 @@ CameraEngine::~CameraEngine() {
  * converter
  */
 //void CameraEngine::DrawFrame(void) {
+//
 //    if (!cameraReady_ || !yuvReader_) return;
 //    AImage *image = yuvReader_->GetNextImage();
 //    if (!image) {
@@ -366,7 +380,141 @@ CameraEngine::~CameraEngine() {
 //
 //        return;
 //    }
+//    ANativeWindow_acquire(app_->window);// Specify actual surfaces that should be used for output
+//    ANativeWindow_Buffer buf;
+//    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
+//        yuvReader_->DeleteImage(image);
+//        return;
+//    }
 //}
+/**
+ * Delete Image
+ * @param image {@link AImage} instance to be deleted
+ */
+void ImageReader::DeleteImage(AImage *image) {
+    if (image) AImage_delete(image);
+}
+// This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their
+// ranges
+// are normalized to eight bits.
+static const int kMaxChannelValue = 262143;
+static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
+    nY -= 16;
+    nU -= 128;
+    nV -= 128;
+    if (nY < 0) nY = 0;
+
+    // This is the floating point equivalent. We do the conversion in integer
+    // because some Android devices do not have floating point in hardware.
+    // nR = (int)(1.164 * nY + 1.596 * nV);
+    // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
+    // nB = (int)(1.164 * nY + 2.018 * nU);
+
+    int nR = (int)(1192 * nY + 1634 * nV);
+    int nG = (int)(1192 * nY - 833 * nV - 400 * nU);
+    int nB = (int)(1192 * nY + 2066 * nU);
+
+    nR = MIN(kMaxChannelValue, MAX(0, nR));
+    nG = MIN(kMaxChannelValue, MAX(0, nG));
+    nB = MIN(kMaxChannelValue, MAX(0, nB));
+
+    nR = (nR >> 10) & 0xff;
+    nG = (nG >> 10) & 0xff;
+    nB = (nB >> 10) & 0xff;
+
+    return 0xff000000 | (nB << 16) | (nG << 8) | nR;
+}
+
+/*
+ * PresentImage()
+ *   Converting yuv to RGB
+ *   No rotation: (x,y) --> (x, y)
+ *   Refer to:
+ * https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
+ */
+void ImageReader::PresentImage(ANativeWindow_Buffer *buf, AImage *image) {
+    AImageCropRect srcRect;
+    AImage_getCropRect(image, &srcRect);
+
+    int32_t yStride, uvStride;
+    uint8_t *yPixel, *uPixel, *vPixel;
+    int32_t yLen, uLen, vLen;
+    AImage_getPlaneRowStride(image, 0, &yStride);
+    AImage_getPlaneRowStride(image, 1, &uvStride);
+    AImage_getPlaneData(image, 0, &yPixel, &yLen);
+    AImage_getPlaneData(image, 1, &uPixel, &uLen);
+    AImage_getPlaneData(image, 2, &vPixel, &vLen);
+    int32_t uvPixelStride;
+    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
+
+    int32_t height = MIN(buf->height, (srcRect.bottom - srcRect.top));
+    int32_t width = MIN(buf->width, (srcRect.right - srcRect.left));
+
+    uint32_t *out = static_cast<uint32_t *>(buf->bits);
+    for (int32_t y = 0; y < height; y++) {
+        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
+
+        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
+        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
+        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
+
+        for (int32_t x = 0; x < width; x++) {
+            const int32_t uv_offset = (x >> 1) * uvPixelStride;
+            out[x] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
+        }
+        out += buf->stride;
+    }
+}
+/**
+ * Convert yuv image inside AImage into ANativeWindow_Buffer
+ * ANativeWindow_Buffer format is guaranteed to be
+ *      WINDOW_FORMAT_RGBX_8888
+ *      WINDOW_FORMAT_RGBA_8888
+ * @param buf a {@link ANativeWindow_Buffer } instance, destination of
+ *            image conversion
+ * @param image a {@link AImage} instance, source of image conversion.
+ *            it will be deleted via {@link AImage_delete}
+ */
+bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
+
+    if(buf->format == WINDOW_FORMAT_RGBX_8888 ||buf->format == WINDOW_FORMAT_RGBA_8888){
+        LOGI("Not supported buffer format");
+    }
+
+    int32_t srcFormat = -1;
+    AImage_getFormat(image, &srcFormat);
+
+    if(AIMAGE_FORMAT_YUV_420_888 == srcFormat){
+        LOGI("Failed to get format");
+    }
+    int32_t srcPlanes = 0;
+    AImage_getNumberOfPlanes(image, &srcPlanes);
+
+    if(srcPlanes == 3){
+        LOGI("Is not 3 planes");
+    }
+
+    switch (presentRotation_) {
+        case 0:
+            PresentImage(buf, image);
+            break;
+//        case 90:
+//            PresentImage90(buf, image);
+//            break;
+//        case 180:
+//            PresentImage180(buf, image);
+//            break;
+//        case 270:
+//            PresentImage270(buf, image);
+//            break;
+        default:
+            LOGI("NOT recognized display rotation: %d", presentRotation_);
+    }
+
+    AImage_delete(image);
+
+    return true;
+}
 
 void CameraEngine::DrawFrame(void) {
     if (!cameraReady_ || !yuvReader_) return;
@@ -626,6 +774,7 @@ void ImageReader::WriteFile(AImage *image) {
 
 
 void ImageReader::ImageCallback(AImageReader *reader) {
+    LOGI("ImageCallback testing ");
     int32_t format;
     media_status_t status = AImageReader_getFormat(reader, &format);
 
@@ -634,11 +783,13 @@ void ImageReader::ImageCallback(AImageReader *reader) {
         media_status_t status = AImageReader_acquireNextImage(reader, &image);
 
 
+
         // Create a thread and write out the jpeg files
         std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
         writeFileHandler.detach();
     }
 }
+
 void LogMediaStatus(media_status_t status) {
     switch (status) {
         case AMEDIA_OK:
@@ -719,10 +870,10 @@ void LogMediaStatus(media_status_t status) {
         case AMEDIA_IMGREADER_IMAGE_NOT_LOCKED:
             LOGE("AMEDIA_IMGREADER_IMAGE_NOT_LOCKED: Image not locked for required operation.");
             break;
-        case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED:
+        case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED: //TODO: THIS IS THE ONE THAT IS ALSO CRASHING
             LOGE("AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED: Maximum images acquired, release one first.");
             break;
-        case AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE:
+        case AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE: //TODO: THIS IS THE ONE THAT IS ALSO CRASHING
             LOGE("AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE: No available image buffers.");
             break;
         default:
@@ -735,21 +886,27 @@ void LogMediaStatus(media_status_t status) {
  *   Retrieve the next image in ImageReader's bufferQueue, NOT the last image so
  * no image is skipped. Recommended for batch/background processing.
  */
+ //todo: THIS IS STILL CAUSING PROBLEMS
 AImage *ImageReader::GetNextImage(void) {
     //todo: THE CURRENT PROBLEM IS THAT THE IMAGE THAT IS BEING RETURNED IS BEING NULL
     AImage *image;
-    if (!reader_) {
-        LOGE("READER IS NULL");
 
-    }
-//    when i come back i need to check on the reader_ variable
-    media_status_t status = AImageReader_acquireNextImage(reader_, &image);
+
+    // LOGI("BEFORE AImageReader_acquireNextImage");
+     if (reader_ == nullptr) {
+         LOGE("ImageReader::GetNextImage: reader_ is null");
+     }
+     int32_t imageCount = 0;
+     AImageReader_getMaxImages(reader_, &imageCount);
+     if (imageCount == 0) {
+         LOGI("ImageReader::GetNextImage: No images available in buffer");
+         return nullptr;
+     }
+
+    media_status_t status = AImageReader_acquireNextImage(reader_, &image);// this is what is causing a crash
+    //AImage_delete(image); //this was added by me because I want to test if it would stop the crashing
     LogMediaStatus(status);
 
-    if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) {
-        LOGE("No image buffer available.");
-        return nullptr;
-    }
     if (status != AMEDIA_OK) {
         LOGE("ImageReader::GetNextImage: status != AMEDIA_OK");
 
@@ -1077,6 +1234,7 @@ extern "C" void android_main(struct android_app* state) {
         if (source != NULL) {
             source->process(state, source);
         }
+
         pEngineObj->DrawFrame();
 
 
