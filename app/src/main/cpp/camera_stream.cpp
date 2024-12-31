@@ -33,269 +33,6 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-#define MAX(a, b)           \
-  ({                        \
-    __typeof__(a) _a = (a); \
-    __typeof__(b) _b = (b); \
-    _a > _b ? _a : _b;      \
-  })
-#define MIN(a, b)           \
-  ({                        \
-    __typeof__(a) _a = (a); \
-    __typeof__(b) _b = (b); \
-    _a < _b ? _a : _b;      \
-  })
-/**
- * EnumerateCamera()
- *     Loop through cameras on the system, pick up
- *     1) back facing one if available
- *     2) otherwise pick the first one reported to us
- */
-void NDKCamera::EnumerateCamera() {
-    ACameraIdList* cameraIds = nullptr;
-    ACameraManager_getCameraIdList(cameraMgr_, &cameraIds); //retrieves and stores cameraIds
-//
-    for (int i = 0; i < cameraIds->numCameras; ++i) {
-        const char* id = cameraIds->cameraIds[i];
-        LOGI("CAMERA ID CHECK-----> %8s", id);
-
-
-        //retrieves and stores metadata
-        ACameraMetadata* metadataObj;
-        ACameraManager_getCameraCharacteristics(cameraMgr_, id, &metadataObj);
-
-
-        int32_t count = 0;
-        const uint32_t* tags = nullptr;
-        //List all the entry tags in input ACameraMetadata and stores in tags.
-        ACameraMetadata_getAllTags(metadataObj, &count, &tags);
-        for (int tagIdx = 0; tagIdx < count; ++tagIdx) {
-            if (ACAMERA_LENS_FACING == tags[tagIdx]) {
-                ACameraMetadata_const_entry lensInfo = {
-                        0,
-                };
-                //Get a metadata entry from an input ACameraMetadata.
-                ACameraMetadata_getConstEntry(metadataObj, tags[tagIdx], &lensInfo);
-                //Storing camera information:
-                CameraId cam(id);
-                cam.facing_ = static_cast<acamera_metadata_enum_android_lens_facing_t>(
-                        lensInfo.data.u8[0]);
-
-                cam.owner_ = false;
-                cam.device_ = nullptr;
-                cameras_[cam.id_] = cam;
-                if (cam.facing_ == ACAMERA_LENS_FACING_BACK) {
-                    activeCameraId_ = cam.id_;
-                }
-                break;
-            }
-        }
-        ACameraMetadata_free(metadataObj);
-    }
-
-//    ASSERT(cameras_.size(), "No Camera Available on the device");
-    if (activeCameraId_.length() == 0) {
-        // if no back facing camera found, pick up the first one to use...
-        activeCameraId_ = cameras_.begin()->second.id_;
-    }
-    ACameraManager_deleteCameraIdList(cameraIds);
-}
-
-/**
- * ---------------------------------------- START OF LISTENERS ----------------------------------------
- * */
-/*
- * CameraDevice callbacks
- */
-void OnDeviceStateChanges(void* ctx, ACameraDevice* dev) {
-    reinterpret_cast<NDKCamera*>(ctx)->OnDeviceState(dev);
-}
-
-void OnDeviceErrorChanges(void* ctx, ACameraDevice* dev, int err) {
-    reinterpret_cast<NDKCamera*>(ctx)->OnDeviceError(dev, err);
-}
-/**
- * OnCameraStatusChanged()
- *  handles Callback from ACameraManager
- */
-void NDKCamera::OnCameraStatusChanged(const char* id, bool available) {
-    if (valid_) {
-        cameras_[std::string(id)].available_ = available ? true : false;
-    }
-}
-
-/*
- * Camera Manager Listener object
- */
-void OnCameraAvailable(void* ctx, const char* id) {
-    reinterpret_cast<NDKCamera*>(ctx)->OnCameraStatusChanged(id, true);
-}
-void OnCameraUnavailable(void* ctx, const char* id) {
-    reinterpret_cast<NDKCamera*>(ctx)->OnCameraStatusChanged(id, false);
-}
-
-/**
- * ---------------------------------------- END OF LISTENERS ----------------------------------------
- * */
-
-ACameraDevice_stateCallbacks* NDKCamera::GetDeviceListener() {
-    static ACameraDevice_stateCallbacks cameraDeviceListener = {
-            .context = this,
-            .onDisconnected = ::OnDeviceStateChanges,
-            .onError = ::OnDeviceErrorChanges,
-    };
-    return &cameraDeviceListener;
-}
-
-/**
- * Handle Camera DeviceStateChanges msg, notify device is disconnected
- * simply close the camera
- */
-void NDKCamera::OnDeviceState(ACameraDevice* dev) {
-    std::string id(ACameraDevice_getId(dev));
-    LOGI("device %s is disconnected", id.c_str());
-
-    cameras_[id].available_ = false;
-    ACameraDevice_close(cameras_[id].device_);
-    cameras_.erase(id);
-}
-/**
- * Handles Camera's deviceErrorChanges message, no action;
- * mainly debugging purpose
- *
- *
- */
-void NDKCamera::OnDeviceError(ACameraDevice* dev, int err) {
-    std::string id(ACameraDevice_getId(dev));
-
-    LOGI("CameraDevice %s is in error %#x", id.c_str(), err);
-   // PrintCameraDeviceError(err);
-
-    CameraId& cam = cameras_[id];
-
-    switch (err) {
-        case ERROR_CAMERA_IN_USE:
-            cam.available_ = false;
-            cam.owner_ = false;
-            break;
-        case ERROR_CAMERA_SERVICE:
-        case ERROR_CAMERA_DEVICE:
-        case ERROR_CAMERA_DISABLED:
-        case ERROR_MAX_CAMERAS_IN_USE:
-            cam.available_ = false;
-            cam.owner_ = false;
-            break;
-        default:
-            LOGI("Unknown Camera Device Error: %#x", err);
-    }
-}
-/**
- * Construct a camera manager listener on the fly and return to caller
- *
- * @return ACameraManager_AvailabilityCallback
- */
-ACameraManager_AvailabilityCallbacks* NDKCamera::GetManagerListener() {
-    static ACameraManager_AvailabilityCallbacks cameraMgrListener = {
-            .context = this,
-            .onCameraAvailable = ::OnCameraAvailable,
-            .onCameraUnavailable = ::OnCameraUnavailable,
-    };
-    return &cameraMgrListener;
-}
-
-/**
- * StartPreview()
- *   Toggle preview start/stop
- */
-void NDKCamera::StartPreview(bool start) {
-    //TODO: THIS CONDITIONAL IS WHAT ACTUALLY activating the camera and shows the camera in the top right
-
-    if (start) {
-        ACameraCaptureSession_setRepeatingRequest(captureSession_, nullptr, 1,
-                                         &requests_[PREVIEW_REQUEST_IDX].request_,
-                                         nullptr);
-    }
-    else if (!start && captureSessionState_ == CaptureSessionState::ACTIVE) {
-        ACameraCaptureSession_stopRepeating(captureSession_);
-    } else {
-
-    }
-}
-
-NDKCamera::NDKCamera()
-        :cameraMgr_(nullptr),
-         activeCameraId_(""),
-         cameraFacing_(ACAMERA_LENS_FACING_BACK),
-         captureSessionState_(CaptureSessionState::MAX_STATE),
-         cameraOrientation_(0){
-
-
-    valid_ = false;
-    requests_.resize(CAPTURE_REQUEST_COUNT); //resize the vector to 2
-    memset(requests_.data(), 0, requests_.size() * sizeof(requests_[0]));
-    cameras_.clear();
-    cameraMgr_ = ACameraManager_create();
-
-
-    cameraMgr_ = ACameraManager_create();
-
-    // Pick up a back-facing camera to preview
-    EnumerateCamera();
-
-    // Create back facing camera device
-   ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
-                        &cameras_[activeCameraId_].device_);
-
-   //Register camera availability callbacks.
-    ACameraManager_registerAvailabilityCallback(cameraMgr_, GetManagerListener());
-
-
-}
-
-NDKCamera::~NDKCamera() {
-    //cameras_.clear();
-    if (cameraMgr_) {
-        //CALL_MGR(unregisterAvailabilityCallback(cameraMgr_, GetManagerListener()));
-        ACameraManager_delete(cameraMgr_);
-        cameraMgr_ = nullptr;
-    }
-}
-/**
- * GetSensorOrientation()
- *     Retrieve current sensor orientation regarding to the phone device
- * orientation
- *     SensorOrientation is NOT settable.
- */
-bool NDKCamera::GetSensorOrientation(int32_t* facing, int32_t* angle) { //working on this right now
-    if (!cameraMgr_) {
-        return false;
-    }
-
-    ACameraMetadata* metadataObj;
-    ACameraMetadata_const_entry face, orientation;
-
-    //Query the capabilities of a camera device.
-    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
-                                      &metadataObj));
-    CALL_METADATA(
-            getConstEntry(metadataObj, ACAMERA_SENSOR_ORIENTATION, &orientation)
-            );
-
-    cameraFacing_ = static_cast<int32_t>(face.data.u8[0]);
-//
-//
-//
-    LOGI("Current SENSOR_ORIENTATION-----> %8d", orientation.data.i32[0]);
-    LOGI("Current SENSOR_ORIENTATION cameraFacing_-----> %8d", cameraFacing_);
-//
-
-    ACameraMetadata_free(metadataObj); // to free the memory of the output characteristics.
-    cameraOrientation_ = orientation.data.i32[0];
-////
-    if (facing) *facing = cameraFacing_;
-    if (angle) *angle = cameraOrientation_;
-    return true;
-}
 
 
 /**
@@ -313,177 +50,12 @@ CameraEngine::~CameraEngine() {
 
 }
 
-/**
- * The main function rendering a frame. In our case, it is yuv to RGBA8888
- * converter
- */
-//void CameraEngine::DrawFrame(void) {
-//
-//    if (!cameraReady_ || !yuvReader_) return;
-//    AImage *image = yuvReader_->GetNextImage();
-//    if (!image) {
-//        LOGI("IMAGE POINTER IS NULL");
-//
-//        return;
-//    }
-//    ANativeWindow_acquire(app_->window);// Specify actual surfaces that should be used for output
-//    ANativeWindow_Buffer buf;
-//    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
-//        yuvReader_->DeleteImage(image);
-//        return;
-//    }
-//}
-/**
- * Delete Image
- * @param image {@link AImage} instance to be deleted
- */
-void ImageReader::DeleteImage(AImage *image) {
-    if (image) AImage_delete(image);
-}
-// This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their
-// ranges
-// are normalized to eight bits.
-static const int kMaxChannelValue = 262143;
-static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
-    nY -= 16;
-    nU -= 128;
-    nV -= 128;
-    if (nY < 0) nY = 0;
-
-    // This is the floating point equivalent. We do the conversion in integer
-    // because some Android devices do not have floating point in hardware.
-    // nR = (int)(1.164 * nY + 1.596 * nV);
-    // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
-    // nB = (int)(1.164 * nY + 2.018 * nU);
-
-    int nR = (int)(1192 * nY + 1634 * nV);
-    int nG = (int)(1192 * nY - 833 * nV - 400 * nU);
-    int nB = (int)(1192 * nY + 2066 * nU);
-
-    nR = MIN(kMaxChannelValue, MAX(0, nR));
-    nG = MIN(kMaxChannelValue, MAX(0, nG));
-    nB = MIN(kMaxChannelValue, MAX(0, nB));
-
-    nR = (nR >> 10) & 0xff;
-    nG = (nG >> 10) & 0xff;
-    nB = (nB >> 10) & 0xff;
-
-    return 0xff000000 | (nB << 16) | (nG << 8) | nR;
-}
-
-/*
- * PresentImage()
- *   Converting yuv to RGB
- *   No rotation: (x,y) --> (x, y)
- *   Refer to:
- * https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
- */
-void ImageReader::PresentImage(ANativeWindow_Buffer *buf, AImage *image) {
-    AImageCropRect srcRect;
-    AImage_getCropRect(image, &srcRect);
-
-    int32_t yStride, uvStride;
-    uint8_t *yPixel, *uPixel, *vPixel;
-    int32_t yLen, uLen, vLen;
-    AImage_getPlaneRowStride(image, 0, &yStride);
-    AImage_getPlaneRowStride(image, 1, &uvStride);
-    AImage_getPlaneData(image, 0, &yPixel, &yLen);
-    AImage_getPlaneData(image, 1, &uPixel, &uLen);
-    AImage_getPlaneData(image, 2, &vPixel, &vLen);
-    int32_t uvPixelStride;
-    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
-
-    int32_t height = MIN(buf->height, (srcRect.bottom - srcRect.top));
-    int32_t width = MIN(buf->width, (srcRect.right - srcRect.left));
-
-    uint32_t *out = static_cast<uint32_t *>(buf->bits);
-    for (int32_t y = 0; y < height; y++) {
-        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
-
-        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
-        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
-        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
-
-        for (int32_t x = 0; x < width; x++) {
-            const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            out[x] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
-        }
-        out += buf->stride;
-    }
-}
-/**
- * Convert yuv image inside AImage into ANativeWindow_Buffer
- * ANativeWindow_Buffer format is guaranteed to be
- *      WINDOW_FORMAT_RGBX_8888
- *      WINDOW_FORMAT_RGBA_8888
- * @param buf a {@link ANativeWindow_Buffer } instance, destination of
- *            image conversion
- * @param image a {@link AImage} instance, source of image conversion.
- *            it will be deleted via {@link AImage_delete}
- */
-bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
-
-    if(buf->format == WINDOW_FORMAT_RGBX_8888 ||buf->format == WINDOW_FORMAT_RGBA_8888){
-        LOGI("Not supported buffer format");
-    }
-
-    int32_t srcFormat = -1;
-    AImage_getFormat(image, &srcFormat);
-
-    if(AIMAGE_FORMAT_YUV_420_888 == srcFormat){
-        LOGI("Failed to get format");
-    }
-    int32_t srcPlanes = 0;
-    AImage_getNumberOfPlanes(image, &srcPlanes);
-
-    if(srcPlanes == 3){
-        LOGI("Is not 3 planes");
-    }
-
-    switch (presentRotation_) {
-        case 0:
-            PresentImage(buf, image);
-            break;
-//        case 90:
-//            PresentImage90(buf, image);
-//            break;
-//        case 180:
-//            PresentImage180(buf, image);
-//            break;
-//        case 270:
-//            PresentImage270(buf, image);
-//            break;
-        default:
-            LOGI("NOT recognized display rotation: %d", presentRotation_);
-    }
-
-    AImage_delete(image);
-
-    return true;
-}
-
-void CameraEngine::DrawFrame(void) {
-    if (!cameraReady_ || !yuvReader_) {
-        LOGI("CAMERA IS NOT READER OR YUV READER IS NOT READY");
-        return;
-    }
-    AImage* image = yuvReader_->GetNextImage();
-    if (!image) {
-        return;
-    }
 
 
-    ANativeWindow_acquire(app_->window);// Specify actual surfaces that should be used for output
-    ANativeWindow_Buffer buf;
-    if (ANativeWindow_lock(app_->window, &buf, nullptr) < 0) {
-        yuvReader_->DeleteImage(image);
-        return;
-    }
 
-    yuvReader_->DisplayImage(&buf, image);
-    ANativeWindow_unlockAndPost(app_->window);
-    ANativeWindow_release(app_->window);
-}
+
+
+
 
 
 void CameraEngine::SaveNativeWinRes(int32_t w, int32_t h, int32_t format) {
@@ -503,241 +75,126 @@ struct android_app* CameraEngine::AndroidApp(void) const { return app_; }
  */
 void CameraEngine::OnAppInitWindow(void) {
     //TODO: REIMPLEMENT THIS CONDITIONAL AFTER THE CAMERA IS ACTUALLY WORKING
-//    if (!cameraGranted_) {
-//        // Not permitted to use camera yet, ask(again) and defer other events
-//        RequestCameraPermission();
-//        return;
-//    }
 
-    rotation_ = GetDisplayRotation();
-    LOGI("Present Rotation Angle: %d", rotation_);
-
-    CreateCamera();
-
-
-    //This seems to deal with the sesitivity Ui that I do not need right now
-   // EnableUI();
-
-    // NativeActivity end is ready to display, start pulling images
-    cameraReady_ = true;
-    camera_->StartPreview(true);
 }
 
-/**
- * Retrieve current rotation from Java side
- *
- * @return current rotation angle
- */
-int CameraEngine::GetDisplayRotation() {
-
-
-    JNIEnv *env; // access to the JNI functions
-    ANativeActivity *activity = app_->activity; //access to the ANativeActivity
-    activity->vm->GetEnv((void **)&env, JNI_VERSION_1_6); //get hold of the JVM environment context and set env
-
-    //attaches the current thread to the JVM, setting up env as the JNI environment
-    // only threads attached to the JVM can make JNI calls
-    activity->vm->AttachCurrentThread(&env, NULL);
-
-    jobject activityObj = env->NewGlobalRef(activity->clazz); //getting a reference to the Activity
-    jclass clz = env->GetObjectClass(activityObj); //retrieves the actual class
-    //calls the actual method and stores it newOrientation
-    jint newOrientation = env->CallIntMethod(
-            activityObj, env->GetMethodID(clz, "getRotationDegree", "()I"));
-
-    //clean up to avoid memory leaks
-    env->DeleteGlobalRef(activityObj);
-    activity->vm->DetachCurrentThread();
-
-    return newOrientation;
-}
-/**
- * A helper class to assist image size comparison, by comparing the absolute
- * size
- * regardless of the portrait or landscape mode.
- */
-class DisplayDimension {
-    public:
-    DisplayDimension(int32_t w, int32_t h) : w_(w), h_(h), portrait_(false) {
-        if (h > w) {
-            // make it landscape
-            w_ = h;
-            h_ = w;
-            portrait_ = true;
-        }
-    }
-    void Flip(void) { portrait_ = !portrait_; }
-    bool IsSameRatio(DisplayDimension& other) {
-        return (w_ * other.h_ == h_ * other.w_);
-    }
-    bool operator>(DisplayDimension& other) {
-        return (w_ >= other.w_ & h_ >= other.h_);
-    }
-    bool operator==(DisplayDimension& other) {
-        return (w_ == other.w_ && h_ == other.h_ && portrait_ == other.portrait_);
-    }
-    int32_t org_width(void) { return (portrait_ ? h_ : w_); }
-    int32_t org_height(void) { return (portrait_ ? w_ : h_); }
-    bool IsPortrait(void) { return portrait_; }
-
-private:
-    int32_t w_, h_;
-    bool portrait_;
-};
-
-
-
-/**
- * Find a compatible camera modes:
- *    1) the same aspect ration as the native display window, which should be a
- *       rotated version of the physical device
- *    2) the smallest resolution in the camera mode list
- * This is to minimize the later color space conversion workload.
- */
-bool NDKCamera::MatchCaptureSizeRequest(ANativeWindow* display,
-                                        ImageFormat* resView,
-                                        ImageFormat* resCap) {
-    DisplayDimension disp(ANativeWindow_getWidth(display),
-                          ANativeWindow_getHeight(display));
-    if (cameraOrientation_ == 90 || cameraOrientation_ == 270) {
-        disp.Flip();
-    }
-
-    ACameraMetadata* metadata;
-    CALL_MGR(
-            getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(), &metadata));
-    ACameraMetadata_const_entry entry;
-    CALL_METADATA(getConstEntry(
-            metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry));
-    // format of the data: format, width, height, input?, type int32
-    bool foundIt = false;
-    DisplayDimension foundRes(4000, 4000);
-    DisplayDimension maxJPG(0, 0);
-
-    for (int i = 0; i < entry.count; i += 4) {
-        int32_t input = entry.data.i32[i + 3];
-        int32_t format = entry.data.i32[i + 0];
-        if (input) continue;
-
-        if (format == AIMAGE_FORMAT_YUV_420_888 || format == AIMAGE_FORMAT_JPEG) {
-            DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
-            if (!disp.IsSameRatio(res)) continue;
-            if (format == AIMAGE_FORMAT_YUV_420_888 && foundRes > res) {
-                foundIt = true;
-                foundRes = res;
-            } else if (format == AIMAGE_FORMAT_JPEG && res > maxJPG) {
-                maxJPG = res;
-            }
-        }
-    }
-
-    if (foundIt) {
-        resView->width = foundRes.org_width();
-        resView->height = foundRes.org_height();
-        resCap->width = maxJPG.org_width();
-        resCap->height = maxJPG.org_height();
-    } else {
-        LOGI("Did not find any compatible camera resolution, taking 640x480");
-        if (disp.IsPortrait()) {
-            resView->width = 480;
-            resView->height = 640;
-        } else {
-            resView->width = 640;
-            resView->height = 480;
-        }
-        *resCap = *resView;
-    }
-    resView->format = AIMAGE_FORMAT_YUV_420_888;
-    resCap->format = AIMAGE_FORMAT_JPEG;
-    return foundIt;
-}
-
-
-/**
- * -----------------------------IMAGE READER---------------------------
- *
- * */
 /**
 * MAX_BUF_COUNT:
 *   Max buffers in this ImageReader.
 */
 #define MAX_BUF_COUNT 4
 
+
+
+
+
 /*
- * For JPEG capture, captured files are saved under
- *     DirName
- * File names are incrementally appended an index number as
- *     capture0.jpg, capture1.jpg, capture2.jpg
+ * SampleEngine global object
  */
-static const char *kDirName = "/sdcard/DCIM/Camera/";
-static const char *kFileName = "capture";
+static CameraEngine* pEngineObj = nullptr;
+CameraEngine* GetAppEngine(void) {
+//    ASSERT(pEngineObj, "AppEngine has not initialized");
+    return pEngineObj;
+}
+
+
+
+
+
+
+static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
+    CameraEngine* engine = reinterpret_cast<CameraEngine*>(app->userData);
+
+    switch (cmd) {
+        case APP_CMD_INIT_WINDOW: //Called when the NativeActivity is created
+            LOGI("NativeActivity APP_CMD_INIT_WINDOW");
+
+
+            if (engine->AndroidApp()->window != NULL) {
+                engine->SaveNativeWinRes(ANativeWindow_getWidth(app->window),
+                                         ANativeWindow_getHeight(app->window),
+                                         ANativeWindow_getFormat(app->window));
+                engine->OnAppInitWindow();
+
+            }
+            break;
+        case APP_CMD_TERM_WINDOW:
+            LOGI("NativeActivity APP_CMD_TERM_WINDOW");
+            break;
+        case APP_CMD_CONFIG_CHANGED:
+            LOGI("NativeActivity APP_CMD_CONFIG_CHANGED");
+
+            break;
+        case APP_CMD_LOST_FOCUS:
+            LOGI("NativeActivity APP_CMD_LOST_FOCUS");
+            break;
+    }
+}
 
 /**
- * Write out jpeg files to kDirName directory
- * @param image point capture jpg image
- */
-void ImageReader::WriteFile(AImage *image) {
-    int planeCount;
-    media_status_t status = AImage_getNumberOfPlanes(image, &planeCount);
+ * Called when the NativeActivity is created
+ * */
+extern "C" void android_main(struct android_app* state) {
+    LOGI("NativeActivity android_main()");
+    CameraEngine engine(state); //uses the explicit constructor to initialize the state and creates a variable called engine
+   pEngineObj = &engine; //pEngineObj is defined as the global object
+//
+//
+    state->userData = reinterpret_cast<void*>(&engine);
+    state->onAppCmd = ProcessAndroidCmd;
+//////
+//////    // loop waiting for stuff to do.
+////WITHOUT THE WHILE LOOP BELOW THE APP WILL FREEZE AND CRASH
+    while (!state->destroyRequested) {
+        struct android_poll_source* source = nullptr;
 
-    uint8_t *data = nullptr;
-    int len = 0;
-    AImage_getPlaneData(image, 0, &data, &len);
-
-    DIR *dir = opendir(kDirName);
-    if (dir) {
-        closedir(dir);
-    } else {
-        std::string cmd = "mkdir -p ";
-        cmd += kDirName;
-        system(cmd.c_str());
-    }
-
-    struct timespec ts {
-            0, 0
-    };
-    clock_gettime(CLOCK_REALTIME, &ts);
-    struct tm localTime;
-    localtime_r(&ts.tv_sec, &localTime);
-
-    std::string fileName = kDirName;
-    std::string dash("-");
-    fileName += kFileName + std::to_string(localTime.tm_mon) +
-                std::to_string(localTime.tm_mday) + dash +
-                std::to_string(localTime.tm_hour) +
-                std::to_string(localTime.tm_min) +
-                std::to_string(localTime.tm_sec) + ".jpg";
-    FILE *file = fopen(fileName.c_str(), "wb");
-    if (file && data && len) {
-        fwrite(data, 1, len, file);
-        fclose(file);
-
-        if (callback_) {
-            callback_(callbackCtx_, fileName.c_str());
+        // both ALooper_pollOnce and source->process(state, source) need to be called or it will crash the app
+        ALooper_pollOnce(0, NULL, nullptr, (void**)&source);
+        if (source != NULL) {
+            source->process(state, source);
         }
-    } else {
-        if (file) fclose(file);
+
+        //todo: this section is what is causing the crash error
+       // pEngineObj->DrawFrame();
+
+
     }
-    AImage_delete(image);
+
+    LOGI("CameraEngine thread destroy requested!");
+//    engine.DeleteCamera();
+//    pEngineObj = nullptr;
+}
+/*****************----------------FUNCTIONS THAT MUST BE CALLED-------------********************/
+/**
+ * Process user camera and disk writing permission
+ * Resume application initialization after user granted camera and disk usage
+ * If user denied permission, do nothing: no camera
+ *
+ * @param granted user's authorization for camera and disk usage.
+ * @return none
+ */
+void CameraEngine::OnCameraPermission(jboolean granted) {
+    cameraGranted_ = (granted != JNI_FALSE);
+    LOGI("camera status %d",cameraGranted_);
+
+    OnAppInitWindow();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
+    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
+                                  GetAppEngine(), granted);
+    permissionHandler.detach();
+
+    LOGI("PERMISSION GRANTED");
 }
 
 
-void ImageReader::ImageCallback(AImageReader *reader) {
-    LOGI("ImageCallback testing ");
-    int32_t format;
-    media_status_t status = AImageReader_getFormat(reader, &format);
-
-    if (format == AIMAGE_FORMAT_JPEG) {
-        AImage *image = nullptr;
-        media_status_t status = AImageReader_acquireNextImage(reader, &image);
 
 
 
-        // Create a thread and write out the jpeg files
-        std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
-        writeFileHandler.detach();
-    }
-}
+
 
 void LogMediaStatus(media_status_t status) {
     switch (status) {
@@ -829,414 +286,4 @@ void LogMediaStatus(media_status_t status) {
             LOGE("Unknown media status: %d", status);
             break;
     }
-}
-/**
- * GetNextImage()
- *   Retrieve the next image in ImageReader's bufferQueue, NOT the last image so
- * no image is skipped. Recommended for batch/background processing.
- */
- //todo: THIS IS STILL CAUSING PROBLEMS
-AImage *ImageReader::GetNextImage(void) {
-    //todo: THE CURRENT PROBLEM IS THAT THE IMAGE THAT IS BEING RETURNED IS BEING NULL
-    AImage *image;
-
-
-    // LOGI("BEFORE AImageReader_acquireNextImage");
-     if (reader_ == nullptr) {
-         LOGE("ImageReader::GetNextImage: reader_ is null");
-     }
-
-
-    media_status_t status = AImageReader_acquireNextImage(reader_, &image);// this is what is causing a crash
-    //AImage_delete(image); //this was added by me because I want to test if it would stop the crashing
-    LogMediaStatus(status);
-
-    if (status != AMEDIA_OK) {
-        LOGE("ImageReader::GetNextImage: status != AMEDIA_OK");
-
-        return nullptr;
-    }
-
-    return image;
-}
-
-
-/**
- * ImageReader listener: called by AImageReader for every frame captured
- * We pass the event to ImageReader class, so it could do some housekeeping
- * about
- * the loaded queue. For example, we could keep a counter to track how many
- * buffers are full and idle in the queue. If camera almost has no buffer to
- * capture
- * we could release ( skip ) some frames by AImageReader_getNextImage() and
- * AImageReader_delete().
- */
-void OnImageCallback(void *ctx, AImageReader *reader) {
-    reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
-}
-/**
- * Constructor
- */
-ImageReader::ImageReader(ImageFormat *res, enum AIMAGE_FORMATS format)
-        : presentRotation_(0), reader_(nullptr) {
-    callback_ = nullptr;
-    callbackCtx_ = nullptr;
-
-    media_status_t status = AImageReader_new(res->width, res->height, format,
-                                             MAX_BUF_COUNT, &reader_);
-    bool a = reader_ && status == AMEDIA_OK;
-
-
-    if(!reader_){
-        LOGI("AImageReader reader is null");
-    }
-    if (status == AMEDIA_OK) {
-        LOGI(" AImageReader Successfully obtained ANativeWindow");
-    } else {
-        LOGE("AImageReader Could not get ANativeWindow: status = %d", status);
-    }
-
-
-//    if(a){
-//        LOGI("Failed to create AImageReader");
-//    }else{
-//        LOGI("Failed to CREATED!!!!!!!");
-//    }
-
-
-    AImageReader_ImageListener listener{
-            .context = this,
-            .onImageAvailable = OnImageCallback,
-    };
-    AImageReader_setImageListener(reader_, &listener);
-}
-/**
- * Handles capture session state changes.
- *   Update into internal session state.
- */
-void NDKCamera::OnSessionState(ACameraCaptureSession* ses,
-                               CaptureSessionState state) {
-    if (!ses || ses != captureSession_) {
-      //  LOGW("CaptureSession is %s", (ses ? "NOT our session" : "NULL"));
-        return;
-    }
-
-//    ASSERT(state < CaptureSessionState::MAX_STATE, "Wrong state %d",
-//           static_cast<int>(state));
-
-    captureSessionState_ = state;
-}
-// CaptureSession state callbacks
-void OnSessionClosed(void* ctx, ACameraCaptureSession* ses) {
-    //LF
-    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(
-            ses, CaptureSessionState::CLOSED);
-}
-void OnSessionReady(void* ctx, ACameraCaptureSession* ses) {
-    //LOGW("session %p ready", ses);
-    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(ses,
-                                                      CaptureSessionState::READY);
-}
-void OnSessionActive(void* ctx, ACameraCaptureSession* ses) {
-    //LOGW("session %p active", ses);
-    reinterpret_cast<NDKCamera*>(ctx)->OnSessionState(
-            ses, CaptureSessionState::ACTIVE);
-}
-ACameraCaptureSession_stateCallbacks* NDKCamera::GetSessionListener() {
-    static ACameraCaptureSession_stateCallbacks sessionListener = {
-            .context = this,
-            .onClosed = ::OnSessionClosed,
-            .onReady = ::OnSessionReady,
-            .onActive = ::OnSessionActive,
-    };
-    return &sessionListener;
-}
-
-
-void ImageReader::SetPresentRotation(int32_t angle) {
-    presentRotation_ = angle;
-}
-void ImageReader::RegisterCallback(
-        void *ctx, std::function<void(void *ctx, const char *fileName)> func) {
-    callbackCtx_ = ctx;
-    callback_ = func;
-}
-
-void CameraEngine::OnPhotoTaken(const char *fileName) {
-    JNIEnv *jni;
-    app_->activity->vm->AttachCurrentThread(&jni, NULL);
-
-    // Default class retrieval
-    jclass clazz = jni->GetObjectClass(app_->activity->clazz);
-    jmethodID methodID =
-            jni->GetMethodID(clazz, "OnPhotoTaken", "(Ljava/lang/String;)V");
-    jstring javaName = jni->NewStringUTF(fileName);
-
-    jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
-    app_->activity->vm->DetachCurrentThread();
-}
-//TODO: FIX THE CRASHING ERROR
-//TODO: READ ABOUT HOW TO READ C++ CRASH LOGS
-//todo: So the error is SOMEWHERE IN HERE
-void NDKCamera::CreateSession(ANativeWindow* previewWindow,
-                              ANativeWindow* jpgWindow, int32_t imageRotation) {
-    // Create output from this app's ANativeWindow, and add into output container
-    //todo: IT LOOKS LIKE THIS ASSIGNMENT IS CAUSING THE CRASH
-    requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_ = previewWindow;
-    requests_[PREVIEW_REQUEST_IDX].template_ = TEMPLATE_PREVIEW;
-    requests_[JPG_CAPTURE_REQUEST_IDX].outputNativeWindow_ = jpgWindow;
-    requests_[JPG_CAPTURE_REQUEST_IDX].template_ = TEMPLATE_STILL_CAPTURE;
-//
-    CALL_CONTAINER(create(&outputContainer_));
-    for (auto& req : requests_) {
-        ANativeWindow_acquire(req.outputNativeWindow_);
-        CALL_OUTPUT(create(req.outputNativeWindow_, &req.sessionOutput_));
-        CALL_CONTAINER(add(outputContainer_, req.sessionOutput_));
-        CALL_TARGET(create(req.outputNativeWindow_, &req.target_));
-        CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
-                                      req.template_, &req.request_));
-        CALL_REQUEST(addTarget(req.request_, req.target_));
-    }
-//
-//    // Create a capture session for the given preview request
-    captureSessionState_ = CaptureSessionState::READY;
-    CALL_DEV(createCaptureSession(cameras_[activeCameraId_].device_,
-                                  outputContainer_, GetSessionListener(),
-                                  &captureSession_));
-//
-    ACaptureRequest_setEntry_i32(requests_[JPG_CAPTURE_REQUEST_IDX].request_,
-                                 ACAMERA_JPEG_ORIENTATION, 1, &imageRotation);
-//
-//    /*
-//     * Only preview request is in manual mode, JPG is always in Auto mode
-//     * JPG capture mode could also be switch into manual mode and control
-//     * the capture parameters, this sample leaves JPG capture to be auto mode
-//     * (auto control has better effect than author's manual control)
-//     */
-    uint8_t aeModeOff = ACAMERA_CONTROL_AE_MODE_OFF;
-    CALL_REQUEST(setEntry_u8(requests_[PREVIEW_REQUEST_IDX].request_,
-                             ACAMERA_CONTROL_AE_MODE, 1, &aeModeOff));
-    //todo:DON'T THINK i NEED THESE RIGHT NOW
-//    CALL_REQUEST(setEntry_i32(requests_[PREVIEW_REQUEST_IDX].request_,
-//                              ACAMERA_SENSOR_SENSITIVITY, 1, &sensitivity_));
-//    CALL_REQUEST(setEntry_i64(requests_[PREVIEW_REQUEST_IDX].request_,
-//                              ACAMERA_SENSOR_EXPOSURE_TIME, 1, &exposureTime_));
-}
-
-
-ANativeWindow *ImageReader::GetNativeWindow(void) {
-    if (!reader_) return nullptr;
-    ANativeWindow *nativeWindow;
-    media_status_t status = AImageReader_getWindow(reader_, &nativeWindow);
-    //ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow");
-    if (status == AMEDIA_OK) {
-        LOGI("Successfully obtained ANativeWindow");
-    } else {
-        LOGE("Could not get ANativeWindow: status = %d", status);
-    }
-
-    return nativeWindow;
-}
-
-/**
- * Create a camera object for onboard BACK_FACING camera
- */
-void CameraEngine::CreateCamera(void) {
-    ACameraMetadata* metadataObj;
-    LOGI("CameraEngine::CreateCamera CALLED");
-    LOGI("CameraEngine::CreateCamera app_->window->%s", app_->window ? "true" : "false");
-    LOGI("CameraEngine::CreateCamera cameraGranted_->%s", cameraGranted_ ? "true" : "false");
-    // Camera needed to be requested at the run-time from Java SDK
-    // if Not granted, do nothing.
-    //this can be implemented later
-    if(!cameraGranted_){
-        LOGI("CameraEngine::CreateCamera cameraGranted_ FALSE");
-    }
-    if(!app_->window){
-        LOGI("CameraEngine::CreateCamera app_->window FALSE");
-        LOGI("CameraEngine::CreateCamera app_->window->%s", app_->window ? "true" : "false");
-    }
-
-    if (!cameraGranted_ || !app_->window) {
-        //TODO: THIS IS BEING TRIGGERED AND NEEDS TO BE FIXED
-        //i need to find out if both are false or just one and fix the incorrect one
-        LOGI("Camera Sample requires Full Camera access");
-        return;
-    }
-
-    int32_t displayRotation = GetDisplayRotation();
-    rotation_ = displayRotation;
-
-    camera_ = new NDKCamera();
-//
-    int32_t facing = 0, angle = 0, imageRotation = 0;
-
-    if (camera_->GetSensorOrientation(&facing, &angle)) {
-        //todo: THIS IS WHAT I START NEXT
-        if (facing == ACAMERA_LENS_FACING_FRONT) {
-            imageRotation = (angle + rotation_) % 360;
-            imageRotation = (360 - imageRotation) % 360;
-        } else {
-            imageRotation = (angle - rotation_ + 360) % 360;
-        }
-    }
-    LOGI("Phone Rotation: %d, Present Rotation Angle: %d", rotation_,
-         imageRotation);
-    ImageFormat view{0, 0, 0}, capture{0, 0, 0};
-    camera_->MatchCaptureSizeRequest(app_->window, &view, &capture);
-//
-//    ASSERT(view.width && view.height, "Could not find supportable resolution");
-//
-//    // Request the necessary nativeWindow to OS
-    bool portraitNativeWindow =
-            (savedNativeWinRes_.width < savedNativeWinRes_.height);
-    ANativeWindow_setBuffersGeometry(
-            app_->window, portraitNativeWindow ? view.height : view.width,
-            portraitNativeWindow ? view.width : view.height, WINDOW_FORMAT_RGBA_8888);
-//
-    yuvReader_ = new ImageReader(&view, AIMAGE_FORMAT_YUV_420_888);
-    //todo: this is what I am currently working on
-    yuvReader_->SetPresentRotation(imageRotation);
-    jpgReader_ = new ImageReader(&capture, AIMAGE_FORMAT_JPEG);
-    jpgReader_->SetPresentRotation(imageRotation);
-    jpgReader_->RegisterCallback(
-            this, [this](void* ctx, const char* str) -> void {
-                reinterpret_cast<CameraEngine*>(ctx)->OnPhotoTaken(str);
-            });
-
-    ANativeWindow* testingWindow = yuvReader_->GetNativeWindow();
-
-    if(testingWindow == nullptr){
-        LOGI("Testing the pointer ---> null pointer");
-    }else{
-        LOGI("Testing the pointer ---> not null");
-    }
-
-
-//
-//    // now we could create session
-    camera_->CreateSession(yuvReader_->GetNativeWindow(),
-                           jpgReader_->GetNativeWindow(), imageRotation);
-
-}
-
-
-/*
- * SampleEngine global object
- */
-static CameraEngine* pEngineObj = nullptr;
-CameraEngine* GetAppEngine(void) {
-//    ASSERT(pEngineObj, "AppEngine has not initialized");
-    return pEngineObj;
-}
-
-
-
-
-
-
-
-
-//todo: this will run instead of android_main if implemented
-//extern "C" void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, size_t savedStateSize) {
-//    // Initialization code for NativeActivity
-//    LOGI("NativeActivity created");
-//
-//    // Set up app state, attach events, etc.
-//    // ...
-//
-//}
-
-
-
-
-static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
-    CameraEngine* engine = reinterpret_cast<CameraEngine*>(app->userData);
-
-    switch (cmd) {
-        case APP_CMD_INIT_WINDOW: //Called when the NativeActivity is created
-            LOGI("NativeActivity APP_CMD_INIT_WINDOW");
-
-
-            if (engine->AndroidApp()->window != NULL) {
-
-                LOGI("CameraEngine::CreateCamera ProcessAndroidCmd->window-> %s", app->window ? "true" : "false");
-                engine->SaveNativeWinRes(ANativeWindow_getWidth(app->window),
-                                         ANativeWindow_getHeight(app->window),
-                                         ANativeWindow_getFormat(app->window));
-                engine->OnAppInitWindow();
-
-            }
-            break;
-        case APP_CMD_TERM_WINDOW:
-            LOGI("NativeActivity APP_CMD_TERM_WINDOW");
-            break;
-        case APP_CMD_CONFIG_CHANGED:
-            LOGI("NativeActivity APP_CMD_CONFIG_CHANGED");
-
-            break;
-        case APP_CMD_LOST_FOCUS:
-            LOGI("NativeActivity APP_CMD_LOST_FOCUS");
-            break;
-    }
-}
-
-/**
- * Called when the NativeActivity is created
- * */
-extern "C" void android_main(struct android_app* state) {
-    LOGI("NativeActivity android_main()");
-
-
-    CameraEngine engine(state); //uses the explicit constructor to initialize the state and creates a variable called engine
-   pEngineObj = &engine; //pEngineObj is defined as the global object
-//
-//
-    state->userData = reinterpret_cast<void*>(&engine);
-    state->onAppCmd = ProcessAndroidCmd;
-//////
-//////    // loop waiting for stuff to do.
-////WITHOUT THE WHILE LOOP BELOW THE APP WILL FREEZE AND CRASH
-    while (!state->destroyRequested) {
-        struct android_poll_source* source = nullptr;
-
-        // both ALooper_pollOnce and source->process(state, source) need to be called or it will crash the app
-        ALooper_pollOnce(0, NULL, nullptr, (void**)&source);
-        if (source != NULL) {
-            source->process(state, source);
-        }
-
-        //todo: this section is what is causing the crash error
-       // pEngineObj->DrawFrame();
-
-
-    }
-
-    LOGI("CameraEngine thread destroy requested!");
-//    engine.DeleteCamera();
-//    pEngineObj = nullptr;
-}
-/**
- * Process user camera and disk writing permission
- * Resume application initialization after user granted camera and disk usage
- * If user denied permission, do nothing: no camera
- *
- * @param granted user's authorization for camera and disk usage.
- * @return none
- */
-void CameraEngine::OnCameraPermission(jboolean granted) {
-    cameraGranted_ = (granted != JNI_FALSE);
-    LOGI("camera status %d",cameraGranted_);
-
-    OnAppInitWindow();
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_clicker_cameraNDK_CameraNDKNativeActivity_notifyCameraPermission(JNIEnv *env,jobject thiz,jboolean granted) {
-    std::thread permissionHandler(&CameraEngine::OnCameraPermission,
-                                  GetAppEngine(), granted);
-    permissionHandler.detach();
-
-    LOGI("PERMISSION GRANTED");
 }
