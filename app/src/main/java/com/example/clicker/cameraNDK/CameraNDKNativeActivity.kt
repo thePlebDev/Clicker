@@ -6,6 +6,8 @@ import android.app.NativeActivity
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Display
 import android.view.WindowManager
@@ -31,7 +33,10 @@ class CameraNDKNativeActivity : NativeActivity() {
 
         this.setContentView(mainLayout)
        //checkCameraPermission()
-        notifyCameraPermission(true)
+        // Delay notifyCameraPermission by 1 second (1000 milliseconds)
+        Handler(Looper.getMainLooper()).postDelayed({
+            notifyCameraPermission(true)
+        }, 1000)
     }
 
     private fun checkCameraPermission() {
