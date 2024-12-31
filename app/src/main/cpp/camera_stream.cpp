@@ -249,60 +249,6 @@ NDKCamera::NDKCamera()
    //Register camera availability callbacks.
     ACameraManager_registerAvailabilityCallback(cameraMgr_, GetManagerListener());
 
-    // Initialize camera controls(exposure time and sensitivity), pick
-    // up value of 2% * range + min as starting value (just a number, no magic)
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //TODO: I THINK i CAN IGNORE THE REQUESTS
-//    ACameraMetadata* metadataObj;
-//    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
-//                                      &metadataObj));
-//    ACameraMetadata_const_entry val = {
-//            0,
-//    };
-//    camera_status_t status = ACameraMetadata_getConstEntry(
-//            metadataObj, ACAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE, &val);
-//    if (status == ACAMERA_OK) {
-//        exposureRange_.min_ = val.data.i64[0];
-//        if (exposureRange_.min_ < kMinExposureTime) {
-//            exposureRange_.min_ = kMinExposureTime;
-//        }
-//        exposureRange_.max_ = val.data.i64[1];
-//        if (exposureRange_.max_ > kMaxExposureTime) {
-//            exposureRange_.max_ = kMaxExposureTime;
-//        }
-//        exposureTime_ = exposureRange_.value(2);
-//    } else {
-//        LOGW("Unsupported ACAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE");
-//        exposureRange_.min_ = exposureRange_.max_ = 0l;
-//        exposureTime_ = 0l;
-//    }
-//    status = ACameraMetadata_getConstEntry(
-//            metadataObj, ACAMERA_SENSOR_INFO_SENSITIVITY_RANGE, &val);
-//
-//    if (status == ACAMERA_OK) {
-//        sensitivityRange_.min_ = val.data.i32[0];
-//        sensitivityRange_.max_ = val.data.i32[1];
-//
-//        sensitivity_ = sensitivityRange_.value(2);
-//    } else {
-//        LOGW("failed for ACAMERA_SENSOR_INFO_SENSITIVITY_RANGE");
-//        sensitivityRange_.min_ = sensitivityRange_.max_ = 0;
-//        sensitivity_ = 0;
-//    }
-//    valid_ = true;
-//}
 
 }
 
@@ -517,7 +463,10 @@ bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
 }
 
 void CameraEngine::DrawFrame(void) {
-    if (!cameraReady_ || !yuvReader_) return;
+    if (!cameraReady_ || !yuvReader_) {
+        LOGI("CAMERA IS NOT READER OR YUV READER IS NOT READY");
+        return;
+    }
     AImage* image = yuvReader_->GetNextImage();
     if (!image) {
         return;
@@ -563,7 +512,7 @@ void CameraEngine::OnAppInitWindow(void) {
     rotation_ = GetDisplayRotation();
     LOGI("Present Rotation Angle: %d", rotation_);
 
-    CreateCamera(); // working on this section
+    CreateCamera();
 
 
     //This seems to deal with the sesitivity Ui that I do not need right now
@@ -896,12 +845,7 @@ AImage *ImageReader::GetNextImage(void) {
      if (reader_ == nullptr) {
          LOGE("ImageReader::GetNextImage: reader_ is null");
      }
-     int32_t imageCount = 0;
-     AImageReader_getMaxImages(reader_, &imageCount);
-     if (imageCount == 0) {
-         LOGI("ImageReader::GetNextImage: No images available in buffer");
-         return nullptr;
-     }
+
 
     media_status_t status = AImageReader_acquireNextImage(reader_, &image);// this is what is causing a crash
     //AImage_delete(image); //this was added by me because I want to test if it would stop the crashing
@@ -943,11 +887,21 @@ ImageReader::ImageReader(ImageFormat *res, enum AIMAGE_FORMATS format)
     bool a = reader_ && status == AMEDIA_OK;
 
 
-    if(a){
-        LOGI("Failed to create AImageReader");
-    }else{
-        LOGI("Failed to CREATED!!!!!!!");
+    if(!reader_){
+        LOGI("AImageReader reader is null");
     }
+    if (status == AMEDIA_OK) {
+        LOGI(" AImageReader Successfully obtained ANativeWindow");
+    } else {
+        LOGE("AImageReader Could not get ANativeWindow: status = %d", status);
+    }
+
+
+//    if(a){
+//        LOGI("Failed to create AImageReader");
+//    }else{
+//        LOGI("Failed to CREATED!!!!!!!");
+//    }
 
 
     AImageReader_ImageListener listener{
@@ -1089,13 +1043,26 @@ ANativeWindow *ImageReader::GetNativeWindow(void) {
  */
 void CameraEngine::CreateCamera(void) {
     ACameraMetadata* metadataObj;
+    LOGI("CameraEngine::CreateCamera CALLED");
+    LOGI("CameraEngine::CreateCamera app_->window->%s", app_->window ? "true" : "false");
+    LOGI("CameraEngine::CreateCamera cameraGranted_->%s", cameraGranted_ ? "true" : "false");
     // Camera needed to be requested at the run-time from Java SDK
     // if Not granted, do nothing.
     //this can be implemented later
-//    if (!cameraGranted_ || !app_->window) {
-//        LOGW("Camera Sample requires Full Camera access");
-//        return;
-//    }
+    if(!cameraGranted_){
+        LOGI("CameraEngine::CreateCamera cameraGranted_ FALSE");
+    }
+    if(!app_->window){
+        LOGI("CameraEngine::CreateCamera app_->window FALSE");
+        LOGI("CameraEngine::CreateCamera app_->window->%s", app_->window ? "true" : "false");
+    }
+
+    if (!cameraGranted_ || !app_->window) {
+        //TODO: THIS IS BEING TRIGGERED AND NEEDS TO BE FIXED
+        //i need to find out if both are false or just one and fix the incorrect one
+        LOGI("Camera Sample requires Full Camera access");
+        return;
+    }
 
     int32_t displayRotation = GetDisplayRotation();
     rotation_ = displayRotation;
@@ -1192,6 +1159,8 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
 
 
             if (engine->AndroidApp()->window != NULL) {
+
+                LOGI("CameraEngine::CreateCamera ProcessAndroidCmd->window-> %s", app->window ? "true" : "false");
                 engine->SaveNativeWinRes(ANativeWindow_getWidth(app->window),
                                          ANativeWindow_getHeight(app->window),
                                          ANativeWindow_getFormat(app->window));
@@ -1217,15 +1186,17 @@ static void ProcessAndroidCmd(struct android_app* app, int32_t cmd) {
  * */
 extern "C" void android_main(struct android_app* state) {
     LOGI("NativeActivity android_main()");
-    CameraEngine engine(state);
-    pEngineObj = &engine; //pEngineObj is defined as the global object
 
 
+    CameraEngine engine(state); //uses the explicit constructor to initialize the state and creates a variable called engine
+   pEngineObj = &engine; //pEngineObj is defined as the global object
+//
+//
     state->userData = reinterpret_cast<void*>(&engine);
     state->onAppCmd = ProcessAndroidCmd;
-////
-////    // loop waiting for stuff to do.
-//WITHOUT THE WHILE LOOP BELOW THE APP WILL FREEZE AND CRASH
+//////
+//////    // loop waiting for stuff to do.
+////WITHOUT THE WHILE LOOP BELOW THE APP WILL FREEZE AND CRASH
     while (!state->destroyRequested) {
         struct android_poll_source* source = nullptr;
 
@@ -1235,7 +1206,8 @@ extern "C" void android_main(struct android_app* state) {
             source->process(state, source);
         }
 
-        pEngineObj->DrawFrame();
+        //todo: this section is what is causing the crash error
+       // pEngineObj->DrawFrame();
 
 
     }
@@ -1254,6 +1226,7 @@ extern "C" void android_main(struct android_app* state) {
  */
 void CameraEngine::OnCameraPermission(jboolean granted) {
     cameraGranted_ = (granted != JNI_FALSE);
+    LOGI("camera status %d",cameraGranted_);
 
     OnAppInitWindow();
 }
