@@ -34,9 +34,11 @@ class CameraNDKNativeActivity : NativeActivity() {
         this.setContentView(mainLayout)
        //checkCameraPermission()
         // Delay notifyCameraPermission by 1 second (1000 milliseconds)
-        Handler(Looper.getMainLooper()).postDelayed({
-            notifyCameraPermission(true)
-        }, 1000)
+        //so I think this only needs to be called if we do not have the appropriate permissions
+        //so we can fix this later, to properly handle the permissions
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            notifyCameraPermission(true)
+//        }, 1000)
     }
 
     private fun checkCameraPermission() {
