@@ -191,8 +191,7 @@ class HomeFragment : Fragment(){
                                 startActivity(intent)
                             },
                             navigateToStream = {
-                                val myIntent = Intent(requireActivity(), CameraNDKNativeActivity::class.java)
-                                startActivity(myIntent)
+
                             }
 
 
