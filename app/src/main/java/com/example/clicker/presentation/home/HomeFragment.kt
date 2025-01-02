@@ -191,7 +191,7 @@ class HomeFragment : Fragment(){
                                 startActivity(intent)
                             },
                             navigateToStream = {
-
+                                findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
                             }
 
 
