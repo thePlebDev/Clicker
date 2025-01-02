@@ -31,6 +31,9 @@
         <action
             android:id="@+id/action_homeFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_selfStreamingFragment"
+            app:destination="@id/selfStreamingFragment" />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
@@ -106,4 +109,8 @@
             android:id="@+id/action_searchFragment_to_streamFragment"
             app:destination="@id/streamFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/selfStreamingFragment"
+        android:name="com.example.clicker.presentation.selfStreaming.SelfStreamingFragment"
+        android:label="SelfStreamingFragment" />
 </navigation>
