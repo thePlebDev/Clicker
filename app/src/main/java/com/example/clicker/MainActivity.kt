@@ -110,14 +110,7 @@ class MainActivity : AppCompatActivity() {
 //     *
 //     * */
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
 
-        }
-        Log.d("RequestPermissionCheck","requestCode-->$requestCode")
-    }
 
 
 
