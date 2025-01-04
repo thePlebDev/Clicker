@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.selfStreaming
 
+import android.content.ContentValues
 import android.content.Context
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,8 +12,11 @@ import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,20 +25,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.google.common.util.concurrent.ListenableFuture
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 class SelfStreamingFragment : Fragment() {
 
     private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
     private var videoCapture: VideoCapture<Recorder>? = null
+    private lateinit var recordingState:VideoRecordEvent
+    private var currentRecording: Recording? = null
+    private var audioEnabled = false
+    private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(requireContext()) }
+    private val captureLiveStatus = MutableLiveData<String>()
+
+
 
     private  var _binding: FragmentSelfStreamingBinding? = null
+
     /**
      * - The external version of [_binding]
      * */
@@ -60,6 +77,11 @@ class SelfStreamingFragment : Fragment() {
 //            }
 //        }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initializeUI()
     }
 
     override fun onDestroyView() {
@@ -93,11 +115,127 @@ class SelfStreamingFragment : Fragment() {
         videoCapture = VideoCapture.withOutput(recorder)
 
 
-
-
-
         cameraProvider.bindToLifecycle(this, cameraSelector, preview, videoCapture)
 
+
+    }
+
+
+
+
+    // Implements VideoCapture use case, including start and stop capturing.
+    private fun initializeUI() {
+
+
+        // audioEnabled by default is disabled.
+
+
+        // React to user touching the capture button
+        binding.captureButton.apply {
+            setOnClickListener {
+                if (!this@SelfStreamingFragment::recordingState.isInitialized || recordingState is VideoRecordEvent.Finalize) {
+                   //THIS IS GOING TO BE TRIGGERED FIRST BECAUSE isInitialized IS FALSE
+
+                    startRecording()
+                } else {
+                    when (recordingState) {
+                        is VideoRecordEvent.Start -> {
+                            currentRecording?.pause()
+                          //  captureViewBinding.stopButton.visibility = View.VISIBLE
+                        }
+                        is VideoRecordEvent.Pause -> currentRecording?.resume()
+                        is VideoRecordEvent.Resume -> currentRecording?.pause()
+                        else -> throw IllegalStateException("recordingState in unknown state")
+                    }
+                }
+            }
+            isEnabled = true
+        }
+
+        binding.stopButton.apply {
+            setOnClickListener {
+                // stopping: hide it after getting a click before we go to viewing fragment
+
+                if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
+                    return@setOnClickListener
+                }
+
+                val recording = currentRecording
+                if (recording != null) {
+                    recording.stop()
+                    currentRecording = null
+                }
+
+            }
+            // ensure the stop button is initialized disabled & invisible
+            visibility = View.INVISIBLE
+            isEnabled = false
+        }
+
+    }
+
+
+    /**
+     * Kick start the video recording
+     *   - config Recorder to capture to MediaStoreOutput
+     *   - register RecordEvent Listener
+     *   - apply audio request from user
+     *   - start recording!
+     * After this function, user could start/pause/resume/stop recording and application listens
+     * to VideoRecordEvent for the current recording status.
+     */
+
+    private fun startRecording() {
+        // create MediaStoreOutputOptions for our recorder: resulting our recording!
+        val name = "CameraX-recording-" +
+                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                    .format(System.currentTimeMillis()) + ".mp4"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, name)
+        }
+        val mediaStoreOutput = MediaStoreOutputOptions.Builder(
+            requireActivity().contentResolver,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+            .setContentValues(contentValues)
+            .build()
+
+        // configure Recorder and Start recording to the mediaStoreOutput.
+        currentRecording = videoCapture?.output
+            ?.prepareRecording(requireActivity(), mediaStoreOutput)
+//            .apply { if (audioEnabled) withAudioEnabled() }
+            ?.start(mainThreadExecutor, captureListener)
+
+        Log.i(TAG, "Recording started")
+    }
+
+    /**
+     * CaptureEvent listener.
+     */
+    private val captureListener = Consumer<VideoRecordEvent> { event ->
+        // cache the recording state
+        if (event !is VideoRecordEvent.Status)
+            recordingState = event
+
+      //  updateUI(event)
+
+        if (event is VideoRecordEvent.Finalize) {
+            // display the captured video
+//            lifecycleScope.launch {
+//                navController.navigate(
+//                    CaptureFragmentDirections.actionCaptureToVideoViewer(
+//                        event.outputResults.outputUri
+//                    )
+//                )
+//            }
+        }
+    }
+
+
+    companion object {
+        // default Quality selection if no input from UI
+        const val DEFAULT_QUALITY_IDX = 0
+        val TAG:String = SelfStreamingFragment::class.java.simpleName
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 
 
