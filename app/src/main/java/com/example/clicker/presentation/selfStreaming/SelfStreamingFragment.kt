@@ -168,8 +168,8 @@ class SelfStreamingFragment : Fragment() {
 
             }
             // ensure the stop button is initialized disabled & invisible
-            visibility = View.INVISIBLE
-            isEnabled = false
+            visibility = View.VISIBLE
+            isEnabled = true
         }
 
     }
