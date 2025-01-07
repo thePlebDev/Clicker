@@ -88,8 +88,11 @@ class SelfStreamingFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-    //
+    /**
+     * setUpCamera gets a FUTURE and then runs the [bindPreview] once the future has computed
+     * */
     private fun setUpCamera(context:Context){
+
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider = cameraProviderFuture.get()
@@ -97,15 +100,19 @@ class SelfStreamingFragment : Fragment() {
         }, ContextCompat.getMainExecutor(context))
     }
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
+
+        //where the camera data is coming from?
         var preview : Preview = Preview.Builder()
             .build()
+        //get a reference to the XML view
         val previewView =binding.previewView
 
+        //build and return the camera object
         var cameraSelector : CameraSelector = CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
 
-        //preview
+        //set where the camera data is going to be shown
         preview.setSurfaceProvider(previewView.getSurfaceProvider())
         // build a recorder, which can:
         //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
