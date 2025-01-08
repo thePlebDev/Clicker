@@ -175,7 +175,7 @@ class SelfStreamingFragment : Fragment() {
 
             }
             // ensure the stop button is initialized disabled & invisible
-            visibility = View.VISIBLE
+           // visibility = View.VISIBLE
             isEnabled = true
         }
 
@@ -210,7 +210,11 @@ class SelfStreamingFragment : Fragment() {
         currentRecording = videoCapture?.output
             ?.prepareRecording(requireActivity(), mediaStoreOutput)
 //            .apply { if (audioEnabled) withAudioEnabled() }
-            ?.start(mainThreadExecutor, captureListener)
+            ?.start(mainThreadExecutor, captureListener)?.apply{
+                binding.liveButton.visibility = View.VISIBLE
+                binding.stopButton.visibility = View.VISIBLE
+                binding.captureButton.visibility = View.INVISIBLE
+            }
 
         Log.i(TAG, "Recording started")
     }
@@ -223,7 +227,7 @@ class SelfStreamingFragment : Fragment() {
         if (event !is VideoRecordEvent.Status)
             recordingState = event
 
-      //  updateUI(event)
+        updateUI(event)
 
         if (event is VideoRecordEvent.Finalize) {
             // display the captured video
@@ -234,6 +238,42 @@ class SelfStreamingFragment : Fragment() {
 //                    )
 //                )
 //            }
+        }
+    }
+    private fun updateUI(event: VideoRecordEvent) {
+//        val state = if (event is VideoRecordEvent.Status) recordingState.getNameString()
+//        else event.getNameString()
+        when (event) {
+            is VideoRecordEvent.Status -> {
+                //The status report of the recording in progress
+                // placeholder: we update the UI with new status after this when() block,
+                // nothing needs to do here.
+                Log.d("updateUI", "Status")
+            }
+
+            is VideoRecordEvent.Start -> {
+//                showUI(UiState.RECORDING, event.getNameString())
+                Log.d("updateUI", "Start")
+            }
+
+            is VideoRecordEvent.Finalize -> {
+                //Indicates the finalization of recording
+//                showUI(UiState.FINALIZED, event.getNameString())
+                Log.d("updateUI", "Finalize")
+                binding.liveButton.visibility = View.INVISIBLE
+                binding.stopButton.visibility = View.INVISIBLE
+                binding.captureButton.visibility = View.VISIBLE
+            }
+
+            is VideoRecordEvent.Pause -> {
+//                captureViewBinding.captureButton.setImageResource(R.drawable.ic_resume)
+                Log.d("updateUI", "Finalize")
+            }
+
+            is VideoRecordEvent.Resume -> {
+//                captureViewBinding.captureButton.setImageResource(R.drawable.ic_pause)
+                Log.d("updateUI","Resume")
+            }
         }
     }
 
