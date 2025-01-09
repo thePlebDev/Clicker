@@ -1,4 +1,7 @@
 package com.example.clicker.rtmp
 
-class GenericStream {
+import android.content.Context
+
+class GenericStream(context: Context, connectChecker: ConnectChecker) {
+
 }
