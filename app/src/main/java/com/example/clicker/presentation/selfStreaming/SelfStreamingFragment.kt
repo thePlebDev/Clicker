@@ -32,12 +32,15 @@ import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
+import com.example.clicker.rtmp.ConnectChecker
+import com.example.clicker.rtmp.GenericStream
 import com.google.common.util.concurrent.ListenableFuture
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 
-class SelfStreamingFragment : Fragment() {
+
+class SelfStreamingFragment : Fragment(), ConnectChecker {
 
     private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
     private var videoCapture: VideoCapture<Recorder>? = null
@@ -46,6 +49,8 @@ class SelfStreamingFragment : Fragment() {
     private var audioEnabled = false
     private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(requireContext()) }
     private val captureLiveStatus = MutableLiveData<String>()
+
+    val genericStream: GenericStream = GenericStream(requireActivity(),this)
 
 
 
@@ -285,7 +290,30 @@ class SelfStreamingFragment : Fragment() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 
+    override fun onConnectionStarted(url: String) {
+        binding.liveButton.text = "START RTMP"
+    }
 
+    override fun onConnectionSuccess() {
+        //update for success
+        binding.liveButton.text = "SUCCESS RTMP"
+    }
+
+    override fun onConnectionFailed(reason: String) {
+        binding.liveButton.text = "FAILED RTMP"
+    }
+
+    override fun onDisconnect() {
+
+    }
+
+    override fun onAuthError() {
+
+    }
+
+    override fun onAuthSuccess() {
+        TODO("Not yet implemented")
+    }
 
 
 }
