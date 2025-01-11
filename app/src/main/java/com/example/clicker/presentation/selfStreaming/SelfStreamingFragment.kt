@@ -26,12 +26,15 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
+import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
+import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.rtmp.ConnectChecker
 import com.example.clicker.rtmp.GenericStream
 import com.google.common.util.concurrent.ListenableFuture
@@ -39,8 +42,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 
-
-class SelfStreamingFragment : Fragment(), ConnectChecker {
+// , ConnectChecker -> this is causing the fragment to crash
+class SelfStreamingFragment : Fragment() {
 
     private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
     private var videoCapture: VideoCapture<Recorder>? = null
@@ -50,7 +53,12 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
     private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(requireContext()) }
     private val captureLiveStatus = MutableLiveData<String>()
 
-    val genericStream: GenericStream = GenericStream(requireActivity(),this)
+//    val genericStream: GenericStream = GenericStream(requireActivity(),this)
+
+    /**
+     * the variable that acts as access to all the stream ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val selfStreamingViewModel: SelfStreamingViewModel by activityViewModels()
 
 
 
@@ -75,12 +83,16 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
         // Inflate the layout for this fragment
         _binding = FragmentSelfStreamingBinding.inflate(inflater, container, false)
         val view = binding.root
-//        binding.composeView.apply {
-//            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-//            setContent {
-//                SelfStreamingView()
-//            }
-//        }
+        binding.composeView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                SelfStreamingView(
+                    selfStreamingViewModel =selfStreamingViewModel,
+                    startStream = {startStreamButtonClick()},
+                    stopStream = {stopStreamButtonClick()}
+                )
+            }
+        }
         return view
     }
 
@@ -133,56 +145,42 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
     }
 
 
+    private fun startStreamButtonClick(){
+        if (!this@SelfStreamingFragment::recordingState.isInitialized || recordingState is VideoRecordEvent.Finalize) {
+            //THIS IS GOING TO BE TRIGGERED FIRST BECAUSE isInitialized IS FALSE
+
+            startRecording()
+        } else {
+            when (recordingState) {
+                is VideoRecordEvent.Start -> {
+                    currentRecording?.pause()
+                    //  captureViewBinding.stopButton.visibility = View.VISIBLE
+                }
+                is VideoRecordEvent.Pause -> currentRecording?.resume()
+                is VideoRecordEvent.Resume -> currentRecording?.pause()
+                else -> throw IllegalStateException("recordingState in unknown state")
+            }
+        }
+    }
+    private fun stopStreamButtonClick(){
+
+        if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
+            return
+        }
+
+        val recording = currentRecording
+        if (recording != null) {
+            recording.stop()
+            currentRecording = null
+        }
+    }
 
 
     // Implements VideoCapture use case, including start and stop capturing.
     private fun initializeUI() {
 
 
-        // audioEnabled by default is disabled.
 
-
-        // React to user touching the capture button
-        binding.captureButton.apply {
-            setOnClickListener {
-                if (!this@SelfStreamingFragment::recordingState.isInitialized || recordingState is VideoRecordEvent.Finalize) {
-                   //THIS IS GOING TO BE TRIGGERED FIRST BECAUSE isInitialized IS FALSE
-
-                    startRecording()
-                } else {
-                    when (recordingState) {
-                        is VideoRecordEvent.Start -> {
-                            currentRecording?.pause()
-                          //  captureViewBinding.stopButton.visibility = View.VISIBLE
-                        }
-                        is VideoRecordEvent.Pause -> currentRecording?.resume()
-                        is VideoRecordEvent.Resume -> currentRecording?.pause()
-                        else -> throw IllegalStateException("recordingState in unknown state")
-                    }
-                }
-            }
-            isEnabled = true
-        }
-
-        binding.stopButton.apply {
-            setOnClickListener {
-                // stopping: hide it after getting a click before we go to viewing fragment
-
-                if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
-                    return@setOnClickListener
-                }
-
-                val recording = currentRecording
-                if (recording != null) {
-                    recording.stop()
-                    currentRecording = null
-                }
-
-            }
-            // ensure the stop button is initialized disabled & invisible
-           // visibility = View.VISIBLE
-            isEnabled = true
-        }
 
     }
 
@@ -216,9 +214,10 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
             ?.prepareRecording(requireActivity(), mediaStoreOutput)
 //            .apply { if (audioEnabled) withAudioEnabled() }
             ?.start(mainThreadExecutor, captureListener)?.apply{
-                binding.liveButton.visibility = View.VISIBLE
-                binding.stopButton.visibility = View.VISIBLE
-                binding.captureButton.visibility = View.INVISIBLE
+
+                selfStreamingViewModel.setIsStreamLive(true)
+
+
             }
 
         Log.i(TAG, "Recording started")
@@ -265,9 +264,10 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
                 //Indicates the finalization of recording
 //                showUI(UiState.FINALIZED, event.getNameString())
                 Log.d("updateUI", "Finalize")
-                binding.liveButton.visibility = View.INVISIBLE
-                binding.stopButton.visibility = View.INVISIBLE
-                binding.captureButton.visibility = View.VISIBLE
+
+                selfStreamingViewModel.setIsStreamLive(false)
+
+
             }
 
             is VideoRecordEvent.Pause -> {
@@ -290,30 +290,30 @@ class SelfStreamingFragment : Fragment(), ConnectChecker {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 
-    override fun onConnectionStarted(url: String) {
-        binding.liveButton.text = "START RTMP"
-    }
-
-    override fun onConnectionSuccess() {
-        //update for success
-        binding.liveButton.text = "SUCCESS RTMP"
-    }
-
-    override fun onConnectionFailed(reason: String) {
-        binding.liveButton.text = "FAILED RTMP"
-    }
-
-    override fun onDisconnect() {
-
-    }
-
-    override fun onAuthError() {
-
-    }
-
-    override fun onAuthSuccess() {
-        TODO("Not yet implemented")
-    }
+//    override fun onConnectionStarted(url: String) {
+//        binding.liveButton.text = "START RTMP"
+//    }
+//
+//    override fun onConnectionSuccess() {
+//        //update for success
+//        binding.liveButton.text = "SUCCESS RTMP"
+//    }
+//
+//    override fun onConnectionFailed(reason: String) {
+//        binding.liveButton.text = "FAILED RTMP"
+//    }
+//
+//    override fun onDisconnect() {
+//
+//    }
+//
+//    override fun onAuthError() {
+//
+//    }
+//
+//    override fun onAuthSuccess() {
+//        TODO("Not yet implemented")
+//    }
 
 
 }

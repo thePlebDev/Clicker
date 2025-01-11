@@ -5,39 +5,16 @@
     android:layout_height="match_parent"
     tools:context=".presentation.home.HomeFragment">
 
-<!--    <androidx.compose.ui.platform.ComposeView-->
-<!--        android:id="@+id/compose_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <Button
-        android:id="@+id/capture_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start capture"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"/>
 
-    <Button
-        android:id="@+id/stop_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stop capture"
-        android:layout_gravity="bottom|start"
-        android:visibility="invisible"
-        android:layout_margin="16dp"/>
 
-    <Button
-        android:id="@+id/live_button"
-        android:visibility="invisible"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="LIVE"
-        android:layout_gravity="top|end"
-        android:layout_margin="16dp"/>
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 
 </FrameLayout>
