@@ -29,9 +29,11 @@ import androidx.core.util.Consumer
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -60,6 +62,10 @@ class SelfStreamingFragment : Fragment() {
      * the variable that acts as access to all the stream ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
      * */
     private val selfStreamingViewModel: SelfStreamingViewModel by activityViewModels()
+    /**
+     * the variable that acts as access to all the logout ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val logoutViewModel: LogoutViewModel by activityViewModels()
 
 
 
@@ -91,7 +97,13 @@ class SelfStreamingFragment : Fragment() {
                     SelfStreamingView(
                         selfStreamingViewModel = selfStreamingViewModel,
                         startStream = { startStreamButtonClick() },
-                        stopStream = { stopStreamButtonClick() }
+                        stopStream = { stopStreamButtonClick() },
+                        logoutOfTwitch = {
+                            logoutViewModel.setLoggedOutStatus("TRUE")
+                            findNavController().navigate(R.id.action_selfStreamingFragment_to_logoutFragment)
+
+                        }
+
                     )
                 }
             }

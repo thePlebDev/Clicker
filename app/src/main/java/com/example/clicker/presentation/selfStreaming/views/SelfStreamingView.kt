@@ -66,6 +66,7 @@ fun SelfStreamingView(
     selfStreamingViewModel:SelfStreamingViewModel,
     startStream:()->Unit,
     stopStream:()->Unit,
+    logoutOfTwitch:()->Unit,
 ){
     val streamIsLive = selfStreamingViewModel.streamIsLive.value
     val streamKeyResponse = selfStreamingViewModel.streamKeyResponse.value
@@ -106,6 +107,7 @@ fun SelfStreamingView(
                 },
                 bottomModalState=bottomModalState,
                 context=context,
+                logoutOfTwitch={logoutOfTwitch()}
 
             )
         }
@@ -157,6 +159,7 @@ fun StartButtonResponse(
     closeBottomModalSheet:()->Unit,
     bottomModalState: SheetState,
     context: Context,
+    logoutOfTwitch:()->Unit,
 ){
     Box(
         modifier = Modifier.fillMaxSize()
@@ -204,7 +207,9 @@ fun StartButtonResponse(
                     ) {
 
                         LoginWithTwitchBottomModalButtonColumn(
-                            loginWithTwitch={}
+                            loginWithTwitch={
+                                logoutOfTwitch()
+                            }
                         )
                     }
 
