@@ -58,12 +58,28 @@ class SelfStreamingViewModel @Inject constructor(
      * */
     private val _oAuthTokenClientId: MutableStateFlow<oAuthClinetId?> = MutableStateFlow(null)
 
+    /**
+     * private mutable version of [showBottomModalSheet]
+     * */
+    private val _showBottomModalSheet: MutableState<Boolean> = mutableStateOf(false)
+    /**
+     * a [State] nullable-String object used to hold the unique identifier of the Android application
+     * */
+    val showBottomModalSheet: State<Boolean> = _showBottomModalSheet
+
+    fun setShowBottomModalSheet(newValue: Boolean){
+        _showBottomModalSheet.value = newValue
+    }
+
 
 
 
 
     init{
         monitorStreamKey()
+    }
+    init{
+        getStreamKey()
     }
 
     fun setIsStreamLive(newValue:Boolean){
@@ -80,6 +96,13 @@ class SelfStreamingViewModel @Inject constructor(
 //
 //            }
         //}
+    }
+    fun getStreamKey(){
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(1000)
+            _streamKeyResponse.value = NetworkAuthResponse.Auth401Failure(Exception(""))
+            setShowBottomModalSheet(true)
+        }
     }
 
 

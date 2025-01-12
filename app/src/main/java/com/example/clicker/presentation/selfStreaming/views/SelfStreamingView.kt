@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.selfStreaming.views
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,7 +71,7 @@ fun SelfStreamingView(
     val streamKeyResponse = selfStreamingViewModel.streamKeyResponse.value
     val bottomModalState = rememberModalBottomSheetState()
 
-    var showSheet by remember { mutableStateOf(true) }
+    var showSheet = selfStreamingViewModel.showBottomModalSheet.value
     val context = LocalContext.current
 
 
@@ -97,26 +99,17 @@ fun SelfStreamingView(
             StartButtonResponse(
                 Modifier.align(Alignment.BottomEnd),
                 startStream={startStream()},
-                streamKeyResponse=streamKeyResponse
+                streamKeyResponse=streamKeyResponse,
+                showSheet=showSheet,
+                closeBottomModalSheet={
+                    selfStreamingViewModel.setShowBottomModalSheet(false)
+                },
+                bottomModalState=bottomModalState,
+                context=context,
+
             )
         }
-        if (showSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showSheet = false },
-                sheetState = bottomModalState,
-                containerColor= MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxWidth(),
-                dragHandle = {
-                    TestingGLSurfaceViewComposable(context,Modifier.height(50.dp).width(50.dp))
-                }
-            ) {
 
-                LoginWithTwitchBottomModalButtonColumn(
-                    loginWithTwitch={}
-                )
-            }
-
-        }
 
 
 
@@ -154,29 +147,83 @@ fun StopButton(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartButtonResponse(
     modifier: Modifier,
     startStream:()->Unit,
-    streamKeyResponse: NetworkAuthResponse<String>
+    streamKeyResponse: NetworkAuthResponse<String>,
+    showSheet:Boolean,
+    closeBottomModalSheet:()->Unit,
+    bottomModalState: SheetState,
+    context: Context,
 ){
-    Column(modifier.padding(end = 50.dp)){
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ){
         when(streamKeyResponse){
             is NetworkAuthResponse.Loading->{
+
+                StartButtonLoading(
+                    modifier,
+                    startStream={startStream()},
+                )
+            }
+            is NetworkAuthResponse.Success->{
                 StartButton(
                     modifier,
                     startStream={startStream()},
-                    enabled=false
+                    enabled=true
                 )
             }
-            is NetworkAuthResponse.Success->{}
-            is NetworkAuthResponse.Failure->{}
-            is NetworkAuthResponse.Auth401Failure->{}
-            is NetworkAuthResponse.NetworkFailure->{}
+            is NetworkAuthResponse.Failure->{
+                //
+                StartButton(
+                    modifier,
+                    startStream={startStream()},
+                    enabled=true
+                )
+                Text("Failed",color = Color.Red, fontSize = 50.sp,modifier = Modifier.align(
+                    Alignment.Center))
+            }
+            is NetworkAuthResponse.Auth401Failure->{
+                StartButton(
+                    modifier,
+                    startStream={startStream()},
+                    enabled=true
+                )
+                if (showSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { closeBottomModalSheet() },
+                        sheetState = bottomModalState,
+                        containerColor= MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.fillMaxWidth(),
+                        dragHandle = {
+                            TestingGLSurfaceViewComposable(context,Modifier.height(50.dp).width(50.dp))
+                        }
+                    ) {
+
+                        LoginWithTwitchBottomModalButtonColumn(
+                            loginWithTwitch={}
+                        )
+                    }
+
+                }
+            }
+            is NetworkAuthResponse.NetworkFailure->{
+                StartButton(
+                    modifier,
+                    startStream={startStream()},
+                    enabled=true
+                )
+                Text("Network error. Try again",color = Color.Red, fontSize = 50.sp,modifier = Modifier.align(
+                    Alignment.Center))
+            }
 
         }
-
     }
+
+
 }
 @Composable
 fun StartButton(
@@ -188,6 +235,25 @@ fun StartButton(
         Button(
             onClick ={startStream()},
             enabled=enabled,
+        ) {
+
+            Text(text ="Start")
+
+        }
+        Spacer(modifier =Modifier.height(50.dp))
+    }
+
+}
+@Composable
+fun StartButtonLoading(
+    modifier: Modifier,
+    startStream:()->Unit,
+
+){
+    Column(modifier.padding(end = 50.dp)){
+        Button(
+            onClick ={startStream()},
+            enabled=false,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically){
                 Text(text ="Start")
@@ -201,51 +267,6 @@ fun StartButton(
 
 }
 
-@Composable
-fun TestingNewContentBanner(
-    clickedUsername: String,
-
-
-){
-
-    var clickedBadgeName by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-
-    Column() {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = stringResource(R.string.user_icon_description),
-                    modifier = Modifier
-                        .clickable { }
-                        .size(35.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Text(
-                    clickedUsername,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                )
-            }
-
-
-        }
-        if(!clickedBadgeName.isEmpty()){
-            Text(clickedBadgeName,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                modifier = Modifier.padding(horizontal =5.dp)
-            )
-        }
-
-
-    }
-}
 
 
 /**
