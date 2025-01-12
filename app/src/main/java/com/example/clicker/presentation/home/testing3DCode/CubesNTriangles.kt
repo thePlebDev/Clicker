@@ -19,6 +19,7 @@ import javax.microedition.khronos.opengles.GL10
 
 /**
  * **TestingGLSurfaceViewComposable** a composable wrapper function for the [GL2JNIView] class
+ * - THIS IS THE FULL ROTATING CUBE!!!!!!!!
  *
  * @param context a [Context] object used to create a JNI class
  * @param modifier a [Modifier] object used to manage the size of the JNI class
