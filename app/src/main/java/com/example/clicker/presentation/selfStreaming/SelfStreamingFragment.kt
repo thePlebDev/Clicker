@@ -37,6 +37,7 @@ import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.rtmp.ConnectChecker
 import com.example.clicker.rtmp.GenericStream
+import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -86,11 +87,13 @@ class SelfStreamingFragment : Fragment() {
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                SelfStreamingView(
-                    selfStreamingViewModel =selfStreamingViewModel,
-                    startStream = {startStreamButtonClick()},
-                    stopStream = {stopStreamButtonClick()}
-                )
+                AppTheme {
+                    SelfStreamingView(
+                        selfStreamingViewModel = selfStreamingViewModel,
+                        startStream = { startStreamButtonClick() },
+                        stopStream = { stopStreamButtonClick() }
+                    )
+                }
             }
         }
         return view

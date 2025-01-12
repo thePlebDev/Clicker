@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.presentation.selfStreaming.domain.SelfStreaming
+import com.example.clicker.util.NetworkAuthResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,15 +33,15 @@ class SelfStreamingViewModel @Inject constructor(
 
 
     /**
-     * private mutable version of [streamKey]
+     * private mutable version of [streamKeyResponse]
      * */
-    private val _streamKey: MutableStateFlow<String?> = MutableStateFlow(null) //this needs to be a response
+    private val _streamKeyResponse: MutableState<NetworkAuthResponse<String>> = mutableStateOf(NetworkAuthResponse.Loading) //this needs to be a response
 
     /**
      * a [StateFlow] String object used to hold the stream key of the user attempting to stream
      * - [GET stream key documentation](https://dev.twitch.tv/docs/api/reference/#get-stream-key)
      * */
-    val streamKey: StateFlow<String?> = _streamKey
+    val streamKeyResponse: State<NetworkAuthResponse<String>> = _streamKeyResponse
 
     /**
      * private mutable version of [clientId]
@@ -74,11 +75,11 @@ class SelfStreamingViewModel @Inject constructor(
 
 
     private fun monitorStreamKey()=viewModelScope.launch(Dispatchers.IO){
-        _streamKey.collect{nullableStreamKey->
-            nullableStreamKey?.let { streamKey ->
-
-            }
-        }
+//        _streamKey.collect{nullableStreamKey->
+//            nullableStreamKey?.let { streamKey ->
+//
+//            }
+        //}
     }
 
 
