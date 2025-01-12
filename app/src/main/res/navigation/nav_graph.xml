@@ -115,6 +115,7 @@
         android:label="SelfStreamingFragment" >
         <action
             android:id="@+id/action_selfStreamingFragment_to_logoutFragment"
+            app:popUpToInclusive="true"
             app:destination="@id/logoutFragment" />
     </fragment>
 </navigation>
