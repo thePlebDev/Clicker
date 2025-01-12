@@ -112,5 +112,9 @@
     <fragment
         android:id="@+id/selfStreamingFragment"
         android:name="com.example.clicker.presentation.selfStreaming.SelfStreamingFragment"
-        android:label="SelfStreamingFragment" />
+        android:label="SelfStreamingFragment" >
+        <action
+            android:id="@+id/action_selfStreamingFragment_to_logoutFragment"
+            app:destination="@id/logoutFragment" />
+    </fragment>
 </navigation>
