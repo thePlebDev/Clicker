@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,6 +34,7 @@ import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.search.SearchViewModel
+import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
@@ -97,6 +99,11 @@ class HomeFragment : Fragment(){
      * the variable that acts as access to all the search ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
      * */
     private val searchViewModel: SearchViewModel by activityViewModels()
+
+    /**
+     * the variable that acts as access to all the search ViewModel data. It is scoped with [activityViewModels](https://stackoverflow.com/questions/68058302/difference-between-activityviewmodels-and-lazy-viewmodelprovider)
+     * */
+    private val selfStreamingViewModel: SelfStreamingViewModel by activityViewModels()
 
 
 
@@ -191,6 +198,12 @@ class HomeFragment : Fragment(){
                                 startActivity(intent)
                             },
                             navigateToStream = {
+                                val oAuthToken = homeViewModel.oAuthToken.value  ?:""
+                                val clientId = homeViewModel.validatedUser.value?.clientId ?:""
+                                selfStreamingViewModel.setClientIdOAuthToken(
+                                    clientId = clientId,
+                                    oAuthToken =oAuthToken
+                                )
                                 findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
                             }
 
