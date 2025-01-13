@@ -78,9 +78,7 @@ class SelfStreamingViewModel @Inject constructor(
     init{
         monitorStreamKey()
     }
-    init{
-        getStreamKey()
-    }
+
 
     fun setIsStreamLive(newValue:Boolean){
         _streamIsLive.value = newValue
@@ -104,9 +102,6 @@ class SelfStreamingViewModel @Inject constructor(
             setShowBottomModalSheet(true)
         }
     }
-
-
-
 
     //I need to wait for the oAuthToken and the clientId
     //Once I have both I need to make a request to get the client ID
