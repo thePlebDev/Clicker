@@ -202,7 +202,8 @@ class HomeFragment : Fragment(){
                                 val clientId = homeViewModel.validatedUser.value?.clientId ?:""
                                 selfStreamingViewModel.setClientIdOAuthToken(
                                     clientId = clientId,
-                                    oAuthToken =oAuthToken
+                                    oAuthToken =oAuthToken,
+                                    broadcasterId = homeViewModel.validatedUser.value?.userId ?:""
                                 )
                                 findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
                             }

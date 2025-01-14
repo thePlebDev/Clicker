@@ -3,6 +3,8 @@ package com.example.clicker.presentation.selfStreaming.clients
 import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Query
 
 
 /**
@@ -19,6 +21,9 @@ interface StreamToTwitchClient {
      * */
     @GET("streams/key")
     suspend fun getStreamKey(
+        @Header("Authorization") authorization: String,
+        @Header("Client-Id") clientId: String,
+        @Query("broadcaster_id") broadcasterId: String
     ): Response<StreamKeyResponse>
 }
 
