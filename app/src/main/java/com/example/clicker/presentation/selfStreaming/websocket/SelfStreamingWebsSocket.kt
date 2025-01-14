@@ -14,7 +14,7 @@ class SelfStreamingWebsSocket: SelfStreamingSocket, WebSocketListener() {
 
     private var client: OkHttpClient = OkHttpClient.Builder().build()
     var webSocket: WebSocket? = null
-    private val hardcodedRMTPURL =""
+    private val hardcodedRMTPURL ="rtmp://sfo.contribute.live-video.net/app/live_946933663_yv2XEXjO3MAkrsWJMzGrOINwYrSzmT?bandwidthtest=true"
 
 
 
