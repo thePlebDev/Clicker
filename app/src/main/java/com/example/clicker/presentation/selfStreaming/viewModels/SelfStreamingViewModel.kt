@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.presentation.selfStreaming.domain.SelfStreaming
+import com.example.clicker.presentation.selfStreaming.domain.SelfStreamingSocket
 import com.example.clicker.util.NetworkAuthResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,8 @@ data class OAuthClinetId(
 
 @HiltViewModel
 class SelfStreamingViewModel @Inject constructor(
-    private val streamToTwitch: SelfStreaming
+    private val streamToTwitch: SelfStreaming,
+    private val selfStreamingWebSocket: SelfStreamingSocket
 ): ViewModel() {
 
 
@@ -91,6 +93,7 @@ class SelfStreamingViewModel @Inject constructor(
     }
 
     private fun monitorOAuthTokenClientId()=viewModelScope.launch(Dispatchers.IO){
+        selfStreamingWebSocket.runWebSocket()
         _oAuthTokenClientId.collect{nullableOAuthClientId ->
             nullableOAuthClientId?.let{oAuthClientId ->
                 getStreamKey(
@@ -124,6 +127,7 @@ class SelfStreamingViewModel @Inject constructor(
                     is NetworkAuthResponse.Success ->{
                         //this should actually update the stream key
                         _streamKeyResponse.value = response
+                        Log.d("GetStreamKeyRequest","streamKey -->${response.data}")
 
                     }
                     is NetworkAuthResponse.Failure ->{
@@ -175,4 +179,8 @@ class SelfStreamingViewModel @Inject constructor(
         //make the request to get the stream key
         }
 
+    override fun onCleared() {
+        super.onCleared()
+        selfStreamingWebSocket.closeWebSocket()
+    }
 }
