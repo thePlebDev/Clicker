@@ -58,7 +58,9 @@ import com.example.clicker.network.repository.util.ModActionParsing
 import com.example.clicker.network.websockets.TwitchEventSubWebSocket
 import com.example.clicker.presentation.selfStreaming.clients.StreamToTwitchClient
 import com.example.clicker.presentation.selfStreaming.domain.SelfStreaming
+import com.example.clicker.presentation.selfStreaming.domain.SelfStreamingSocket
 import com.example.clicker.presentation.selfStreaming.repository.SelfStreamingImpl
+import com.example.clicker.presentation.selfStreaming.websocket.SelfStreamingWebsSocket
 import com.example.clicker.presentation.stream.util.NetworkMonitoring
 import com.example.clicker.presentation.stream.util.TextParsing
 import com.example.clicker.presentation.stream.util.TokenCommand
@@ -341,6 +343,11 @@ object SingletonModule {
     fun provideCoroutineDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
     }
+    @Provides
+    fun provideSelfStreamingSocket(): SelfStreamingSocket {
+        return SelfStreamingWebsSocket()
+    }
+
     @Provides
     fun provideTwitchWebSocket(
         twitchParsingEngine: ParsingEngine
