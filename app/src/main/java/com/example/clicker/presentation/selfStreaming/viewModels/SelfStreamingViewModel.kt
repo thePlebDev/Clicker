@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
@@ -21,14 +22,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-data class oAuthClinetId(
+data class OAuthClinetId(
     val oAuthToken: String,
-    val clientId:String
+    val clientId:String,
+    val broadcasterId: String
 )
 
 @HiltViewModel
 class SelfStreamingViewModel @Inject constructor(
-    streamToTwitch: SelfStreaming
+    private val streamToTwitch: SelfStreaming
 ): ViewModel() {
 
 
@@ -56,7 +58,7 @@ class SelfStreamingViewModel @Inject constructor(
     /**
      * a [StateFlow] oAuthClinetId object used to hold the clientId and the OAuth token
      * */
-    private val _oAuthTokenClientId: MutableStateFlow<oAuthClinetId?> = MutableStateFlow(null)
+    private val _oAuthTokenClientId: MutableStateFlow<OAuthClinetId?> = MutableStateFlow(null)
 
     /**
      * private mutable version of [showBottomModalSheet]
@@ -78,6 +80,9 @@ class SelfStreamingViewModel @Inject constructor(
     init{
         monitorStreamKey()
     }
+    init {
+        monitorOAuthTokenClientId()
+    }
 
 
     fun setIsStreamLive(newValue:Boolean){
@@ -85,6 +90,59 @@ class SelfStreamingViewModel @Inject constructor(
 
     }
 
+    private fun monitorOAuthTokenClientId()=viewModelScope.launch(Dispatchers.IO){
+        _oAuthTokenClientId.collect{nullableOAuthClientId ->
+            nullableOAuthClientId?.let{oAuthClientId ->
+                getStreamKey(
+                    oAuthToken = oAuthClientId.oAuthToken,
+                    clientId = oAuthClientId.clientId,
+                    broadcasterId = oAuthClientId.broadcasterId
+                )
+            }
+        }
+    }
+
+    private fun getStreamKey(
+        oAuthToken: String,
+        clientId: String,
+        broadcasterId:String,
+    ){
+        Log.d("GetStreamKeyRequest","oAuthToken -->$oAuthToken")
+        Log.d("GetStreamKeyRequest","clientId -->$clientId")
+        Log.d("GetStreamKeyRequest","broadcasterId -->$broadcasterId")
+        viewModelScope.launch(Dispatchers.IO) {
+            _streamKeyResponse.value = NetworkAuthResponse.Loading
+
+
+            streamToTwitch.getStreamKey(
+                oAuthToken=oAuthToken,
+                clientId = clientId,
+                broadcasterId=broadcasterId
+            ).collect{response ->
+                when(response){
+                    is NetworkAuthResponse.Loading ->{}
+                    is NetworkAuthResponse.Success ->{
+                        //this should actually update the stream key
+                        _streamKeyResponse.value = response
+
+                    }
+                    is NetworkAuthResponse.Failure ->{
+                        //needs to move this back to success after
+                        _streamKeyResponse.value = response
+                    }
+                    is NetworkAuthResponse.NetworkFailure ->{
+                        //needs to move this back to success after
+                        _streamKeyResponse.value = response
+                    }
+                    is NetworkAuthResponse.Auth401Failure ->{
+                        _streamKeyResponse.value = response
+                        setShowBottomModalSheet(true)
+                    }
+            }
+
+            }
+        }
+    }
 
 
 
@@ -95,25 +153,24 @@ class SelfStreamingViewModel @Inject constructor(
 //            }
         //}
     }
-    fun getStreamKey(){
-        viewModelScope.launch(Dispatchers.IO) {
-            delay(1000)
-            _streamKeyResponse.value = NetworkAuthResponse.Auth401Failure(Exception(""))
-            setShowBottomModalSheet(true)
-        }
-    }
+
 
     //I need to wait for the oAuthToken and the clientId
     //Once I have both I need to make a request to get the client ID
 
     fun setClientIdOAuthToken(
         clientId: String,
-        oAuthToken: String
+        oAuthToken: String,
+        broadcasterId: String
     )=viewModelScope.launch(Dispatchers.IO){
         Log.d("setClientIdOAuthTokenSelfStreaming","clientId -->$clientId")
         Log.d("setClientIdOAuthTokenSelfStreaming","oAuthToken -->$oAuthToken")
         _oAuthTokenClientId.emit(
-            oAuthClinetId(clientId,oAuthToken)
+            OAuthClinetId(
+                clientId=clientId,
+                oAuthToken=oAuthToken,
+                broadcasterId=broadcasterId
+            )
         )
         //make the request to get the stream key
         }

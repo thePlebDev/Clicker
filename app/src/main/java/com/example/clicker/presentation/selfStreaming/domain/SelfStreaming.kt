@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.selfStreaming.domain
 
+import com.example.clicker.util.NetworkAuthResponse
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -18,5 +19,5 @@ interface SelfStreaming {
      *
      * @return a [Flow] containing a String that represents the user's stream key
      * */
-    fun getStreamKey(oAuthToken:String, clientId:String): Flow<String>
+    fun getStreamKey(oAuthToken:String, clientId:String,broadcasterId:String): Flow<NetworkAuthResponse<String>>
 }

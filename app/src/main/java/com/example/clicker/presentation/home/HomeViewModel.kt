@@ -262,6 +262,7 @@ class HomeViewModel @Inject constructor(
             _validatedUser.collect{nullableValidatedUser ->
                 nullableValidatedUser?.also{nonNullValidatedUser ->
                     Log.d("nullableValidatedUser","RUNNING")
+                    Log.d("nullableValidatedUser","userId ->${nonNullValidatedUser.userId}")
                     getLiveStreams(
                         clientId = nonNullValidatedUser.clientId,
                         userId = nonNullValidatedUser.userId,
