@@ -1,15 +1,14 @@
 package com.example.clicker.network.repository
 
 import com.example.clicker.network.clients.BetterTTVEmoteClient
-import com.example.clicker.network.clients.ChannelEmote
-import com.example.clicker.network.clients.ChannelEmoteResponse
-import com.example.clicker.network.clients.ChannelImages
+
 
 import com.example.clicker.network.clients.TwitchAuthenticationClient
 import com.example.clicker.network.clients.TwitchEmoteClient
 import com.example.clicker.network.domain.TwitchEmoteRepo
 import com.example.clicker.network.domain.TwitchRepo
 import com.example.clicker.network.models.emotes.BetterTTVChannelEmotes
+import com.example.clicker.network.models.emotes.ChannelEmoteResponse
 import com.example.clicker.network.models.emotes.IndivBetterTTVEmote
 import com.example.clicker.network.repository.util.createJsonBodyFrom
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatBadgePair
