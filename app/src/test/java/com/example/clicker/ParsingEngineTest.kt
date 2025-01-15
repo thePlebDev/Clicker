@@ -1,6 +1,6 @@
 package com.example.clicker
 
-import com.example.clicker.network.clients.Emote
+
 import com.example.clicker.network.websockets.MessageScanner
 import com.example.clicker.network.websockets.ParsingEngine
 import com.example.clicker.network.websockets.models.MessageType
