@@ -29,6 +29,7 @@ class UtilityTests {
         val url ="rtmp://sfo.contribute.live-video.net/app/live_user_123456789?bandwidthtest=true"
         val validSchemes = arrayOf("rtmp", "rtmps", "rtmpt", "rtmpts")
         val parser = UrlParser.parse(url, validSchemes)
+        val testing = parser.scheme.startsWith("rtmp")
 
 
 
