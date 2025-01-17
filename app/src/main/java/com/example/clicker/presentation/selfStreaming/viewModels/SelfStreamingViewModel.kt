@@ -6,8 +6,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.clicker.presentation.selfStreaming.clients.RtmpClient
 import com.example.clicker.presentation.selfStreaming.domain.SelfStreaming
 import com.example.clicker.presentation.selfStreaming.domain.SelfStreamingSocket
+import com.example.clicker.presentation.selfStreaming.websocket.RtmpsClient2
 import com.example.clicker.util.NetworkAuthResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +34,7 @@ data class OAuthClinetId(
 @HiltViewModel
 class SelfStreamingViewModel @Inject constructor(
     private val streamToTwitch: SelfStreaming,
-    private val selfStreamingWebSocket: SelfStreamingSocket
+    private val rtmpClient: RtmpClient
 ): ViewModel() {
 
 
@@ -75,7 +77,25 @@ class SelfStreamingViewModel @Inject constructor(
         _showBottomModalSheet.value = newValue
     }
 
+    val host = "ingest.global-contribute.live-video.net"
+    val port = 443 // RTMPS secure port
+    val app = "app" // RTMP application name
 
+
+
+    init{
+        viewModelScope.launch {
+            val rtmpsClient = RtmpsClient2(host, port, app)
+            rtmpsClient.connect()
+
+            // After connection and handshake, you can start sending video/audio data
+
+            // Disconnect after finishing
+           // delay(10000)
+            rtmpsClient.disconnect()
+        }
+
+    }
 
 
 
@@ -93,7 +113,7 @@ class SelfStreamingViewModel @Inject constructor(
     }
 
     private fun monitorOAuthTokenClientId()=viewModelScope.launch(Dispatchers.IO){
-        selfStreamingWebSocket.runWebSocket()
+
         _oAuthTokenClientId.collect{nullableOAuthClientId ->
             nullableOAuthClientId?.let{oAuthClientId ->
                 getStreamKey(
@@ -127,6 +147,14 @@ class SelfStreamingViewModel @Inject constructor(
                     is NetworkAuthResponse.Success ->{
                         //this should actually update the stream key
                         _streamKeyResponse.value = response
+                        val streamKey =response.data
+
+//                        rtmps://ingest.global-contribute.live-video.net:443/app/
+
+                        rtmpClient.connect(
+                            url ="rtmps://ingest.global-contribute.live-video.net/app/$streamKey?bandwidthtest=true",
+                            isRetry = false
+                        )
                         Log.d("GetStreamKeyRequest","streamKey -->${response.data}")
 
                     }
@@ -181,6 +209,6 @@ class SelfStreamingViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        selfStreamingWebSocket.closeWebSocket()
+        rtmpClient.disconnect()
     }
 }
