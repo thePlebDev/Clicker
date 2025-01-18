@@ -151,10 +151,10 @@ class SelfStreamingViewModel @Inject constructor(
 
 //                        rtmps://ingest.global-contribute.live-video.net:443/app/
 
-                        rtmpClient.connect(
-                            url ="rtmps://ingest.global-contribute.live-video.net/app/$streamKey?bandwidthtest=true",
-                            isRetry = false
-                        )
+//                        rtmpClient.connect(
+//                            url ="rtmps://ingest.global-contribute.live-video.net/app/$streamKey?bandwidthtest=true",
+//                            isRetry = false
+//                        )
                         Log.d("GetStreamKeyRequest","streamKey -->${response.data}")
 
                     }

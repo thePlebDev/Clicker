@@ -2,7 +2,7 @@ package com.example.clicker.presentation.selfStreaming.clients
 
 import com.example.clicker.presentation.selfStreaming.util.UrlParser
 import com.example.clicker.presentation.selfStreaming.websocket.RtmpSocket
-import com.example.clicker.presentation.selfStreaming.websocket.TcpTunneledSocket
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -45,8 +45,8 @@ class RtmpClient @Inject constructor() {
     private suspend fun establishConnection(
          host:String
     ): Boolean {
-        val socket = TcpTunneledSocket(host, 1935, tlsEnabled)
-        socket.connect()
+//        val socket = TcpTunneledSocket(host, 1935, tlsEnabled)
+//        socket.connect()
         return true
     }
 
