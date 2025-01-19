@@ -31,29 +31,7 @@ class RtmpsClient2(
     private lateinit var outputStream: OutputStream
 
     // Perform connection on background thread using Coroutine
-    suspend fun connect() {
-        try {
-            withContext(Dispatchers.IO) {
-                // Step 1: Create SSL context and factory
-                val sslContext: SSLContext = SSLContext.getInstance("TLS")
-                sslContext.init(null, null, null)
-                val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
 
-                // Step 2: Establish a secure connection to the RTMP server
-                sslSocket = sslSocketFactory.createSocket(host, port) as SSLSocket
-                sslSocket.startHandshake() // Perform SSL handshake
-                outputStream = sslSocket.outputStream
-                Log.i(TAG, "Connected to RTMPS server at $host:$port")
-
-                // Step 3: Perform the RTMP handshake
-                performRtmpHandshake()
-
-                Log.i(TAG, "RTMPS handshake completed successfully")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to connect: ${e.message}", e)
-        }
-    }
 
     private suspend fun performRtmpHandshake() {
         withContext(Dispatchers.IO) {
