@@ -77,6 +77,7 @@ class SelfStreamingViewModel @Inject constructor(
         _showBottomModalSheet.value = newValue
     }
 
+
     val host = "ingest.global-contribute.live-video.net"
     val port = 443 // RTMPS secure port
     val app = "app" // RTMP application name
