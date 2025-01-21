@@ -144,7 +144,6 @@ class RtmpsClient2(
                 // Read S2
                 val s2 = ByteArray(1536)
                 inputStream.read(s2)
-                Log.d("TESTINGTHINGERSAGAIN","${s1[0]==s2[0]}")
 
                 Log.i(TAG, "RTMP handshake successful")
             } catch (e: Exception) {
