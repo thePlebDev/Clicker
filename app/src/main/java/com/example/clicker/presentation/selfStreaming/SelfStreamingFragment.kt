@@ -2,11 +2,15 @@ package com.example.clicker.presentation.selfStreaming
 
 import android.content.ContentValues
 import android.content.Context
+import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
@@ -132,6 +136,20 @@ class SelfStreamingFragment : Fragment() {
         }, ContextCompat.getMainExecutor(context))
     }
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
+        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
+        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
+            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
+            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
+            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
+        }
+        //moves the codec to the Configured stage
+        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        //createInputSurface() must be called after configure
+        val inputSurface = codec.createInputSurface()
+
+        //moves the codec to the Executing stage
+        codec.start()
 
         //where the camera data is coming from?
         var preview : Preview = Preview.Builder()
@@ -145,7 +163,12 @@ class SelfStreamingFragment : Fragment() {
             .build()
 
         //set where the camera data is going to be shown
-        preview.setSurfaceProvider(previewView.getSurfaceProvider())
+       // preview.setSurfaceProvider(previewView.getSurfaceProvider())
+        preview.setSurfaceProvider { request ->
+            request.provideSurface(inputSurface, ContextCompat.getMainExecutor(requireContext())) {
+                println("CameraX preview frames are now routed to MediaCodec")
+            }
+        }
         // build a recorder, which can:
         //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
         //   - be used create recording(s) (the recording performs recording)
@@ -158,6 +181,25 @@ class SelfStreamingFragment : Fragment() {
 
 
     }
+
+    private fun bindPreview2() {
+        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
+        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
+            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
+            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
+            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
+        }
+        //moves the codec to the Configured stage
+        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        //createInputSurface() must be called after configure
+        val inputSurface = codec.createInputSurface()
+
+        //moves the codec to the Executing stage
+        codec.start()
+
+    }
+
 
 
     private fun startStreamButtonClick(){

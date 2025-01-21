@@ -1,25 +1,20 @@
 package com.example.clicker.presentation.selfStreaming.websocket
 
+import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.util.Log
+import android.view.Surface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.nio.ByteBuffer
 import java.util.Random
-import java.util.concurrent.atomic.AtomicLong
 import javax.net.ssl.HandshakeCompletedEvent
 import javax.net.ssl.HandshakeCompletedListener
-import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
-
 
 
 class RtmpsClient2(
@@ -33,6 +28,10 @@ class RtmpsClient2(
 
     private lateinit var sslSocket: SSLSocket
     private lateinit var outputStream: OutputStream
+
+    //surface to buffer encoder
+    // where the video frames are sent to be encoded
+    private lateinit var inputSurface: Surface
 
     // Perform connection on background thread using Coroutine
     suspend fun connect() {
@@ -162,6 +161,25 @@ class RtmpsClient2(
             }
         }
     }
+
+    fun prepareVideoEncoder(){
+        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
+        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
+            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
+            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
+            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
+        }
+        //moves the codec to the Configured stage
+        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        //createInputSurface() must be called after configure
+        inputSurface = codec.createInputSurface()
+
+        //moves the codec to the Executing stage
+        codec.start()
+
+    }
+
 
     fun sendConnectCommand(outputStream: OutputStream, app: String, tcUrl: String) {
 //        val amfData = AmfEncoder()
