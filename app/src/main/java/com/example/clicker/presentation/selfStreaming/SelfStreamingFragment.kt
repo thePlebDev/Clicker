@@ -136,21 +136,7 @@ class SelfStreamingFragment : Fragment() {
         }, ContextCompat.getMainExecutor(context))
     }
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-         codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
-        setCallback()
-        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
-            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
-            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
-            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
-        }
-        //moves the codec to the Configured stage
-        codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        //createInputSurface() must be called after configure
-        val inputSurface = codec?.createInputSurface()
 
-        //moves the codec to the Executing stage
-        codec?.start()
 
         //where the camera data is coming from?
         var preview : Preview = Preview.Builder()
@@ -167,11 +153,7 @@ class SelfStreamingFragment : Fragment() {
         Log.d("CameraXMediaCodec","TRYING TO BIND")
 
          preview.setSurfaceProvider(previewView.getSurfaceProvider())
-//        preview.setSurfaceProvider { request ->
-//            request.provideSurface(inputSurface!!, ContextCompat.getMainExecutor(requireContext())) {
-//                Log.d("CameraXMediaCodec","Connected")
-//            }
-//        }
+
         // build a recorder, which can:
         //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
         //   - be used create recording(s) (the recording performs recording)
@@ -185,53 +167,34 @@ class SelfStreamingFragment : Fragment() {
 
     }
 
-    private fun setCallback() {
-        handlerThread = HandlerThread(TAG)
-        handlerThread!!.start()
-        handler = Handler(handlerThread!!.getLooper())
-        createAsyncCallback()
-        Log.d("CameraXMediaCodec","setCallback()")
-        codec?.setCallback(callback, handler)
-    }
 
-    private fun createAsyncCallback() {
-        callback = object : MediaCodec.Callback() {
-            override fun onInputBufferAvailable(p0: MediaCodec, p1: Int) {
-                Log.d("CameraXMediaCodec","onInputBufferAvailable")
+
+
+
+
+    private fun clickToStream(){
+        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+            .format(System.currentTimeMillis())
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Video.Media.RELATIVE_PATH,
+                    "Movies/CameraX-Video")
             }
-
-            override fun onOutputBufferAvailable(
-                p0: MediaCodec,
-                p1: Int,
-                p2: MediaCodec.BufferInfo
-            ) {
-                Log.d("CameraXMediaCodec","onOutputBufferAvailable")
-            }
-
-            override fun onError(p0: MediaCodec, p1: CodecException) {
-                Log.d("CameraXMediaCodec","onError")
-            }
-
-            override fun onOutputFormatChanged(p0: MediaCodec, p1: MediaFormat) {
-                Log.d("CameraXMediaCodec","onOutputFormatChanged")
-            }
-
-
-
-            override fun onCryptoError(codec: MediaCodec, e: MediaCodec.CryptoException) {
-                super.onCryptoError(codec, e)
-                Log.d("CameraXMediaCodec","onCryptoError()")
-            }
-
         }
 
+        val mediaStoreOutputOptions = MediaStoreOutputOptions
+            .Builder(requireActivity().contentResolver,
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+            .setContentValues(contentValues)
+            .build()
+
+
+
+
+
     }
-
-    private fun testingAgainCodec(){
-        
-    }
-
-
 
 
 
@@ -246,6 +209,7 @@ class SelfStreamingFragment : Fragment() {
             when (recordingState) {
                 is VideoRecordEvent.Start -> {
                     currentRecording?.pause()
+
                     //  captureViewBinding.stopButton.visibility = View.VISIBLE
                 }
                 is VideoRecordEvent.Pause -> currentRecording?.resume()
@@ -308,8 +272,6 @@ class SelfStreamingFragment : Fragment() {
             ?.start(mainThreadExecutor, captureListener)?.apply{
 
                 selfStreamingViewModel.setIsStreamLive(true)
-
-
             }
 
         Log.i(TAG, "Recording started")
@@ -318,14 +280,14 @@ class SelfStreamingFragment : Fragment() {
     /**
      * CaptureEvent listener.
      */
-    private val captureListener = Consumer<VideoRecordEvent> { event ->
+    private val captureListener = Consumer<VideoRecordEvent> { recordEvent ->
         // cache the recording state
-        if (event !is VideoRecordEvent.Status)
-            recordingState = event
+        if (recordEvent !is VideoRecordEvent.Status)
+            recordingState = recordEvent
 
-        updateUI(event)
+        updateUI(recordEvent)
 
-        if (event is VideoRecordEvent.Finalize) {
+        if (recordEvent is VideoRecordEvent.Finalize) {
             // display the captured video
 //            lifecycleScope.launch {
 //                navController.navigate(
@@ -334,6 +296,12 @@ class SelfStreamingFragment : Fragment() {
 //                    )
 //                )
 //            }
+        }
+        when(recordEvent) {
+            is VideoRecordEvent.Start -> {
+                Log.d("VideoRecordEventtESTING","START")
+
+            }
         }
     }
     private fun updateUI(event: VideoRecordEvent) {
@@ -382,30 +350,6 @@ class SelfStreamingFragment : Fragment() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     }
 
-//    override fun onConnectionStarted(url: String) {
-//        binding.liveButton.text = "START RTMP"
-//    }
-//
-//    override fun onConnectionSuccess() {
-//        //update for success
-//        binding.liveButton.text = "SUCCESS RTMP"
-//    }
-//
-//    override fun onConnectionFailed(reason: String) {
-//        binding.liveButton.text = "FAILED RTMP"
-//    }
-//
-//    override fun onDisconnect() {
-//
-//    }
-//
-//    override fun onAuthError() {
-//
-//    }
-//
-//    override fun onAuthSuccess() {
-//        TODO("Not yet implemented")
-//    }
 
 
 }
