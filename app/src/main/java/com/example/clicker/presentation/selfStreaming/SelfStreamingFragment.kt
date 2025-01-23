@@ -3,14 +3,16 @@ package com.example.clicker.presentation.selfStreaming
 import android.content.ContentValues
 import android.content.Context
 import android.media.MediaCodec
+import android.media.MediaCodec.CodecException
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
@@ -21,28 +23,18 @@ import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
-import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
-import com.example.clicker.presentation.stream.StreamViewModel
-import com.example.clicker.rtmp.ConnectChecker
-import com.example.clicker.rtmp.GenericStream
 import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import java.text.SimpleDateFormat
@@ -59,6 +51,13 @@ class SelfStreamingFragment : Fragment() {
     private var audioEnabled = false
     private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(requireContext()) }
     private val captureLiveStatus = MutableLiveData<String>()
+
+
+
+    private var handlerThread: HandlerThread? = null
+    private var handler: Handler? = null
+    private var callback: MediaCodec.Callback? = null
+    private var codec: MediaCodec? = null
 
 //    val genericStream: GenericStream = GenericStream(requireActivity(),this)
 
@@ -132,11 +131,13 @@ class SelfStreamingFragment : Fragment() {
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider = cameraProviderFuture.get()
+
             bindPreview(cameraProvider)
         }, ContextCompat.getMainExecutor(context))
     }
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
+         codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
+        setCallback()
         val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
             setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
             setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
@@ -144,12 +145,12 @@ class SelfStreamingFragment : Fragment() {
             setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
         }
         //moves the codec to the Configured stage
-        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         //createInputSurface() must be called after configure
-        val inputSurface = codec.createInputSurface()
+        val inputSurface = codec?.createInputSurface()
 
         //moves the codec to the Executing stage
-        codec.start()
+        codec?.start()
 
         //where the camera data is coming from?
         var preview : Preview = Preview.Builder()
@@ -163,12 +164,14 @@ class SelfStreamingFragment : Fragment() {
             .build()
 
         //set where the camera data is going to be shown
-       // preview.setSurfaceProvider(previewView.getSurfaceProvider())
-        preview.setSurfaceProvider { request ->
-            request.provideSurface(inputSurface, ContextCompat.getMainExecutor(requireContext())) {
-                println("CameraX preview frames are now routed to MediaCodec")
-            }
-        }
+        Log.d("CameraXMediaCodec","TRYING TO BIND")
+
+         preview.setSurfaceProvider(previewView.getSurfaceProvider())
+//        preview.setSurfaceProvider { request ->
+//            request.provideSurface(inputSurface!!, ContextCompat.getMainExecutor(requireContext())) {
+//                Log.d("CameraXMediaCodec","Connected")
+//            }
+//        }
         // build a recorder, which can:
         //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
         //   - be used create recording(s) (the recording performs recording)
@@ -182,23 +185,55 @@ class SelfStreamingFragment : Fragment() {
 
     }
 
-    private fun bindPreview2() {
-        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
-        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
-            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
-            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
-            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
-        }
-        //moves the codec to the Configured stage
-        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        //createInputSurface() must be called after configure
-        val inputSurface = codec.createInputSurface()
+    private fun setCallback() {
+        handlerThread = HandlerThread(TAG)
+        handlerThread!!.start()
+        handler = Handler(handlerThread!!.getLooper())
+        createAsyncCallback()
+        Log.d("CameraXMediaCodec","setCallback()")
+        codec?.setCallback(callback, handler)
+    }
 
-        //moves the codec to the Executing stage
-        codec.start()
+    private fun createAsyncCallback() {
+        callback = object : MediaCodec.Callback() {
+            override fun onInputBufferAvailable(p0: MediaCodec, p1: Int) {
+                Log.d("CameraXMediaCodec","onInputBufferAvailable")
+            }
+
+            override fun onOutputBufferAvailable(
+                p0: MediaCodec,
+                p1: Int,
+                p2: MediaCodec.BufferInfo
+            ) {
+                Log.d("CameraXMediaCodec","onOutputBufferAvailable")
+            }
+
+            override fun onError(p0: MediaCodec, p1: CodecException) {
+                Log.d("CameraXMediaCodec","onError")
+            }
+
+            override fun onOutputFormatChanged(p0: MediaCodec, p1: MediaFormat) {
+                Log.d("CameraXMediaCodec","onOutputFormatChanged")
+            }
+
+
+
+            override fun onCryptoError(codec: MediaCodec, e: MediaCodec.CryptoException) {
+                super.onCryptoError(codec, e)
+                Log.d("CameraXMediaCodec","onCryptoError()")
+            }
+
+        }
 
     }
+
+    private fun testingAgainCodec(){
+        
+    }
+
+
+
+
 
 
 

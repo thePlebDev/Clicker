@@ -3,6 +3,7 @@ package com.example.clicker.presentation.selfStreaming.websocket
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.opengl.EGL14
 import android.util.Log
 import android.view.Surface
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,18 @@ class RtmpsClient2(
     //surface to buffer encoder
     // where the video frames are sent to be encoded
     private lateinit var inputSurface: Surface
+
+    // parameters for the encoder
+    private val MIME_TYPE = "video/avc" // H.264 Advanced Video Coding
+    private val FRAME_RATE = 30 // 30fps
+    private val IFRAME_INTERVAL = 5 // 5 seconds between I-frames
+    private val DURATION_SEC: Long = 8 // 8 seconds of video
+
+    // allocate one of these up front so we don't need to do it every time
+    private var mBufferInfo: MediaCodec.BufferInfo? = null
+    private lateinit var  mEncoder: MediaCodec
+//    private lateinit var  mInputSurface: CodecInputSurface
+
 
     // Perform connection on background thread using Coroutine
     suspend fun connect() {
@@ -162,58 +175,11 @@ class RtmpsClient2(
         }
     }
 
-    fun prepareVideoEncoder(){
-        val codec = MediaCodec.createEncoderByType("video/avc") // H.264 codec
-        val format = MediaFormat.createVideoFormat("video/avc", 200, 300).apply {
-            setInteger(MediaFormat.KEY_BIT_RATE, 500000) // Adjust bitrate
-            setInteger(MediaFormat.KEY_FRAME_RATE, 30)  // Adjust frame rate
-            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // Interval between I-frames
-        }
-        //moves the codec to the Configured stage
-        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        //createInputSurface() must be called after configure
-        inputSurface = codec.createInputSurface()
-
-        //moves the codec to the Executing stage
-        codec.start()
-
-    }
 
 
-    fun sendConnectCommand(outputStream: OutputStream, app: String, tcUrl: String) {
-//        val amfData = AmfEncoder()
-//        amfData.writeString("connect")
-//        amfData.writeNumber(1.0) // Transaction ID
-//        amfData.writeObject(mapOf(
-//            "app" to app,
-//            "tcUrl" to tcUrl,
-//            "fpad" to false,
-//            "capabilities" to 239,
-//            "audioCodecs" to 3191,
-//            "videoCodecs" to 252,
-//            "videoFunction" to 1
-//        ))
-//
-//        outputStream.write(amfData.toByteArray())
-//        outputStream.flush()
-    }
 
-    fun sendPublishCommand(outputStream: OutputStream, streamKey: String) {
-//        val amfData = AmfEncoder()
-//        amfData.writeString("publish")
-//        amfData.writeNumber(1.0) // Transaction ID
-//        amfData.writeNull() // Optional metadata
-//        amfData.writeString(streamKey) // Stream key
-//
-//        outputStream.write(amfData.toByteArray())
-//        outputStream.flush()
-    }
 
-    fun sendVideoFrame(outputStream: OutputStream, frameData: ByteArray) {
-//        val header = RtmpHeader.createVideoHeader()
-//        outputStream.write(header)
-//        outputStream.write(frameData)
-//        outputStream.flush()
-    }
+
 }
+
+
