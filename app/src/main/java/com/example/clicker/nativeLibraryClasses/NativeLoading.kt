@@ -52,10 +52,30 @@ object NativeBlurEffect{
 
 }
 
+/**
+ * THIS IS THE CUBE CODE
+ * */
 object NativeCube{
 
     init{
         System.loadLibrary("cube_code");
+    }
+
+
+    /**
+     * @param width the current view width
+     * @param height the current view height
+     */
+    external fun init(width: Int, height: Int)
+    external fun step()
+
+
+}
+
+object VideoEncoder{
+
+    init{
+        System.loadLibrary("video_encoder");
     }
 
 

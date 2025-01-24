@@ -43,6 +43,9 @@ add_library(blur_effect SHARED
 add_library(cube_code SHARED
         cube_code.cpp)
 
+add_library(video_encoder SHARED
+        video_encoder.cpp)
+
 add_library(camera_stream SHARED
         camera_stream.cpp)
 
@@ -110,6 +113,11 @@ target_link_libraries(blur_effect
         GLESv2)
 
 target_link_libraries(cube_code
+        android
+        log
+        EGL
+        GLESv2)
+target_link_libraries(video_encoder
         android
         log
         EGL
