@@ -23,6 +23,8 @@ import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
@@ -33,6 +35,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.home.testing3DCode.VideoEncoderGLSurfaceViewComposable
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.example.clicker.ui.theme.AppTheme
@@ -97,6 +100,10 @@ class SelfStreamingFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 AppTheme {
+//                    VideoEncoderGLSurfaceViewComposable(
+//                        context = requireContext(),
+//                        modifier = Modifier.fillMaxSize()
+//                    )
                     SelfStreamingView(
                         selfStreamingViewModel = selfStreamingViewModel,
                         startStream = { startStreamButtonClick() },

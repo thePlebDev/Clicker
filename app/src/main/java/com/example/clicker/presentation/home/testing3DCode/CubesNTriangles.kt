@@ -13,6 +13,7 @@ import com.example.clicker.nativeLibraryClasses.NativeBlurEffect
 import com.example.clicker.nativeLibraryClasses.NativeCube
 import com.example.clicker.nativeLibraryClasses.NativeSquareLoading
 import com.example.clicker.nativeLibraryClasses.NativeUnderstandTriangle
+import com.example.clicker.presentation.selfStreaming.openGLSurfaces.CustomGLSurfaceView
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -32,6 +33,19 @@ fun TestingGLSurfaceViewComposable(
     AndroidView(
         factory = {
             GL2JNIView(context)
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun VideoEncoderGLSurfaceViewComposable(
+    context: Context,
+    modifier: Modifier
+) {
+    AndroidView(
+        factory = {
+            CustomGLSurfaceView(context)
         },
         modifier = modifier
     )
@@ -64,6 +78,7 @@ fun TestingGLSurfaceViewUnderstandingTriangle(
 
 /**
  * **GL2JNIView** a is a [GLSurfaceView] class used to show the user the C++ UI code
+ * - THIS IS THE ROTATING CUBE!!!!!!!!!!
  *
  * @param context a [Context] object used to create a JNI class
  * */
