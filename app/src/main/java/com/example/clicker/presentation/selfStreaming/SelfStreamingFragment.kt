@@ -1,7 +1,17 @@
 package com.example.clicker.presentation.selfStreaming
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.ImageFormat
+import android.graphics.Point
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.params.StreamConfigurationMap
+import android.media.ImageReader
 import android.media.MediaCodec
 import android.media.MediaCodec.CodecException
 import android.media.MediaCodecInfo
@@ -12,8 +22,11 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.provider.MediaStore
 import android.util.Log
+import android.util.Size
+import android.view.Display
 import android.view.LayoutInflater
 import android.view.Surface
+import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
@@ -34,7 +47,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.nativeLibraryClasses.VideoEncoder
@@ -44,8 +59,17 @@ import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingVi
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.lang.Math.max
+import java.lang.Math.min
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
 // , ConnectChecker -> this is causing the fragment to crash
@@ -77,6 +101,21 @@ class SelfStreamingFragment : Fragment() {
      * */
     private val logoutViewModel: LogoutViewModel by activityViewModels()
 
+    /** The [CameraDevice] that will be opened in this fragment */
+    private lateinit var camera: CameraDevice
+
+    /** [HandlerThread] where all camera operations run */
+    private val cameraThread = HandlerThread("CameraThread").apply { start() }
+
+    /** [Handler] corresponding to [cameraThread] */
+    private val cameraHandler = Handler(cameraThread.looper)
+
+    /** Readers used as buffers for camera still shots */
+    private lateinit var imageReader: ImageReader
+
+    /** Internal reference to the ongoing [CameraCaptureSession] configured with our parameters */
+    private lateinit var session: CameraCaptureSession
+
 
 
     private  var _binding: FragmentSelfStreamingBinding? = null
@@ -86,9 +125,48 @@ class SelfStreamingFragment : Fragment() {
      * */
     private val binding get() = _binding!!
 
+    /** AndroidX navigation arguments */
+//    private val args: FragmentSelfStreamingArgs by navArgs()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
+    private val cameraManager: CameraManager by lazy {
+        val context = requireContext().applicationContext
+        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
+
+
+    /** [CameraCharacteristics] corresponding to the provided Camera ID */
+    private val characteristics: CameraCharacteristics by lazy {
+        cameraManager.getCameraCharacteristics(enumerateCameras(cameraManager))
+    }
+
+    private fun enumerateCameras(cameraManager: CameraManager):String {
+
+
+        // Get list of all compatible cameras
+        val cameraIds = cameraManager.cameraIdList.filter {
+            val characteristics = cameraManager.getCameraCharacteristics(it)
+            val capabilities = characteristics.get(
+                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES
+            )
+            capabilities?.contains(
+                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE
+            ) ?: false
+        }.filter { id->
+            id.toInt()==CameraCharacteristics.LENS_FACING_FRONT
+        }
+
+        cameraIds.forEach { id ->
+            Log.d("cameraIdsCHECKS","cameraId -->$id")
+        }
+        return cameraIds[0]
+
+    }
+
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+           val cameraId = enumerateCameras(cameraManager)
+
 
     }
 
@@ -97,14 +175,15 @@ class SelfStreamingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-//        val surface = createMediaCodecSurface(1920, 1080) // Create surface for MediaCodec
-//        VideoEncoder.initRenderer(surface, 1920, 1080) // Initialize OpenGL renderer
-//        setupCamera(surface, this, requireContext())
 
 
-       setUpCamera(requireActivity().applicationContext) // this is the normal one that works
+
+
+      // setUpCamera(requireActivity().applicationContext) // this is the normal one that works
         // Inflate the layout for this fragment
         _binding = FragmentSelfStreamingBinding.inflate(inflater, container, false)
+
+
         val view = binding.root
         binding.composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -136,6 +215,131 @@ class SelfStreamingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeUI()
+        binding.viewFinder.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(p0: SurfaceHolder) {
+                Log.d("VIEWFINDERtESITNG","CREATED")
+                val previewSize = getPreviewOutputSize(
+                    binding.viewFinder.display,
+                    characteristics,
+                    SurfaceHolder::class.java
+                )
+                Log.d("PREVIEWSIZE","height -->${previewSize.height}")
+                Log.d("PREVIEWSIZE","width -->${previewSize.width}")
+
+                binding.viewFinder.setAspectRatio(
+                    previewSize.width,
+                    previewSize.height
+                )
+
+                // To ensure that size is set, initialize camera in the view's thread
+               view.post { initializeCamera(enumerateCameras(cameraManager)) }
+            }
+
+            override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+                Log.d("VIEWFINDERtESITNG","SURFACE CHANGED")
+            }
+
+            override fun surfaceDestroyed(p0: SurfaceHolder) {
+                Log.d("VIEWFINDERtESITNG","DESTROYED")
+            }
+
+        }
+        )
+        // To ensure that size is set, initialize camera in the view's thread
+
+    }
+
+
+    /**
+     * Begin all camera operations in a coroutine in the main thread. This function:
+     * - Opens the camera
+     * - Configures the camera session
+     * - Starts the preview by dispatching a repeating capture request
+     * - Sets up the still image capture listeners
+     */
+    private fun initializeCamera(cameraId:String) = lifecycleScope.launch(Dispatchers.Main) {
+        // Open the selected camera
+        camera = openCamera(cameraManager, cameraId, cameraHandler)
+
+        // Initialize an image reader which will be used to capture still photos
+        val size = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
+        imageReader = ImageReader.newInstance(
+            size.width, size.height, ImageFormat.JPEG, IMAGE_BUFFER_SIZE)
+
+        // Creates list of Surfaces where the camera will output frames
+        val targets = listOf(binding.viewFinder.holder.surface, imageReader.surface)
+
+        // Start a capture session using our open camera and list of Surfaces where frames will go
+        session = createCaptureSession(camera, targets, cameraHandler)
+
+        val captureRequest = camera.createCaptureRequest(
+            CameraDevice.TEMPLATE_PREVIEW).apply { addTarget(binding.viewFinder.holder.surface) }
+
+        // This will keep sending the capture request as frequently as possible until the
+        // session is torn down or session.stopRepeating() is called
+        session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
+
+        // Listen to the capture button
+
+    }
+
+    /**
+     * Starts a [CameraCaptureSession] and returns the configured session (as the result of the
+     * suspend coroutine
+     */
+    private suspend fun createCaptureSession(
+        device: CameraDevice,
+        targets: List<Surface>,
+        handler: Handler? = null
+    ): CameraCaptureSession = suspendCoroutine { cont ->
+
+        // Create a capture session using the predefined targets; this also involves defining the
+        // session state callback to be notified of when the session is ready
+        device.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+
+            override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
+
+            override fun onConfigureFailed(session: CameraCaptureSession) {
+                val exc = RuntimeException("Camera ${device.id} session configuration failed")
+                Log.e(TAG, exc.message, exc)
+                cont.resumeWithException(exc)
+            }
+        }, handler)
+    }
+
+
+    /** Opens the camera and returns the opened device (as the result of the suspend coroutine) */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @SuppressLint("MissingPermission")
+    private suspend fun openCamera(
+        manager: CameraManager,
+        cameraId: String,
+        handler: Handler? = null
+    ): CameraDevice = suspendCancellableCoroutine { cont ->
+        manager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+            override fun onOpened(device: CameraDevice) = cont.resume(device){}
+
+            override fun onDisconnected(device: CameraDevice) {
+                Log.w(TAG, "Camera $cameraId has been disconnected")
+                requireActivity().finish()
+            }
+
+            override fun onError(device: CameraDevice, error: Int) {
+                val msg = when (error) {
+                    ERROR_CAMERA_DEVICE -> "Fatal (device)"
+                    ERROR_CAMERA_DISABLED -> "Device policy"
+                    ERROR_CAMERA_IN_USE -> "Camera in use"
+                    ERROR_CAMERA_SERVICE -> "Fatal (service)"
+                    ERROR_MAX_CAMERAS_IN_USE -> "Maximum cameras in use"
+                    else -> "Unknown"
+                }
+                val exc = RuntimeException("Camera $cameraId error: ($error) $msg")
+                Log.e(TAG, exc.message, exc)
+                if (cont.isActive) cont.resumeWithException(exc)
+            }
+        }, handler)
     }
 
     override fun onDestroyView() {
@@ -145,78 +349,9 @@ class SelfStreamingFragment : Fragment() {
     /**
      * setUpCamera gets a FUTURE and then runs the [bindPreview] once the future has computed
      * */
-    private fun setUpCamera(context:Context){
-
-        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider = cameraProviderFuture.get()
-
-            bindPreview(cameraProvider)
-        }, ContextCompat.getMainExecutor(context))
-    }
-
-    fun setupCamera(surface: Surface, lifecycleOwner: LifecycleOwner, context: Context) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder().build()
-            preview.setSurfaceProvider { request ->
-                request.provideSurface(surface, mainThreadExecutor) {
-                    // Handle cleanup when the surface is no longer needed
-                }
-            }
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
-        }, ContextCompat.getMainExecutor(context))
-    }
 
 
-
-
-
-
-
-    private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-
-
-
-        //build and return the camera object
-        var cameraSelector : CameraSelector = CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-            .build()
-
-        //set where the camera data is going to be shown
-        Log.d("CameraXMediaCodec","TRYING TO BIND")
-
-        //where the camera data is coming from?
-        var preview : Preview = Preview.Builder()
-            .build()
-        //get a reference to the XML view
-        val previewView =binding.previewView
-
-         preview.setSurfaceProvider(previewView.getSurfaceProvider())// this is the one that works
-
-
-
-        // build a recorder, which can:
-        //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
-        //   - be used create recording(s) (the recording performs recording)
-        val recorder = Recorder.Builder()
-            .build()
-        videoCapture = VideoCapture.withOutput(recorder)
-
-
-        cameraProvider.bindToLifecycle(this, cameraSelector, preview, videoCapture)
-
-
-    }
-
-
-
-
-
-
+    //todo: this needs to be changed to work with the new camera2 API
     private fun startStreamButtonClick(){
         if (!this@SelfStreamingFragment::recordingState.isInitialized || recordingState is VideoRecordEvent.Finalize) {
             //THIS IS GOING TO BE TRIGGERED FIRST BECAUSE isInitialized IS FALSE
@@ -235,6 +370,8 @@ class SelfStreamingFragment : Fragment() {
             }
         }
     }
+
+    //todo: this needs to be changed to work with the new camera2 API
     private fun stopStreamButtonClick(){
 
         if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
@@ -365,8 +502,64 @@ class SelfStreamingFragment : Fragment() {
         const val DEFAULT_QUALITY_IDX = 0
         val TAG:String = SelfStreamingFragment::class.java.simpleName
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        /** Maximum number of images that will be held in the reader's buffer */
+        private const val IMAGE_BUFFER_SIZE: Int = 3
     }
 
+    /** Helper class used to pre-compute shortest and longest sides of a [Size] */
+    class SmartSize(width: Int, height: Int) {
+        var size = Size(width, height)
+        var long = max(size.width, size.height)
+        var short = min(size.width, size.height)
+        override fun toString() = "SmartSize(${long}x${short})"
+    }
+
+
+    /** Standard High Definition size for pictures and video */
+    val SIZE_1080P: SmartSize = SmartSize(1920, 1080)
+
+    /** Returns a [SmartSize] object for the given [Display] */
+    fun getDisplaySmartSize(display: Display): SmartSize {
+        val outPoint = Point()
+        display.getRealSize(outPoint)
+        return SmartSize(outPoint.x, outPoint.y)
+    }
+
+    /**
+     * Returns the largest available PREVIEW size. For more information, see:
+     * https://d.android.com/reference/android/hardware/camera2/CameraDevice and
+     * https://developer.android.com/reference/android/hardware/camera2/params/StreamConfigurationMap
+     */
+    fun <T>getPreviewOutputSize(
+        display: Display,
+        characteristics: CameraCharacteristics,
+        targetClass: Class<T>,
+        format: Int? = null
+    ): Size {
+
+        // Find which is smaller: screen or 1080p
+        val screenSize = getDisplaySmartSize(display)
+        val hdScreen = screenSize.long >= SIZE_1080P.long || screenSize.short >= SIZE_1080P.short
+        val maxSize = if (hdScreen) SIZE_1080P else screenSize
+
+        // If image format is provided, use it to determine supported sizes; else use target class
+        val config = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+        if (format == null)
+            assert(StreamConfigurationMap.isOutputSupportedFor(targetClass))
+        else
+            assert(config.isOutputSupportedFor(format))
+        val allSizes = if (format == null)
+            config.getOutputSizes(targetClass) else config.getOutputSizes(format)
+
+        // Get available sizes and sort them by area from largest to smallest
+        val validSizes = allSizes
+            .sortedWith(compareBy { it.height * it.width })
+            .map { SmartSize(it.width, it.height) }.reversed()
+
+        // Then, get the largest output size that is smaller or equal than our max size
+        return validSizes.first { it.long <= maxSize.long && it.short <= maxSize.short }.size
+    }
 
 
 }
