@@ -13,10 +13,12 @@ import android.os.HandlerThread
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Recorder
@@ -30,10 +32,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
+import com.example.clicker.nativeLibraryClasses.VideoEncoder
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.testing3DCode.VideoEncoderGLSurfaceViewComposable
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
@@ -92,7 +96,13 @@ class SelfStreamingFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        setUpCamera(requireActivity().applicationContext)
+
+//        val surface = createMediaCodecSurface(1920, 1080) // Create surface for MediaCodec
+//        VideoEncoder.initRenderer(surface, 1920, 1080) // Initialize OpenGL renderer
+//        setupCamera(surface, this, requireContext())
+
+
+       setUpCamera(requireActivity().applicationContext) // this is the normal one that works
         // Inflate the layout for this fragment
         _binding = FragmentSelfStreamingBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -121,6 +131,8 @@ class SelfStreamingFragment : Fragment() {
         return view
     }
 
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeUI()
@@ -142,14 +154,32 @@ class SelfStreamingFragment : Fragment() {
             bindPreview(cameraProvider)
         }, ContextCompat.getMainExecutor(context))
     }
+
+    fun setupCamera(surface: Surface, lifecycleOwner: LifecycleOwner, context: Context) {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build()
+            preview.setSurfaceProvider { request ->
+                request.provideSurface(surface, mainThreadExecutor) {
+                    // Handle cleanup when the surface is no longer needed
+                }
+            }
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+        }, ContextCompat.getMainExecutor(context))
+    }
+
+
+
+
+
+
+
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
 
 
-        //where the camera data is coming from?
-        var preview : Preview = Preview.Builder()
-            .build()
-        //get a reference to the XML view
-        val previewView =binding.previewView
 
         //build and return the camera object
         var cameraSelector : CameraSelector = CameraSelector.Builder()
@@ -159,7 +189,15 @@ class SelfStreamingFragment : Fragment() {
         //set where the camera data is going to be shown
         Log.d("CameraXMediaCodec","TRYING TO BIND")
 
-         preview.setSurfaceProvider(previewView.getSurfaceProvider())
+        //where the camera data is coming from?
+        var preview : Preview = Preview.Builder()
+            .build()
+        //get a reference to the XML view
+        val previewView =binding.previewView
+
+         preview.setSurfaceProvider(previewView.getSurfaceProvider())// this is the one that works
+
+
 
         // build a recorder, which can:
         //   - record video/audio to MediaStore(only shown here), File, ParcelFileDescriptor
@@ -174,34 +212,6 @@ class SelfStreamingFragment : Fragment() {
 
     }
 
-
-
-
-
-
-    private fun clickToStream(){
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Video.Media.RELATIVE_PATH,
-                    "Movies/CameraX-Video")
-            }
-        }
-
-        val mediaStoreOutputOptions = MediaStoreOutputOptions
-            .Builder(requireActivity().contentResolver,
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-            .setContentValues(contentValues)
-            .build()
-
-
-
-
-
-    }
 
 
 
@@ -281,7 +291,7 @@ class SelfStreamingFragment : Fragment() {
                 selfStreamingViewModel.setIsStreamLive(true)
             }
 
-        Log.i(TAG, "Recording started")
+        Log.i("startRecordingAGAIN", "Recording started")
     }
 
     /**
