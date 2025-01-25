@@ -1,5 +1,7 @@
 package com.example.clicker.nativeLibraryClasses
 
+import android.view.Surface
+
 object NativeLoading {
 
     init {
@@ -70,6 +72,12 @@ object NativeCube{
     external fun step()
 
 
+
+
+    // Initialize OpenGL with the shared surface
+
+
+
 }
 
 object VideoEncoder{
@@ -85,6 +93,7 @@ object VideoEncoder{
      */
     external fun init(width: Int, height: Int)
     external fun step()
+
 
 
 }
