@@ -73,6 +73,33 @@ class SelfStreamingViewModel @Inject constructor(
      * */
     val showBottomModalSheet: State<Boolean> = _showBottomModalSheet
 
+
+    /**
+     * private mutable version of [cameraId]
+     * */
+    private val _cameraId: MutableState<String?> = mutableStateOf("")
+    /**
+     * a [State] nullable-String object used to hold the unique identifier for which camera device is currently being used
+     * */
+    val cameraId: State<String?> = _cameraId
+
+    fun setCameraId(cameraId:String?){
+        if(_cameraId.value =="1"){
+            _cameraId.value = "0"
+        }else{
+            _cameraId.value = "1"
+        }
+
+    }
+    fun setCameraId(){
+        if(_cameraId.value =="1"){
+            _cameraId.value = "0"
+        }else{
+            _cameraId.value = "1"
+        }
+
+    }
+
     fun setShowBottomModalSheet(newValue: Boolean){
         _showBottomModalSheet.value = newValue
     }

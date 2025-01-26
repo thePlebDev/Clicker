@@ -68,6 +68,7 @@ fun SelfStreamingView(
     startStream:()->Unit,
     stopStream:()->Unit,
     logoutOfTwitch:()->Unit,
+    switchCamera: () -> Unit
 ){
     val streamIsLive = selfStreamingViewModel.streamIsLive.value
     val streamKeyResponse = selfStreamingViewModel.streamKeyResponse.value
@@ -85,7 +86,7 @@ fun SelfStreamingView(
         SwitchCameraButton(
             Modifier.align(Alignment.BottomCenter),
             switchCamera={
-                //todo: THIS NEEDS TO BE FILLED AND CALLED
+                switchCamera()
             }
         )
 
