@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.Point
+import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
@@ -62,6 +63,7 @@ import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.Math.max
@@ -136,37 +138,15 @@ class SelfStreamingFragment : Fragment() {
     }
 
 
+
     /** [CameraCharacteristics] corresponding to the provided Camera ID */
     private val characteristics: CameraCharacteristics by lazy {
-        cameraManager.getCameraCharacteristics(enumerateCameras(cameraManager))
+        cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
     }
 
-    private fun enumerateCameras(cameraManager: CameraManager):String {
-
-
-        // Get list of all compatible cameras
-        val cameraIds = cameraManager.cameraIdList.filter {
-            val characteristics = cameraManager.getCameraCharacteristics(it)
-            val capabilities = characteristics.get(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES
-            )
-            capabilities?.contains(
-                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE
-            ) ?: false
-        }.filter { id->
-            id.toInt()==CameraCharacteristics.LENS_FACING_FRONT
-        }
-
-        cameraIds.forEach { id ->
-            Log.d("cameraIdsCHECKS","cameraId -->$id")
-        }
-        return cameraIds[0]
-
-    }
 
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-           val cameraId = enumerateCameras(cameraManager)
 
 
     }
@@ -205,6 +185,25 @@ class SelfStreamingFragment : Fragment() {
                         logoutOfTwitch = {
                             logoutViewModel.setLoggedOutStatus("TRUE")
                             findNavController().navigate(R.id.action_selfStreamingFragment_to_logoutFragment)
+                        },
+                        switchCamera = {
+//                           val id = getNextCameraId(
+//                                cameraManager,
+//                                currCameraId = selfStreamingViewModel.cameraId.value
+//                            )
+                            selfStreamingViewModel.setCameraId()
+//
+                            session.stopRepeating()
+                            session.close()
+                            camera.close()
+
+
+                            Handler().postDelayed({
+                                // doSomethingHere()
+                                Log.d("switchCameraCall","viewModelId -->${selfStreamingViewModel.cameraId.value}")
+                                initializeCamera(selfStreamingViewModel.cameraId.value?:"")
+                            }, 2000)
+
 
                         }
 
@@ -317,14 +316,93 @@ class SelfStreamingFragment : Fragment() {
         }, handler)
     }
 
+
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-    /**
-     * setUpCamera gets a FUTURE and then runs the [bindPreview] once the future has computed
-     * */
 
+    fun getFirstCameraIdFacing(cameraManager: CameraManager,
+                               facing: Int = CameraMetadata.LENS_FACING_BACK): String? {
+        try {
+            // Get list of all compatible cameras
+            val cameraIds = cameraManager.cameraIdList.filter {
+                val characteristics = cameraManager.getCameraCharacteristics(it)
+                val capabilities = characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+                capabilities?.contains(
+                    CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) ?: false
+            }
+
+            // Iterate over the list of cameras and return the first one matching desired
+            // lens-facing configuration
+            cameraIds.forEach {
+                val characteristics = cameraManager.getCameraCharacteristics(it)
+                if (characteristics.get(CameraCharacteristics.LENS_FACING) == facing) {
+                    return it
+                }
+            }
+            selfStreamingViewModel.setCameraId(
+                cameraIds.firstOrNull()
+            )
+
+            // If no camera matched desired orientation, return the first one from the list
+            return cameraIds.firstOrNull()
+        } catch (e: CameraAccessException) {
+            e.message?.let { Log.e(TAG, it) }
+            return null
+        }
+
+    }
+    private fun filterCompatibleCameras(cameraIds: Array<String>,
+                                        cameraManager: CameraManager): List<String> {
+        return cameraIds.filter {
+            val characteristics = cameraManager.getCameraCharacteristics(it)
+            characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)?.contains(
+                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) ?: false
+        }
+    }
+
+    private fun filterCameraIdsFacing(cameraIds: List<String>, cameraManager: CameraManager,
+                                      facing: Int): List<String> {
+        return cameraIds.filter {
+            val characteristics = cameraManager.getCameraCharacteristics(it)
+            characteristics.get(CameraCharacteristics.LENS_FACING) == facing
+        }
+    }
+
+    fun getNextCameraId(cameraManager: CameraManager, currCameraId: String? = null): String? {
+        // Get all front, back and external cameras in 3 separate lists
+        val cameraIds = filterCompatibleCameras(cameraManager.cameraIdList, cameraManager)
+        val backCameras = filterCameraIdsFacing(
+            cameraIds, cameraManager, CameraMetadata.LENS_FACING_BACK)
+        val frontCameras = filterCameraIdsFacing(
+            cameraIds, cameraManager, CameraMetadata.LENS_FACING_FRONT)
+        val externalCameras = filterCameraIdsFacing(
+            cameraIds, cameraManager, CameraMetadata.LENS_FACING_EXTERNAL)
+
+        // The recommended order of iteration is: all external, first back, first front
+        val allCameras = (externalCameras + listOf(
+            backCameras.firstOrNull(), frontCameras.firstOrNull())).filterNotNull()
+
+        // Get the index of the currently selected camera in the list
+        val cameraIndex = allCameras.indexOf(currCameraId)
+
+        // The selected camera may not be in the list, for example it could be an
+        // external camera that has been removed by the user
+        return if (cameraIndex == -1) {
+            Log.d("CameraIDChecking","1")
+
+            // Return the first camera from the list
+            allCameras.getOrNull(0)
+
+        } else {
+            // Return the next camera from the list, wrap around if necessary
+
+            Log.d("CameraIDChecking","0")
+            allCameras.getOrNull((cameraIndex + 1) % allCameras.size)
+        }
+    }
 
 
 
@@ -407,9 +485,12 @@ class SelfStreamingFragment : Fragment() {
                 previewSize.width,
                 previewSize.height
             )
+            val id = getFirstCameraIdFacing(
+                cameraManager
+            )?:""
 
             // To ensure that size is set, initialize camera in the view's thread
-            view?.post { initializeCamera(enumerateCameras(cameraManager)) }
+            view?.post { initializeCamera(id) }
         }
 
         override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
