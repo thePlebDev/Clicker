@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
@@ -81,6 +82,12 @@ fun SelfStreamingView(
 
     ){
 
+        SwitchCameraButton(
+            Modifier.align(Alignment.BottomCenter),
+            switchCamera={
+                //todo: THIS NEEDS TO BE FILLED AND CALLED
+            }
+        )
 
         if(streamIsLive){
             LiveUI(
@@ -148,6 +155,23 @@ fun StopButton(
 
 
 }
+@Composable
+fun SwitchCameraButton(
+    modifier: Modifier,
+    switchCamera:()->Unit
+){
+    Column(modifier.padding(start = 50.dp)){
+        Button(
+            onClick ={switchCamera()}
+        ) {
+            Icon(painter = painterResource(id =R.drawable.flip_camera_android_24), contentDescription = "Change camera")
+        }
+        Spacer(modifier =Modifier.height(50.dp))
+    }
+
+
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,7 +226,10 @@ fun StartButtonResponse(
                         containerColor= MaterialTheme.colorScheme.primary,
                         modifier = Modifier.fillMaxWidth(),
                         dragHandle = {
-                            TestingGLSurfaceViewComposable(context,Modifier.height(50.dp).width(50.dp))
+                            TestingGLSurfaceViewComposable(context,
+                                Modifier
+                                    .height(50.dp)
+                                    .width(50.dp))
                         }
                     ) {
 

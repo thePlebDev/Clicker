@@ -55,6 +55,7 @@ import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.nativeLibraryClasses.VideoEncoder
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.home.testing3DCode.VideoEncoderGLSurfaceViewComposable
+import com.example.clicker.presentation.selfStreaming.surfaces.AutoFitSurfaceView
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
 import com.example.clicker.ui.theme.AppTheme
@@ -215,37 +216,7 @@ class SelfStreamingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeUI()
-        binding.viewFinder.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(p0: SurfaceHolder) {
-                Log.d("VIEWFINDERtESITNG","CREATED")
-                val previewSize = getPreviewOutputSize(
-                    binding.viewFinder.display,
-                    characteristics,
-                    SurfaceHolder::class.java
-                )
-                Log.d("PREVIEWSIZE","height -->${previewSize.height}")
-                Log.d("PREVIEWSIZE","width -->${previewSize.width}")
-
-                binding.viewFinder.setAspectRatio(
-                    previewSize.width,
-                    previewSize.height
-                )
-
-                // To ensure that size is set, initialize camera in the view's thread
-               view.post { initializeCamera(enumerateCameras(cameraManager)) }
-            }
-
-            override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-                Log.d("VIEWFINDERtESITNG","SURFACE CHANGED")
-            }
-
-            override fun surfaceDestroyed(p0: SurfaceHolder) {
-                Log.d("VIEWFINDERtESITNG","DESTROYED")
-            }
-
-        }
-        )
-        // To ensure that size is set, initialize camera in the view's thread
+        binding.viewFinder.holder.addCallback(SurfaceHolderCallbackSetUp())
 
     }
 
@@ -259,6 +230,7 @@ class SelfStreamingFragment : Fragment() {
      */
     private fun initializeCamera(cameraId:String) = lifecycleScope.launch(Dispatchers.Main) {
         // Open the selected camera
+       // this is what I need to figure out
         camera = openCamera(cameraManager, cameraId, cameraHandler)
 
         // Initialize an image reader which will be used to capture still photos
@@ -561,6 +533,38 @@ class SelfStreamingFragment : Fragment() {
         return validSizes.first { it.long <= maxSize.long && it.short <= maxSize.short }.size
     }
 
+    inner class SurfaceHolderCallbackSetUp(): SurfaceHolder.Callback{
+        override fun surfaceCreated(p0: SurfaceHolder) {
+            Log.d("VIEWFINDERtESITNG","CREATED")
+            val previewSize = getPreviewOutputSize(
+                binding.viewFinder.display,
+                characteristics,
+                SurfaceHolder::class.java
+            )
+            Log.d("PREVIEWSIZE","height -->${previewSize.height}")
+            Log.d("PREVIEWSIZE","width -->${previewSize.width}")
+
+            binding.viewFinder.setAspectRatio(
+                previewSize.width,
+                previewSize.height
+            )
+
+            // To ensure that size is set, initialize camera in the view's thread
+            view?.post { initializeCamera(enumerateCameras(cameraManager)) }
+        }
+
+        override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+            Log.d("VIEWFINDERtESITNG","SURFACE CHANGED")
+        }
+
+        override fun surfaceDestroyed(p0: SurfaceHolder) {
+            Log.d("VIEWFINDERtESITNG","DESTROYED")
+        }
+
+    }
+
 
 }
+
+
 
