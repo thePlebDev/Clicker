@@ -196,8 +196,12 @@ class SelfStreamingFragment : Fragment() {
 //                    )
                     SelfStreamingView(
                         selfStreamingViewModel = selfStreamingViewModel,
-                        startStream = { startStreamButtonClick() },
-                        stopStream = { stopStreamButtonClick() },
+                        startStream = {
+                            //todo: these need to be implemented
+                                      },
+                        stopStream = {
+                            //todo: these need to be implemented
+                                     },
                         logoutOfTwitch = {
                             logoutViewModel.setLoggedOutStatus("TRUE")
                             findNavController().navigate(R.id.action_selfStreamingFragment_to_logoutFragment)
@@ -215,7 +219,6 @@ class SelfStreamingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initializeUI()
         binding.viewFinder.holder.addCallback(SurfaceHolderCallbackSetUp())
 
     }
@@ -323,150 +326,6 @@ class SelfStreamingFragment : Fragment() {
      * */
 
 
-    //todo: this needs to be changed to work with the new camera2 API
-    private fun startStreamButtonClick(){
-        if (!this@SelfStreamingFragment::recordingState.isInitialized || recordingState is VideoRecordEvent.Finalize) {
-            //THIS IS GOING TO BE TRIGGERED FIRST BECAUSE isInitialized IS FALSE
-
-            startRecording()
-        } else {
-            when (recordingState) {
-                is VideoRecordEvent.Start -> {
-                    currentRecording?.pause()
-
-                    //  captureViewBinding.stopButton.visibility = View.VISIBLE
-                }
-                is VideoRecordEvent.Pause -> currentRecording?.resume()
-                is VideoRecordEvent.Resume -> currentRecording?.pause()
-                else -> throw IllegalStateException("recordingState in unknown state")
-            }
-        }
-    }
-
-    //todo: this needs to be changed to work with the new camera2 API
-    private fun stopStreamButtonClick(){
-
-        if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
-            return
-        }
-
-        val recording = currentRecording
-        if (recording != null) {
-            recording.stop()
-            currentRecording = null
-        }
-    }
-
-
-    // Implements VideoCapture use case, including start and stop capturing.
-    private fun initializeUI() {
-
-
-
-
-    }
-
-
-    /**
-     * Kick start the video recording
-     *   - config Recorder to capture to MediaStoreOutput
-     *   - register RecordEvent Listener
-     *   - apply audio request from user
-     *   - start recording!
-     * After this function, user could start/pause/resume/stop recording and application listens
-     * to VideoRecordEvent for the current recording status.
-     */
-
-    private fun startRecording() {
-        // create MediaStoreOutputOptions for our recorder: resulting our recording!
-        val name = "CameraX-recording-" +
-                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                    .format(System.currentTimeMillis()) + ".mp4"
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Video.Media.DISPLAY_NAME, name)
-        }
-        val mediaStoreOutput = MediaStoreOutputOptions.Builder(
-            requireActivity().contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-            .setContentValues(contentValues)
-            .build()
-
-        // configure Recorder and Start recording to the mediaStoreOutput.
-        currentRecording = videoCapture?.output
-            ?.prepareRecording(requireActivity(), mediaStoreOutput)
-//            .apply { if (audioEnabled) withAudioEnabled() }
-            ?.start(mainThreadExecutor, captureListener)?.apply{
-
-                selfStreamingViewModel.setIsStreamLive(true)
-            }
-
-        Log.i("startRecordingAGAIN", "Recording started")
-    }
-
-    /**
-     * CaptureEvent listener.
-     */
-    private val captureListener = Consumer<VideoRecordEvent> { recordEvent ->
-        // cache the recording state
-        if (recordEvent !is VideoRecordEvent.Status)
-            recordingState = recordEvent
-
-        updateUI(recordEvent)
-
-        if (recordEvent is VideoRecordEvent.Finalize) {
-            // display the captured video
-//            lifecycleScope.launch {
-//                navController.navigate(
-//                    CaptureFragmentDirections.actionCaptureToVideoViewer(
-//                        event.outputResults.outputUri
-//                    )
-//                )
-//            }
-        }
-        when(recordEvent) {
-            is VideoRecordEvent.Start -> {
-                Log.d("VideoRecordEventtESTING","START")
-
-            }
-        }
-    }
-    private fun updateUI(event: VideoRecordEvent) {
-//        val state = if (event is VideoRecordEvent.Status) recordingState.getNameString()
-//        else event.getNameString()
-        when (event) {
-            is VideoRecordEvent.Status -> {
-                //The status report of the recording in progress
-                // placeholder: we update the UI with new status after this when() block,
-                // nothing needs to do here.
-                Log.d("updateUI", "Status")
-            }
-
-            is VideoRecordEvent.Start -> {
-//                showUI(UiState.RECORDING, event.getNameString())
-                Log.d("updateUI", "Start")
-            }
-
-            is VideoRecordEvent.Finalize -> {
-                //Indicates the finalization of recording
-//                showUI(UiState.FINALIZED, event.getNameString())
-                Log.d("updateUI", "Finalize")
-
-                selfStreamingViewModel.setIsStreamLive(false)
-
-
-            }
-
-            is VideoRecordEvent.Pause -> {
-//                captureViewBinding.captureButton.setImageResource(R.drawable.ic_resume)
-                Log.d("updateUI", "Finalize")
-            }
-
-            is VideoRecordEvent.Resume -> {
-//                captureViewBinding.captureButton.setImageResource(R.drawable.ic_pause)
-                Log.d("updateUI","Resume")
-            }
-        }
-    }
 
 
     companion object {
