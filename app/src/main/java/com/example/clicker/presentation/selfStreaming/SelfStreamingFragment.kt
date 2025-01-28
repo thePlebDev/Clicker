@@ -5,24 +5,29 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.Point
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.media.MediaCodec
 import android.media.MediaCodec.CodecException
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.util.Range
 import android.util.Size
 import android.view.Display
 import android.view.LayoutInflater
@@ -30,6 +35,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
@@ -76,6 +82,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 // , ConnectChecker -> this is causing the fragment to crash
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class SelfStreamingFragment : Fragment() {
 
     private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
@@ -144,12 +151,59 @@ class SelfStreamingFragment : Fragment() {
         cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
     }
 
+    /** Requests used for preview and recording in the [CameraCaptureSession] */
+    private val recordRequest: CaptureRequest by lazy {
+        createRecordRequest(
+            session,
+            previewStabilization = false,
+            viewFinder = binding.viewFinder
+        )
+    }
+    //
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun createRecordRequest(
+        session: CameraCaptureSession,
+        previewStabilization: Boolean,
+        viewFinder: AutoFitSurfaceView
+    ): CaptureRequest {
+
+        val cameraConfig = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+        // Recording should always be done in the most efficient format, which is
+        //  the format native to the camera framework
+        val targetClass = MediaRecorder::class.java
+        // Get the number of seconds that each frame will take to process
+        // For each size, list the expected FPS
+       val size= cameraConfig.getOutputSizes(targetClass)[0]
+        val secondsPerFrame =
+            cameraConfig.getOutputMinFrameDuration(targetClass, size) /
+                    1_000_000_000.0
+        // Compute the frames per second to let user select a configuration
+        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
+        Log.d("FRAMESPERSECOND","FPS -->$fps")
+
+
+        // Capture request holds references to target surfaces
+        return session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
+            // Add the preview and recording surface targets
+            addTarget(viewFinder.holder.surface)
+            addTarget(encoder.getInputSurface())
+
+            // Sets user requested FPS for all targets
+            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))
+
+            if (previewStabilization) {
+                set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION)
+            }
+        }.build()
+    }
+
 
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-    }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -220,6 +274,7 @@ class SelfStreamingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.viewFinder.holder.addCallback(SurfaceHolderCallbackSetUp())
 
+
     }
 
 
@@ -232,7 +287,7 @@ class SelfStreamingFragment : Fragment() {
      */
     private fun initializeCamera(cameraId:String) = lifecycleScope.launch(Dispatchers.Main) {
         // Open the selected camera
-       // this is what I need to figure out
+        // this is what I need to figure out
         camera = openCamera(cameraManager, cameraId, cameraHandler)
 
         // Initialize an image reader which will be used to capture still photos
@@ -248,12 +303,28 @@ class SelfStreamingFragment : Fragment() {
         // Start a capture session using our open camera and list of Surfaces where frames will go
         session = createCaptureSession(camera, targets, cameraHandler)
 
-        val captureRequest = camera.createCaptureRequest(
-            CameraDevice.TEMPLATE_PREVIEW).apply { addTarget(binding.viewFinder.holder.surface) }
+        /**
+         * NEW VERSION BELOW
+         * */
+        // You will use the preview capture template for the combined streams
+        // because it is optimized for low latency; for high-quality images, use
+        // TEMPLATE_STILL_CAPTURE, and for a steady frame rate use TEMPLATE_RECORD
+        val requestTemplate = CameraDevice.TEMPLATE_PREVIEW
+        val combinedRequest = session.device.createCaptureRequest(requestTemplate)
+        // Link the Surface targets with the combined request
+        combinedRequest.addTarget(binding.viewFinder.holder.surface)
+        /**
+         * NEW VERSION ABOVE
+         * - it is the same as the one below, just more explicit
+         * */
+
+        //BELOW IS THE ONE THAT WORKS
+//        val captureRequest = camera.createCaptureRequest(
+//            CameraDevice.TEMPLATE_PREVIEW).apply { addTarget(binding.viewFinder.holder.surface) }
 
         // This will keep sending the capture request as frequently as possible until the
         // session is torn down or session.stopRepeating() is called
-        session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
+        session.setRepeatingRequest(combinedRequest.build(), null, cameraHandler)
 
         // Listen to the capture button
 
@@ -491,6 +562,8 @@ class SelfStreamingFragment : Fragment() {
 
             // To ensure that size is set, initialize camera in the view's thread
             view?.post { initializeCamera(id) }
+
+
         }
 
         override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
@@ -503,6 +576,17 @@ class SelfStreamingFragment : Fragment() {
 
     }
 
+
+}
+
+private class RenderHandler(looper: Looper, width: Int, height: Int, fps: Int,
+                            filterOn: Boolean, transfer: Int, dynamicRange: Long,
+                            characteristics: CameraCharacteristics, encoder: EncoderWrapper,
+                            viewFinder: AutoFitSurfaceView): Handler(looper),
+    SurfaceTexture.OnFrameAvailableListener {
+    override fun onFrameAvailable(p0: SurfaceTexture?) {
+        TODO("Not yet implemented")
+    }
 
 }
 
