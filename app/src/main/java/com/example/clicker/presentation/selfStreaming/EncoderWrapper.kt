@@ -18,12 +18,12 @@ import java.nio.ByteBuffer
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class EncoderWrapper(
-    outputFile: File,
-    orientationHint: Int,
-    width: Int,
-    height: Int,
-    bitRate: Int,
-    frameRate: Int,
+    private val outputFile: File,
+    private val orientationHint: Int,
+    private val width: Int,
+    private val height: Int,
+    private val bitRate: Int,
+    private val frameRate: Int,
 ) {
     companion object {
         val TAG = "EncoderWrapper"
@@ -37,7 +37,7 @@ class EncoderWrapper(
 
     private val mOutputFile = outputFile
     private val mOrientationHint = orientationHint
-    private val mVideoCodec = ColorSpaceProfiles.UNSPECIFIED
+    private val mVideoCodec = VIDEO_CODEC_ID_H264
     private val dynamicRange =  DynamicRangeProfiles.STANDARD
     private val mMimeType = idToType(mVideoCodec)
 
@@ -110,16 +110,18 @@ class EncoderWrapper(
 
     public fun start() {
 
-            mEncoder!!.start()
 
-            // Start the encoder thread last.  That way we're sure it can see all of the state
-            // we've initialized.
-            mEncoderThread!!.start()
-            mEncoderThread!!.waitUntilReady()
+//            mEncoder!!.start()
+//
+//            // Start the encoder thread last.  That way we're sure it can see all of the state
+//            // we've initialized.
+//            mEncoderThread!!.start()
+//            mEncoderThread!!.waitUntilReady()
 
     }
 
 
+    //todo: this is throwing
      fun idToType(videoCodecId: Int): String = when (videoCodecId) {
         VIDEO_CODEC_ID_H264 -> MediaFormat.MIMETYPE_VIDEO_AVC
         VIDEO_CODEC_ID_HEVC -> MediaFormat.MIMETYPE_VIDEO_HEVC

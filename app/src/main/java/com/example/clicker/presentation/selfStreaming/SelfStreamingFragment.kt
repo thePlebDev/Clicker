@@ -101,6 +101,7 @@ class SelfStreamingFragment : Fragment() {
     private var handler: Handler? = null
     private var callback: MediaCodec.Callback? = null
     private var codec: MediaCodec? = null
+    private val RECORDER_VIDEO_BITRATE: Int = 10_000_000
 
 //    val genericStream: GenericStream = GenericStream(requireActivity(),this)
 
@@ -169,17 +170,29 @@ class SelfStreamingFragment : Fragment() {
 
     private fun createEncoder(): EncoderWrapper {
 
-        var orientationHint = 1
+        val size = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
 
-        return EncoderWrapper(
+        val cameraConfig = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+        val secondsPerFrame =
+            cameraConfig.getOutputMinFrameDuration( SurfaceHolder::class.java, size) /
+                    1_000_000_000.0
+        // Compute the frames per second to let user select a configuration
+        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
+        val encoder =EncoderWrapper(
             outputFile=outputFile,
             orientationHint =orientation,
-            width =,
-            height=,
-            bitRate=,
-            frameRate=,
+            width =size.width,
+            height=size.height,
+            bitRate=RECORDER_VIDEO_BITRATE,
+            frameRate=fps,
 
-        )
+            )
+        encoder.start()
+
+        return encoder
     }
 
     /** Creates a [File] named with the current date and time */
@@ -288,6 +301,20 @@ class SelfStreamingFragment : Fragment() {
             .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
         imageReader = ImageReader.newInstance(
             size.width, size.height, ImageFormat.JPEG, IMAGE_BUFFER_SIZE)
+        /**
+         * THE NEW CODE i NEED
+         *
+         * **/
+        val capabilities = characteristics.get(
+            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)!!
+        val cameraConfig = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+        val secondsPerFrame =
+            cameraConfig.getOutputMinFrameDuration( SurfaceHolder::class.java, size) /
+                    1_000_000_000.0
+        // Compute the frames per second to let user select a configuration
+        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
+        val fpsLabel = if (fps > 0) "$fps" else "N/A"
 
         // Creates list of Surfaces where the camera will output frames
         val targets = listOf(binding.viewFinder.holder.surface, imageReader.surface)
@@ -317,6 +344,8 @@ class SelfStreamingFragment : Fragment() {
         // This will keep sending the capture request as frequently as possible until the
         // session is torn down or session.stopRepeating() is called
         session.setRepeatingRequest(combinedRequest.build(), null, cameraHandler)
+
+        encoder.start()
 
         // Listen to the capture button
 
