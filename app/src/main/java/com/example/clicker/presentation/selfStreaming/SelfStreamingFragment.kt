@@ -72,9 +72,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.File
 import java.lang.Math.max
 import java.lang.Math.min
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -128,6 +130,7 @@ class SelfStreamingFragment : Fragment() {
 
 
 
+
     private  var _binding: FragmentSelfStreamingBinding? = null
 
     /**
@@ -151,57 +154,46 @@ class SelfStreamingFragment : Fragment() {
         cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
     }
 
-    /** Requests used for preview and recording in the [CameraCaptureSession] */
-    private val recordRequest: CaptureRequest by lazy {
-        createRecordRequest(
-            session,
-            previewStabilization = false,
-            viewFinder = binding.viewFinder
+
+    /** File where the recording will be saved */
+    private val outputFile: File by lazy { createFile(requireContext(), "mp4") }
+
+    /** [EncoderWrapper] utility class */
+    private val encoder: EncoderWrapper by lazy { createEncoder() }
+
+    /** Orientation of the camera as 0, 90, 180, or 270 degrees */
+    private val orientation: Int by lazy {
+        characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
+    }
+
+
+    private fun createEncoder(): EncoderWrapper {
+
+        var orientationHint = 1
+
+        return EncoderWrapper(
+            outputFile=outputFile,
+            orientationHint =orientation,
+            width =,
+            height=,
+            bitRate=,
+            frameRate=,
+
         )
     }
-    //
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun createRecordRequest(
-        session: CameraCaptureSession,
-        previewStabilization: Boolean,
-        viewFinder: AutoFitSurfaceView
-    ): CaptureRequest {
 
-        val cameraConfig = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-        // Recording should always be done in the most efficient format, which is
-        //  the format native to the camera framework
-        val targetClass = MediaRecorder::class.java
-        // Get the number of seconds that each frame will take to process
-        // For each size, list the expected FPS
-       val size= cameraConfig.getOutputSizes(targetClass)[0]
-        val secondsPerFrame =
-            cameraConfig.getOutputMinFrameDuration(targetClass, size) /
-                    1_000_000_000.0
-        // Compute the frames per second to let user select a configuration
-        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
-        Log.d("FRAMESPERSECOND","FPS -->$fps")
-
-
-        // Capture request holds references to target surfaces
-        return session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
-            // Add the preview and recording surface targets
-            addTarget(viewFinder.holder.surface)
-            addTarget(encoder.getInputSurface())
-
-            // Sets user requested FPS for all targets
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))
-
-            if (previewStabilization) {
-                set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
-                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION)
-            }
-        }.build()
+    /** Creates a [File] named with the current date and time */
+    private fun createFile(context: Context, extension: String): File {
+        val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+        return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
     }
+
+
 
 
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         }
 
