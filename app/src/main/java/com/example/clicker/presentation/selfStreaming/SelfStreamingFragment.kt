@@ -11,6 +11,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.media.MediaCodec
@@ -20,6 +21,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import android.util.Range
 import android.util.Size
 import android.view.Display
 import android.view.LayoutInflater
@@ -140,7 +142,7 @@ class SelfStreamingFragment : Fragment() {
     private val outputFile: File by lazy { createFile(requireContext(), "mp4") }
 
     /** [EncoderWrapper] utility class */
-    private val encoder: EncoderWrapper by lazy { createEncoder() }
+    private val encoder: EncoderWrapper = createEncoder()
 
     /** Orientation of the camera as 0, 90, 180, or 270 degrees */
     private val orientation: Int by lazy {
@@ -217,10 +219,24 @@ class SelfStreamingFragment : Fragment() {
                     SelfStreamingView(
                         selfStreamingViewModel = selfStreamingViewModel,
                         startStream = {
-                            //todo: these need to be implemented
+                            //todo: THIS NEEDS TO CALL TO START THE ENCODING
+                            encoder.start()
+                            selfStreamingViewModel.setIsStreamLive(true)
                                       },
                         stopStream = {
-                            //todo: these need to be implemented
+                            //todo: THIS NEEDS TO CALL TO END THE ENCODING
+//                            cvRecordingStarted.block() this is just a variable
+
+                            /* Wait for at least one frame to process so we don't have an empty video */
+//                            encoder.waitForFirstFrame() don't need because I don't use a MediaRecorder
+
+                            session.stopRepeating()
+                            session.close()
+
+//                            pipeline.clearFrameListener() don't add yet
+                            encoder.shutdown()
+                            selfStreamingViewModel.setIsStreamLive(false)
+
                                      },
                         logoutOfTwitch = {
                             logoutViewModel.setLoggedOutStatus("TRUE")
@@ -302,6 +318,8 @@ class SelfStreamingFragment : Fragment() {
 
         // Start a capture session using our open camera and list of Surfaces where frames will go
         session = createCaptureSession(camera, targets, cameraHandler)
+        encoder.configure()
+
 
         /**
          * NEW VERSION BELOW
@@ -313,6 +331,12 @@ class SelfStreamingFragment : Fragment() {
         val combinedRequest = session.device.createCaptureRequest(requestTemplate)
         // Link the Surface targets with the combined request
         combinedRequest.addTarget(binding.viewFinder.holder.surface)
+        //combinedRequest.addTarget(encoder.getInputSurface()) //
+
+        // Sets user requested FPS for all targets
+        combinedRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))
+        combinedRequest.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+            CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION)
         /**
          * NEW VERSION ABOVE
          * - it is the same as the one below, just more explicit
@@ -580,16 +604,7 @@ class SelfStreamingFragment : Fragment() {
 
 }
 
-private class RenderHandler(looper: Looper, width: Int, height: Int, fps: Int,
-                            filterOn: Boolean, transfer: Int, dynamicRange: Long,
-                            characteristics: CameraCharacteristics, encoder: EncoderWrapper,
-                            viewFinder: AutoFitSurfaceView): Handler(looper),
-    SurfaceTexture.OnFrameAvailableListener {
-    override fun onFrameAvailable(p0: SurfaceTexture?) {
-        TODO("Not yet implemented")
-    }
 
-}
 
 
 
