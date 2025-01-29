@@ -1,6 +1,7 @@
 package com.example.clicker.network.models.twitchRepo
 
 
+import android.util.Log
 import com.example.clicker.presentation.home.models.StreamInfo
 import com.google.gson.annotations.SerializedName
 
@@ -73,8 +74,11 @@ fun StreamData.toStreamInfo(): StreamInfo {
  * */
 fun StreamData.changeUrlWidthHeight(aspectWidth: Int, aspectHeight: Int): StreamData {
 
+    Log.d("StreamDataChangeUrlWidth","StreamData ->${this}")
+
     return copy(
         thumbNailUrl = thumbNailUrl.replace("{width}", "$aspectWidth")
-            .replace("{height}", "$aspectHeight")
+            .replace("{height}", "$aspectHeight"),
+        tags = if(tags == null) listOf() else tags
     )
 }
