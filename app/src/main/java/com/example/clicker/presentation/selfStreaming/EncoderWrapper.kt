@@ -80,6 +80,7 @@ class EncoderWrapper(
                 else -> -1
             }
 
+        //the desired format of the output
             val format = MediaFormat.createVideoFormat(mMimeType, width, height)
 
             // Set some properties.  Failing to specify some of these can cause the MediaCodec
@@ -108,15 +109,17 @@ class EncoderWrapper(
 
 
 
+    //TODO: THIS FUNCTION IS READY TO BE CALLED
     public fun start() {
 
 
-//            mEncoder!!.start()
-//
-//            // Start the encoder thread last.  That way we're sure it can see all of the state
-//            // we've initialized.
-//            mEncoderThread!!.start()
-//            mEncoderThread!!.waitUntilReady()
+
+            mEncoder!!.start() // telling mEncoder to enter the EXECUTING.FLUSHED state
+
+            // Start the encoder thread last.  That way we're sure it can see all of the state
+            // we've initialized.
+            mEncoderThread!!.start()
+            mEncoderThread!!.waitUntilReady()
 
     }
 

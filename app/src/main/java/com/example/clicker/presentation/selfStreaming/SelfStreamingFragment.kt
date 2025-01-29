@@ -1,7 +1,6 @@
 package com.example.clicker.presentation.selfStreaming
 
 import android.annotation.SuppressLint
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.Point
@@ -12,22 +11,15 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
-import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.media.MediaCodec
-import android.media.MediaCodec.CodecException
-import android.media.MediaCodecInfo
-import android.media.MediaFormat
-import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.provider.MediaStore
 import android.util.Log
-import android.util.Range
 import android.util.Size
 import android.view.Display
 import android.view.LayoutInflater
@@ -36,32 +28,21 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceRequest
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
-import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
-import com.example.clicker.nativeLibraryClasses.VideoEncoder
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.home.testing3DCode.VideoEncoderGLSurfaceViewComposable
 import com.example.clicker.presentation.selfStreaming.surfaces.AutoFitSurfaceView
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
@@ -69,7 +50,6 @@ import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -171,28 +151,29 @@ class SelfStreamingFragment : Fragment() {
     private fun createEncoder(): EncoderWrapper {
 
         val size = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
+        )!!
             .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
 
         val cameraConfig = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
+        )!!
         val secondsPerFrame =
-            cameraConfig.getOutputMinFrameDuration( SurfaceHolder::class.java, size) /
+            cameraConfig.getOutputMinFrameDuration(SurfaceHolder::class.java, size) /
                     1_000_000_000.0
         // Compute the frames per second to let user select a configuration
         val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
-        val encoder =EncoderWrapper(
-            outputFile=outputFile,
-            orientationHint =orientation,
-            width =size.width,
-            height=size.height,
-            bitRate=RECORDER_VIDEO_BITRATE,
-            frameRate=fps,
+
+
+        return EncoderWrapper(
+            outputFile = outputFile,
+            orientationHint = orientation,
+            width = size.width,
+            height = size.height,
+            bitRate = RECORDER_VIDEO_BITRATE,
+            frameRate = fps,
 
             )
-        encoder.start()
-
-        return encoder
     }
 
     /** Creates a [File] named with the current date and time */
@@ -328,7 +309,7 @@ class SelfStreamingFragment : Fragment() {
         // You will use the preview capture template for the combined streams
         // because it is optimized for low latency; for high-quality images, use
         // TEMPLATE_STILL_CAPTURE, and for a steady frame rate use TEMPLATE_RECORD
-        val requestTemplate = CameraDevice.TEMPLATE_PREVIEW
+        val requestTemplate = CameraDevice.TEMPLATE_RECORD
         val combinedRequest = session.device.createCaptureRequest(requestTemplate)
         // Link the Surface targets with the combined request
         combinedRequest.addTarget(binding.viewFinder.holder.surface)
@@ -345,7 +326,6 @@ class SelfStreamingFragment : Fragment() {
         // session is torn down or session.stopRepeating() is called
         session.setRepeatingRequest(combinedRequest.build(), null, cameraHandler)
 
-        encoder.start()
 
         // Listen to the capture button
 
