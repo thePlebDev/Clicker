@@ -124,6 +124,8 @@ class SelfStreamingFragment : Fragment() {
     /** [CameraCharacteristics] corresponding to the provided Camera ID */
     private lateinit var characteristics: CameraCharacteristics
 
+    private lateinit var encoderWrapper: EncoderWrapper
+
     private  var _binding: FragmentSelfStreamingBinding? = null
 
     /**
@@ -167,6 +169,7 @@ class SelfStreamingFragment : Fragment() {
         val context = requireContext().applicationContext
         cameraManager =context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         characteristics =cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
+        encoderWrapper =createEncoder()
     }
 
     override fun onCreateView(
@@ -275,8 +278,8 @@ class SelfStreamingFragment : Fragment() {
         // Compute the frames per second to let user select a configuration
         val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
         val fpsLabel = if (fps > 0) "$fps" else "N/A"
-        val encoder =createEncoder()
-        val encoderSurface =encoder.getInputSurface()
+
+        val encoderSurface =encoderWrapper.getInputSurface()
 
         // Creates list of Surfaces where the camera will output frames
         //I am trying to figure out a link between combinedRequests and targets
@@ -296,9 +299,11 @@ class SelfStreamingFragment : Fragment() {
         // TEMPLATE_STILL_CAPTURE, and for a steady frame rate use TEMPLATE_RECORD
         val requestTemplate = CameraDevice.TEMPLATE_RECORD
         val combinedRequest = session.device.createCaptureRequest(requestTemplate)
+
         // Link the Surface targets with the combined request
+        // we can only use buffers that were already defined on the capture session
         combinedRequest.addTarget(binding.viewFinder.holder.surface)
-        combinedRequest.addTarget(encoderSurface) //
+        combinedRequest.addTarget(encoderSurface) //output buffers
 
         // Sets user requested FPS for all targets
         combinedRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))

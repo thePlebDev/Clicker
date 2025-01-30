@@ -123,6 +123,18 @@ android {
             matchingFallbacks = ['release']
             debuggable false
         }
+        questDebug {
+            signingConfig signingConfigs.debug
+            debuggable = true
+            applicationIdSuffix = ".questdebug"
+        }
+        questRelease{
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ["release"]
+
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
