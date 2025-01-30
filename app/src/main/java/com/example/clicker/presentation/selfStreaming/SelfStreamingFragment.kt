@@ -141,8 +141,7 @@ class SelfStreamingFragment : Fragment() {
     /** File where the recording will be saved */
     private val outputFile: File by lazy { createFile(requireContext(), "mp4") }
 
-    /** [EncoderWrapper] utility class */
-    private val encoder: EncoderWrapper = createEncoder()
+
 
     /** Orientation of the camera as 0, 90, 180, or 270 degrees */
     private val orientation: Int by lazy {
@@ -150,33 +149,7 @@ class SelfStreamingFragment : Fragment() {
     }
 
 
-    private fun createEncoder(): EncoderWrapper {
 
-        val size = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
-        )!!
-            .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
-
-        val cameraConfig = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
-        )!!
-        val secondsPerFrame =
-            cameraConfig.getOutputMinFrameDuration(SurfaceHolder::class.java, size) /
-                    1_000_000_000.0
-        // Compute the frames per second to let user select a configuration
-        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
-
-
-        return EncoderWrapper(
-            outputFile = outputFile,
-            orientationHint = orientation,
-            width = size.width,
-            height = size.height,
-            bitRate = RECORDER_VIDEO_BITRATE,
-            frameRate = fps,
-
-            )
-    }
 
     /** Creates a [File] named with the current date and time */
     private fun createFile(context: Context, extension: String): File {
@@ -220,21 +193,13 @@ class SelfStreamingFragment : Fragment() {
                         selfStreamingViewModel = selfStreamingViewModel,
                         startStream = {
                             //todo: THIS NEEDS TO CALL TO START THE ENCODING
-                            encoder.start()
+
                             selfStreamingViewModel.setIsStreamLive(true)
                                       },
                         stopStream = {
                             //todo: THIS NEEDS TO CALL TO END THE ENCODING
-//                            cvRecordingStarted.block() this is just a variable
 
-                            /* Wait for at least one frame to process so we don't have an empty video */
-//                            encoder.waitForFirstFrame() don't need because I don't use a MediaRecorder
 
-                            session.stopRepeating()
-                            session.close()
-
-//                            pipeline.clearFrameListener() don't add yet
-                            encoder.shutdown()
                             selfStreamingViewModel.setIsStreamLive(false)
 
                                      },
@@ -302,8 +267,6 @@ class SelfStreamingFragment : Fragment() {
          * THE NEW CODE i NEED
          *
          * **/
-        val capabilities = characteristics.get(
-            CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)!!
         val cameraConfig = characteristics.get(
             CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
         val secondsPerFrame =
@@ -318,7 +281,6 @@ class SelfStreamingFragment : Fragment() {
 
         // Start a capture session using our open camera and list of Surfaces where frames will go
         session = createCaptureSession(camera, targets, cameraHandler)
-        encoder.configure()
 
 
         /**
