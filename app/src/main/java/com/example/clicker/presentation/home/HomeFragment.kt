@@ -113,6 +113,7 @@ class HomeFragment : Fragment(){
         super.onCreate(savedInstanceState)
         Log.d("HomeFragmentLifeCycle","onCreate")
 
+        Log.d("BuildTypeTesting","${BuildConfig.BUILD_TYPE}")
 
 
 
