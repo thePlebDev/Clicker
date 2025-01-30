@@ -12,6 +12,8 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.params.OutputConfiguration
+import android.hardware.camera2.params.SessionConfiguration
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.media.MediaCodec
@@ -60,6 +62,7 @@ import java.lang.Math.min
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -106,13 +109,17 @@ class SelfStreamingFragment : Fragment() {
     private val cameraHandler = Handler(cameraThread.looper)
 
     /** Readers used as buffers for camera still shots */
-    private lateinit var imageReader: ImageReader
+//    private lateinit var imageReader: ImageReader this is only needed when I need to analyze every frame
 
     /** Internal reference to the ongoing [CameraCaptureSession] configured with our parameters */
     private lateinit var session: CameraCaptureSession
 
 
+    /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
+    private lateinit var cameraManager: CameraManager
 
+    /** [CameraCharacteristics] corresponding to the provided Camera ID */
+    private lateinit var characteristics: CameraCharacteristics
 
     private  var _binding: FragmentSelfStreamingBinding? = null
 
@@ -124,18 +131,7 @@ class SelfStreamingFragment : Fragment() {
     /** AndroidX navigation arguments */
 //    private val args: FragmentSelfStreamingArgs by navArgs()
 
-    /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
-    private val cameraManager: CameraManager by lazy {
-        val context = requireContext().applicationContext
-        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    }
 
-
-
-    /** [CameraCharacteristics] corresponding to the provided Camera ID */
-    private val characteristics: CameraCharacteristics by lazy {
-        cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
-    }
 
 
     /** File where the recording will be saved */
@@ -158,13 +154,17 @@ class SelfStreamingFragment : Fragment() {
     }
 
 
-
-
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+            initializeItems()
 
         }
+
+    private fun initializeItems(){
+        val context = requireContext().applicationContext
+        cameraManager =context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        characteristics =cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -208,10 +208,7 @@ class SelfStreamingFragment : Fragment() {
                             findNavController().navigate(R.id.action_selfStreamingFragment_to_logoutFragment)
                         },
                         switchCamera = {
-//                           val id = getNextCameraId(
-//                                cameraManager,
-//                                currCameraId = selfStreamingViewModel.cameraId.value
-//                            )
+
                             selfStreamingViewModel.setCameraId()
 //
                             session.stopRepeating()
@@ -239,6 +236,7 @@ class SelfStreamingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //this will run the initializeCamera() function
         binding.viewFinder.holder.addCallback(SurfaceHolderCallbackSetUp())
 
 
@@ -261,8 +259,7 @@ class SelfStreamingFragment : Fragment() {
         val size = characteristics.get(
             CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
             .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
-        imageReader = ImageReader.newInstance(
-            size.width, size.height, ImageFormat.JPEG, IMAGE_BUFFER_SIZE)
+
         /**
          * THE NEW CODE i NEED
          *
@@ -277,10 +274,11 @@ class SelfStreamingFragment : Fragment() {
         val fpsLabel = if (fps > 0) "$fps" else "N/A"
 
         // Creates list of Surfaces where the camera will output frames
-        val targets = listOf(binding.viewFinder.holder.surface, imageReader.surface)
+        //I am trying to figure out a link between combinedRequests and targets
+        val targets = listOf(binding.viewFinder.holder.surface)
 
         // Start a capture session using our open camera and list of Surfaces where frames will go
-        session = createCaptureSession(camera, targets, cameraHandler)
+        session = createCaptureSession(camera, targets)
 
 
         /**
@@ -299,17 +297,8 @@ class SelfStreamingFragment : Fragment() {
         combinedRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))
         combinedRequest.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
             CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION)
-        /**
-         * NEW VERSION ABOVE
-         * - it is the same as the one below, just more explicit
-         * */
 
-        //BELOW IS THE ONE THAT WORKS
-//        val captureRequest = camera.createCaptureRequest(
-//            CameraDevice.TEMPLATE_PREVIEW).apply { addTarget(binding.viewFinder.holder.surface) }
 
-        // This will keep sending the capture request as frequently as possible until the
-        // session is torn down or session.stopRepeating() is called
         session.setRepeatingRequest(combinedRequest.build(), null, cameraHandler)
 
 
@@ -324,21 +313,34 @@ class SelfStreamingFragment : Fragment() {
     private suspend fun createCaptureSession(
         device: CameraDevice,
         targets: List<Surface>,
-        handler: Handler? = null
     ): CameraCaptureSession = suspendCoroutine { cont ->
 
         // Create a capture session using the predefined targets; this also involves defining the
         // session state callback to be notified of when the session is ready
-        device.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+        // ✅ Convert List<Surface> into OutputConfiguration
+        val outputConfigs = targets.map { OutputConfiguration(it) }
 
-            override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
+        // ✅ Create SessionConfiguration
+        val sessionConfig = SessionConfiguration(
+            SessionConfiguration.SESSION_REGULAR, // Use SESSION_HIGH_SPEED for high frame rates
+            outputConfigs,
+            Executors.newSingleThreadExecutor(), // Ensures callback execution
+            object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    cont.resume(session) // Resume coroutine with session
+                }
 
-            override fun onConfigureFailed(session: CameraCaptureSession) {
-                val exc = RuntimeException("Camera ${device.id} session configuration failed")
-                Log.e(TAG, exc.message, exc)
-                cont.resumeWithException(exc)
+                override fun onConfigureFailed(session: CameraCaptureSession) {
+                    val exc = RuntimeException("Camera ${device.id} session configuration failed")
+                    Log.e("CameraSession", exc.message, exc)
+                    cont.resumeWithException(exc)
+                }
             }
-        }, handler)
+        )
+        device.createCaptureSession(
+            sessionConfig
+        )
+
     }
 
 
@@ -559,6 +561,8 @@ class SelfStreamingFragment : Fragment() {
 
         override fun surfaceDestroyed(p0: SurfaceHolder) {
             Log.d("VIEWFINDERtESITNG","DESTROYED")
+            // should probably do clean up stuff here
+
         }
 
     }
