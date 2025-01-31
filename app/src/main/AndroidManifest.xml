@@ -36,7 +36,9 @@
                 <data
                     android:host="com.example.modderz"
                     android:scheme="https" />
+
             </intent-filter>
+
         </activity>
         <activity android:name=".cameraNDK.CameraNDKNativeActivity" >
             <meta-data android:name="android.app.lib_name"

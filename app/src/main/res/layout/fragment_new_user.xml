@@ -10,4 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.example.clicker.presentation.authentication.CustomVRLoginPage
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
 </FrameLayout>

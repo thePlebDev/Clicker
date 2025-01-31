@@ -348,6 +348,25 @@ class ParsingEngineTest {
         /**THEN*/
         Assert.assertEquals(1, 2)
 
+    }
+
+    @Test
+    fun parse_url_access_token(){
+        /**GIVEN*/
+        //below are edge cases
+        val expectedResult = "xq44me01nqmu4b5"
+        val urlToParse = "https://com.example.modderz/#access_token=xq44me01nqmu4b5&scope"
+        val containsTest = urlToParse.contains("#access_token=")
+        val regex = """#access_token=([^&]*)""".toRegex()
+        val matchResult = regex.find(urlToParse)
+        val actualResult =matchResult?.groups?.get(1)?.value?:""
+
+
+// Determine subscriber status
+
+        /**THEN*/
+        Assert.assertEquals(expectedResult, actualResult)
+
 
     }
 
