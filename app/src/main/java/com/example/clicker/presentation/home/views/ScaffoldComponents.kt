@@ -80,6 +80,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
 
@@ -171,6 +172,7 @@ import kotlinx.coroutines.launch
         val scope = rememberCoroutineScope()
 
 
+
         DrawerScaffold(
             scaffoldState = scaffoldState,
             topBar = {
@@ -190,11 +192,51 @@ import kotlinx.coroutines.launch
                 )
             },
             bottomBar = {
+                if (BuildConfig.BUILD_TYPE in setOf("questDebug", "questRelease")) {
+                    this.TripleButtonNavigationBottomBarRow(
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        firstButton = {
+                            IconOverTextColumn(
+                                iconColor = MaterialTheme.colorScheme.secondary,
+                                text = "Home",
+                                imageVector = Icons.Default.Home,
+                                iconContentDescription = "Stay on home page",
+                                onClick = {},
+                                fontColor = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        },
+                        secondButton = {
+                            PainterResourceIconOverTextColumn(
+                                iconColor = MaterialTheme.colorScheme.onPrimary,
+                                text = "Mod Channels",
+                                painter = painterResource(R.drawable.moderator_white),
+                                iconContentDescription = "Navigate to mod channel page",
+                                onClick = { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) },
+                                fontColor = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        },
+                        thirdButton = {
 
-                this.
-                FourButtonNavigationBottomBarRow(
+                            this.PainterResourceIconOverTextColumn(
+                                iconColor = MaterialTheme.colorScheme.onPrimary,
+                                painter = painterResource(id = R.drawable.baseline_category_24),
+                                iconContentDescription = "Navigate to search bar",
+                                fontColor = MaterialTheme.colorScheme.onPrimary,
+                                text = "Categories",
+                                onClick = {
+                                    getTopGames()
+                                    getPinnedList()
+                                    onNavigate(R.id.action_homeFragment_to_searchFragment)
+                                },
+                            )
+                        }
+                    )
+
+                } else {
+                    this.FourButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    horizontalArrangement=Arrangement.SpaceAround,
+                    horizontalArrangement = Arrangement.SpaceAround,
                     firstButton = {
                         IconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.secondary,
@@ -207,11 +249,11 @@ import kotlinx.coroutines.launch
                     },
                     secondButton = {
                         PainterResourceIconOverTextColumn(
-                            iconColor =MaterialTheme.colorScheme.onPrimary,
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Mod Channels",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
-                            onClick ={onNavigate(R.id.action_homeFragment_to_modChannelsFragment)},
+                            onClick = { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
@@ -230,7 +272,7 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
-                    fourthButton={
+                    fourthButton = {
                         IconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Stream",
@@ -243,7 +285,8 @@ import kotlinx.coroutines.launch
                         )
                     }
 
-                )
+                ) //TODO: THIS IS THE BOTTOM
+            }
             },
             drawerContent = {
                 LoginLogoutScaffoldDrawerBox(
@@ -645,8 +688,12 @@ fun CreatingBackgroundServiceSwitch(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp).clickable {
-                Log.d("BackgroundStreamServiceOnStartCommand","running --->${checkIfServiceRunning()}")
+            .padding(15.dp)
+            .clickable {
+                Log.d(
+                    "BackgroundStreamServiceOnStartCommand",
+                    "running --->${checkIfServiceRunning()}"
+                )
 
             },
         elevation = 10.dp
