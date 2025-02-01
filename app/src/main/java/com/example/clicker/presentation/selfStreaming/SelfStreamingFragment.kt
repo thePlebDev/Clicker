@@ -12,6 +12,7 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.DynamicRangeProfiles
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
@@ -235,7 +236,13 @@ class SelfStreamingFragment : Fragment() {
                             //todo: THIS NEEDS TO CALL TO START THE ENCODING
 
                             selfStreamingViewModel.setIsStreamLive(true)
-                                      },
+
+                            //to end the current session
+                            session.close()
+                            newSession()
+
+
+                        },
                         stopStream = {
                             //todo: THIS NEEDS TO CALL TO END THE ENCODING
 
@@ -279,6 +286,24 @@ class SelfStreamingFragment : Fragment() {
         //this will run the initializeCamera() function
         binding.viewFinder.holder.addCallback(SurfaceHolderCallbackSetUp())
 
+
+    }
+    private fun newSession()= lifecycleScope.launch(Dispatchers.Main){
+        val recordTargets = pipeline.getRecordTargets()
+        session = createCaptureSession(camera, recordTargets)
+
+        session.setRepeatingRequest(recordRequest,
+            object : CameraCaptureSession.CaptureCallback() {
+                override fun onCaptureCompleted(session: CameraCaptureSession,
+                                                request: CaptureRequest,
+                                                result: TotalCaptureResult
+                ) {
+                    Log.d("onCaptureCompleted","CAPTURE")
+//                                        if (isCurrentlyRecording()) {
+//                                            encoder.frameAvailable()
+//                                        }
+                }
+            }, cameraHandler)
 
     }
 
