@@ -7,9 +7,11 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.util.Log
 import android.view.Surface
 import java.io.File
+import java.lang.ref.WeakReference
 
 class EncoderWrapper(
     width: Int,
@@ -81,6 +83,7 @@ class EncoderWrapper(
     //todo: I think this should run when start() is called
     /**
      * Notifies the encoder thread that a new frame is available to the encoder.
+     * - This sends the message to the Handler that then tells the Thread to encode the frame
      */
     public fun frameAvailable() {
         val handler = mEncoderThread!!.getHandler()
@@ -249,19 +252,70 @@ class EncoderWrapper(
             }
         }
 
+        /**
+         * Drains the encoder output.
+         * <p>
+         * See notes for {@link EncoderWrapper#frameAvailable()}.
+         */
+        fun frameAvailable() {
+            Log.d(TAG, "frameAvailable")
+            if (drainEncoder()) {
+                synchronized (mLock) {
+                    mFrameNum++
+                    mLock.notify()
+                }
+            }
+        }
 
+        /**
+         * Tells the Looper to quit.
+         */
+        fun shutdown() {
+             Log.d(TAG, "shutdown")
+            Looper.myLooper()!!.quit()
+            mMuxer.stop()
+            mMuxer.release()
+        }
+
+
+/**
+ * --------------------------------------BEGIN THE EncoderHandler ----------------------------------------------------------
+ * */
         /**
          * Handler for EncoderThread.  Used for messages sent from the UI thread (or whatever
          * is driving the encoder) to the encoder thread.
          * <p>
          * The object is created on the encoder thread.
          */
-        public class EncoderHandler(et: EncoderThread) : Handler() {
+        public class EncoderHandler(et: EncoderThread): Handler() {
             companion object {
                 val MSG_FRAME_AVAILABLE: Int = 0
                 val MSG_SHUTDOWN: Int = 1
             }
 
+            // This shouldn't need to be a weak ref, since we'll go away when the Looper quits,
+            // but no real harm in it.
+            private val mWeakEncoderThread = WeakReference<EncoderThread>(et)
+
+            // runs on encoder thread
+            public override fun handleMessage(msg: Message) {
+                val what: Int = msg.what
+
+                Log.v(TAG, "EncoderHandler: what=" + what)
+
+
+                val encoderThread: EncoderThread? = mWeakEncoderThread.get()
+                if (encoderThread == null) {
+                    Log.w(TAG, "EncoderHandler.handleMessage: weak ref is null")
+                    return
+                }
+
+                when (what) {
+                    MSG_FRAME_AVAILABLE -> encoderThread.frameAvailable()
+                    MSG_SHUTDOWN -> encoderThread.shutdown()
+                    else -> throw RuntimeException("unknown message " + what)
+                }
+            }
         }
     }
 
