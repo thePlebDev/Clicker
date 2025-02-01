@@ -299,9 +299,9 @@ class SelfStreamingFragment : Fragment() {
                                                 result: TotalCaptureResult
                 ) {
                     Log.d("onCaptureCompleted","CAPTURE")
-//                                        if (isCurrentlyRecording()) {
-//                                            encoder.frameAvailable()
-//                                        }
+
+                        encoder.frameAvailable()
+
                 }
             }, cameraHandler)
 
