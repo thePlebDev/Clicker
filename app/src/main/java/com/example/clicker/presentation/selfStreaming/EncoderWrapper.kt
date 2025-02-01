@@ -140,6 +140,17 @@ class EncoderWrapper(
         // we can use for input and wrap it with a class that handles the EGL work.
         mEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
     }
+    //todo: THIS SHOULD BE CALLED WHEN THE USER CLICKS THE RECORD
+    public fun start() {
+
+            mEncoder!!.start()
+
+            // Start the encoder thread last.  That way we're sure it can see all of the state
+            // we've initialized.
+            mEncoderThread!!.start()
+            mEncoderThread!!.waitUntilReady()
+
+    }
 
 
 
@@ -158,6 +169,9 @@ class EncoderWrapper(
         else -> MediaFormat.COLOR_TRANSFER_SDR_VIDEO
     }
 
+
+//    One way to create a Thread is to declare a class to be a subclass of Thread. This subclass should
+//    override the run method of class Thread. An instance of the subclass can then be allocated and started.
 
     private class EncoderThread(mediaCodec: MediaCodec,
                                 outputFile: File,
@@ -200,8 +214,10 @@ class EncoderWrapper(
          * <p>
          * Prepares the Looper, Handler, and signals anybody watching that we're ready to go.
          */
-        public override fun run() {
+         override fun run() {
             Looper.prepare()
+
+//            A Handler is the mechanism used to enqueue tasks on a Looper’s queue
             mHandler = EncoderHandler(this)    // must create on encoder thread
             Log.d(TAG, "encoder thread ready")
             synchronized (mLock) {
@@ -209,13 +225,28 @@ class EncoderWrapper(
                 mLock.notify()    // signal waitUntilReady()
             }
 
-            Looper.loop()
+            Looper.loop() // causes the thread to enter a tight loop in which it checks its MessageQueue for tasks
 
             synchronized (mLock) {
                 mReady = false
                 mHandler = null
             }
             Log.d(TAG, "looper quit")
+        }
+
+        /**
+         * Waits until the encoder thread is ready to receive messages.
+         * <p>
+         * Call from non-encoder thread.
+         */
+        public fun waitUntilReady() {
+            synchronized (mLock) {
+                while (!mReady) {
+                    try {
+                        mLock.wait()
+                    } catch (ie: InterruptedException) { /* not expected */ }
+                }
+            }
         }
 
 

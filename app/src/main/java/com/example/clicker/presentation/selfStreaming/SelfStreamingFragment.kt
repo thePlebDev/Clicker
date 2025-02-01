@@ -119,13 +119,19 @@ class SelfStreamingFragment : Fragment() {
     private lateinit var session: CameraCaptureSession
 
 
+
     /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
-    private lateinit var cameraManager: CameraManager
+    private val cameraManager: CameraManager by lazy {
+        val context = requireContext().applicationContext
+        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
 
     /** [CameraCharacteristics] corresponding to the provided Camera ID */
-    private lateinit var characteristics: CameraCharacteristics
+    private val characteristics: CameraCharacteristics by lazy {
+        cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
 
-    private lateinit var encoderWrapper: EncoderWrapper
+    }
+
 
     private  var _binding: FragmentSelfStreamingBinding? = null
 
@@ -149,6 +155,39 @@ class SelfStreamingFragment : Fragment() {
     private val orientation: Int by lazy {
         characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
     }
+    private val encoder: EncoderWrapper by lazy { createEncoder() }
+
+    private val pipeline: SoftwarePipeline by lazy {
+        val previewSize = getPreviewOutputSize(
+            binding.viewFinder.display,
+            characteristics,
+            SurfaceHolder::class.java
+        )
+        val size = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
+        val cameraConfig = characteristics.get(
+            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+        val secondsPerFrame =
+            cameraConfig.getOutputMinFrameDuration( SurfaceHolder::class.java, size) /
+                    1_000_000_000.0
+        // Compute the frames per second to let user select a configuration
+        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
+        SoftwarePipeline(
+            width =previewSize.width, height =previewSize.height, dynamicRange=DynamicRangeProfiles.STANDARD,
+            characteristics =characteristics ,fps=fps,
+            encoder= encoder, viewFinder=binding.viewFinder)
+
+    }
+
+    /** Requests used for preview and recording in the [CameraCaptureSession] */
+    private val recordRequest: CaptureRequest by lazy {
+        pipeline.createRecordRequest(session)
+    }
+   /** Requests used for preview only in the [CameraCaptureSession] */
+    private val previewRequest: CaptureRequest by lazy {
+        pipeline.createPreviewRequest(session)
+    }
 
 
 
@@ -162,16 +201,10 @@ class SelfStreamingFragment : Fragment() {
 
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-            initializeItems()
 
         }
 
-    private fun initializeItems(){
-        val context = requireContext().applicationContext
-        cameraManager =context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        characteristics =cameraManager.getCameraCharacteristics(getFirstCameraIdFacing(cameraManager)?:"")
-        encoderWrapper =createEncoder()
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -258,61 +291,17 @@ class SelfStreamingFragment : Fragment() {
      * - Sets up the still image capture listeners
      */
     private fun initializeCamera(cameraId:String) = lifecycleScope.launch(Dispatchers.Main) {
-        // Open the selected camera
-        // this is what I need to figure out
+
         camera = openCamera(cameraManager, cameraId, cameraHandler)
 
+
         // Initialize an image reader which will be used to capture still photos
-        val size = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-            .getOutputSizes(ImageFormat.JPEG).maxByOrNull { it.height * it.width }!!
-
-        /**
-         * THE NEW CODE i NEED
-         *
-         * **/
-        val cameraConfig = characteristics.get(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-        val secondsPerFrame =
-            cameraConfig.getOutputMinFrameDuration( SurfaceHolder::class.java, size) /
-                    1_000_000_000.0
-        // Compute the frames per second to let user select a configuration
-        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
-        val fpsLabel = if (fps > 0) "$fps" else "N/A"
-
-        val encoderSurface =encoderWrapper.getInputSurface()
-
-        // Creates list of Surfaces where the camera will output frames
-        //I am trying to figure out a link between combinedRequests and targets
-        val targets = listOf(binding.viewFinder.holder.surface,encoderSurface)
+        val previewTargets = pipeline.getPreviewTargets()
 
         // Start a capture session using our open camera and list of Surfaces where frames will go
-        session = createCaptureSession(camera, targets)
+        session = createCaptureSession(camera, previewTargets)
 
-
-
-
-        /**
-         * NEW VERSION BELOW
-         * */
-        // You will use the preview capture template for the combined streams
-        // because it is optimized for low latency; for high-quality images, use
-        // TEMPLATE_STILL_CAPTURE, and for a steady frame rate use TEMPLATE_RECORD
-        val requestTemplate = CameraDevice.TEMPLATE_RECORD
-        val combinedRequest = session.device.createCaptureRequest(requestTemplate)
-
-        // Link the Surface targets with the combined request
-        // we can only use buffers that were already defined on the capture session
-        combinedRequest.addTarget(binding.viewFinder.holder.surface)
-        combinedRequest.addTarget(encoderSurface) //output buffers
-
-        // Sets user requested FPS for all targets
-        combinedRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(fps, fps))
-        combinedRequest.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
-            CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_PREVIEW_STABILIZATION)
-
-
-        session.setRepeatingRequest(combinedRequest.build(), null, cameraHandler)
+        session.setRepeatingRequest(previewRequest, null, cameraHandler)
 
 
         // Listen to the capture button
