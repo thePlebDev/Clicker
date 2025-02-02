@@ -258,13 +258,13 @@ class EncoderWrapper(
          * See notes for {@link EncoderWrapper#frameAvailable()}.
          */
         fun frameAvailable() {
-            Log.d(TAG, "frameAvailable")
-            if (drainEncoder()) {
-                synchronized (mLock) {
-                    mFrameNum++
-                    mLock.notify()
-                }
-            }
+            Log.d("THREADframeAvailable", "frameAvailable")
+//            if (drainEncoder()) {
+//                synchronized (mLock) {
+//                    mFrameNum++
+//                    mLock.notify()
+//                }
+//            }
         }
 
         /**

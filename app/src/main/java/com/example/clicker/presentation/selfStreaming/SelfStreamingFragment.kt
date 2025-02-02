@@ -59,6 +59,7 @@ import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -238,8 +239,13 @@ class SelfStreamingFragment : Fragment() {
                             selfStreamingViewModel.setIsStreamLive(true)
 
                             //to end the current session
+
                             session.close()
-                            newSession()
+                            // Wait for session to be properly closed before creating a new one
+
+                            cameraHandler.post {
+                                newSession()
+                            }
 
 
                         },
@@ -289,8 +295,11 @@ class SelfStreamingFragment : Fragment() {
 
     }
     private fun newSession()= lifecycleScope.launch(Dispatchers.Main){
+
+
         val recordTargets = pipeline.getRecordTargets()
         session = createCaptureSession(camera, recordTargets)
+        encoder.start()
 
         session.setRepeatingRequest(recordRequest,
             object : CameraCaptureSession.CaptureCallback() {
@@ -322,6 +331,7 @@ class SelfStreamingFragment : Fragment() {
 
         // Initialize an image reader which will be used to capture still photos
         val previewTargets = pipeline.getPreviewTargets()
+
 
         // Start a capture session using our open camera and list of Surfaces where frames will go
         session = createCaptureSession(camera, previewTargets)
