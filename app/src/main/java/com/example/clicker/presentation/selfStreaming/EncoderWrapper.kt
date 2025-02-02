@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.Surface
 import java.io.File
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
 
 class EncoderWrapper(
     width: Int,
@@ -259,12 +260,85 @@ class EncoderWrapper(
          */
         fun frameAvailable() {
             Log.d("THREADframeAvailable", "frameAvailable")
-//            if (drainEncoder()) {
-//                synchronized (mLock) {
-//                    mFrameNum++
-//                    mLock.notify()
-//                }
-//            }
+            if (drainEncoder()) {
+                synchronized (mLock) {
+                    mFrameNum++
+                    mLock.notify()
+                }
+            }
+        }
+        /**
+         * Drains all pending output from the encoder, and adds it to the circular buffer.
+         */
+        public fun drainEncoder(): Boolean {
+            val TIMEOUT_USEC: Long = 0     // no timeout -- check for buffers, bail if none
+            var encodedFrame = false
+
+            while (true) {
+                var encoderStatus: Int = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC)
+                if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                    // no output available yet
+                    break;
+                } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    // Should happen before receiving buffers, and should only happen once.
+                    // The MediaFormat contains the csd-0 and csd-1 keys, which we'll need
+                    // for MediaMuxer.  It's unclear what else MediaMuxer might want, so
+                    // rather than extract the codec-specific data and reconstruct a new
+                    // MediaFormat later, we just grab it here and keep it around.
+                    mEncodedFormat = mEncoder.getOutputFormat()
+                    Log.d(TAG, "encoder output format changed: " + mEncodedFormat)
+                } else if (encoderStatus < 0) {
+                    Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
+                            encoderStatus)
+                    // let's ignore it
+                } else {
+                    var encodedData: ByteBuffer? = mEncoder.getOutputBuffer(encoderStatus)
+                    if (encodedData == null) {
+                        throw RuntimeException("encoderOutputBuffer " + encoderStatus +
+                                " was null");
+                    }
+
+                    if ((mBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                        // The codec config data was pulled out when we got the
+                        // INFO_OUTPUT_FORMAT_CHANGED status.  The MediaMuxer won't accept
+                        // a single big blob -- it wants separate csd-0/csd-1 chunks --
+                        // so simply saving this off won't work.
+                       Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG")
+                        mBufferInfo.size = 0
+                    }
+
+                    if (mBufferInfo.size != 0) {
+                        // adjust the ByteBuffer values to match BufferInfo (not needed?)
+                        encodedData.position(mBufferInfo.offset)
+                        encodedData.limit(mBufferInfo.offset + mBufferInfo.size)
+
+                        if (mVideoTrack == -1) {
+                            mVideoTrack = mMuxer.addTrack(mEncodedFormat!!)
+                            mMuxer.setOrientationHint(mOrientationHint)
+                            mMuxer.start()
+                            Log.d(TAG, "Started media muxer")
+                        }
+
+
+                        mMuxer.writeSampleData(mVideoTrack, encodedData, mBufferInfo)
+                        encodedFrame = true
+
+
+                        Log.d(TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
+                                    mBufferInfo.presentationTimeUs)
+
+                    }
+
+                    mEncoder.releaseOutputBuffer(encoderStatus, false)
+
+                    if ((mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                        Log.w(TAG, "reached end of stream unexpectedly")
+                        break      // out of while
+                    }
+                }
+            }
+
+            return encodedFrame
         }
 
         /**
