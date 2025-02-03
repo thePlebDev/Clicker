@@ -2,6 +2,7 @@ package com.example.clicker.presentation.selfStreaming
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.ImageFormat
 import android.graphics.Point
 import android.graphics.SurfaceTexture
@@ -22,8 +23,10 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
@@ -36,6 +39,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Recorder
@@ -44,11 +48,13 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentSelfStreamingBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
@@ -119,6 +125,10 @@ class SelfStreamingFragment : Fragment() {
 
     /** Internal reference to the ongoing [CameraCaptureSession] configured with our parameters */
     private lateinit var session: CameraCaptureSession
+
+
+    private var recordingStartMillis: Long = 0L
+    private  val MIN_REQUIRED_RECORDING_TIME_MILLIS: Long = 1000L
 
 
 
@@ -195,9 +205,22 @@ class SelfStreamingFragment : Fragment() {
 
 
     /** Creates a [File] named with the current date and time */
-    private fun createFile(context: Context, extension: String): File {
+    private fun createFileOriginal(context: Context, extension: String): File {
         val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
         return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
+    }
+    private fun createFile(context: Context, extension: String): File {
+        val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+
+        // Save the video in the public Movies directory
+        val videoDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "YourAppName")
+
+        // Create the directory if it doesn't exist
+        if (!videoDir.exists()) {
+            videoDir.mkdirs()
+        }
+
+        return File(videoDir, "VID_${sdf.format(Date())}.$extension")
     }
 
 
@@ -242,15 +265,66 @@ class SelfStreamingFragment : Fragment() {
 
                             session.close()
                             // Wait for session to be properly closed before creating a new one
+                            recordingStartMillis = System.currentTimeMillis()
 
                             cameraHandler.post {
                                 newSession()
                             }
 
 
+
                         },
                         stopStream = {
                             //todo: THIS NEEDS TO CALL TO END THE ENCODING
+                            /* Wait for at least one frame to process so we don't have an empty video */
+
+                            lifecycleScope.launch(Dispatchers.Main){
+                               // encoder.waitForFirstFrame()
+                                session.stopRepeating()
+                                session.close()
+                                // Requires recording of at least MIN_REQUIRED_RECORDING_TIME_MILLIS
+                                val elapsedTimeMillis = System.currentTimeMillis() - recordingStartMillis
+                                if (elapsedTimeMillis < MIN_REQUIRED_RECORDING_TIME_MILLIS) {
+                                    delay(MIN_REQUIRED_RECORDING_TIME_MILLIS - elapsedTimeMillis)
+                                }
+                                delay(2000)
+
+
+
+                                Log.d("stopStreamEncoding", "ATTEMPTING TO SHUTDOWN")
+                                if (encoder.shutdown()) {
+                                    // Broadcasts the media file to the rest of the system
+                                    MediaScannerConnection.scanFile(
+                                        context,
+                                        arrayOf(outputFile.absolutePath),
+                                        arrayOf("video/mp4"),
+                                        null
+                                    )
+                                    Log.d("stopStreamEncoding", "Recording stopped. Output file: $outputFile")
+
+
+                                    if (outputFile.exists()) {
+                                        Log.d("stopStreamEncoding", "EXISTS")
+                                        // Launch external activity via intent to play video recorded using our provider
+                                        startActivity(Intent().apply {
+                                            action = Intent.ACTION_VIEW
+                                            type = MimeTypeMap.getSingleton()
+                                                .getMimeTypeFromExtension(outputFile.extension)
+                                            val authority = "${BuildConfig.APPLICATION_ID}.provider"
+                                            data = FileProvider.getUriForFile(view.context, authority, outputFile)
+                                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                        })
+                                    }else{
+                                        Log.d("stopStreamEncoding", "NOT FOUND")
+                                    }
+                                }
+
+
+
+
+                            }
+
 
 
                             selfStreamingViewModel.setIsStreamLive(false)

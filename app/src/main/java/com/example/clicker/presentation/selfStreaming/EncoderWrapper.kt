@@ -66,21 +66,26 @@ class EncoderWrapper(
      */
     public fun shutdown(): Boolean {
         Log.d(TAG, "releasing encoder objects")
+        Log.d("stopStreamEncoding", "releasing encoder objects")
 
 
         val handler = mEncoderThread!!.getHandler()
         handler.sendMessage(handler.obtainMessage(EncoderThread.EncoderHandler.MSG_SHUTDOWN))
+        Log.d("stopStreamEncoding", "sendMessage to handler")
         try {
-            mEncoderThread!!.join()
+            Log.d("stopStreamEncoding", "sendMessage to JOIN")
+            mEncoderThread!!.join()//
         } catch (ie: InterruptedException ) {
             Log.w(TAG, "Encoder thread join() was interrupted", ie)
         }
 
+        Log.d("stopStreamEncoding", "STOP AND RELEASE")
         mEncoder!!.stop()
         mEncoder!!.release()
 
         return true
     }
+
     //todo: I think this should run when start() is called
     /**
      * Notifies the encoder thread that a new frame is available to the encoder.
@@ -90,6 +95,12 @@ class EncoderWrapper(
         val handler = mEncoderThread!!.getHandler()
         handler.sendMessage(handler.obtainMessage(
             EncoderThread.EncoderHandler.MSG_FRAME_AVAILABLE))
+    }
+
+    /* Wait for at least one frame to process so we don't have an empty video */
+    public fun waitForFirstFrame() {
+
+            mEncoderThread!!.waitForFirstFrame()
     }
 
     /**
@@ -174,9 +185,11 @@ class EncoderWrapper(
     }
 
 
+    /**
+     * ---------------------------------------------- THE START OF EncoderThread -----------------------------------------------------------------
+     * */
 //    One way to create a Thread is to declare a class to be a subclass of Thread. This subclass should
 //    override the run method of class Thread. An instance of the subclass can then be allocated and started.
-
     private class EncoderThread(mediaCodec: MediaCodec,
                                 outputFile: File,
                                 orientationHint: Int): Thread() {
@@ -213,18 +226,21 @@ class EncoderWrapper(
             return mHandler!!
         }
 
+
         /**
          * Thread entry point.
          * <p>
          * Prepares the Looper, Handler, and signals anybody watching that we're ready to go.
          */
          override fun run() {
+            Log.d(TAG, "mReady run CALLED")
             Looper.prepare()
 
 //            A Handler is the mechanism used to enqueue tasks on a Looper’s queue
             mHandler = EncoderHandler(this)    // must create on encoder thread
             Log.d(TAG, "encoder thread ready")
             synchronized (mLock) {
+                Log.d(TAG, "mReady TRUE")
                 mReady = true
                 mLock.notify()    // signal waitUntilReady()
             }
@@ -232,6 +248,7 @@ class EncoderWrapper(
             Looper.loop() // causes the thread to enter a tight loop in which it checks its MessageQueue for tasks
 
             synchronized (mLock) {
+                Log.d(TAG, "mReady FALSE")
                 mReady = false
                 mHandler = null
             }
@@ -246,11 +263,29 @@ class EncoderWrapper(
         public fun waitUntilReady() {
             synchronized (mLock) {
                 while (!mReady) {
+                    Log.d(TAG, "mReady WAIT")
                     try {
                         mLock.wait()
                     } catch (ie: InterruptedException) { /* not expected */ }
                 }
             }
+        }
+        /**
+         * Waits until the encoder has processed a single frame.
+         * <p>
+         * Call from non-encoder thread.
+         */
+        public fun waitForFirstFrame() {
+            synchronized (mLock) {
+                while (mFrameNum < 1) {
+                    try {
+                        mLock.wait()
+                    } catch (ie: InterruptedException) {
+                        ie.printStackTrace();
+                    }
+                }
+            }
+            Log.d(TAG, "Waited for first frame");
         }
 
         /**
@@ -259,7 +294,7 @@ class EncoderWrapper(
          * See notes for {@link EncoderWrapper#frameAvailable()}.
          */
         fun frameAvailable() {
-            Log.d("THREADframeAvailable", "frameAvailable")
+           // Log.d("THREADframeAvailable", "frameAvailable")
             if (drainEncoder()) {
                 synchronized (mLock) {
                     mFrameNum++
@@ -275,6 +310,8 @@ class EncoderWrapper(
             var encodedFrame = false
 
             while (true) {
+
+                
                 var encoderStatus: Int = mEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC)
                 if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                     // no output available yet
@@ -286,12 +323,13 @@ class EncoderWrapper(
                     // rather than extract the codec-specific data and reconstruct a new
                     // MediaFormat later, we just grab it here and keep it around.
                     mEncodedFormat = mEncoder.getOutputFormat()
-                    Log.d(TAG, "encoder output format changed: " + mEncodedFormat)
+                    Log.d("drainEncoder", "encoder output format changed: " + mEncodedFormat)
                 } else if (encoderStatus < 0) {
-                    Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
+                    Log.w("drainEncoder", "unexpected result from encoder.dequeueOutputBuffer: " +
                             encoderStatus)
                     // let's ignore it
                 } else {
+                    //encodedData is the actual compressed video frames, encoded and ready for storage
                     var encodedData: ByteBuffer? = mEncoder.getOutputBuffer(encoderStatus)
                     if (encodedData == null) {
                         throw RuntimeException("encoderOutputBuffer " + encoderStatus +
@@ -303,28 +341,34 @@ class EncoderWrapper(
                         // INFO_OUTPUT_FORMAT_CHANGED status.  The MediaMuxer won't accept
                         // a single big blob -- it wants separate csd-0/csd-1 chunks --
                         // so simply saving this off won't work.
-                       Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG")
+                       Log.d("drainEncoder", "ignoring BUFFER_FLAG_CODEC_CONFIG")
                         mBufferInfo.size = 0
                     }
 
                     if (mBufferInfo.size != 0) {
                         // adjust the ByteBuffer values to match BufferInfo (not needed?)
+                        //tells where the valid data starts and moves the buffer's read pointer to the start of the valid data.
                         encodedData.position(mBufferInfo.offset)
+                        //prevents reading beyond the valid data.
+                        //This ensures only the encoded frame data and not extra padding or old data is sent to
+                        //the MediaMixer
                         encodedData.limit(mBufferInfo.offset + mBufferInfo.size)
 
                         if (mVideoTrack == -1) {
+                            //initialize the MediaMuxer if needed
                             mVideoTrack = mMuxer.addTrack(mEncodedFormat!!)
                             mMuxer.setOrientationHint(mOrientationHint)
                             mMuxer.start()
-                            Log.d(TAG, "Started media muxer")
+                            Log.d("drainEncoder", "Started media muxer")
                         }
 
 
+                        //writes the encoded frame into the muxer.
                         mMuxer.writeSampleData(mVideoTrack, encodedData, mBufferInfo)
                         encodedFrame = true
 
 
-                        Log.d(TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
+                        Log.d("drainEncoder", "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
                                     mBufferInfo.presentationTimeUs)
 
                     }
@@ -332,7 +376,7 @@ class EncoderWrapper(
                     mEncoder.releaseOutputBuffer(encoderStatus, false)
 
                     if ((mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                        Log.w(TAG, "reached end of stream unexpectedly")
+                        Log.w("drainEncoder", "reached end of stream unexpectedly")
                         break      // out of while
                     }
                 }
@@ -345,11 +389,12 @@ class EncoderWrapper(
          * Tells the Looper to quit.
          */
         fun shutdown() {
-             Log.d(TAG, "shutdown")
+             Log.d(TAG, "shutdown the mMuxer")
             Looper.myLooper()!!.quit()
             mMuxer.stop()
             mMuxer.release()
         }
+
 
 
 /**
