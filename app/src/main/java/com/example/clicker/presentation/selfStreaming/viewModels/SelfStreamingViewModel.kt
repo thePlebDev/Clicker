@@ -105,25 +105,28 @@ class SelfStreamingViewModel @Inject constructor(
     }
 
 
-    val host = "ingest.global-contribute.live-video.net"
-    val port = 443 // RTMPS secure port
-    val app = "app" // RTMP application name
-
-
-
-    init{
-        viewModelScope.launch {
-            val rtmpsClient = RtmpsClient2(host, port, app)
-            rtmpsClient.connect()
-
-            // After connection and handshake, you can start sending video/audio data
-
-            // Disconnect after finishing
-           // delay(10000)
-            rtmpsClient.disconnect()
-        }
-
-    }
+//    val host = "ingest.global-contribute.live-video.net"
+//    val port = 443 // RTMPS secure port
+//    val app = "app" // RTMP application name
+//
+//
+//
+//    init{
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val rtmpsClient = RtmpsClient2(host, port, app)
+//            rtmpsClient.connect()
+//
+//            // After connection and handshake, you can start sending video/audio data
+//
+//            // Disconnect after finishing
+//
+//            rtmpsClient.sendRtmpConnect("live_946933663_yv2XEXjO3MAkrsWJMzGrOINwYrSzmT")
+//            rtmpsClient.sendRtmpPublish("live_946933663_yv2XEXjO3MAkrsWJMzGrOINwYrSzmT")
+//             delay(10000)
+//            rtmpsClient.disconnect()
+//        }
+//
+//    }
 
 
 
