@@ -10,6 +10,8 @@ import android.view.Surface
 import com.example.clicker.presentation.selfStreaming.EncoderWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.EOFException
+import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.Random
@@ -89,36 +91,42 @@ class RtmpsClient2(
         }
     }
 
+
     private suspend fun performRtmpHandshake() {
         withContext(Dispatchers.IO) {
             try {
-
                 val timestamp = System.currentTimeMillis().toInt()
                 val randomData = ByteArray(1528).apply { Random().nextBytes(this) }
 
+                val c0 = ByteArray(1)
+                c0[0] =3
                 // Build C0 + C1
-                val handshake = ByteArray(1537).apply {
-                    //C0
-                    this[0] = 3 // RTMP version
-
-                    //C1
+                val c1 = ByteArray(1536).apply {
+                   // time (4 bytes)
                     // Copy timestamp (4 bytes) directly
                     val timestampBytes = ByteBuffer.allocate(4).putInt(timestamp).array()
-                    this[1] = timestampBytes[0]
-                    this[2] = timestampBytes[1]
-                    this[3] = timestampBytes[2]
-                    this[4] = timestampBytes[3]
+                    this[0] = timestampBytes[0]
+                    this[1] = timestampBytes[1]
+                    this[2] = timestampBytes[2]
+                    this[3] = timestampBytes[3]
 
+                    //zero (4 bytes)
                     // Copy 4 zero bytes directly
+                    this[4] = 0
                     this[5] = 0
                     this[6] = 0
                     this[7] = 0
-                    this[8] = 0
 
+                    //random bytes
                     // Copy randomData (1528 bytes) directly
                     for (i in randomData.indices) {
-                        this[9 + i] = randomData[i]
+                        this[8 + i] = randomData[i]
                     }
+                }
+
+                val handshake = ByteArray(1537).apply {
+                    this[0] = 3 // C0: RTMP version
+                    System.arraycopy(c1, 0, this, 1, c1.size) // C1
                 }
 
                 // Send C0 + C1
@@ -129,8 +137,10 @@ class RtmpsClient2(
                 // Read S0 + S1
                 val inputStream = sslSocket.getInputStream()
                 val response = ByteArray(1537)
-                inputStream.read(response)
-                //THIS IS TO VERIFY THE RESPONSE
+                inputStream.readFully(response)
+
+                //MUST wait until S1 has been received before sending C2
+                // Verify S0
                 if (response[0] != 3.toByte()) {
                     throw IllegalStateException("Invalid RTMP handshake version from server")
                 }
@@ -162,15 +172,31 @@ class RtmpsClient2(
                 outputStream.write(c2)
                 outputStream.flush()
 
-
                 // Read S2
                 val s2 = ByteArray(1536)
-                inputStream.read(s2)
+                inputStream.readFully(s2)
 
-                Log.i(TAG, "RTMP handshake successful")
+                //MUST wait until S2
+                // Verify S2 matches C1
+                if (!s2.contentEquals(c1)) {
+                    throw IllegalStateException("Invalid RTMP handshake response from server")
+                }
+
+                Log.i(TAG, "RTMP handshake successful. Everything matches. begin sending data")
             } catch (e: Exception) {
                 Log.e(TAG, "Handshake failed: ${e.message}", e)
             }
+        }
+    }
+
+    fun InputStream.readFully(buffer: ByteArray) {
+        var bytesRead = 0
+        while (bytesRead < buffer.size) {
+            val result = this.read(buffer, bytesRead, buffer.size - bytesRead)
+            if (result == -1) {
+                throw EOFException("Unexpected end of stream")
+            }
+            bytesRead += result
         }
     }
 
