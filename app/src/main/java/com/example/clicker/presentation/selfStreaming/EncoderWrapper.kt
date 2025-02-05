@@ -21,6 +21,8 @@ class EncoderWrapper(
     frameRate: Int,
     orientationHint: Int,
     outputFile: File,
+    sendToTwitch:(ByteBuffer)->Unit
+
 
     ){
 
@@ -46,7 +48,7 @@ class EncoderWrapper(
 
     private val mEncoderThread: EncoderThread? by lazy {
 
-        EncoderThread(mEncoder!!, outputFile, mOrientationHint)
+        EncoderThread(mEncoder!!, outputFile,sendToTwitch={buffer ->sendToTwitch(buffer)}, mOrientationHint)
 
     }
 
@@ -108,27 +110,7 @@ class EncoderWrapper(
      */
     init {
 
-        val codecProfile = when (mVideoCodec) {
-            VIDEO_CODEC_ID_HEVC -> when {
-                dynamicRange == DynamicRangeProfiles.HLG10 ->
-                    MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10
-                dynamicRange == DynamicRangeProfiles.HDR10 ->
-                    MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10
-                dynamicRange == DynamicRangeProfiles.HDR10_PLUS ->
-                    MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus
-                else -> -1
-            }
-            VIDEO_CODEC_ID_AV1 -> when {
-                dynamicRange == DynamicRangeProfiles.HLG10 ->
-                    MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10
-                dynamicRange == DynamicRangeProfiles.HDR10 ->
-                    MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10
-                dynamicRange == DynamicRangeProfiles.HDR10_PLUS ->
-                    MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus
-                else -> -1
-            }
-            else -> -1
-        }
+        val codecProfile =1
 
         val format = MediaFormat.createVideoFormat(mMimeType, width, height)
 
@@ -141,13 +123,13 @@ class EncoderWrapper(
         format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL)
 
-        if (codecProfile != -1) {
+
             format.setInteger(MediaFormat.KEY_PROFILE, codecProfile)
             format.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT2020)
             format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
             format.setInteger(MediaFormat.KEY_COLOR_TRANSFER, getTransferFunction())
             format.setFeatureEnabled(MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true)
-        }
+
 
         Log.d(TAG, "format: " + format)
 
@@ -192,6 +174,7 @@ class EncoderWrapper(
 //    override the run method of class Thread. An instance of the subclass can then be allocated and started.
     private class EncoderThread(mediaCodec: MediaCodec,
                                 outputFile: File,
+                                private val sendToTwitch:(ByteBuffer)->Unit,
                                 orientationHint: Int): Thread() {
         val mEncoder = mediaCodec
         var mEncodedFormat: MediaFormat? = null
@@ -353,6 +336,10 @@ class EncoderWrapper(
                         //This ensures only the encoded frame data and not extra padding or old data is sent to
                         //the MediaMixer
                         encodedData.limit(mBufferInfo.offset + mBufferInfo.size)
+                        //TODO: THIS IS WHERE i WOULD SEND THE ENCODED DATA
+
+                        sendToTwitch(encodedData)
+
 
                         if (mVideoTrack == -1) {
                             //initialize the MediaMuxer if needed

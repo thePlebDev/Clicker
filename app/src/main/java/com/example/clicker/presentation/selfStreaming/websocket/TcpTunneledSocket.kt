@@ -1,11 +1,13 @@
 package com.example.clicker.presentation.selfStreaming.websocket
 
+import android.hardware.camera2.CameraCharacteristics
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.opengl.EGL14
 import android.util.Log
 import android.view.Surface
+import com.example.clicker.presentation.selfStreaming.EncoderWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
@@ -21,7 +23,8 @@ import javax.net.ssl.SSLSocketFactory
 class RtmpsClient2(
     private val host: String,
     private val port: Int,
-    private val app: String
+    private val app: String,
+
 ) {
     companion object {
         private const val TAG = "RtmpsClient"
@@ -42,8 +45,12 @@ class RtmpsClient2(
 
     // allocate one of these up front so we don't need to do it every time
     private var mBufferInfo: MediaCodec.BufferInfo? = null
-    private lateinit var  mEncoder: MediaCodec
+
 //    private lateinit var  mInputSurface: CodecInputSurface
+
+//    private val mInputSurface: Surface by lazy {
+//        encoder.getInputSurface()
+//    }
 
 
     // Perform connection on background thread using Coroutine
@@ -72,6 +79,8 @@ class RtmpsClient2(
 
                 // Step 3: Perform the RTMP handshake
                 performRtmpHandshake()
+                // ✅ Step 4: Check RTMP Connection Status
+//                checkRtmpConnectionStatus(sslSocket)
 
                 Log.i(TAG, "RTMPS handshake completed successfully")
             }
@@ -121,6 +130,7 @@ class RtmpsClient2(
                 val inputStream = sslSocket.getInputStream()
                 val response = ByteArray(1537)
                 inputStream.read(response)
+                //THIS IS TO VERIFY THE RESPONSE
                 if (response[0] != 3.toByte()) {
                     throw IllegalStateException("Invalid RTMP handshake version from server")
                 }
@@ -164,6 +174,63 @@ class RtmpsClient2(
         }
     }
 
+    fun sendDataInChunks(encodedData: ByteBuffer) {
+        val data = ByteArray(encodedData.remaining())
+        encodedData.get(data) // Retrieve the data from ByteBuffer
+        Log.d("sendDataInChunks","SENDING.......")
+
+        var offset = 0
+        val chunkStreamId = 3 // Example chunk stream ID
+
+        while (offset < data.size) {
+            val remaining = data.size - offset
+            val currentChunkSize = minOf(128, remaining)
+
+            // Create and send the chunk header
+            val header = createChunkHeader(chunkStreamId, currentChunkSize, offset == 0)
+            outputStream.write(header)
+            Log.d("sendDataInChunks","HEADER")
+
+            // Send the chunk data
+            outputStream.write(data, offset, currentChunkSize)
+            Log.d("sendDataInChunks","DATA")
+
+            // Update offset
+            offset += currentChunkSize
+        }
+        outputStream.flush() // Ensure all data is sent
+    }
+
+    fun createChunkHeader(chunkStreamId: Int, chunkSize: Int, isFirstChunk: Boolean): ByteArray {
+        val headerType = if (isFirstChunk) 0 else 3 // Type 0 for first chunk, Type 3 for subsequent chunks
+        val header = ByteArray(12) // Basic header + Message header (Type 0)
+
+        // Basic header
+        header[0] = ((headerType shl 6) or chunkStreamId).toByte()
+
+        // Message header for Type 0
+        if (isFirstChunk) {
+            val timestamp = 0 // Example timestamp
+            header[1] = ((timestamp shr 16) and 0xFF).toByte()
+            header[2] = ((timestamp shr 8) and 0xFF).toByte()
+            header[3] = (timestamp and 0xFF).toByte()
+            header[4] = ((chunkSize shr 16) and 0xFF).toByte()
+            header[5] = ((chunkSize shr 8) and 0xFF).toByte()
+            header[6] = (chunkSize and 0xFF).toByte()
+            header[7] = 8 // Example message type ID
+            header[8] = 0 // Message stream ID (little-endian)
+            header[9] = 0
+            header[10] = 0
+            header[11] = 0
+        }
+
+        return header
+    }
+
+
+
+
+
     suspend fun disconnect() {
         withContext(Dispatchers.IO) {
             try {
@@ -175,6 +242,38 @@ class RtmpsClient2(
         }
     }
 
+
+    suspend fun checkRtmpConnectionStatus(socket: SSLSocket) {
+        Log.i(TAG, "CHECKING RESPONSE")
+        withContext(Dispatchers.IO) {
+            try {
+                val inputStream = socket.getInputStream()
+                val buffer = ByteArray(4096) // Buffer for incoming RTMP messages
+                val bytesRead = inputStream.read(buffer)
+
+                if (bytesRead > 0) {
+                    // Log raw RTMP response in hex format
+                    val responseHex = buffer.copyOf(bytesRead).joinToString(" ") { String.format("%02X", it) }
+                    Log.i(TAG, "Raw RTMP Response (Hex): $responseHex")
+
+                    // Try to decode the response as UTF-8 text
+                    val responseText = String(buffer.copyOf(bytesRead), Charsets.UTF_8)
+                    Log.i(TAG, "Decoded RTMP Response: $responseText")
+
+                    // Check if the RTMP server sent a successful connection response
+                    if (responseText.contains("NetConnection.Connect.Success")) {
+                        Log.i(TAG, "RTMP connection established successfully!")
+                    } else {
+                        Log.e(TAG, "RTMP connection failed or pending: $responseText")
+                    }
+                } else {
+                    Log.e(TAG, "No data received from RTMP server")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error reading RTMP response: ${e.message}", e)
+            }
+        }
+    }
 
 
 

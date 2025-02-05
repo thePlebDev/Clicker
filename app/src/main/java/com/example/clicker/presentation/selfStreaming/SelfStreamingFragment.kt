@@ -53,6 +53,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
@@ -61,6 +62,7 @@ import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.selfStreaming.surfaces.AutoFitSurfaceView
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.selfStreaming.views.SelfStreamingView
+import com.example.clicker.presentation.selfStreaming.websocket.RtmpsClient2
 import com.example.clicker.ui.theme.AppTheme
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.Dispatchers
@@ -201,6 +203,28 @@ class SelfStreamingFragment : Fragment() {
         pipeline.createPreviewRequest(session)
     }
 
+    val host = "ingest.global-contribute.live-video.net"
+    val port = 443 // RTMPS secure port
+    val app = "app" // RTMP application name
+    val rtmpsClient = RtmpsClient2(host, port, app)
+
+
+
+    init{
+        lifecycleScope.launch(Dispatchers.IO) {
+
+            rtmpsClient.connect()
+
+            // After connection and handshake, you can start sending video/audio data
+
+            // Disconnect after finishing
+
+
+            delay(60000)
+            rtmpsClient.disconnect()
+        }
+
+    }
 
 
 
@@ -428,10 +452,10 @@ class SelfStreamingFragment : Fragment() {
 
         // Create a capture session using the predefined targets; this also involves defining the
         // session state callback to be notified of when the session is ready
-        // ✅ Convert List<Surface> into OutputConfiguration
+        // Convert List<Surface> into OutputConfiguration
         val outputConfigs = targets.map { OutputConfiguration(it) }
 
-        // ✅ Create SessionConfiguration
+        //  Create SessionConfiguration
         val sessionConfig = SessionConfiguration(
             SessionConfiguration.SESSION_REGULAR, // Use SESSION_HIGH_SPEED for high frame rates
             outputConfigs,
@@ -701,7 +725,13 @@ class SelfStreamingFragment : Fragment() {
             RECORDER_VIDEO_BITRATE,
            fps,
             orientation,
-            outputFile
+            outputFile,
+            sendToTwitch = {buffer ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    rtmpsClient.sendDataInChunks(buffer)
+                }
+
+            }
         )
     }
 
