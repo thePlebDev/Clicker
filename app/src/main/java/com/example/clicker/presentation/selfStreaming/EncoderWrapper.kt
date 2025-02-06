@@ -11,8 +11,11 @@ import android.os.Message
 import android.util.Log
 import android.view.Surface
 import java.io.File
+import java.io.OutputStream
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class EncoderWrapper(
     width: Int,
@@ -424,5 +427,6 @@ class EncoderWrapper(
             }
         }
     }
+
 
 }
