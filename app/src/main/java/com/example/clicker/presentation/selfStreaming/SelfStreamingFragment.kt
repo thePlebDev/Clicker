@@ -727,10 +727,8 @@ class SelfStreamingFragment : Fragment() {
             orientation,
             outputFile,
             sendToTwitch = {buffer ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    rtmpsClient.sendDataInChunks(buffer)
-                }
-
+                    val chunk =rtmpsClient.createRTMPChunk(buffer)
+                    rtmpsClient.RTMP_SendChunk(chunk)
             }
         )
     }

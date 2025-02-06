@@ -11,10 +11,14 @@ import com.example.clicker.presentation.selfStreaming.EncoderWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.EOFException
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.Random
+import java.util.logging.Level
+import java.util.logging.Logger
 import javax.net.ssl.HandshakeCompletedEvent
 import javax.net.ssl.HandshakeCompletedListener
 import javax.net.ssl.SSLContext
@@ -98,8 +102,7 @@ class RtmpsClient2(
                 val timestamp = System.currentTimeMillis().toInt()
                 val randomData = ByteArray(1528).apply { Random().nextBytes(this) }
 
-                val c0 = ByteArray(1)
-                c0[0] =3
+
                 // Build C0 + C1
                 val c1 = ByteArray(1536).apply {
                    // time (4 bytes)
@@ -183,6 +186,7 @@ class RtmpsClient2(
                 }
 
                 Log.i(TAG, "RTMP handshake successful. Everything matches. begin sending data")
+                connect("app")
             } catch (e: Exception) {
                 Log.e(TAG, "Handshake failed: ${e.message}", e)
             }
@@ -200,57 +204,92 @@ class RtmpsClient2(
         }
     }
 
-    fun sendDataInChunks(encodedData: ByteBuffer) {
-        val data = ByteArray(encodedData.remaining())
-        encodedData.get(data) // Retrieve the data from ByteBuffer
-        Log.d("sendDataInChunks","SENDING.......")
+    fun connect(appName: String) {
+        try {
 
-        var offset = 0
-        val chunkStreamId = 3 // Example chunk stream ID
+           // rtmp://ingest.global-contribute.live-video.net/app/{stream_key}
 
-        while (offset < data.size) {
-            val remaining = data.size - offset
-            val currentChunkSize = minOf(128, remaining)
+            val commandName = "connect"
+            val transactionId = 1 // Always 1 for connect
+            val commandObject = mapOf(
+                "app" to appName,
+                "flashver" to "FMSc/1.0",
+                "swfUrl" to "file://C:/FlvPlayer.swf",
+                "tcUrl" to "rtmps://ingest.global-contribute.live-video.net:443/app/",
+                "fpad" to false,
+                "audioCodecs" to 0x0FFF,
+                "videoCodecs" to 0x00FF,
+                "videoFunction" to 1,
+                "pageUrl" to "http://somehost/sample.html",
+                "objectEncoding" to 3 // AMF3
+            )
 
-            // Create and send the chunk header
-            val header = createChunkHeader(chunkStreamId, currentChunkSize, offset == 0)
-            outputStream.write(header)
-            Log.d("sendDataInChunks","HEADER")
+            val encodedMessage = encodeAmf(commandName, transactionId, commandObject)
+            outputStream.write(encodedMessage)
+            outputStream.flush()
 
-            // Send the chunk data
-            outputStream.write(data, offset, currentChunkSize)
-            Log.d("sendDataInChunks","DATA")
-
-            // Update offset
-            offset += currentChunkSize
+            listenForResponse()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        outputStream.flush() // Ensure all data is sent
     }
 
-    fun createChunkHeader(chunkStreamId: Int, chunkSize: Int, isFirstChunk: Boolean): ByteArray {
-        val headerType = if (isFirstChunk) 0 else 3 // Type 0 for first chunk, Type 3 for subsequent chunks
-        val header = ByteArray(12) // Basic header + Message header (Type 0)
 
-        // Basic header
-        header[0] = ((headerType shl 6) or chunkStreamId).toByte()
 
-        // Message header for Type 0
-        if (isFirstChunk) {
-            val timestamp = 0 // Example timestamp
-            header[1] = ((timestamp shr 16) and 0xFF).toByte()
-            header[2] = ((timestamp shr 8) and 0xFF).toByte()
-            header[3] = (timestamp and 0xFF).toByte()
-            header[4] = ((chunkSize shr 16) and 0xFF).toByte()
-            header[5] = ((chunkSize shr 8) and 0xFF).toByte()
-            header[6] = (chunkSize and 0xFF).toByte()
-            header[7] = 8 // Example message type ID
-            header[8] = 0 // Message stream ID (little-endian)
-            header[9] = 0
-            header[10] = 0
-            header[11] = 0
+    private fun encodeAmf(commandName: String, transactionId: Int, commandObject: Map<String, Any>): ByteArray {
+        val buffer = ByteBuffer.allocate(1024) // Allocate enough space
+
+        // Encode command name as AMF string
+        buffer.put(0x02) // AMF0 String marker
+        buffer.putShort(commandName.length.toShort())
+        buffer.put(commandName.toByteArray(Charsets.UTF_8))
+
+        // Encode transaction ID as AMF number
+        buffer.put(0x00) // AMF0 Number marker
+        buffer.putDouble(transactionId.toDouble())
+
+        // Encode command object as AMF object
+        buffer.put(0x03) // AMF0 Object marker
+        commandObject.forEach { (key, value) ->
+            buffer.putShort(key.length.toShort())
+            buffer.put(key.toByteArray(Charsets.UTF_8))
+
+            when (value) {
+                is String -> {
+                    buffer.put(0x02) // AMF0 String marker
+                    buffer.putShort(value.length.toShort())
+                    buffer.put(value.toByteArray(Charsets.UTF_8))
+                }
+                is Boolean -> {
+                    buffer.put(0x01) // AMF0 Boolean marker
+                    buffer.put(if (value) 1 else 0)
+                }
+                is Number -> {
+                    buffer.put(0x00) // AMF0 Number marker
+                    buffer.putDouble(value.toDouble())
+                }
+            }
         }
+        buffer.put(0x00) // End of object
+        buffer.put(0x00)
+        buffer.put(0x09)
 
-        return header
+        return buffer.array().copyOf(buffer.position())
+    }
+
+
+
+    private fun listenForResponse() {
+        val inputStream = sslSocket.getInputStream()
+        val responseBuffer = ByteArray(1024)
+        val bytesRead = inputStream.read(responseBuffer)
+
+        if (bytesRead > 0) {
+            val response = String(responseBuffer, 0, bytesRead, Charsets.UTF_8)
+            Log.d(TAG,"listenForResponse() Server Response: $response")
+        }else{
+            Log.d(TAG,"bytesRead < 0 --->: $bytesRead")
+        }
     }
 
 
@@ -303,6 +342,117 @@ class RtmpsClient2(
 
 
 
+    data class RTMPChunk(
+        val c_chunk: ByteArray,
+        val c_header: ByteArray,
+        val c_chunkSize: Int,
+        val c_headerSize: Int
+    )
+
+    fun RTMP_SendChunk(chunk: RTMPChunk): Int {
+        val logger = Logger.getLogger("RTMP")
+        var wrote = 0
+        val hbuf = ByteArray(RTMP_MAX_HEADER_SIZE)
+
+        logger.log(Level.FINE, "{0}: size={1}", arrayOf("RTMP_SendChunk", chunk.c_chunkSize))
+        logger.log(Level.FINE, chunk.c_header.joinToString("") { String.format("%02x", it) })
+
+        if (chunk.c_chunkSize > 0) {
+            val ptr = ByteArray(chunk.c_headerSize + chunk.c_chunkSize)
+            System.arraycopy(chunk.c_chunk, 0, ptr, chunk.c_headerSize, chunk.c_chunkSize)
+            logger.log(Level.FINE, chunk.c_chunk.joinToString("") { String.format("%02x", it) })
+
+            // Save header bytes we're about to overwrite
+            System.arraycopy(ptr, 0, hbuf, 0, chunk.c_headerSize)
+            System.arraycopy(chunk.c_header, 0, ptr, 0, chunk.c_headerSize)
+
+//            outputStream.write(ptr)
+//            outputStream.flush()
+
+            if (sslSocket.session.isValid) {
+                Log.d("RTMP", "SSL Handshake successful")
+            } else {
+                Log.e("RTMP", "SSL Handshake failed, server might be rejecting connection")
+            }
+            if (sslSocket.inputStream.read() == -1) {
+                Log.e("RTMP", "Server closed the connection immediately")
+            }
+
+            if (!sslSocket.isClosed && sslSocket.isConnected) {
+                try {
+                    outputStream.write(ptr)
+                    outputStream.flush()
+                    Log.d("RTMP", "Chunk sent successfully")
+                } catch (e: IOException) {
+                    Log.e("RTMP", "Error writing to stream: ${e.message}")
+                }
+            } else {
+                Log.e("RTMP", "Socket is closed, cannot write")
+            }
+            wrote = chunk.c_headerSize + chunk.c_chunkSize
+
+            // Restore the original header bytes
+            System.arraycopy(hbuf, 0, ptr, 0, chunk.c_headerSize)
+        } else {
+           outputStream.write(chunk.c_header)
+            outputStream.flush()
+            wrote = chunk.c_headerSize
+        }
+
+        return wrote
+    }
+
+     val RTMP_MAX_HEADER_SIZE = 18
+
+
+    fun createRTMPChunk(encodedData: ByteBuffer?): RTMPChunk {
+        // Define the header size (example value)
+        val headerSize = 12
+
+        // Extract data from the ByteBuffer
+        val data = ByteArray(encodedData?.remaining() ?: 0)
+        encodedData?.get(data)
+
+        // Define the chunk header (example values)
+        val header = ByteArray(headerSize)
+        // Populate the header with example values
+        // In a real scenario, you would set this based on your protocol requirements
+        header[0] = 0x02 // Example header byte
+
+        // Create the RTMPChunk instance
+        return RTMPChunk(
+            c_chunk = data,
+            c_header = header,
+            c_chunkSize = data.size/2,
+            c_headerSize = header.size
+        )
+    }
+
+    fun rtmp_open_for_write(){
+        val rtmp = rtmpInit()
+
+    }
+    fun rtmpInit():RTMP{
+        val RTMP_DEFAULT_CHUNKSIZE = 128
+
+        val rtmpChunk =RTMP()
+        rtmpChunk.mSb?.socket = -1
+        rtmpChunk.mInChunkSize =RTMP_DEFAULT_CHUNKSIZE
+        rtmpChunk.mOutChunkSize =RTMP_DEFAULT_CHUNKSIZE
+
+        rtmpChunk.mNBufferMS =30000
+        rtmpChunk.mNClientBW =2500000
+        rtmpChunk.mNClientBW2 =2
+        rtmpChunk.mNServerBW=2500000
+        rtmpChunk.mFAudioCodecs =3191.0
+        rtmpChunk.mFVideoCodecs =252.0
+        rtmpChunk.link?.receiveTimeoutInMs = 10000
+        rtmpChunk.link?.swfAge = 30
+
+
+        return rtmpChunk
+
+    }
 
 
 }
