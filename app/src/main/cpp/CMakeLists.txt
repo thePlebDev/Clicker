@@ -49,6 +49,21 @@ add_library(video_encoder SHARED
 add_library(camera_stream SHARED
         camera_stream.cpp)
 
+add_library(
+        # Specifies the name of the library.
+        rtmp_client
+        # Sets the library as a shared library.
+        SHARED
+        # Provides a relative path to your source file(s).
+        rtmp_client.cpp)
+
+# Link libraries for rtmp_client
+target_link_libraries(rtmp_client
+        android
+        log
+        EGL
+        GLESv2)
+
 find_library( camera-lib camera2ndk )
 find_library( media-lib mediandk )
 find_library( android-lib android )
