@@ -94,10 +94,7 @@ class SelfStreamingFragment : Fragment() {
     private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(requireContext()) }
     private val captureLiveStatus = MutableLiveData<String>()
 
-    init {
-        val testing =RTMPNativeClient().nativeOpen("",false,1L,3,3)
-        Log.d("TESTINGnATIVEoPEN","VALUE RETURNED ----> $testing")
-    }
+
 
 
     private var handlerThread: HandlerThread? = null

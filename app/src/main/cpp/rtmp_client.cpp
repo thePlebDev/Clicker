@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "rtmp_client.h"
+
 
 //Now I need to make the JNI file
 extern "C"
@@ -16,5 +18,9 @@ Java_com_example_clicker_presentation_selfStreaming_RTMPNativeClient_nativeOpen(
                                                                                 jlong rtmp_pointer,
                                                                                 jint send_timeout_in_ms,
                                                                                 jint receive_timeout_in_ms) {
+    RTMP *rtmp = (RTMP *) rtmpPointer;
+
+
     return -1;
 }
+

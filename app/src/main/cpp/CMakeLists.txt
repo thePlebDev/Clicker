@@ -55,7 +55,13 @@ add_library(
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
-        rtmp_client.cpp)
+        rtmp_client.cpp
+
+)
+# I need to link the target libraries with rtmp.h and then link rtmp.h with rtmp_client
+
+#added to the INCLUDE_DIRECTORIES directory for preproccessing
+include_directories(rtmp_client.h)
 
 # Link libraries for rtmp_client
 target_link_libraries(rtmp_client
@@ -63,6 +69,14 @@ target_link_libraries(rtmp_client
         log
         EGL
         GLESv2)
+
+
+
+
+
+
+
+
 
 find_library( camera-lib camera2ndk )
 find_library( media-lib mediandk )
