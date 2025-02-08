@@ -12,16 +12,31 @@
 
 #endif //CLICKER_RTMP_H
 #define RTMP_MAX_HEADER_SIZE 18
+#define RTMP_FEATURE_HTTP	0x01
+#define RTMP_FEATURE_ENC	0x02
+#define RTMP_FEATURE_SSL	0x04
+#define RTMP_FEATURE_MFP	0x08	/* not yet supported */
+#define RTMP_FEATURE_WRITE	0x10	/* publish, not play */
+#define RTMP_FEATURE_HTTP2	0x20	/* server-side rtmpt */
 /* needs to fit largest number of bytes recv() may return */
 #define RTMP_BUFFER_CACHE_SIZE (16*1024)
+#define RTMP_PROTOCOL_RTMP      0
+#define RTMP_PROTOCOL_RTMPT     RTMP_FEATURE_HTTP
+#define RTMP_PROTOCOL_RTMPS     RTMP_FEATURE_SSL
+#define RTMP_PROTOCOL_RTMPTE    (RTMP_FEATURE_HTTP|RTMP_FEATURE_ENC)
+#define RTMP_PROTOCOL_RTMPTS    (RTMP_FEATURE_HTTP|RTMP_FEATURE_SSL)
+#define RTMP_PROTOCOL_RTMPE     RTMP_FEATURE_ENC
+#define RTMP_PROTOCOL_RTMFP     RTMP_FEATURE_MFP
+
+#define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 
 
 
 
-struct AVal{
-    char *av_val;
+ struct AVal{
+    const char* av_val;
     int av_len;
-};
+} ;
 
 struct RTMP_METHOD{
     AVal name;
@@ -85,11 +100,35 @@ struct RTMPSockBuf{
     int sb_timedout;
     void *sb_ssl;
 };
- struct AMFObject
+typedef enum
+{ AMF_NUMBER = 0, AMF_BOOLEAN, AMF_STRING, AMF_OBJECT,
+    AMF_MOVIECLIP,		/* reserved, not used */
+    AMF_NULL, AMF_UNDEFINED, AMF_REFERENCE, AMF_ECMA_ARRAY, AMF_OBJECT_END,
+    AMF_STRICT_ARRAY, AMF_DATE, AMF_LONG_STRING, AMF_UNSUPPORTED,
+    AMF_RECORDSET,		/* reserved, not used */
+    AMF_XML_DOC, AMF_TYPED_OBJECT,
+    AMF_AVMPLUS,		/* switch to AMF3 */
+    AMF_INVALID = 0xff
+} AMFDataType;
+struct AMFObject
 {
     int o_num;
     struct AMFObjectProperty *o_props;
 };
+struct AMFObjectProperty
+{
+    AVal p_name;
+    AMFDataType p_type;
+    union
+    {
+        double p_number;
+        AVal p_aval;
+        AMFObject p_object;
+    } p_vu;
+    int16_t p_UTCoffset;
+} ;
+
+
 
 //todo: WHY DOES THIS NEED THE TYPEDEF?
  struct RTMP_LNK{
@@ -229,8 +268,11 @@ typedef enum RTMPResult_ {
 } RTMPResult;
 void RTMP_Init(RTMP *r);
 RTMP *RTMP_Alloc(void);
-RTMPResult RTMP_SetupURL(RTMP *r, const char *url);
-int RTMP_ParseURL(const char *url, int *protocol, AVal *host,
+RTMPResult RTMP_SetupURL(RTMP *r,  char *url);
+int RTMP_ParseURL( char *url, int *protocol, AVal *host,
                   unsigned int *port, AVal *playpath, AVal *app);
+void AMF_AddProp(AMFObject * obj, const AMFObjectProperty * prop);
+
+
 
 
