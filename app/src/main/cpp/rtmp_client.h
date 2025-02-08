@@ -34,7 +34,7 @@
 
 
  struct AVal{
-    const char* av_val;
+     char* av_val;
     int av_len;
 } ;
 
@@ -272,6 +272,7 @@ RTMPResult RTMP_SetupURL(RTMP *r,  char *url);
 int RTMP_ParseURL( char *url, int *protocol, AVal *host,
                   unsigned int *port, AVal *playpath, AVal *app);
 void AMF_AddProp(AMFObject * obj, const AMFObjectProperty * prop);
+RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp);
 
 
 
