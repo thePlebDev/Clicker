@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h> //socket.h includes a number of definitions of structures needed for sockets.
+#include <netinet/in.h> //in.h contains constants and structures needed for internet domain addresses.
+#include <arpa/inet.h>
+#include <netdb.h>
 #include "rtmp_client.h"
 
 
@@ -14,6 +18,18 @@
 #define RTMP_DEFAULT_CHUNKSIZE	128
 
 #define OFF(x)	offsetof(struct RTMP,x)
+//todo: read up on arrays
+const char RTMPProtocolStringsLower[][7] = {
+        "rtmp",
+        "rtmpt",
+        "rtmpe",
+        "rtmpte",
+        "rtmps",
+        "rtmpts",
+        "",
+        "",
+        "rtmfp"
+};
 
 
 void RTMP_Init(RTMP *r){
@@ -250,6 +266,29 @@ int RTMP_SetOpt(RTMP *r, const AVal *opt, AVal *arg)
 
     return RTMP_SUCCESS;
 }
+static void
+SocksSetup(RTMP *r, AVal *sockshost){
+    if (sockshost->av_len)
+    {
+        LOGI("SocksSetup", "sockshost->av_len");
+        const char *socksport = strchr(sockshost->av_val, ':');
+        char *hostname = strdup(sockshost->av_val);
+
+        if (socksport)
+            hostname[socksport - sockshost->av_val] = '\0';
+        r->Link.sockshost.av_val = hostname;
+        r->Link.sockshost.av_len = strlen(hostname);
+
+        r->Link.socksport = socksport ? atoi(socksport + 1) : 1080;
+
+        LOGI("SocksSetup", "Connecting via SOCKS proxy: %s:%d", r->Link.sockshost.av_val,
+             r->Link.socksport);
+    }else{
+        r->Link.sockshost.av_val = NULL;
+        r->Link.sockshost.av_len = 0;
+        r->Link.socksport = 0;
+    }
+}
 
 RTMPResult RTMP_SetupURL(RTMP *r,  char *url){
     AVal opt, arg;
@@ -315,9 +354,116 @@ RTMPResult RTMP_SetupURL(RTMP *r,  char *url){
         if (ret != RTMP_SUCCESS)
             return (RTMPResult) ret;
     }
+    if (!r->Link.tcUrl.av_len){
+        r->Link.tcUrl.av_val = url;
+        if (r->Link.app.av_len){
+            if (r->Link.app.av_val < url + len){
+                /* if app is part of original url, just use it */
+                r->Link.tcUrl.av_len = r->Link.app.av_len + (r->Link.app.av_val - url);
+            }else{
+                len = r->Link.hostname.av_len + r->Link.app.av_len +
+                      sizeof("rtmpte://:65535/");
+                r->Link.tcUrl.av_val = static_cast<char *>(malloc(len));
+                r->Link.tcUrl.av_len = snprintf(r->Link.tcUrl.av_val, len,
+                                                "%s://%.*s:%d/%.*s",
+                                                RTMPProtocolStringsLower[r->Link.protocol],
+                                                r->Link.hostname.av_len, r->Link.hostname.av_val,
+                                                r->Link.port,
+                                                r->Link.app.av_len, r->Link.app.av_val);
+                r->Link.lFlags |= RTMP_LF_FTCU;
+            }
+        }else{
+            r->Link.tcUrl.av_len = strlen(url);
+        }
+    }
+    //LOGI("add_addr_info", "HOST DNS. (addr: %s)", hostname);
+    //todo: THIS IS NEXT THING TO DO
+    LOGI("SocksSetup", "sockshost-%d", r->Link.sockshost.av_len); //r->Link.sockshost.av_len IS 0 BUT IT COULD BE A BUG
+    SocksSetup(r, &r->Link.sockshost);
+
+    if (r->Link.port == 0)
+    {
+        if (r->Link.protocol & RTMP_FEATURE_SSL)
+            r->Link.port = 443;
+        else if (r->Link.protocol & RTMP_FEATURE_HTTP)
+            r->Link.port = 80;
+        else
+            r->Link.port = 1935;
+    }
     return RTMP_SUCCESS;
 
 }
+static RTMPResult add_addr_info(struct sockaddr_in *service, AVal *host, int port){
+    char *hostname;
+    RTMPResult ret = RTMP_SUCCESS;
+    if (host->av_val[host->av_len]){
+        hostname = static_cast<char *>(malloc(host->av_len + 1));
+        memcpy(hostname, host->av_val, host->av_len);
+        hostname[host->av_len] = '\0';
+    }else{
+        hostname = host->av_val;
+    }
+
+    service->sin_addr.s_addr = inet_addr(hostname);
+    if (service->sin_addr.s_addr == INADDR_NONE){
+
+        struct hostent *host = gethostbyname(hostname);
+        if (host == nullptr || host->h_addr == nullptr){
+
+            LOGI("add_addr_info", "Problem accessing the DNS. (addr: %s)", hostname);
+            ret = RTMP_ERROR_DNS_NOT_REACHABLE;
+            goto finish;
+        }
+        LOGI("add_addr_info", "HOST DNS. (addr: %s)", hostname);
+        service->sin_addr = *(struct in_addr *)host->h_addr;
+    }
+    service->sin_port = htons(port);
+    finish:
+    if (hostname != host->av_val)
+        free(hostname);
+    return ret;
+}
+RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp){
+    struct sockaddr_in service;
+    RTMPResult ret = RTMP_SUCCESS;
+    if (!r->Link.hostname.av_len)
+        return RTMP_ERROR_URL_MISSING_PROTOCOL;
+
+    memset(&service, 0, sizeof(struct sockaddr_in));
+    service.sin_family = AF_INET; //THIS MUST BE SET
+
+    if (r->Link.socksport){
+        LOGI("RTMP_Connect", "SOCKETS");
+        /* Connect via SOCKS */
+        ret = add_addr_info(&service, &r->Link.sockshost, r->Link.socksport);
+        if (ret != RTMP_SUCCESS)
+        {
+            return ret;
+        }
+    }else{
+        /* Connect directly */
+        LOGI("RTMP_Connect", "DIRECTLY");
+        ret = add_addr_info(&service, &r->Link.hostname, r->Link.port);
+        if (ret != RTMP_SUCCESS)
+        {
+            LOGI("RTMP_Connect", "DIRECTLY");
+            return ret;
+        }
+    }
+
+    ret = RTMP_Connect0(r, (struct sockaddr *)&service);
+//    if (ret != RTMP_SUCCESS)
+//        return ret;
+//
+//    r->m_bSendCounter = TRUE;
+//
+//    return RTMP_Connect1(r, cp);
+//todo: THIS RETURN VALUE IS JUST FOR TESTING
+return RTMP_SUCCESS;
+
+}
+
+
 
 
 
@@ -335,7 +481,20 @@ Java_com_example_clicker_presentation_selfStreaming_RTMPNativeClient_nativeOpen(
     rtmp->Link.receiveTimeoutInMs = receive_timeout_in_ms;
     rtmp->Link.sendTimeoutInMs = send_timeout_in_ms;
 
+    //todo: STILL A LOT TO DO FOR SetupURL
     RTMPResult ret = RTMP_SetupURL(rtmp, "rtmps://ingest.global-contribute.live-video.net:443/app/");
+
+    if (ret != RTMP_SUCCESS) {
+        LOGI("NATIVEOPENMETHOD", "FAILED");
+        return ret;
+    }
+    LOGI("NATIVEOPENMETHOD", "VALUE -->%d",ret);
+    if (is_publish_mode) {
+        //I think this is if the stream is already streaming
+       // RTMP_EnableWrite(rtmp);
+    }
+
+    ret = RTMP_Connect(rtmp, NULL);
 
 
     return (int) ret;
