@@ -1,9 +1,11 @@
 //
-// Created by 14035 on 2024-09-24.
+// Created by Tristan on 2024-09-24.
 //
+
 
 #ifndef CLICKER_MY_CLASS_H
 #define CLICKER_MY_CLASS_H
+
 
 //namespace N
 //{
