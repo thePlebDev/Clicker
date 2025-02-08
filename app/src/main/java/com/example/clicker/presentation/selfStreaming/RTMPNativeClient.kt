@@ -6,6 +6,7 @@ class RTMPNativeClient {
     companion object {
         init {
             System.loadLibrary("rtmp_client")
+
         }
     }
 
