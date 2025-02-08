@@ -15,6 +15,9 @@
 /* needs to fit largest number of bytes recv() may return */
 #define RTMP_BUFFER_CACHE_SIZE (16*1024)
 
+
+
+
 struct AVal{
     char *av_val;
     int av_len;
@@ -194,4 +197,40 @@ struct RTMP{
     RTMPSockBuf m_sb;
     RTMP_LNK Link;
 };
+typedef enum RTMPResult_ {
+    RTMP_SUCCESS = 0,
+    RTMP_READ_DONE = -1,
+    RTMP_ERROR_OPEN_ALLOC = -2,
+    RTMP_ERROR_OPEN_CONNECT_STREAM = -3,
+    RTMP_ERROR_UNKNOWN_RTMP_OPTION = -4,
+    RTMP_ERROR_UNKNOWN_RTMP_AMF_TYPE = -5,
+    RTMP_ERROR_DNS_NOT_REACHABLE = -6,
+    RTMP_ERROR_SOCKET_CONNECT_FAIL = -7,
+    RTMP_ERROR_SOCKS_NEGOTIATION_FAIL = -8,
+    RTMP_ERROR_SOCKET_CREATE_FAIL = -9,
+    RTMP_ERROR_NO_SSL_TLS_SUPP = -10,
+    RTMP_ERROR_HANDSHAKE_CONNECT_FAIL = -11,
+    RTMP_ERROR_HANDSHAKE_FAIL = -12,
+    RTMP_ERROR_CONNECT_FAIL = -13,
+    RTMP_ERROR_CONNECTION_LOST = -14,
+    RTMP_ERROR_KEYFRAME_TS_MISMATCH = -15,
+    RTMP_ERROR_READ_CORRUPT_STREAM = -16,
+    RTMP_ERROR_MEM_ALLOC_FAIL = -17,
+    RTMP_ERROR_STREAM_BAD_DATASIZE = -18,
+    RTMP_ERROR_PACKET_TOO_SMALL = -19,
+    RTMP_ERROR_SEND_PACKET_FAIL = -20,
+    RTMP_ERROR_AMF_ENCODE_FAIL = -21,
+    RTMP_ERROR_URL_MISSING_PROTOCOL = -22,
+    RTMP_ERROR_URL_MISSING_HOSTNAME = -23,
+    RTMP_ERROR_URL_INCORRECT_PORT = -24,
+    RTMP_ERROR_IGNORED = -25,
+    RTMP_ERROR_GENERIC = -26,
+    RTMP_ERROR_SANITY_FAIL = -27,
+} RTMPResult;
+void RTMP_Init(RTMP *r);
+RTMP *RTMP_Alloc(void);
+RTMPResult RTMP_SetupURL(RTMP *r, const char *url);
+int RTMP_ParseURL(const char *url, int *protocol, AVal *host,
+                  unsigned int *port, AVal *playpath, AVal *app);
+
 
