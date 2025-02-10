@@ -314,6 +314,13 @@ void AMF_DecodeString(const char *data, AVal * str);
 void AMF_DecodeString(const char *data, AVal * str);
 double AMF_DecodeNumber(const char *data);
 int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
+int RTMP_IsConnected(RTMP *r);
+char *AMF_EncodeNumber(char *output, char *outend, double dVal);
+char *AMF_EncodeString(char *output, char *outend, const AVal * str);
+char *AMF_EncodeInt16(char *output, char *outend, short nVal);
+RTMPResult SendDeleteStream(RTMP *r, double dStreamId);
+int RTMPSockBuf_Close(RTMPSockBuf *sb);
+void RTMPPacket_Free(RTMPPacket *p);
 
 
 

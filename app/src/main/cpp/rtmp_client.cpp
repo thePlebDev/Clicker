@@ -13,10 +13,12 @@
 #include <netinet/tcp.h>
 #include <ctime>
 
+
 #include <stdarg.h>
 
 #include <assert.h>
 #include <ctype.h>
+#include <unistd.h>
 
 
 #include <errno.h>
@@ -33,6 +35,10 @@ RTMP_LogLevel RTMP_debuglevel = RTMP_LOGERROR;
 #define OFF(x)	offsetof(struct RTMP,x)
 #define TRUE	1
 #define FALSE	0
+#undef closesocket
+#define closesocket(s)	close(s)
+
+
 int RTMP_ctrlC;
 
 static const char *RTMPT_cmds[] = {
@@ -41,6 +47,7 @@ static const char *RTMPT_cmds[] = {
         "idle",
         "close"
 };
+#define SAVC(x)	static const AVal av_##x = AVC(#x)
 
 
 //todo: read up on arrays
@@ -56,6 +63,9 @@ const char RTMPProtocolStringsLower[][7] = {
         "rtmfp"
 };
 static const int packetSize[] = { 12, 8, 4, 1 };
+
+
+
 
 
 void RTMP_Init(RTMP *r){
@@ -142,6 +152,8 @@ static struct urlopt {
                 "Publisher password" },
         { {NULL,0}, 0, 0}
 };
+SAVC(FCUnpublish);
+SAVC(deleteStream);
 void AMF_AddProp(AMFObject *obj, const AMFObjectProperty *prop){
     if (!(obj->o_num & 0x0f))
     obj->o_props =
@@ -718,9 +730,184 @@ HTTP_Post(RTMP *r, RTMPTCmd cmd, const char *buf, int len)
     r->m_unackd++;
     return hlen;
 }
-void
-RTMP_Close(RTMP *r)
+int RTMP_IsConnected(RTMP *r){
+    return r->m_sb.sb_socket != -1;
+}
+char *AMF_EncodeNumber(char *output, char *outend, double dVal)
 {
+    if (output+1+8 > outend)
+        return NULL;
+
+    *output++ = AMF_NUMBER;	/* type: Number */
+
+#if __FLOAT_WORD_ORDER == __BYTE_ORDER
+    #if __BYTE_ORDER == __BIG_ENDIAN
+  memcpy(output, &dVal, 8);
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+  {
+    unsigned char *ci, *co;
+    ci = (unsigned char *)&dVal;
+    co = (unsigned char *)output;
+    co[0] = ci[7];
+    co[1] = ci[6];
+    co[2] = ci[5];
+    co[3] = ci[4];
+    co[4] = ci[3];
+    co[5] = ci[2];
+    co[6] = ci[1];
+    co[7] = ci[0];
+  }
+#endif
+#else
+#if __BYTE_ORDER == __LITTLE_ENDIAN	/* __FLOAT_WORD_ORER == __BIG_ENDIAN */
+    {
+        unsigned char *ci, *co;
+        ci = (unsigned char *)&dVal;
+        co = (unsigned char *)output;
+        co[0] = ci[3];
+        co[1] = ci[2];
+        co[2] = ci[1];
+        co[3] = ci[0];
+        co[4] = ci[7];
+        co[5] = ci[6];
+        co[6] = ci[5];
+        co[7] = ci[4];
+    }
+#else /* __BYTE_ORDER == __BIG_ENDIAN && __FLOAT_WORD_ORER == __LITTLE_ENDIAN */
+    {
+    unsigned char *ci, *co;
+    ci = (unsigned char *)&dVal;
+    co = (unsigned char *)output;
+    co[0] = ci[4];
+    co[1] = ci[5];
+    co[2] = ci[6];
+    co[3] = ci[7];
+    co[4] = ci[0];
+    co[5] = ci[1];
+    co[6] = ci[2];
+    co[7] = ci[3];
+  }
+#endif
+#endif
+
+    return output+8;
+}
+char *AMF_EncodeInt16(char *output, char *outend, short nVal){
+    if (output+2 > outend)
+        return NULL;
+
+    output[1] = nVal & 0xff;
+    output[0] = nVal >> 8;
+    return output+2;
+}
+
+char *AMF_EncodeString(char *output, char *outend, const AVal *bv){
+    if ((bv->av_len < 65536 && output + 1 + 2 + bv->av_len > outend) ||
+        output + 1 + 4 + bv->av_len > outend)
+        return NULL;
+
+    if (bv->av_len < 65536)
+    {
+        *output++ = AMF_STRING;
+
+        output = AMF_EncodeInt16(output, outend, bv->av_len);
+    }
+    else
+    {
+        *output++ = AMF_LONG_STRING;
+
+        output = AMF_EncodeInt32(output, outend, bv->av_len);
+    }
+    memcpy(output, bv->av_val, bv->av_len);
+    output += bv->av_len;
+
+    return output;
+}
+
+
+
+static RTMPResult SendFCUnpublish(RTMP *r)
+{
+    RTMPPacket packet;
+    char pbuf[1024], *pend = pbuf + sizeof(pbuf);
+    char *enc;
+
+    packet.m_nChannel = 0x03;	/* control channel (invoke) */
+    packet.m_headerType = RTMP_PACKET_SIZE_MEDIUM;
+    packet.m_packetType = RTMP_PACKET_TYPE_INVOKE;
+    packet.m_nTimeStamp = 0;
+    packet.m_nInfoField2 = 0;
+    packet.m_hasAbsTimestamp = 0;
+    packet.m_body = pbuf + RTMP_MAX_HEADER_SIZE;
+
+    enc = packet.m_body;
+    enc = AMF_EncodeString(enc, pend, &av_FCUnpublish);
+    enc = AMF_EncodeNumber(enc, pend, ++r->m_numInvokes);
+    *enc++ = AMF_NULL;
+    enc = AMF_EncodeString(enc, pend, &r->Link.playpath);
+    if (!enc){
+        LOGI("SendFCUnpublish", "%s, No valid HTTP response found", enc);
+    }
+
+
+
+    packet.m_nBodySize = enc - packet.m_body;
+
+    return RTMP_SendPacket(r, &packet, FALSE);
+}
+RTMPResult SendDeleteStream(RTMP *r, double dStreamId)
+{
+    RTMPPacket packet;
+    char pbuf[256], *pend = pbuf + sizeof(pbuf);
+    char *enc;
+
+    packet.m_nChannel = 0x03;	/* control channel (invoke) */
+    packet.m_headerType = RTMP_PACKET_SIZE_MEDIUM;
+    packet.m_packetType = RTMP_PACKET_TYPE_INVOKE;
+    packet.m_nTimeStamp = 0;
+    packet.m_nInfoField2 = 0;
+    packet.m_hasAbsTimestamp = 0;
+    packet.m_body = pbuf + RTMP_MAX_HEADER_SIZE;
+
+    enc = packet.m_body;
+    enc = AMF_EncodeString(enc, pend, &av_deleteStream);
+    enc = AMF_EncodeNumber(enc, pend, ++r->m_numInvokes);
+    *enc++ = AMF_NULL;
+    enc = AMF_EncodeNumber(enc, pend, dStreamId);
+
+    packet.m_nBodySize = enc - packet.m_body;
+
+    /* no response expected */
+    return RTMP_SendPacket(r, &packet, FALSE);
+}
+static void AV_clear(RTMP_METHOD *vals, int num){
+    int i;
+    for (i = 0; i < num; i++)
+        free(vals[i].name.av_val);
+    free(vals);
+}
+int RTMPSockBuf_Close(RTMPSockBuf *sb){
+#if defined(CRYPTO) && !defined(NO_SSL)
+    if (sb->sb_ssl)
+    {
+      TLS_shutdown(sb->sb_ssl);
+      TLS_close(sb->sb_ssl);
+      sb->sb_ssl = NULL;
+    }
+#endif
+    if (sb->sb_socket != -1)
+        return closesocket(sb->sb_socket);
+    return 0;
+}
+void RTMPPacket_Free(RTMPPacket *p)
+{
+    if (p->m_body)
+    {
+        free(p->m_body - RTMP_MAX_HEADER_SIZE);
+        p->m_body = NULL;
+    }
+}
+void RTMP_Close(RTMP *r){
     int i;
 
     if (RTMP_IsConnected(r))
@@ -1343,12 +1530,12 @@ RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp){
     }
 
     ret = RTMP_Connect0(r, (struct sockaddr *)&service);
-//    if (ret != RTMP_SUCCESS)
-//        return ret;
-//
-//    r->m_bSendCounter = TRUE;
-//
-//    return RTMP_Connect1(r, cp);
+    if (ret != RTMP_SUCCESS)
+        return ret;
+
+    r->m_bSendCounter = TRUE;
+
+    return RTMP_Connect1(r, cp);
 //todo: THIS RETURN VALUE IS JUST FOR TESTING
 return RTMP_SUCCESS;
 
