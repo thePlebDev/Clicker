@@ -290,37 +290,7 @@ typedef enum { RTMP_LOGCRIT=0, RTMP_LOGERROR, RTMP_LOGWARNING, RTMP_LOGINFO,
     RTMP_LOGDEBUG, RTMP_LOGDEBUG2, RTMP_LOGALL
 } RTMP_LogLevel;
 
-void RTMP_Init(RTMP *r);
-RTMP *RTMP_Alloc(void);
-RTMPResult RTMP_SetupURL(RTMP *r,  char *url);
-int RTMP_ParseURL( char *url, int *protocol, AVal *host,
-                  unsigned int *port, AVal *playpath, AVal *app);
-void AMF_AddProp(AMFObject * obj, const AMFObjectProperty * prop);
-RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp);
-RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr *svc);
-void RTMP_Close(RTMP *r);
-int ReadN(RTMP *r, char *buffer, int n);
 
-//i need to remove the static and implement the actual function
-static int HTTP_Post(RTMP *r,  RTMPTCmd cmd, const char *buf, int len);
-RTMPResult SendBytesReceived(RTMP *r);
-char *AMF_EncodeInt32(char *output, char *outend, int nVal);
-RTMPResult RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue);
-char *AMF_EncodeInt24(char *output, char *outend, int nVal);
-void RTMP_LogHexString(int level, const uint8_t *data, unsigned long len);
-void RTMP_Log(int level, const char *format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
-static int WriteN(RTMP *r, const char *buffer, int n);
-void AMF_DecodeString(const char *data, AVal * str);
-void AMF_DecodeString(const char *data, AVal * str);
-double AMF_DecodeNumber(const char *data);
-int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
-int RTMP_IsConnected(RTMP *r);
-char *AMF_EncodeNumber(char *output, char *outend, double dVal);
-char *AMF_EncodeString(char *output, char *outend, const AVal * str);
-char *AMF_EncodeInt16(char *output, char *outend, short nVal);
-RTMPResult SendDeleteStream(RTMP *r, double dStreamId);
-int RTMPSockBuf_Close(RTMPSockBuf *sb);
-void RTMPPacket_Free(RTMPPacket *p);
 
 
 
