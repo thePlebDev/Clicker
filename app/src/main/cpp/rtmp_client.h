@@ -30,6 +30,21 @@
 
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 
+#define RTMP_MAX_HEADER_SIZE 18
+#define RTMP_PACKET_SIZE_LARGE    0
+#define RTMP_PACKET_SIZE_MEDIUM   1
+#define RTMP_PACKET_SIZE_SMALL    2
+#define RTMP_PACKET_SIZE_MINIMUM  3
+#define RTMP_PACKET_TYPE_CHUNK_SIZE         0x01
+/*      RTMP_PACKET_TYPE_...                0x02 */
+#define RTMP_PACKET_TYPE_BYTES_READ_REPORT  0x03
+#define RTMP_PACKET_TYPE_CONTROL            0x04
+#define RTMP_PACKET_TYPE_SERVER_BW          0x05
+#define RTMP_PACKET_TYPE_CLIENT_BW          0x06
+#define RTMP_PACKET_TYPE_INVOKE             0x14
+
+
+
 
 
 
@@ -266,6 +281,15 @@ typedef enum RTMPResult_ {
     RTMP_ERROR_GENERIC = -26,
     RTMP_ERROR_SANITY_FAIL = -27,
 } RTMPResult;
+
+typedef enum {
+    RTMPT_OPEN=0, RTMPT_SEND, RTMPT_IDLE, RTMPT_CLOSE
+} RTMPTCmd;
+
+typedef enum { RTMP_LOGCRIT=0, RTMP_LOGERROR, RTMP_LOGWARNING, RTMP_LOGINFO,
+    RTMP_LOGDEBUG, RTMP_LOGDEBUG2, RTMP_LOGALL
+} RTMP_LogLevel;
+
 void RTMP_Init(RTMP *r);
 RTMP *RTMP_Alloc(void);
 RTMPResult RTMP_SetupURL(RTMP *r,  char *url);
@@ -273,6 +297,24 @@ int RTMP_ParseURL( char *url, int *protocol, AVal *host,
                   unsigned int *port, AVal *playpath, AVal *app);
 void AMF_AddProp(AMFObject * obj, const AMFObjectProperty * prop);
 RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp);
+RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr *svc);
+void RTMP_Close(RTMP *r);
+int ReadN(RTMP *r, char *buffer, int n);
+
+//i need to remove the static and implement the actual function
+static int HTTP_Post(RTMP *r,  RTMPTCmd cmd, const char *buf, int len);
+RTMPResult SendBytesReceived(RTMP *r);
+char *AMF_EncodeInt32(char *output, char *outend, int nVal);
+RTMPResult RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue);
+char *AMF_EncodeInt24(char *output, char *outend, int nVal);
+void RTMP_LogHexString(int level, const uint8_t *data, unsigned long len);
+void RTMP_Log(int level, const char *format, ...) __attribute__ ((__format__ (__printf__, 2, 3)));
+static int WriteN(RTMP *r, const char *buffer, int n);
+void AMF_DecodeString(const char *data, AVal * str);
+void AMF_DecodeString(const char *data, AVal * str);
+double AMF_DecodeNumber(const char *data);
+int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
+
 
 
 
