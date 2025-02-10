@@ -8,6 +8,7 @@
 #include <string.h>
 #include "../rtmp_client.h"
 
+
 #include <android/log.h>
 
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
@@ -15,10 +16,7 @@
 #define TRUE	1
 #define FALSE	0
 
- enum RTMP_LogLevel
-{ RTMP_LOGCRIT=0, RTMP_LOGERROR, RTMP_LOGWARNING, RTMP_LOGINFO,
-    RTMP_LOGDEBUG, RTMP_LOGDEBUG2, RTMP_LOGALL
-};
+
 
 int RTMP_ParseURL( char *url, int *protocol, AVal *host, unsigned int *port,
                   AVal *playpath, AVal *app)
