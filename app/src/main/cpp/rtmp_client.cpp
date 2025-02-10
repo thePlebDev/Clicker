@@ -158,6 +158,29 @@ SAVC(deleteStream);
 
 
 
+static int try_connect(struct rtmp_stream *stream){
+
+    if (dstr_is_empty(&stream->path)) {
+        warn("URL is empty");
+        return OBS_OUTPUT_BAD_PATH;
+    }
+
+    info("Connecting to RTMP URL %s...", stream->path.array);
+
+    // free any existing RTMP TLS context
+    RTMP_TLS_Free(&stream->rtmp);
+
+    RTMP_Init(&stream->rtmp);
+
+    if (!RTMP_SetupURL(&stream->rtmp, stream->path.array)){
+        return OBS_OUTPUT_BAD_PATH;
+    }
+
+
+}
+
+
+
 
 //Now I need to make the JNI file
 extern "C"
