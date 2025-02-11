@@ -27,6 +27,7 @@
 #define RTMP_PROTOCOL_RTMPTS    (RTMP_FEATURE_HTTP|RTMP_FEATURE_SSL)
 #define RTMP_PROTOCOL_RTMPE     RTMP_FEATURE_ENC
 #define RTMP_PROTOCOL_RTMFP     RTMP_FEATURE_MFP
+#define AVC(str)	{str,sizeof(str)-1}
 
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 
@@ -34,6 +35,7 @@
 #define MAX_OUTPUT_VIDEO_ENCODERS 6
 #define RTMP_MAX_HEADER_SIZE 18
 #define SOCKET int
+#define MODULE_EXPORT EXPORT
 enum audio_id_t {
     AUDIO_CODEC_NONE = 0,
     AUDIO_CODEC_AAC = 1,
@@ -44,61 +46,12 @@ enum video_id_t {
     CODEC_AV1,      // Y2023 spec
     CODEC_HEVC,
 };
-
-typedef struct obs_output obs_output_t; //just creates an alias called `obs_output_t` for `struct obs_output`
-typedef struct os_event_data os_event_t;
-typedef struct os_sem_data os_sem_t;
-struct dstr {
-    char *array;
-    size_t len; /* number of characters, excluding null terminator */
-    size_t capacity;
-};
-
-enum {
-    /**
-     * Use if there's a problem that can potentially affect the program,
-     * but isn't enough to require termination of the program.
-     *
-     * Use in creation functions and core subsystem functions.  Places that
-     * should definitely not fail.
-     */
-    LOG_ERROR = 100,
-
-    /**
-     * Use if a problem occurs that doesn't affect the program and is
-     * recoverable.
-     *
-     * Use in places where failure isn't entirely unexpected, and can
-     * be handled safely.
-     */
-    LOG_WARNING = 200,
-
-    /**
-     * Informative message to be displayed in the log.
-     */
-    LOG_INFO = 300,
-
-    /**
-     * Debug message to be used mostly by developers.
-     */
-    LOG_DEBUG = 400
-};
-
-
-/* Double-ended Queue */
-struct deque {
-    void *data;
-    size_t size;
-
-    size_t start_pos;
-    size_t end_pos;
-    size_t capacity;
-};
 typedef struct AVal
 {
     char *av_val;
     int av_len;
 } AVal;
+
 typedef struct RTMP_METHOD
 {
     AVal name;
@@ -118,7 +71,6 @@ typedef struct RTMPPacket
     uint8_t m_hasAbsTimestamp;	/* timestamp absolute or relative? */
     int m_nChannel;
     uint32_t m_nTimeStamp;	/* timestamp */
-    uint32_t m_nLastWireTimeStamp; /* timestamp that was encoded when sending */
     int32_t m_nInfoField2;	/* last 4 bytes in a long header */
     uint32_t m_nBodySize;
     uint32_t m_nBytesRead;
@@ -157,8 +109,7 @@ typedef struct RTMP_READ
     uint32_t nIgnoredFlvFrameCounter;
 } RTMP_READ;
 typedef enum
-{
-    AMF_NUMBER = 0, AMF_BOOLEAN, AMF_STRING, AMF_OBJECT,
+{ AMF_NUMBER = 0, AMF_BOOLEAN, AMF_STRING, AMF_OBJECT,
     AMF_MOVIECLIP,		/* reserved, not used */
     AMF_NULL, AMF_UNDEFINED, AMF_REFERENCE, AMF_ECMA_ARRAY, AMF_OBJECT_END,
     AMF_STRICT_ARRAY, AMF_DATE, AMF_LONG_STRING, AMF_UNSUPPORTED,
@@ -166,14 +117,37 @@ typedef enum
     AMF_XML_DOC, AMF_TYPED_OBJECT,
     AMF_AVMPLUS,		/* switch to AMF3 */
     AMF_INVALID = 0xff
-}
-        AMFDataType;
+} AMFDataType;
 
-typedef struct AMFObject
+#define RTMP_LF_AUTH	0x0001	/* using auth param */
+#define RTMP_LF_LIVE	0x0002	/* stream is live */
+#define RTMP_LF_SWFV	0x0004	/* do SWF verification */
+#define RTMP_LF_PLST	0x0008	/* send playlist before play */
+#define RTMP_LF_BUFX	0x0010	/* toggle stream on BufferEmpty msg */
+#define RTMP_LF_FTCU	0x0020	/* free tcUrl on close */
+int lFlags;
+
+int swfAge;
+
+int protocol;
+int receiveTimeoutInMs;
+int sendTimeoutInMs;
+
+typedef struct RTMPSockBuf
 {
+    int sb_socket;
+    int sb_size;		/* number of unprocessed bytes in buffer */
+    char *sb_start;		/* pointer into sb_pBuffer of next byte to process */
+    char sb_buf[RTMP_BUFFER_CACHE_SIZE];	/* data read from socket */
+    int sb_timedout;
+    void *sb_ssl;
+} RTMPSockBuf;
+
+typedef struct AMFObject{
     int o_num;
     struct AMFObjectProperty *o_props;
 } AMFObject;
+
 typedef struct AMFObjectProperty
 {
     AVal p_name;
@@ -188,35 +162,13 @@ typedef struct AMFObjectProperty
 } AMFObjectProperty;
 
 
-typedef struct RTMPSockBuf
+typedef struct RTMP_LNK
 {
-    struct sockaddr_storage sb_addr; /* address of remote  THIS COMES FROM <sys/socket.h>*/
-    SOCKET sb_socket;
-    int sb_size;		/* number of unprocessed bytes in buffer */
-    char *sb_start;		/* pointer into sb_pBuffer of next byte to process */
-    char sb_buf[RTMP_BUFFER_CACHE_SIZE];	/* data read from socket */
-    int sb_timedout;
-    void *sb_ssl;
-} RTMPSockBuf;
-
-typedef struct RTMP_Stream {
-    int id;
-    AVal playpath;
-} RTMP_Stream;
-typedef void (*CUSTOMCONNECTENCODING)(char **penc, char *ppend);
-//START
-typedef struct RTMP_LNK{
-#define RTMP_MAX_STREAMS 8
-    RTMP_Stream streams[RTMP_MAX_STREAMS];
-    int nStreams;
-    int curStreamIdx;
-    int playingStreams;
-
     AVal hostname;
     AVal sockshost;
 
-    CUSTOMCONNECTENCODING customConnectEncode;
-
+    AVal playpath0;	/* parsed from URL */
+    AVal playpath;	/* passed in explicitly */
     AVal tcUrl;
     AVal swfUrl;
     AVal pageUrl;
@@ -245,8 +197,8 @@ typedef struct RTMP_LNK{
     int swfAge;
 
     int protocol;
-    int receiveTimeout;	/* connection receive timeout in seconds */
-    int sendTimeout;	/* connection send timeout in seconds */
+    int receiveTimeoutInMs;
+    int sendTimeoutInMs;
 
 #define RTMP_PUB_NAME   0x0001  /* send login to server */
 #define RTMP_PUB_RESP   0x0002  /* send salted password hash */
@@ -260,20 +212,16 @@ typedef struct RTMP_LNK{
 
 #ifdef CRYPTO
     #define RTMP_SWF_HASHLEN	32
-        uint32_t SWFSize;
-        uint8_t SWFHash[RTMP_SWF_HASHLEN];
-        char SWFVerificationResponse[RTMP_SWF_HASHLEN+10];
+    void *dh;			/* for encryption */
+    void *rc4keyIn;
+    void *rc4keyOut;
+
+    uint32_t SWFSize;
+    uint8_t SWFHash[RTMP_SWF_HASHLEN];
+    char SWFVerificationResponse[RTMP_SWF_HASHLEN+10];
 #endif
 } RTMP_LNK;
 
-//  END
-typedef struct RTMP_BINDINFO
-{
-    struct sockaddr_storage addr;
-    int addrLen;
-} RTMP_BINDINFO;
-
-typedef int (*CUSTOMSEND)(RTMPSockBuf*, const char *, int, void*);
 typedef struct RTMP
 {
     int m_inChunkSize;
@@ -293,15 +241,6 @@ typedef struct RTMP
     uint8_t m_bPlaying;
     uint8_t m_bSendEncoding;
     uint8_t m_bSendCounter;
-
-    uint8_t m_bUseNagle;
-    uint8_t m_bCustomSend;
-    void*   m_customSendParam;
-    CUSTOMSEND m_customSendFunc;
-
-    RTMP_BINDINFO m_bindIP;
-
-    uint8_t m_bSendChunkSizeInfo;
 
     int m_numInvokes;
     int m_numCalls;
@@ -329,102 +268,116 @@ typedef struct RTMP
     RTMPPacket m_write;
     RTMPSockBuf m_sb;
     RTMP_LNK Link;
-    int connect_time_ms;
-    int last_error_code;
-
-#ifdef CRYPTO
-    TLS_CTX RTMP_TLS_ctx;
-#endif
 } RTMP;
+typedef enum RTMPResult_ {
+    RTMP_SUCCESS = 0,
+    RTMP_READ_DONE = -1,
+    RTMP_ERROR_OPEN_ALLOC = -2,
+    RTMP_ERROR_OPEN_CONNECT_STREAM = -3,
+    RTMP_ERROR_UNKNOWN_RTMP_OPTION = -4,
+    RTMP_ERROR_UNKNOWN_RTMP_AMF_TYPE = -5,
+    RTMP_ERROR_DNS_NOT_REACHABLE = -6,
+    RTMP_ERROR_SOCKET_CONNECT_FAIL = -7,
+    RTMP_ERROR_SOCKS_NEGOTIATION_FAIL = -8,
+    RTMP_ERROR_SOCKET_CREATE_FAIL = -9,
+    RTMP_ERROR_NO_SSL_TLS_SUPP = -10,
+    RTMP_ERROR_HANDSHAKE_CONNECT_FAIL = -11,
+    RTMP_ERROR_HANDSHAKE_FAIL = -12,
+    RTMP_ERROR_CONNECT_FAIL = -13,
+    RTMP_ERROR_CONNECTION_LOST = -14,
+    RTMP_ERROR_KEYFRAME_TS_MISMATCH = -15,
+    RTMP_ERROR_READ_CORRUPT_STREAM = -16,
+    RTMP_ERROR_MEM_ALLOC_FAIL = -17,
+    RTMP_ERROR_STREAM_BAD_DATASIZE = -18,
+    RTMP_ERROR_PACKET_TOO_SMALL = -19,
+    RTMP_ERROR_SEND_PACKET_FAIL = -20,
+    RTMP_ERROR_AMF_ENCODE_FAIL = -21,
+    RTMP_ERROR_URL_MISSING_PROTOCOL = -22,
+    RTMP_ERROR_URL_MISSING_HOSTNAME = -23,
+    RTMP_ERROR_URL_INCORRECT_PORT = -24,
+    RTMP_ERROR_IGNORED = -25,
+    RTMP_ERROR_GENERIC = -26,
+    RTMP_ERROR_SANITY_FAIL = -27,
+} RTMPResult;
 
-
-struct rtmp_stream {
-    obs_output_t *output;
-
-    pthread_mutex_t packets_mutex;
-    struct deque packets;
-    bool sent_headers;
-
-    bool got_first_packet;
-    int64_t start_dts_offset;
-
-    volatile bool connecting;
-    pthread_t connect_thread;
-
-    volatile bool active;
-    volatile bool disconnected;
-    volatile bool encode_error;
-    pthread_t send_thread;
-
-    int max_shutdown_time_sec;
-
-    os_sem_t *send_sem;
-    os_event_t *stop_event;
-    uint64_t stop_ts;
-    uint64_t shutdown_timeout_ts;
-
-    struct dstr path, key;
-    struct dstr username, password;
-    struct dstr encoder_name;
-    struct dstr bind_ip;
-    socklen_t addrlen_hint; /* hint IPv4 vs IPv6 */
-
-    /* frame drop variables */
-    int64_t drop_threshold_usec;
-    int64_t pframe_drop_threshold_usec;
-    int min_priority;
-    float congestion;
-
-    int64_t last_dts_usec;
-
-    uint64_t total_bytes_sent;
-    int dropped_frames;
-
-#ifdef TEST_FRAMEDROPS
-    struct deque droptest_info;
-	uint64_t droptest_last_key_check;
-	size_t droptest_max;
-	size_t droptest_size;
-#endif
-
-    pthread_mutex_t dbr_mutex;
-    struct deque dbr_frames;
-    size_t dbr_data_size;
-    uint64_t dbr_inc_timeout;
-    long audio_bitrate;
-    long dbr_est_bitrate;
-    long dbr_orig_bitrate;
-    long dbr_prev_bitrate;
-    long dbr_cur_bitrate;
-    long dbr_inc_bitrate;
-    bool dbr_enabled;
-
-    enum audio_id_t audio_codec[MAX_OUTPUT_AUDIO_ENCODERS];
-    enum video_id_t video_codec[MAX_OUTPUT_VIDEO_ENCODERS];
-
-    RTMP rtmp;
-
-    bool new_socket_loop;
-    bool low_latency_mode;
-    bool disable_send_window_optimization;
-    bool socket_thread_active;
-    pthread_t socket_thread;
-    uint8_t *write_buf;
-    size_t write_buf_len;
-    size_t write_buf_size;
-    pthread_mutex_t write_buf_mutex;
-    os_event_t *buffer_space_available_event;
-    os_event_t *buffer_has_data_event;
-    os_event_t *socket_available_event;
-    os_event_t *send_thread_signaled_exit;
+#define OFF(x)	offsetof(struct RTMP,x)
+enum { OPT_STR=0, OPT_INT, OPT_BOOL, OPT_CONN };
+static struct urlopt {
+    AVal name;
+    off_t off;
+    int otype;
+    int omisc;
+    char *use;
+} options[] = {
+        { AVC("socks"),     OFF(Link.sockshost),     OPT_STR, 0,
+                "Use the specified SOCKS proxy" },
+        { AVC("app"),       OFF(Link.app),           OPT_STR, 0,
+                "Name of target app on server" },
+        { AVC("tcUrl"),     OFF(Link.tcUrl),         OPT_STR, 0,
+                "URL to played stream" },
+        { AVC("pageUrl"),   OFF(Link.pageUrl),       OPT_STR, 0,
+                "URL of played media's web page" },
+        { AVC("swfUrl"),    OFF(Link.swfUrl),        OPT_STR, 0,
+                "URL to player SWF file" },
+        { AVC("conn"),      OFF(Link.extras),        OPT_CONN, 0,
+                "Append arbitrary AMF data to Connect message" },
+        { AVC("playpath"),  OFF(Link.playpath),      OPT_STR, 0,
+                "Path to target media on server" },
+        { AVC("playlist"),  OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_PLST,
+                "Set playlist before play command" },
+        { AVC("live"),      OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_LIVE,
+                "Stream is live, no seeking possible" },
+        { AVC("subscribe"), OFF(Link.subscribepath), OPT_STR, 0,
+                "Stream to subscribe to" },
+        { AVC("jtv"), OFF(Link.usherToken),          OPT_STR, 0,
+                "Justin.tv authentication token" },
+        { AVC("token"),     OFF(Link.token),	       OPT_STR, 0,
+                "Key for SecureToken response" },
+        { AVC("swfVfy"),    OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_SWFV,
+                "Perform SWF Verification" },
+        { AVC("swfAge"),    OFF(Link.swfAge),        OPT_INT, 0,
+                "Number of days to use cached SWF hash" },
+        { AVC("start"),     OFF(Link.seekTime),      OPT_INT, 0,
+                "Stream start position in milliseconds" },
+        { AVC("stop"),      OFF(Link.stopTime),      OPT_INT, 0,
+                "Stream stop position in milliseconds" },
+        { AVC("buffer"),    OFF(m_nBufferMS),        OPT_INT, 0,
+                "Buffer time in milliseconds" },
+        { AVC("timeout"),   OFF(Link.receiveTimeoutInMs),       OPT_INT, 0,
+                "Session timeout in seconds" },
+        { AVC("pubUser"),   OFF(Link.pubUser),       OPT_STR, 0,
+                "Publisher username" },
+        { AVC("pubPasswd"), OFF(Link.pubPasswd),     OPT_STR, 0,
+                "Publisher password" },
+        { {NULL,0}, 0, 0}
 };
+static const AVal truth[] = {
+        AVC("1"),
+        AVC("on"),
+        AVC("yes"),
+        AVC("true"),
+        {0,0}
+};
+extern const char RTMPProtocolStringsLower[][7];
 
-void RTMP_TLS_Free(RTMP *r);
-void RTMP_Reset(RTMP *r);
-int RTMP_SetupURL(RTMP *r, char *url);
+
+RTMP *RTMP_Alloc(void);
+void RTMP_Init(RTMP *r);
+RTMPResult RTMP_SetupURL(RTMP *r, char *url);
+
+int RTMP_SetOpt(RTMP *r, const AVal *opt, AVal *arg);
+void AMF_AddProp(AMFObject * obj, const AMFObjectProperty * prop);
+
 int RTMP_ParseURL( char *url, int *protocol, AVal *host,
-                  unsigned int *port, AVal *app);
+                  unsigned int *port, AVal *playpath, AVal *app);
+void RTMP_ParsePlaypath(AVal *in, AVal *out);
 void RTMP_EnableWrite(RTMP *r);
+RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp);
+RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr *svc);
+
+RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp);
+
+
 
 
 

@@ -80,13 +80,6 @@ target_link_libraries(parse_url
         GLESv2)
 
 
-
-
-
-
-
-
-
 find_library( camera-lib camera2ndk )
 find_library( media-lib mediandk )
 find_library( android-lib android )
