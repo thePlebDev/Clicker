@@ -424,6 +424,7 @@ void RTMP_Reset(RTMP *r);
 int RTMP_SetupURL(RTMP *r, char *url);
 int RTMP_ParseURL( char *url, int *protocol, AVal *host,
                   unsigned int *port, AVal *app);
+void RTMP_EnableWrite(RTMP *r);
 
 
 
