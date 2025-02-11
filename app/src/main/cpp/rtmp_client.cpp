@@ -22,160 +22,186 @@
 
 
 #include <errno.h>
-#define GetSockError() errno
-
-
 #include "rtmp_client.h"
-RTMP_LogLevel RTMP_debuglevel = RTMP_LOGERROR;
 
-
-
+#define GetSockError() errno
+#define OBS_OUTPUT_BAD_PATH -1
 #define RTMP_DEFAULT_CHUNKSIZE	128
-
-#define OFF(x)	offsetof(struct RTMP,x)
 #define TRUE	1
 #define FALSE	0
-#undef closesocket
-#define closesocket(s)	close(s)
-
-
-int RTMP_ctrlC;
-
-static const char *RTMPT_cmds[] = {
-        "open",
-        "send",
-        "idle",
-        "close"
-};
-#define SAVC(x)	static const AVal av_##x = AVC(#x)
-
-
-//todo: read up on arrays
-const char RTMPProtocolStringsLower[][7] = {
-        "rtmp",
-        "rtmpt",
-        "rtmpe",
-        "rtmpte",
-        "rtmps",
-        "rtmpts",
-        "",
-        "",
-        "rtmfp"
-};
-static const int packetSize[] = { 12, 8, 4, 1 };
 
 
 
 
+static inline bool dstr_is_empty(const struct dstr *str)
+{
+    if (!str->array || !str->len)
+        return true;
+    if (!*str->array)
+        return true;
 
-void RTMP_Init(RTMP *r){
+    return false;
+}
 
-
-    //memset(r, 0, sizeof(RTMP));
-    r->m_sb.sb_socket = -1;
+void RTMP_Reset(RTMP *r)
+{
     r->m_inChunkSize = RTMP_DEFAULT_CHUNKSIZE;
     r->m_outChunkSize = RTMP_DEFAULT_CHUNKSIZE;
+    r->m_bSendChunkSizeInfo = 1;
     r->m_nBufferMS = 30000;
     r->m_nClientBW = 2500000;
     r->m_nClientBW2 = 2;
     r->m_nServerBW = 2500000;
     r->m_fAudioCodecs = 3191.0;
     r->m_fVideoCodecs = 252.0;
-    r->Link.receiveTimeoutInMs = 10000;
+    r->Link.curStreamIdx = 0;
+    r->Link.nStreams = 0;
+    r->Link.receiveTimeout = 30;
+    r->Link.sendTimeout = 15;
     r->Link.swfAge = 30;
 }
+extern const char RTMPProtocolStringsLower[][7];
+const char RTMPProtocolStringsLower[][7] =
+        {
+                "rtmp",
+                "rtmpt",
+                "rtmpe",
+                "rtmpte",
+                "rtmps",
+                "rtmpts",
+                "",
+                "",
+                "rtmfp"
+        };
 
-enum { OPT_STR=0, OPT_INT, OPT_BOOL, OPT_CONN };
-#define AVC(str) {str, sizeof(str) - 1}
+void RTMP_Init(RTMP *r)
+{
+    memset(r, 0, sizeof(RTMP));
+    r->m_sb.sb_socket = -1;
+    RTMP_Reset(r);
+   // RTMP_TLS_Init(r); TODO: MIGHT NOT NEED THIS
+}
+static void
+SocksSetup(RTMP *r, AVal *sockshost)
+{
+    if (sockshost->av_len)
+    {
+        const char *socksport = strchr(sockshost->av_val, ':');
+        char *hostname = strdup(sockshost->av_val);
 
+        if (socksport)
+            hostname[socksport - sockshost->av_val] = '\0';
+        r->Link.sockshost.av_val = hostname;
+        r->Link.sockshost.av_len = (int)strlen(hostname);
 
+        r->Link.socksport = socksport ? atoi(socksport + 1) : 1080;
 
+        LOGI("SocksSetup","Connecting via SOCKS proxy: %s:%d", r->Link.sockshost.av_val,
+             r->Link.socksport);
+    }
+    else{
+        LOGI("SocksSetup","NO PROXY?");
+        r->Link.sockshost.av_val = NULL;
+        r->Link.sockshost.av_len = 0;
+        r->Link.socksport = 0;
+    }
+}
 
-static const char hexdig[] = "0123456789abcdef";
-static const AVal truth[] = {
-        AVC("1"),
-        AVC("on"),
-        AVC("yes"),
-        AVC("true"),
-        {0, 0}
-};
-static const char *optinfo[] = {
-        "string", "integer", "boolean", "AMF" };
-static struct urlopt {
-    AVal name;
-    off_t off;
-    int otype;
-    int omisc;
-    const char *use;
-} options[] = {
-        { AVC("socks"),     OFF(Link.sockshost),     OPT_STR, 0,
-                "Use the specified SOCKS proxy" },
-        { AVC("app"),       OFF(Link.app),           OPT_STR, 0,
-                "Name of target app on server" },
-        { AVC("tcUrl"),     OFF(Link.tcUrl),         OPT_STR, 0,
-                "URL to played stream" },
-        { AVC("pageUrl"),   OFF(Link.pageUrl),       OPT_STR, 0,
-                "URL of played media's web page" },
-        { AVC("swfUrl"),    OFF(Link.swfUrl),        OPT_STR, 0,
-                "URL to player SWF file" },
-        { AVC("flashver"),  OFF(Link.flashVer),      OPT_STR, 0,
-                "Flash version string (default )" },
-        { AVC("conn"),      OFF(Link.extras),        OPT_CONN, 0,
-                "Append arbitrary AMF data to Connect message" },
-        { AVC("playpath"),  OFF(Link.playpath),      OPT_STR, 0,
-                "Path to target media on server" },
-        { AVC("playlist"),  OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_PLST,
-                "Set playlist before play command" },
-        { AVC("live"),      OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_LIVE,
-                "Stream is live, no seeking possible" },
-        { AVC("subscribe"), OFF(Link.subscribepath), OPT_STR, 0,
-                "Stream to subscribe to" },
-        { AVC("jtv"), OFF(Link.usherToken),          OPT_STR, 0,
-                "Justin.tv authentication token" },
-        { AVC("token"),     OFF(Link.token),	       OPT_STR, 0,
-                "Key for SecureToken response" },
-        { AVC("swfVfy"),    OFF(Link.lFlags),        OPT_BOOL, RTMP_LF_SWFV,
-                "Perform SWF Verification" },
-        { AVC("swfAge"),    OFF(Link.swfAge),        OPT_INT, 0,
-                "Number of days to use cached SWF hash" },
-        { AVC("start"),     OFF(Link.seekTime),      OPT_INT, 0,
-                "Stream start position in milliseconds" },
-        { AVC("stop"),      OFF(Link.stopTime),      OPT_INT, 0,
-                "Stream stop position in milliseconds" },
-        { AVC("buffer"),    OFF(m_nBufferMS),        OPT_INT, 0,
-                "Buffer time in milliseconds" },
-        { AVC("timeout"),   OFF(Link.receiveTimeoutInMs),       OPT_INT, 0,
-                "Session timeout in seconds" },
-        { AVC("pubUser"),   OFF(Link.pubUser),       OPT_STR, 0,
-                "Publisher username" },
-        { AVC("pubPasswd"), OFF(Link.pubPasswd),     OPT_STR, 0,
-                "Publisher password" },
-        { {NULL,0}, 0, 0}
-};
-SAVC(FCUnpublish);
-SAVC(deleteStream);
+int RTMP_SetupURL(RTMP *r, char *url)
+{
+    int ret, len;
+    unsigned int port = 0;
 
+    len = (int)strlen(url);
+    ret = RTMP_ParseURL(url, &r->Link.protocol, &r->Link.hostname,
+                        &port, &r->Link.app);
+    if (!ret)
+        return ret;
+    r->Link.port = port;
 
+    if (!r->Link.tcUrl.av_len)
+    {
+        r->Link.tcUrl.av_val = url;
+        if (r->Link.app.av_len)
+        {
+            if (r->Link.app.av_val < url + len)
+            {
+                /* if app is part of original url, just use it */
+                r->Link.tcUrl.av_len = r->Link.app.av_len + (r->Link.app.av_val - url);
+            }
+            else
+            {
+                len = r->Link.hostname.av_len + r->Link.app.av_len +
+                      sizeof("rtmpte://:65535/");
+                r->Link.tcUrl.av_val = static_cast<char *>(malloc(len));
+                r->Link.tcUrl.av_len = snprintf(r->Link.tcUrl.av_val, len,
+                                                "%s://%.*s:%d/%.*s",
+                                                RTMPProtocolStringsLower[r->Link.protocol],
+                                                r->Link.hostname.av_len, r->Link.hostname.av_val,
+                                                r->Link.port,
+                                                r->Link.app.av_len, r->Link.app.av_val);
+                r->Link.lFlags |= RTMP_LF_FTCU;
+            }
+        }
+        else
+        {
+            r->Link.tcUrl.av_len = (int)strlen(url);
+        }
+    }
+
+#ifdef CRYPTO
+    if ((r->Link.lFlags & RTMP_LF_SWFV) && r->Link.swfUrl.av_len)
+#ifdef USE_HASHSWF
+        RTMP_HashSWF(r->Link.swfUrl.av_val, &r->Link.SWFSize,
+        (unsigned char *)r->Link.SWFHash, r->Link.swfAge);
+#else
+        return FALSE;
+#endif
+#endif
+
+    SocksSetup(r, &r->Link.sockshost);
+
+    if (r->Link.port == 0)
+    {
+        if (r->Link.protocol & RTMP_FEATURE_SSL)
+            r->Link.port = 443;
+        else if (r->Link.protocol & RTMP_FEATURE_HTTP)
+            r->Link.port = 80;
+        else
+            r->Link.port = 1935;
+    }
+    LOGI("SocksSetup","port -> %d",r->Link.port );
+    return TRUE;
+}
 
 
 static int try_connect(struct rtmp_stream *stream){
 
+    //delete this and just add the path
+
     if (dstr_is_empty(&stream->path)) {
-        warn("URL is empty");
+
+        LOGI("try_connect","URL is empty");
         return OBS_OUTPUT_BAD_PATH;
     }
 
-    info("Connecting to RTMP URL %s...", stream->path.array);
+
+    LOGI("try_connect","Connecting to RTMP URL %s...", stream->path.array);
 
     // free any existing RTMP TLS context
-    RTMP_TLS_Free(&stream->rtmp);
+    //I will comment this out now, I this this in only needed when restarting
+   // RTMP_TLS_Free(&stream->rtmp);
+
 
     RTMP_Init(&stream->rtmp);
-
+//
     if (!RTMP_SetupURL(&stream->rtmp, stream->path.array)){
         return OBS_OUTPUT_BAD_PATH;
     }
 
+    //todo: THERE IS MORE TO THIS CODE BUT FOR RIGHT NOW I AM JUST USING THIS
+
+    return -1;
 
 }
 
@@ -190,6 +216,12 @@ Java_com_example_clicker_presentation_selfStreaming_RTMPNativeClient_nativeOpen(
                                                                                 jint receive_timeout_in_ms) {
 
 
+    rtmp_stream *stream = new rtmp_stream();
+    char URL[] = "rtmps://ingest.global-contribute.live-video.net:443/app/";
+
+    stream->path = dstr{URL,strlen(URL),3};
+
+    try_connect(stream);
 
 
     return -1;

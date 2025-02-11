@@ -3,7 +3,7 @@
 //
 
 
-
+#include <sys/socket.h>
 
 
 
@@ -52,6 +52,36 @@ struct dstr {
     char *array;
     size_t len; /* number of characters, excluding null terminator */
     size_t capacity;
+};
+
+enum {
+    /**
+     * Use if there's a problem that can potentially affect the program,
+     * but isn't enough to require termination of the program.
+     *
+     * Use in creation functions and core subsystem functions.  Places that
+     * should definitely not fail.
+     */
+    LOG_ERROR = 100,
+
+    /**
+     * Use if a problem occurs that doesn't affect the program and is
+     * recoverable.
+     *
+     * Use in places where failure isn't entirely unexpected, and can
+     * be handled safely.
+     */
+    LOG_WARNING = 200,
+
+    /**
+     * Informative message to be displayed in the log.
+     */
+    LOG_INFO = 300,
+
+    /**
+     * Debug message to be used mostly by developers.
+     */
+    LOG_DEBUG = 400
 };
 
 
@@ -160,7 +190,7 @@ typedef struct AMFObjectProperty
 
 typedef struct RTMPSockBuf
 {
-    struct sockaddr_storage sb_addr; /* address of remote */
+    struct sockaddr_storage sb_addr; /* address of remote  THIS COMES FROM <sys/socket.h>*/
     SOCKET sb_socket;
     int sb_size;		/* number of unprocessed bytes in buffer */
     char *sb_start;		/* pointer into sb_pBuffer of next byte to process */
@@ -307,6 +337,7 @@ typedef struct RTMP
 #endif
 } RTMP;
 
+
 struct rtmp_stream {
     obs_output_t *output;
 
@@ -387,6 +418,12 @@ struct rtmp_stream {
     os_event_t *socket_available_event;
     os_event_t *send_thread_signaled_exit;
 };
+
+void RTMP_TLS_Free(RTMP *r);
+void RTMP_Reset(RTMP *r);
+int RTMP_SetupURL(RTMP *r, char *url);
+int RTMP_ParseURL( char *url, int *protocol, AVal *host,
+                  unsigned int *port, AVal *app);
 
 
 
