@@ -174,6 +174,10 @@ int RTMP_SetupURL(RTMP *r, char *url)
     return TRUE;
 }
 
+void RTMP_EnableWrite(RTMP *r){
+    r->Link.protocol |= RTMP_FEATURE_WRITE;
+}
+
 
 static int try_connect(struct rtmp_stream *stream){
 
@@ -199,9 +203,56 @@ static int try_connect(struct rtmp_stream *stream){
         return OBS_OUTPUT_BAD_PATH;
     }
 
-    //todo: THERE IS MORE TO THIS CODE BUT FOR RIGHT NOW I AM JUST USING THIS
+    RTMP_EnableWrite(&stream->rtmp);
 
-    return -1;
+//    dstr_copy(&stream->encoder_name, "FMLE/3.0 (compatible; FMSc/1.0)");
+//
+//    set_rtmp_dstr(&stream->rtmp.Link.pubUser, &stream->username);
+//    set_rtmp_dstr(&stream->rtmp.Link.pubPasswd, &stream->password);
+//    set_rtmp_dstr(&stream->rtmp.Link.flashVer, &stream->encoder_name);
+//    stream->rtmp.Link.swfUrl = stream->rtmp.Link.tcUrl;
+//
+//    if (dstr_is_empty(&stream->bind_ip) || dstr_cmp(&stream->bind_ip, "default") == 0) {
+//        memset(&stream->rtmp.m_bindIP, 0, sizeof(stream->rtmp.m_bindIP));
+//    } else {
+//        bool success = netif_str_to_addr(&stream->rtmp.m_bindIP.addr, &stream->rtmp.m_bindIP.addrLen,
+//                                         stream->bind_ip.array);
+//        if (success) {
+//            int len = stream->rtmp.m_bindIP.addrLen;
+//            bool ipv6 = len == sizeof(struct sockaddr_in6);
+//            info("Binding to IPv%d", ipv6 ? 6 : 4);
+//        }
+//    }
+//
+//    // Only use the IPv4 / IPv6 hint if a binding address isn't specified.
+//    if (stream->rtmp.m_bindIP.addrLen == 0)
+//        stream->rtmp.m_bindIP.addrLen = stream->addrlen_hint;
+//
+//    RTMP_AddStream(&stream->rtmp, stream->key.array);
+//
+//    stream->rtmp.m_outChunkSize = 4096;
+//    stream->rtmp.m_bSendChunkSizeInfo = true;
+//    stream->rtmp.m_bUseNagle = true;
+//
+//#ifdef _WIN32
+//    win32_log_interface_type(stream);
+//#endif
+//
+//    if (!RTMP_Connect(&stream->rtmp, NULL)) {
+//        set_output_error(stream);
+//        return OBS_OUTPUT_CONNECT_FAILED;
+//    }
+//
+//    if (!RTMP_ConnectStream(&stream->rtmp, 0))
+//        return OBS_OUTPUT_INVALID_STREAM;
+//
+//    char ip_address[INET6_ADDRSTRLEN] = {0};
+//    netif_addr_to_str(&stream->rtmp.m_sb.sb_addr, ip_address, INET6_ADDRSTRLEN);
+//    info("Connection to %s (%s) successful", stream->path.array, ip_address);
+// todo:
+//    return init_send(stream); //this should be the actual return value
+
+    return 55; //this should be removed
 
 }
 
@@ -221,7 +272,8 @@ Java_com_example_clicker_presentation_selfStreaming_RTMPNativeClient_nativeOpen(
 
     stream->path = dstr{URL,strlen(URL),3};
 
-    try_connect(stream);
+    int testing =try_connect(stream);
+    LOGI("FINISHEDSETUP","try_connect() -> %d",testing );
 
 
     return -1;
