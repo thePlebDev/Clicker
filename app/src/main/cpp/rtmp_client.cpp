@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <ctime>
+#include <sys/times.h>
 
 
 #include <stdarg.h>
@@ -39,6 +40,14 @@
 #define RTMP_PACKET_SIZE_SMALL    2
 #define RTMP_PACKET_SIZE_MINIMUM  3
 #define RTMP_PACKET_TYPE_INVOKE             0x14
+
+#define RTMP_SIG_SIZE 1536
+#define RTMP_LARGE_HEADER_SIZE 12
+
+static const int packetSize[] = { 12, 8, 4, 1 };
+#ifndef _WIN32
+static int clk_tck;
+#endif
 
 
 
@@ -499,6 +508,254 @@ RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
 
     return RTMP_SUCCESS;
 }
+uint32_t RTMP_GetTime(){
+#ifdef _DEBUG
+    return 0;
+#elif defined(_WIN32)
+    return timeGetTime();
+#else
+    struct tms t;
+    if (!clk_tck) clk_tck = sysconf(_SC_CLK_TCK);
+    return times(&t) * 1000 / clk_tck;
+#endif
+}
+
+int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len){
+    int rc;
+
+    rc = send(sb->sb_socket, buf, len, 0);
+
+    return rc;
+}
+
+static int ReadN(RTMP *r, char *buffer, int n)
+{
+    int nOriginalSize = n;
+    int avail;
+    char *ptr;
+
+    r->m_sb.sb_timedout = FALSE;
+
+#ifdef _DEBUG
+    memset(buffer, 0, n);
+#endif
+
+    ptr = buffer;
+    while (n > 0)
+    {
+        int nBytes = 0, nRead;
+        if (r->Link.protocol & RTMP_FEATURE_HTTP)
+        {
+            int refill = 0;
+            while (!r->m_resplen)
+            {
+                int ret;
+                if (r->m_sb.sb_size < 13 || refill)
+                {
+                    if (!r->m_unackd)
+                        HTTP_Post(r, RTMPT_IDLE, "", 1);
+                    if (RTMPSockBuf_Fill(&r->m_sb) < 1)
+                    {
+                        if (!r->m_sb.sb_timedout)
+                            RTMP_Close(r);
+                        return 0;
+                    }
+                }
+                if ((ret = HTTP_read(r, 0)) == -1)
+                {
+                    RTMP_Log(RTMP_LOGDEBUG, "%s, No valid HTTP response found", __FUNCTION__);
+                    RTMP_Close(r);
+                    return 0;
+                }
+                else if (ret == -2)
+                {
+                    refill = 1;
+                }
+                else
+                {
+                    refill = 0;
+                }
+            }
+            if (r->m_resplen && !r->m_sb.sb_size)
+                RTMPSockBuf_Fill(&r->m_sb);
+            avail = r->m_sb.sb_size;
+            if (avail > r->m_resplen)
+                avail = r->m_resplen;
+        }
+        else
+        {
+            avail = r->m_sb.sb_size;
+            if (avail == 0)
+            {
+                if (RTMPSockBuf_Fill(&r->m_sb) < 1)
+                {
+                    if (!r->m_sb.sb_timedout)
+                        RTMP_Close(r);
+                    return 0;
+                }
+                avail = r->m_sb.sb_size;
+            }
+        }
+        nRead = ((n < avail) ? n : avail);
+        if (nRead > 0 && r->m_sb.sb_start != NULL)
+        {
+            memcpy(ptr, r->m_sb.sb_start, nRead);
+            r->m_sb.sb_start += nRead;
+            r->m_sb.sb_size -= nRead;
+            nBytes = nRead;
+            r->m_nBytesIn += nRead;
+            if (r->m_bSendCounter
+                && r->m_nBytesIn > ( r->m_nBytesInSent + r->m_nClientBW / 10))
+            {
+                RTMPResult result = SendBytesReceived(r);
+                if (result != RTMP_SUCCESS)
+                    return result;
+            }
+        }
+        /*RTMP_Log(RTMP_LOGDEBUG, "%s: %d bytes\n", __FUNCTION__, nBytes); */
+#ifdef _DEBUG
+        fwrite(ptr, 1, nBytes, netstackdump_read);
+#endif
+
+        if (nBytes == 0)
+        {
+            RTMP_Log(RTMP_LOGDEBUG, "%s, RTMP socket closed by peer", __FUNCTION__);
+            /*goto again; */
+            RTMP_Close(r);
+            break;
+        }
+
+        if (r->Link.protocol & RTMP_FEATURE_HTTP)
+            r->m_resplen -= nBytes;
+
+#ifdef CRYPTO
+        if (r->Link.rc4keyIn)
+	{
+	  RC4_encrypt(r->Link.rc4keyIn, nBytes, ptr);
+	}
+#endif
+
+        n -= nBytes;
+        ptr += nBytes;
+    }
+
+    return nOriginalSize - n;
+}
+
+
+static int WriteN(RTMP *r, const char *buffer, int n){
+    const char *ptr = buffer;
+#ifdef CRYPTO
+    char *encrypted = 0;
+  char buf[RTMP_BUFFER_CACHE_SIZE];
+
+  if (r->Link.rc4keyOut)
+    {
+      if (n > sizeof(buf))
+	encrypted = (char *)malloc(n);
+      else
+	encrypted = (char *)buf;
+      ptr = encrypted;
+      RC4_encrypt2(r->Link.rc4keyOut, n, buffer, ptr);
+    }
+#endif
+
+    while (n > 0)
+    {
+        int nBytes;
+
+
+        //this is actually going to send the bytes
+        nBytes = RTMPSockBuf_Send(&r->m_sb, ptr, n);
+
+        if (nBytes < 0){
+            int sockerr = GetSockError();
+
+            LOGI("WriteN",  "%s, RTMP send error %d (%d bytes)", __FUNCTION__,sockerr, n);
+            n = 1;
+            break;
+        }
+
+        if (nBytes == 0)
+            break;
+
+        n -= nBytes;
+        ptr += nBytes;
+    }
+
+#ifdef CRYPTO
+    if (encrypted && encrypted != buf)
+    free(encrypted);
+#endif
+
+    return n == 0;
+}
+
+
+static int HandShake(RTMP *r, int FP9HandShake){
+    int i;
+    uint32_t uptime, suptime;
+    int bMatch;
+    char type;
+    char clientbuf[RTMP_SIG_SIZE + 1], *clientsig = clientbuf + 1;
+    char serversig[RTMP_SIG_SIZE];
+
+    clientbuf[0] = 0x03;		/* not encrypted */
+
+    uptime = htonl(RTMP_GetTime());
+    memcpy(clientsig, &uptime, 4);
+
+    memset(&clientsig[4], 0, 4);
+
+#ifdef _DEBUG
+    for (i = 8; i < RTMP_SIG_SIZE; i++)
+    clientsig[i] = 0xff;
+#else
+    for (i = 8; i < RTMP_SIG_SIZE; i++)
+        clientsig[i] = (char)(rand() & 255);
+#endif
+
+    if (!WriteN(r, clientbuf, RTMP_SIG_SIZE + 1))
+        return FALSE;
+
+    if (ReadN(r, &type, 1) != 1)	/* 0x03 or 0x06 */
+        return FALSE;
+
+
+    LOGI("HandShake",  "%s: Type Answer   : %02X", __FUNCTION__, type);
+
+    if (type != clientbuf[0])
+    LOGI("HandShake",  "%s: Type mismatch: client sent %d, server answered %d",__FUNCTION__, clientbuf[0], type);
+
+    if (ReadN(r, serversig, RTMP_SIG_SIZE) != RTMP_SIG_SIZE)
+        return FALSE;
+
+    /* decode server response */
+
+    memcpy(&suptime, serversig, 4);
+    suptime = ntohl(suptime);
+
+
+    LOGI("HandShake",  "%s: Server Uptime : %d", __FUNCTION__, suptime);
+    LOGI("HandShake",  "%s: FMS Version   : %d.%d.%d.%d", __FUNCTION__,
+         serversig[4], serversig[5], serversig[6], serversig[7]);
+
+    /* 2nd part of handshake */
+    if (!WriteN(r, serversig, RTMP_SIG_SIZE))
+        return FALSE;
+
+    if (ReadN(r, serversig, RTMP_SIG_SIZE) != RTMP_SIG_SIZE)
+        return FALSE;
+
+    bMatch = (memcmp(serversig, clientsig, RTMP_SIG_SIZE) == 0);
+    if (!bMatch){
+        LOGI("HandShake",  "%s, client signature does not match!", __FUNCTION__);
+
+    }
+    return TRUE;
+}
+
+
 
 RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp){
     if (r->Link.protocol & RTMP_FEATURE_SSL){
@@ -519,36 +776,24 @@ RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp){
 
 #endif
     }
-//    if (r->Link.protocol & RTMP_FEATURE_HTTP)
-//    {
-//        r->m_msgCounter = 1;
-//        r->m_clientID.av_val = NULL;
-//        r->m_clientID.av_len = 0;
-//        HTTP_Post(r, RTMPT_OPEN, "", 1);
-//        if (HTTP_read(r, 1) != 0)
-//        {
-//            r->m_msgCounter = 0;
-//            RTMP_Log(RTMP_LOGDEBUG, "%s, Could not connect for handshake", __FUNCTION__);
-//            RTMP_Close(r);
-//            return RTMP_ERROR_HANDSHAKE_CONNECT_FAIL;
-//        }
-//        r->m_msgCounter = 0;
-//    }
-//    RTMP_Log(RTMP_LOGDEBUG, "%s, ... connected, handshaking", __FUNCTION__);
-//    if (!HandShake(r, TRUE))
-//    {
-//        RTMP_Log(RTMP_LOGERROR, "%s, handshake failed.", __FUNCTION__);
-//        RTMP_Close(r);
-//        return RTMP_ERROR_HANDSHAKE_FAIL;
-//    }
-//    RTMP_Log(RTMP_LOGDEBUG, "%s, handshaked", __FUNCTION__);
-//
-//    if (SendConnectPacket(r, cp) != RTMP_SUCCESS)
-//    {
-//        RTMP_Log(RTMP_LOGERROR, "%s, RTMP connect failed.", __FUNCTION__);
-//        RTMP_Close(r);
-//        return RTMP_ERROR_CONNECT_FAIL;
-//    }
+
+
+    LOGI("RTMP_Connect1",  "%s, ... connected, handshaking", __FUNCTION__);
+    if (!HandShake(r, TRUE))
+    {
+
+        LOGI("RTMP_Connect1",  "%s, handshake failed.", __FUNCTION__);
+        RTMP_Close(r);
+        return RTMP_ERROR_HANDSHAKE_FAIL;
+    }
+    RTMP_Log(RTMP_LOGDEBUG, "%s, handshaked", __FUNCTION__);
+
+    if (SendConnectPacket(r, cp) != RTMP_SUCCESS){
+
+        LOGI("RTMP_Connect1", "%s, RTMP connect failed.", __FUNCTION__);
+        RTMP_Close(r);
+        return RTMP_ERROR_CONNECT_FAIL;
+    }
     LOGI("RTMP_Connect1",  "RTMP_SUCCESS");
     return RTMP_SUCCESS;
 }
@@ -605,7 +850,7 @@ static int manualConnection() {
     struct hostent *server;
 
     // Create socket
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd < 0) {
         LOGI("mainTesting",  "Error creating socket");
 
@@ -620,7 +865,7 @@ static int manualConnection() {
     }
 
     // Setup server address struct
-    memset(&server_addr, 0, sizeof(server_addr));
+    memset(&server_addr, 0, sizeof(server_addr)); //ensures that any parts of the structure that we do not explicitly set contain zero.
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
     memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);

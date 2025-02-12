@@ -376,7 +376,11 @@ RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp);
 RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr *svc);
 
 RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp);
-
+static int HandShake(RTMP *r, int FP9HandShake);
+uint32_t RTMP_GetTime(void);
+static int WriteN(RTMP *r, const char *buffer, int n);
+int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
+static int ReadN(RTMP *r, char *buffer, int n);
 
 
 
