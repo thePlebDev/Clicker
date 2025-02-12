@@ -381,6 +381,29 @@ uint32_t RTMP_GetTime(void);
 static int WriteN(RTMP *r, const char *buffer, int n);
 int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
 static int ReadN(RTMP *r, char *buffer, int n);
+int RTMPSockBuf_Send(RTMPSockBuf *sb, const char *buf, int len);
+void RTMP_Close(RTMP *r);
+char *AMF_EncodeString(char *output, char *outend, const AVal * str);
+char *AMF_EncodeInt16(char *output, char *outend, short nVal);
+char *AMF_EncodeInt32(char *output, char *outend, int nVal);
+char *AMF_EncodeNumber(char *output, char *outend, double dVal);
+RTMPResult RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue);
+char *AMF_EncodeInt24(char *output, char *outend, int nVal);
+void AMF_DecodeString(const char *data, AVal * str);
+unsigned short AMF_DecodeInt16(const char *data);
+double AMF_DecodeNumber(const char *data);
+static RTMPResult SendDeleteStream(RTMP *r, double dStreamId);
+int RTMPSockBuf_Fill(RTMPSockBuf *sb);
+static int HTTP_read(RTMP *r, int fill);
+RTMPResult SendBytesReceived(RTMP *r);
+RTMPResult SendConnectPacket(RTMP *r, RTMPPacket *cp);
+char *AMF_EncodeNamedString(char *output, char *outend, const AVal * name, const AVal * value);
+char *AMF_EncodeNamedBoolean(char *output, char *outend, const AVal * name, int bVal);
+char *AMF_EncodeNamedNumber(char *output, char *outend, const AVal * name, double dVal);
+char *AMF_EncodeBoolean(char *output, char *outend, int bVal);
+char *AMFProp_Encode(AMFObjectProperty * prop, char *pBuffer, char *pBufEnd);
+char *AMF_Encode(AMFObject * obj, char *pBuffer, char *pBufEnd);
+char *AMF_EncodeArray(AMFObject *obj, char *pBuffer, char *pBufEnd);
 
 
 

@@ -51,6 +51,8 @@ add_library(camera_stream SHARED
 
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
+add_library(amf_encoding SHARED
+        parsing/amf_encoding.cpp)
 
 add_library(
         # Specifies the name of the library.
@@ -69,11 +71,17 @@ include_directories(rtmp_client.h)
 # Link libraries for rtmp_client
 target_link_libraries(rtmp_client
         parse_url
+        amf_encoding
         android
         log
         EGL
         GLESv2)
 target_link_libraries(parse_url
+        android
+        log
+        EGL
+        GLESv2)
+target_link_libraries(amf_encoding
         android
         log
         EGL
