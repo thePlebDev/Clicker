@@ -731,8 +731,7 @@ init{
             orientation,
             outputFile,
             sendToTwitch = {buffer ->
-                    val chunk =rtmpsClient.createRTMPChunk(buffer)
-                    rtmpsClient.RTMP_SendChunk(chunk)
+
             }
         )
     }

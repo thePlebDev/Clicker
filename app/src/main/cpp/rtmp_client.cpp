@@ -270,9 +270,10 @@ const char RTMPProtocolStringsLower[][7] = {
 
 
 static void SocksSetup(RTMP *r, AVal *sockshost){
-    LOGI("SocksSetup",  "SOCKETS -->%d",sockshost->av_len);
-    if (sockshost->av_len)
-    {
+//    LOGI("SocksSetup",  "SOCKETS -->%d",sockshost->av_len);
+
+// THIS WILL NOT RUN
+    if (sockshost->av_len){
         const char *socksport = strchr(sockshost->av_val, ':');
         char *hostname = strdup(sockshost->av_val);
 
@@ -286,8 +287,7 @@ static void SocksSetup(RTMP *r, AVal *sockshost){
         LOGI("SocksSetup",  "Connecting via SOCKS proxy: %s:%d", r->Link.sockshost.av_val,
              r->Link.socksport);
     }
-    else
-    {
+    else{ // THIS WILL  RUN
         r->Link.sockshost.av_val = NULL;
         r->Link.sockshost.av_len = 0;
         r->Link.socksport = 0;
@@ -299,26 +299,31 @@ static void SocksSetup(RTMP *r, AVal *sockshost){
 
 
 
-RTMPResult RTMP_SetupURL(RTMP *r, char *url)
-{
+RTMPResult RTMP_SetupURL(RTMP *r, char *url){
     AVal opt, arg;
     char *p1, *p2, *ptr = strchr(url, ' ');
     int ret, len;
     unsigned int port = 0;
 
-    if (ptr)
+    if (ptr){ //this does not run
         *ptr = '\0';
+    }
 
     len = strlen(url);
     ret = RTMP_ParseURL(url, &r->Link.protocol, &r->Link.hostname,
                         &port, &r->Link.playpath0, &r->Link.app);
-    if (ret != RTMP_SUCCESS)
-    {
+    if (ret != RTMP_SUCCESS){
         return static_cast<RTMPResult>(ret);
     }
-    r->Link.port = port;
+    LOGI("RTMP_SetupURL", "port --> %u", port);
+    r->Link.port = port; //443
+    LOGI("RTMP_SetupURL", "length --> %d", r->Link.playpath0.av_len); //0
+    LOGI("RTMP_SetupURL", "value --> %s", r->Link.playpath0.av_val);//null
     r->Link.playpath = r->Link.playpath0;
 
+
+
+    //this while loop is not entered. CAN DELETE IN FUTURE
     while (ptr) {
         *ptr++ = '\0';
         p1 = ptr;
@@ -365,17 +370,25 @@ RTMPResult RTMP_SetupURL(RTMP *r, char *url)
             return static_cast<RTMPResult>(ret);
     }
 
+
+    //THIS IS ENTERED
     if (!r->Link.tcUrl.av_len)
     {
-        r->Link.tcUrl.av_val = url;
+
+        r->Link.tcUrl.av_val = url; //this is the entire rtmp://ingest.global-contribute.live-video.net:443/app/
+        //this is entered
         if (r->Link.app.av_len)
         {
+            //this is entered
             if (r->Link.app.av_val < url + len)
             {
+
+                LOGI("RTMP_SetupURL", "port --> %u", port);
                 /* if app is part of original url, just use it */
+                //this is 54
                 r->Link.tcUrl.av_len = r->Link.app.av_len + (r->Link.app.av_val - url);
             }
-            else
+            else //not entered
             {
                 len = r->Link.hostname.av_len + r->Link.app.av_len +
                       sizeof("rtmpte://:65535/");
@@ -389,20 +402,25 @@ RTMPResult RTMP_SetupURL(RTMP *r, char *url)
                 r->Link.lFlags |= RTMP_LF_FTCU;
             }
         }
-        else
+        else //not entered
         {
             r->Link.tcUrl.av_len = strlen(url);
         }
     }
-
-#ifdef CRYPTO
-    if ((r->Link.lFlags & RTMP_LF_SWFV) && r->Link.swfUrl.av_len)
-    RTMP_HashSWF(r->Link.swfUrl.av_val, &r->Link.SWFSize,
-	  (unsigned char *)r->Link.SWFHash, r->Link.swfAge);
-#endif
+//
+//#ifdef CRYPTO
+//    if ((r->Link.lFlags & RTMP_LF_SWFV) && r->Link.swfUrl.av_len)
+//    RTMP_HashSWF(r->Link.swfUrl.av_val, &r->Link.SWFSize,
+//	  (unsigned char *)r->Link.SWFHash, r->Link.swfAge);
+//#endif
+//
+//    LOGI("RTMP_SetupURL", "SocksSetup LENGTH --> %d", r->Link.sockshost.av_len); //value is 0
+//    LOGI("RTMP_SetupURL", "SocksSetup VALUE --> %s", r->Link.sockshost.av_val); //value is null
 
     SocksSetup(r, &r->Link.sockshost);
 
+
+    //THIS WILL NOT RUN
     if (r->Link.port == 0)
     {
         if (r->Link.protocol & RTMP_FEATURE_SSL)
@@ -418,38 +436,47 @@ void RTMP_EnableWrite(RTMP *r)
 {
     r->Link.protocol |= RTMP_FEATURE_WRITE;
 }
-static RTMPResult
-add_addr_info(struct sockaddr_in *service, AVal *host, int port)
-{
+/**
+ *  add_addr_info is meant to add extra information to the socket before connecting to it
+ *
+ *  @param host the size and the characters of the url
+ *  @param sockaddr_in  a structure containing an internet address
+ *  @param port the port of 443
+ * */
+static RTMPResult add_addr_info(struct sockaddr_in *service, AVal *host, int port){
     char *hostname;
     RTMPResult ret = RTMP_SUCCESS;
-    if (host->av_val[host->av_len])
-    {
+
+    //this WILL RUN
+    if (host->av_val[host->av_len]){
         hostname = static_cast<char *>(malloc(host->av_len + 1));
         memcpy(hostname, host->av_val, host->av_len);
         hostname[host->av_len] = '\0';
     }
-    else
-    {
+    else{
         hostname = host->av_val;
     }
+//
 
     service->sin_addr.s_addr = inet_addr(hostname);
-    if (service->sin_addr.s_addr == INADDR_NONE)
-    {
+
+    //this will run
+    if (service->sin_addr.s_addr == INADDR_NONE){
         struct hostent *host = gethostbyname(hostname);
         if (host == NULL || host->h_addr == NULL)
         {
 
-            LOGI("RTMP_ParseURL",  "Problem accessing the DNS. (addr: %s)", hostname);
+            LOGI("add_addr_info",  "Problem accessing the DNS. (addr: %s)", hostname);
             ret = RTMP_ERROR_DNS_NOT_REACHABLE;
             goto finish;
         }
         service->sin_addr = *(struct in_addr *)host->h_addr;
     }
 
+
     service->sin_port = htons(port);
     finish:
+    //this will run
     if (hostname != host->av_val)
         free(hostname);
     return ret;
@@ -695,13 +722,11 @@ RTMPResult RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue){
         if (nSize < nChunkSize)
             nChunkSize = nSize;
 
-        if (tbuf)
-        {
+        if (tbuf){
             memcpy(toff, header, nChunkSize + hSize);
             toff += nChunkSize + hSize;
         }
-        else
-        {
+        else{
             wrote = WriteN(r, header, nChunkSize + hSize);
             if (!wrote) {
                 return RTMP_ERROR_SEND_PACKET_FAIL;
@@ -842,19 +867,22 @@ void RTMP_Close(RTMP *r){
 }
 
 
-
+/**
+ * RTMP_Connect0 is responsible for the successful creation and connection of the socket
+ * */
 RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
-    LOGI("RTMP_Connect0",  "CALLED");
+
     int on = 1;
     r->m_sb.sb_timedout = FALSE;
     r->m_pausing = 0;
     r->m_fDuration = 0.0;
 
+    //this is creating the socket
     r->m_sb.sb_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (r->m_sb.sb_socket != -1)
-    {
-        //TODO:this is getting called
-        LOGI("RTMP_Connect0",  "r->m_sb.sb_socket != -1");
+
+    //this will run
+    if (r->m_sb.sb_socket != -1){
+
         int err;
         struct timeval send_timeout;
 
@@ -865,8 +893,9 @@ RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
             LOGI("RTMP_Connect0",  "Error %d setting SO_SNDTIMEO", errno);
         }
 
-        if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0)
-        {
+        //this will not run.
+        //THIS CONDITIONAL NOT RUNNING MEANS A SUCCESSFUL CONNECTION
+        if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0){
             LOGI("RTMP_Connect0",  "GetSockError()");
             int err = GetSockError();
             //TODO: I THINK THAT THIS IS THE ONE that will get called
@@ -876,8 +905,8 @@ RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
             return RTMP_ERROR_SOCKET_CONNECT_FAIL;
         }
 
-        if (r->Link.socksport)
-        {
+        //THIS WILL NOT RUN
+        if (r->Link.socksport){
 
             LOGI("RTMP_Connect0",  "%s ... SOCKS negotiation", __FUNCTION__);
 //            if (!SocksNegotiate(r))
@@ -888,8 +917,7 @@ RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
 //                return RTMP_ERROR_SOCKS_NEGOTIATION_FAIL;
 //            }
         }
-    }
-    else{
+    }else{ //this will not run
         LOGI("RTMP_Connect0", "%s, failed to create socket. Error: %d", __FUNCTION__,
              GetSockError());
 
@@ -902,8 +930,7 @@ RTMPResult RTMP_Connect0(RTMP *r, struct sockaddr * service){
 
         tv.tv_sec = r->Link.receiveTimeoutInMs / 1000;
         tv.tv_usec = (r->Link.receiveTimeoutInMs % 1000) * 1000;
-        if (setsockopt
-                (r->m_sb.sb_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)))
+        if (setsockopt(r->m_sb.sb_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)))
         {
 
             LOGI("RTMP_Connect0", "%s, Setting socket timeout to %dms failed!",__FUNCTION__, r->Link.receiveTimeoutInMs);
@@ -1196,8 +1223,10 @@ static int WriteN(RTMP *r, const char *buffer, int n){
     }
 #endif
 
-    while (n > 0)
-    {
+    //n --> 1537
+    LOGI("WriteN",  "n > 0");
+    while (n > 0){
+        LOGI("WriteN",  "n --> %d",n);
         int nBytes;
 
 
@@ -1215,6 +1244,7 @@ static int WriteN(RTMP *r, const char *buffer, int n){
         if (nBytes == 0)
             break;
 
+        LOGI("WriteN",  "nBytes --> %d",nBytes); //this is instantly 1537
         n -= nBytes;
         ptr += nBytes;
     }
@@ -1224,15 +1254,18 @@ static int WriteN(RTMP *r, const char *buffer, int n){
     free(encrypted);
 #endif
 
+    LOGI("WriteN",  "d -->,%d",n == 0);
     return n == 0;
 }
 
 
 static int HandShake(RTMP *r, int FP9HandShake){
+    LOGI("HandShakeOriginal", "START");
     int i;
     uint32_t uptime, suptime;
     int bMatch;
     char type;
+    //this is 1536 +1
     char clientbuf[RTMP_SIG_SIZE + 1], *clientsig = clientbuf + 1;
     char serversig[RTMP_SIG_SIZE];
 
@@ -1247,21 +1280,29 @@ static int HandShake(RTMP *r, int FP9HandShake){
     for (i = 8; i < RTMP_SIG_SIZE; i++)
     clientsig[i] = 0xff;
 #else
-    for (i = 8; i < RTMP_SIG_SIZE; i++)
+    for (i = 8; i < RTMP_SIG_SIZE; i++){
         clientsig[i] = (char)(rand() & 255);
+    }
+
 #endif
 
-    if (!WriteN(r, clientbuf, RTMP_SIG_SIZE + 1))
+    LOGI("HandShakeOriginal", "WriteN start");
+    if (!WriteN(r, clientbuf, RTMP_SIG_SIZE + 1)){
         return FALSE;
+    }
 
-    if (ReadN(r, &type, 1) != 1)	/* 0x03 or 0x06 */
+
+    LOGI("HandShakeOriginal", "READING");
+    if (ReadN(r, &type, 1) != 1){
         return FALSE;
+    }	/* 0x03 or 0x06 */
 
 
-    LOGI("HandShake",  "%s: Type Answer   : %02X", __FUNCTION__, type);
+
+    LOGI("HandShakeOriginal",  "%s: Type Answer   : %02X", __FUNCTION__, type);
 
     if (type != clientbuf[0])
-    LOGI("HandShake",  "%s: Type mismatch: client sent %d, server answered %d",__FUNCTION__, clientbuf[0], type);
+    LOGI("HandShakeOriginal",  "%s: Type mismatch: client sent %d, server answered %d",__FUNCTION__, clientbuf[0], type);
 
     if (ReadN(r, serversig, RTMP_SIG_SIZE) != RTMP_SIG_SIZE)
         return FALSE;
@@ -1272,8 +1313,8 @@ static int HandShake(RTMP *r, int FP9HandShake){
     suptime = ntohl(suptime);
 
 
-    LOGI("HandShake",  "%s: Server Uptime : %d", __FUNCTION__, suptime);
-    LOGI("HandShake",  "%s: FMS Version   : %d.%d.%d.%d", __FUNCTION__,
+    LOGI("HandShakeOriginal",  "%s: Server Uptime : %d", __FUNCTION__, suptime);
+    LOGI("HandShakeOriginal",  "%s: FMS Version   : %d.%d.%d.%d", __FUNCTION__,
          serversig[4], serversig[5], serversig[6], serversig[7]);
 
     /* 2nd part of handshake */
@@ -1285,7 +1326,7 @@ static int HandShake(RTMP *r, int FP9HandShake){
 
     bMatch = (memcmp(serversig, clientsig, RTMP_SIG_SIZE) == 0);
     if (!bMatch){
-        LOGI("HandShake",  "%s, client signature does not match!", __FUNCTION__);
+        LOGI("HandShakeOriginal",  "%s, client signature does not match!", __FUNCTION__);
 
     }
     return TRUE;
@@ -1421,6 +1462,7 @@ SAVC(nonprivate);
 
 
 RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp){
+     //THIS WILL NOT RUN
     if (r->Link.protocol & RTMP_FEATURE_SSL){
 #if defined(CRYPTO) && !defined(NO_SSL)
         TLS_client(RTMP_TLS_ctx, r->m_sb.sb_ssl);
@@ -1449,28 +1491,33 @@ RTMPResult RTMP_Connect1(RTMP *r, RTMPPacket *cp){
         RTMP_Close(r);
         return RTMP_ERROR_HANDSHAKE_FAIL;
     }
-
-    LOGI("RTMP_Connect1",  "%s, handshaked", __FUNCTION__);
-
-    if (SendConnectPacket(r, cp) != RTMP_SUCCESS){
-
-        LOGI("RTMP_Connect1", "%s, RTMP connect failed.", __FUNCTION__);
-        RTMP_Close(r);
-        return RTMP_ERROR_CONNECT_FAIL;
-    }
-    LOGI("RTMP_Connect1",  "RTMP_SUCCESS");
+//
+//    LOGI("RTMP_Connect1",  "%s, handshaked", __FUNCTION__);
+//
+//    if (SendConnectPacket(r, cp) != RTMP_SUCCESS){
+//
+//        LOGI("RTMP_Connect1", "%s, RTMP connect failed.", __FUNCTION__);
+//        RTMP_Close(r);
+//        return RTMP_ERROR_CONNECT_FAIL;
+//    }
+//    LOGI("RTMP_Connect1",  "RTMP_SUCCESS");
     return RTMP_SUCCESS;
 }
 
 RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp){
     struct sockaddr_in service;
     RTMPResult ret = RTMP_SUCCESS;
+
+    //this does not run
     if (!r->Link.hostname.av_len)
         return RTMP_ERROR_URL_MISSING_PROTOCOL;
 
     memset(&service, 0, sizeof(struct sockaddr_in));
     service.sin_family = AF_INET;
 
+
+
+    //THIS DOES NOT RUN
     if (r->Link.socksport)
     {
         LOGI("RTMP_Connect0", "SOCKS");
@@ -1480,7 +1527,7 @@ RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp){
             return ret;
         }
     }
-    else{
+    else{ //THIS DOES  RUN
         LOGI("RTMP_Connect0", "directly");
         /* Connect directly */
         ret = add_addr_info(&service, &r->Link.hostname, r->Link.port);
@@ -1490,18 +1537,20 @@ RTMPResult RTMP_Connect(RTMP *r, RTMPPacket *cp){
             return ret;
         }
     }
-    LOGI("RTMP_Connect0", "RTMP_Connect0()");
+
 
     //THIS IS GETTING CALLED
     ret = RTMP_Connect0(r, (struct sockaddr *)&service);
+
+    //this will not run if RTMP_Connect0 successfully creates and connects a socket
     if (ret != RTMP_SUCCESS)
         return ret;
 
     r->m_bSendCounter = TRUE;
-
-   // todo: return RTMP_Connect1(r, cp); IS THE ACTUAL RETURN VALUE. NOT RTMP_SUCCESS
+//
+//   // todo: return RTMP_Connect1(r, cp); IS THE ACTUAL RETURN VALUE. NOT RTMP_SUCCESS
     return RTMP_Connect1(r, cp);
-  return RTMP_SUCCESS;
+//  return RTMP_SUCCESS;
 }
 
 
@@ -1566,49 +1615,43 @@ Java_com_example_clicker_presentation_selfStreaming_RTMPNativeClient_nativeOpen(
     //todo: I NEED TO RE-IMPLEMENT THIS METHOd
     //below is the method that is used to create a socket in the library
     manualConnection();
-//  int sock1  = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//    struct hostent *server;
-//    server = gethostbyname("ingest.global-contribute.live-video.net");
-//
-//  //below is what the book tells me
-//    unsigned long addr;
-//    int sock2 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//    struct sockaddr_in service;
-//    memset(&service, 0, sizeof(struct sockaddr_in));
-//    service.sin_family = AF_INET;
-//    service.sin_port = htons(443);
-//    if(sock2<0){
-//        LOGI("NATIVEOPEN",  "FAILED TO CREATE");
-//    }else{
-//        LOGI("NATIVEOPEN",  "SOCK CREATED");
-//    }
 
-//     char *url = "rtmps://ingest.global-contribute.live-video.net:443/app/";
+
+
+     char *url = "rtmp://ingest.global-contribute.live-video.net:443/app/";
 ////    RTMP *rtmp = (RTMP *) nullptr;
 ////     rtmp = RTMP_Alloc();
-//    RTMP *rtmp = RTMP_Alloc();
-//    if (rtmp == NULL) {
-//
-//        LOGI("NATIVEOPEN",  "RTMP open called without allocating rtmp object");
-//        return RTMP_ERROR_IGNORED;
-//    }
-//
-//    RTMP_Init(rtmp);
-//    rtmp->Link.receiveTimeoutInMs = receiveTimeoutInMs;
-//    rtmp->Link.sendTimeoutInMs = sendTimeoutInMs;
-//    RTMPResult ret = RTMP_SetupURL(rtmp, url);
-//
-//    LOGI("NATIVEOPEN",  "RTMPResult--> %d",ret);
-////
-////    if (ret != RTMP_SUCCESS) {
-////        RTMP_Free(rtmp);
-////        return ret;
-////    }
+    RTMP *rtmp = RTMP_Alloc();
+    if (rtmp == NULL) {
+
+        LOGI("NATIVEOPEN",  "RTMP open called without allocating rtmp object");
+        return RTMP_ERROR_IGNORED;
+    }
+    char *again = strchr(url, ' ');
+    if(again){
+        LOGI("NATIVEOPEN",  "INSIDE THE IF ");
+    }
+
+
+
+    RTMP_Init(rtmp);
+    rtmp->Link.receiveTimeoutInMs = receiveTimeoutInMs;
+    rtmp->Link.sendTimeoutInMs = sendTimeoutInMs;
+    RTMPResult ret = RTMP_SetupURL(rtmp, url);
+
+   LOGI("NATIVEOPEN",  "RTMPResult--> %d",ret);
+
+   //THIS WILL NOT RUN
+    if (ret != RTMP_SUCCESS) {
+       // RTMP_Free(rtmp);
+        return ret;
+    }
+    //TODO: THIS SHOULD BE ENABLED BUT NOT RIGHT NOW
 //    if (is_publish_mode) {
 //        RTMP_EnableWrite(rtmp);
 //    }
 
-   // ret = RTMP_Connect(rtmp, NULL);
+    ret = RTMP_Connect(rtmp, NULL);
 //    if (ret != RTMP_SUCCESS) {
 //        RTMP_Free(rtmp);
 //        return ret;
