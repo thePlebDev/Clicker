@@ -20,6 +20,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.SocketException
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.util.Random
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -106,7 +107,6 @@ class RtmpsClient2(
         val C0 = ByteArray(1)
 
         C0[0] =3
-        val timestampBytes = ByteBuffer.allocate(4).putInt(timestamp).array()
 
         val C1 = ByteArray(1536).apply {
             // time (4 bytes)
@@ -147,65 +147,46 @@ class RtmpsClient2(
         val inputStream = sslSocket.getInputStream()
         val allBytesS1 = inputStream.readAllBytes()
 
-//
+
+        //TODO: DOUBLE CHECK THAT THIS 9 INDEX IS CORRECT
+        val firstHalfOfS1 = allBytesS1.copyOfRange(9, 1537)
 
 
-        // I ignore 0 because Twitch sets it as the version witch is 3
-        val firstHalfOfS1 = allBytesS1.copyOfRange(0, 1537)
+// Optionally, log the first few bytes for verification
+       // Log.d("HandshakeVerification", "First few bytes of firstHalfOfS1: ${firstHalfOfS1.take(10).joinToString(", ") { it.toString() }}")
 
-        Log.d("TESTINGHANDSHAKEAGAIN","firstHalfOfS1 last -->${firstHalfOfS1[firstHalfOfS1.size-1]}")
+        val C2 = ByteArray(1536).apply {
+            // Set the first 8 bytes to 0 (timestamp)
+            this[0] = 0
+            this[1] = 0
+            this[2] = 0
+            this[3] = 0
+            this[4] = 0
+            this[5] = 0
+            this[6] = 0
+            this[7] = 0
 
-      //  Log.d("TESTINGHANDSHAKEAGAIN","-----------------SEPARATE---------------------------------")
-        val C2 = ByteArray(1537).apply {
-            this[0] = 0 //timestamp set as 0
-            this[1] = 0//timestamp set as 0
-            this[2] = 0//timestamp set as 0
-            this[3] = 0//timestamp set as 0
-
-
-            this[4] = 0 //timestamp set as 0
-            this[5] =0//timestamp set as 0
-            this[6] = 0//timestamp set as 0
-            this[7] =0//timestamp set as 0
-
-            Log.d("TESTINGHANDSHAKEAGAIN"," 0? -->${firstHalfOfS1[8]}")
-            for(i in 8 until firstHalfOfS1.size-1 ){
-                //I think we just set a hard conditional that says if i == 8 do nothing
-               // Log.d("TESTINGHANDSHAKEAGAIN","i -->$i value -->${firstHalfOfS1[i]}")
-                if(i ==8){
-
-                }
-
-                else{
-                    this[i] =firstHalfOfS1[i]
-                }
-            }
-
-        }
-        //THE SIZES SHOULD NOT BE DIFFERENT
-        Log.d("TESTINGHANDSHAKEAGAIN"," c2 sizet -->${C2[C2.size-1]}")
-        Log.d("TESTINGHANDSHAKEAGAIN"," firstHalfOfS1 sizet -->${firstHalfOfS1[firstHalfOfS1.size-1]}")
-       // I need to print them both out side by side to see what is happening
-        //todo: I think what is happening is that the final values of c2 are not being initialized. Size problem maybe?
-        for (i in C2.indices){
-            Log.d("TESTINGHANDSHAKEAGAIN"," equal -->${C2[i]==firstHalfOfS1[i]}")
-            if(C2[i]!=firstHalfOfS1[i]){
-
-                Log.d("TESTINGHANDSHAKEAGAIN"," i -->$i")
-                Log.d("TESTINGHANDSHAKEAGAIN"," C2[i] -->${C2[i]}")
-                Log.d("TESTINGHANDSHAKEAGAIN"," firstHalfOfS1[i] -->${firstHalfOfS1[i]}")
-
+            // Copy the remaining 1528 bytes from firstHalfOfS1
+            for (i in 0 until 1528) {
+                this[8 + i] = firstHalfOfS1[i] // Correctly copy all 1528 bytes
             }
         }
 
 
+// Compare the last 10 bytes of S1 and C2
+        val lastFewBytesOfS1 = firstHalfOfS1.copyOfRange(firstHalfOfS1.size - 10, firstHalfOfS1.size)
+        val lastFewBytesOfC2 = C2.copyOfRange(C2.size - 10, C2.size)
+        Log.d("HandshakeAgain", "Last 10 bytes of S1: ${lastFewBytesOfS1.joinToString(", ") { it.toString() }}")
+        Log.d("HandshakeAgain", "Last 10 bytes of C2: ${lastFewBytesOfC2.joinToString(", ") { it.toString() }}")
 
         outputStream.write(C2)
         outputStream.flush()
-        val secondInputstream = sslSocket.inputStream
 
-        val allbytesSecond = secondInputstream.readAllBytes()
-        Log.d("TESTINGHANDSHAKEAGAIN","size 2 --->${allbytesSecond.size}")
+
+        val bytesRead = inputStream.readAllBytes()
+        Log.d("TESTINGHANDSHAKEAGAIN", "Server response to connect: ${bytesRead.size} bytes")
+
+
 
 
 
