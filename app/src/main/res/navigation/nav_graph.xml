@@ -34,6 +34,9 @@
         <action
             android:id="@+id/action_homeFragment_to_selfStreamingFragment"
             app:destination="@id/selfStreamingFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_miniGameFragment"
+            app:destination="@id/miniGameFragment" />
     </fragment>
     <fragment
         android:id="@+id/streamFragment"
@@ -117,5 +120,14 @@
             android:id="@+id/action_selfStreamingFragment_to_logoutFragment"
             app:popUpToInclusive="true"
             app:destination="@id/logoutFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/miniGameFragment"
+        android:name="com.example.clicker.presentation.minigames.MiniGameFragment"
+        android:label="fragment_mini_game"
+        tools:layout="@layout/fragment_mini_game" >
+        <action
+            android:id="@+id/action_miniGameFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
     </fragment>
 </navigation>
