@@ -272,17 +272,19 @@ import kotlinx.coroutines.launch
                             },
                         )
                     },
+
                     fourthButton = {
-                        IconOverTextColumn(
+                        this.PainterResourceIconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Stream",
-                            imageVector = Icons.Default.Add,
-                            iconContentDescription = "Navigate to stream page",
-                            onClick = {
-                                navigateToStream()
-                            },
+                            painter = painterResource(id = R.drawable.videogame_asset),
+                            iconContentDescription = "Navigate to mini games page",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Mini Games",
+                            onClick = {
+                                onNavigate(R.id.action_homeFragment_to_miniGameFragment)
+                            },
                         )
+
                     }
 
                 ) //TODO: THIS IS THE BOTTOM
