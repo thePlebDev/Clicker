@@ -5,11 +5,15 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.opengl.EGL14
+import android.os.Build
 import android.util.Log
 import android.view.Surface
+import androidx.annotation.RequiresApi
 import com.example.clicker.presentation.selfStreaming.EncoderWrapper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.io.DataInputStream
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -60,6 +64,7 @@ class RtmpsClient2(
 
 
     // Perform connection on background thread using Coroutine
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     suspend fun connect() {
         try {
             withContext(Dispatchers.IO) {
@@ -73,20 +78,17 @@ class RtmpsClient2(
                 // Add a HandshakeCompletedListener
                 sslSocket.addHandshakeCompletedListener(object : HandshakeCompletedListener {
                     override fun handshakeCompleted(event: HandshakeCompletedEvent) {
-                        Log.i(TAG, "Handshake completed successfully! NEW LISTENER")
-                        Log.i(TAG, "Cipher Suite: ${event.cipherSuite}")
-                        Log.i(TAG, "Session: ${event.session}")
-                        Log.i(TAG, "Peer Principal: ${event.peerPrincipal}")
+//
                     }
                 })
                 sslSocket.startHandshake() // Perform SSL handshake
                 outputStream = sslSocket.outputStream
-                Log.i(TAG, "Connected to RTMPS server at $host:$port")
+               // Log.i(TAG, "Connected to RTMPS server at $host:$port")
 
                 // Step 3: Perform the RTMP handshake
-                performRtmpHandshake()
-                // ✅ Step 4: Check RTMP Connection Status
-//                checkRtmpConnectionStatus(sslSocket)
+                //performRtmpHandshake()
+                performRtmpHandshakeAgain()
+
 
                 Log.i(TAG, "RTMPS handshake completed successfully")
             }
@@ -96,6 +98,128 @@ class RtmpsClient2(
     }
 
 
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private  suspend fun performRtmpHandshakeAgain(){
+        val timestamp = System.currentTimeMillis().toInt()
+        val randomData = ByteArray(1528).apply { Random().nextBytes(this) }
+        val C0 = ByteArray(1)
+
+        C0[0] =3
+        val timestampBytes = ByteBuffer.allocate(4).putInt(timestamp).array()
+
+        val C1 = ByteArray(1536).apply {
+            // time (4 bytes)
+            // Copy timestamp (4 bytes) directly
+            this[0] = 0
+            this[1] = 0
+            this[2] = 0
+            this[3] = 0
+
+
+
+
+            //zero (4 bytes)
+            // Copy 4 zero bytes directly
+            this[4] = 0
+            this[5] = 0
+            this[6] = 0
+            this[7] = 0
+
+            //random bytes
+            // Copy randomData (1528 bytes) directly
+            for (i in randomData.indices) {
+                this[8 + i] = randomData[i]
+
+            }
+        }
+        val handshake = ByteArray(1537).apply {
+            this[0] = 3 // C0: RTMP version
+            System.arraycopy(C1, 0, this, 1, C1.size)
+        }
+
+        // Send C0 + C1
+        val outputStream = sslSocket.getOutputStream()
+        outputStream.write(handshake)
+        outputStream.flush()
+
+        // Read S0 + S1
+        val inputStream = sslSocket.getInputStream()
+        val allBytesS1 = inputStream.readAllBytes()
+
+//
+
+
+        // I ignore 0 because Twitch sets it as the version witch is 3
+        val firstHalfOfS1 = allBytesS1.copyOfRange(0, 1537)
+
+        Log.d("TESTINGHANDSHAKEAGAIN","firstHalfOfS1 last -->${firstHalfOfS1[firstHalfOfS1.size-1]}")
+
+      //  Log.d("TESTINGHANDSHAKEAGAIN","-----------------SEPARATE---------------------------------")
+        val C2 = ByteArray(1537).apply {
+            this[0] = 0 //timestamp set as 0
+            this[1] = 0//timestamp set as 0
+            this[2] = 0//timestamp set as 0
+            this[3] = 0//timestamp set as 0
+
+
+            this[4] = 0 //timestamp set as 0
+            this[5] =0//timestamp set as 0
+            this[6] = 0//timestamp set as 0
+            this[7] =0//timestamp set as 0
+
+            Log.d("TESTINGHANDSHAKEAGAIN"," 0? -->${firstHalfOfS1[8]}")
+            for(i in 8 until firstHalfOfS1.size-1 ){
+                //I think we just set a hard conditional that says if i == 8 do nothing
+               // Log.d("TESTINGHANDSHAKEAGAIN","i -->$i value -->${firstHalfOfS1[i]}")
+                if(i ==8){
+
+                }
+
+                else{
+                    this[i] =firstHalfOfS1[i]
+                }
+            }
+
+        }
+        //THE SIZES SHOULD NOT BE DIFFERENT
+        Log.d("TESTINGHANDSHAKEAGAIN"," c2 sizet -->${C2[C2.size-1]}")
+        Log.d("TESTINGHANDSHAKEAGAIN"," firstHalfOfS1 sizet -->${firstHalfOfS1[firstHalfOfS1.size-1]}")
+       // I need to print them both out side by side to see what is happening
+        //todo: I think what is happening is that the final values of c2 are not being initialized. Size problem maybe?
+        for (i in C2.indices){
+            Log.d("TESTINGHANDSHAKEAGAIN"," equal -->${C2[i]==firstHalfOfS1[i]}")
+            if(C2[i]!=firstHalfOfS1[i]){
+
+                Log.d("TESTINGHANDSHAKEAGAIN"," i -->$i")
+                Log.d("TESTINGHANDSHAKEAGAIN"," C2[i] -->${C2[i]}")
+                Log.d("TESTINGHANDSHAKEAGAIN"," firstHalfOfS1[i] -->${firstHalfOfS1[i]}")
+
+            }
+        }
+
+
+
+        outputStream.write(C2)
+        outputStream.flush()
+        val secondInputstream = sslSocket.inputStream
+
+        val allbytesSecond = secondInputstream.readAllBytes()
+        Log.d("TESTINGHANDSHAKEAGAIN","size 2 --->${allbytesSecond.size}")
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun performRtmpHandshake() {
         withContext(Dispatchers.IO) {
             try {
@@ -138,14 +262,15 @@ class RtmpsClient2(
                 outputStream.flush()
 
                 // Read S0 + S1
-                val inputStream = sslSocket.getInputStream()
+               val inputStream = sslSocket.getInputStream()
                 val response = ByteArray(1537)
                 inputStream.readFully(response)
 
                 //MUST wait until S1 has been received before sending C2
                 // Verify S0
-                if (response[0] != 3.toByte()) {
-                    throw IllegalStateException("Invalid RTMP handshake version from server")
+                if (response[0] == 3.toByte()) {
+
+                    Log.i(TAG, "S0 == 3.TObYTE")
                 }
 
                 val s1 = response.copyOfRange(1, 1537)
@@ -179,19 +304,26 @@ class RtmpsClient2(
                 val s2 = ByteArray(1536)
                 inputStream.readFully(s2)
 
+                Log.d("TESTINGHANDSHAKEAGAIN","readAllBytes --->${inputStream.readAllBytes().size}")
+                Log.d("TESTINGHANDSHAKEAGAIN","c1 size --->${c1.size}")
+
                 //MUST wait until S2
                 // Verify S2 matches C1
-                if (!s2.contentEquals(c1)) {
-                    throw IllegalStateException("Invalid RTMP handshake response from server")
+                if (s2.contentEquals(c1)) {
+
+                    Log.i(TAG, "Invalid RTMP handshake response from server")
+                }else{
+                    Log.i(TAG, "RTMP handshake successful. Everything matches. begin sending data")
                 }
 
-                Log.i(TAG, "RTMP handshake successful. Everything matches. begin sending data")
-                connect("app")
+
+
             } catch (e: Exception) {
                 Log.e(TAG, "Handshake failed: ${e.message}", e)
             }
         }
     }
+
 
     fun InputStream.readFully(buffer: ByteArray) {
         var bytesRead = 0
@@ -204,93 +336,93 @@ class RtmpsClient2(
         }
     }
 
-    fun connect(appName: String) {
+    // Function to listen for the "Window Acknowledgement Size" (RTMP type 5)
+    fun listenForWindowAcknowledgementSizeOrigianl(inputStream: InputStream) {
         try {
+            // RTMP protocol uses a 12-byte header for each message
+            val header = ByteArray(12)
 
-           // rtmp://ingest.global-contribute.live-video.net/app/{stream_key}
-
-            val commandName = "connect"
-            val transactionId = 1 // Always 1 for connect
-            val commandObject = mapOf(
-                "app" to appName,
-                "flashver" to "FMSc/1.0",
-                "swfUrl" to "file://C:/FlvPlayer.swf",
-                "tcUrl" to "rtmps://ingest.global-contribute.live-video.net:443/app/",
-                "fpad" to false,
-                "audioCodecs" to 0x0FFF,
-                "videoCodecs" to 0x00FF,
-                "videoFunction" to 1,
-                "pageUrl" to "http://somehost/sample.html",
-                "objectEncoding" to 3 // AMF3
-            )
-
-            val encodedMessage = encodeAmf(commandName, transactionId, commandObject)
-            outputStream.write(encodedMessage)
-            outputStream.flush()
-
-            listenForResponse()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-
-
-    private fun encodeAmf(commandName: String, transactionId: Int, commandObject: Map<String, Any>): ByteArray {
-        val buffer = ByteBuffer.allocate(1024) // Allocate enough space
-
-        // Encode command name as AMF string
-        buffer.put(0x02) // AMF0 String marker
-        buffer.putShort(commandName.length.toShort())
-        buffer.put(commandName.toByteArray(Charsets.UTF_8))
-
-        // Encode transaction ID as AMF number
-        buffer.put(0x00) // AMF0 Number marker
-        buffer.putDouble(transactionId.toDouble())
-
-        // Encode command object as AMF object
-        buffer.put(0x03) // AMF0 Object marker
-        commandObject.forEach { (key, value) ->
-            buffer.putShort(key.length.toShort())
-            buffer.put(key.toByteArray(Charsets.UTF_8))
-
-            when (value) {
-                is String -> {
-                    buffer.put(0x02) // AMF0 String marker
-                    buffer.putShort(value.length.toShort())
-                    buffer.put(value.toByteArray(Charsets.UTF_8))
-                }
-                is Boolean -> {
-                    buffer.put(0x01) // AMF0 Boolean marker
-                    buffer.put(if (value) 1 else 0)
-                }
-                is Number -> {
-                    buffer.put(0x00) // AMF0 Number marker
-                    buffer.putDouble(value.toDouble())
-                }
+            // Read the RTMP header
+            val headerLength = inputStream.read(header)
+            if (headerLength != 12) {
+                throw EOFException("Failed to read RTMP message header.")
             }
-        }
-        buffer.put(0x00) // End of object
-        buffer.put(0x00)
-        buffer.put(0x09)
 
-        return buffer.array().copyOf(buffer.position())
+            // Extract message type (Message Type is 1 byte at position 7 in the header)
+            val messageType = header[7].toInt()
+
+            if (messageType == 5) { // Window Acknowledgement Size (Message Type 5)
+                val windowSizeBytes = ByteArray(4)
+                val bytesRead = inputStream.read(windowSizeBytes)
+                if (bytesRead != 4) {
+                    throw EOFException("Failed to read Window Acknowledgement Size.")
+                }
+
+                // Convert the byte array to an integer (window size)
+                val windowSize = ((windowSizeBytes[0].toInt() and 0xFF) shl 24) or
+                        ((windowSizeBytes[1].toInt() and 0xFF) shl 16) or
+                        ((windowSizeBytes[2].toInt() and 0xFF) shl 8) or
+                        (windowSizeBytes[3].toInt() and 0xFF)
+
+                Log.d("listenForWindowAcknowledgementSize","Received Window Acknowledgement Size: $windowSize bytes")
+            } else {
+                Log.d("listenForWindowAcknowledgementSize","Received non-Window Acknowledgement message type: $messageType")
+            }
+        } catch (e: Exception) {
+            Log.d("listenForWindowAcknowledgementSize","Error while reading RTMP message: ${e.message}")
+        }
+    }
+    fun listenForWindowAcknowledgementSize(inputStream: InputStream) {
+        try {
+            val header = ByteArray(12)
+            var bytesRead = 0
+
+            // Read the RTMP header, ensuring we get all 12 bytes
+            while (bytesRead < 12) {
+                val result = inputStream.read(header, bytesRead, 12 - bytesRead)
+                if (result == -1) {
+                    throw EOFException("Unexpected end of stream while reading RTMP header.")
+                }
+                bytesRead += result
+            }
+
+            // Extract message type (Message Type is 1 byte at position 7 in the header)
+            val messageType = header[7].toInt()
+
+            if (messageType == 5) { // Window Acknowledgement Size (Message Type 5)
+                val windowSizeBytes = ByteArray(4)
+                bytesRead = 0
+
+                // Read the Window Acknowledgement Size (next 4 bytes)
+                while (bytesRead < 4) {
+                    val result = inputStream.read(windowSizeBytes, bytesRead, 4 - bytesRead)
+                    if (result == -1) {
+                        throw EOFException("Unexpected end of stream while reading Window Acknowledgement Size.")
+                    }
+                    bytesRead += result
+                }
+
+                // Convert the byte array to an integer (window size)
+                val windowSize = ((windowSizeBytes[0].toInt() and 0xFF) shl 24) or
+                        ((windowSizeBytes[1].toInt() and 0xFF) shl 16) or
+                        ((windowSizeBytes[2].toInt() and 0xFF) shl 8) or
+                        (windowSizeBytes[3].toInt() and 0xFF)
+
+                Log.d("listenForWindowAcknowledgementSize","Received Window Acknowledgement Size: $windowSize bytes")
+            } else {
+                Log.d("listenForWindowAcknowledgementSize","Received non-Window Acknowledgement message type: $messageType")
+            }
+        } catch (e: IOException) {
+            Log.d("listenForWindowAcknowledgementSize","Error while reading RTMP message: ${e.message}")
+        }
     }
 
 
 
-    private fun listenForResponse() {
-        val inputStream = sslSocket.getInputStream()
-        val responseBuffer = ByteArray(1024)
-        val bytesRead = inputStream.read(responseBuffer)
 
-        if (bytesRead > 0) {
-            val response = String(responseBuffer, 0, bytesRead, Charsets.UTF_8)
-            Log.d(TAG,"listenForResponse() Server Response: $response")
-        }else{
-            Log.d(TAG,"bytesRead < 0 --->: $bytesRead")
-        }
-    }
+
+
+
 
 
 
@@ -307,154 +439,52 @@ class RtmpsClient2(
         }
     }
 
+    // Helper function to read 3-byte unsigned integer (for message length)
 
-    suspend fun checkRtmpConnectionStatus(socket: SSLSocket) {
-        Log.i(TAG, "CHECKING RESPONSE")
-        withContext(Dispatchers.IO) {
-            try {
-                val inputStream = socket.getInputStream()
-                val buffer = ByteArray(4096) // Buffer for incoming RTMP messages
-                val bytesRead = inputStream.read(buffer)
 
-                if (bytesRead > 0) {
-                    // Log raw RTMP response in hex format
-                    val responseHex = buffer.copyOf(bytesRead).joinToString(" ") { String.format("%02X", it) }
-                    Log.i(TAG, "Raw RTMP Response (Hex): $responseHex")
+}
 
-                    // Try to decode the response as UTF-8 text
-                    val responseText = String(buffer.copyOf(bytesRead), Charsets.UTF_8)
-                    Log.i(TAG, "Decoded RTMP Response: $responseText")
+// AMF0 Encoding Utility (Minimal example)
+class AMF0Encoder {
+    fun encode(command: String, transactionId: Int, commandObject: Map<String, Any>): ByteArray {
+        val buffer = ByteBuffer.allocate(1024)
 
-                    // Check if the RTMP server sent a successful connection response
-                    if (responseText.contains("NetConnection.Connect.Success")) {
-                        Log.i(TAG, "RTMP connection established successfully!")
-                    } else {
-                        Log.e(TAG, "RTMP connection failed or pending: $responseText")
-                    }
-                } else {
-                    Log.e(TAG, "No data received from RTMP server")
+        // Encode command name (string)
+        buffer.put(0x02) // AMF0 string marker
+        buffer.putShort(command.length.toShort())
+        buffer.put(command.toByteArray(Charsets.UTF_8))
+
+        // Encode transaction ID (number)
+        buffer.put(0x00) // AMF0 number marker
+        buffer.putDouble(transactionId.toDouble())
+
+        // Encode command object (AMF0 object)
+        buffer.put(0x03) // AMF0 object marker
+        for ((key, value) in commandObject) {
+            buffer.putShort(key.length.toShort())
+            buffer.put(key.toByteArray(Charsets.UTF_8))
+            when (value) {
+                is String -> {
+                    buffer.put(0x02) // String marker
+                    buffer.putShort(value.length.toShort())
+                    buffer.put(value.toByteArray(Charsets.UTF_8))
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error reading RTMP response: ${e.message}", e)
+                is Number -> {
+                    buffer.put(0x00) // Number marker
+                    buffer.putDouble(value.toDouble())
+                }
+                is Boolean -> {
+                    buffer.put(0x01) // Boolean marker
+                    buffer.put(if (value) 1 else 0)
+                }
             }
         }
+        buffer.put(0x00) // Object end marker
+        buffer.put(0x00)
+        buffer.put(0x09)
+
+        return buffer.array().copyOf(buffer.position())
     }
-
-
-
-    data class RTMPChunk(
-        val c_chunk: ByteArray,
-        val c_header: ByteArray,
-        val c_chunkSize: Int,
-        val c_headerSize: Int
-    )
-
-    fun RTMP_SendChunk(chunk: RTMPChunk): Int {
-        val logger = Logger.getLogger("RTMP")
-        var wrote = 0
-        val hbuf = ByteArray(RTMP_MAX_HEADER_SIZE)
-
-        logger.log(Level.FINE, "{0}: size={1}", arrayOf("RTMP_SendChunk", chunk.c_chunkSize))
-        logger.log(Level.FINE, chunk.c_header.joinToString("") { String.format("%02x", it) })
-
-        if (chunk.c_chunkSize > 0) {
-            val ptr = ByteArray(chunk.c_headerSize + chunk.c_chunkSize)
-            System.arraycopy(chunk.c_chunk, 0, ptr, chunk.c_headerSize, chunk.c_chunkSize)
-            logger.log(Level.FINE, chunk.c_chunk.joinToString("") { String.format("%02x", it) })
-
-            // Save header bytes we're about to overwrite
-            System.arraycopy(ptr, 0, hbuf, 0, chunk.c_headerSize)
-            System.arraycopy(chunk.c_header, 0, ptr, 0, chunk.c_headerSize)
-
-//            outputStream.write(ptr)
-//            outputStream.flush()
-
-            if (sslSocket.session.isValid) {
-                Log.d("RTMP", "SSL Handshake successful")
-            } else {
-                Log.e("RTMP", "SSL Handshake failed, server might be rejecting connection")
-            }
-            if (sslSocket.inputStream.read() == -1) {
-                Log.e("RTMP", "Server closed the connection immediately")
-            }
-
-            if (!sslSocket.isClosed && sslSocket.isConnected) {
-                try {
-                    outputStream.write(ptr)
-                    outputStream.flush()
-                    Log.d("RTMP", "Chunk sent successfully")
-                } catch (e: IOException) {
-                    Log.e("RTMP", "Error writing to stream: ${e.message}")
-                }
-            } else {
-                Log.e("RTMP", "Socket is closed, cannot write")
-            }
-            wrote = chunk.c_headerSize + chunk.c_chunkSize
-
-            // Restore the original header bytes
-            System.arraycopy(hbuf, 0, ptr, 0, chunk.c_headerSize)
-        } else {
-           outputStream.write(chunk.c_header)
-            outputStream.flush()
-            wrote = chunk.c_headerSize
-        }
-
-        return wrote
-    }
-
-     val RTMP_MAX_HEADER_SIZE = 18
-
-
-    fun createRTMPChunk(encodedData: ByteBuffer?): RTMPChunk {
-        // Define the header size (example value)
-        val headerSize = 12
-
-        // Extract data from the ByteBuffer
-        val data = ByteArray(encodedData?.remaining() ?: 0)
-        encodedData?.get(data)
-
-        // Define the chunk header (example values)
-        val header = ByteArray(headerSize)
-        // Populate the header with example values
-        // In a real scenario, you would set this based on your protocol requirements
-        header[0] = 0x02 // Example header byte
-
-        // Create the RTMPChunk instance
-        return RTMPChunk(
-            c_chunk = data,
-            c_header = header,
-            c_chunkSize = data.size/2,
-            c_headerSize = header.size
-        )
-    }
-
-    fun rtmp_open_for_write(){
-        val rtmp = rtmpInit()
-
-    }
-    fun rtmpInit():RTMP{
-        val RTMP_DEFAULT_CHUNKSIZE = 128
-
-        val rtmpChunk =RTMP()
-        rtmpChunk.mSb?.socket = -1
-        rtmpChunk.mInChunkSize =RTMP_DEFAULT_CHUNKSIZE
-        rtmpChunk.mOutChunkSize =RTMP_DEFAULT_CHUNKSIZE
-
-        rtmpChunk.mNBufferMS =30000
-        rtmpChunk.mNClientBW =2500000
-        rtmpChunk.mNClientBW2 =2
-        rtmpChunk.mNServerBW=2500000
-        rtmpChunk.mFAudioCodecs =3191.0
-        rtmpChunk.mFVideoCodecs =252.0
-        rtmpChunk.link?.receiveTimeoutInMs = 10000
-        rtmpChunk.link?.swfAge = 30
-
-
-        return rtmpChunk
-
-    }
-
-
 }
 
 

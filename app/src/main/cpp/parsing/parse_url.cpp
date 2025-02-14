@@ -223,6 +223,7 @@ int RTMP_ParseURL( char *url, int *protocol, AVal *host, unsigned int *port,AVal
             LOGI("RTMP_ParseURL",  "Invalid port number!");
         } else {
             *port = p2;
+            LOGI("RTMP_ParseURL",  "Parsed PORT    : %u", p2);
         }
     }
 
