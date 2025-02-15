@@ -116,7 +116,8 @@ bool setupGraphics(int w, int h){
     glViewport(0, 0, w, h);
     return true;
 }
-
+// the X coordinates are 0,3,6,9,12,15
+// the Y coordinates are 1,4,7,10,13,16
  GLfloat triangleVertices[] = {
         // First triangle
         0.08f,  0.04f, 0.0f,  // Top right
@@ -130,7 +131,7 @@ bool setupGraphics(int w, int h){
 
 };
 void renderFrame(){
-    LOGI("RENDERFRAMECHECK",  "render");
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
@@ -140,23 +141,50 @@ void renderFrame(){
     glEnableVertexAttribArray(vPosition);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-void updateTriangle(){
+void updateTriangle(
+        float xValue,
+        float yValue
+        ){
 
-    for (int i = 0; i < 18; ++i){
-        triangleVertices[i] =0.001f+triangleVertices[i];
+    float newX = triangleVertices[6] + xValue/20;
+    float newXRight = triangleVertices[0] + xValue/20;
+    LOGI("RENDERFRAMECHECK", "triangleVertices[6]newX ==> %f", newX);
+    if(newX>-1 && newXRight<1){
+        for (int i = 0; i < 18; i += 3) {
+            // LOGI("RENDERFRAMECHECK", "currentXValue  ==> %f", triangleVertices[i]);
+
+            // Calculate new position
+            float newX = triangleVertices[i] + xValue/20;
+
+            // Clamp between -1.0 and 1.0
+            triangleVertices[i] = fmaxf(-1.0f, fminf(1.0f, newX));
+        }
     }
 
+
+    // Update the X coordinates
+
+
+//    //this only updates the Y COORDINATES
+//    for (int i = 1; i < 18; i += 3) {
+//        LOGI("RENDERFRAMECHECK",  "i ==> %d",i);
+//        triangleVertices[i] += 0.01f;
+//    }
+
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv *env, jobject thiz,
-                                                                          jint width, jint height) {
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv *env, jobject thiz,jint width, jint height) {
     setupGraphics(width, height);
 }
+
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_views_PingPongSystem_step(JNIEnv *env,jobject thiz) {
-    updateTriangle();
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,
+                                                                          jfloat x_value,
+                                                                          jfloat y_value) {
+    updateTriangle(x_value,y_value);
     renderFrame();
 }
