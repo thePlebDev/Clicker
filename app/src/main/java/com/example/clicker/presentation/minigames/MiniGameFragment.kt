@@ -10,9 +10,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
 import androidx.core.view.size
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.findNavController
 import com.example.clicker.R
 import com.example.clicker.databinding.FragmentMiniGameBinding
 import com.example.clicker.databinding.FragmentModChannelsBinding
+import com.example.clicker.presentation.minigames.views.MiniGameViews
 import com.example.clicker.ui.theme.AppTheme
 
 
@@ -37,7 +40,9 @@ class MiniGameFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 AppTheme {
-                    Text(text ="THIS IS THE MINI GAME SECTION",color = Color.Red, fontSize = 40.sp)
+                    MiniGameViews(
+                        onNavigate = {dest -> findNavController().navigate(dest) }
+                    )
 
                 }
             }

@@ -129,5 +129,11 @@
         <action
             android:id="@+id/action_miniGameFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_miniGameFragment_to_modChannelsFragment"
+            app:destination="@id/modChannelsFragment" />
+        <action
+            android:id="@+id/action_miniGameFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
 </navigation>

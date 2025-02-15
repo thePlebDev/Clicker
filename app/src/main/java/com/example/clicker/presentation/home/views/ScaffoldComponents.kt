@@ -192,48 +192,7 @@ import kotlinx.coroutines.launch
                 )
             },
             bottomBar = {
-                if (BuildConfig.BUILD_TYPE in setOf("questDebug", "questRelease")) {
-                    this.TripleButtonNavigationBottomBarRow(
-                        fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        firstButton = {
-                            IconOverTextColumn(
-                                iconColor = MaterialTheme.colorScheme.secondary,
-                                text = "Home",
-                                imageVector = Icons.Default.Home,
-                                iconContentDescription = "Stay on home page",
-                                onClick = {},
-                                fontColor = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        },
-                        secondButton = {
-                            PainterResourceIconOverTextColumn(
-                                iconColor = MaterialTheme.colorScheme.onPrimary,
-                                text = "Mod Channels",
-                                painter = painterResource(R.drawable.moderator_white),
-                                iconContentDescription = "Navigate to mod channel page",
-                                onClick = { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) },
-                                fontColor = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        },
-                        thirdButton = {
 
-                            this.PainterResourceIconOverTextColumn(
-                                iconColor = MaterialTheme.colorScheme.onPrimary,
-                                painter = painterResource(id = R.drawable.baseline_category_24),
-                                iconContentDescription = "Navigate to search bar",
-                                fontColor = MaterialTheme.colorScheme.onPrimary,
-                                text = "Categories",
-                                onClick = {
-                                    getTopGames()
-                                    getPinnedList()
-                                    onNavigate(R.id.action_homeFragment_to_searchFragment)
-                                },
-                            )
-                        }
-                    )
-
-                } else {
                     this.FourButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -288,7 +247,7 @@ import kotlinx.coroutines.launch
                     }
 
                 ) //TODO: THIS IS THE BOTTOM
-            }
+
             },
             drawerContent = {
                 LoginLogoutScaffoldDrawerBox(
