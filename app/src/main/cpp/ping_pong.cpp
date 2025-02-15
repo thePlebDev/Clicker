@@ -14,6 +14,7 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+//source code for the vertex shade
 static const char glVertexShader[] =
         "attribute vec4 vPosition;\n"
         "void main()\n"
@@ -113,19 +114,32 @@ bool setupGraphics(int w, int h)
     glViewport(0, 0, w, h);
     return true;
 }
-const GLfloat triangleVertices[] = {
+const GLfloat triangleVerticesOG[] = {
         0.0f, 1.0f,
         -1.0f, -1.0f,
         1.0f, -1.0f
+};
+
+const GLfloat triangleVertices[] = {
+        // First triangle
+        0.08f,  0.04f, 0.0f,  // Top right
+        0.08f, -0.04f, 0.0f,  // Bottom right
+        -0.08f,  0.04f, 0.0f,  // Top left
+
+        // Second triangle
+        0.08f, -0.04f, 0.0f,  // Bottom right
+        -0.08f, -0.04f, 0.0f,  // Bottom left
+        -0.08f,  0.04f, 0.0f   // Top left
+
 };
 void renderFrame()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0 ,triangleVertices);
+    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0 ,triangleVertices);
     glEnableVertexAttribArray(vPosition);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 extern "C"
