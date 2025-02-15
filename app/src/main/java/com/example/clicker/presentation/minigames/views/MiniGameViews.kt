@@ -2,6 +2,9 @@ package com.example.clicker.presentation.minigames.views
 
 import android.content.Context
 import android.opengl.GLSurfaceView
+import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -124,32 +127,80 @@ fun PingPongViewGLSurfaceViewComposable(
     )
 }
 
-class PingPongView(context: Context?) : GLSurfaceView(context){
+class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchListener{
+    val renderer = Renderer()
+
+
 
     init{
         init()
+        setOnTouchListener(this)
     }
     private fun init(){
 
         setEGLContextClientVersion(2)
-        setRenderer(Renderer())
+        setRenderer(renderer)
 
     }
 
+    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+        event ?: return false
+        // Get screen dimensions
+        val width = width.toFloat()
+        val height = height.toFloat()
 
+        // Convert screen coordinates to OpenGL coordinates
+        val glX = (2.0f * event.x / width) - 1.0f
+        val glY = 1.0f - (2.0f * event.y / height)
 
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                Log.d("TESTINGACtionMove","CLICKED")
+              //  renderer.onTouch(event.x, event.y, isDragging = false)
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                Log.d("TESTINGACtionMove", "GL X: $glX, GL Y: $glY")
+                renderer.setXValue(glX)
+                renderer.setYValue(glY)
+                //renderer.onTouch(event.x, event.y, isDragging = true)
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+               // renderer.onTouch(event.x, event.y, isDragging = false)
+                return true
+            }
+        }
+        return false
+    }
 
 
 }
 
 class Renderer : GLSurfaceView.Renderer {
+
+    private var xValue =0f
+    private var yValue =0f
+
+    fun setXValue(value: Float) {
+        val newX = xValue + value
+
+        // Clamp xValue between -1.0 and 1.0
+        xValue = newX.coerceIn(-1.0f, 1.0f)
+
+        Log.d("GLSurfaceViewRender", "xValue -> $xValue")
+    }
+    fun setYValue(value:Float){
+        yValue =value
+    }
+
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
         //this is called constantly
         //   NativeSquareLoading.step() // this is the checker board
 
         //  NativeBlurEffect.step() // this is the blur effect
-        PingPongSystem.step()
+        PingPongSystem.move(xValue,yValue)
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
@@ -181,7 +232,8 @@ object PingPongSystem{
      * @param height the current view height
      */
     external fun init(width: Int, height: Int)
-    external fun step()
+
+    external fun move(xValue:Float,yValue:Float)
 
 
 }
