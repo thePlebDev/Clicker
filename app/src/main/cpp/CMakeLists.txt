@@ -49,6 +49,9 @@ add_library(video_encoder SHARED
 add_library(camera_stream SHARED
         camera_stream.cpp)
 
+add_library(ping_pong SHARED
+        ping_pong.cpp)
+
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
 add_library(amf_encoding SHARED
@@ -82,6 +85,11 @@ target_link_libraries(parse_url
         EGL
         GLESv2)
 target_link_libraries(amf_encoding
+        android
+        log
+        EGL
+        GLESv2)
+target_link_libraries(ping_pong
         android
         log
         EGL
