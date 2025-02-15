@@ -11,10 +11,12 @@
 // 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (DONE)
 
 #define LOG_TAG "pingPong"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 //source code for the vertex shade
+// we define, attribute vec4 vPosition; as the input for the shader
+// we set gl_Position = vPosition meaning we hook up the input to the output
 static const char glVertexShader[] =
         "attribute vec4 vPosition;\n"
         "void main()\n"
@@ -102,25 +104,20 @@ GLuint createProgram(const char* vertexSource, const char * fragmentSource)
 }
 GLuint simpleTriangleProgram;
 GLuint vPosition;
-bool setupGraphics(int w, int h)
-{
+bool setupGraphics(int w, int h){
     simpleTriangleProgram = createProgram(glVertexShader, glFragmentShader);
     if (!simpleTriangleProgram)
     {
         LOGE ("Could not create program");
         return false;
     }
+    //retrieve a reference to the position input in the vertex shader
     vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
     glViewport(0, 0, w, h);
     return true;
 }
-const GLfloat triangleVerticesOG[] = {
-        0.0f, 1.0f,
-        -1.0f, -1.0f,
-        1.0f, -1.0f
-};
 
-const GLfloat triangleVertices[] = {
+ GLfloat triangleVertices[] = {
         // First triangle
         0.08f,  0.04f, 0.0f,  // Top right
         0.08f, -0.04f, 0.0f,  // Bottom right
@@ -132,14 +129,23 @@ const GLfloat triangleVertices[] = {
         -0.08f,  0.04f, 0.0f   // Top left
 
 };
-void renderFrame()
-{
+void renderFrame(){
+    LOGI("RENDERFRAMECHECK",  "render");
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
+    //specify how it should interpret the vertex data
     glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0 ,triangleVertices);
+    //giving the vertex attribute location as its argument;
     glEnableVertexAttribArray(vPosition);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+void updateTriangle(){
+
+    for (int i = 0; i < 18; ++i){
+        triangleVertices[i] =0.001f+triangleVertices[i];
+    }
+
 }
 
 extern "C"
@@ -150,7 +156,7 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_views_PingPongSystem_step(JNIEnv *env,
-                                                                          jobject thiz) {
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_step(JNIEnv *env,jobject thiz) {
+    updateTriangle();
     renderFrame();
 }
