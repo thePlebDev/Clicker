@@ -146,15 +146,15 @@ void updateTriangle(
         float yValue
         ){
 
-    float newX = triangleVertices[6] + xValue/20;
-    float newXRight = triangleVertices[0] + xValue/20;
+    float newX = triangleVertices[6] + xValue/40;
+    float newXRight = triangleVertices[0] + xValue/40;
     LOGI("RENDERFRAMECHECK", "triangleVertices[6]newX ==> %f", newX);
     if(newX>-1 && newXRight<1){
         for (int i = 0; i < 18; i += 3) {
             // LOGI("RENDERFRAMECHECK", "currentXValue  ==> %f", triangleVertices[i]);
 
             // Calculate new position
-            float newX = triangleVertices[i] + xValue/20;
+            float newX = triangleVertices[i] + xValue/40;
 
             // Clamp between -1.0 and 1.0
             triangleVertices[i] = fmaxf(-1.0f, fminf(1.0f, newX));

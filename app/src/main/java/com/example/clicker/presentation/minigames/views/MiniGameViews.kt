@@ -22,6 +22,7 @@ import com.example.clicker.presentation.home.testing3DCode.TestingGLSurfaceViewC
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -106,7 +107,9 @@ fun MiniGameScaffold(
         content = { contentPadding ->
             PingPongViewGLSurfaceViewComposable(
                 context = context,
-                modifier = Modifier.padding(contentPadding).fillMaxSize()
+                modifier = Modifier
+                    .padding(contentPadding)
+                    .fillMaxSize()
             )
 
         },
@@ -155,19 +158,28 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                renderer.setMoveValue(Movement.MOVE)
                 Log.d("TESTINGACtionMove","CLICKED")
               //  renderer.onTouch(event.x, event.y, isDragging = false)
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                Log.d("TESTINGACtionMove", "GL X: $glX, GL Y: $glY")
+                val testing =(glX*100).roundToInt()
+                val testing3 =(glX*100).roundToInt()
+                val testing5 =((glX%5)*100).roundToInt()
+                Log.d("TESTINGACtionMove", "2 -->$testing: ${(testing%2) ==0 }, GL Y: $glY")
+//                Log.d("TESTINGACtionMove", "3 -->$testing3: ${(testing3%3) ==0}")
+//                Log.d("TESTINGACtionMove", "5 -->$testing5: ${(testing5%5) ==0 }")
+
                 renderer.setXValue(glX)
                 renderer.setYValue(glY)
                 //renderer.onTouch(event.x, event.y, isDragging = true)
                 return true
             }
             MotionEvent.ACTION_UP -> {
+                Log.d("TESTINGACtionMove","UPP")
                // renderer.onTouch(event.x, event.y, isDragging = false)
+                renderer.setMoveValue(Movement.STOP)
                 return true
             }
         }
@@ -176,11 +188,15 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
 
 }
+enum class Movement{
+    INIT,MOVE,STOP
+}
 
 class Renderer : GLSurfaceView.Renderer {
 
     private var xValue =0f
     private var yValue =0f
+    private var move = Movement.INIT
 
     fun setXValue(value: Float) {
         val newX = xValue + value
@@ -193,6 +209,9 @@ class Renderer : GLSurfaceView.Renderer {
     fun setYValue(value:Float){
         yValue =value
     }
+    fun setMoveValue(value:Movement){
+        move = value
+    }
 
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
@@ -200,7 +219,17 @@ class Renderer : GLSurfaceView.Renderer {
         //   NativeSquareLoading.step() // this is the checker board
 
         //  NativeBlurEffect.step() // this is the blur effect
-        PingPongSystem.move(xValue,yValue)
+        when(move){
+            Movement.INIT ->{
+                PingPongSystem.move(xValue,yValue)
+            }
+            Movement.MOVE->{
+                PingPongSystem.move(xValue,yValue)
+            }
+            Movement.STOP ->{
+                PingPongSystem.move(0f,0f)
+            }
+        }
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
