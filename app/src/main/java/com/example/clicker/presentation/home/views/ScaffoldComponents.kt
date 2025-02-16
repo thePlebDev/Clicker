@@ -193,7 +193,7 @@ import kotlinx.coroutines.launch
             },
             bottomBar = {
 
-                    this.FourButtonNavigationBottomBarRow(
+                this.TripleButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement = Arrangement.SpaceAround,
                     firstButton = {
@@ -217,7 +217,6 @@ import kotlinx.coroutines.launch
                         )
                     },
                     thirdButton = {
-
                         this.PainterResourceIconOverTextColumn(
                             iconColor = MaterialTheme.colorScheme.onPrimary,
                             painter = painterResource(id = R.drawable.baseline_category_24),
@@ -230,23 +229,9 @@ import kotlinx.coroutines.launch
                                 onNavigate(R.id.action_homeFragment_to_searchFragment)
                             },
                         )
-                    },
-
-                    fourthButton = {
-                        this.PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            painter = painterResource(id = R.drawable.videogame_asset),
-                            iconContentDescription = "Navigate to mini games page",
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Mini Games",
-                            onClick = {
-                                onNavigate(R.id.action_homeFragment_to_miniGameFragment)
-                            },
-                        )
-
                     }
+                )
 
-                ) //TODO: THIS IS THE BOTTOM
 
             },
             drawerContent = {
