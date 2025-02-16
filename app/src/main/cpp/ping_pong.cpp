@@ -118,17 +118,51 @@ bool setupGraphics(int w, int h){
 }
 // the X coordinates are 0,3,6,9,12,15
 // the Y coordinates are 1,4,7,10,13,16
- GLfloat triangleVertices[] = {
-        // First triangle
+ GLfloat triangleVerticesPractice[] = {
+        // First paddle half
+        -0.5f,  0.95f, 0.0f,  // Top right
+        -0.5f, 1.0f, 0.0f,  // Bottom right
+        -1.0f,  1.0f, 0.0f,  // Top left
+
+        // Second paddle half
+        -0.5f,  0.95f, 0.0f,  // Top right
+        -1.00f, 0.95f, 0.0f,  // Bottom right
+        -1.00f,  1.0f, 0.0f,  // Top left
+
+
+
+};
+//This is the paddles
+GLfloat triangleVertices[] = {
+        // First triangle (original rectangle)
         0.08f,  0.04f, 0.0f,  // Top right
         0.08f, -0.04f, 0.0f,  // Bottom right
         -0.08f,  0.04f, 0.0f,  // Top left
 
-        // Second triangle
+        // Second triangle (original rectangle)
         0.08f, -0.04f, 0.0f,  // Bottom right
         -0.08f, -0.04f, 0.0f,  // Bottom left
-        -0.08f,  0.04f, 0.0f   // Top left
+        -0.08f,  0.04f, 0.0f,  // Top left
 
+        // First TOP paddle half
+        -0.5f,  0.95f, 0.0f,  // Top right
+        -0.5f, 1.0f, 0.0f,  // Bottom right
+        -1.0f,  1.0f, 0.0f,  // Top left
+
+        // Second TOP paddle half
+        -0.5f,  0.95f, 0.0f,  // Top right
+        -1.00f, 0.95f, 0.0f,  // Bottom right
+        -1.00f,  1.0f, 0.0f,  // Top left
+
+        // SECOND TOP paddle half
+        0.5f,  -0.95f, 0.0f,  // Top right
+        0.5f, -1.0f, 0.0f,  // Bottom right
+        1.0f,  -1.0f, 0.0f,  // Top left
+
+        // SECOND TOP paddle half
+        0.5f,  -0.95f, 0.0f,  // Top right
+        1.00f, -0.95f, 0.0f,  // Bottom right
+        1.00f,  -1.0f, 0.0f,  // Top left
 };
 void renderFrame(){
 
@@ -139,7 +173,8 @@ void renderFrame(){
     glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0 ,triangleVertices);
     //giving the vertex attribute location as its argument;
     glEnableVertexAttribArray(vPosition);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 18);
+   // glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 void updateTriangle(
         float xValue,
