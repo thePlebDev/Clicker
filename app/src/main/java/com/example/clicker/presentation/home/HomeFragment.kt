@@ -168,7 +168,7 @@ class HomeFragment : Fragment(){
             height = height
         )
 
-       // val myWebView: WebView = view.findViewById(R.id.webView)
+        val myWebView: WebView = view.findViewById(R.id.webView)
 
 
         if(value !=UserTypes.NEW){
@@ -182,12 +182,7 @@ class HomeFragment : Fragment(){
                             streamViewModel = streamViewModel,
                             onNavigate = {
                                     dest -> findNavController().navigate(dest)
-                                animateToScreenTop(
-                                    streamToBeMoved=streamToBeMoved,
-                                    startY=height,
-                                    endY = 0
-                                )
-                                Log.d("CLICKEDtOnAVIGAE","CLICKED")
+
 
                                          },
                             autoModViewModel =autoModViewModel,
@@ -206,6 +201,8 @@ class HomeFragment : Fragment(){
                                     startY=height,
                                     endY = 0
                                 )
+                                val channelName = streamViewModel.channelName.value
+                                Log.d("CHANNELNAMENONENGLISH", "channelName -->$channelName")
                                 Log.d("CLICKEDtOnAVIGAE","CLICKED WEBSOCKET")
                             },
                             hapticFeedBackError = {
@@ -254,7 +251,14 @@ class HomeFragment : Fragment(){
                                 findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
 
 
-                            }
+                            },
+                            loadUrl  ={ channelName->
+                                setWebView(
+                                    myWebView=myWebView,
+                                    url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+                                )
+
+                        }
 
 
                         )
@@ -268,6 +272,28 @@ class HomeFragment : Fragment(){
 
         return view
     }
+
+    fun setWebView(
+        myWebView: WebView,
+        url: String
+    ) {
+        Log.d("setWebViewURL","url -->$url")
+        myWebView.settings.mediaPlaybackRequiresUserGesture = false
+
+
+        myWebView.settings.javaScriptEnabled = true
+        myWebView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
+        myWebView.isClickable = true
+        myWebView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+        myWebView.settings.allowContentAccess = true
+        myWebView.settings.allowFileAccess = true
+
+        myWebView.settings.setSupportZoom(true)
+
+        myWebView.loadUrl(url)
+    }
+
     fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
@@ -296,16 +322,7 @@ class HomeFragment : Fragment(){
         }
 
     }
-    fun transferDragEvent(
-        webView: WebView,
-        constraintView:View
-    ){
-        webView.setOnTouchListener{v, event ->
-            true
 
-        }
-
-    }
 
 
     var initialY = 0f
@@ -370,6 +387,7 @@ class HomeFragment : Fragment(){
                             }
                             start()
                         }
+                        webView.loadUrl("about:blank")
                     }else{
                         ValueAnimator.ofInt(startY, 0).apply {
                             duration = 100 // Adjust duration for the animation
@@ -517,26 +535,6 @@ class HomeFragment : Fragment(){
         }
     }
 
-    fun setWebView(
-        myWebView: WebView,
-        url: String
-    ) {
-        Log.d("setWebViewURL","url -->$url")
-        myWebView.settings.mediaPlaybackRequiresUserGesture = false
-
-
-        myWebView.settings.javaScriptEnabled = true
-        myWebView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
-        myWebView.isClickable = true
-        myWebView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
-
-        myWebView.settings.allowContentAccess = true
-        myWebView.settings.allowFileAccess = true
-
-        myWebView.settings.setSupportZoom(true)
-
-        myWebView.loadUrl(url)
-    }
 
 
 

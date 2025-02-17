@@ -150,6 +150,8 @@ import com.example.clicker.util.Response
         navigateToStream:()->Unit,
         channelName:String,
         bottomModalState2:ModalBottomSheetState,
+        loadUrl:(String)->Unit,
+
 
         ){
 
@@ -216,7 +218,8 @@ import com.example.clicker.util.Response
                     },
                     grantedNotifications=grantedNotifications,
                     openAppSettings={openAppSettings()},
-                    navigateToStream={navigateToStream()}
+                    navigateToStream={navigateToStream()},
+                    loadUrl={url->loadUrl(url)}
 
                 )
 

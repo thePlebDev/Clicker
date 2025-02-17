@@ -77,7 +77,8 @@ fun ValidationView(
     endService:()->Unit,
     checkIfServiceRunning:()->Boolean,
     openAppSettings:() ->Unit,
-    navigateToStream:()->Unit
+    navigateToStream:()->Unit,
+    loadUrl:(String)->Unit,
 
 
 ) {
@@ -233,7 +234,8 @@ fun ValidationView(
 
                          },
         channelName = streamViewModel.channelName.value?:"",
-        bottomModalState2 = bottomModalState2
+        bottomModalState2 = bottomModalState2,
+        loadUrl={url->loadUrl(url)}
 
     )
 
