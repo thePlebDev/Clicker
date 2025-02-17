@@ -420,7 +420,10 @@ fun LoginWithTwitchBottomModalButtonColumn(
                         streamItem.userId,
                         userId
                     )
-                    onNavigate(R.id.action_homeFragment_to_streamFragment)
+                    //todo: UN COMMENT OUT
+//                    onNavigate(
+//                        R.id.action_homeFragment_to_streamFragment
+//                    )
                 }
             ){
                 ImageWithViewCountBox(

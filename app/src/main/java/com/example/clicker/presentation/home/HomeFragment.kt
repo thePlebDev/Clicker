@@ -1,7 +1,10 @@
 package com.example.clicker.presentation.home
 
 import android.Manifest
+import android.animation.ValueAnimator
+import android.app.Activity
 import android.app.ActivityManager
+import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -12,15 +15,20 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.DragEvent
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -113,11 +121,15 @@ class HomeFragment : Fragment(){
         super.onCreate(savedInstanceState)
         Log.d("HomeFragmentLifeCycle","onCreate")
 
+
+
         Log.d("BuildTypeTesting","${BuildConfig.BUILD_TYPE}")
 
 
 
     }
+
+
 
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -141,7 +153,19 @@ class HomeFragment : Fragment(){
 
         val value = homeViewModel.determineUserType()
         checkUserType(view,value)
-        // Get the activity's intent
+
+        val streamToBeMoved:View = view.findViewById(R.id.streaming_modal_view)
+
+        val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
+        val height = windowMetrics.getBounds().height()
+
+
+        setListenerOnConstraintView(
+            streamToBeMoved =streamToBeMoved,
+            height = height
+        )
+
+
 
         if(value !=UserTypes.NEW){
             binding.composeView.apply {
@@ -152,7 +176,16 @@ class HomeFragment : Fragment(){
                         ValidationView(
                             homeViewModel = homeViewModel,
                             streamViewModel = streamViewModel,
-                            onNavigate = { dest -> findNavController().navigate(dest) },
+                            onNavigate = {
+                                    dest -> findNavController().navigate(dest)
+                                animateToScreenTop(
+                                    streamToBeMoved=streamToBeMoved,
+                                    startY=height,
+                                    endY = 0
+                                )
+                                Log.d("CLICKEDtOnAVIGAE","CLICKED")
+
+                                         },
                             autoModViewModel =autoModViewModel,
                             updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
                                 modViewViewModel.updateAutoModTokens(
@@ -162,7 +195,15 @@ class HomeFragment : Fragment(){
                                     moderatorId =moderatorId
                                 )
                             },
-                            createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                            createNewTwitchEventWebSocket =
+                            {modViewViewModel.createNewTwitchEventWebSocket()
+                                animateToScreenTop(
+                                    streamToBeMoved=streamToBeMoved,
+                                    startY=height,
+                                    endY = 0
+                                )
+                                Log.d("CLICKEDtOnAVIGAE","CLICKED WEBSOCKET")
+                            },
                             hapticFeedBackError = {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
                             },
@@ -207,6 +248,8 @@ class HomeFragment : Fragment(){
                                     broadcasterId = homeViewModel.validatedUser.value?.userId ?:""
                                 )
                                 findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
+
+
                             }
 
 
@@ -232,6 +275,107 @@ class HomeFragment : Fragment(){
         return false
     }
 
+    fun animateToScreenTop(
+        streamToBeMoved:View,
+        startY:Int,
+        endY:Int
+    ){
+        val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+
+        ValueAnimator.ofInt(startY, endY).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
+                streamToBeMoved.layoutParams = layoutParams
+            }
+            start()
+        }
+
+    }
+
+
+    var initialY = 0f
+    var initialTopMargin = 0
+    var isDragging = false
+    fun setListenerOnConstraintView(
+        streamToBeMoved:View,
+        height:Int,
+    ){
+
+        val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+        layoutParams.setMargins(layoutParams.leftMargin, height, layoutParams.rightMargin, layoutParams.bottomMargin)
+        streamToBeMoved.layoutParams = layoutParams
+
+
+        streamToBeMoved.setOnTouchListener { v, event ->
+            val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    Log.d("DragEventTesting", "DOWN")
+                    initialY = event.rawY  // Store the Y touch position
+                    initialTopMargin = layoutParams.topMargin // Store the initial top margin
+                    isDragging = false // Reset flag
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = (event.rawY - initialY).toInt() // Calculate movement
+                    Log.d("changeInACtion","dy -->$dy")
+
+                    //this prevents the little jumps
+                    if (dy > 10 || dy < -10) {
+                        isDragging = true
+                    }
+
+                    if (isDragging) {
+                        val newTopMargin = initialTopMargin + dy // Move the entire section up/down
+
+                        layoutParams.topMargin = newTopMargin
+                        streamToBeMoved.layoutParams = layoutParams
+
+                        Log.d("DragEventTesting", "Top Margin: $newTopMargin")
+                    }
+
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    Log.d("DragEventTesting", "UP")
+                    val dy = (event.rawY - initialY).toInt()
+
+                    val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+                    val startY = layoutParams.topMargin
+                    val endY = height // the target height you want to move to
+
+                    if(dy >500){
+                        ValueAnimator.ofInt(startY, endY).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
+                                streamToBeMoved.layoutParams = layoutParams
+                            }
+                            start()
+                        }
+                    }else{
+                        ValueAnimator.ofInt(startY, 0).apply {
+                            duration = 100 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
+                                streamToBeMoved.layoutParams = layoutParams
+                            }
+                            start()
+                        }
+                    }
+                    // Animate from startY to endY
+
+
+                    isDragging = false
+                    true
+                }
+                else -> false
+            }
+        }
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
