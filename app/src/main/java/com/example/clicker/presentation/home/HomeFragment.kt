@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.collectAsState
@@ -43,6 +44,7 @@ import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewMo
 import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
+import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
@@ -162,9 +164,11 @@ class HomeFragment : Fragment(){
 
         setListenerOnConstraintView(
             streamToBeMoved =streamToBeMoved,
+            webView = view.findViewById(R.id.webView),
             height = height
         )
 
+       // val myWebView: WebView = view.findViewById(R.id.webView)
 
 
         if(value !=UserTypes.NEW){
@@ -292,6 +296,16 @@ class HomeFragment : Fragment(){
         }
 
     }
+    fun transferDragEvent(
+        webView: WebView,
+        constraintView:View
+    ){
+        webView.setOnTouchListener{v, event ->
+            true
+
+        }
+
+    }
 
 
     var initialY = 0f
@@ -299,6 +313,7 @@ class HomeFragment : Fragment(){
     var isDragging = false
     fun setListenerOnConstraintView(
         streamToBeMoved:View,
+        webView: WebView,
         height:Int,
     ){
 
@@ -307,7 +322,7 @@ class HomeFragment : Fragment(){
         streamToBeMoved.layoutParams = layoutParams
 
 
-        streamToBeMoved.setOnTouchListener { v, event ->
+        webView.setOnTouchListener { v, event ->
             val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
 
             when (event.action) {
@@ -500,6 +515,27 @@ class HomeFragment : Fragment(){
                 }
             }
         }
+    }
+
+    fun setWebView(
+        myWebView: WebView,
+        url: String
+    ) {
+        Log.d("setWebViewURL","url -->$url")
+        myWebView.settings.mediaPlaybackRequiresUserGesture = false
+
+
+        myWebView.settings.javaScriptEnabled = true
+        myWebView.addJavascriptInterface(AndroidConsoleInterface(), "AndroidConsole")
+        myWebView.isClickable = true
+        myWebView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+        myWebView.settings.allowContentAccess = true
+        myWebView.settings.allowFileAccess = true
+
+        myWebView.settings.setSupportZoom(true)
+
+        myWebView.loadUrl(url)
     }
 
 
