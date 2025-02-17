@@ -166,7 +166,8 @@ import kotlinx.coroutines.launch
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
         openAppSettings:() ->Unit,
-        navigateToStream:()->Unit
+        navigateToStream:()->Unit,
+        loadUrl:(String)->Unit
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -295,7 +296,8 @@ import kotlinx.coroutines.launch
                             height = height,
                             width = width,
                             onNavigate = {id -> onNavigate(id)},
-                            density =screenDensity
+                            density =screenDensity,
+                            loadUrl={url->loadUrl(url)}
                         )
                     },
                     gettingStreamError = {message ->
@@ -394,7 +396,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
             onNavigate: (Int) -> Unit,
             height: Int,
             width: Int,
-            density:Float
+            density:Float,
+            loadUrl:(String)->Unit
 
         ){
             Log.d("LiveChannelRowItem","height->$height")
@@ -404,6 +407,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
 
             Row(
                 modifier = Modifier.clickable {
+                    Log.d("channelNameCheck","-->${streamItem.userLogin}")
                     updateClickedStreamInfo(
                         ClickedStreamInfo(
                             channelName = streamItem.userLogin,
@@ -424,6 +428,8 @@ fun LoginWithTwitchBottomModalButtonColumn(
 //                    onNavigate(
 //                        R.id.action_homeFragment_to_streamFragment
 //                    )
+
+                    loadUrl(streamItem.userLogin)
                 }
             ){
                 ImageWithViewCountBox(
