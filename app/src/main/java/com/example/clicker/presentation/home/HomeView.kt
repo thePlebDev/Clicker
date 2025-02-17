@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -32,8 +33,9 @@ import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.Response
-
-
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 
 /**
@@ -90,6 +92,9 @@ fun ValidationView(
     val lowPowerModeActive = streamViewModel.lowPowerModeActive.value
     val context = LocalContext.current
     var isBoxVisible by remember { mutableStateOf(false) }
+    //this is for the new feature
+    val bottomModalState2 = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
 
 
 
@@ -160,6 +165,10 @@ fun ValidationView(
                 )
             }
             streamViewModel.setImmersiveMode(false)
+            scope.launch {
+                delay(500)
+                bottomModalState2.show()
+            }
 
         },
         updateClickedStreamInfo={
@@ -219,7 +228,12 @@ fun ValidationView(
         changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)},
         grantedNotifications =homeViewModel.grantedNotifications.value,
         openAppSettings={openAppSettings()},
-        navigateToStream={navigateToStream()}
+        navigateToStream={
+            navigateToStream()
+
+                         },
+        channelName = streamViewModel.channelName.value?:"",
+        bottomModalState2 = bottomModalState2
 
     )
 

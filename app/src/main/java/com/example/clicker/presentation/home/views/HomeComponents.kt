@@ -1,7 +1,14 @@
 package com.example.clicker.presentation.home.views
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.widget.FrameLayout
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +30,9 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -36,13 +45,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.R
 
 import com.example.clicker.network.models.twitchRepo.StreamData
 
 
 import com.example.clicker.presentation.home.disableClickAndRipple
+import com.example.clicker.presentation.minigames.views.PingPongView
 import com.example.clicker.presentation.sharedViews.LogoutDialog
+import com.example.clicker.presentation.stream.AndroidConsoleInterface
+import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
@@ -134,7 +147,9 @@ import com.example.clicker.util.Response
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotifications:Boolean,
         openAppSettings:() ->Unit,
-        navigateToStream:()->Unit
+        navigateToStream:()->Unit,
+        channelName:String,
+        bottomModalState2:ModalBottomSheetState,
 
         ){
 
@@ -223,6 +238,8 @@ import com.example.clicker.util.Response
 
             },
             bottomModalState =bottomModalState,
+            channelName = channelName,
+            bottomModalState2=bottomModalState2
         )
 
 
@@ -246,18 +263,63 @@ import com.example.clicker.util.Response
             scaffoldHomeView:@Composable () -> Unit,
             logoutDialog:@Composable () -> Unit,
             bottomModalState: ModalBottomSheetState,
+            channelName:String,
+            bottomModalState2:ModalBottomSheetState,
         ){
 
-            ModalBottomSheetLayout(
-                sheetState = bottomModalState,
-                sheetContent = { loginBottomModal() },
-                content = {scaffoldHomeView()}
-            )
-            logoutDialog()
+
+                ModalBottomSheetLayout(
+                    sheetState = bottomModalState,
+                    sheetContent = { loginBottomModal() },
+                    content = {scaffoldHomeView()}
+                )
+                logoutDialog()
 
         }
 
 
+
+
+
+//THIS IS NOT WORKING. NEED TO GO CUSTOM XML
+@Composable
+fun TestingScreen(
+    url:String
+) {
+    Log.d("TESTINGtHEURLANDTHING","URL -->$url")
+
+    AndroidView(
+        factory = { context ->
+
+            WebView(context).apply {
+                settings.apply {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    mediaPlaybackRequiresUserGesture = false
+                    allowContentAccess = true
+                    allowFileAccess = true
+                    setSupportZoom(true)
+                    useWideViewPort = true
+                    loadWithOverviewMode = true
+                }
+
+                // Force enable hardware acceleration
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+                // Attach WebChromeClient for video playback
+                webChromeClient = object : WebChromeClient() {}
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    val twitchUrl = "https://player.twitch.tv/?channel=ohnepixel&controls=false&muted=false&parent=yourdomain.com"
+                    loadUrl(twitchUrl)
+                }, 2000) // Delay to ensure WebView is fully initialized
+            }
+
+        },
+        modifier = Modifier
+            .fillMaxSize()
+    )
+}
 
 
 
