@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -22,6 +23,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.Window
 import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -32,6 +34,9 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -115,6 +120,9 @@ class HomeFragment : Fragment(){
      * */
     private val selfStreamingViewModel: SelfStreamingViewModel by activityViewModels()
 
+    lateinit private var streamToBeMoved:View
+    lateinit private var myWebView:WebView
+
 
 
 
@@ -156,7 +164,7 @@ class HomeFragment : Fragment(){
         val value = homeViewModel.determineUserType()
         checkUserType(view,value)
 
-        val streamToBeMoved:View = view.findViewById(R.id.streaming_modal_view)
+         streamToBeMoved = view.findViewById(R.id.streaming_modal_view)
 
         val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         val height = windowMetrics.getBounds().height()
@@ -168,7 +176,7 @@ class HomeFragment : Fragment(){
             height = height
         )
 
-        val myWebView: WebView = view.findViewById(R.id.webView)
+         myWebView = view.findViewById(R.id.webView)
 
 
         if(value !=UserTypes.NEW){
@@ -409,6 +417,27 @@ class HomeFragment : Fragment(){
         }
 
     }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d("onConfigurationChanged", "Landscape mode")
+            setImmersiveMode(requireActivity().window)
+
+            val layoutParams = myWebView.layoutParams
+
+
+            layoutParams.width =ConstraintLayout.LayoutParams.MATCH_PARENT
+            layoutParams.height =ConstraintLayout.LayoutParams.MATCH_PARENT
+
+//            streamToBeMoved.layoutParams = layoutParams
+            myWebView.layoutParams = layoutParams
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.d("onConfigurationChanged", "Portrait mode")
+        }
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -535,6 +564,15 @@ class HomeFragment : Fragment(){
         }
     }
 
+
+    fun setImmersiveMode(window: Window){
+        WindowCompat.setDecorFitsSystemWindows(window, false) // this is saying ignore the insets
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.let {
+            it.hide(WindowInsetsCompat.Type.systemBars()) //hide the insets
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
 
 
 
