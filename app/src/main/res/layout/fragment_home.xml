@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".presentation.home.HomeFragment">
 
     <androidx.compose.ui.platform.ComposeView
@@ -15,7 +16,20 @@
         android:id="@+id/streaming_modal_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@android:color/holo_red_dark">
+
+        <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
+            android:id="@+id/webView"
+            android:layout_width="0.dp"
+            android:layout_height="0.dp"
+            android:layout_marginTop="40dp"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Other views go here -->
 
