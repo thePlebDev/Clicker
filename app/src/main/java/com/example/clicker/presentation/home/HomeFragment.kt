@@ -25,12 +25,16 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
+import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -45,12 +49,15 @@ import com.example.clicker.R
 import com.example.clicker.cameraNDK.CameraNDKNativeActivity
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewDragStateViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.models.UserTypes
+import com.example.clicker.presentation.home.views.HomeStreamChatViews
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import com.example.clicker.presentation.stream.AutoModViewModel
+import com.example.clicker.presentation.stream.StreamView
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
@@ -120,6 +127,8 @@ class HomeFragment : Fragment(){
      * */
     private val selfStreamingViewModel: SelfStreamingViewModel by activityViewModels()
 
+    private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
+
     lateinit private var streamToBeMoved:View
     lateinit private var myWebView:WebView
 
@@ -168,6 +177,7 @@ class HomeFragment : Fragment(){
 
         val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         val height = windowMetrics.getBounds().height()
+        val orientationIsLandscape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 
         setListenerOnConstraintView(
@@ -195,6 +205,8 @@ class HomeFragment : Fragment(){
                                          },
                             autoModViewModel =autoModViewModel,
                             updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                                Log.d("TestingNavigation","updateModViewSettings")
+
                                 modViewViewModel.updateAutoModTokens(
                                     oAuthToken =oAuthToken,
                                     clientId =clientId,
@@ -202,8 +214,8 @@ class HomeFragment : Fragment(){
                                     moderatorId =moderatorId
                                 )
                             },
-                            createNewTwitchEventWebSocket =
-                            {modViewViewModel.createNewTwitchEventWebSocket()
+                            createNewTwitchEventWebSocket = {modViewViewModel.createNewTwitchEventWebSocket()
+                                homeViewModel.setShowHomeChat(true)
                                 animateToScreenTop(
                                     streamToBeMoved=streamToBeMoved,
                                     startY=height,
@@ -249,6 +261,7 @@ class HomeFragment : Fragment(){
                                 startActivity(intent)
                             },
                             navigateToStream = {
+                                Log.d("TestingNavigation","navigateToStream")
                                 val oAuthToken = homeViewModel.oAuthToken.value  ?:""
                                 val clientId = homeViewModel.validatedUser.value?.clientId ?:""
                                 selfStreamingViewModel.setClientIdOAuthToken(
@@ -256,7 +269,7 @@ class HomeFragment : Fragment(){
                                     oAuthToken =oAuthToken,
                                     broadcasterId = homeViewModel.validatedUser.value?.userId ?:""
                                 )
-                                findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
+                               // findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
 
 
                             },
@@ -274,7 +287,37 @@ class HomeFragment : Fragment(){
 
                 }
             }
-        }
+            binding.streamComposeView.apply{
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+
+                    AppTheme{
+                        HomeStreamChatViews(
+                            streamViewModel,
+                            autoModViewModel,
+                            modViewViewModel,
+                            chatSettingsViewModel,
+                            hideSoftKeyboard ={
+                                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                imm.hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken,0)
+
+                            },
+                            showModView={
+                                if(!orientationIsLandscape){
+                                    Log.d("ShowModViewFunction","clicked")
+                                    modViewDragStateViewModel.setShowModView(true)
+                                }
+
+                            },
+                            modViewIsVisible = modViewDragStateViewModel.showModView.value,
+                            streamInfoViewModel=streamInfoViewModel,
+                            showHomeChat=homeViewModel.showHomeChat.value
+                        )
+
+                    }
+                }
+            }
+        } //
 
 
 

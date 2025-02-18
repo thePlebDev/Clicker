@@ -63,6 +63,12 @@ class HomeViewModel @Inject constructor(
 
     private var _grantedNotifications: MutableState<Boolean> = mutableStateOf(false)
     val grantedNotifications: State<Boolean> = _grantedNotifications
+
+    private var _showHomeChat: MutableState<Boolean> = mutableStateOf(false)
+    val showHomeChat: State<Boolean> = _showHomeChat
+    fun setShowHomeChat(value:Boolean){
+        _showHomeChat.value = value
+    }
     fun changeGrantedNotifications(newValue: Boolean){
         _grantedNotifications.value = newValue
     }
