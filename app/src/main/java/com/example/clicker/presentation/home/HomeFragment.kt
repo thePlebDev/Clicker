@@ -15,6 +15,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.DragEvent
@@ -31,8 +33,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -46,15 +55,19 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.cameraNDK.CameraNDKNativeActivity
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.authentication.views.LoadingIndicator
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewDragStateViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.home.views.HomeStreamChatViews
+import com.example.clicker.presentation.home.views.StreamLoading
+import com.example.clicker.presentation.home.views.StreamScreen
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
@@ -190,6 +203,8 @@ class HomeFragment : Fragment(){
         )
 
          myWebView = view.findViewById(R.id.webView)
+
+
         verticalWebViewOverlayClicked(myWebView as VerticalWebView)
 
 
@@ -321,12 +336,31 @@ class HomeFragment : Fragment(){
                     }
                 }
             }
+            binding.streamComposeViewLoading.apply{
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+
+
+                    AppTheme{
+                        StreamScreen(
+                            myWebView,
+                            webViewIsLoading= homeViewModel.webViewIsLoading.value,
+                            clickedUser=streamViewModel.channelName.value ?:"",
+                            listOfLiveUserNames = homeViewModel.liveUserNames.toList()
+
+                        )
+
+
+                    }
+                }
+            }
         } //
 
 
 
         return view
     }
+
 
     fun setWebView(
         myWebView: WebView,
@@ -350,10 +384,18 @@ class HomeFragment : Fragment(){
                 super.onPageFinished(view, url)
                 // Page has finished loading
                 Log.d("WebVIewChecking", "Page loaded: $url")
+                Handler(Looper.getMainLooper()).postDelayed({
+                        // This method will be executed once the timer is over
+                    homeViewModel.setWebViewIsLoading(false)
+                    },
+                    1300 // value in milliseconds
+                )
+
             }
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 Log.d("WebVIewChecking", "Page started loading: $url")
+                homeViewModel.setWebViewIsLoading(true)
             }
         }
 
@@ -458,7 +500,11 @@ class HomeFragment : Fragment(){
                             }
                             start()
                         }
-                        webView.loadUrl("about:blank")
+                        webView.loadData(
+                            "<html><body style='background-color:black;'></body></html>",
+                            "text/html",
+                            "UTF-8"
+                        )
                     }else{
                         ValueAnimator.ofInt(startY, 0).apply {
                             duration = 100 // Adjust duration for the animation
@@ -484,11 +530,13 @@ class HomeFragment : Fragment(){
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
+
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d("onConfigurationChanged", "Landscape mode")
+            Log.d("onConfigurationChangedTesting", "Landscape mode")
             setImmersiveMode(requireActivity().window)
 
             val layoutParams = myWebView.layoutParams
+
 
 
             layoutParams.width =ConstraintLayout.LayoutParams.MATCH_PARENT
@@ -497,12 +545,14 @@ class HomeFragment : Fragment(){
 //            streamToBeMoved.layoutParams = layoutParams
             myWebView.layoutParams = layoutParams
 
+
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Log.d("onConfigurationChanged", "Portrait mode")
+            Log.d("onConfigurationChangedTesting", "Portrait mode")
 
             val layoutParams = myWebView.layoutParams
 
             unsetImmersiveMode(requireActivity().window)
+
 
 
             //setting them back to 0 will make the it respect the aspect ratio
@@ -510,6 +560,7 @@ class HomeFragment : Fragment(){
             layoutParams.height =0
 
             myWebView.layoutParams = layoutParams
+
 
         }
 
