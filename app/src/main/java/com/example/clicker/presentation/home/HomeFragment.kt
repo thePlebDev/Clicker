@@ -11,6 +11,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -27,6 +28,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.compose.material.Text
@@ -59,6 +61,7 @@ import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamView
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.BackgroundStreamService
@@ -187,6 +190,7 @@ class HomeFragment : Fragment(){
         )
 
          myWebView = view.findViewById(R.id.webView)
+        verticalWebViewOverlayClicked(myWebView as VerticalWebView)
 
 
         if(value !=UserTypes.NEW){
@@ -341,6 +345,17 @@ class HomeFragment : Fragment(){
         myWebView.settings.allowFileAccess = true
 
         myWebView.settings.setSupportZoom(true)
+        myWebView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // Page has finished loading
+                Log.d("WebVIewChecking", "Page loaded: $url")
+            }
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                Log.d("WebVIewChecking", "Page started loading: $url")
+            }
+        }
 
         myWebView.loadUrl(url)
     }
@@ -424,6 +439,11 @@ class HomeFragment : Fragment(){
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     Log.d("DragEventTesting", "UP")
                     val dy = (event.rawY - initialY).toInt()
+                    if (!isDragging && Math.abs(dy) < 10) {
+                        Log.d("TestingDraggingTap", "WebView was tapped!") // ✅ Log when tap happens
+                        val another = webView as VerticalWebView // Ensures accessibility actions
+                        another.singleTapMethod()
+                    }
 
                     val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
                     val startY = layoutParams.topMargin
@@ -636,6 +656,30 @@ class HomeFragment : Fragment(){
 
             it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
+        }
+    }
+
+    private fun verticalWebViewOverlayClicked(
+        verticalClickableWebView: VerticalWebView
+    ){
+        Log.d("CLICKINGCHECKINGTHINGER","CLICKED")
+        verticalClickableWebView.singleTapMethod={
+
+            if(autoModViewModel.verticalOverlayIsVisible.value){
+                autoModViewModel.setVerticalOverlayToHidden()
+            }else{
+                autoModViewModel.setVerticalOverlayToVisible()
+            }
+            verticalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
+
+
+            val jsCode2 = """
+                 function printClickedToAndroid(quantities) {
+        AndroidConsole.logMessage(quantities);
+    }
+    printClickedToAndroid("Log to the console from Javascript")
+ """
+            verticalClickableWebView.evaluateJavascript(jsCode2, null)
         }
     }
 

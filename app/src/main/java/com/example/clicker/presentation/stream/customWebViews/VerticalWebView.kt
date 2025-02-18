@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
+
 class VerticalWebView: WebView {
     constructor(context: Context?) : super(context!!) {}
     constructor(context: Context?, attrs: AttributeSet?) : super(
@@ -87,4 +88,5 @@ class VerticalWebView: WebView {
     }
 
 
-}
+
+}// end of the webview
