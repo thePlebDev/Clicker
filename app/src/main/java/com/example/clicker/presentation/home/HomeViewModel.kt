@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clicker.domain.TwitchDataStore
@@ -16,6 +17,7 @@ import com.example.clicker.network.domain.TwitchSearch
 import com.example.clicker.network.models.twitchAuthentication.ValidatedUser
 import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.network.models.twitchRepo.changeUrlWidthHeight
+import com.example.clicker.network.models.websockets.TwitchUserData
 import com.example.clicker.presentation.home.models.HomeUIState
 import com.example.clicker.presentation.home.models.ModChannelUIState
 import com.example.clicker.presentation.home.models.UserTypes
@@ -37,6 +39,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+data class HomeWebView(
+    val width: Int,
+    val height:Int
+)
 
 
 @HiltViewModel
@@ -66,6 +72,20 @@ class HomeViewModel @Inject constructor(
 
     private var _showHomeChat: MutableState<Boolean> = mutableStateOf(false)
     val showHomeChat: State<Boolean> = _showHomeChat
+
+    private var _webViewIsLoading: MutableState<Boolean> = mutableStateOf(false)
+    val webViewIsLoading: State<Boolean> = _webViewIsLoading
+
+    /**
+     * A list representing all the channels that are live
+     * */
+    val liveUserNames = mutableStateListOf<String>()
+
+
+
+    fun setWebViewIsLoading(value:Boolean){
+        _webViewIsLoading.value = value
+    }
     fun setShowHomeChat(value:Boolean){
         _showHomeChat.value = value
     }
@@ -465,12 +485,15 @@ class HomeViewModel @Inject constructor(
                                     _uiState.value.aspectHeight
                                 )
                             }
+                            Log.d("TESTINGTHEuRLASPECT","${replacedWidthHeightList[0]}")
                             val horizontalLongHoldStreamList =response.data.map {
                                 it.changeUrlWidthHeight(
                                     (_uiState.value.width)/2,
                                     (_uiState.value.aspectHeight)/2
                                 )
                             }
+                           val liveUsers = replacedWidthHeightList.map { it.userName }
+                            liveUserNames.addAll(liveUsers)
 
                             _uiState.value = _uiState.value.copy(
                                 streamersListLoading = NetworkNewUserResponse.Success(replacedWidthHeightList),
