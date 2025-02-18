@@ -417,6 +417,7 @@ class HomeFragment : Fragment(){
         }
 
     }
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
@@ -435,6 +436,18 @@ class HomeFragment : Fragment(){
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d("onConfigurationChanged", "Portrait mode")
+
+            val layoutParams = myWebView.layoutParams
+
+            unsetImmersiveMode(requireActivity().window)
+
+
+            //setting them back to 0 will make the it respect the aspect ratio
+            layoutParams.width =0
+            layoutParams.height =0
+
+            myWebView.layoutParams = layoutParams
+
         }
 
     }
@@ -571,6 +584,15 @@ class HomeFragment : Fragment(){
         windowInsetsController.let {
             it.hide(WindowInsetsCompat.Type.systemBars()) //hide the insets
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+    fun unsetImmersiveMode(window: Window) {
+        WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.let {
+
+            it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
         }
     }
 
