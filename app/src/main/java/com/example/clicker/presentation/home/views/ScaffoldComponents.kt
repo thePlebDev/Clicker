@@ -297,7 +297,11 @@ import kotlinx.coroutines.launch
                             width = width,
                             onNavigate = {id -> onNavigate(id)},
                             density =screenDensity,
-                            loadUrl={url->loadUrl(url)}
+                            loadUrl={url->
+                                navigateToStream()
+                                loadUrl(url)
+
+                            }
                         )
                     },
                     gettingStreamError = {message ->
@@ -425,9 +429,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
                         userId
                     )
                     //todo: UN COMMENT OUT
-//                    onNavigate(
-//                        R.id.action_homeFragment_to_streamFragment
-//                    )
+
 
                     loadUrl(streamItem.userLogin)
                 }

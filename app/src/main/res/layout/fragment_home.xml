@@ -18,7 +18,7 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/holo_red_dark">
+        android:background="@android:color/background_dark">
 
         <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
             android:id="@+id/webView"
@@ -29,6 +29,15 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/stream_compose_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/webView" />
 
         <!-- Other views go here -->
 

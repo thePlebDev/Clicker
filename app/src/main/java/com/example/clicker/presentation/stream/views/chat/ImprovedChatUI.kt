@@ -1509,7 +1509,8 @@ class ImprovedChatUI(){
         val titleFontSize = MaterialTheme.typography.headlineMedium.fontSize
         val messageFontSize = MaterialTheme.typography.headlineSmall.fontSize
         val chatScope = remember(){ ChatScope(titleFontSize,messageFontSize) }
-        val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchChatMessage.color))) }
+        val twitchUserColor = twitchChatMessage.color ?: "#A020F0"
+        val color = remember { mutableStateOf(Color(android.graphics.Color.parseColor(twitchUserColor))) }
         if(color.value == Color.Black){
             color.value = MaterialTheme.colorScheme.secondary
         }
