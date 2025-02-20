@@ -551,17 +551,20 @@ class HomeFragment : Fragment(){
 
     }
 
-    var initialYWebView = 0f
+    var initialWebViewY = 0f
+    var initialWebViewX = 0f
     var isDraggingWebView = false
     var lastY = 0f
     var lastX = 0f
     var lastHeight = 0
     var lastWidth = 0
-    val minHeight = 200  // Smallest height allowed
+    val minHeight = 300  // Smallest height allowed
     val screenWidth = Resources.getSystem().displayMetrics.widthPixels
     var smallHeightPositioned = false
     // Define animations outside for efficiency
     private lateinit var springAnimation: SpringAnimation
+    private lateinit var springAnimationX: SpringAnimation
+
 
     fun moveTheWebView(webView: WebView) {
         webView.settings.mediaPlaybackRequiresUserGesture = false
@@ -578,6 +581,7 @@ class HomeFragment : Fragment(){
 
         webView.loadUrl("https://player.twitch.tv/?channel=Ludwig&controls=false&muted=false&parent=modderz")
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
       //  maxHeight = webView.layoutParams.height
         Log.d("WebViewPositionCHecking", "ebView.layoutParams.height-->${webView.layoutParams.height}")
         val halfwayPoint = screenHeight / 2
@@ -588,10 +592,17 @@ class HomeFragment : Fragment(){
                 stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
             }
         }
+        springAnimationX = SpringAnimation(webView, SpringAnimation.X).apply {
+            spring = SpringForce().apply {
+                dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+            }
+        }
         webView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    initialYWebView = event.rawY
+                    initialWebViewY = event.rawY
+                    initialWebViewX = event.rawX
                     lastY = webView.y
                     lastX = webView.x
                     lastHeight = webView.height
@@ -601,7 +612,8 @@ class HomeFragment : Fragment(){
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    val dy = event.rawY - initialYWebView
+                    val dy = event.rawY - initialWebViewY
+                    val dx = event.rawX - initialWebViewX
 
                     if (dy > 10 || dy < -10) {
                         isDraggingWebView = true
@@ -612,7 +624,12 @@ class HomeFragment : Fragment(){
                        // webView.y = lastY + dy+100
                         Log.d("WebViewPositionCHecking", "webView.y-->${webView.y}")
                         val newY =(lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+                        val minWidth =(minHeight * 16 / 9)
+                        val newXDragging =(lastX + dx).coerceIn(0f, (screenWidth - minWidth).toFloat())
                         //webView.y = (lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+                        if(smallHeightPositioned){
+                            springAnimationX.animateToFinalPosition(newXDragging)
+                        }
                         springAnimation.animateToFinalPosition(newY)
 
                         // Shrink the WebView (keeping 16:9 ratio)
@@ -636,11 +653,25 @@ class HomeFragment : Fragment(){
 
                         }else{
                             if(!smallHeightPositioned){
-                                val params = webView.layoutParams
-                                params.width = newWidth
-                                params.height = newHeight
-                                webView.layoutParams = params
-                                webView.x = newX
+                                ValueAnimator.ofInt(webView.layoutParams.height, newHeight).apply {
+                                    duration = 300 // Adjust duration as needed
+                                    addUpdateListener { animation ->
+                                        val params = webView.layoutParams
+                                        params.height = animation.animatedValue as Int
+                                        webView.layoutParams = params
+                                    }
+                                    start()
+                                }
+
+                                ValueAnimator.ofInt(webView.layoutParams.width, newWidth).apply {
+                                    duration = 300
+                                    addUpdateListener { animation ->
+                                        val params = webView.layoutParams
+                                        params.width = animation.animatedValue as Int
+                                        webView.layoutParams = params
+                                    }
+                                    start()
+                                }
                             }
 
                         }
@@ -654,7 +685,7 @@ class HomeFragment : Fragment(){
 
                     isDraggingWebView = false
 
-                    val dy = (event.rawY - initialYWebView).toInt()
+                    val dy = (event.rawY - initialWebViewY).toInt()
                     //need to check for this animation
                     if (!isDraggingWebView && Math.abs(dy) < 10) {
 
