@@ -322,6 +322,50 @@ class HomeFragment : Fragment(){
 //                                    myWebView=myWebView,
 //                                    url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
 //                                )
+                                isDraggingWebView = false
+
+                                val webView = newWebView
+                                ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        val value = animator.animatedValue as Int
+                                        webView.y = value.toFloat()
+                                    }
+                                    start()
+                                }
+                                ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        val value = animator.animatedValue as Int
+                                        webView.x = value.toFloat()
+                                    }
+                                    start()
+                                }
+                                val params = webView.layoutParams
+                                ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        val webParams = webView.layoutParams
+                                        webParams.height = animator.animatedValue as Int
+                                        webView.layoutParams = webParams
+                                    }
+                                    start()
+                                }
+                                val newWidth = (maxHeightNewWebView * 16 / 9)
+                                Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+                                ValueAnimator.ofInt(params.width, newWidth).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        val webParams = webView.layoutParams
+                                        webParams.width = animator.animatedValue as Int
+                                        webView.layoutParams = webParams
+                                    }
+
+
+                                    start()
+                                }
+                                smallHeightPositioned = false
+
 
                         }
 
@@ -472,83 +516,6 @@ class HomeFragment : Fragment(){
         streamToBeMoved.layoutParams = layoutParams
 
 
-//        webView.setOnTouchListener { v, event ->
-//            val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
-//
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    Log.d("DragEventTesting", "DOWN")
-//                    initialY = event.rawY  // Store the Y touch position
-//                    initialTopMargin = layoutParams.topMargin // Store the initial top margin
-//                    isDragging = false // Reset flag
-//                    true
-//                }
-//                MotionEvent.ACTION_MOVE -> {
-//                    val dy = (event.rawY - initialY).toInt() // Calculate movement
-//                    Log.d("changeInACtion","dy -->$dy")
-//
-//                    //this prevents the little jumps
-//                    if (dy > 10 || dy < -10) {
-//                        isDragging = true
-//                    }
-//
-//                    if (isDragging) {
-//                        val newTopMargin = initialTopMargin + dy // Move the entire section up/down
-//
-//                        layoutParams.topMargin = newTopMargin
-//                        streamToBeMoved.layoutParams = layoutParams
-//
-//                        Log.d("DragEventTesting", "Top Margin: $newTopMargin")
-//                    }
-//
-//                    true
-//                }
-//                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-//                    Log.d("DragEventTesting", "UP")
-//                    val dy = (event.rawY - initialY).toInt()
-//                    if (!isDragging && Math.abs(dy) < 10) {
-//                        Log.d("TestingDraggingTap", "WebView was tapped!")
-//                        val another = webView as VerticalWebView // Ensures accessibility actions
-//                        another.singleTapMethod()
-//                    }
-//
-//                    val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
-//                    val startY = layoutParams.topMargin
-//                    val endY = height // the target height you want to move to
-//
-//                    if(dy >500){
-//                        ValueAnimator.ofInt(startY, endY).apply {
-//                            duration = 300 // Adjust duration for the animation
-//                            addUpdateListener { animator ->
-//                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
-//                                streamToBeMoved.layoutParams = layoutParams
-//                            }
-//                            start()
-//                        }
-//                        webView.loadData(
-//                            "<html><body style='background-color:black;'></body></html>",
-//                            "text/html",
-//                            "UTF-8"
-//                        )
-//                    }else{
-//                        ValueAnimator.ofInt(startY, 0).apply {
-//                            duration = 100 // Adjust duration for the animation
-//                            addUpdateListener { animator ->
-//                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
-//                                streamToBeMoved.layoutParams = layoutParams
-//                            }
-//                            start()
-//                        }
-//                    }
-//                    // Animate from startY to endY
-//
-//
-//                    isDragging = false
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
 
     }
 
@@ -682,6 +649,7 @@ class HomeFragment : Fragment(){
                         Log.d("TestingAgainWebView", "WebView was tapped!")
                         Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
                         // ofInt() gives the start and end value
+
                         ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
                             duration = 300 // Adjust duration for the animation
                             addUpdateListener { animator ->
@@ -717,15 +685,16 @@ class HomeFragment : Fragment(){
                                 webParams.width = animator.animatedValue as Int
                                 webView.layoutParams = webParams
                             }
-                            animateToScreenTop(
-                                streamToBeMoved=streamToBeMoved,
-                                startY=screenHeight,
-                                endY = 0
-                            )
 
 
                             start()
                         }
+                        animateToScreenTop(
+                            streamToBeMoved=streamToBeMoved,
+                            startY=screenHeight,
+                            endY = 0
+                        )
+
 
 
                         smallHeightPositioned = false
@@ -746,6 +715,49 @@ class HomeFragment : Fragment(){
                 }
                 else -> false
             }
+        }
+    }
+
+    fun animateWebViewToTop(
+        webView: WebView,
+        newWidth:Int
+    ) {
+        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.y = value.toFloat()
+            }
+            start()
+        }
+        ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.x = value.toFloat()
+            }
+            start()
+        }
+        val params = webView.layoutParams
+        ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.height = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+            start()
+        }
+
+        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+        ValueAnimator.ofInt(params.width, newWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.width = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+
         }
     }
 
