@@ -150,7 +150,7 @@ class HomeFragment : Fragment(){
     private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
 
     lateinit private var streamToBeMoved:View
-    lateinit private var myWebView:WebView
+    //lateinit private var myWebView:WebView
     var maxHeightNewWebView = 608 // Largest height allowed
 
 
@@ -211,9 +211,10 @@ class HomeFragment : Fragment(){
 
         setListenerOnConstraintView(
             streamToBeMoved =streamToBeMoved,
-            webView = view.findViewById(R.id.webView),
+           // webView = view.findViewById(R.id.webView),
             height = height
         )
+        //this is the one that I will be actually using
         moveTheWebView(
             newWebView
         )
@@ -226,10 +227,10 @@ class HomeFragment : Fragment(){
             }
         })
 
-         myWebView = view.findViewById(R.id.webView)
+        // myWebView = view.findViewById(R.id.webView)
 
 
-        verticalWebViewOverlayClicked(myWebView as VerticalWebView)
+       // verticalWebViewOverlayClicked(myWebView as VerticalWebView)
 
 
         if(value !=UserTypes.NEW){
@@ -317,10 +318,10 @@ class HomeFragment : Fragment(){
 
                             },
                             loadUrl  ={ channelName->
-                                setWebView(
-                                    myWebView=myWebView,
-                                    url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-                                )
+//                                setWebView(
+//                                    myWebView=myWebView,
+//                                    url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+//                                )
 
                         }
 
@@ -360,24 +361,24 @@ class HomeFragment : Fragment(){
                     }
                 }
             }
-            binding.streamComposeViewLoading.apply{
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                setContent {
-
-
-                    AppTheme{
-                        StreamScreen(
-                            myWebView,
-                            webViewIsLoading= homeViewModel.webViewIsLoading.value,
-                            clickedUser=streamViewModel.channelName.value ?:"",
-                            listOfLiveUserNames = homeViewModel.liveUserNames.toList()
-
-                        )
-
-
-                    }
-                }
-            }
+//            binding.streamComposeViewLoading.apply{
+//                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+//                setContent {
+//
+//
+//                    AppTheme{
+//                        StreamScreen(
+//                            myWebView,
+//                            webViewIsLoading= homeViewModel.webViewIsLoading.value,
+//                            clickedUser=streamViewModel.channelName.value ?:"",
+//                            listOfLiveUserNames = homeViewModel.liveUserNames.toList()
+//
+//                        )
+//
+//
+//                    }
+//                }
+//            }
         } //
 
 
@@ -462,7 +463,7 @@ class HomeFragment : Fragment(){
     var isDragging = false
     fun setListenerOnConstraintView(
         streamToBeMoved:View,
-        webView: WebView,
+      //  webView: WebView,
         height:Int,
     ){
 
@@ -471,83 +472,83 @@ class HomeFragment : Fragment(){
         streamToBeMoved.layoutParams = layoutParams
 
 
-        webView.setOnTouchListener { v, event ->
-            val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
-
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    Log.d("DragEventTesting", "DOWN")
-                    initialY = event.rawY  // Store the Y touch position
-                    initialTopMargin = layoutParams.topMargin // Store the initial top margin
-                    isDragging = false // Reset flag
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dy = (event.rawY - initialY).toInt() // Calculate movement
-                    Log.d("changeInACtion","dy -->$dy")
-
-                    //this prevents the little jumps
-                    if (dy > 10 || dy < -10) {
-                        isDragging = true
-                    }
-
-                    if (isDragging) {
-                        val newTopMargin = initialTopMargin + dy // Move the entire section up/down
-
-                        layoutParams.topMargin = newTopMargin
-                        streamToBeMoved.layoutParams = layoutParams
-
-                        Log.d("DragEventTesting", "Top Margin: $newTopMargin")
-                    }
-
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    Log.d("DragEventTesting", "UP")
-                    val dy = (event.rawY - initialY).toInt()
-                    if (!isDragging && Math.abs(dy) < 10) {
-                        Log.d("TestingDraggingTap", "WebView was tapped!")
-                        val another = webView as VerticalWebView // Ensures accessibility actions
-                        another.singleTapMethod()
-                    }
-
-                    val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
-                    val startY = layoutParams.topMargin
-                    val endY = height // the target height you want to move to
-
-                    if(dy >500){
-                        ValueAnimator.ofInt(startY, endY).apply {
-                            duration = 300 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
-                                streamToBeMoved.layoutParams = layoutParams
-                            }
-                            start()
-                        }
-                        webView.loadData(
-                            "<html><body style='background-color:black;'></body></html>",
-                            "text/html",
-                            "UTF-8"
-                        )
-                    }else{
-                        ValueAnimator.ofInt(startY, 0).apply {
-                            duration = 100 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
-                                streamToBeMoved.layoutParams = layoutParams
-                            }
-                            start()
-                        }
-                    }
-                    // Animate from startY to endY
-
-
-                    isDragging = false
-                    true
-                }
-                else -> false
-            }
-        }
+//        webView.setOnTouchListener { v, event ->
+//            val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+//
+//            when (event.action) {
+//                MotionEvent.ACTION_DOWN -> {
+//                    Log.d("DragEventTesting", "DOWN")
+//                    initialY = event.rawY  // Store the Y touch position
+//                    initialTopMargin = layoutParams.topMargin // Store the initial top margin
+//                    isDragging = false // Reset flag
+//                    true
+//                }
+//                MotionEvent.ACTION_MOVE -> {
+//                    val dy = (event.rawY - initialY).toInt() // Calculate movement
+//                    Log.d("changeInACtion","dy -->$dy")
+//
+//                    //this prevents the little jumps
+//                    if (dy > 10 || dy < -10) {
+//                        isDragging = true
+//                    }
+//
+//                    if (isDragging) {
+//                        val newTopMargin = initialTopMargin + dy // Move the entire section up/down
+//
+//                        layoutParams.topMargin = newTopMargin
+//                        streamToBeMoved.layoutParams = layoutParams
+//
+//                        Log.d("DragEventTesting", "Top Margin: $newTopMargin")
+//                    }
+//
+//                    true
+//                }
+//                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+//                    Log.d("DragEventTesting", "UP")
+//                    val dy = (event.rawY - initialY).toInt()
+//                    if (!isDragging && Math.abs(dy) < 10) {
+//                        Log.d("TestingDraggingTap", "WebView was tapped!")
+//                        val another = webView as VerticalWebView // Ensures accessibility actions
+//                        another.singleTapMethod()
+//                    }
+//
+//                    val layoutParams = streamToBeMoved.layoutParams as FrameLayout.LayoutParams
+//                    val startY = layoutParams.topMargin
+//                    val endY = height // the target height you want to move to
+//
+//                    if(dy >500){
+//                        ValueAnimator.ofInt(startY, endY).apply {
+//                            duration = 300 // Adjust duration for the animation
+//                            addUpdateListener { animator ->
+//                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
+//                                streamToBeMoved.layoutParams = layoutParams
+//                            }
+//                            start()
+//                        }
+//                        webView.loadData(
+//                            "<html><body style='background-color:black;'></body></html>",
+//                            "text/html",
+//                            "UTF-8"
+//                        )
+//                    }else{
+//                        ValueAnimator.ofInt(startY, 0).apply {
+//                            duration = 100 // Adjust duration for the animation
+//                            addUpdateListener { animator ->
+//                                layoutParams.setMargins(layoutParams.leftMargin, animator.animatedValue as Int, layoutParams.rightMargin, layoutParams.bottomMargin)
+//                                streamToBeMoved.layoutParams = layoutParams
+//                            }
+//                            start()
+//                        }
+//                    }
+//                    // Animate from startY to endY
+//
+//
+//                    isDragging = false
+//                    true
+//                }
+//                else -> false
+//            }
+//        }
 
     }
 
@@ -653,25 +654,11 @@ class HomeFragment : Fragment(){
 
                         }else{
                             if(!smallHeightPositioned){
-                                ValueAnimator.ofInt(webView.layoutParams.height, newHeight).apply {
-                                    duration = 300 // Adjust duration as needed
-                                    addUpdateListener { animation ->
-                                        val params = webView.layoutParams
-                                        params.height = animation.animatedValue as Int
-                                        webView.layoutParams = params
-                                    }
-                                    start()
-                                }
-
-                                ValueAnimator.ofInt(webView.layoutParams.width, newWidth).apply {
-                                    duration = 300
-                                    addUpdateListener { animation ->
-                                        val params = webView.layoutParams
-                                        params.width = animation.animatedValue as Int
-                                        webView.layoutParams = params
-                                    }
-                                    start()
-                                }
+                                val params = webView.layoutParams
+                                params.width = newWidth
+                                params.height = newHeight
+                                webView.layoutParams = params
+                              //  webView.x = newX
                             }
 
                         }
@@ -682,18 +669,20 @@ class HomeFragment : Fragment(){
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val dy = (event.rawY - initialWebViewY).toInt()
+
 
                     isDraggingWebView = false
 
-                    val dy = (event.rawY - initialWebViewY).toInt()
+
                     //need to check for this animation
                     if (!isDraggingWebView && Math.abs(dy) < 10) {
 
 
                         Log.d("TestingAgainWebView", "WebView was tapped!")
-                        Log.d("TestingAgainWebView", "x-->${webView.x } Y-->${webView.y}")
+                        Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
                         // ofInt() gives the start and end value
-                       ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+                        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
                             duration = 300 // Adjust duration for the animation
                             addUpdateListener { animator ->
                                 val value = animator.animatedValue as Int
@@ -720,7 +709,7 @@ class HomeFragment : Fragment(){
                             start()
                         }
                         val newWidth = (maxHeightNewWebView * 16 / 9)
-                        Log.d("NEWWIDTHtESTING","WIDTH-->$newWidth")
+                        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
                         ValueAnimator.ofInt(params.width, newWidth).apply {
                             duration = 300 // Adjust duration for the animation
                             addUpdateListener { animator ->
@@ -728,12 +717,28 @@ class HomeFragment : Fragment(){
                                 webParams.width = animator.animatedValue as Int
                                 webView.layoutParams = webParams
                             }
+                            animateToScreenTop(
+                                streamToBeMoved=streamToBeMoved,
+                                startY=screenHeight,
+                                endY = 0
+                            )
 
 
                             start()
                         }
 
+
                         smallHeightPositioned = false
+                    }//end of the tap conditional
+
+                    val testing =streamToBeMoved.y
+
+                    if(testing==0f){
+                            animateToScreenTop(
+                                streamToBeMoved=streamToBeMoved,
+                                startY=0,
+                                endY = screenHeight
+                            )
                     }
 
 
@@ -753,31 +758,31 @@ class HomeFragment : Fragment(){
             Log.d("onConfigurationChangedTesting", "Landscape mode")
             setImmersiveMode(requireActivity().window)
 
-            val layoutParams = myWebView.layoutParams
-
-
-
-            layoutParams.width =ConstraintLayout.LayoutParams.MATCH_PARENT
-            layoutParams.height =ConstraintLayout.LayoutParams.MATCH_PARENT
-
-//            streamToBeMoved.layoutParams = layoutParams
-            myWebView.layoutParams = layoutParams
+//            val layoutParams = myWebView.layoutParams
+//
+//
+//
+//            layoutParams.width =ConstraintLayout.LayoutParams.MATCH_PARENT
+//            layoutParams.height =ConstraintLayout.LayoutParams.MATCH_PARENT
+//
+////            streamToBeMoved.layoutParams = layoutParams
+//            myWebView.layoutParams = layoutParams
 
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d("onConfigurationChangedTesting", "Portrait mode")
 
-            val layoutParams = myWebView.layoutParams
-
-            unsetImmersiveMode(requireActivity().window)
-
-
-
-            //setting them back to 0 will make the it respect the aspect ratio
-            layoutParams.width =0
-            layoutParams.height =0
-
-            myWebView.layoutParams = layoutParams
+//            val layoutParams = myWebView.layoutParams
+//
+//            unsetImmersiveMode(requireActivity().window)
+//
+//
+//
+//            //setting them back to 0 will make the it respect the aspect ratio
+//            layoutParams.width =0
+//            layoutParams.height =0
+//
+//            myWebView.layoutParams = layoutParams
 
 
         }

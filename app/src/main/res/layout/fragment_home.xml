@@ -20,7 +20,7 @@
         android:focusable="true"
         android:background="@android:color/background_dark">
 
-        <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
+        <androidx.compose.ui.platform.ComposeView
             android:id="@+id/webView"
             android:background="@android:color/background_dark"
             android:layout_width="0.dp"
@@ -57,6 +57,7 @@
         android:id="@+id/testing_constraint_again"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         >
 
         <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
@@ -70,7 +71,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             />
 
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
 
 </FrameLayout>
