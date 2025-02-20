@@ -147,6 +147,7 @@ class HomeFragment : Fragment(){
 
     lateinit private var streamToBeMoved:View
     lateinit private var myWebView:WebView
+    var maxHeightNewWebView = 608 // Largest height allowed
 
 
 
@@ -165,6 +166,12 @@ class HomeFragment : Fragment(){
     }
 
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -190,10 +197,12 @@ class HomeFragment : Fragment(){
         checkUserType(view,value)
 
          streamToBeMoved = view.findViewById(R.id.streaming_modal_view)
+        val newWebView:WebView = view.findViewById(R.id.web_view_testing_movement)
 
         val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         val height = windowMetrics.getBounds().height()
         val orientationIsLandscape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
 
 
         setListenerOnConstraintView(
@@ -201,6 +210,17 @@ class HomeFragment : Fragment(){
             webView = view.findViewById(R.id.webView),
             height = height
         )
+        moveTheWebView(
+            newWebView
+        )
+        Log.d("TestingWebViewHeight", "ebView.layoutParams.height-->${newWebView.layoutParams.height}")
+        newWebView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                newWebView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                maxHeightNewWebView = newWebView.height
+                Log.d("TestingWebViewHeight", "After layout: ${newWebView.height}")
+            }
+        })
 
          myWebView = view.findViewById(R.id.webView)
 
@@ -482,7 +502,7 @@ class HomeFragment : Fragment(){
                     Log.d("DragEventTesting", "UP")
                     val dy = (event.rawY - initialY).toInt()
                     if (!isDragging && Math.abs(dy) < 10) {
-                        Log.d("TestingDraggingTap", "WebView was tapped!") // ✅ Log when tap happens
+                        Log.d("TestingDraggingTap", "WebView was tapped!")
                         val another = webView as VerticalWebView // Ensures accessibility actions
                         another.singleTapMethod()
                     }
@@ -526,6 +546,153 @@ class HomeFragment : Fragment(){
         }
 
     }
+
+    var initialYWebView = 0f
+    var isDraggingWebView = false
+    var lastY = 0f
+    var lastX = 0f
+    var lastHeight = 0
+    var lastWidth = 0
+    val minHeight = 200  // Smallest height allowed
+    val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+    var smallHeightPositioned = false
+
+    fun moveTheWebView(webView: WebView) {
+        webView.settings.mediaPlaybackRequiresUserGesture = false
+
+
+        webView.settings.javaScriptEnabled = true
+        webView.isClickable = true
+        webView.settings.domStorageEnabled = true; // THIS ALLOWS THE US TO CLICK ON THE MATURE AUDIENCE BUTTON
+
+        webView.settings.allowContentAccess = true
+        webView.settings.allowFileAccess = true
+
+        webView.settings.setSupportZoom(true)
+
+        webView.loadUrl("https://player.twitch.tv/?channel=Ludwig&controls=false&muted=false&parent=modderz")
+        val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+      //  maxHeight = webView.layoutParams.height
+        Log.d("WebViewPositionCHecking", "ebView.layoutParams.height-->${webView.layoutParams.height}")
+        val halfwayPoint = screenHeight / 2
+        webView.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    initialYWebView = event.rawY
+                    lastY = webView.y
+                    lastX = webView.x
+                    lastHeight = webView.height
+                    lastWidth = webView.width
+                    isDraggingWebView = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.rawY - initialYWebView
+
+                    if (dy > 10 || dy < -10) {
+                        isDraggingWebView = true
+                    }
+
+                    if (isDraggingWebView) {
+                        // Move Y position
+                       // webView.y = lastY + dy+100
+                        Log.d("WebViewPositionCHecking", "webView.y-->${webView.y}")
+                        webView.y = (lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+
+                        // Shrink the WebView (keeping 16:9 ratio)
+                        // Check if WebView has moved past halfway
+                        if (webView.y > halfwayPoint) {
+                            Log.d("WebViewPositionCHecking", "WebView has passed the halfway point!")
+                        } else {
+                          //  Log.d("WebViewPositionCHecking", "WebView is still above the halfway point.")
+                        }
+                        val newHeight = (lastHeight - dy).toInt().coerceIn(minHeight, maxHeightNewWebView)
+                        val newWidth = (newHeight * 16 / 9).toInt()
+                        if (newHeight == minHeight){
+                            smallHeightPositioned = true
+                        }
+
+                        // Move X position (push to side gradually)
+                        val progress = (newHeight - minHeight).toFloat() / (maxHeightNewWebView - minHeight) // 0 to 1
+                        val newX = (screenWidth - newWidth) * (1 - progress) // Moves toward the right
+
+                        if (webView.y > halfwayPoint) {
+
+                        }else{
+                            if(!smallHeightPositioned){
+                                val params = webView.layoutParams
+                                params.width = newWidth
+                                params.height = newHeight
+                                webView.layoutParams = params
+                                webView.x = newX
+                            }
+
+                        }
+                        // Apply new size and position
+
+                    }
+
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+
+                    isDraggingWebView = false
+
+                    val dy = (event.rawY - initialYWebView).toInt()
+                    //need to check for this animation
+                    if (!isDraggingWebView && Math.abs(dy) < 10) {
+
+
+                        Log.d("TestingAgainWebView", "WebView was tapped!")
+                        Log.d("TestingAgainWebView", "x-->${webView.x } Y-->${webView.y}")
+                        // ofInt() gives the start and end value
+                       ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val value = animator.animatedValue as Int
+                                webView.y = value.toFloat()
+                            }
+                            start()
+                        }
+                        ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val value = animator.animatedValue as Int
+                                webView.x = value.toFloat()
+                            }
+                            start()
+                        }
+                        val params = webView.layoutParams
+                        ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val webParams = webView.layoutParams
+                                webParams.height = animator.animatedValue as Int
+                                webView.layoutParams = webParams
+                            }
+                            start()
+                        }
+                        ValueAnimator.ofInt(params.width, maxHeightNewWebView*(19/6)).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val webParams = webView.layoutParams
+                                webParams.width = animator.animatedValue as Int
+                                webView.layoutParams = webParams
+                            }
+                            start()
+                        }
+
+                        smallHeightPositioned = false
+                    }
+
+
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
