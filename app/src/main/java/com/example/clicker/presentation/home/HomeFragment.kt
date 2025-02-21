@@ -230,7 +230,7 @@ class HomeFragment : Fragment(){
         // myWebView = view.findViewById(R.id.webView)
 
 
-       // verticalWebViewOverlayClicked(myWebView as VerticalWebView)
+
 
 
         if(value !=UserTypes.NEW){
@@ -677,11 +677,21 @@ class HomeFragment : Fragment(){
 
                             start()
                         }
-                        animateToScreenTop(
-                            streamToBeMoved=streamToBeMoved,
-                            startY=screenHeight,
-                            endY = 0
-                        )
+                        //fixes the bug of typing taping when the screen is full
+                        if(smallHeightPositioned){
+                            //webview is in mini screen form and is being tapped
+                            animateToScreenTop(
+                                streamToBeMoved=streamToBeMoved,
+                                startY=screenHeight,
+                                endY = 0
+                            )
+                        } else{
+                            //webview is in full screen form and is being tapped
+                            verticalWebViewOverlayClicked(webView as VerticalWebView)
+
+
+                        }
+
 
 
 
@@ -938,7 +948,7 @@ class HomeFragment : Fragment(){
         verticalClickableWebView: VerticalWebView
     ){
         Log.d("CLICKINGCHECKINGTHINGER","CLICKED")
-        verticalClickableWebView.singleTapMethod={
+
 
             if(autoModViewModel.verticalOverlayIsVisible.value){
                 autoModViewModel.setVerticalOverlayToHidden()
@@ -955,7 +965,7 @@ class HomeFragment : Fragment(){
     printClickedToAndroid("Log to the console from Javascript")
  """
             verticalClickableWebView.evaluateJavascript(jsCode2, null)
-        }
+
     }
 
 
