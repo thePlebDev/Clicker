@@ -318,10 +318,15 @@ class HomeFragment : Fragment(){
 
                             },
                             loadUrl  ={ channelName->
-//                                setWebView(
-//                                    myWebView=myWebView,
-//                                    url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-//                                )
+                                if(homeViewModel.clickedStreamerName.value != channelName){
+                                    setWebView(
+                                        myWebView=newWebView,
+                                        url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+                                    )
+
+                                }
+
+
                                 isDraggingWebView = false
 
                                 val webView = newWebView
@@ -448,25 +453,6 @@ class HomeFragment : Fragment(){
         myWebView.settings.allowFileAccess = true
 
         myWebView.settings.setSupportZoom(true)
-        myWebView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                // Page has finished loading
-                Log.d("WebVIewChecking", "Page loaded: $url")
-                Handler(Looper.getMainLooper()).postDelayed({
-                        // This method will be executed once the timer is over
-                    homeViewModel.setWebViewIsLoading(false)
-                    },
-                    1300 // value in milliseconds
-                )
-
-            }
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-                Log.d("WebVIewChecking", "Page started loading: $url")
-                homeViewModel.setWebViewIsLoading(true)
-            }
-        }
 
         myWebView.loadUrl(url)
     }
@@ -547,9 +533,10 @@ class HomeFragment : Fragment(){
 
         webView.settings.setSupportZoom(true)
 
-        webView.loadUrl("https://player.twitch.tv/?channel=Ludwig&controls=false&muted=false&parent=modderz")
+      //  webView.loadUrl("https://player.twitch.tv/?channel=Ludwig&controls=false&muted=false&parent=modderz")
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+        webView.y = screenHeight.toFloat()
       //  maxHeight = webView.layoutParams.height
         Log.d("WebViewPositionCHecking", "ebView.layoutParams.height-->${webView.layoutParams.height}")
         val halfwayPoint = screenHeight / 2
@@ -588,6 +575,7 @@ class HomeFragment : Fragment(){
                     }
 
                     if (isDraggingWebView) {
+
                         // Move Y position
                        // webView.y = lastY + dy+100
                         Log.d("WebViewPositionCHecking", "webView.y-->${webView.y}")
@@ -642,7 +630,7 @@ class HomeFragment : Fragment(){
                     isDraggingWebView = false
 
 
-                    //need to check for this animation
+                    //THIS IS THE TAP CONDITIONAL
                     if (!isDraggingWebView && Math.abs(dy) < 10) {
 
 
@@ -702,7 +690,8 @@ class HomeFragment : Fragment(){
 
                     val testing =streamToBeMoved.y
 
-                    if(testing==0f){
+
+                    if(testing==0f && smallHeightPositioned){
                             animateToScreenTop(
                                 streamToBeMoved=streamToBeMoved,
                                 startY=0,
@@ -712,7 +701,7 @@ class HomeFragment : Fragment(){
 
 
                     true
-                }
+                } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
                 else -> false
             }
         }

@@ -51,6 +51,7 @@ fun HomeStreamChatViews(
 ){
 
 
+
     if(showHomeChat){
         StreamView(
             streamViewModel=streamViewModel,

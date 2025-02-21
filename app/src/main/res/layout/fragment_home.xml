@@ -18,8 +18,12 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/background_dark">
+        android:background="@android:color/background_dark"
+        >
+<!--        this is how we can make the chat invisible-->
+        <!--        android:alpha="0.5"-->
 
+<!--        this is the place holder-->
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/webView"
             android:background="@android:color/background_dark"
@@ -39,15 +43,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/webView" />
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/stream_compose_view_loading"
-            android:layout_width="0.dp"
-            android:layout_height="0.dp"
-            app:layout_constraintDimensionRatio="16:9"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+
 
         <!-- Other views go here -->
 
