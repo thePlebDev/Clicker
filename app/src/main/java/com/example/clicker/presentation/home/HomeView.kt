@@ -110,8 +110,9 @@ fun ValidationView(
         onNavigate = {id -> onNavigate(id) },
         updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
 
+
             if (!lowPowerModeActive) {
-                homeViewModel.updateClickedStreamerName(streamerName)
+
 
 
                 Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
@@ -168,6 +169,7 @@ fun ValidationView(
             streamViewModel.setImmersiveMode(false)
             scope.launch {
                 delay(500)
+                homeViewModel.updateClickedStreamerName(streamerName)
                 bottomModalState2.show()
             }
 
