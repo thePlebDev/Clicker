@@ -696,13 +696,12 @@ fun setImmersiveMode(window: Window){
     }
 }
 fun unsetImmersiveMode(window: Window) {
-    WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
     val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
     windowInsetsController.let {
-
-        it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
-        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
+        it.show(WindowInsetsCompat.Type.systemBars()) // Show the system bars first
+        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // Reset to default behavior
     }
+    WindowCompat.setDecorFitsSystemWindows(window, true) // Now respect insets
 }
 
 
