@@ -51,6 +51,7 @@ import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -150,6 +151,7 @@ class HomeFragment : Fragment(){
     private val modViewDragStateViewModel: ModViewDragStateViewModel by activityViewModels()
 
     lateinit private var streamToBeMoved:View
+    lateinit private var newWebView:WebView
     //lateinit private var myWebView:WebView
     var maxHeightNewWebView = 608 // Largest height allowed
 
@@ -201,7 +203,7 @@ class HomeFragment : Fragment(){
         checkUserType(view,value)
 
          streamToBeMoved = view.findViewById(R.id.streaming_modal_view)
-        val newWebView:WebView = view.findViewById(R.id.web_view_testing_movement)
+         newWebView = view.findViewById(R.id.web_view_testing_movement)
 
         val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         val height = windowMetrics.getBounds().height()
@@ -410,25 +412,8 @@ class HomeFragment : Fragment(){
                     }
                 }
             }
-//            binding.streamComposeViewLoading.apply{
-//                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-//                setContent {
-//
-//
-//                    AppTheme{
-//                        StreamScreen(
-//                            myWebView,
-//                            webViewIsLoading= homeViewModel.webViewIsLoading.value,
-//                            clickedUser=streamViewModel.channelName.value ?:"",
-//                            listOfLiveUserNames = homeViewModel.liveUserNames.toList()
-//
-//                        )
-//
-//
-//                    }
-//                }
-//            }
-        } //
+
+        }
 
 
 
@@ -617,7 +602,7 @@ class HomeFragment : Fragment(){
                             }
 
                         }
-                        // Apply new size and position
+
 
                     }
 
@@ -637,46 +622,11 @@ class HomeFragment : Fragment(){
                         Log.d("TestingAgainWebView", "WebView was tapped!")
                         Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
                         // ofInt() gives the start and end value
+                        animateToFullScreen(
+                            webView,
+                            maxHeightNewWebView
+                        )
 
-                        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
-                            duration = 300 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                val value = animator.animatedValue as Int
-                                webView.y = value.toFloat()
-                            }
-                            start()
-                        }
-                        ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
-                            duration = 300 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                val value = animator.animatedValue as Int
-                                webView.x = value.toFloat()
-                            }
-                            start()
-                        }
-                        val params = webView.layoutParams
-                        ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
-                            duration = 300 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                val webParams = webView.layoutParams
-                                webParams.height = animator.animatedValue as Int
-                                webView.layoutParams = webParams
-                            }
-                            start()
-                        }
-                        val newWidth = (maxHeightNewWebView * 16 / 9)
-                        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
-                        ValueAnimator.ofInt(params.width, newWidth).apply {
-                            duration = 300 // Adjust duration for the animation
-                            addUpdateListener { animator ->
-                                val webParams = webView.layoutParams
-                                webParams.width = animator.animatedValue as Int
-                                webView.layoutParams = webParams
-                            }
-
-
-                            start()
-                        }
                         //fixes the bug of typing taping when the screen is full
                         if(smallHeightPositioned){
                             //webview is in mini screen form and is being tapped
@@ -717,10 +667,12 @@ class HomeFragment : Fragment(){
         }
     }
 
-    fun animateWebViewToTop(
+    private fun animateToFullScreen(
         webView: WebView,
-        newWidth:Int
-    ) {
+        maxHeight: Int,
+    ){
+
+        //animating the Y position
         ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
@@ -729,6 +681,7 @@ class HomeFragment : Fragment(){
             }
             start()
         }
+        //animating the X position
         ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
@@ -738,7 +691,150 @@ class HomeFragment : Fragment(){
             start()
         }
         val params = webView.layoutParams
-        ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
+        //animating the HEIGHT position
+        ValueAnimator.ofInt(params.height, maxHeight).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.height = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+            start()
+        }
+        val newWidth = (maxHeight * 16 / 9)
+        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+        //animating the WIDTH position
+        ValueAnimator.ofInt(params.width, newWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.width = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+
+
+            start()
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val rootView = requireActivity().window.decorView
+            rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+                    val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+
+                    if(smallHeightPositioned){
+                        animateToBottomRightScreen(
+                            screenHeight=screenHeight,
+                            screenWidth=screenWidth
+                        )
+                    }else{
+                        animateHorizontalToFullScreen(
+                            newWebView,
+                            Resources.getSystem().displayMetrics.heightPixels,
+
+                            )
+                        animateToTopLeftScreen(
+                            newWebView,
+                            screenWidth
+                        )
+
+                    }
+
+                    rootView.viewTreeObserver.removeOnGlobalLayoutListener(this) // Prevent multiple calls
+                }
+            })
+            setImmersiveMode(requireActivity().window)
+            Log.d("onConfigurationChangedTesting", "Landscape mode")
+
+
+
+
+
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+            val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+            Log.d("TestingScreenHeight", "portrait -->: ${screenHeight}")
+            unsetImmersiveMode(requireActivity().window)
+
+            if(smallHeightPositioned){
+                animateToBottomRightScreen(
+                    screenHeight=screenHeight,
+                    screenWidth=screenWidth
+                )
+            }else{
+                animateToFullScreen(
+                    newWebView,
+                    maxHeightNewWebView
+                )
+            }
+
+
+
+        }
+
+    }
+
+    fun animateToBottomRightScreen(
+        screenHeight:Int,
+        screenWidth:Int
+    ){
+        ValueAnimator.ofInt(newWebView.y.toInt(), (screenHeight -newWebView.height)).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                newWebView.y = value.toFloat()
+            }
+            start()
+        }
+        ValueAnimator.ofInt(newWebView.x.toInt(), (screenWidth -newWebView.width)).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                newWebView.x = value.toFloat()
+            }
+            start()
+        }
+    }
+    fun animateToTopLeftScreen(
+        webView: WebView,
+        maxWidth:Int
+    ){
+        val endWidth = (maxWidth*0.13).toInt()
+        Log.d("TESTINGMAXLENGHTTHINGER","endWidth -->$endWidth")
+        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.y = value.toFloat()
+            }
+            start()
+        }
+        ValueAnimator.ofInt(webView.x.toInt(), endWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.x = value.toFloat()
+            }
+            start()
+        }
+    }
+    fun animateHorizontalToFullScreen(
+        webView:WebView,
+        maxHeight:Int,
+
+    ){
+        val params = webView.layoutParams
+        //animating the HEIGHT position
+        ValueAnimator.ofInt(params.height, maxHeight).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
                 val webParams = webView.layoutParams
@@ -748,7 +844,10 @@ class HomeFragment : Fragment(){
             start()
         }
 
+        //animating the width position
+        val newWidth = (maxHeight * 16 / 9)
         Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+        //animating the WIDTH position
         ValueAnimator.ofInt(params.width, newWidth).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
@@ -757,47 +856,9 @@ class HomeFragment : Fragment(){
                 webView.layoutParams = webParams
             }
 
+
+            start()
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d("onConfigurationChangedTesting", "Landscape mode")
-            setImmersiveMode(requireActivity().window)
-
-//            val layoutParams = myWebView.layoutParams
-//
-//
-//
-//            layoutParams.width =ConstraintLayout.LayoutParams.MATCH_PARENT
-//            layoutParams.height =ConstraintLayout.LayoutParams.MATCH_PARENT
-//
-////            streamToBeMoved.layoutParams = layoutParams
-//            myWebView.layoutParams = layoutParams
-
-
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Log.d("onConfigurationChangedTesting", "Portrait mode")
-
-//            val layoutParams = myWebView.layoutParams
-//
-//            unsetImmersiveMode(requireActivity().window)
-//
-//
-//
-//            //setting them back to 0 will make the it respect the aspect ratio
-//            layoutParams.width =0
-//            layoutParams.height =0
-//
-//            myWebView.layoutParams = layoutParams
-
-
-        }
-
     }
 
     override fun onDestroyView() {
@@ -935,14 +996,14 @@ class HomeFragment : Fragment(){
         }
     }
     fun unsetImmersiveMode(window: Window) {
-        WindowCompat.setDecorFitsSystemWindows(window, true) // this is saying respect the insets
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.let {
-
-            it.show(WindowInsetsCompat.Type.systemBars()) // show the insets
-            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // reset to default behavior
+            it.show(WindowInsetsCompat.Type.systemBars()) // Show the system bars first
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // Reset to default behavior
         }
+        WindowCompat.setDecorFitsSystemWindows(window, true) // Now respect insets
     }
+
 
     private fun verticalWebViewOverlayClicked(
         verticalClickableWebView: VerticalWebView
