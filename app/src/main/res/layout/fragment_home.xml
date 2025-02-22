@@ -56,6 +56,7 @@
 
         >
 
+
         <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
             android:id="@+id/web_view_testing_movement"
             android:background="@android:color/holo_blue_bright"
@@ -67,6 +68,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:clickable="true"
             android:focusable="true"
+            />
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/horizontal_overlay"
+            android:background="@android:color/black"
+            android:alpha="0.8"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_height="0.1dp"
+            app:layout_constraintStart_toStartOf="@id/web_view_testing_movement"
+            app:layout_constraintEnd_toEndOf="@id/web_view_testing_movement"
+            app:layout_constraintBottom_toBottomOf="@id/web_view_testing_movement"
+
             />
 
 

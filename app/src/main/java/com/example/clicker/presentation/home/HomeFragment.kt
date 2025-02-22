@@ -43,6 +43,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.sp
@@ -71,8 +72,7 @@ import com.example.clicker.presentation.enhancedModView.viewModels.ModViewDragSt
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.models.UserTypes
 import com.example.clicker.presentation.home.views.HomeStreamChatViews
-import com.example.clicker.presentation.home.views.StreamLoading
-import com.example.clicker.presentation.home.views.StreamScreen
+import com.example.clicker.presentation.home.views.VerticalHomeStreamOverlayView
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
@@ -154,6 +154,7 @@ class HomeFragment : Fragment(){
     lateinit private var newWebView:WebView
     //lateinit private var myWebView:WebView
     var maxHeightNewWebView = 608 // Largest height allowed
+
 
 
 
@@ -412,6 +413,20 @@ class HomeFragment : Fragment(){
                     }
                 }
             }
+            binding.horizontalOverlay.apply{
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+
+                    AppTheme{
+                        VerticalHomeStreamOverlayView(
+                            channelName = streamViewModel.clickedStreamInfo.value.channelName,
+                            streamTitle = streamViewModel.clickedStreamInfo.value.streamTitle,
+                            category = streamViewModel.clickedStreamInfo.value.category,
+                            tags = streamViewModel.tagsImmutable.value,
+                        )
+                    }
+                }
+            }
 
         }
 
@@ -489,7 +504,7 @@ class HomeFragment : Fragment(){
 
 
     }
-
+// VERTICAL ANIMATIONS
     var initialWebViewY = 0f
     var initialWebViewX = 0f
     var isDraggingWebView = false
@@ -503,6 +518,12 @@ class HomeFragment : Fragment(){
     // Define animations outside for efficiency
     private lateinit var springAnimation: SpringAnimation
     private lateinit var springAnimationX: SpringAnimation
+
+    // HORIZONTAL ANIMATIONS
+    var horizontalInitialWebViewY = 0f
+    var horizontalInitialWebViewX = 0f
+    var horizontalIsDraggingWebView = false
+    var horizontalLastY = 0f
 
 
     fun moveTheWebView(webView: WebView) {
@@ -538,132 +559,214 @@ class HomeFragment : Fragment(){
                 stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
             }
         }
+
         webView.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    initialWebViewY = event.rawY
-                    initialWebViewX = event.rawX
-                    lastY = webView.y
-                    lastX = webView.x
-                    lastHeight = webView.height
-                    lastWidth = webView.width
-                    isDraggingWebView = false
-                    springAnimation.cancel()
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dy = event.rawY - initialWebViewY
-                    val dx = event.rawX - initialWebViewX
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-                    if (dy > 10 || dy < -10) {
-                        isDraggingWebView = true
+            if(isLandscape){
+                //DO NOTHING RIGHT NOW
+                //TODO  START OF THE HORIZONTAL ANIMATIONS
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        horizontalInitialWebViewY = event.rawY
+                        horizontalInitialWebViewX = event.rawX
+                        horizontalLastY = webView.y
+
+                        true
                     }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dy =  event.rawY - horizontalInitialWebViewY
+                        val dx = horizontalInitialWebViewX - event.rawX
 
-                    if (isDraggingWebView) {
-
-                        // Move Y position
-                       // webView.y = lastY + dy+100
-                        Log.d("WebViewPositionCHecking", "webView.y-->${webView.y}")
-                        val newY =(lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
-                        val minWidth =(minHeight * 16 / 9)
-                        val newXDragging =(lastX + dx).coerceIn(0f, (screenWidth - minWidth).toFloat())
-                        //webView.y = (lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
-                        if(smallHeightPositioned){
-                            springAnimationX.animateToFinalPosition(newXDragging)
+                        if (dy > 10 || dy < -10) {
+                            horizontalIsDraggingWebView = true
                         }
-                        springAnimation.animateToFinalPosition(newY)
+                        if(horizontalIsDraggingWebView){
+                            val newY =(horizontalLastY + dy)
+                            springAnimation.animateToFinalPosition(newY)
 
-                        // Shrink the WebView (keeping 16:9 ratio)
-                        // Check if WebView has moved past halfway
-                        if (webView.y > halfwayPoint) {
-                            Log.d("WebViewPositionCHecking", "WebView has passed the halfway point!")
-                        } else {
-                          //  Log.d("WebViewPositionCHecking", "WebView is still above the halfway point.")
-                        }
-                        val newHeight = (lastHeight - dy).toInt().coerceIn(minHeight, maxHeightNewWebView)
-                        val newWidth = (newHeight * 16 / 9).toInt()
-                        if (newHeight == minHeight){
-                            smallHeightPositioned = true
                         }
 
-                        // Move X position (push to side gradually)
-                        val progress = (newHeight - minHeight).toFloat() / (maxHeightNewWebView - minHeight) // 0 to 1
-                        val newX = (screenWidth - newWidth) * (1 - progress) // Moves toward the right
+                        true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        val dy =  event.rawY - horizontalInitialWebViewY
+                        //this is the tapping conditional
+                        if (!isDraggingWebView && Math.abs(dy) < 10) {
+                            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+                            composeView.visibility = View.VISIBLE
+                            
+                            animateHeightComposeView(
+                                composeView,
+                                (webView.height*0.35).toInt()
+                            )
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                    animateHeightComposeView(
+                                        composeView,
+                                        0
+                                    )
+                                },
+                                1000 // value in milliseconds
+                            )
 
-                        if (webView.y > halfwayPoint) {
+                        }
+                        horizontalIsDraggingWebView = false
 
-                        }else{
-                            if(!smallHeightPositioned){
-                                val params = webView.layoutParams
-                                params.width = newWidth
-                                params.height = newHeight
-                                webView.layoutParams = params
-                              //  webView.x = newX
+                        true
+                    } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
+                    else -> false
+                }
+                 true //todo: END OF THE HORIZONTAL ANIMATIONS
+
+            }else{
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialWebViewY = event.rawY
+                        initialWebViewX = event.rawX
+                        lastY = webView.y
+                        lastX = webView.x
+                        lastHeight = webView.height
+                        lastWidth = webView.width
+                        isDraggingWebView = false
+                        springAnimation.cancel()
+                        true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dy = event.rawY - initialWebViewY
+                        val dx = event.rawX - initialWebViewX
+
+                        if (dy > 10 || dy < -10) {
+                            isDraggingWebView = true
+                        }
+
+                        if (isDraggingWebView) {
+
+                            // Move Y position
+                            // webView.y = lastY + dy+100
+                            Log.d("WebViewPositionCHecking", "webView.y-->${webView.y}")
+                            val newY =(lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+                            val minWidth =(minHeight * 16 / 9)
+                            val newXDragging =(lastX + dx).coerceIn(0f, (screenWidth - minWidth).toFloat())
+                            //webView.y = (lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+                            if(smallHeightPositioned){
+                                springAnimationX.animateToFinalPosition(newXDragging)
+                            }
+                            springAnimation.animateToFinalPosition(newY)
+
+                            // Shrink the WebView (keeping 16:9 ratio)
+                            // Check if WebView has moved past halfway
+                            if (webView.y > halfwayPoint) {
+                                Log.d("WebViewPositionCHecking", "WebView has passed the halfway point!")
+                            } else {
+                                //  Log.d("WebViewPositionCHecking", "WebView is still above the halfway point.")
+                            }
+                            val newHeight = (lastHeight - dy).toInt().coerceIn(minHeight, maxHeightNewWebView)
+                            val newWidth = (newHeight * 16 / 9).toInt()
+                            if (newHeight == minHeight){
+                                smallHeightPositioned = true
                             }
 
+                            // Move X position (push to side gradually)
+                            val progress = (newHeight - minHeight).toFloat() / (maxHeightNewWebView - minHeight) // 0 to 1
+                            val newX = (screenWidth - newWidth) * (1 - progress) // Moves toward the right
+
+                            if (webView.y > halfwayPoint) {
+
+                            }else{
+                                if(!smallHeightPositioned){
+                                    val params = webView.layoutParams
+                                    params.width = newWidth
+                                    params.height = newHeight
+                                    webView.layoutParams = params
+                                    //  webView.x = newX
+                                }
+
+                            }
+
+
                         }
 
-
+                        true
                     }
-
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val dy = (event.rawY - initialWebViewY).toInt()
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        val dy = (event.rawY - initialWebViewY).toInt()
 
 
-                    isDraggingWebView = false
+                        isDraggingWebView = false
 
 
-                    //THIS IS THE TAP CONDITIONAL
-                    if (!isDraggingWebView && Math.abs(dy) < 10) {
+                        //THIS IS THE TAP CONDITIONAL
+                        if (!isDraggingWebView && Math.abs(dy) < 10) {
 
 
-                        Log.d("TestingAgainWebView", "WebView was tapped!")
-                        Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
-                        // ofInt() gives the start and end value
-                        animateToFullScreen(
-                            webView,
-                            maxHeightNewWebView
-                        )
-
-                        //fixes the bug of typing taping when the screen is full
-                        if(smallHeightPositioned){
-                            //webview is in mini screen form and is being tapped
-                            animateToScreenTop(
-                                streamToBeMoved=streamToBeMoved,
-                                startY=screenHeight,
-                                endY = 0
+                            Log.d("TestingAgainWebView", "WebView was tapped!")
+                            Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
+                            // ofInt() gives the start and end value
+                            animateToFullScreen(
+                                webView,
+                                maxHeightNewWebView
                             )
-                        } else{
-                            //webview is in full screen form and is being tapped
-                            verticalWebViewOverlayClicked(webView as VerticalWebView)
+
+                            //fixes the bug of typing taping when the screen is full
+                            if(smallHeightPositioned){
+                                //webview is in mini screen form and is being tapped
+                                animateToScreenTop(
+                                    streamToBeMoved=streamToBeMoved,
+                                    startY=screenHeight,
+                                    endY = 0
+                                )
+                            } else{
+                                //webview is in full screen form and is being tapped
+                                verticalWebViewOverlayClicked(webView as VerticalWebView)
 
 
-                        }
+                            }
 
 
 
 
-                        smallHeightPositioned = false
-                    }//end of the tap conditional
+                            smallHeightPositioned = false
+                        }//end of the tap conditional
 
-                    val testing =streamToBeMoved.y
+                        val testing =streamToBeMoved.y
 
 
-                    if(testing==0f && smallHeightPositioned){
+                        if(testing==0f && smallHeightPositioned){
                             animateToScreenTop(
                                 streamToBeMoved=streamToBeMoved,
                                 startY=0,
                                 endY = screenHeight
                             )
-                    }
+                        }
 
 
-                    true
-                } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
-                else -> false
+                        true
+                    } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
+                    else -> false
+                }
             }
+
+
+        }
+    }
+    /**
+     * animateHeight takes the starting height of the [composeView] and animates it to the final height
+     * specified at [finalHeight]
+     * */
+    private fun animateHeightComposeView(
+        composeView: ComposeView,
+        finalHeight:Int
+    ){
+        val params = composeView.layoutParams
+        //animating the HEIGHT position
+        ValueAnimator.ofInt(params.height, finalHeight).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = composeView.layoutParams
+                webParams.height = animator.animatedValue as Int
+                composeView.layoutParams = webParams
+            }
+            start()
         }
     }
 
@@ -724,6 +827,8 @@ class HomeFragment : Fragment(){
 
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+
             val rootView = requireActivity().window.decorView
             rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -760,6 +865,9 @@ class HomeFragment : Fragment(){
 
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+            composeView.visibility = View.GONE
+
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels
             val screenWidth = Resources.getSystem().displayMetrics.widthPixels
             Log.d("TestingScreenHeight", "portrait -->: ${screenHeight}")

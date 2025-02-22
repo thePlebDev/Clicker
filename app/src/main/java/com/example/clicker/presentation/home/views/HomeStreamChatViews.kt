@@ -6,9 +6,16 @@ import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,9 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -30,6 +39,7 @@ import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewMo
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamView
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.TagListStable
 import com.example.clicker.presentation.stream.views.chat.ChatUI
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.stream.views.overlays.VerticalOverlayView
@@ -50,8 +60,6 @@ fun HomeStreamChatViews(
     showHomeChat:Boolean
 ){
 
-
-
     if(showHomeChat){
         StreamView(
             streamViewModel=streamViewModel,
@@ -64,96 +72,93 @@ fun HomeStreamChatViews(
             modViewIsVisible=modViewIsVisible,
         )
     }
-
-
-}
-
-@Composable
-fun StreamScreen(
-    webView: WebView,
-    webViewIsLoading:Boolean,
-    clickedUser:String,
-    listOfLiveUserNames:List<String>
-) {
-    val configuration = LocalConfiguration.current
-    var webViewWidth by remember { mutableStateOf(webView.width) }
-    var webViewHeight by remember { mutableStateOf(webView.height) }
-
-    // Update dimensions when the orientation changes
-    LaunchedEffect(configuration) {
-        webViewWidth = webView.width
-        webViewHeight = webView.height
-    }
-    if(webViewIsLoading){
-        StreamLoading(
-            width = webViewWidth,
-            height = webViewHeight,
-            clickedUser=clickedUser,
-            listOfLiveUserNames=listOfLiveUserNames
-        )
-    }
-
-
-
 }
 
 
 @Composable
-fun StreamLoading(
-    width:Int,
-    height:Int,
-    clickedUser:String,
-    listOfLiveUserNames:List<String>
-
+fun VerticalHomeStreamOverlayView(
+    channelName:String,
+    streamTitle:String,
+    category:String,
+    tags: TagListStable,
 ){
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
-    Log.d("CLickedUserChecks", "user -->$clickedUser")
-    Log.d("onConfigurationChangedTesting", "width-->$width height -->$height")
-
-    preloadImages(
-        context=context,
-        clickedUsers = listOfLiveUserNames,
-        width=width,
-        height=height
-    )
+    VerticalHomeStreamOverlayUI(
+        channelName,
+        streamTitle,
+        category,
+        tags
+            )
 
 
+}
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)) {
-        AsyncImage(
-            model = "https://static-cdn.jtvnw.net/previews-ttv/live_user_$clickedUser-${width}x$height.jpg",
-            contentDescription = "Translated description of what the image contains",
-            modifier = Modifier.align(Alignment.TopCenter)
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun VerticalHomeStreamOverlayUI(
+    channelName:String,
+    streamTitle:String,
+    category: String,
+    tags: TagListStable
+){
+    Log.d("VerticalTestingOverlayUI","RECOMPING")
+
+    //  val tags = listOf("meat ball", " tagerine","gabagool")
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)) {
+        Text(
+            channelName,
+            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+            color = Color.White,
+
+            )
+        Text(
+            streamTitle,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = Color.White,
+            lineHeight = MaterialTheme.typography.headlineSmall.fontSize,
+
+            )
+        Text(
+            category,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = Color.White.copy(alpha = 0.8f),
+            modifier = Modifier.padding(vertical = 5.dp)
         )
-        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        LazyRow(
+            modifier = Modifier.background(Color.Transparent).padding(bottom = 10.dp)
+        ) {
+            items(tags.list){tagTitle->
+                VerticalTagText(tagTitle)
+            }
+
+        }
     }
+
 }
 
 @Composable
-fun preloadImages(
-    context: Context,
-    clickedUsers:List<String>,
-    width:Int,
-    height:Int,
-) {
-    val imageLoader = ImageLoader(context)
-    val imageUrls = clickedUsers.map {
-            clickedUser ->
-        "https://static-cdn.jtvnw.net/previews-ttv/live_user_$clickedUser-${width}x$height.jpg"
+fun VerticalTagText(
+    tagText:String
+){
+    Box(
+        Modifier
+            .background(Color.Transparent)
+            .padding(3.dp)
+    ){
+        Text(
+            text =tagText,
+            Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.DarkGray)
+                .padding(horizontal = 10.dp, vertical = 5.dp)
+            ,
+            color = Color.White,
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize
 
-    }
-
-    imageUrls.forEach { url ->
-        val request = ImageRequest.Builder(context)
-            .data(url)
-            .memoryCacheKey(url) // Optional: Helps with in-memory caching
-            .diskCacheKey(url)   // Optional: Helps with disk caching
-            .build()
-        imageLoader.enqueue(request) // Preload each image
+        )
     }
 }
 
