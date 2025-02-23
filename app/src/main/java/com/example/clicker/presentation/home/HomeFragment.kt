@@ -20,6 +20,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.DragEvent
+import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -524,6 +525,8 @@ class HomeFragment : Fragment(){
     var horizontalInitialWebViewX = 0f
     var horizontalIsDraggingWebView = false
     var horizontalLastY = 0f
+    private var horizontalLastTapTime = 0L
+    private val horizontalDoubleTapThreshold = 300
 
 
     fun moveTheWebView(webView: WebView) {
@@ -559,11 +562,47 @@ class HomeFragment : Fragment(){
                 stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
             }
         }
+        val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+               Log.d("GestureDetectorTapping","DOUBLE")
+                return true
+            }
+
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+                // ofInt() gives the start and end value
+                //this is where it goes
+                if(isLandscape){
+                    Log.d("ORIENTATIONtESTIN","LANDSCAPE")
+                    val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+                    composeView.visibility = View.VISIBLE
+                    horizontalAnimateSingleTap(
+                        webView
+                    )
+
+                }else{
+                    Log.d("ORIENTATIONtESTIN","vertical")
+                    verticalAnimateSingleTap(
+                        webView,screenHeight
+                    )
+                }
+
+                return super.onSingleTapConfirmed(e)
+            }
+
+
+        })
 
         webView.setOnTouchListener { v, event ->
             val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+            gestureDetector.onTouchEvent(event)
+
+
             if(isLandscape){
+
                 //DO NOTHING RIGHT NOW
                 //TODO  START OF THE HORIZONTAL ANIMATIONS
                 when (event.action) {
@@ -592,25 +631,32 @@ class HomeFragment : Fragment(){
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         val dy =  event.rawY - horizontalInitialWebViewY
                         //this is the tapping conditional
-                        if (!isDraggingWebView && Math.abs(dy) < 10) {
-                            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-                            composeView.visibility = View.VISIBLE
-                            
-                            animateHeightComposeView(
-                                composeView,
-                                (webView.height*0.35).toInt()
-                            )
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                    animateHeightComposeView(
-                                        composeView,
-                                        0
-                                    )
-                                },
-                                1000 // value in milliseconds
-                            )
+                        val newTestingWidth = newWebView.width - (newWebView.width*0.2)
+                        val newTestingHeight = (newTestingWidth * 9 / 16)
+                        Log.d("TestingTheWebViewWidth","width ->${newTestingWidth}")
+                        Log.d("TestingTheWebViewWidth","height ->${newTestingHeight}")
 
-                        }
+
+                         if (!isDraggingWebView && Math.abs(dy) < 10) {
+//                            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+//                            composeView.visibility = View.VISIBLE
+//
+//                            animateHeightComposeView(
+//                                composeView,
+//                                (webView.height*0.35).toInt()
+//                            )
+//                            Handler(Looper.getMainLooper()).postDelayed({
+//                                    animateHeightComposeView(
+//                                        composeView,
+//                                        0
+//                                    )
+//                                },
+//                                1000 // value in milliseconds
+//                            )
+
+                        } // END OF TAPPING CONDITIONAL
                         horizontalIsDraggingWebView = false
+
 
                         true
                     } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
@@ -619,6 +665,7 @@ class HomeFragment : Fragment(){
                  true //todo: END OF THE HORIZONTAL ANIMATIONS
 
             }else{
+
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         initialWebViewY = event.rawY
@@ -694,39 +741,8 @@ class HomeFragment : Fragment(){
 
                         isDraggingWebView = false
 
+                        //The tapped conditional is moved to the gesture detection
 
-                        //THIS IS THE TAP CONDITIONAL
-                        if (!isDraggingWebView && Math.abs(dy) < 10) {
-
-
-                            Log.d("TestingAgainWebView", "WebView was tapped!")
-                            Log.d("TestingAgainWebView", "x-->${webView.x} Y-->${webView.y}")
-                            // ofInt() gives the start and end value
-                            animateToFullScreen(
-                                webView,
-                                maxHeightNewWebView
-                            )
-
-                            //fixes the bug of typing taping when the screen is full
-                            if(smallHeightPositioned){
-                                //webview is in mini screen form and is being tapped
-                                animateToScreenTop(
-                                    streamToBeMoved=streamToBeMoved,
-                                    startY=screenHeight,
-                                    endY = 0
-                                )
-                            } else{
-                                //webview is in full screen form and is being tapped
-                                verticalWebViewOverlayClicked(webView as VerticalWebView)
-
-
-                            }
-
-
-
-
-                            smallHeightPositioned = false
-                        }//end of the tap conditional
 
                         val testing =streamToBeMoved.y
 
@@ -747,8 +763,55 @@ class HomeFragment : Fragment(){
             }
 
 
+
         }
     }
+
+    fun verticalAnimateSingleTap(
+        webView:WebView,
+        screenHeight: Int
+    ){
+        animateToFullScreen(
+            webView,
+            maxHeightNewWebView
+        )
+
+        //fixes the bug of typing taping when the screen is full
+        if(smallHeightPositioned){
+            //webview is in mini screen form and is being tapped
+            animateToScreenTop(
+                streamToBeMoved=streamToBeMoved,
+                startY=screenHeight,
+                endY = 0
+            )
+            //above should be in the onSingleTap
+        } else{
+            //webview is in full screen form and is being tapped
+            verticalWebViewOverlayClicked(webView as VerticalWebView)
+        }
+
+        smallHeightPositioned = false
+    }
+    fun horizontalAnimateSingleTap(
+        webView: WebView
+    ){
+        val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+        composeView.visibility = View.VISIBLE
+
+        animateHeightComposeView(
+            composeView,
+            (webView.height*0.35).toInt()
+        )
+        Handler(Looper.getMainLooper()).postDelayed({
+            animateHeightComposeView(
+                composeView,
+                0
+            )
+        },
+            1000 // value in milliseconds
+        )
+    }
+
     /**
      * animateHeight takes the starting height of the [composeView] and animates it to the final height
      * specified at [finalHeight]
