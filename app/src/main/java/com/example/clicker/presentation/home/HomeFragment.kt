@@ -206,7 +206,7 @@ class HomeFragment : Fragment(){
         checkUserType(view,value)
 
          streamToBeMoved = view.findViewById(R.id.streaming_modal_view)
-         newWebView = view.findViewById(R.id.web_view_testing_movement)
+         newWebView = binding.webViewTestingMovement
 
         val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         val height = windowMetrics.getBounds().height()
@@ -978,53 +978,57 @@ class HomeFragment : Fragment(){
 
 
     private fun animateToFullScreen(
-        webView: WebView,
+        webView: View,
         maxHeight: Int,
     ){
 
         //animating the Y position
         ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
-            duration = 300 // Adjust duration for the animation
+            duration = 100 // Adjust duration for the animation
             addUpdateListener { animator ->
                 val value = animator.animatedValue as Int
                 webView.y = value.toFloat()
             }
-            start()
-        }
-        //animating the X position
-        ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
-            duration = 300 // Adjust duration for the animation
-            addUpdateListener { animator ->
-                val value = animator.animatedValue as Int
-                webView.x = value.toFloat()
-            }
-            start()
-        }
-        val params = webView.layoutParams
-        //animating the HEIGHT position
-        ValueAnimator.ofInt(params.height, maxHeight).apply {
-            duration = 300 // Adjust duration for the animation
-            addUpdateListener { animator ->
-                val webParams = webView.layoutParams
-                webParams.height = animator.animatedValue as Int
-                webView.layoutParams = webParams
-            }
-            start()
-        }
-        val newWidth = (maxHeight * 16 / 9)
-        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
-        //animating the WIDTH position
-        ValueAnimator.ofInt(params.width, newWidth).apply {
-            duration = 300 // Adjust duration for the animation
-            addUpdateListener { animator ->
-                val webParams = webView.layoutParams
-                webParams.width = animator.animatedValue as Int
-                webView.layoutParams = webParams
-            }
+            doOnEnd {
+                //animating the X position
+                ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Int
+                        webView.x = value.toFloat()
+                    }
+                    start()
+                }
+                val params = webView.layoutParams
+                //animating the HEIGHT position
+                ValueAnimator.ofInt(params.height, maxHeight).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        val webParams = webView.layoutParams
+                        webParams.height = animator.animatedValue as Int
+                        webView.layoutParams = webParams
+                    }
+                    start()
+                }
+                val newWidth = (maxHeight * 16 / 9)
+                Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+                //animating the WIDTH position
+                ValueAnimator.ofInt(params.width, newWidth).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        val webParams = webView.layoutParams
+                        webParams.width = animator.animatedValue as Int
+                        webView.layoutParams = webParams
+                    }
 
 
+                    start()
+                }
+
+            } //end of the doOnEnd
             start()
         }
+
     }
 
 
@@ -1087,10 +1091,20 @@ class HomeFragment : Fragment(){
                     screenWidth=screenWidth
                 )
             }else{
+                //This animates back to the home page
+                val newWebViewTesting = binding.webViewTestingMovement
+                val placeHolder = binding.webView
+
                 animateToFullScreen(
-                    newWebView,
+                    newWebViewTesting,
                     maxHeightNewWebView
                 )
+                animateToFullScreen(
+                    placeHolder,
+                    maxHeightNewWebView
+                )
+                //I need to animate the red place holder
+                // I need to animate the chat back
             }
 
 
