@@ -58,6 +58,7 @@
         >
 
 
+        <!-- THIS IS THE WEBVIEW THAT IS SHOWING THE STREAMING -->
         <com.example.clicker.presentation.stream.customWebViews.VerticalWebView
             android:id="@+id/web_view_testing_movement"
             android:background="@android:color/holo_blue_bright"
