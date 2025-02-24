@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
+    <!--        this is what is getting animated to mov off the screen-->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/streaming_modal_view"
         android:layout_width="match_parent"
@@ -20,13 +20,12 @@
         android:focusable="true"
         android:background="@android:color/background_dark"
         >
-<!--        this is how we can make the chat invisible-->
-        <!--        android:alpha="0.5"-->
+
 
 <!--        this is the place holder-->
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/webView"
-            android:background="@android:color/background_dark"
+            android:background="@android:color/holo_red_dark"
             android:layout_width="0.dp"
             android:layout_height="0.dp"
             app:layout_constraintDimensionRatio="16:9"
@@ -34,11 +33,13 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        <!--        THIS IS THE CHAT   -->
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/stream_compose_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
 
+            android:background="@android:color/holo_purple"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
