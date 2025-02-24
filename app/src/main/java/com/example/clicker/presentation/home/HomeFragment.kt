@@ -494,7 +494,7 @@ class HomeFragment : Fragment(){
         finalWidth:Int
 
     ){
-        val newHeight = webView.height+100
+
         val horizontalSpringAnimation = SpringAnimation(webView, SpringAnimation.X).apply {
             spring = SpringForce().apply {
                 dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
@@ -509,6 +509,17 @@ class HomeFragment : Fragment(){
                 val webParams = webView.layoutParams
                 webParams.width = animator.animatedValue as Int
                 webView.layoutParams = webParams
+            }
+            doOnEnd {
+                val horizontalOverLayView:View =binding.root.findViewById(R.id.horizontal_overlay)
+                val horizontalOverlaySpringAnimationX = SpringAnimation(binding.horizontalOverlay, SpringAnimation.X).apply {
+                    spring = SpringForce().apply {
+                        dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                        stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                    }
+                }
+                horizontalOverlaySpringAnimationX.animateToFinalPosition(0f)
+
             }
 
             start()
@@ -557,8 +568,8 @@ class HomeFragment : Fragment(){
     var horizontalInitialWebViewX = 0f
     var horizontalIsDraggingWebView = false
     var horizontalLastY = 0f
-    private var horizontalLastTapTime = 0L
-    private val horizontalDoubleTapThreshold = 300
+
+    private var horizontalFullScreenTap = false
 
 
     fun moveTheWebView(webView: WebView) {
@@ -600,95 +611,117 @@ class HomeFragment : Fragment(){
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                 if(isLandscape){
+                    if(!horizontalFullScreenTap){
 
-//                    val newWidth = webView.width * 0.8.toInt()
-                    val newWidth = (webView.width * 0.85).toInt()
+                        val newWidth = (webView.width * 0.85).toInt()
 
-                    horizontalAnimateWidthNPosition(
-                        webView = webView,
-                        finalWidth = newWidth,
-                    )
-                    //this should make sure the place holder always matches the actual webview showing the stream
-                    horizontalAnimateWidthNPosition(
-                        //this view is the place holder
-                        webView = binding.root.findViewById<ComposeView>(R.id.webView),
-                        finalWidth = newWidth,
-                    )
+                        horizontalAnimateWidthNPosition(
+                            webView = webView,
+                            finalWidth = newWidth,
+                        )
+                        //this should make sure the place holder always matches the actual webview showing the stream
+                        horizontalAnimateWidthNPosition(
+                            //this view is the place holder
+                            webView = binding.root.findViewById<ComposeView>(R.id.webView),
+                            finalWidth = newWidth,
+                        )
 
-                    //todo animate the chats width and move its x position to half way
+                        //todo animate the chats width and move its x position to half way
 
-                    val view =binding.root
-                    //this is the chat
-                   val chatView = view.findViewById<ComposeView>(R.id.stream_compose_view)
+                        //START OF THE HORIZONTAL TAP
+                        val view =binding.root
+                        //this is the chat
+                        val chatView = view.findViewById<ComposeView>(R.id.stream_compose_view)
+                        chatView.visibility = View.VISIBLE
 
-                    val horizontalSpringAnimationX = SpringAnimation(chatView, SpringAnimation.X).apply {
-                        spring = SpringForce().apply {
-                            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
-                            stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                        val horizontalSpringAnimationX = SpringAnimation(chatView, SpringAnimation.X).apply {
+                            spring = SpringForce().apply {
+                                dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                                stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                            }
                         }
-                    }
-                    val horizontalSpringAnimationY = SpringAnimation(chatView, SpringAnimation.Y).apply {
-                        spring = SpringForce().apply {
-                            dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
-                            stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
-                        }
-                    }
-
-
-                    val params = chatView.layoutParams
-                    //this is animating its width
-                    val newChatWidth = (webView.width *0.45).toInt()
-                    ValueAnimator.ofInt(params.width, newChatWidth).apply {
-                        duration = 300 // Adjust duration for the animation
-                        addUpdateListener { animator ->
-                            val chatParams = chatView.layoutParams
-                            chatParams.width = animator.animatedValue as Int
-                            chatView.layoutParams = chatParams
+                        val horizontalSpringAnimationY = SpringAnimation(chatView, SpringAnimation.Y).apply {
+                            spring = SpringForce().apply {
+                                dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                                stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                            }
                         }
 
-                        start()
-                    }
-                    //CHAT HEIGHT
 
-                    val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+
+                        val params = chatView.layoutParams
+                        //this is animating its width
+                        val newChatWidth = (webView.width *0.45).toInt()
+                        ValueAnimator.ofInt(params.width, newChatWidth).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val chatParams = chatView.layoutParams
+                                chatParams.width = animator.animatedValue as Int
+                                chatView.layoutParams = chatParams
+                            }
+
+                            start()
+                        }
+                        //CHAT HEIGHT
+
+                        val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
 
                         val metrics = windowManager.currentWindowMetrics
                         val screenHeightTesting =  metrics.bounds.height()
 
 
-                    Log.d("TestingChatHeight", "height --> $screenHeight")
-                    val newChatHeight = 1100
-                    Log.d("TestingChatHeight","heightTesting-->${screenHeightTesting}")
+                        Log.d("TestingChatHeight", "height --> $screenHeight")
+                        Log.d("TestingChatHeight","heightTesting-->${screenHeightTesting}")
 
-                    ValueAnimator.ofInt(params.height, screenHeightTesting).apply {
-                        duration = 300 // Adjust duration for the animation
-                        addUpdateListener { animator ->
-                            val chatParams = chatView.layoutParams
-                            chatParams.height = animator.animatedValue as Int
-                            chatView.layoutParams = chatParams
-                        }
-                        doOnEnd {
-                            // animation done inside of doOnEnd to make sure we get the proper values
-                            val width = webView.width
-                            Log.d("TESTINGWEBVIEWwIDTH","WIDTH-->$width")
-                            horizontalSpringAnimationX.animateToFinalPosition(1538f)//need to delete this magic number
-                            horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
+                        ValueAnimator.ofInt(params.height, screenHeightTesting).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val chatParams = chatView.layoutParams
+                                chatParams.height = animator.animatedValue as Int
+                                chatView.layoutParams = chatParams
+                            }
+                            doOnEnd {
+                                // animation done inside of doOnEnd to make sure we get the proper values
+                                val width = webView.width.toFloat()
+                                Log.d("TESTINGWEBVIEWwIDTH","WIDTH-->$width")
+                                horizontalSpringAnimationX.animateToFinalPosition(width)//need to delete this magic number
+                                horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
+                            }
+
+                            start()
                         }
 
-                        start()
+
+                        horizontalFullScreenTap = true
+
+
+                    }else{
+
+                        //I want to make the chat invisible
+                        val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+                        chatView.visibility = View.INVISIBLE
+                        //move the stream back to full screen
+                        animateHorizontalToFullScreen(
+                            newWebView,
+                            Resources.getSystem().displayMetrics.heightPixels,
+                        )
+
+                        animateToTopLeftScreen(
+                            newWebView,
+                            Resources.getSystem().displayMetrics.widthPixels
+                        )
+                        animateHorizontalOverlayToCenter(
+                            overlay  = binding.horizontalOverlay,
+                            maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                        )
+                        //move the overlay
+                        horizontalFullScreenTap = false
+
+
+
                     }
-
-
-                    //BELOW DID NOT WORK
-
-//                    val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-                    //the chat width can be a little bigger
-                    val newChatXPosition = (screenWidth -newChatWidth).toFloat()
-//                    horizontalSpringAnimationX.animateToFinalPosition(1700f) // this seems find
-//                    horizontalSpringAnimationY.animateToFinalPosition(0f) // this needs to be increased
-                    Log.d("chatHeightTesting","height ->${params.height}")
-
 
                 }
 
@@ -765,25 +798,6 @@ class HomeFragment : Fragment(){
                         Log.d("TestingTheWebViewWidth","width ->${newTestingWidth}")
                         Log.d("TestingTheWebViewWidth","height ->${newTestingHeight}")
 
-
-                         if (!isDraggingWebView && Math.abs(dy) < 10) {
-//                            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-//                            composeView.visibility = View.VISIBLE
-//
-//                            animateHeightComposeView(
-//                                composeView,
-//                                (webView.height*0.35).toInt()
-//                            )
-//                            Handler(Looper.getMainLooper()).postDelayed({
-//                                    animateHeightComposeView(
-//                                        composeView,
-//                                        0
-//                                    )
-//                                },
-//                                1000 // value in milliseconds
-//                            )
-
-                        } // END OF TAPPING CONDITIONAL
                         horizontalIsDraggingWebView = false
 
 
@@ -929,7 +943,7 @@ class HomeFragment : Fragment(){
 
         animateHeightComposeView(
             composeView,
-            (webView.height*0.35).toInt()
+            (webView.height*0.40).toInt()
         )
         Handler(Looper.getMainLooper()).postDelayed({
             animateHeightComposeView(
@@ -1034,11 +1048,12 @@ class HomeFragment : Fragment(){
                             screenWidth=screenWidth
                         )
                     }else{
+
                         animateHorizontalToFullScreen(
                             newWebView,
                             Resources.getSystem().displayMetrics.heightPixels,
-
                             )
+
                         animateToTopLeftScreen(
                             newWebView,
                             screenWidth
@@ -1124,6 +1139,21 @@ class HomeFragment : Fragment(){
             addUpdateListener { animator ->
                 val value = animator.animatedValue as Int
                 webView.x = value.toFloat()
+            }
+            start()
+        }
+    }
+    fun animateHorizontalOverlayToCenter(
+        overlay: View,
+        maxWidth:Int
+    ){
+        val endWidth = (maxWidth*0.13).toInt()
+
+        ValueAnimator.ofInt(overlay.x.toInt(), endWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                overlay.x = value.toFloat()
             }
             start()
         }
