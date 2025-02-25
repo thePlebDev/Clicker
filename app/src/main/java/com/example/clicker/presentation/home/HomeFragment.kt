@@ -300,6 +300,19 @@ class HomeFragment : Fragment(){
 
                             },
                             loadUrl  ={ channelName->
+                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                                if(isLandScape){
+                                   val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+                                    if(homeViewModel.clickedStreamerName.value != channelName){
+                                        setWebView(
+                                            myWebView=newWebView,
+                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+                                        )
+
+                                    }
+                                    animateHorizontalSmallSizeToFullScreen(screenHeight)
+                                }else{
+
                                 if(homeViewModel.clickedStreamerName.value != channelName){
                                     setWebView(
                                         myWebView=newWebView,
@@ -354,7 +367,7 @@ class HomeFragment : Fragment(){
                                 smallHeightPositioned = false
 
 
-                        }
+                        }}
 
 
                         )
@@ -727,6 +740,14 @@ class HomeFragment : Fragment(){
                         horizontalAnimateSingleTap(
                             webView
                         )
+                    }else{
+                        //this means it is in the mini view feature
+                        // I need to expand to the full size of the screen
+
+                        animateHorizontalSmallSizeToFullScreen(
+                            screenHeight=screenHeight
+                        )
+
                     }
 
 
@@ -966,6 +987,39 @@ class HomeFragment : Fragment(){
 
 
         }
+    }
+
+    fun animateHorizontalSmallSizeToFullScreen(
+        screenHeight:Int
+    ){
+        animateToScreenTop(
+            streamToBeMoved=streamToBeMoved,
+            startY=screenHeight,
+            endY = 0
+        )
+        //animate to full screen size
+        //I want to make the chat invisible
+        val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+        chatView.visibility = View.INVISIBLE
+
+        //move the stream back to full screen
+        animateHorizontalToFullScreen(
+            newWebView,
+            Resources.getSystem().displayMetrics.heightPixels,
+        )
+
+        animateToTopLeftScreen(
+            newWebView,
+            Resources.getSystem().displayMetrics.widthPixels
+        )
+        animateHorizontalOverlayToCenter(
+            overlay  = binding.horizontalOverlay,
+            maxWidth = Resources.getSystem().displayMetrics.widthPixels
+        )
+        //move the overlay
+        horizontalFullScreenTap = false
+        smallHeightPositioned=false
+
     }
 
     fun verticalAnimateSingleTap(
