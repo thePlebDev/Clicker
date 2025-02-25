@@ -2,25 +2,20 @@ package com.example.clicker.presentation.home
 
 import android.Manifest
 import android.animation.ValueAnimator
-import android.app.Activity
 import android.app.ActivityManager
-import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.DisplayMetrics
 import android.util.Log
-import android.view.DragEvent
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -32,29 +27,13 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -63,13 +42,10 @@ import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import coil.compose.AsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
-import com.example.clicker.cameraNDK.CameraNDKNativeActivity
 import com.example.clicker.databinding.FragmentHomeBinding
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
-import com.example.clicker.presentation.authentication.views.LoadingIndicator
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewDragStateViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.models.UserTypes
@@ -79,7 +55,6 @@ import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingViewModel
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import com.example.clicker.presentation.stream.AutoModViewModel
-import com.example.clicker.presentation.stream.StreamView
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
@@ -228,7 +203,9 @@ class HomeFragment : Fragment(){
             override fun onGlobalLayout() {
                 newWebView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 maxHeightNewWebView = newWebView.height
+                val composeView = binding.streamComposeView
                 Log.d("TestingWebViewHeight", "After layout: ${newWebView.height}")
+                Log.d("TestingWebViewHeight", "chat height layout: ${composeView.height}")
             }
         })
 
@@ -610,8 +587,10 @@ class HomeFragment : Fragment(){
             @RequiresApi(Build.VERSION_CODES.R)
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                Log.d("testinghorizontalfullscreen","fullscreen -->${horizontalFullScreenTap}")
                 if(isLandscape){
                     if(!horizontalFullScreenTap){
+
 
                         val newWidth = (webView.width * 0.85).toInt()
 
@@ -733,6 +712,9 @@ class HomeFragment : Fragment(){
 
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                val composeView = binding.streamComposeView
+
+                Log.d("TestingWebViewHeight", "chat height layout: ${composeView.height}")
 
                 // ofInt() gives the start and end value
                 //this is where it goes
@@ -1032,12 +1014,16 @@ class HomeFragment : Fragment(){
     }
 
 
+
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setImmersiveMode(requireActivity().window)
+
 
 
             val rootView = requireActivity().window.decorView
@@ -1068,7 +1054,6 @@ class HomeFragment : Fragment(){
                     rootView.viewTreeObserver.removeOnGlobalLayoutListener(this) // Prevent multiple calls
                 }
             })
-            setImmersiveMode(requireActivity().window)
             Log.d("onConfigurationChangedTesting", "Landscape mode")
 
 
@@ -1077,8 +1062,12 @@ class HomeFragment : Fragment(){
 
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            horizontalFullScreenTap = false
             val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-            composeView.visibility = View.GONE
+//            this should be looked into to add during horizontal change
+//                    plus still a bug when in mini mode and then transition to a new stream and then horizontal(
+//                    this seems to just be using old values. so the animation when a new stream is clicked
+            //composeView.visibility = View.GONE
 
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels
             val screenWidth = Resources.getSystem().displayMetrics.widthPixels
@@ -1099,12 +1088,97 @@ class HomeFragment : Fragment(){
                     newWebViewTesting,
                     maxHeightNewWebView
                 )
+                //I need to animate the red place holder
                 animateToFullScreen(
                     placeHolder,
                     maxHeightNewWebView
                 )
-                //I need to animate the red place holder
+
                 // I need to animate the chat back
+                val composeChat = binding.streamComposeView
+
+                val webParams = composeChat.layoutParams
+
+                val screenWidthResource = Resources.getSystem().displayMetrics.widthPixels
+                val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val metrics = windowManager.currentWindowMetrics
+                val screenWidthTesting =  metrics.bounds.width()
+
+//                Handler(Looper.getMainLooper()).postDelayed(
+//                    {
+//                    },
+//                    1000 // value in milliseconds
+//                )
+
+                //animate Width
+                ValueAnimator.ofInt(webParams.width, screenWidthResource).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        webParams.width = animator.animatedValue as Int
+                        composeChat.layoutParams = webParams
+                    }
+                    doOnEnd {
+
+
+                        //animate X
+                        ValueAnimator.ofInt(composeChat.x.toInt(),0).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val value = animator.animatedValue as Int
+                                composeChat.x = value.toFloat()
+                            }
+                            doOnEnd {
+                                //animate Y
+                                val streamingWebViewHeight =binding.webViewTestingMovement.height
+                                Log.d("TestingChatMovingHeight","streamingView height -->${streamingWebViewHeight}")
+                                ValueAnimator.ofInt(composeChat.y.toInt(),streamingWebViewHeight).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        val value = animator.animatedValue as Int
+                                        composeChat.y = value.toFloat()
+                                    }
+                                    start()
+                                }
+                                // This method will be executed once the timer is over
+                                //animate HEIGHT
+                                val webParams2 = composeChat.layoutParams
+                                composeChat.visibility = View.VISIBLE
+
+                                val rootView = binding.root
+
+
+                                //the height of the streamingView
+                                val streamingWebViewHeight2 =binding.webViewTestingMovement.height
+                                val bottomBarHeight =getNavigationBarHeight()
+
+                                Log.d("TestingChatMovingHeight","608 -->${streamingWebViewHeight2}")
+                                Log.d("TestingChatMovingHeight","63 -->${bottomBarHeight}")
+                                Log.d("TestingChatMovingHeight","671 -->${bottomBarHeight +streamingWebViewHeight2}")
+                                Log.d("TestingChatMovingHeight","1611 -->${binding.streamingModalView.height-(streamingWebViewHeight2)}")
+
+                             //   Log.d("TestingChatMovingHeight","container height -->${binding.streamingModalView.height-671}")
+                                //  Log.d("TestingChatMovingHeight","bottomBarHeight -->${getNavigationBarHeight()}")// I need this
+                                val finalHeight =binding.streamingModalView.height-streamingWebViewHeight2
+                                ValueAnimator.ofInt(webParams2.height, finalHeight).apply {
+                                    duration = 300 // Adjust duration for the animation
+                                    addUpdateListener { animator ->
+                                        webParams2.height = animator.animatedValue as Int
+                                        composeChat.layoutParams = webParams2
+                                    }
+                                    start()
+                                }
+
+                            }
+                            start()
+                        }
+
+                    }
+                    start()
+                }
+
+                //make visible if invisable
+
+
             }
 
 
@@ -1193,6 +1267,7 @@ class HomeFragment : Fragment(){
         val newWidth = (maxHeight * 16 / 9)
         Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
         //animating the WIDTH position
+
         ValueAnimator.ofInt(params.width, newWidth).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
@@ -1338,6 +1413,7 @@ class HomeFragment : Fragment(){
         windowInsetsController.let {
             it.hide(WindowInsetsCompat.Type.systemBars()) //hide the insets
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
         }
     }
     fun unsetImmersiveMode(window: Window) {
@@ -1347,6 +1423,22 @@ class HomeFragment : Fragment(){
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT // Reset to default behavior
         }
         WindowCompat.setDecorFitsSystemWindows(window, true) // Now respect insets
+    }
+    fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
+    }
+    fun getNavigationBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
     }
 
 
