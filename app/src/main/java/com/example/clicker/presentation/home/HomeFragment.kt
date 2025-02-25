@@ -545,6 +545,7 @@ class HomeFragment : Fragment(){
     var horizontalInitialWebViewX = 0f
     var horizontalIsDraggingWebView = false
     var horizontalLastY = 0f
+    var horizontalLastX = 0f
 
     private var horizontalFullScreenTap = false
 
@@ -720,11 +721,14 @@ class HomeFragment : Fragment(){
                 //this is where it goes
                 if(isLandscape){
                     Log.d("ORIENTATIONtESTIN","LANDSCAPE")
-                    val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-                    composeView.visibility = View.VISIBLE
-                    horizontalAnimateSingleTap(
-                        webView
-                    )
+                    if(!smallHeightPositioned){
+                        val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+                        composeView.visibility = View.VISIBLE
+                        horizontalAnimateSingleTap(
+                            webView
+                        )
+                    }
+
 
                 }else{
                     Log.d("ORIENTATIONtESTIN","vertical")
@@ -746,6 +750,8 @@ class HomeFragment : Fragment(){
 
 
             if(isLandscape){
+                val newScreenHeight =Resources.getSystem().displayMetrics.heightPixels
+                val newScreenWidth =Resources.getSystem().displayMetrics.widthPixels
 
                 //DO NOTHING RIGHT NOW
                 //TODO  START OF THE HORIZONTAL ANIMATIONS
@@ -754,19 +760,85 @@ class HomeFragment : Fragment(){
                         horizontalInitialWebViewY = event.rawY
                         horizontalInitialWebViewX = event.rawX
                         horizontalLastY = webView.y
+                        horizontalLastX = webView.x
 
                         true
                     }
                     MotionEvent.ACTION_MOVE -> {
                         val dy =  event.rawY - horizontalInitialWebViewY
-                        val dx = horizontalInitialWebViewX - event.rawX
+                        val dx =  event.rawX-horizontalInitialWebViewX
 
-                        if (dy > 10 || dy < -10) {
+                        //this is to determine if the view is dragging
+                        if (dy > 40 || dy < -40) {
                             horizontalIsDraggingWebView = true
                         }
+
                         if(horizontalIsDraggingWebView){
-                            val newY =(horizontalLastY + dy)
+                            val minWidth =(minHeight * 16 / 9)
+                            val newY =(horizontalLastY + dy).coerceIn(0f, (newScreenHeight - minHeight).toFloat())
+                            val newXDragging =(horizontalLastX + dx).coerceIn(0f, (newScreenWidth - minWidth).toFloat())
+                            //this is moving the horizontal stream on the Y-axis
                             springAnimation.animateToFinalPosition(newY)
+                            //todo: I need the shrinking animation
+
+                            val newHeight = (lastHeight - dy).toInt().coerceIn(minHeight, maxHeightNewWebView)
+                            val newWidth = (newHeight * 16 / 9).toInt()
+
+                           // webView.y = (lastY + dy).coerceIn(0f, (screenHeight - 200 - minHeight).toFloat())
+                            if(smallHeightPositioned){
+                                Log.d("smallHeightPositionedTestingHorizontal","smallHeightPositioned-->${smallHeightPositioned}")
+                                springAnimationX.animateToFinalPosition(newXDragging)
+                            }
+                            springAnimation.animateToFinalPosition(newY)
+                            Log.d("HorizontalheightConditional","-->${webView.y > (Resources.getSystem().displayMetrics.heightPixels/2)}")
+
+                            if (webView.y > (Resources.getSystem().displayMetrics.heightPixels/2)) {
+
+                            }else{
+                                if(!smallHeightPositioned){
+                                    //animate the height and width
+                                    val params = webView.layoutParams
+//                                    params.width = newWidth
+//                                    params.height = newHeight
+//                                    webView.layoutParams = params
+                                    //  webView.x = newX
+
+
+
+                                    //this is animating its width
+                                    ValueAnimator.ofInt(params.width, newWidth).apply {
+                                        duration = 300 // Adjust duration for the animation
+                                        addUpdateListener { animator ->
+                                            params.width = animator.animatedValue as Int
+                                          //  params.height = newHeight
+                                            webView.layoutParams = params
+                                        }
+
+                                        start()
+                                    }
+                                    //this is animating its width
+                                    ValueAnimator.ofInt(params.height, newHeight).apply {
+                                        duration = 300 // Adjust duration for the animation
+                                        addUpdateListener { animator ->
+                                            params.height = animator.animatedValue as Int
+                                            //  params.height = newHeight
+                                            webView.layoutParams = params
+                                        }
+//                                        doOnEnd {
+//                                            //I want to animate the x
+//                                            animateToBottomRightScreen(
+//                                                screenHeight=1000,
+//                                                screenWidth=200
+//                                                    )
+//                                        }
+
+                                        start()
+                                    }
+                                    // todo: below needs to be uncommented out
+                                    smallHeightPositioned=true
+                                }
+
+                            }
 
                         }
 
@@ -783,13 +855,25 @@ class HomeFragment : Fragment(){
                         horizontalIsDraggingWebView = false
 
 
+                        //THIS IS THE CONDITIONAL TO CHECK IF IT SHOULD COLLAPSE
+                        val testing =streamToBeMoved.y
+                        if(testing==0f && smallHeightPositioned){
+                            animateToScreenTop(
+                                streamToBeMoved=streamToBeMoved,
+                                startY=0,
+                                endY = screenHeight
+                            )
+                        }
+
+
                         true
                     } //END OF  MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL
                     else -> false
                 }
-                 true //todo: END OF THE HORIZONTAL ANIMATIONS
+                 true
 
-            }else{
+            }//todo: END OF THE HORIZONTAL ANIMATIONS
+            else{
 
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -825,27 +909,19 @@ class HomeFragment : Fragment(){
                             }
                             springAnimation.animateToFinalPosition(newY)
 
-                            // Shrink the WebView (keeping 16:9 ratio)
-                            // Check if WebView has moved past halfway
-                            if (webView.y > halfwayPoint) {
-                                Log.d("WebViewPositionCHecking", "WebView has passed the halfway point!")
-                            } else {
-                                //  Log.d("WebViewPositionCHecking", "WebView is still above the halfway point.")
-                            }
+
                             val newHeight = (lastHeight - dy).toInt().coerceIn(minHeight, maxHeightNewWebView)
                             val newWidth = (newHeight * 16 / 9).toInt()
                             if (newHeight == minHeight){
                                 smallHeightPositioned = true
                             }
 
-                            // Move X position (push to side gradually)
-                            val progress = (newHeight - minHeight).toFloat() / (maxHeightNewWebView - minHeight) // 0 to 1
-                            val newX = (screenWidth - newWidth) * (1 - progress) // Moves toward the right
 
                             if (webView.y > halfwayPoint) {
 
                             }else{
                                 if(!smallHeightPositioned){
+                                    Log.d("WebViewPDositionCHeckingtESTING", "SHRINK XY")
                                     val params = webView.layoutParams
                                     params.width = newWidth
                                     params.height = newHeight

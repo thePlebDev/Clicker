@@ -71,6 +71,7 @@
             android:clickable="true"
             android:focusable="true"
             />
+        <!-- OVERLAY -->
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/horizontal_overlay"
             android:background="@android:color/black"
