@@ -880,8 +880,10 @@ class HomeFragment : Fragment(){
                             Log.d("HorizontalheightConditional","-->${webView.y > (Resources.getSystem().displayMetrics.heightPixels/2)}")
 
                             if (webView.y > (Resources.getSystem().displayMetrics.heightPixels/2)) {
+                                Log.d("TESITNGaNIMATIONSPECS","TRUE")
 
                             }else{
+                                Log.d("TESITNGaNIMATIONSPECS","FALSE")
                                 if(!smallHeightPositioned){
                                     //animate the height and width
                                     val params = webView.layoutParams
@@ -944,6 +946,8 @@ class HomeFragment : Fragment(){
                                 startY=0,
                                 endY = screenHeight
                             )
+                        }else{
+                            Log.d("shouldAnimateBackToTop","BACK TO TOP")
                         }
 
 
@@ -1035,6 +1039,15 @@ class HomeFragment : Fragment(){
                                 startY=0,
                                 endY = screenHeight
                             )
+                        }else {
+                            if (!smallHeightPositioned) {
+                                animateWebViewVerticalFullScreen(
+                                    webView,
+                                    lastHeight
+                                )
+
+
+                                }
                         }
 
 
@@ -1046,6 +1059,58 @@ class HomeFragment : Fragment(){
 
 
 
+        }
+    }
+
+    /**
+     * animateWebViewVerticalFullScreen animates the [webView] back to its original height and width based on [lastHeight] value
+     *
+     * @param webView a [WebView] object that will be animated
+     * @param lastHeight a Int value used to determine the width and height of the [webView]
+     * */
+    private fun animateWebViewVerticalFullScreen(
+        webView: WebView,
+        lastHeight:Int
+    ){
+        Log.d("shouldAnimateBackToTop", "BACK TO TOP")
+        //animate the Y and width/height
+        //todo: checn this animate
+        val horizontalSpringAnimationY =
+            SpringAnimation(webView, SpringAnimation.Y).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+
+        val params = webView.layoutParams
+
+        ValueAnimator.ofInt(params.width, (lastHeight * 16 / 9)).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                params.width = animator.animatedValue as Int
+                //  params.height = newHeight
+                webView.layoutParams = params
+            }
+
+            start()
+        }
+        //this is animating its width
+        ValueAnimator.ofInt(params.height, lastHeight).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                params.height = animator.animatedValue as Int
+                //  params.height = newHeight
+                webView.layoutParams = params
+            }
+            doOnEnd {
+                horizontalSpringAnimationY.animateToFinalPosition(0f)
+            }
+
+
+            start()
         }
     }
 
