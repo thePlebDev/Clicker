@@ -554,7 +554,9 @@ class HomeFragment : Fragment(){
 
     }
     /**
-     * animateHorizontalOverlay animates the horizontal over lay that is shown to the user when a double click occurs
+     * animateHorizontalOverlay animates the horizontal overlay that is shown to the user when a double click occurs.
+     * The animation is done on the X-axis
+     *
      * */
     fun animateHorizontalOverlay(){
         val horizontalOverlaySpringAnimationX = SpringAnimation(binding.horizontalOverlay, SpringAnimation.X).apply {
@@ -675,7 +677,7 @@ class HomeFragment : Fragment(){
                                 finalWidth = newWidth,
                             )
                             //this animates the horizontal overlay to zero
-                            animateHorizontalOverlay()
+                           animateHorizontalOverlay()
 
                             //todo animate the chats width and move its x position to half way
 
@@ -769,9 +771,14 @@ class HomeFragment : Fragment(){
                                 newWebView,
                                 Resources.getSystem().displayMetrics.widthPixels
                             )
-                            animateHorizontalOverlayToCenter(
-                                overlay = binding.horizontalOverlay,
-                                maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                {
+                                    animateHorizontalOverlayToCenter(
+                                        overlay  = binding.horizontalOverlay,
+                                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                                    )
+                                },
+                                1000 // value in milliseconds
                             )
                             //move the overlay
                             horizontalFullScreenTap = false
@@ -1141,10 +1148,17 @@ class HomeFragment : Fragment(){
             newWebView,
             Resources.getSystem().displayMetrics.widthPixels
         )
-        animateHorizontalOverlayToCenter(
-            overlay  = binding.horizontalOverlay,
-            maxWidth = Resources.getSystem().displayMetrics.widthPixels
+
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                animateHorizontalOverlayToCenter(
+                    overlay  = binding.horizontalOverlay,
+                    maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                )
+            },
+            1000 // value in milliseconds
         )
+
         //move the overlay
         horizontalFullScreenTap = false //this is for the overlay
         smallHeightPositioned=false
@@ -1363,6 +1377,7 @@ class HomeFragment : Fragment(){
 
 
 
+
             val rootView = requireActivity().window.decorView
             rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -1388,6 +1403,15 @@ class HomeFragment : Fragment(){
                             newWebView,
                             screenWidth
                         )
+                        Handler(Looper.getMainLooper()).postDelayed(
+                            {
+                                animateHorizontalOverlayToCenter(
+                                    overlay  = binding.horizontalOverlay,
+                                    maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                                )
+                            },
+                            1000 // value in milliseconds
+                        )
 
                     }
 
@@ -1395,6 +1419,16 @@ class HomeFragment : Fragment(){
                 }
             })
             Log.d("onConfigurationChangedTesting", "Landscape mode")
+            //todo: this is not working properly
+//            Handler(Looper.getMainLooper()).postDelayed(
+//                {
+//                    animateHorizontalOverlayToCenter(
+//                        overlay  = binding.horizontalOverlay,
+//                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
+//                    )
+//                },
+//                1000 // value in milliseconds
+//            )
 
 
 
