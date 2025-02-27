@@ -515,13 +515,21 @@ class HomeFragment : Fragment(){
     }
 
 
-    private fun horizontalAnimateWidthNPosition(
+    /**
+     * horizontalAnimateWidthAndXPosition animates the [webView's][webView] position on the X-axis and width to the size
+     * specified by [finalWidth]
+     *
+     * @param webView a [View] object that will be animated inside of this function
+     * @param finalWidth a Int value used to animate [webView] to the final width
+     *
+     * */
+    private fun horizontalAnimateWidthAndXPosition(
         webView: View,
         finalWidth:Int
 
     ){
 
-        val horizontalSpringAnimation = SpringAnimation(webView, SpringAnimation.X).apply {
+        val horizontalSpringAnimationWebViewX = SpringAnimation(webView, SpringAnimation.X).apply {
             spring = SpringForce().apply {
                 dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
                 stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
@@ -536,25 +544,26 @@ class HomeFragment : Fragment(){
                 webParams.width = animator.animatedValue as Int
                 webView.layoutParams = webParams
             }
-            doOnEnd {
-                val horizontalOverLayView:View =binding.root.findViewById(R.id.horizontal_overlay)
-                val horizontalOverlaySpringAnimationX = SpringAnimation(binding.horizontalOverlay, SpringAnimation.X).apply {
-                    spring = SpringForce().apply {
-                        dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
-                        stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
-                    }
-                }
-                horizontalOverlaySpringAnimationX.animateToFinalPosition(0f)
 
-            }
 
             start()
         }
 
+        horizontalSpringAnimationWebViewX.animateToFinalPosition(0f)
 
-        horizontalSpringAnimation.animateToFinalPosition(0f)
 
-
+    }
+    /**
+     * animateHorizontalOverlay animates the horizontal over lay that is shown to the user when a double click occurs
+     * */
+    fun animateHorizontalOverlay(){
+        val horizontalOverlaySpringAnimationX = SpringAnimation(binding.horizontalOverlay, SpringAnimation.X).apply {
+            spring = SpringForce().apply {
+                dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                stiffness = SpringForce.STIFFNESS_LOW // Lower = smoother motion
+            }
+        }
+        horizontalOverlaySpringAnimationX.animateToFinalPosition(0f)
     }
 
     /**
@@ -655,16 +664,18 @@ class HomeFragment : Fragment(){
 
                             val newWidth = (webView.width * 0.85).toInt()
 
-                            horizontalAnimateWidthNPosition(
+                            horizontalAnimateWidthAndXPosition(
                                 webView = webView,
                                 finalWidth = newWidth,
                             )
                             //this should make sure the place holder always matches the actual webview showing the stream
-                            horizontalAnimateWidthNPosition(
+                            horizontalAnimateWidthAndXPosition(
                                 //this view is the place holder
                                 webView = binding.root.findViewById<ComposeView>(R.id.webView),
                                 finalWidth = newWidth,
                             )
+                            //this animates the horizontal overlay to zero
+                            animateHorizontalOverlay()
 
                             //todo animate the chats width and move its x position to half way
 
@@ -749,7 +760,7 @@ class HomeFragment : Fragment(){
                                 binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
                             chatView.visibility = View.INVISIBLE
                             //move the stream back to full screen
-                            animateHorizontalToFullScreen(
+                            animateHorizontalWidthAndHeightToFullScreen(
                                 newWebView,
                                 Resources.getSystem().displayMetrics.heightPixels,
                             )
@@ -900,13 +911,7 @@ class HomeFragment : Fragment(){
                                             //  params.height = newHeight
                                             webView.layoutParams = params
                                         }
-//                                        doOnEnd {
-//                                            //I want to animate the x
-//                                            animateToBottomRightScreen(
-//                                                screenHeight=1000,
-//                                                screenWidth=200
-//                                                    )
-//                                        }
+
 
                                         start()
                                     }
@@ -1050,7 +1055,6 @@ class HomeFragment : Fragment(){
     fun animateHorizontalSmallSizeToFullScreen(
         screenHeight:Int,
 
-
     ){
         animateContainerToScreenTop(
             containerViewToBeMoved=streamToBeMoved,
@@ -1063,7 +1067,7 @@ class HomeFragment : Fragment(){
         chatView.visibility = View.INVISIBLE
 
         //move the stream back to full screen
-        animateHorizontalToFullScreen(
+        animateHorizontalWidthAndHeightToFullScreen(
             newWebView,
             Resources.getSystem().displayMetrics.heightPixels,
         )
@@ -1301,13 +1305,16 @@ class HomeFragment : Fragment(){
                     val screenWidth = Resources.getSystem().displayMetrics.widthPixels
 
                     if(smallHeightPositioned){
-                        animateToBottomRightScreen(
+                        animateXAndYToBottomRightScreen(
                             screenHeight=screenHeight,
                             screenWidth=screenWidth
                         )
                     }else{
+                        val chatView =
+                            binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+                        chatView.visibility = View.INVISIBLE
 
-                        animateHorizontalToFullScreen(
+                        animateHorizontalWidthAndHeightToFullScreen(
                             newWebView,
                             Resources.getSystem().displayMetrics.heightPixels,
                             )
@@ -1331,11 +1338,8 @@ class HomeFragment : Fragment(){
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             horizontalFullScreenTap = false
-            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-//            this should be looked into to add during horizontal change
-//                    plus still a bug when in mini mode and then transition to a new stream and then horizontal(
-//                    this seems to just be using old values. so the animation when a new stream is clicked
-            //composeView.visibility = View.GONE
+
+
 
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels
             val screenWidth = Resources.getSystem().displayMetrics.widthPixels
@@ -1343,7 +1347,7 @@ class HomeFragment : Fragment(){
             unsetImmersiveMode(requireActivity().window)
 
             if(smallHeightPositioned){
-                animateToBottomRightScreen(
+                animateXAndYToBottomRightScreen(
                     screenHeight=screenHeight,
                     screenWidth=screenWidth
                 )
@@ -1460,13 +1464,20 @@ class HomeFragment : Fragment(){
 
     }
 
-    fun animateHeightAndWidth(
+    /**
+     * animateHeightAndWidth animates the width and height of the [webView] object specified in a 16/9 ratio
+     *
+     * @param webView a [WebView] object that will be animated
+     * @param newWidth a Int value used to animate the [webView]
+     * */
+    private fun animateHeightAndWidth(
         webView: WebView,
         newWidth:Int
     ){
 
 
         val params = webView.layoutParams
+        val newHeight = newWidth * (9/16)
 
         //this is animating its width
         ValueAnimator.ofInt(params.width, newWidth).apply {
@@ -1479,10 +1490,27 @@ class HomeFragment : Fragment(){
 
             start()
         }
+        ValueAnimator.ofInt(params.height, newHeight).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                params.height = animator.animatedValue as Int
+                //  params.height = newHeight
+                webView.layoutParams = params
+            }
+
+            start()
+        }
 
     }
 
-    fun animateToBottomRightScreen(
+    /**
+     * animateXAndYToBottomRightScreen animates the X and Y values of the [newWebView] to the positions specified by
+     * [screenHeight] and screenWidth
+     *
+     * @param screenWidth a Int value used to animate the X value of the [newWebView]
+     * @param screenHeight a Int value used to animate the Y value of the [newWebView]
+     * */
+    fun animateXAndYToBottomRightScreen(
         screenHeight:Int,
         screenWidth:Int
     ){
@@ -1503,6 +1531,12 @@ class HomeFragment : Fragment(){
             start()
         }
     }
+    /**
+     * animateToTopLeftScreen is used to animate [webView] into a full screen position based on the [maxWidth]
+     *
+     * @param webView a [WebView] object that will be animated to the full screen position
+     * @param maxWidth a Int value used to animate the [webView]
+     * */
     fun animateToTopLeftScreen(
         webView: WebView,
         maxWidth:Int
@@ -1526,6 +1560,12 @@ class HomeFragment : Fragment(){
             start()
         }
     }
+    /**
+     * animateHorizontalOverlayToCenter animates the horizontal overlay into the correct horizontal position
+     *
+     * @param overlay a [View] object that will be animated
+     * @param maxWidth a Int value that is used to animate the [overlay]
+     * */
     fun animateHorizontalOverlayToCenter(
         overlay: View,
         maxWidth:Int
@@ -1541,7 +1581,14 @@ class HomeFragment : Fragment(){
             start()
         }
     }
-    fun animateHorizontalToFullScreen(
+    /**
+     * animateHorizontalWidthAndHeightToFullScreen animates the full width and height  of [webView] in a 16/9 ration specified by the
+     * [maxHeight]
+     *
+     * @param webView a [WebView] object that will be animated
+     * @param maxHeight a Int value that is used to animate the [webView]
+     * */
+    fun animateHorizontalWidthAndHeightToFullScreen(
         webView:WebView,
         maxHeight:Int,
 
