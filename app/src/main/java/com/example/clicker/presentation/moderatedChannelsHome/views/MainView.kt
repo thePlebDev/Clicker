@@ -52,7 +52,8 @@ fun ModChannelView(
     hapticFeedBackError:() ->Unit,
     logoutViewModel: LogoutViewModel,
     modViewViewModel: ModViewViewModel,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    movePager: (Int) -> Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -162,7 +163,8 @@ fun ModChannelView(
                         )
                     }
                 }
-            }
+            },
+            movePager={pagerValue->movePager(pagerValue)}
 
 
         )

@@ -265,6 +265,8 @@ import kotlinx.coroutines.launch
             }
         ) { contentPadding ->
 
+            // I actually think this is where I want the horizontal pager
+
             PullToRefreshComponent(
                 padding = contentPadding,
                 refreshing = homeRefreshing,
