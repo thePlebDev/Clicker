@@ -324,46 +324,11 @@ class HomeFragment : Fragment(){
 
                                 isDraggingWebView = false
 
-                                val webView = newWebView
-                                ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
-                                    duration = 300 // Adjust duration for the animation
-                                    addUpdateListener { animator ->
-                                        val value = animator.animatedValue as Int
-                                        webView.y = value.toFloat()
-                                    }
-                                    start()
-                                }
-                                ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
-                                    duration = 300 // Adjust duration for the animation
-                                    addUpdateListener { animator ->
-                                        val value = animator.animatedValue as Int
-                                        webView.x = value.toFloat()
-                                    }
-                                    start()
-                                }
-                                val params = webView.layoutParams
-                                ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
-                                    duration = 300 // Adjust duration for the animation
-                                    addUpdateListener { animator ->
-                                        val webParams = webView.layoutParams
-                                        webParams.height = animator.animatedValue as Int
-                                        webView.layoutParams = webParams
-                                    }
-                                    start()
-                                }
-                                val newWidth = (maxHeightNewWebView * 16 / 9)
-                                Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
-                                ValueAnimator.ofInt(params.width, newWidth).apply {
-                                    duration = 300 // Adjust duration for the animation
-                                    addUpdateListener { animator ->
-                                        val webParams = webView.layoutParams
-                                        webParams.width = animator.animatedValue as Int
-                                        webView.layoutParams = webParams
-                                    }
+                                    //todo: THis where the animation function should go
+                                    animateWebViewToFullScreenVertical(
+                                        webView = newWebView
+                                    )
 
-
-                                    start()
-                                }
                                     if(smallHeightPositioned){
                                         animateChatVerticalMiniToFullScreen()
                                     }
@@ -450,6 +415,61 @@ class HomeFragment : Fragment(){
 
     }
 
+
+    /**
+     * animateWebViewToFullScreenVertical
+     * */
+    fun animateWebViewToFullScreenVertical(
+        webView: WebView
+    ){
+
+        val verticalWebViewAnimationX =
+            SpringAnimation(webView, SpringAnimation.X).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+        val verticalWebViewAnimationY =
+            SpringAnimation(webView, SpringAnimation.Y).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+
+        val params = webView.layoutParams
+        ValueAnimator.ofInt(params.height, maxHeightNewWebView).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.height = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+            start()
+        }
+        val newWidth = (maxHeightNewWebView * 16 / 9)
+        Log.d("NEWWIDTHtESTING", "WIDTH-->$newWidth")
+        ValueAnimator.ofInt(params.width, newWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val webParams = webView.layoutParams
+                webParams.width = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+            doOnEnd {
+                verticalWebViewAnimationX.animateToFinalPosition(0f)
+                verticalWebViewAnimationY.animateToFinalPosition(0f)
+            }
+
+
+            start()
+        }
+    }
 
     /**
      * setWebViewAndLoadURL enables all the neccessary features inside of the [myWebView] param and then loads the url specified
@@ -823,7 +843,6 @@ class HomeFragment : Fragment(){
 
                         animateHorizontalSmallSizeToFullScreen(
                             screenHeight=screenHeight,
-
                         )
 
                     }
@@ -1148,7 +1167,7 @@ class HomeFragment : Fragment(){
             newWebView,
             Resources.getSystem().displayMetrics.heightPixels,
         )
-
+        //todo: I need to implement the same animations as
         animateToTopLeftScreen(
             newWebView,
             Resources.getSystem().displayMetrics.widthPixels
@@ -1183,6 +1202,7 @@ class HomeFragment : Fragment(){
         //fixes the bug of typing taping when the screen is full
         if(smallHeightPositioned){
             //webview is in mini screen form and is being tapped
+            Log.d("AnimateVerticalTesting","TESTING")
             animateContainerToScreenTop(
                 containerViewToBeMoved=streamToBeMoved,
                 startY=screenHeight,
@@ -1272,6 +1292,65 @@ class HomeFragment : Fragment(){
             start()
         }
 
+    }
+
+    fun testingVerticalAnimationAgain(){
+        val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+        chatView.visibility = View.VISIBLE
+
+        val verticalChatAnimationX =
+            SpringAnimation(chatView, SpringAnimation.X).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+        val verticalChatAnimationY =
+            SpringAnimation(chatView, SpringAnimation.Y).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+        val params = chatView.layoutParams
+
+        val screeWidth = Resources.getSystem().displayMetrics.widthPixels
+
+        Log.d("CHATHEIGHTTESTING","heightPixels -->${Resources.getSystem().displayMetrics.heightPixels.toFloat()}")
+
+        //TODO: ADD THIS CHAT ANIMATION TO FUNCTION
+        //ADD THIS CHAT ANIMATION TO WHEN USER CLICKS ON NEW VIDEO FOR VERTICAL
+        //ANIMATING CHAT HEIGHT
+        ValueAnimator.ofInt(params.height, binding.testingConstraintAgain.height-maxHeightNewWebView).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val chatParams = chatView.layoutParams
+                chatParams.height = animator.animatedValue as Int
+                chatView.layoutParams = chatParams
+            }
+
+
+            start()
+        }
+        ValueAnimator.ofInt(params.width, screeWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val chatParams = chatView.layoutParams
+                chatParams.width = animator.animatedValue as Int
+                chatView.layoutParams = chatParams
+            }
+            doOnEnd {
+                val heightTesting =Resources.getSystem().displayMetrics.heightPixels.toFloat()
+                verticalChatAnimationX.animateToFinalPosition(0f)
+                verticalChatAnimationY.animateToFinalPosition(maxHeightNewWebView.toFloat())
+            }
+
+            start()
+        }
     }
     fun horizontalAnimateSingleTap(
         webView: WebView

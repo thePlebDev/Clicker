@@ -297,7 +297,7 @@ fun ValidationView(
                     },
                     createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
                     hapticFeedBackError={
-                       
+
                                         },
                     logoutViewModel =logoutViewModel,
                     modViewViewModel=modViewViewModel,
