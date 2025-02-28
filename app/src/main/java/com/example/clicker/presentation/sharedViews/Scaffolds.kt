@@ -82,9 +82,9 @@ import androidx.compose.ui.unit.dp
         val bottomBarScaffoldScope = remember(){ScaffoldBottomBarScope(25.dp)}
 
 
-        androidx.compose.material.Scaffold(
-            scaffoldState = scaffoldState,
-            backgroundColor = MaterialTheme.colorScheme.primary,
+        Scaffold(
+//            scaffoldState = scaffoldState,
+            containerColor = MaterialTheme.colorScheme.primary,
             topBar = {
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -94,9 +94,9 @@ import androidx.compose.ui.unit.dp
                     }
                 }
             },
-            drawerContent = {
-                drawerContent()
-            },
+//            drawerContent = {
+//                drawerContent()
+//            },
             bottomBar = {
                 with(bottomBarScaffoldScope){
                     bottomBar()

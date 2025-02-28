@@ -151,6 +151,7 @@ import com.example.clicker.util.Response
         channelName:String,
         bottomModalState2:ModalBottomSheetState,
         loadUrl:(String)->Unit,
+        movePager:(Int)->Unit
 
 
         ){
@@ -219,7 +220,8 @@ import com.example.clicker.util.Response
                     grantedNotifications=grantedNotifications,
                     openAppSettings={openAppSettings()},
                     navigateToStream={navigateToStream()},
-                    loadUrl={url->loadUrl(url)}
+                    loadUrl={url->loadUrl(url)},
+                    movePager={pagerValue->movePager(pagerValue)}
 
                 )
 
