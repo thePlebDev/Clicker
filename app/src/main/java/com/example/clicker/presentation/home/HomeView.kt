@@ -121,15 +121,6 @@ fun ValidationView(
     val pagerState = rememberPagerState(
         pageCount = { 3 }
     )
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.height(200.dp).fillMaxWidth()
-    ) { page ->
-
-        // Our page content
-        when(page){
-            0 ->{
-
 
 
                 HomeViewImplementation(
@@ -273,55 +264,15 @@ fun ValidationView(
                         scope.launch {
                             pagerState.animateScrollToPage(pagerValue)
                         }
-                    }
-
-                )
-
-                //end of the 0 conditional ------------------------------------------------------------
-            }
-            1->{
-                //TODO: ADD MOD CHANNELS
-                ModChannelView(
-                    popBackStackNavigation = {   },
-                    homeViewModel = homeViewModel,
-                    streamViewModel =streamViewModel,
-                    onNavigate = { dest ->
-
                     },
-                    autoModViewModel = autoModViewModel,
-                    updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
-                        modViewViewModel.updateAutoModTokens(
-                            oAuthToken =oAuthToken,
-                            clientId =clientId,
-                            broadcasterId=broadcasterId,
-                            moderatorId =moderatorId
-                        )
-                    },
-                    createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
-                    hapticFeedBackError={
-
-                                        },
                     logoutViewModel =logoutViewModel,
                     modViewViewModel=modViewViewModel,
                     searchViewModel=searchViewModel,
-                     movePager={pagerValue ->
-                        scope.launch {
-                            pagerState.animateScrollToPage(pagerValue)
-                        }
-                    }
+                    homeViewModel=homeViewModel,
+                    streamViewModel=streamViewModel,
+                    autoModViewModel=autoModViewModel
+
                 )
-
-            }
-            2 ->{
-                //TODO: ADD CATEGORIES
-
-
-            }
-        }
-
-
-
-    }
 
 
 

@@ -55,27 +55,27 @@ class ModChannelsFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 AppTheme{
-                    ModChannelView(
-                        popBackStackNavigation = {  findNavController().popBackStack() },
-                        homeViewModel = homeViewModel,
-                        streamViewModel =streamViewModel,
-                        onNavigate = { dest -> findNavController().navigate(dest) },
-                        autoModViewModel = autoModViewModel,
-                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
-                            modViewViewModel.updateAutoModTokens(
-                                oAuthToken =oAuthToken,
-                                clientId =clientId,
-                                broadcasterId=broadcasterId,
-                                moderatorId =moderatorId
-                            )
-                        },
-                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
-                        hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
-                        logoutViewModel =logoutViewModel,
-                        modViewViewModel=modViewViewModel,
-                        searchViewModel=searchViewModel,
-                        movePager = {}
-                    )
+//                    ModChannelView(
+//                        popBackStackNavigation = {  findNavController().popBackStack() },
+//                        homeViewModel = homeViewModel,
+//                        streamViewModel =streamViewModel,
+//                        onNavigate = { dest -> findNavController().navigate(dest) },
+//                        autoModViewModel = autoModViewModel,
+//                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+//                            modViewViewModel.updateAutoModTokens(
+//                                oAuthToken =oAuthToken,
+//                                clientId =clientId,
+//                                broadcasterId=broadcasterId,
+//                                moderatorId =moderatorId
+//                            )
+//                        },
+//                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+//                        hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
+//                        logoutViewModel =logoutViewModel,
+//                        modViewViewModel=modViewViewModel,
+//                        searchViewModel=searchViewModel,
+//                        movePager = {}
+//                    )
                 }
             }
         }
