@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -91,65 +92,9 @@ import com.example.clicker.util.Response
         hapticFeedBackError:() ->Unit,
         getTopGames:()->Unit,
         movePager: (Int) -> Unit,
+        contentPadding: PaddingValues
     ){
-        NoDrawerScaffold(
-            topBar = {
-                IconTextTopBarRow(
-                    icon ={
-                        BasicIcon(
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Navigate back to home page",
-                            onClick = {movePager(0)}
-                        )
-                    },
-                    text =""
 
-                    )
-            }
-            , bottomBar={
-                TripleButtonNavigationBottomBarRow(
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    horizontalArrangement=Arrangement.SpaceAround,
-                    firstButton = {
-                        IconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Home",
-                            imageVector = Icons.Default.Home,
-                            iconContentDescription = "Navigate back to home page",
-                            onClick = {
-                                movePager(0)
-                                      },
-                            fontColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    },
-                    secondButton = {
-                        PainterResourceIconOverTextColumn(
-                            iconColor =MaterialTheme.colorScheme.secondary,
-                            text = "Mod Channels",
-                            painter = painterResource(R.drawable.moderator_white),
-                            iconContentDescription = "Click to stay on mod page",
-                            onClick ={},
-                            fontColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    },
-                    thirdButton = {
-
-                        this.PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            painter = painterResource(id = R.drawable.baseline_category_24),
-                            iconContentDescription = "Navigate to search bar",
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Categories",
-                            onClick = {
-                                getTopGames()
-                                movePager(2)
-                            },
-                        )
-                    },
-                )
-            }
-        ) {contentPadding ->
             PullToRefreshComponent(
                 padding = contentPadding,
                 refreshing = refreshing,
@@ -189,7 +134,6 @@ import com.example.clicker.util.Response
                 )
             }
 
-        }
     }
 
 

@@ -49,12 +49,18 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.R
 
 import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.home.HomeViewModel
 
 
 import com.example.clicker.presentation.home.disableClickAndRipple
 import com.example.clicker.presentation.minigames.views.PingPongView
+import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.sharedViews.LogoutDialog
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
+import com.example.clicker.presentation.stream.AutoModViewModel
+import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkAuthResponse
@@ -151,7 +157,14 @@ import com.example.clicker.util.Response
         channelName:String,
         bottomModalState2:ModalBottomSheetState,
         loadUrl:(String)->Unit,
-        movePager:(Int)->Unit
+        movePager:(Int)->Unit,
+
+        homeViewModel: HomeViewModel,
+        streamViewModel: StreamViewModel,
+        modViewViewModel: ModViewViewModel,
+        searchViewModel: SearchViewModel,
+        logoutViewModel: LogoutViewModel,
+        autoModViewModel:AutoModViewModel
 
 
         ){
@@ -221,7 +234,14 @@ import com.example.clicker.util.Response
                     openAppSettings={openAppSettings()},
                     navigateToStream={navigateToStream()},
                     loadUrl={url->loadUrl(url)},
-                    movePager={pagerValue->movePager(pagerValue)}
+                    movePager={pagerValue->movePager(pagerValue)},
+                    logoutViewModel =logoutViewModel,
+                    modViewViewModel=modViewViewModel,
+                    searchViewModel=searchViewModel,
+                    homeViewModel=homeViewModel,
+                    streamViewModel=streamViewModel,
+                    autoModViewModel=autoModViewModel
+
 
                 )
 

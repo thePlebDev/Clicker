@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.moderatedChannelsHome.views
 
 import android.util.Log
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -41,7 +42,7 @@ import kotlinx.coroutines.launch
  * */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ModChannelView(
+fun ModChannelView( //todo: THIS IS WHAT IS SHOWN ON THE FRAGMENT and the SCAFFOLD. THE MAIN FACING COMPONENT
     homeViewModel: HomeViewModel,
     streamViewModel: StreamViewModel,
     autoModViewModel: AutoModViewModel,
@@ -54,6 +55,7 @@ fun ModChannelView(
     modViewViewModel: ModViewViewModel,
     searchViewModel: SearchViewModel,
     movePager: (Int) -> Unit,
+    contentPadding: PaddingValues,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -164,7 +166,8 @@ fun ModChannelView(
                     }
                 }
             },
-            movePager={pagerValue->movePager(pagerValue)}
+            movePager={pagerValue->movePager(pagerValue)},
+            contentPadding=contentPadding
 
 
         )

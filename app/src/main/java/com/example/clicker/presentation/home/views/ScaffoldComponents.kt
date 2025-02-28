@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.example.clicker.presentation.home.views
 
 import android.util.Log
@@ -28,6 +30,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -83,6 +87,11 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import com.example.clicker.network.models.twitchRepo.StreamData
+import com.example.clicker.presentation.authentication.logout.LogoutViewModel
+import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.moderatedChannelsHome.views.ModChannelView
+import com.example.clicker.presentation.search.SearchViewModel
 
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.ErrorScope
@@ -90,6 +99,8 @@ import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 import com.example.clicker.presentation.sharedViews.NewUserAlert
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
+import com.example.clicker.presentation.stream.AutoModViewModel
+import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.launch
@@ -169,9 +180,20 @@ import kotlinx.coroutines.launch
         navigateToStream:()->Unit,
         loadUrl:(String)->Unit,
         movePager:(Int)->Unit,
+
+        autoModViewModel: AutoModViewModel,
+        homeViewModel: HomeViewModel,
+        streamViewModel: StreamViewModel,
+        modViewViewModel: ModViewViewModel,
+        searchViewModel: SearchViewModel,
+        logoutViewModel: LogoutViewModel,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
+        val pagerState = rememberPagerState(
+            initialPage = 0,
+            pageCount = { 3 }
+        )
 
 
 
@@ -200,22 +222,30 @@ import kotlinx.coroutines.launch
                     horizontalArrangement = Arrangement.SpaceAround,
                     firstButton = {
                         IconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.secondary,
+                            iconColor = if(pagerState.currentPage ==0)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
                             text = "Home",
                             imageVector = Icons.Default.Home,
                             iconContentDescription = "Stay on home page",
-                            onClick = {},
+                            onClick = {
+                                      if(pagerState.currentPage !=0){
+                                          scope.launch {
+                                              pagerState.animateScrollToPage(0)
+                                          }
+                                      }
+                            },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
                     secondButton = {
                         PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            iconColor = if(pagerState.currentPage ==1)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
                             text = "Mod Channels",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
                             onClick = {
-                                movePager(1)
+                                scope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
                               //  onNavigate(R.id.action_homeFragment_to_modChannelsFragment)
                                       },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
@@ -223,13 +253,15 @@ import kotlinx.coroutines.launch
                     },
                     thirdButton = {
                         this.PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
+                            iconColor = if(pagerState.currentPage ==2)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
                             painter = painterResource(id = R.drawable.baseline_category_24),
                             iconContentDescription = "Navigate to search bar",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Categories",
                             onClick = {
-                                movePager(2)
+                                scope.launch {
+                                    pagerState.animateScrollToPage(2)
+                                }
                                 getTopGames()
                                 getPinnedList()
                               //  onNavigate(R.id.action_homeFragment_to_searchFragment)
@@ -264,79 +296,138 @@ import kotlinx.coroutines.launch
 
             }
         ) { contentPadding ->
+            //todo: THIS IS WHERE THE HORIZONTAL PAGER NEEDS OT GO
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+
+                // Our page content
+                when (page) {
+                     0 -> {
+                         PullToRefreshComponent(
+                             padding = contentPadding,
+                             refreshing = homeRefreshing,
+                             refreshFunc = {homeRefreshFunc()},
+                             showNetworkMessage=showNetworkMessage,
+                             networkStatus = {modifier ->
+                                 NetworkStatusCard(
+                                     modifier = modifier,
+                                     color =  networkMessageColor,
+                                     networkMessage = networkMessage
+                                 )
+                             }
+                         ){
+                             LiveChannelsLazyColumn(
+                                 followedStreamerList =followedStreamerList,
+                                 contentPadding =contentPadding,
+                                 loadingIndicator = {
+                                     LazyListLoadingIndicator()
+                                 },
+                                 emptyList={
+                                     EmptyFollowingListCard()
+                                 },
+                                 liveChannelRowItem = {streamItem ->
+                                     LiveChannelRowItem(
+                                         updateStreamerName ={
+                                                 streamerName,clientId,broadcasterId,userId ->
+                                             updateStreamerName(streamerName,clientId,broadcasterId,userId)
+
+                                         },
+                                         updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
+                                         streamItem = streamItem,
+                                         clientId =clientId,
+                                         userId = userId,
+                                         height = height,
+                                         width = width,
+                                         onNavigate = {id -> onNavigate(id)},
+                                         density =screenDensity,
+                                         loadUrl={url->
+                                             navigateToStream()
+                                             loadUrl(url)
+
+                                         }
+                                     )
+                                 },
+                                 gettingStreamError = {message ->
+                                     GettingStreamsErrorCard(errorMessage = message)
+                                 },
+                                 newUserAlert={responseMessage ->
+                                     NewUserAlert(
+                                         iconSize = 35.dp,
+                                         iconContentDescription = "Show the login modal",
+                                         iconColor = MaterialTheme.colorScheme.onSecondary,
+                                         iconImageVector = Icons.Default.AccountCircle,
+                                         backgroundColor = MaterialTheme.colorScheme.secondary,
+                                         fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                                         textColor = MaterialTheme.colorScheme.onSecondary,
+                                         message = responseMessage,
+                                         onClick ={
+                                             scope.launch {
+                                                 bottomModalState.show()
+                                             }
+                                         }
+                                     )
+                                 },
+                                 bottomModalState =bottomModalState,
+                                 showNetworkRefreshError =showNetworkRefreshError,
+                                 hapticFeedBackError={hapticFeedBackError()},
+                             )
+
+                         }
+
+
+                     } // END OF THE HOME VIEW
+                     1 -> {
+
+
+                         ModChannelView(
+                             popBackStackNavigation = {   },
+                             homeViewModel = homeViewModel,
+                             streamViewModel =streamViewModel,
+                             onNavigate = { dest ->
+
+                             },
+                             autoModViewModel = autoModViewModel,
+                             updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                                 modViewViewModel.updateAutoModTokens(
+                                     oAuthToken =oAuthToken,
+                                     clientId =clientId,
+                                     broadcasterId=broadcasterId,
+                                     moderatorId =moderatorId
+                                 )
+                             },
+                             createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                             hapticFeedBackError={
+
+                             },
+                             logoutViewModel =logoutViewModel,
+                             modViewViewModel=modViewViewModel,
+                             searchViewModel=searchViewModel,
+                             movePager={pagerValue ->
+                                 scope.launch {
+                                     pagerState.animateScrollToPage(pagerValue)
+                                 }
+                             },
+                             contentPadding = contentPadding
+                         )
+
+
+
+
+
+
+                     }// END OF THE MOD CHANNELS VIEW
+                     2 -> {
+
+                     }// END OF THE CATEGORIES
+            }
+        }
 
             // I actually think this is where I want the horizontal pager
 
-            PullToRefreshComponent(
-                padding = contentPadding,
-                refreshing = homeRefreshing,
-                refreshFunc = {homeRefreshFunc()},
-                showNetworkMessage=showNetworkMessage,
-                networkStatus = {modifier ->
-                    NetworkStatusCard(
-                        modifier = modifier,
-                        color =  networkMessageColor,
-                        networkMessage = networkMessage
-                    )
-                }
-            ){
-                LiveChannelsLazyColumn(
-                    followedStreamerList =followedStreamerList,
-                    contentPadding =contentPadding,
-                    loadingIndicator = {
-                        LazyListLoadingIndicator()
-                    },
-                    emptyList={
-                        EmptyFollowingListCard()
-                    },
-                    liveChannelRowItem = {streamItem ->
-                        LiveChannelRowItem(
-                            updateStreamerName ={
-                                    streamerName,clientId,broadcasterId,userId ->
-                                updateStreamerName(streamerName,clientId,broadcasterId,userId)
 
-                            },
-                            updateClickedStreamInfo={clickedStreamInfo ->  updateClickedStreamInfo(clickedStreamInfo)},
-                            streamItem = streamItem,
-                            clientId =clientId,
-                            userId = userId,
-                            height = height,
-                            width = width,
-                            onNavigate = {id -> onNavigate(id)},
-                            density =screenDensity,
-                            loadUrl={url->
-                                navigateToStream()
-                                loadUrl(url)
-
-                            }
-                        )
-                    },
-                    gettingStreamError = {message ->
-                        GettingStreamsErrorCard(errorMessage = message)
-                    },
-                    newUserAlert={responseMessage ->
-                        NewUserAlert(
-                            iconSize = 35.dp,
-                            iconContentDescription = "Show the login modal",
-                            iconColor = MaterialTheme.colorScheme.onSecondary,
-                            iconImageVector = Icons.Default.AccountCircle,
-                            backgroundColor = MaterialTheme.colorScheme.secondary,
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                            textColor = MaterialTheme.colorScheme.onSecondary,
-                            message = responseMessage,
-                            onClick ={
-                                scope.launch {
-                                    bottomModalState.show()
-                                }
-                            }
-                        )
-                    },
-                    bottomModalState =bottomModalState,
-                    showNetworkRefreshError =showNetworkRefreshError,
-                    hapticFeedBackError={hapticFeedBackError()},
-                )
-
-            }
 
 
         }
@@ -344,6 +435,13 @@ import kotlinx.coroutines.launch
 
 
 
+/**
+
+ *
+ *  **LoginWithTwitchBottomModalButtonColumn** is a composable function representing a Button and text that is shown to the user when they are not logged in
+ *
+ * @param loginWithTwitch a function, when called, will log the user out
+ * */
 /**
 
  *
@@ -379,6 +477,24 @@ fun LoginWithTwitchBottomModalButtonColumn(
 }
 
 
+        /**
+         *
+         * - **LiveChannelRowItem** is a composable function that will show the individual information for each live stream
+         * retrieved from the Twitch server
+         *
+         * @param updateStreamerName a function used to update the current streamer the user has clicked on. This information is used
+         * to connect the [TwitchWebSocket][com.example.clicker.network.websockets.TwitchWebSocket] to the Twitch servers
+         * @param streamItem a [StreamInfo][com.example.clicker.presentation.home.StreamInfo] object that is used to represent the all the information
+         * of a single live stream
+         * @param clientId a String representing the clientId of the user
+         * @param userId a String representing the userId of the user
+         * @param onNavigate a function used to navigate to the StreamView
+         * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
+         * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+         * @param density a float meant to represent the screen density of the current device
+         * @param updateClickedStreamInfo a function when called with a [ClickedStreamInfo] object,
+         * will populate the view model with the needed [ClickedStreamInfo] information
+         * */
         /**
          *
          * - **LiveChannelRowItem** is a composable function that will show the individual information for each live stream
@@ -463,6 +579,17 @@ fun LoginWithTwitchBottomModalButtonColumn(
         }
 
 
+    /**
+     *
+     * **LoginLogoutScaffoldDrawerBox** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+     *
+     * @param userIsLoggedIn a boolean to determine if the user is logged in or not
+     * @param loginWithTwitch a function, when called, will log the user out
+     * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
+     * @param userIsLoggedIn a boolean to determine if the user is logged in or not
+     * @param lowPowerModeActive a Boolean used to determine if the user is in --low power mode-- or not
+     * @param changeLowPowerMode a function, when called with a Boolean, will determine the state of [lowPowerModeActive]
+     * */
     /**
      *
      * **LoginLogoutScaffoldDrawerBox** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
@@ -603,7 +730,13 @@ fun DeniedNotification(
  *
  * @param checked a Boolean  used to determine if there should be an animation or not
  * */
-    @Composable
+    /**
+ *
+ * **LowPowerModeAnimatedColumnAnimatedVisibility** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+ *
+ * @param checked a Boolean  used to determine if there should be an animation or not
+ * */
+@Composable
     fun LowPowerModeAnimatedColumnAnimatedVisibility(checked:Boolean){
         val density = LocalDensity.current
         AnimatedVisibility(
@@ -690,7 +823,14 @@ fun CreatingBackgroundServiceSwitch(
  * @param checkedValue a Boolean used to determine if the internal switch should change its state
  * @param changeCheckedValue a function, when called, will change the value of the [checkedValue]
  * */
-    @Composable
+    /**
+ *
+ * **AccountActionSwitchCard** is a composable that is shown to the user when the [ScaffoldState] is set to OPEN
+ *
+ * @param checkedValue a Boolean used to determine if the internal switch should change its state
+ * @param changeCheckedValue a function, when called, will change the value of the [checkedValue]
+ * */
+@Composable
     fun AccountActionSwitchCard(
         checkedValue:Boolean,
         changeCheckedValue:(Boolean)->Unit
@@ -726,6 +866,15 @@ fun CreatingBackgroundServiceSwitch(
 
 
 
+    /**
+     *
+     * - **AccountActionCard** is a clickable card that can be clicked on the trigger the action of [onCardClick]
+     *
+     * @param scaffoldState the state of the [Scaffold]. Will be used to open and close the drawer of the Scaffold
+     * @param onCardClick a function will be run once the Card is clicked
+     * @param title a string representing a text that will be shown on the Card and should tell the user what the clickable card does
+     * @param iconImageVector a [ImageVector] that will be displayed after the [title]
+     * */
     /**
      *
      * - **AccountActionCard** is a clickable card that can be clicked on the trigger the action of [onCardClick]
@@ -778,6 +927,23 @@ fun CreatingBackgroundServiceSwitch(
 
 
 
+    /**
+     *
+     * - **LiveChannelsLazyColumn** is a composable function that will show the individual information for each live stream
+     * retrieved from the Twitch server
+     *
+     * @param bottomModalState [ModalBottomSheetState] object used to determine if the Bottom modal should pop up or not
+     * @param followedStreamerList a [NetworkNewUserResponse] object representing the list of the user's followed streams
+     * @param contentPadding a [PaddingValues] object meant to be used to determine the necessary space needed to properly display
+     * the composable to the user
+     * @param loadingIndicator a composable function that will be show to the user when [followedStreamerList] enters a loading state
+     * @param emptyList a composable function that will be shown to the user when [followedStreamerList] is a success state but has no data
+     * @param liveChannelRowItem a composable function that will show the individual information for each live stream retrieved from the Twitch server
+     * @param gettingStreamError a composable function that will be shown to the user to the user when [followedStreamerList] enters a Failed state
+     * @param newUserAlert a composable function that will be show to the user if [followedStreamerList]  enters a new user state
+     * @param showNetworkRefreshError a composable function that will be show to the user if [followedStreamerList] enters a network error state
+     * @param hapticFeedBackError a composable function that will be run when there is an error of anykind from [followedStreamerList]
+     * */
     /**
      *
      * - **LiveChannelsLazyColumn** is a composable function that will show the individual information for each live stream
@@ -914,6 +1080,11 @@ fun CreatingBackgroundServiceSwitch(
      * - **EmptyFollowingListCard** is a composable function that will appear to the user when there are no live channels
      *
      * */
+    /**
+     *
+     * - **EmptyFollowingListCard** is a composable function that will appear to the user when there are no live channels
+     *
+     * */
     @Composable
     fun EmptyFollowingListCard() {
         Card(
@@ -948,6 +1119,14 @@ fun CreatingBackgroundServiceSwitch(
     }
 
 
+    /**
+     *
+     * - **GettingStreamsErrorCard** is a composable function that will appear to the user when there was an error
+     * retrieving the streams from the Twitch server
+     *
+     * @param errorMessage a String representing what the user sees when this composable is shown
+     *
+     * */
     /**
      *
      * - **GettingStreamsErrorCard** is a composable function that will appear to the user when there was an error
@@ -1002,6 +1181,14 @@ fun CreatingBackgroundServiceSwitch(
  * @param streamTitle a String representing the title of the streamer's stream
  * @param gameTitle a String representing the title of the game they are playing
  * */
+/**
+ *
+ * - **StreamTitleWithInfoColumn** is a Column that shows information about the streamer and the game they are playing
+ *
+ * @param streamerName a String representing the name of the live streamer
+ * @param streamTitle a String representing the title of the streamer's stream
+ * @param gameTitle a String representing the title of the game they are playing
+ * */
 @Composable
 fun StreamTitleWithInfoColumn(
     streamerName:String,
@@ -1032,6 +1219,16 @@ fun StreamTitleWithInfoColumn(
 
     }
 }
+/**
+ *
+ * - **ImageWithViewCountBox** is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
+ * It will show the thumbnail for the stream and their current viewer count
+ *
+ * @param url a String representing the thumbnail image
+ * @param height a Int representing the height of the image. The height is in a 9/16 aspect ration
+ * @param width a Int representing the width of the image. The width is in a 9/16 aspect ration
+ * @param viewCount a Int representing the number of current viewers the streamer has
+ * */
 /**
  *
  * - **ImageWithViewCountBox** is a Box that uses the SubcomposeAsyncImage to load and show the image we get from the Twitch server.
@@ -1085,6 +1282,10 @@ fun ImageWithViewCountBox(
 
 
 
+/**
+ *  **setTagAndId** is a custom [semantics][androidx.compose.ui.semantics.semantics] modifier used to
+ *  help with accessibility and testing
+ * */
 /**
  *  **setTagAndId** is a custom [semantics][androidx.compose.ui.semantics.semantics] modifier used to
  *  help with accessibility and testing
