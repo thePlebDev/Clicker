@@ -1,10 +1,22 @@
 package com.example.clicker.presentation.home
 
 import android.util.Log
+import android.view.HapticFeedbackConstants
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 //import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -14,16 +26,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 
 import com.example.clicker.presentation.home.views.HomeViewImplementation
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.moderatedChannelsHome.views.ModChannelView
 import com.example.clicker.presentation.search.SearchViewModel
 
 
@@ -57,7 +75,7 @@ import kotlin.coroutines.coroutineContext
  * @param searchViewModel a [SearchViewModel] object containing access to all the parameters and functions of the  [SearchViewModel]
  *
  * */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ValidationView(
     homeViewModel: HomeViewModel,
@@ -86,6 +104,8 @@ fun ValidationView(
 
 
 
+
+
     val userIsAuthenticated = homeViewModel.validatedUser.collectAsState().value?.clientId != null
     val userId = homeViewModel.validatedUser.collectAsState().value?.userId
     val clientId = homeViewModel.validatedUser.collectAsState().value?.clientId
@@ -98,148 +118,203 @@ fun ValidationView(
     val scope = rememberCoroutineScope()
 
 
-
-
-
-    HomeViewImplementation(
-        bottomModalState =bottomModalState,
-        loginWithTwitch ={
-            logoutViewModel.setLoggedOutStatus("TRUE")
-            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-                         },
-        onNavigate = {id -> onNavigate(id) },
-        updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
-
-
-            if (!lowPowerModeActive) {
-
-
-
-                Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
-                streamViewModel.updateChannelNameAndClientIdAndUserId(
-                    streamerName,
-                    clientId,
-                    broadcasterId,
-                    userId,
-                    login = homeViewModel.validatedUser.value?.login ?: "",
-                    oAuthToken= homeViewModel.oAuthToken.value ?:""
-                )
-                streamViewModel.getBetterTTVGlobalEmotes()
-                autoModViewModel.updateAutoModCredentials(
-                    oAuthToken = oAuthToken,
-                    clientId = streamViewModel.state.value.clientId,
-                    moderatorId = streamViewModel.state.value.userId,
-                    broadcasterId = streamViewModel.state.value.broadcasterId,
-                )
-                updateModViewSettings(
-                    oAuthToken,
-                    streamViewModel.state.value.clientId,
-                    streamViewModel.state.value.broadcasterId,
-                    streamViewModel.state.value.userId,
-                )
-                createNewTwitchEventWebSocket()
-                streamViewModel.getChannelEmotes(
-                    oAuthToken,
-                    streamViewModel.state.value.clientId,
-                    streamViewModel.state.value.broadcasterId,
-                )
-                chatSettingsViewModel.getGlobalChatBadges(
-                    oAuthToken = oAuthToken,
-                    clientId = streamViewModel.state.value.clientId,
-                )
-                chatSettingsViewModel.getGlobalEmote(
-                    oAuthToken = oAuthToken,
-                    clientId = streamViewModel.state.value.clientId,
-                )
-                streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
-                streamViewModel.clearAllChatters()
-                streamInfoViewModel.getStreamInfo(
-                    authorizationToken = oAuthToken,
-                    clientId = streamViewModel.state.value.clientId,
-                    broadcasterId = streamViewModel.state.value.broadcasterId,
-                )
-                //todo: this needs to be added to the
-                modViewViewModel.getUnbanRequests(
-                    oAuthToken =homeViewModel.oAuthToken.value ?:"",
-                    clientId=clientId,
-                    moderatorId=userId,
-                    broadcasterId=broadcasterId
-                )
-            }
-            streamViewModel.setImmersiveMode(false)
-            scope.launch {
-                delay(500)
-                homeViewModel.updateClickedStreamerName(streamerName)
-                bottomModalState2.show()
-            }
-
-        },
-        updateClickedStreamInfo={
-            //todo: THIS IS WHAT I NEED TO UPDATE
-                clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
-                                },
-        followedStreamerList = homeViewModel.state.value.streamersListLoading,
-        clientId = clientId ?: "",
-        userId = userId ?: "",
-        height = homeViewModel.state.value.aspectHeight,
-        width = homeViewModel.state.value.width,
-        logout = {
-
-            logoutViewModel.setNavigateHome(false)
-//            logoutViewModel.setLoggedOutStatus("TRUE")
-            logoutViewModel.logout(
-                clientId = clientId?:"",
-                oAuthToken = oAuthToken
-            )
-            homeViewModel.hideLogoutDialog()
-            onNavigate(R.id.action_homeFragment_to_logoutFragment)
-
-        },
-        userIsAuthenticated =userIsAuthenticated,
-        screenDensity = homeViewModel.state.value.screenDensity,
-        homeRefreshing =homeViewModel.state.value.homeRefreshing,
-        homeRefreshFunc = {homeViewModel.pullToRefreshHome()},
-        networkMessageColor=Color.Red,
-        networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
-        showNetworkMessage = homeViewModel.state.value.networkConnectionState,
-        logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
-        hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
-        showLogoutDialog ={homeViewModel.showLogoutDialog()},
-        currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
-        showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
-        hapticFeedBackError={hapticFeedBackError()},
-        lowPowerModeActive=lowPowerModeActive,
-        changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
-        getTopGames = {
-            when(searchViewModel.topGames.value){
-
-                is Response.Success ->{}
-                else->{
-                    searchViewModel.getTopGames(
-                        oAuthToken = oAuthToken,
-                        clientId = clientId?:""
-                    )
-                }
-            }
-        },
-        getPinnedList={},
-        permissionCheck={},
-        startService={startService()},
-        endService={endService()},
-        checkIfServiceRunning={checkIfServiceRunning()},
-        backgroundServiceChecked=homeViewModel.backgroundServiceChecked.value,
-        changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)},
-        grantedNotifications =homeViewModel.grantedNotifications.value,
-        openAppSettings={openAppSettings()},
-        navigateToStream={
-            navigateToStream()
-
-                         },
-        channelName = streamViewModel.channelName.value?:"",
-        bottomModalState2 = bottomModalState2,
-        loadUrl={url->loadUrl(url)}
-
+    val pagerState = rememberPagerState(
+        pageCount = { 3 }
     )
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.height(200.dp).fillMaxWidth()
+    ) { page ->
+
+        // Our page content
+        when(page){
+            0 ->{
+
+
+
+                HomeViewImplementation(
+                    bottomModalState =bottomModalState,
+                    loginWithTwitch ={
+                        logoutViewModel.setLoggedOutStatus("TRUE")
+                        onNavigate(R.id.action_homeFragment_to_logoutFragment)
+                    },
+                    onNavigate = {id -> onNavigate(id) },
+                    updateStreamerName = { streamerName, clientId, broadcasterId, userId ->
+
+
+                        if (!lowPowerModeActive) {
+
+
+
+                            Log.d("LOWPOWERMODETESTING", "NON-ACTIVE")
+                            streamViewModel.updateChannelNameAndClientIdAndUserId(
+                                streamerName,
+                                clientId,
+                                broadcasterId,
+                                userId,
+                                login = homeViewModel.validatedUser.value?.login ?: "",
+                                oAuthToken= homeViewModel.oAuthToken.value ?:""
+                            )
+                            streamViewModel.getBetterTTVGlobalEmotes()
+                            autoModViewModel.updateAutoModCredentials(
+                                oAuthToken = oAuthToken,
+                                clientId = streamViewModel.state.value.clientId,
+                                moderatorId = streamViewModel.state.value.userId,
+                                broadcasterId = streamViewModel.state.value.broadcasterId,
+                            )
+                            updateModViewSettings(
+                                oAuthToken,
+                                streamViewModel.state.value.clientId,
+                                streamViewModel.state.value.broadcasterId,
+                                streamViewModel.state.value.userId,
+                            )
+                            createNewTwitchEventWebSocket()
+                            streamViewModel.getChannelEmotes(
+                                oAuthToken,
+                                streamViewModel.state.value.clientId,
+                                streamViewModel.state.value.broadcasterId,
+                            )
+                            chatSettingsViewModel.getGlobalChatBadges(
+                                oAuthToken = oAuthToken,
+                                clientId = streamViewModel.state.value.clientId,
+                            )
+                            chatSettingsViewModel.getGlobalEmote(
+                                oAuthToken = oAuthToken,
+                                clientId = streamViewModel.state.value.clientId,
+                            )
+                            streamViewModel.getBetterTTVChannelEmotes(streamViewModel.state.value.broadcasterId)
+                            streamViewModel.clearAllChatters()
+                            streamInfoViewModel.getStreamInfo(
+                                authorizationToken = oAuthToken,
+                                clientId = streamViewModel.state.value.clientId,
+                                broadcasterId = streamViewModel.state.value.broadcasterId,
+                            )
+                            //todo: this needs to be added to the
+                            modViewViewModel.getUnbanRequests(
+                                oAuthToken =homeViewModel.oAuthToken.value ?:"",
+                                clientId=clientId,
+                                moderatorId=userId,
+                                broadcasterId=broadcasterId
+                            )
+                        }
+                        streamViewModel.setImmersiveMode(false)
+                        scope.launch {
+                            delay(500)
+                            homeViewModel.updateClickedStreamerName(streamerName)
+                            bottomModalState2.show()
+                        }
+
+                    },
+                    updateClickedStreamInfo={
+                        //todo: THIS IS WHAT I NEED TO UPDATE
+                            clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)
+                    },
+                    followedStreamerList = homeViewModel.state.value.streamersListLoading,
+                    clientId = clientId ?: "",
+                    userId = userId ?: "",
+                    height = homeViewModel.state.value.aspectHeight,
+                    width = homeViewModel.state.value.width,
+                    logout = {
+
+                        logoutViewModel.setNavigateHome(false)
+//            logoutViewModel.setLoggedOutStatus("TRUE")
+                        logoutViewModel.logout(
+                            clientId = clientId?:"",
+                            oAuthToken = oAuthToken
+                        )
+                        homeViewModel.hideLogoutDialog()
+                        onNavigate(R.id.action_homeFragment_to_logoutFragment)
+
+                    },
+                    userIsAuthenticated =userIsAuthenticated,
+                    screenDensity = homeViewModel.state.value.screenDensity,
+                    homeRefreshing =homeViewModel.state.value.homeRefreshing,
+                    homeRefreshFunc = {homeViewModel.pullToRefreshHome()},
+                    networkMessageColor=Color.Red,
+                    networkMessage =homeViewModel.state.value.homeNetworkErrorMessage,
+                    showNetworkMessage = homeViewModel.state.value.networkConnectionState,
+                    logoutDialogIsOpen =homeViewModel.state.value.logoutDialogIsOpen,
+                    hideLogoutDialog ={homeViewModel.hideLogoutDialog()},
+                    showLogoutDialog ={homeViewModel.showLogoutDialog()},
+                    currentUsername = homeViewModel.validatedUser.collectAsState().value?.login ?: "Username not found",
+                    showNetworkRefreshError = homeViewModel.state.value.showNetworkRefreshError,
+                    hapticFeedBackError={hapticFeedBackError()},
+                    lowPowerModeActive=lowPowerModeActive,
+                    changeLowPowerMode={newValue ->streamViewModel.changeLowPowerModeActive(newValue)},
+                    getTopGames = {
+                        when(searchViewModel.topGames.value){
+
+                            is Response.Success ->{}
+                            else->{
+                                searchViewModel.getTopGames(
+                                    oAuthToken = oAuthToken,
+                                    clientId = clientId?:""
+                                )
+                            }
+                        }
+                    },
+                    getPinnedList={},
+                    permissionCheck={},
+                    startService={startService()},
+                    endService={endService()},
+                    checkIfServiceRunning={checkIfServiceRunning()},
+                    backgroundServiceChecked=homeViewModel.backgroundServiceChecked.value,
+                    changeBackgroundServiceChecked={newValue ->homeViewModel.changeBackgroundServiceChecked(newValue)},
+                    grantedNotifications =homeViewModel.grantedNotifications.value,
+                    openAppSettings={openAppSettings()},
+                    navigateToStream={
+                        navigateToStream()
+
+                    },
+                    channelName = streamViewModel.channelName.value?:"",
+                    bottomModalState2 = bottomModalState2,
+                    loadUrl={url->loadUrl(url)},
+                    movePager={pagerValue ->
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerValue)
+                        }
+                    }
+
+                )
+
+                //end of the 0 conditional ------------------------------------------------------------
+            }
+            1->{
+                //TODO: ADD MOD CHANNELS
+                ModChannelView(
+                    popBackStackNavigation = {   },
+                    homeViewModel = homeViewModel,
+                    streamViewModel =streamViewModel,
+                    onNavigate = { dest ->  },
+                    autoModViewModel = autoModViewModel,
+                    updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                        modViewViewModel.updateAutoModTokens(
+                            oAuthToken =oAuthToken,
+                            clientId =clientId,
+                            broadcasterId=broadcasterId,
+                            moderatorId =moderatorId
+                        )
+                    },
+                    createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                    hapticFeedBackError={
+                       
+                                        },
+                    logoutViewModel =logoutViewModel,
+                    modViewViewModel=modViewViewModel,
+                    searchViewModel=searchViewModel
+                )
+
+            }
+            2 ->{
+                //TODO: ADD CATEGORIES
+            }
+        }
+
+
+
+    }
+
+
 
 }/******END OF THE VALIDATION VIEW********/
 

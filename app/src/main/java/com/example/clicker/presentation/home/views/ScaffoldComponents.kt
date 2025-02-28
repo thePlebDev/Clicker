@@ -167,7 +167,8 @@ import kotlinx.coroutines.launch
         grantedNotifications:Boolean,
         openAppSettings:() ->Unit,
         navigateToStream:()->Unit,
-        loadUrl:(String)->Unit
+        loadUrl:(String)->Unit,
+        movePager:(Int)->Unit,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -213,7 +214,10 @@ import kotlinx.coroutines.launch
                             text = "Mod Channels",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
-                            onClick = { onNavigate(R.id.action_homeFragment_to_modChannelsFragment) },
+                            onClick = {
+                                movePager(1)
+                              //  onNavigate(R.id.action_homeFragment_to_modChannelsFragment)
+                                      },
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                         )
                     },
@@ -225,9 +229,10 @@ import kotlinx.coroutines.launch
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Categories",
                             onClick = {
+                                movePager(2)
                                 getTopGames()
                                 getPinnedList()
-                                onNavigate(R.id.action_homeFragment_to_searchFragment)
+                              //  onNavigate(R.id.action_homeFragment_to_searchFragment)
                             },
                         )
                     }
