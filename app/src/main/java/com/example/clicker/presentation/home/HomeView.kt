@@ -285,7 +285,9 @@ fun ValidationView(
                     popBackStackNavigation = {   },
                     homeViewModel = homeViewModel,
                     streamViewModel =streamViewModel,
-                    onNavigate = { dest ->  },
+                    onNavigate = { dest ->
+
+                    },
                     autoModViewModel = autoModViewModel,
                     updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
                         modViewViewModel.updateAutoModTokens(
@@ -301,12 +303,19 @@ fun ValidationView(
                                         },
                     logoutViewModel =logoutViewModel,
                     modViewViewModel=modViewViewModel,
-                    searchViewModel=searchViewModel
+                    searchViewModel=searchViewModel,
+                     movePager={pagerValue ->
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerValue)
+                        }
+                    }
                 )
 
             }
             2 ->{
                 //TODO: ADD CATEGORIES
+
+
             }
         }
 

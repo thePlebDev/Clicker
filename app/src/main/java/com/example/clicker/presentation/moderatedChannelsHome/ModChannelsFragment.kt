@@ -73,7 +73,8 @@ class ModChannelsFragment : Fragment() {
                         hapticFeedBackError={view.performHapticFeedback(HapticFeedbackConstants.REJECT)},
                         logoutViewModel =logoutViewModel,
                         modViewViewModel=modViewViewModel,
-                        searchViewModel=searchViewModel
+                        searchViewModel=searchViewModel,
+                        movePager = {}
                     )
                 }
             }

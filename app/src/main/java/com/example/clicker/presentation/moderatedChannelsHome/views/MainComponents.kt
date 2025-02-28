@@ -90,6 +90,7 @@ import com.example.clicker.util.Response
         showNetworkRefreshError:Boolean,
         hapticFeedBackError:() ->Unit,
         getTopGames:()->Unit,
+        movePager: (Int) -> Unit,
     ){
         NoDrawerScaffold(
             topBar = {
@@ -99,7 +100,7 @@ import com.example.clicker.util.Response
                             color = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Navigate back to home page",
-                            onClick = {onNavigate(R.id.action_modChannelsFragment_to_homeFragment)}
+                            onClick = {movePager(0)}
                         )
                     },
                     text =""
@@ -116,7 +117,9 @@ import com.example.clicker.util.Response
                             text = "Home",
                             imageVector = Icons.Default.Home,
                             iconContentDescription = "Navigate back to home page",
-                            onClick = {onNavigate(R.id.action_modChannelsFragment_to_homeFragment)},
+                            onClick = {
+                                movePager(0)
+                                      },
                             fontColor = MaterialTheme.colorScheme.onPrimary
                         )
                     },
@@ -140,7 +143,7 @@ import com.example.clicker.util.Response
                             text = "Categories",
                             onClick = {
                                 getTopGames()
-                                onNavigate(R.id.action_modChannelsFragment_to_searchFragment)
+                                movePager(2)
                             },
                         )
                     },
