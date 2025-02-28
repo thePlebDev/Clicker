@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -75,6 +76,7 @@ import kotlin.coroutines.coroutineContext
  * @param searchViewModel a [SearchViewModel] object containing access to all the parameters and functions of the  [SearchViewModel]
  *
  * */
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ValidationView(
@@ -97,6 +99,7 @@ fun ValidationView(
     openAppSettings:() ->Unit,
     navigateToStream:()->Unit,
     loadUrl:(String)->Unit,
+    webViewAnimation:(String)->Unit,
 
 
 ) {
@@ -270,7 +273,8 @@ fun ValidationView(
                     searchViewModel=searchViewModel,
                     homeViewModel=homeViewModel,
                     streamViewModel=streamViewModel,
-                    autoModViewModel=autoModViewModel
+                    autoModViewModel=autoModViewModel,
+                    webViewAnimation={channelName ->webViewAnimation(channelName)}
 
                 )
 

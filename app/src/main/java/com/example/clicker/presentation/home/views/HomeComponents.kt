@@ -164,7 +164,8 @@ import com.example.clicker.util.Response
         modViewViewModel: ModViewViewModel,
         searchViewModel: SearchViewModel,
         logoutViewModel: LogoutViewModel,
-        autoModViewModel:AutoModViewModel
+        autoModViewModel:AutoModViewModel,
+        webViewAnimation:(String)->Unit,
 
 
         ){
@@ -240,7 +241,8 @@ import com.example.clicker.util.Response
                     searchViewModel=searchViewModel,
                     homeViewModel=homeViewModel,
                     streamViewModel=streamViewModel,
-                    autoModViewModel=autoModViewModel
+                    autoModViewModel=autoModViewModel,
+                    webViewAnimation={channelName->webViewAnimation(channelName)}
 
 
                 )

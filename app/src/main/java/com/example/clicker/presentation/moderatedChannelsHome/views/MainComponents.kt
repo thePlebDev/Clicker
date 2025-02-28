@@ -70,7 +70,7 @@ import com.example.clicker.util.Response
      * */
     @Composable
     fun MainModView(
-        popBackStackNavigation: () -> Unit,
+
         height: Int,
         width: Int,
         density:Float,
@@ -82,7 +82,6 @@ import com.example.clicker.util.Response
         showNetworkMessage:Boolean,
         updateStreamerName: (String, String,String,String) -> Unit,
         updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-        onNavigate: (Int) -> Unit,
         clientId: String,
         userId: String,
         networkMessageColor:Color,
@@ -92,7 +91,8 @@ import com.example.clicker.util.Response
         hapticFeedBackError:() ->Unit,
         getTopGames:()->Unit,
         movePager: (Int) -> Unit,
-        contentPadding: PaddingValues
+        contentPadding: PaddingValues,
+        webViewAnimation:(String)->Unit,
     ){
 
             PullToRefreshComponent(
@@ -121,7 +121,6 @@ import com.example.clicker.util.Response
 
                     },
                     updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
-                    onNavigate={destination -> onNavigate(destination)},
                     userId = userId,
                     clientId = clientId,
                     loadingIndicator = {
@@ -129,7 +128,8 @@ import com.example.clicker.util.Response
                     },
                     showLoginModal ={showLoginModal()},
                     showNetworkRefreshError =showNetworkRefreshError,
-                    hapticFeedBackError={hapticFeedBackError()}
+                    hapticFeedBackError={hapticFeedBackError()},
+                    webViewAnimation={channelName ->webViewAnimation(channelName)}
 
                 )
             }
@@ -163,13 +163,13 @@ import com.example.clicker.util.Response
             modChannelResponseState: NetworkNewUserResponse<Boolean>,
             updateStreamerName: (String, String,String,String) -> Unit,
             updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
-            onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
             showLoginModal:()->Unit,
             loadingIndicator:@Composable () -> Unit,
             showNetworkRefreshError:Boolean,
             hapticFeedBackError:() ->Unit,
+            webViewAnimation:(String) ->Unit,
 
             ){
             val fontSize =MaterialTheme.typography.headlineMedium.fontSize
@@ -218,11 +218,11 @@ import com.example.clicker.util.Response
                                         updateStreamerName(streamerName,clientId,broadcasterId,userId)
 
                                     },
-                                    onNavigate ={destination -> onNavigate(destination)},
                                     clientId =clientId,
                                     userId=userId,
                                     streamItem = streamInfo,
                                     updateClickedStreamInfo={clickedStreamInfo ->updateClickedStreamInfo(clickedStreamInfo)},
+                                    webViewAnimation={channelName ->webViewAnimation(channelName)}
                                 )
                             }
 
@@ -349,9 +349,9 @@ import com.example.clicker.util.Response
             updateStreamerName: (String, String,String,String) -> Unit,
             updateClickedStreamInfo:(ClickedStreamInfo)->Unit,
             streamItem: StreamData,
-            onNavigate: (Int) -> Unit,
             clientId:String,
             userId:String,
+            webViewAnimation:(String)->Unit,
         ){
             Row(
                 modifier = Modifier
@@ -374,7 +374,9 @@ import com.example.clicker.util.Response
                                 adjustedUrl = streamItem.thumbNailUrl
                             )
                         )
-                        onNavigate(R.id.action_modChannelsFragment_to_streamFragment)
+
+                        webViewAnimation(streamItem.userLogin)
+                     //   onNavigate(R.id.action_modChannelsFragment_to_streamFragment)
                     }
             ){
                 OnlineModChannelImage(
