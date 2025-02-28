@@ -300,6 +300,7 @@ class HomeFragment : Fragment(){
                                 if(isLandScape){
                                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
                                     if(homeViewModel.clickedStreamerName.value != channelName){
+                                        Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
                                         setWebViewAndLoadURL(
                                             myWebView=newWebView,
                                             url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
@@ -314,6 +315,7 @@ class HomeFragment : Fragment(){
                                 }else{
 
                                 if(homeViewModel.clickedStreamerName.value != channelName){
+                                    Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
                                     setWebViewAndLoadURL(
                                         myWebView=newWebView,
                                         url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
@@ -336,8 +338,54 @@ class HomeFragment : Fragment(){
 
 
                         }//end of the else
-                            }
+                            },
+                            webViewAnimation = { channelName->
+                                homeViewModel.setShowHomeChat(true)
+                                animateContainerToScreenTop(
+                                    containerViewToBeMoved=streamToBeMoved,
+                                    startY=windowMetrics.getBounds().height(),
+                                    endY = 0
+                                )
+                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                                if(isLandScape){
+                                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+                                    if(homeViewModel.clickedStreamerName.value != channelName){
+                                        setWebViewAndLoadURL(
+                                            myWebView=newWebView,
+                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+                                        )
 
+                                    }
+                                    animateHorizontalSmallSizeToFullScreen(
+                                        screenHeight=screenHeight,
+
+
+                                        )
+                                }else{
+
+                                    if(homeViewModel.clickedStreamerName.value != channelName){
+                                        setWebViewAndLoadURL(
+                                            myWebView=newWebView,
+                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+                                        )
+
+                                    }
+
+
+                                    isDraggingWebView = false
+
+                                    //todo: THis where the animation function should go
+                                    animateWebViewToFullScreenVertical(
+                                        webView = newWebView
+                                    )
+
+                                    if(smallHeightPositioned){
+                                        animateChatVerticalMiniToFullScreen()
+                                    }
+                                    smallHeightPositioned = false
+
+                                }//end of the else
+                            }
 
                         )
                     }

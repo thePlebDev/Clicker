@@ -56,6 +56,7 @@ fun ModChannelView( //todo: THIS IS WHAT IS SHOWN ON THE FRAGMENT and the SCAFFO
     searchViewModel: SearchViewModel,
     movePager: (Int) -> Unit,
     contentPadding: PaddingValues,
+    webViewAnimation:(String)->Unit,
 ){
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -82,7 +83,6 @@ fun ModChannelView( //todo: THIS IS WHAT IS SHOWN ON THE FRAGMENT and the SCAFFO
     ) {
 
         MainModView(
-            popBackStackNavigation = { popBackStackNavigation() },
             height = homeViewModel.state.value.aspectHeight,
             width = homeViewModel.state.value.width,
             density = homeViewModel.state.value.screenDensity,
@@ -139,10 +139,7 @@ fun ModChannelView( //todo: THIS IS WHAT IS SHOWN ON THE FRAGMENT and the SCAFFO
             },
 
             updateClickedStreamInfo={clickedStreamInfo ->streamViewModel.updateClickedStreamInfo(clickedStreamInfo)  },
-            onNavigate ={
-                    destination ->onNavigate(destination)
-                streamViewModel.setImmersiveMode(false)
-            },
+
             clientId=clientId,
             userId=userId,
             networkMessageColor= Color.Red,
@@ -167,7 +164,8 @@ fun ModChannelView( //todo: THIS IS WHAT IS SHOWN ON THE FRAGMENT and the SCAFFO
                 }
             },
             movePager={pagerValue->movePager(pagerValue)},
-            contentPadding=contentPadding
+            contentPadding=contentPadding,
+            webViewAnimation={channelName ->webViewAnimation(channelName)}
 
 
         )

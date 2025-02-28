@@ -187,6 +187,7 @@ import kotlinx.coroutines.launch
         modViewViewModel: ModViewViewModel,
         searchViewModel: SearchViewModel,
         logoutViewModel: LogoutViewModel,
+        webViewAnimation:(String)->Unit,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -410,7 +411,8 @@ import kotlinx.coroutines.launch
                                      pagerState.animateScrollToPage(pagerValue)
                                  }
                              },
-                             contentPadding = contentPadding
+                             contentPadding = contentPadding,
+                             webViewAnimation={channelName ->webViewAnimation(channelName)}
                          )
 
 
@@ -1030,10 +1032,8 @@ fun CreatingBackgroundServiceSwitch(
                     is NetworkNewUserResponse.Failure -> {
 
                         item {
-
                             val message =followedStreamerList.e.message ?:"Error! please pull down to refresh"
-
-                                gettingStreamError(message)
+                            gettingStreamError(message)
 
                         }
                     }
