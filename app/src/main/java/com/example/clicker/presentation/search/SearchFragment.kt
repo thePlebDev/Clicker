@@ -60,29 +60,29 @@ class SearchFragment : Fragment() {
 
             setContent {
                 AppTheme{
-                    SearchView(
-                        onNavigate = { dest -> findNavController().navigate(dest) },
-                        homeViewModel=homeViewModel,
-                        searchViewModel=searchViewModel,
-                        hapticFeedBackError={ view?.performHapticFeedback(HapticFeedbackConstants.REJECT) },
-
-                        streamViewModel = streamViewModel,
-
-                        autoModViewModel =autoModViewModel,
-                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
-                            modViewViewModel.updateAutoModTokens(
-                                oAuthToken =oAuthToken,
-                                clientId =clientId,
-                                broadcasterId=broadcasterId,
-                                moderatorId =moderatorId
-                            )
-                        },
-                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
-                        chatSettingsViewModel=chatSettingsViewModel,
-                        streamInfoViewModel=streamInfoViewModel,
-                        modViewViewModel=modViewViewModel,
-
-                    )
+//                    SearchView(
+//                        onNavigate = { dest -> findNavController().navigate(dest) },
+//                        homeViewModel=homeViewModel,
+//                        searchViewModel=searchViewModel,
+//                        hapticFeedBackError={ view?.performHapticFeedback(HapticFeedbackConstants.REJECT) },
+//
+//                        streamViewModel = streamViewModel,
+//
+//                        autoModViewModel =autoModViewModel,
+//                        updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+//                            modViewViewModel.updateAutoModTokens(
+//                                oAuthToken =oAuthToken,
+//                                clientId =clientId,
+//                                broadcasterId=broadcasterId,
+//                                moderatorId =moderatorId
+//                            )
+//                        },
+//                        createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+//                        chatSettingsViewModel=chatSettingsViewModel,
+//                        streamInfoViewModel=streamInfoViewModel,
+//                        modViewViewModel=modViewViewModel,
+//
+//                    )
                 }
             }
 

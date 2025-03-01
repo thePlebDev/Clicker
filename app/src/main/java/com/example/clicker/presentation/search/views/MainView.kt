@@ -2,6 +2,8 @@ package com.example.clicker.presentation.search.views
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -12,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.example.clicker.R
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
@@ -59,6 +62,7 @@ fun SearchView(
     autoModViewModel: AutoModViewModel,
     createNewTwitchEventWebSocket:()->Unit,
     updateModViewSettings:(String,String,String,String,)->Unit,
+    contentPadding: PaddingValues,
 
     ){
 
@@ -72,6 +76,7 @@ fun SearchView(
     val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden,skipHalfExpanded =true)
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
+        modifier = Modifier.padding(contentPadding),
         sheetBackgroundColor= MaterialTheme.colorScheme.primary,
         sheetState = state,
         sheetContent = {
@@ -159,52 +164,6 @@ fun SearchView(
         }
     ) {
 
-
-        NoDrawerScaffold(
-            topBar = {
-                SearchBarUI(
-                    pinned = searchViewModel.pinnedFilter.value,
-                    changePinnedListFilterStatus={searchViewModel.updatePinnedFilter()},
-
-                    )
-            },
-            bottomBar = {
-                TripleButtonNavigationBottomBarRow(
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                    horizontalArrangement= Arrangement.SpaceAround,
-                    firstButton = {
-                        IconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Home",
-                            imageVector = Icons.Default.Home,
-                            iconContentDescription = "Navigate to home page",
-                            onClick ={onNavigate(R.id.action_searchFragment_to_homeFragment)},
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    },
-                    secondButton = {
-                        PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Mod Channels",
-                            painter = painterResource(R.drawable.moderator_white),
-                            iconContentDescription = "Navigate to mod channel page",
-                            onClick ={onNavigate(R.id.action_searchFragment_to_modChannelsFragment)},
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    },
-                    thirdButton = {
-                        this.PainterResourceIconOverTextColumn(
-                            iconColor = MaterialTheme.colorScheme.secondary,
-                            painter = painterResource(id = R.drawable.baseline_category_24),
-                            iconContentDescription = "Stay on category page ",
-                            fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Categories",
-                            onClick = {},
-                        )
-                    },
-                )
-            },
-        ) {contentPadding ->
             PullToRefreshComponent(
                 padding = contentPadding,
                 refreshing = searchViewModel.searchRefreshing.value,
@@ -235,7 +194,7 @@ fun SearchView(
 
                 )
             }
-        }
+
 
     }
 
