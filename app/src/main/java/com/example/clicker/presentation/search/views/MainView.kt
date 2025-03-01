@@ -63,6 +63,7 @@ fun SearchView(
     createNewTwitchEventWebSocket:()->Unit,
     updateModViewSettings:(String,String,String,String,)->Unit,
     contentPadding: PaddingValues,
+    webViewAnimation:(String)->Unit,
 
     ){
 
@@ -156,7 +157,8 @@ fun SearchView(
                 streamDataList= searchViewModel.searchStreamDataList.toList(),
                 closeModal={scope.launch { state.hide() }},
                 selectedLanguage=searchViewModel.selectedLanguage.value,
-                changeSelectedLanguage={newValue ->searchViewModel.changeSelectedLanguage(newValue)}
+                changeSelectedLanguage={newValue ->searchViewModel.changeSelectedLanguage(newValue)},
+                webViewAnimation={channelName ->webViewAnimation(channelName)}
 
 
 

@@ -449,7 +449,9 @@ import kotlinx.coroutines.launch
                              chatSettingsViewModel=chatSettingsViewModel,
                              streamInfoViewModel=streamInfoViewModel,
                              modViewViewModel=modViewViewModel,
-                             contentPadding = contentPadding
+                             contentPadding = contentPadding,
+                             webViewAnimation={channelName ->webViewAnimation(channelName)}
+
 
                              )
 
