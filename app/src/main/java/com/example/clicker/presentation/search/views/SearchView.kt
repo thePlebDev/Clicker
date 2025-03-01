@@ -522,7 +522,8 @@ fun CategoryModal(
     density: Float,
     closeModal:()->Unit,
     selectedLanguage:String?,
-    changeSelectedLanguage: (String) -> Unit
+    changeSelectedLanguage: (String) -> Unit,
+    webViewAnimation:(String)->Unit,
 ){
     Column(
         modifier= Modifier
@@ -558,7 +559,8 @@ fun CategoryModal(
                     density=density,
                     getMoreStreams={getMoreStreams()},
                     selectedLanguage=selectedLanguage,
-                    changeSelectedLanguage={newValue ->changeSelectedLanguage(newValue)}
+                    changeSelectedLanguage={newValue ->changeSelectedLanguage(newValue)},
+                    webViewAnimation={channelName ->webViewAnimation(channelName)}
 
                 )
 
@@ -585,7 +587,8 @@ fun LiveGameSuccess(
     density: Float,
     getMoreStreams:()->Unit,
     selectedLanguage:String?,
-    changeSelectedLanguage: (String) -> Unit
+    changeSelectedLanguage: (String) -> Unit,
+    webViewAnimation:(String)->Unit,
 ){
 
     val scrollStateColumn = rememberLazyListState()
@@ -638,7 +641,8 @@ fun LiveGameSuccess(
                 onNavigate={navItem->onNavigate(navItem)},
                 height=height,
                 width=width,
-                density=density
+                density=density,
+                webViewAnimation={channelName ->webViewAnimation(channelName)}
             )
         }
 
@@ -657,7 +661,8 @@ fun CategoryModalBody(
     onNavigate: (Int) -> Unit,
     height: Int,
     width: Int,
-    density: Float
+    density: Float,
+    webViewAnimation:(String)->Unit,
 
 ){
     SearchLiveChannelRowItem(
@@ -671,7 +676,8 @@ fun CategoryModalBody(
         onNavigate={navItem->onNavigate(navItem)},
         height=height,
         width=width,
-        density=density
+        density=density,
+        webViewAnimation={channelName ->webViewAnimation(channelName)}
 
     )
 }
@@ -686,7 +692,8 @@ fun SearchLiveChannelRowItem(
     onNavigate: (Int) -> Unit,
     height: Int,
     width: Int,
-    density:Float
+    density:Float,
+    webViewAnimation:(String)->Unit,
 
 ){
 
@@ -701,6 +708,7 @@ fun SearchLiveChannelRowItem(
                     adjustedUrl = searchStreamItem.thumbnail_url
                 )
             )
+            webViewAnimation(searchStreamItem.user_login)
 
             updateStreamerName(
                 searchStreamItem.user_login,
