@@ -21,6 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 //import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -120,6 +121,16 @@ fun ValidationView(
     //this is for the new feature
     val bottomModalState2 = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(clientId) {
+        if (clientId!=null) {
+            // Call your function here
+            searchViewModel.getTopGames(
+                oAuthToken = oAuthToken,
+                clientId = clientId
+            )
+        }
+    }
 
 
     val pagerState = rememberPagerState(
@@ -241,10 +252,10 @@ fun ValidationView(
 
                             is Response.Success ->{}
                             else->{
-                                searchViewModel.getTopGames(
-                                    oAuthToken = oAuthToken,
-                                    clientId = clientId?:""
-                                )
+//                                searchViewModel.getTopGames(
+//                                    oAuthToken = oAuthToken,
+//                                    clientId = clientId?:""
+//                                )
                             }
                         }
                     },
