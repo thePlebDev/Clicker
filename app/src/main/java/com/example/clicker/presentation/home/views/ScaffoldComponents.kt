@@ -3,6 +3,7 @@
 package com.example.clicker.presentation.home.views
 
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -83,6 +84,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.fragment.findNavController
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
@@ -92,6 +94,7 @@ import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewMo
 import com.example.clicker.presentation.home.HomeViewModel
 import com.example.clicker.presentation.moderatedChannelsHome.views.ModChannelView
 import com.example.clicker.presentation.search.SearchViewModel
+import com.example.clicker.presentation.search.views.SearchView
 
 import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.ErrorScope
@@ -102,6 +105,8 @@ import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.NetworkNewUserResponse
 import kotlinx.coroutines.launch
 
@@ -188,6 +193,8 @@ import kotlinx.coroutines.launch
         searchViewModel: SearchViewModel,
         logoutViewModel: LogoutViewModel,
         webViewAnimation:(String)->Unit,
+        chatSettingsViewModel: ChatSettingsViewModel,
+        streamInfoViewModel: StreamInfoViewModel,
         ){
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
@@ -422,6 +429,29 @@ import kotlinx.coroutines.launch
 
                      }// END OF THE MOD CHANNELS VIEW
                      2 -> {
+                         //todo:put catories here
+                         SearchView(
+                             onNavigate = { dest ->  },
+                             homeViewModel=homeViewModel,
+                             searchViewModel=searchViewModel,
+                             hapticFeedBackError={ },
+                             streamViewModel = streamViewModel,
+                             autoModViewModel =autoModViewModel,
+                             updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                                 modViewViewModel.updateAutoModTokens(
+                                     oAuthToken =oAuthToken,
+                                     clientId =clientId,
+                                     broadcasterId=broadcasterId,
+                                     moderatorId =moderatorId
+                                 )
+                             },
+                             createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                             chatSettingsViewModel=chatSettingsViewModel,
+                             streamInfoViewModel=streamInfoViewModel,
+                             modViewViewModel=modViewViewModel,
+                             contentPadding = contentPadding
+
+                             )
 
                      }// END OF THE CATEGORIES
             }

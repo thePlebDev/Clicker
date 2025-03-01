@@ -102,6 +102,7 @@ fun ValidationView(
     webViewAnimation:(String)->Unit,
 
 
+
 ) {
     val bottomModalState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
@@ -274,7 +275,9 @@ fun ValidationView(
                     homeViewModel=homeViewModel,
                     streamViewModel=streamViewModel,
                     autoModViewModel=autoModViewModel,
-                    webViewAnimation={channelName ->webViewAnimation(channelName)}
+                    webViewAnimation={channelName ->webViewAnimation(channelName)},
+                    chatSettingsViewModel=chatSettingsViewModel,
+                    streamInfoViewModel=streamInfoViewModel,
 
                 )
 

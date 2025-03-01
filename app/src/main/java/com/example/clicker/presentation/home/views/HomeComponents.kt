@@ -63,6 +63,8 @@ import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.models.ClickedStreamInfo
+import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.NetworkAuthResponse
 import com.example.clicker.util.NetworkNewUserResponse
 import com.example.clicker.util.NetworkResponse
@@ -166,6 +168,8 @@ import com.example.clicker.util.Response
         logoutViewModel: LogoutViewModel,
         autoModViewModel:AutoModViewModel,
         webViewAnimation:(String)->Unit,
+        chatSettingsViewModel: ChatSettingsViewModel,
+        streamInfoViewModel: StreamInfoViewModel,
 
 
         ){
@@ -242,7 +246,9 @@ import com.example.clicker.util.Response
                     homeViewModel=homeViewModel,
                     streamViewModel=streamViewModel,
                     autoModViewModel=autoModViewModel,
-                    webViewAnimation={channelName->webViewAnimation(channelName)}
+                    webViewAnimation={channelName->webViewAnimation(channelName)},
+                    streamInfoViewModel = streamInfoViewModel,
+                    chatSettingsViewModel=chatSettingsViewModel
 
 
                 )
