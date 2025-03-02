@@ -2,6 +2,7 @@ package com.example.clicker.presentation.home
 
 import android.Manifest
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.ActivityManager
 import android.content.Context
@@ -34,8 +35,10 @@ import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -163,6 +166,7 @@ class HomeFragment : Fragment(){
     }
 
 
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -307,11 +311,24 @@ class HomeFragment : Fragment(){
                                         )
 
                                     }
-                                    animateHorizontalSmallSizeToFullScreen(
-                                        screenHeight=screenHeight,
+//                                    animateHorizontalSmallSizeToFullScreen(//this is what is being deleted
+//                                        screenHeight=screenHeight,
+//
+//
+//                                    )
 
-
+                                    animateContainerToScreenTop(
+                                        containerViewToBeMoved=streamToBeMoved,
+                                        startY=screenHeight,
+                                        endY = 0
                                     )
+
+                                    animateToTopLeftCon( //this should be it
+                                        newWebView,
+                                        screenWidth
+                                    )
+                                    horizontalFullScreenTap = false //this is for the overlay
+                                    smallHeightPositioned=false
                                 }else{
 
                                 if(homeViewModel.clickedStreamerName.value != channelName){
@@ -735,94 +752,26 @@ class HomeFragment : Fragment(){
 
                     if (isLandscape) {
                         if (!horizontalFullScreenTap) {
+                            //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
+                            //BUT HAVE NOT DOUBLE TAPPED IT YET
+                            Log.d("horizontalFullScreenTaptesting","DOUBLETAP")
 
 
-                            val newWidth = (webView.width * 0.85).toInt()
-
-                            horizontalAnimateWidthAndXPosition(
-                                webView = webView,
-                                finalWidth = newWidth,
-                            )
-                            //this should make sure the place holder always matches the actual webview showing the stream
-                            horizontalAnimateWidthAndXPosition(
-                                //this view is the place holder
-                                webView = binding.root.findViewById<ComposeView>(R.id.webView),
-                                finalWidth = newWidth,
-                            )
-                            //this animates the horizontal overlay to zero
-                           animateHorizontalOverlay()
-
-                            //todo animate the chats width and move its x position to half way
-
-                            //START OF THE HORIZONTAL TAP
-                            val view = binding.root
-                            //this is the chat
-                            val chatView = view.findViewById<ComposeView>(R.id.stream_compose_view)
+                            val newWidth = (webView.width * 0.65).toInt()
+                            val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+                            // TODO: ANIMATE THE WIDTH,X and y
                             chatView.visibility = View.VISIBLE
+                            animateWidthToIncludeChatHorizontalDoubleTap(
+                                webView = webView,
+                                width=newWidth,
+                                chatView = chatView
+                            )
+                            // TODO: ANIMATE THE CHAT
+                            chatAnimateWidthToIncludeChatHorizontalDoubleTap(
+                                chatView = chatView,
+                                webView=webView
+                            )
 
-                            val horizontalSpringAnimationX =
-                                SpringAnimation(chatView, SpringAnimation.X).apply {
-                                    spring = SpringForce().apply {
-                                        dampingRatio =
-                                            SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
-                                        stiffness =
-                                            SpringForce.STIFFNESS_LOW // Lower = smoother motion
-                                    }
-                                }
-                            val horizontalSpringAnimationY =
-                                SpringAnimation(chatView, SpringAnimation.Y).apply {
-                                    spring = SpringForce().apply {
-                                        dampingRatio =
-                                            SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
-                                        stiffness =
-                                            SpringForce.STIFFNESS_LOW // Lower = smoother motion
-                                    }
-                                }
-
-
-                            val params = chatView.layoutParams
-                            //this is animating its width
-                            val newChatWidth = (webView.width * 0.45).toInt()
-                            ValueAnimator.ofInt(params.width, newChatWidth).apply {
-                                duration = 300 // Adjust duration for the animation
-                                addUpdateListener { animator ->
-                                    val chatParams = chatView.layoutParams
-                                    chatParams.width = animator.animatedValue as Int
-                                    chatView.layoutParams = chatParams
-                                }
-
-                                start()
-                            }
-                            //CHAT HEIGHT
-
-                            val windowManager =
-                                context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-
-
-                            val metrics = windowManager.currentWindowMetrics
-                            val screenHeightTesting = metrics.bounds.height()
-
-
-                            Log.d("TestingChatHeight", "height --> $screenHeight")
-                            Log.d("TestingChatHeight", "heightTesting-->${screenHeightTesting}")
-
-                            ValueAnimator.ofInt(params.height, screenHeightTesting).apply {
-                                duration = 300 // Adjust duration for the animation
-                                addUpdateListener { animator ->
-                                    val chatParams = chatView.layoutParams
-                                    chatParams.height = animator.animatedValue as Int
-                                    chatView.layoutParams = chatParams
-                                }
-                                doOnEnd {
-                                    // animation done inside of doOnEnd to make sure we get the proper values
-                                    val width = webView.width.toFloat()
-                                    Log.d("TESTINGWEBVIEWwIDTH", "WIDTH-->$width")
-                                    horizontalSpringAnimationX.animateToFinalPosition(width)//need to delete this magic number
-                                    horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
-                                }
-
-                                start()
-                            }
 
 
                             horizontalFullScreenTap = true
@@ -835,24 +784,30 @@ class HomeFragment : Fragment(){
                                 binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
                             chatView.visibility = View.INVISIBLE
                             //move the stream back to full screen
-                            animateHorizontalWidthAndHeightToFullScreen(
+                            //SFGSDGDS
+                            //todo: JUST REPEAT WHAT i HAVE BEEN DOING WITH THE NEW FULL SCREEN
+                            animateToTopLeftCon( //this should be it
                                 newWebView,
-                                Resources.getSystem().displayMetrics.heightPixels,
+                                screenWidth
                             )
+//                            animateHorizontalWidthAndHeightToFullScreen(
+//                                newWebView,
+//                                Resources.getSystem().displayMetrics.heightPixels,
+//                            )
 
-                            animateToTopLeftScreen(
-                                newWebView,
-                                Resources.getSystem().displayMetrics.widthPixels
-                            )
-                            Handler(Looper.getMainLooper()).postDelayed(
-                                {
-                                    animateHorizontalOverlayToCenter(
-                                        overlay  = binding.horizontalOverlay,
-                                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
-                                    )
-                                },
-                                1000 // value in milliseconds
-                            )
+//                            animateToTopLeftScreen(
+//                                newWebView,
+//                                Resources.getSystem().displayMetrics.widthPixels
+//                            )
+//                            Handler(Looper.getMainLooper()).postDelayed(
+//                                {
+//                                    animateHorizontalOverlayToCenter(
+//                                        overlay  = binding.horizontalOverlay,
+//                                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
+//                                    )
+//                                },
+//                                1000 // value in milliseconds
+//                            )
                             //move the overlay
                             horizontalFullScreenTap = false
 
@@ -878,20 +833,33 @@ class HomeFragment : Fragment(){
                 // ofInt() gives the start and end value
                 //this is where it goes
                 if(isLandscape){
-                    Log.d("ORIENTATIONtESTIN","LANDSCAPE")
+
                     if(!smallHeightPositioned){
+                        //todo:THIS NEEDS TO BE FIXED
                         val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
                         composeView.visibility = View.VISIBLE
+                        //this is to animate the overlay and show it
                         horizontalAnimateSingleTap(
                             webView
                         )
-                    }else{
-                        //this means it is in the mini view feature
-                        // I need to expand to the full size of the screen
+                        Log.d("ORIENTATIONtESTIN","HORIZONTAL SINGLE TAP big view")
 
-                        animateHorizontalSmallSizeToFullScreen(
-                            screenHeight=screenHeight,
+                    }else{
+
+                        animateContainerToScreenTop(
+                            containerViewToBeMoved=streamToBeMoved,
+                            startY=screenHeight,
+                            endY = 0
                         )
+
+                        animateToTopLeftCon( //this should be it
+                            newWebView,
+                            screenWidth
+                        )
+                        //move the overlay
+                        horizontalFullScreenTap = false //this is for the overlay
+                        smallHeightPositioned=false
+
 
                     }
 
@@ -1141,6 +1109,138 @@ class HomeFragment : Fragment(){
         }
     }
 
+    /*************START ANIMATIONS FOR THE DOUBLE TAP IN HORIZONTAL****************/
+
+    /**
+     * animateHeightAndWidthHorizontalDoubleTap animates the width and the X value of the [webView] to make room for the
+     * chat
+     * @param webView a [WebView] object that will be animated based on the value of [width]
+     * @param width a Int value that is used to animate the [webView]
+     * */
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun animateWidthToIncludeChatHorizontalDoubleTap(
+        webView: WebView,
+        width:Int,
+        chatView: ComposeView
+    ){
+        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.y = value.toFloat()
+            }
+
+            doOnEnd {
+                ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Int
+                        webView.x = value.toFloat()
+                    }
+
+
+                    start()
+                }
+
+            }
+
+
+            start()
+        }
+        val webParams = webView.layoutParams
+        ValueAnimator.ofInt(webParams.width, width).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                webParams.width = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+
+
+            start()
+        }
+
+
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun chatAnimateWidthToIncludeChatHorizontalDoubleTap(
+        chatView: ComposeView,
+        webView: WebView
+    ){
+
+
+        chatView.visibility = View.VISIBLE
+        val windowManager =
+            context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val metrics = windowManager.currentWindowMetrics
+        val screenHeightForChat = metrics.bounds.height()
+
+        val horizontalSpringAnimationX =
+            SpringAnimation(chatView, SpringAnimation.X).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+        val horizontalSpringAnimationY =
+            SpringAnimation(chatView, SpringAnimation.Y).apply {
+                spring = SpringForce().apply {
+                    dampingRatio =
+                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                    stiffness =
+                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                }
+            }
+
+
+        val params = chatView.layoutParams
+        //this is animating its width
+        val newChatWidth = (webView.width * 0.35).toInt()
+        ValueAnimator.ofInt(params.width, newChatWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val chatParams = chatView.layoutParams
+                chatParams.width = animator.animatedValue as Int
+                chatView.layoutParams = chatParams
+            }
+
+            start()
+        }
+        //CHAT HEIGHT
+        val screenHeightTesting = metrics.bounds.height()
+
+
+        Log.d("TestingChatHeight", "heightTesting-->${screenHeightTesting}")
+
+        ValueAnimator.ofInt(params.height, screenHeightTesting).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val chatParams = chatView.layoutParams
+                chatParams.height = animator.animatedValue as Int
+                chatView.layoutParams = chatParams
+            }
+            doOnEnd {
+                // animation done inside of doOnEnd to make sure we get the proper values
+                val width = webView.width.toFloat()
+                Log.d("TESTINGWEBVIEWwIDTH", "WIDTH-->$width")
+                horizontalSpringAnimationX.animateToFinalPosition(width)//need to delete this magic number
+                horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
+            }
+
+            start()
+        }
+            }
+
+
+
+
+
+
+    /*************END ANIMATIONS FOR THE DOUBLE TAP IN HORIZONTAL****************/
+
     /**
      * animateWebViewVerticalFullScreen animates the [webView] back to its original height and width based on [lastHeight] value
      *
@@ -1200,6 +1300,7 @@ class HomeFragment : Fragment(){
         screenHeight:Int,
 
     ){
+        //todo: copy this
         animateContainerToScreenTop(
             containerViewToBeMoved=streamToBeMoved,
             startY=screenHeight,
@@ -1502,65 +1603,56 @@ class HomeFragment : Fragment(){
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        //safe guard agains the situations where no stream has been clicked
+
 
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setImmersiveMode(requireActivity().window)
 
+            if(homeViewModel.clickedStreamerName.value.length >1) {
 
 
+                val rootView = requireActivity().window.decorView
+                rootView.viewTreeObserver.addOnGlobalLayoutListener(object :
+                    ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+                        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
 
-            val rootView = requireActivity().window.decorView
-            rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-                    val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+                        if (smallHeightPositioned) {
+                            animateXAndYToBottomRightScreen(
+                                screenHeight = screenHeight,
+                                screenWidth = screenWidth
+                            )
+                        } else {
+                            val chatView =
+                                binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+                            chatView.visibility = View.INVISIBLE
 
-                    if(smallHeightPositioned){
-                        animateXAndYToBottomRightScreen(
-                            screenHeight=screenHeight,
-                            screenWidth=screenWidth
-                        )
-                    }else{
-                        val chatView =
-                            binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
-                        chatView.visibility = View.INVISIBLE
-
-                        animateHorizontalWidthAndHeightToFullScreen(
-                            newWebView,
-                            Resources.getSystem().displayMetrics.heightPixels,
+                            animateToTopLeftCon(
+                                newWebView,
+                                screenWidth
+                            )
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                {
+                                    animateHorizontalOverlayToCenter(
+                                        overlay = binding.horizontalOverlay,
+                                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
+                                    )
+                                },
+                                1000 // value in milliseconds
                             )
 
-                        animateToTopLeftScreen(
-                            newWebView,
-                            screenWidth
-                        )
-                        Handler(Looper.getMainLooper()).postDelayed(
-                            {
-                                animateHorizontalOverlayToCenter(
-                                    overlay  = binding.horizontalOverlay,
-                                    maxWidth = Resources.getSystem().displayMetrics.widthPixels
-                                )
-                            },
-                            1000 // value in milliseconds
-                        )
+                        }
 
+                        rootView.viewTreeObserver.removeOnGlobalLayoutListener(this) // Prevent multiple calls
                     }
+                })
+                Log.d("onConfigurationChangedTesting", "Landscape mode")
+                //todo: this is not working properly
+            }
 
-                    rootView.viewTreeObserver.removeOnGlobalLayoutListener(this) // Prevent multiple calls
-                }
-            })
-            Log.d("onConfigurationChangedTesting", "Landscape mode")
-            //todo: this is not working properly
-//            Handler(Looper.getMainLooper()).postDelayed(
-//                {
-//                    animateHorizontalOverlayToCenter(
-//                        overlay  = binding.horizontalOverlay,
-//                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
-//                    )
-//                },
-//                1000 // value in milliseconds
-//            )
 
 
 
@@ -1576,6 +1668,7 @@ class HomeFragment : Fragment(){
             val screenWidth = Resources.getSystem().displayMetrics.widthPixels
             Log.d("TestingScreenHeight", "portrait -->: ${screenHeight}")
             unsetImmersiveMode(requireActivity().window)
+            if(homeViewModel.clickedStreamerName.value.length >1) {
 
             if(smallHeightPositioned){
                 animateXAndYToBottomRightScreen(
@@ -1587,7 +1680,7 @@ class HomeFragment : Fragment(){
                     webView =newWebView,
                     newWidth = (minHeight * 16 / 9)
                 )
-            }else{
+            }else {
                 //This animates back to the home page
                 val newWebViewTesting = binding.webViewTestingMovement
                 val placeHolder = binding.webView
@@ -1608,9 +1701,10 @@ class HomeFragment : Fragment(){
                 val webParams = composeChat.layoutParams
 
                 val screenWidthResource = Resources.getSystem().displayMetrics.widthPixels
-                val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val windowManager =
+                    context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
                 val metrics = windowManager.currentWindowMetrics
-                val screenWidthTesting =  metrics.bounds.width()
+                val screenWidthTesting = metrics.bounds.width()
 
 //                Handler(Looper.getMainLooper()).postDelayed(
 //                    {
@@ -1629,7 +1723,7 @@ class HomeFragment : Fragment(){
 
 
                         //animate X
-                        ValueAnimator.ofInt(composeChat.x.toInt(),0).apply {
+                        ValueAnimator.ofInt(composeChat.x.toInt(), 0).apply {
                             duration = 300 // Adjust duration for the animation
                             addUpdateListener { animator ->
                                 val value = animator.animatedValue as Int
@@ -1637,16 +1731,20 @@ class HomeFragment : Fragment(){
                             }
                             doOnEnd {
                                 //animate Y
-                                val streamingWebViewHeight =binding.webViewTestingMovement.height
-                                Log.d("TestingChatMovingHeight","streamingView height -->${streamingWebViewHeight}")
-                                ValueAnimator.ofInt(composeChat.y.toInt(),streamingWebViewHeight).apply {
-                                    duration = 300 // Adjust duration for the animation
-                                    addUpdateListener { animator ->
-                                        val value = animator.animatedValue as Int
-                                        composeChat.y = value.toFloat()
+                                val streamingWebViewHeight = binding.webViewTestingMovement.height
+                                Log.d(
+                                    "TestingChatMovingHeight",
+                                    "streamingView height -->${streamingWebViewHeight}"
+                                )
+                                ValueAnimator.ofInt(composeChat.y.toInt(), streamingWebViewHeight)
+                                    .apply {
+                                        duration = 300 // Adjust duration for the animation
+                                        addUpdateListener { animator ->
+                                            val value = animator.animatedValue as Int
+                                            composeChat.y = value.toFloat()
+                                        }
+                                        start()
                                     }
-                                    start()
-                                }
                                 // This method will be executed once the timer is over
                                 //animate HEIGHT
                                 val webParams2 = composeChat.layoutParams
@@ -1656,17 +1754,27 @@ class HomeFragment : Fragment(){
 
 
                                 //the height of the streamingView
-                                val streamingWebViewHeight2 =binding.webViewTestingMovement.height
-                                val bottomBarHeight =getNavigationBarHeight()
+                                val streamingWebViewHeight2 = binding.webViewTestingMovement.height
+                                val bottomBarHeight = getNavigationBarHeight()
 
-                                Log.d("TestingChatMovingHeight","608 -->${streamingWebViewHeight2}")
-                                Log.d("TestingChatMovingHeight","63 -->${bottomBarHeight}")
-                                Log.d("TestingChatMovingHeight","671 -->${bottomBarHeight +streamingWebViewHeight2}")
-                                Log.d("TestingChatMovingHeight","1611 -->${binding.streamingModalView.height-(streamingWebViewHeight2)}")
+                                Log.d(
+                                    "TestingChatMovingHeight",
+                                    "608 -->${streamingWebViewHeight2}"
+                                )
+                                Log.d("TestingChatMovingHeight", "63 -->${bottomBarHeight}")
+                                Log.d(
+                                    "TestingChatMovingHeight",
+                                    "671 -->${bottomBarHeight + streamingWebViewHeight2}"
+                                )
+                                Log.d(
+                                    "TestingChatMovingHeight",
+                                    "1611 -->${binding.streamingModalView.height - (streamingWebViewHeight2)}"
+                                )
 
-                             //   Log.d("TestingChatMovingHeight","container height -->${binding.streamingModalView.height-671}")
+                                //   Log.d("TestingChatMovingHeight","container height -->${binding.streamingModalView.height-671}")
                                 //  Log.d("TestingChatMovingHeight","bottomBarHeight -->${getNavigationBarHeight()}")// I need this
-                                val finalHeight =binding.streamingModalView.height-streamingWebViewHeight2
+                                val finalHeight =
+                                    binding.streamingModalView.height - streamingWebViewHeight2
                                 ValueAnimator.ofInt(webParams2.height, finalHeight).apply {
                                     duration = 300 // Adjust duration for the animation
                                     addUpdateListener { animator ->
@@ -1685,11 +1793,10 @@ class HomeFragment : Fragment(){
                 }
 
                 //make visible if invisable
-
-
             }
 
 
+        }
 
         }
 
@@ -1790,6 +1897,51 @@ class HomeFragment : Fragment(){
             }
             start()
         }
+    }
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun animateToTopLeftCon(
+        webView: WebView,
+        maxWidth:Int
+    ){
+        val windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
+        val width = windowMetrics.getBounds().width()
+        val height = windowMetrics.getBounds().height()
+
+        val newHeight =(width*(9f/16f)).toInt().coerceIn(0,height)
+        val newWidth = (newHeight*(16f/9f)).toInt()
+
+
+
+
+        val endWidth = (maxWidth).toInt()
+        Log.d("TESTINGMAXLENGHTTHINGER","endWidth -->$endWidth")
+        ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.y = value.toFloat()
+            }
+            doOnStart {
+                val webParams = webView.layoutParams
+                webParams.width = width
+                webParams.height = newHeight
+                webView.layoutParams = webParams
+            }
+            doOnEnd {
+                ValueAnimator.ofInt(webView.x.toInt(), 0).apply {
+                    duration = 300 // Adjust duration for the animation
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Int
+                        webView.x = value.toFloat()
+                    }
+
+                    start()
+                }
+            }
+            start()
+        }
+
+
     }
     /**
      * animateHorizontalOverlayToCenter animates the horizontal overlay into the correct horizontal position
