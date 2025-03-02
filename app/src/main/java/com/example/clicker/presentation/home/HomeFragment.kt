@@ -751,8 +751,7 @@ class HomeFragment : Fragment(){
                 Log.d("testinghorizontalfullscreen","horizontalFullScreenTap -->${horizontalFullScreenTap}")
                 Log.d("testinghorizontalfullscreen","isLandscape -->${isLandscape}")
                 if(!smallHeightPositioned) {
-
-
+      
                     if (isLandscape) {
                         if (!horizontalFullScreenTap) {
                             //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
@@ -793,24 +792,7 @@ class HomeFragment : Fragment(){
                                 newWebView,
                                 screenWidth
                             )
-//                            animateHorizontalWidthAndHeightToFullScreen(
-//                                newWebView,
-//                                Resources.getSystem().displayMetrics.heightPixels,
-//                            )
 
-//                            animateToTopLeftScreen(
-//                                newWebView,
-//                                Resources.getSystem().displayMetrics.widthPixels
-//                            )
-//                            Handler(Looper.getMainLooper()).postDelayed(
-//                                {
-//                                    animateHorizontalOverlayToCenter(
-//                                        overlay  = binding.horizontalOverlay,
-//                                        maxWidth = Resources.getSystem().displayMetrics.widthPixels
-//                                    )
-//                                },
-//                                1000 // value in milliseconds
-//                            )
                             //move the overlay
                             horizontalFullScreenTap = false
 
@@ -841,6 +823,9 @@ class HomeFragment : Fragment(){
                         //todo:THIS NEEDS TO BE FIXED
                         val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
                         composeView.visibility = View.VISIBLE
+
+                        //sets the overlay good enough
+                        composeView.x = 0f
                         //this is to animate the overlay and show it
                         horizontalAnimateSingleTap(
                             webView
@@ -1614,6 +1599,7 @@ class HomeFragment : Fragment(){
             setImmersiveMode(requireActivity().window)
 
             if(homeViewModel.clickedStreamerName.value.length >1) {
+
 
 
                 val rootView = requireActivity().window.decorView
