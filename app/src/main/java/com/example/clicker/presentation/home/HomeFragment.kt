@@ -751,7 +751,7 @@ class HomeFragment : Fragment(){
                 Log.d("testinghorizontalfullscreen","horizontalFullScreenTap -->${horizontalFullScreenTap}")
                 Log.d("testinghorizontalfullscreen","isLandscape -->${isLandscape}")
                 if(!smallHeightPositioned) {
-      
+
                     if (isLandscape) {
                         if (!horizontalFullScreenTap) {
                             //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
