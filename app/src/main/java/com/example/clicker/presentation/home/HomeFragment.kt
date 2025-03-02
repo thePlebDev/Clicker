@@ -311,11 +311,7 @@ class HomeFragment : Fragment(){
                                         )
 
                                     }
-//                                    animateHorizontalSmallSizeToFullScreen(//this is what is being deleted
-//                                        screenHeight=screenHeight,
-//
-//
-//                                    )
+
 
                                     animateContainerToScreenTop(
                                         containerViewToBeMoved=streamToBeMoved,
@@ -373,11 +369,18 @@ class HomeFragment : Fragment(){
                                         )
 
                                     }
-                                    animateHorizontalSmallSizeToFullScreen(
-                                        screenHeight=screenHeight,
+                                    animateContainerToScreenTop(
+                                        containerViewToBeMoved=streamToBeMoved,
+                                        startY=screenHeight,
+                                        endY = 0
+                                    )
 
-
-                                        )
+                                    animateToTopLeftCon( //this should be it
+                                        newWebView,
+                                        screenWidth
+                                    )
+                                    horizontalFullScreenTap = false //this is for the overlay
+                                    smallHeightPositioned=false
                                 }else{
 
                                     if(homeViewModel.clickedStreamerName.value != channelName){
