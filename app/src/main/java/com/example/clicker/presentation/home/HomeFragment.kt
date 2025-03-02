@@ -3,6 +3,7 @@ package com.example.clicker.presentation.home
 import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.app.ActivityManager
 import android.content.Context
@@ -64,6 +65,7 @@ import com.example.clicker.presentation.selfStreaming.viewModels.SelfStreamingVi
 import com.example.clicker.presentation.stream.AndroidConsoleInterface
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
+import com.example.clicker.presentation.stream.clearHorizontalChat.ClearHorizontalChatView
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
@@ -301,7 +303,9 @@ class HomeFragment : Fragment(){
                             },
                             loadUrl  ={ channelName->
                                 val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
                                 if(isLandScape){
+                                    streamViewModel.setImmersiveMode(true)
                                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
                                     if(homeViewModel.clickedStreamerName.value != channelName){
                                         Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
@@ -354,6 +358,7 @@ class HomeFragment : Fragment(){
                             },
                             webViewAnimation = { channelName->
                                 homeViewModel.setShowHomeChat(true)
+
                                 animateContainerToScreenTop(
                                     containerViewToBeMoved=streamToBeMoved,
                                     startY=windowMetrics.getBounds().height(),
@@ -361,6 +366,7 @@ class HomeFragment : Fragment(){
                                 )
                                 val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                                 if(isLandScape){
+                                    streamViewModel.setImmersiveMode(true)
                                     val screenHeight = Resources.getSystem().displayMetrics.heightPixels
                                     if(homeViewModel.clickedStreamerName.value != channelName){
                                         setWebViewAndLoadURL(
@@ -454,6 +460,29 @@ class HomeFragment : Fragment(){
                             tags = streamViewModel.tagsImmutable.value,
                         )
                     }
+                }
+            }
+
+            binding.horizontalClearChat.apply {
+                val activity2 = activity as? Activity
+
+
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    if(streamViewModel.advancedChatSettingsState.value.horizontalClearChat && streamViewModel.immersiveMode.value){
+
+                        AppTheme{
+                            ClearHorizontalChatView(
+                                streamViewModel,
+                                chatSettingsViewModel=chatSettingsViewModel,
+//                        offsetX = chatSettingsViewModel.clearChatOffsetX.value,
+//                        changeOffsetXClearChat = {delta-> chatSettingsViewModel.changeOffsetXClearChat(delta) }
+
+                            )
+                        }
+                    }
+
+
                 }
             }
 
@@ -757,6 +786,7 @@ class HomeFragment : Fragment(){
                             //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
                             //BUT HAVE NOT DOUBLE TAPPED IT YET
                             Log.d("horizontalFullScreenTaptesting","DOUBLETAP")
+                            streamViewModel.setImmersiveMode(false)
 
 
                             val newWidth = (webView.width * 0.65).toInt()
@@ -780,6 +810,7 @@ class HomeFragment : Fragment(){
 
 
                         } else {
+                            streamViewModel.setImmersiveMode(true)
 
                             //I want to make the chat invisible
                             val chatView =
@@ -833,6 +864,7 @@ class HomeFragment : Fragment(){
                         Log.d("ORIENTATIONtESTIN","HORIZONTAL SINGLE TAP big view")
 
                     }else{
+                        streamViewModel.setImmersiveMode(true)
 
                         animateContainerToScreenTop(
                             containerViewToBeMoved=streamToBeMoved,
@@ -976,6 +1008,7 @@ class HomeFragment : Fragment(){
                         //THIS IS THE CONDITIONAL TO CHECK IF IT SHOULD COLLAPSE
                         val testing =streamToBeMoved.y
                         if(testing==0f && smallHeightPositioned){
+                            streamViewModel.setImmersiveMode(false)
                             animateContainerToScreenTop(
                                 containerViewToBeMoved=streamToBeMoved,
                                 startY=0,
@@ -1599,6 +1632,7 @@ class HomeFragment : Fragment(){
             setImmersiveMode(requireActivity().window)
 
             if(homeViewModel.clickedStreamerName.value.length >1) {
+                binding.horizontalClearChat.visibility = View.VISIBLE
 
 
 
@@ -1615,6 +1649,8 @@ class HomeFragment : Fragment(){
                                 screenWidth = screenWidth
                             )
                         } else {
+                            Log.d("ORIENTATIONCHECKING","streamViewModel.SETIMMERSIVEMODE()")
+                            streamViewModel.setImmersiveMode(true)
                             val chatView =
                                 binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
                             chatView.visibility = View.INVISIBLE
@@ -1650,6 +1686,7 @@ class HomeFragment : Fragment(){
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             horizontalFullScreenTap = false
+            streamViewModel.setImmersiveMode(false)
 
 
 

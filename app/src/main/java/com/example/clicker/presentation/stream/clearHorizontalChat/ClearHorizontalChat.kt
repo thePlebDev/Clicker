@@ -126,7 +126,7 @@ fun DraggableClearChat(
 ){
     val offsetX = rememberSaveable { mutableStateOf(0f) }
 
-    val maxWidthHalf = (Resources.getSystem().displayMetrics.widthPixels/2.5)*-1
+    val maxWidthHalf = (Resources.getSystem().displayMetrics.widthPixels/2)*-1
     var clearChatWidth by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
 
@@ -148,11 +148,13 @@ fun DraggableClearChat(
                 state = draggableState,
                 onDragStopped = {
 
-                    Log.d("TestingMaxWidthClear", "threshold crossed-->${offsetX.value <= maxWidthHalf}")
                     if (offsetX.value <= maxWidthHalf) {
+                        val newWidth =(Resources.getSystem().displayMetrics.widthPixels.toFloat()-clearChatWidth)
+                        Log.d("TestingMaxWidthClear", "OFFSET LESS. ANIMATE WIDTH")
+                        val oldValue =(fullImmersionWidth + clearChatWidth).toFloat()
                         draggableState.drag(MutatePriority.PreventUserInput) {
                             Animatable(offsetX.value).animateTo(
-                                targetValue = (fullImmersionWidth + clearChatWidth).toFloat(),
+                                targetValue = (newWidth*-1),
                                 tween(durationMillis = 300)
                             ) {
                                 dragBy(value - offsetX.value)
@@ -160,6 +162,7 @@ fun DraggableClearChat(
                         }
 
                     } else {
+                        Log.d("TestingMaxWidthClear", "OFFSET MORE. ANIMATE 0")
                         draggableState.drag(MutatePriority.PreventUserInput) {
                             Animatable(offsetX.value).animateTo(
                                 targetValue = 0f,
