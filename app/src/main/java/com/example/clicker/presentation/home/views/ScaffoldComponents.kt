@@ -204,21 +204,20 @@ import kotlinx.coroutines.launch
             pageCount = { 4 }
         )
 
+        val titleText = when(pagerState.currentPage){
+            0 ->"Live Channels"
+            1->"Mod Channels"
+            2->"Categories"
+            3->"Settings"
+            else->""
+        }
+
 
         NoDrawerScaffold(
             topBar = {
                 IconTextTopBarRow(
-                    icon={
-                        BasicIcon(
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Open left side drawer",
-                            onClick = {
-                                scope.launch { scaffoldState.drawerState.open() }
-                            }
-                        )
-                    },
-                    text=stringResource(R.string.live_channels),
+                    icon={},
+                    text=titleText,
                     fontSize = MaterialTheme.typography.headlineLarge.fontSize
                 )
             },
