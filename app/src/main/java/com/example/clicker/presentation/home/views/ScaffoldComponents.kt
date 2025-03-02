@@ -100,6 +100,7 @@ import com.example.clicker.presentation.sharedViews.DrawerScaffold
 import com.example.clicker.presentation.sharedViews.ErrorScope
 import com.example.clicker.presentation.sharedViews.LazyListLoadingIndicator
 import com.example.clicker.presentation.sharedViews.NewUserAlert
+import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import com.example.clicker.presentation.sharedViews.PullToRefreshComponent
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
 import com.example.clicker.presentation.stream.AutoModViewModel
@@ -200,13 +201,11 @@ import kotlinx.coroutines.launch
         val scope = rememberCoroutineScope()
         val pagerState = rememberPagerState(
             initialPage = 0,
-            pageCount = { 3 }
+            pageCount = { 4 }
         )
 
 
-
-        DrawerScaffold(
-            scaffoldState = scaffoldState,
+        NoDrawerScaffold(
             topBar = {
                 IconTextTopBarRow(
                     icon={
@@ -225,7 +224,8 @@ import kotlinx.coroutines.launch
             },
             bottomBar = {
 
-                this.TripleButtonNavigationBottomBarRow(
+
+                this.FourButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement = Arrangement.SpaceAround,
                     firstButton = {
@@ -275,34 +275,28 @@ import kotlinx.coroutines.launch
                               //  onNavigate(R.id.action_homeFragment_to_searchFragment)
                             },
                         )
+                    },
+                    fourthButton={
+                        this.PainterResourceIconOverTextColumn(
+                            iconColor = if(pagerState.currentPage ==3)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
+                            painter = painterResource(id = R.drawable.baseline_settings_24),
+                            iconContentDescription = "Navigate to Settings pag",
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Settings",
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(3)
+                                }
+
+                            },
+                        )
                     }
+
                 )
 
 
             },
-            drawerContent = {
-                LoginLogoutScaffoldDrawerBox(
-                    showLogoutDialog = {
-                        showLogoutDialog()
-                    },
-                    loginWithTwitch = {
-                        loginWithTwitch()
-                    },
-                    scaffoldState = scaffoldState,
-                    userIsLoggedIn = userIsLoggedIn,
-                    lowPowerModeActive=lowPowerModeActive,
-                    changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
-                    startService={startService()},
-                    endService={endService()},
-                    checkIfServiceRunning={checkIfServiceRunning()},
-                    backgroundServiceChecked=backgroundServiceChecked,
-                    changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)},
-                    grantedNotification= grantedNotifications,
-                    openAppSettings={openAppSettings()}
 
-                )
-
-            }
         ) { contentPadding ->
             //todo: THIS IS WHERE THE HORIZONTAL PAGER NEEDS OT GO
 
@@ -456,6 +450,29 @@ import kotlinx.coroutines.launch
                              )
 
                      }// END OF THE CATEGORIES
+                    3->{
+                        LoginLogoutScaffoldDrawerBox(
+                            showLogoutDialog = {
+                                showLogoutDialog()
+                            },
+                            loginWithTwitch = {
+                                loginWithTwitch()
+                            },
+                            scaffoldState = scaffoldState,
+                            userIsLoggedIn = userIsLoggedIn,
+                            lowPowerModeActive=lowPowerModeActive,
+                            changeLowPowerMode={newValue ->changeLowPowerMode(newValue)},
+                            startService={startService()},
+                            endService={endService()},
+                            checkIfServiceRunning={checkIfServiceRunning()},
+                            backgroundServiceChecked=backgroundServiceChecked,
+                            changeBackgroundServiceChecked={newValue ->changeBackgroundServiceChecked(newValue)},
+                            grantedNotification= grantedNotifications,
+                            openAppSettings={openAppSettings()},
+                            contentPadding = contentPadding
+
+                        )
+                    }
             }
         }
 
@@ -650,9 +667,11 @@ fun LoginWithTwitchBottomModalButtonColumn(
         changeBackgroundServiceChecked:(Boolean)->Unit,
         grantedNotification:Boolean,
         openAppSettings:() ->Unit,
+        contentPadding: PaddingValues,
     ) {
 
         Box(modifier = Modifier
+            .padding(contentPadding)
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)){
             Column(
