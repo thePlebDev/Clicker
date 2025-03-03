@@ -865,6 +865,7 @@ class HomeFragment : Fragment(){
 
                     }else{
                         streamViewModel.setImmersiveMode(true)
+                        binding.streamComposeView.visibility=View.GONE
 
                         animateContainerToScreenTop(
                             containerViewToBeMoved=streamToBeMoved,
@@ -885,6 +886,7 @@ class HomeFragment : Fragment(){
 
 
                 }else{
+
                     Log.d("ORIENTATIONtESTIN","vertical")
                     verticalAnimateSingleTap(
                         webView,screenHeight
