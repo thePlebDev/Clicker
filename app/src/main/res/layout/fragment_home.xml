@@ -26,6 +26,7 @@
 <!--        this is the place holder-->
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/webView"
+            android:background="@android:color/black"
 
             android:layout_width="0.dp"
             android:layout_height="0.dp"
@@ -56,6 +57,7 @@
         android:id="@+id/testing_constraint_again"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
 
         >
 
