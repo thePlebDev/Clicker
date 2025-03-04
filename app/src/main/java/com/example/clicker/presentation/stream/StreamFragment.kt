@@ -75,6 +75,7 @@ class StreamFragment : Fragment() {
         super.onResume()
         autoModViewModel.setHorizontalOverlayToVisible()
         autoModViewModel.setVerticalOverlayToVisible()
+
         val startIntent = Intent(requireActivity(), BackgroundStreamService::class.java)
         startIntent.action = BackgroundStreamService.Actions.END.toString()
         requireActivity().startService(startIntent)
