@@ -9,12 +9,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
@@ -136,6 +138,7 @@ fun ValidationView(
     val pagerState = rememberPagerState(
         pageCount = { 3 }
     )
+
 
 
                 HomeViewImplementation(
@@ -308,6 +311,31 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
         interactionSource = remember { MutableInteractionSource() },
         onClick = { }
     )
+}
+
+
+@Composable
+fun TestingRecordService(
+    startService: () -> Unit,
+    stopService:()->Unit,
+){
+    //needs to start a service and stop one
+
+    Box(modifier = Modifier.fillMaxSize()){
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .align(Alignment.Center)){
+            Button(onClick = { startService()}) {
+                Text("START")
+
+            }
+            Button(onClick = { stopService() }) {
+                Text("END")
+            }
+
+        }
+
+    }
 }
 
 

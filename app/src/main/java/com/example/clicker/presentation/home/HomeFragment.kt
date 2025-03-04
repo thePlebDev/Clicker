@@ -19,10 +19,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.util.Log
 import android.view.GestureDetector
-import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -33,14 +31,15 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.WindowCompat
@@ -71,6 +70,7 @@ import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSetti
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
+import com.example.clicker.services.ScreenRecordingService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -142,6 +142,11 @@ class HomeFragment : Fragment(){
     //lateinit private var myWebView:WebView
     var maxHeightNewWebView = 608 // Largest height allowed
 
+    //this is for the screen recorder
+    private var mScreenWidth = 0
+    private var mScreenHeight = 0
+    private var mScreenDensity = 0
+
 
 
 
@@ -150,6 +155,8 @@ class HomeFragment : Fragment(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("HomeFragmentLifeCycle","onCreate")
+       // registerRecordingToken()
+        initializeRegisterForActivityResult()
 
 
 
@@ -166,6 +173,100 @@ class HomeFragment : Fragment(){
 
 
     }
+    private val SCREEN_CAPTURE_REQUEST_CODE = 2001
+
+
+    // Method to request screen capture permission
+    private fun requestScreenCapture() {
+        val projectionManager =
+            requireContext().getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val captureIntent = projectionManager.createScreenCaptureIntent()
+        startActivityForResult(captureIntent, SCREEN_CAPTURE_REQUEST_CODE)
+    }
+//    this function data needs to be sent to the function above
+
+    private var mediaProjection: MediaProjection? = null
+    private lateinit var startMediaProjection: ActivityResultLauncher<Intent>
+
+    private fun registerRecordingToken() {
+        val mediaProjectionManager = getSystemService(requireContext(),MediaProjectionManager::class.java)
+
+        if (mediaProjectionManager != null) {
+            startMediaProjection.launch(mediaProjectionManager.createScreenCaptureIntent())
+        }
+    }
+    fun initializeRegisterForActivityResult(){
+        val mediaProjectionManager = getSystemService(requireContext(),MediaProjectionManager::class.java)
+
+        // Initialize registerForActivityResult outside the function
+        startMediaProjection = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK && mediaProjectionManager != null) {
+                Log.d("TESTINGTHEFRAGMENTCODE","SEND INTENT")
+                //THIS IS WHERE WE SEND THE INTENT
+                val startIntent = Intent(requireActivity(), ScreenRecordingService::class.java)
+                startIntent.action = BackgroundStreamService.Actions.START.toString()
+                startIntent.putExtra("code", result.resultCode);
+                startIntent.putExtra("data", result.data!!);
+                startIntent.putExtra("width", mScreenWidth);
+                startIntent.putExtra("height", mScreenHeight);
+                startIntent.putExtra("density", mScreenDensity);
+                requireActivity().startService(startIntent)
+                //mediaProjection = mediaProjectionManager.getMediaProjection(result.resultCode, result.data!!)
+            }else{
+
+                Log.d("TESTINGTHEFRAGMENTCODE","not good")
+            }
+        }
+    }
+
+    // Handle the result of the screen capture permission request
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SCREEN_CAPTURE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            startScreenRecordingService(data)
+        }
+    }
+
+    // Method to start the screen recording service
+    private fun startScreenRecordingService(data: Intent) {
+        val startIntent = Intent(requireActivity(), ScreenRecordingService::class.java)
+        startIntent.action = BackgroundStreamService.Actions.START.toString()
+        requireActivity().startService(startIntent)
+    }
+
+    // Sample method to call startForegroundService with a notification (for foreground service)
+    private fun startForegroundService(serviceIntent: Intent) {
+        val notification = NotificationCompat.Builder(requireContext(), "YOUR_CHANNEL_ID")
+            .setContentTitle("Screen Recording")
+            .setContentText("Recording in progress...")
+            .setSmallIcon(R.drawable.autorenew_24)
+            .setOngoing(true)
+            .build()
+
+        // Start the service with the notification and the appropriate foreground service type
+//        ServiceCompat.startForeground(
+//            requireContext(),
+//            99,  // Notification ID
+//            notification,
+//            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+//        )
+
+        // Start the service itself
+        requireContext().startService(serviceIntent)
+    }
+    private val RECORD_AUDIO_PERMISSION = Manifest.permission.RECORD_AUDIO
+    private val REQUEST_CODE = 100
+    fun requestAudioPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), RECORD_AUDIO_PERMISSION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(RECORD_AUDIO_PERMISSION), REQUEST_CODE)
+        }
+    }
+
+
 
 
     @SuppressLint("SuspiciousIndentation")
@@ -217,203 +318,221 @@ class HomeFragment : Fragment(){
 
 
 
+
+
+
         if(value !=UserTypes.NEW){
+            requestAudioPermission()
+
             binding.composeView.apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
                 setContent {
 
                     AppTheme{
-                        ValidationView(
-                            homeViewModel = homeViewModel,
-                            streamViewModel = streamViewModel,
-                            onNavigate = {
-                                    dest -> findNavController().navigate(dest)
+                        TestingRecordService(
+                            startService = {
+                                registerRecordingToken()
 
-
-                                         },
-                            autoModViewModel =autoModViewModel,
-                            updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
-                                Log.d("TestingNavigation","updateModViewSettings")
-
-                                modViewViewModel.updateAutoModTokens(
-                                    oAuthToken =oAuthToken,
-                                    clientId =clientId,
-                                    broadcasterId=broadcasterId,
-                                    moderatorId =moderatorId
-                                )
+                              //  requestScreenCapture()
                             },
-                            createNewTwitchEventWebSocket = {modViewViewModel.createNewTwitchEventWebSocket()
-                                homeViewModel.setShowHomeChat(true)
-                                animateContainerToScreenTop(
-                                    containerViewToBeMoved=streamToBeMoved,
-                                    startY=height,
-                                    endY = 0
-                                )
-                                val channelName = streamViewModel.channelName.value
-                                Log.d("CHANNELNAMENONENGLISH", "channelName -->$channelName")
-                                Log.d("CLICKEDtOnAVIGAE","CLICKED WEBSOCKET")
-                            },
-                            hapticFeedBackError = {
-                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                            },
-                            logoutViewModel=logoutViewModel,
-                            chatSettingsViewModel=chatSettingsViewModel,
-                            streamInfoViewModel=streamInfoViewModel,
-                            modViewViewModel=modViewViewModel,
-                            searchViewModel=searchViewModel,
-                            startService={
-                             //   val startIntent = Intent(this,BackgroundStreamService::class.java)
-                                testingPermissionAgain(requireContext())
-
-//                                val startIntent = Intent(context, BackgroundStreamService::class.java)
-//                                startIntent.action = BackgroundStreamService.Actions.START.toString()
-//                                context.startService(startIntent)
-
-
-                                         },
-                            endService={
-                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+                            stopService = {
+                                val startIntent = Intent(requireActivity(), ScreenRecordingService::class.java)
                                 startIntent.action = BackgroundStreamService.Actions.END.toString()
-                                context.startService(startIntent)
-                            },
-                            checkIfServiceRunning= {
-                                isServiceRunning(
-                                    context,
-                                    BackgroundStreamService::class.java
-                                )
-                            },
-                            openAppSettings = {
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                    putExtra(Settings.EXTRA_APP_PACKAGE, "elliott.software.clicker")  // Use your app's package name
-                                }
-                                startActivity(intent)
-                            },
-                            navigateToStream = {
-                                Log.d("TestingNavigation","navigateToStream")
-                                val oAuthToken = homeViewModel.oAuthToken.value  ?:""
-                                val clientId = homeViewModel.validatedUser.value?.clientId ?:""
-                                selfStreamingViewModel.setClientIdOAuthToken(
-                                    clientId = clientId,
-                                    oAuthToken =oAuthToken,
-                                    broadcasterId = homeViewModel.validatedUser.value?.userId ?:""
-                                )
-                               // findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
+                                requireActivity().startService(startIntent)
 
-
-                            },
-                            loadUrl  ={ channelName->
-                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-                                if(isLandScape){
-                                    streamViewModel.setImmersiveMode(true)
-                                   val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-                                    if(homeViewModel.clickedStreamerName.value != channelName){
-                                        Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
-                                        setWebViewAndLoadURL(
-                                            myWebView=newWebView,
-                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-                                        )
-
-                                    }
-
-
-                                    animateContainerToScreenTop(
-                                        containerViewToBeMoved=streamToBeMoved,
-                                        startY=screenHeight,
-                                        endY = 0
-                                    )
-
-                                    animateToTopLeftCon( //this should be it
-                                        newWebView,
-                                        screenWidth
-                                    )
-                                    horizontalFullScreenTap = false //this is for the overlay
-                                    smallHeightPositioned=false
-                                }else{
-
-                                if(homeViewModel.clickedStreamerName.value != channelName){
-                                    Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
-                                    setWebViewAndLoadURL(
-                                        myWebView=newWebView,
-                                        url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-                                    )
-
-                                }
-
-
-                                isDraggingWebView = false
-
-                                    //todo: THis where the animation function should go
-                                    animateWebViewToFullScreenVertical(
-                                        webView = newWebView
-                                    )
-
-                                    if(smallHeightPositioned){
-                                        animateChatVerticalMiniToFullScreen()
-                                    }
-                                smallHeightPositioned = false
-
-
-                        }//end of the else
-                            },
-                            webViewAnimation = { channelName->
-                                homeViewModel.setShowHomeChat(true)
-
-                                animateContainerToScreenTop(
-                                    containerViewToBeMoved=streamToBeMoved,
-                                    startY=windowMetrics.getBounds().height(),
-                                    endY = 0
-                                )
-                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                                if(isLandScape){
-                                    streamViewModel.setImmersiveMode(true)
-                                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-                                    if(homeViewModel.clickedStreamerName.value != channelName){
-                                        setWebViewAndLoadURL(
-                                            myWebView=newWebView,
-                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-                                        )
-
-                                    }
-                                    animateContainerToScreenTop(
-                                        containerViewToBeMoved=streamToBeMoved,
-                                        startY=screenHeight,
-                                        endY = 0
-                                    )
-
-                                    animateToTopLeftCon( //this should be it
-                                        newWebView,
-                                        screenWidth
-                                    )
-                                    horizontalFullScreenTap = false //this is for the overlay
-                                    smallHeightPositioned=false
-                                }else{
-
-                                    if(homeViewModel.clickedStreamerName.value != channelName){
-                                        setWebViewAndLoadURL(
-                                            myWebView=newWebView,
-                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
-                                        )
-
-                                    }
-
-
-                                    isDraggingWebView = false
-
-                                    //todo: THis where the animation function should go
-                                    animateWebViewToFullScreenVertical(
-                                        webView = newWebView
-                                    )
-
-                                    if(smallHeightPositioned){
-                                        animateChatVerticalMiniToFullScreen()
-                                    }
-                                    smallHeightPositioned = false
-
-                                }//end of the else
                             }
-
                         )
+//                        ValidationView(
+//                            homeViewModel = homeViewModel,
+//                            streamViewModel = streamViewModel,
+//                            onNavigate = {
+//                                    dest -> findNavController().navigate(dest)
+//
+//
+//                                         },
+//                            autoModViewModel =autoModViewModel,
+//                            updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+//                                Log.d("TestingNavigation","updateModViewSettings")
+//
+//                                modViewViewModel.updateAutoModTokens(
+//                                    oAuthToken =oAuthToken,
+//                                    clientId =clientId,
+//                                    broadcasterId=broadcasterId,
+//                                    moderatorId =moderatorId
+//                                )
+//                            },
+//                            createNewTwitchEventWebSocket = {modViewViewModel.createNewTwitchEventWebSocket()
+//                                homeViewModel.setShowHomeChat(true)
+//                                animateContainerToScreenTop(
+//                                    containerViewToBeMoved=streamToBeMoved,
+//                                    startY=height,
+//                                    endY = 0
+//                                )
+//                                val channelName = streamViewModel.channelName.value
+//                                Log.d("CHANNELNAMENONENGLISH", "channelName -->$channelName")
+//                                Log.d("CLICKEDtOnAVIGAE","CLICKED WEBSOCKET")
+//                            },
+//                            hapticFeedBackError = {
+//                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+//                            },
+//                            logoutViewModel=logoutViewModel,
+//                            chatSettingsViewModel=chatSettingsViewModel,
+//                            streamInfoViewModel=streamInfoViewModel,
+//                            modViewViewModel=modViewViewModel,
+//                            searchViewModel=searchViewModel,
+//                            startService={
+//                             //   val startIntent = Intent(this,BackgroundStreamService::class.java)
+//                                testingPermissionAgain(requireContext())
+//
+////                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+////                                startIntent.action = BackgroundStreamService.Actions.START.toString()
+////                                context.startService(startIntent)
+//
+//
+//                                         },
+//                            endService={
+//                                val startIntent = Intent(context, BackgroundStreamService::class.java)
+//                                startIntent.action = BackgroundStreamService.Actions.END.toString()
+//                                context.startService(startIntent)
+//                            },
+//                            checkIfServiceRunning= {
+//                                isServiceRunning(
+//                                    context,
+//                                    BackgroundStreamService::class.java
+//                                )
+//                            },
+//                            openAppSettings = {
+//                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+//                                    putExtra(Settings.EXTRA_APP_PACKAGE, "elliott.software.clicker")  // Use your app's package name
+//                                }
+//                                startActivity(intent)
+//                            },
+//                            navigateToStream = {
+//                                Log.d("TestingNavigation","navigateToStream")
+//                                val oAuthToken = homeViewModel.oAuthToken.value  ?:""
+//                                val clientId = homeViewModel.validatedUser.value?.clientId ?:""
+//                                selfStreamingViewModel.setClientIdOAuthToken(
+//                                    clientId = clientId,
+//                                    oAuthToken =oAuthToken,
+//                                    broadcasterId = homeViewModel.validatedUser.value?.userId ?:""
+//                                )
+//                               // findNavController().navigate(R.id.action_homeFragment_to_selfStreamingFragment)
+//
+//
+//                            },
+//                            loadUrl  ={ channelName->
+//                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//
+//                                if(isLandScape){
+//                                    streamViewModel.setImmersiveMode(true)
+//                                   val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+//                                    if(homeViewModel.clickedStreamerName.value != channelName){
+//                                        Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
+//                                        setWebViewAndLoadURL(
+//                                            myWebView=newWebView,
+//                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+//                                        )
+//
+//                                    }
+//
+//
+//                                    animateContainerToScreenTop(
+//                                        containerViewToBeMoved=streamToBeMoved,
+//                                        startY=screenHeight,
+//                                        endY = 0
+//                                    )
+//
+//                                    animateToTopLeftCon( //this should be it
+//                                        newWebView,
+//                                        screenWidth
+//                                    )
+//                                    horizontalFullScreenTap = false //this is for the overlay
+//                                    smallHeightPositioned=false
+//                                }else{
+//
+//                                if(homeViewModel.clickedStreamerName.value != channelName){
+//                                    Log.d("ChannelNameTestingthingers","homeViewModel.clickedStreamerName.value != channelName")
+//                                    setWebViewAndLoadURL(
+//                                        myWebView=newWebView,
+//                                        url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+//                                    )
+//
+//                                }
+//
+//
+//                                isDraggingWebView = false
+//
+//                                    //todo: THis where the animation function should go
+//                                    animateWebViewToFullScreenVertical(
+//                                        webView = newWebView
+//                                    )
+//
+//                                    if(smallHeightPositioned){
+//                                        animateChatVerticalMiniToFullScreen()
+//                                    }
+//                                smallHeightPositioned = false
+//
+//
+//                        }//end of the else
+//                            },
+//                            webViewAnimation = { channelName->
+//                                homeViewModel.setShowHomeChat(true)
+//
+//                                animateContainerToScreenTop(
+//                                    containerViewToBeMoved=streamToBeMoved,
+//                                    startY=windowMetrics.getBounds().height(),
+//                                    endY = 0
+//                                )
+//                                val isLandScape =resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//                                if(isLandScape){
+//                                    streamViewModel.setImmersiveMode(true)
+//                                    val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+//                                    if(homeViewModel.clickedStreamerName.value != channelName){
+//                                        setWebViewAndLoadURL(
+//                                            myWebView=newWebView,
+//                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+//                                        )
+//
+//                                    }
+//                                    animateContainerToScreenTop(
+//                                        containerViewToBeMoved=streamToBeMoved,
+//                                        startY=screenHeight,
+//                                        endY = 0
+//                                    )
+//
+//                                    animateToTopLeftCon( //this should be it
+//                                        newWebView,
+//                                        screenWidth
+//                                    )
+//                                    horizontalFullScreenTap = false //this is for the overlay
+//                                    smallHeightPositioned=false
+//                                }else{
+//
+//                                    if(homeViewModel.clickedStreamerName.value != channelName){
+//                                        setWebViewAndLoadURL(
+//                                            myWebView=newWebView,
+//                                            url="https://player.twitch.tv/?channel=$channelName&controls=false&muted=false&parent=modderz"
+//                                        )
+//
+//                                    }
+//
+//
+//                                    isDraggingWebView = false
+//
+//                                    //todo: THis where the animation function should go
+//                                    animateWebViewToFullScreenVertical(
+//                                        webView = newWebView
+//                                    )
+//
+//                                    if(smallHeightPositioned){
+//                                        animateChatVerticalMiniToFullScreen()
+//                                    }
+//                                    smallHeightPositioned = false
+//
+//                                }//end of the else
+//                            }
+//
+//                        )
                     }
 
                 }
@@ -504,6 +623,11 @@ class HomeFragment : Fragment(){
     ){
         webView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
+
+                val metrics = Resources.getSystem().displayMetrics
+                mScreenDensity = metrics.densityDpi
+                mScreenHeight =Resources.getSystem().displayMetrics.heightPixels
+                mScreenWidth = Resources.getSystem().displayMetrics.widthPixels
                 webView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 maxHeightNewWebView = webView.height
 
