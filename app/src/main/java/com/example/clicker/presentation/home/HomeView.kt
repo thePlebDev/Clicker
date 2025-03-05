@@ -321,7 +321,7 @@ fun TestingRecordService(
 ){
     //needs to start a service and stop one
 
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize().background(Color.Red)){
         Row(modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.Center)){

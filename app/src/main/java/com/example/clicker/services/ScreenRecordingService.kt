@@ -10,17 +10,22 @@ import android.content.pm.ServiceInfo
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
+import android.media.MediaScannerConnection
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.FileProvider
+import com.example.clicker.BuildConfig
 import com.example.clicker.R
 import java.io.File
 import java.io.IOException
@@ -40,6 +45,7 @@ class ScreenRecordingService : Service() {
     private var mScreenHeight = 0
     private var mScreenDensity = 0
     private var mVirtualDisplay: VirtualDisplay? = null
+    private var mFilePath = ""
 
 
 
@@ -66,9 +72,13 @@ class ScreenRecordingService : Service() {
                 mResultCode = intent.getIntExtra("code", -1);
                 mResultData = intent.getParcelableExtra("data")!!;
 
+                mFilePath= intent.getStringExtra("output_file_path")?:""
                 mScreenWidth = intent.getIntExtra("width", 0);
                 mScreenHeight = intent.getIntExtra("height", 0);
                 mScreenDensity = intent.getIntExtra("density", 1);
+                Log.d("SCREETHEIGHTANDWIDTHtESTING","mScreenWidth-->$mScreenWidth")
+                Log.d("SCREETHEIGHTANDWIDTHtESTING","mScreenHeight-->$mScreenHeight")
+
 
                 initRecorder()
                 initMediaProjection()
@@ -80,7 +90,7 @@ class ScreenRecordingService : Service() {
             BackgroundStreamService.Actions.END.toString()->{
                 //todo:I need to stop the recording
                 //STOP Recording
-                stopRecording()
+//                stopRecording()
                 stopSelf()
             }
         }
@@ -91,46 +101,28 @@ class ScreenRecordingService : Service() {
 
 
     }
-    private fun stopRecording() {
-        try {
-            mMediaRecorder.stop() // Stop recording and save file
-            // It is good practice to call this method when you're done using the MediaRecorder
-            mMediaRecorder.release()
-        } catch (e: Exception) {
-            Log.e("ScreenRecordingService", "Error stopping recorder: ${e.message}")
-        }
 
-        mVirtualDisplay?.release() // Release virtual display
-        mMediaProjection.stop() // Stop media projection
-    }
-    private val fileName: String by lazy {
-        "${externalCacheDir?.absolutePath}/audiorecordtest.3gp"
-    }
-    private val fileName2=getRecordingFilePath()
-    private fun getRecordingFilePath(): String {
-        val moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
-        val appDir = File(moviesDir, "YourAppName")
 
-        if (!appDir.exists()) {
-            appDir.mkdirs() // Ensure the directory exists
-        }
 
-        return File(appDir, "screen_recording_${System.currentTimeMillis()}.mp4").absolutePath
-    }
     @RequiresApi(Build.VERSION_CODES.S)
     fun initRecorder() {
         mMediaRecorder = MediaRecorder(this).apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)  // Set the audio source
             setVideoSource(MediaRecorder.VideoSource.SURFACE);
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4) // Set output format
-            setOutputFile(fileName2) // Set the output file path
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) // Set audio encoder
+            setOutputFile(mFilePath) // Set the output file path
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC) // Set audio encoder
             setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+
+            setVideoSize(mScreenWidth, mScreenHeight)  // Adjust to a higher resolution if needed
+
+            // Set bitrate (increase for better quality)
+            setVideoEncodingBitRate(8000000)
 
             try {
                 prepare() // Prepare the recorder
                 Log.e("initRecorderTest", "prepare() called")
-//                start()  // Start recording
+                start()  // Start recording
             } catch (e: IOException) {
                 Log.e("initRecorderTest", "prepare() failed: ${e.message}")
             }
@@ -178,37 +170,28 @@ class ScreenRecordingService : Service() {
         )
     }
 
-    //NOT IMPLEMENTING THIS RIGHT NOW
-    fun createNotification(): Notification {
-        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.alert_24)
-            .setContentTitle("Recording Screen")
-            .setContentText("RECORDING SCREEN CONTENT")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        return builder.build()
 
-    }
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is not in the Support Library.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            val descriptionText = "DESCRIBING THE CHANNEL"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system.
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
     override fun onDestroy() {
         resetAll()
         super.onDestroy()
 
+    }
+
+    private fun stopRecording() {
+        try {
+            mMediaRecorder.stop() // Stop recording and save file
+            // It is a good practice to call this method when you're done using the MediaRecorder
+            mMediaRecorder.release()
+            Log.e("ScreenRecordingService", "STOP SUCCESS")
+
+        } catch (e: Exception) {
+            Log.e("ScreenRecordingService", "Error stopping recorder: ${e.message}")
+        }
+
+        mVirtualDisplay?.release() // Release virtual display
+        mMediaProjection.stop() // Stop media projection
+        mVirtualDisplay = null
     }
 
     private fun resetAll() {
@@ -219,11 +202,13 @@ class ScreenRecordingService : Service() {
             mVirtualDisplay = null
         }
 
-            mMediaRecorder.setOnErrorListener(null)
-            mMediaRecorder.reset()
+        mMediaRecorder.setOnErrorListener(null)
+        mMediaRecorder.reset()
+        mMediaRecorder.release()
 
 
-            mMediaProjection.stop()
+        mMediaProjection.stop()
+
 
 
     }
