@@ -101,6 +101,12 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+    <SurfaceView
+        android:id="@+id/surface_view_testing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        />
 
 
 

@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.media.MediaScannerConnection
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
@@ -26,6 +27,8 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -83,6 +86,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -400,25 +404,60 @@ class HomeFragment : Fragment(){
                                         null
                                     )
                                     Log.d("stopStreamEncoding", "Recording stopped. Output file: $outputFile")
+                                    //TODO: BELOW IS THE SURFACE VIEW SHOWN TO THE USER
+                                    val surfaceView = binding.root.findViewById<SurfaceView>(R.id.surface_view_testing)
+                                    surfaceView.visibility = View.VISIBLE
+
+                                    // Initialize MediaPlayer
+                                    val mediaPlayer = MediaPlayer()
+
+                                    // Set up SurfaceHolder
+                                    val holder: SurfaceHolder = surfaceView.holder
+
+                                    holder.addCallback(object : SurfaceHolder.Callback {
+                                        override fun surfaceCreated(holder: SurfaceHolder) {
+                                            // Set the surface of MediaPlayer
+                                            mediaPlayer.setDisplay(holder)
+
+                                            try {
+                                                // Path to your video file
+                                                val videoPath = outputFile.absolutePath
+                                                mediaPlayer.setDataSource(videoPath) // Load the video file
+                                                mediaPlayer.prepare() // Prepare MediaPlayer for playback
+                                                mediaPlayer.start() // Start playback
+                                            } catch (e: IOException) {
+                                                e.printStackTrace()
+
+                                            }
+                                        }
+
+                                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+
+                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                            // Release the MediaPlayer when the surface is destroyed
+                                            mediaPlayer.release()
+                                        }
+                                    })
 
 
-                                    if (outputFile.exists()) {
-                                        Log.d("stopStreamEncoding", "EXISTS")
-                                        // Launch external activity via intent to play video recorded using our provider
-                                        startActivity(Intent().apply {
-                                            action = Intent.ACTION_VIEW
-                                            type = MimeTypeMap.getSingleton()
-                                                .getMimeTypeFromExtension(outputFile.extension)
-                                            val authority = "${BuildConfig.APPLICATION_ID}.provider"
-                                            data = FileProvider.getUriForFile(
-                                                view.context,
-                                                authority,
-                                                outputFile
-                                            )
-                                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                                                    Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                        })
-                                    }
+                                    //TODO: BELOW IS SHOWING IT TO THE USER
+//                                    if (outputFile.exists()) {
+//                                        Log.d("stopStreamEncoding", "EXISTS")
+//                                        // Launch external activity via intent to play video recorded using our provider
+//                                        startActivity(Intent().apply {
+//                                            action = Intent.ACTION_VIEW
+//                                            type = MimeTypeMap.getSingleton()
+//                                                .getMimeTypeFromExtension(outputFile.extension)
+//                                            val authority = "${BuildConfig.APPLICATION_ID}.provider"
+//                                            data = FileProvider.getUriForFile(
+//                                                view.context,
+//                                                authority,
+//                                                outputFile
+//                                            )
+//                                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+//                                                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                                        })
+//                                    }
                                 }
 
                             }
