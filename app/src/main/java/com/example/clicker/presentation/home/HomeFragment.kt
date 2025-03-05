@@ -12,11 +12,14 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.media.MediaMetadataRetriever
+import android.media.MediaScannerConnection
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -29,6 +32,7 @@ import android.view.ViewTreeObserver
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.webkit.MimeTypeMap
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.activity.result.ActivityResultLauncher
@@ -42,6 +46,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -49,6 +54,7 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.BuildConfig
 import com.example.clicker.R
@@ -73,6 +79,13 @@ import com.example.clicker.services.NetworkMonitorService
 import com.example.clicker.services.ScreenRecordingService
 import com.example.clicker.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -147,6 +160,25 @@ class HomeFragment : Fragment(){
     private var mScreenHeight = 0
     private var mScreenDensity = 0
 
+    private val outputFile: File by lazy { createFile(requireContext(), "mp4") }
+
+
+    /** Creates a [File] named with the current date and time */
+    private fun createFile(context: Context, extension: String): File {
+        val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+
+        // Save the video in the public Movies directory
+        val videoDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "YourAppName")
+
+        // Create the directory if it doesn't exist
+        if (!videoDir.exists()) {
+            videoDir.mkdirs()
+        }
+
+        return File(videoDir, "VID_${sdf.format(Date())}.$extension")
+    }
+
+
 
 
 
@@ -209,6 +241,7 @@ class HomeFragment : Fragment(){
                 startIntent.action = BackgroundStreamService.Actions.START.toString()
                 startIntent.putExtra("code", result.resultCode);
                 startIntent.putExtra("data", result.data!!);
+                startIntent.putExtra("output_file_path", outputFile.absolutePath)
                 startIntent.putExtra("width", mScreenWidth);
                 startIntent.putExtra("height", mScreenHeight);
                 startIntent.putExtra("density", mScreenDensity);
@@ -266,6 +299,22 @@ class HomeFragment : Fragment(){
         }
     }
 
+    fun getVideoInfo(filePath: String) {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(filePath)
+
+        val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+        val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+        val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+
+        Log.d("TestingBitRateThinger","Duration: $duration ms")
+        Log.d("TestingBitRateThinger","Width: $width px")
+        Log.d("TestingBitRateThinger","Height: $height px")
+        Log.d("TestingBitRateThinger","Bitrate: $bitrate bps")
+
+        retriever.release()
+    }
 
 
 
@@ -328,6 +377,7 @@ class HomeFragment : Fragment(){
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
                 setContent {
 
+
                     AppTheme{
                         TestingRecordService(
                             startService = {
@@ -339,6 +389,37 @@ class HomeFragment : Fragment(){
                                 val startIntent = Intent(requireActivity(), ScreenRecordingService::class.java)
                                 startIntent.action = BackgroundStreamService.Actions.END.toString()
                                 requireActivity().startService(startIntent)
+                                lifecycleScope.launch(Dispatchers.Main){
+                                    delay(2000)
+                                    getVideoInfo(outputFile.absolutePath)
+
+                                    MediaScannerConnection.scanFile(
+                                        context,
+                                        arrayOf(outputFile.absolutePath),
+                                        arrayOf("video/mp4"),
+                                        null
+                                    )
+                                    Log.d("stopStreamEncoding", "Recording stopped. Output file: $outputFile")
+
+
+                                    if (outputFile.exists()) {
+                                        Log.d("stopStreamEncoding", "EXISTS")
+                                        // Launch external activity via intent to play video recorded using our provider
+                                        startActivity(Intent().apply {
+                                            action = Intent.ACTION_VIEW
+                                            type = MimeTypeMap.getSingleton()
+                                                .getMimeTypeFromExtension(outputFile.extension)
+                                            val authority = "${BuildConfig.APPLICATION_ID}.provider"
+                                            data = FileProvider.getUriForFile(
+                                                view.context,
+                                                authority,
+                                                outputFile
+                                            )
+                                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                        })
+                                    }
+                                }
 
                             }
                         )
