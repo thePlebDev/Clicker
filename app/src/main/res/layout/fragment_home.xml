@@ -48,6 +48,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/webView" />
 
+        <!--        the long press view. Will be shown when user long presses   -->
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_view_long_press"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@android:color/black"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            />
+
 
         <!-- Other views go here -->
 

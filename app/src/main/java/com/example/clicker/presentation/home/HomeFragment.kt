@@ -42,6 +42,14 @@ import android.widget.FrameLayout
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.animation.doOnEnd
@@ -76,7 +84,9 @@ import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamViewModel
 import com.example.clicker.presentation.stream.clearHorizontalChat.ClearHorizontalChatView
 import com.example.clicker.presentation.stream.customWebViews.VerticalWebView
+import com.example.clicker.presentation.stream.setWebView
 import com.example.clicker.presentation.stream.views.chat.chatSettings.ChatSettingsViewModel
+import com.example.clicker.presentation.stream.views.horizontalLongPress.HorizontalLongPressView
 import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.services.BackgroundStreamService
 import com.example.clicker.services.NetworkMonitorService
@@ -651,6 +661,61 @@ class HomeFragment : Fragment(){
 
                 }
             }
+            binding.composeViewLongPress.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    AppTheme {
+                        HorizontalLongPressView(
+                            homeViewModel,
+                            streamViewModel = streamViewModel,
+                            loadURL ={newUrl ->
+                                //TODO: THIS NEEDS TO BE IMPLEMENTED WITH THE NEW LOADURL
+                               // Log.d("TESTINGNEWOUTURL","url -->$newUrl")
+//                                val regex = "(?<=channel=)[^&]+".toRegex()
+//                                val match = regex.find(newUrl)?.value?:""
+//                                Log.d("TESTINGNEWOUTURL","clicked stream -->${homeViewModel.clickedStreamerName.value}")
+//                                Log.d("TESTINGNEWOUTURL","clicked stream -->$match")
+//                                if(homeViewModel.clickedStreamerName.value != match ){
+
+                          //      Log.d("TESTINGNEWOUTURL","clicked stream -->$match")
+                                    setWebViewAndLoadURL(
+                                        myWebView=newWebView,
+                                        url=newUrl
+                                    )
+
+                               // }
+                             //   setWebView(webView,newUrl)
+                                     },
+                            createNewTwitchEventWebSocket ={modViewViewModel.createNewTwitchEventWebSocket()},
+                            updateClickedStreamInfo={clickedStreamInfo ->  streamViewModel.updateClickedStreamInfo(clickedStreamInfo)},
+                            updateModViewSettings = { oAuthToken,clientId,broadcasterId,moderatorId ->
+                                modViewViewModel.updateAutoModTokens(
+                                    oAuthToken =oAuthToken,
+                                    clientId =clientId,
+                                    broadcasterId=broadcasterId,
+                                    moderatorId =moderatorId
+                                )
+                            },
+                            updateStreamerName = { streamerName, clientId,broadcasterId,userId->
+                                streamViewModel.updateChannelNameAndClientIdAndUserId(
+                                    streamerName,
+                                    clientId,
+                                    broadcasterId,
+                                    userId,
+                                    login =homeViewModel.validatedUser.value?.login ?:"",
+                                    oAuthToken= homeViewModel.oAuthToken.value ?:""
+                                )
+                                streamInfoViewModel.getStreamInfo(
+                                    authorizationToken= homeViewModel.oAuthToken.value ?:"",
+                                    clientId = clientId,
+                                    broadcasterId= broadcasterId
+                                )
+                            }
+                        )
+                    }
+                }
+
+            }
 
         }
 
@@ -902,6 +967,7 @@ class HomeFragment : Fragment(){
     var horizontalLastX = 0f
 
     private var horizontalFullScreenTap = false
+    private var longPressView = false
 
 /**
  * setAndMoveGestureDetection sets a [GestureDetector](https://developer.android.com/reference/android/view/GestureDetector) on the
@@ -945,18 +1011,110 @@ class HomeFragment : Fragment(){
         }
         val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
 
+
+            @RequiresApi(Build.VERSION_CODES.R)
+            override fun onLongPress(e: MotionEvent) {
+                val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+                if(isLandscape &&!smallHeightPositioned){
+                    if(!horizontalFullScreenTap && !longPressView){
+                        Log.d("testingTheLongPress","IN NEW FEATURE")
+
+
+                        longPressWebViewAnimation(webView = webView)
+
+                        //TODO:SHOW THE FEATURE
+                        val longPressView = binding.root.findViewById<ComposeView>(R.id.compose_view_long_press)
+                        val horizontalSpringAnimationX =
+                            SpringAnimation(longPressView, SpringAnimation.X).apply {
+                                spring = SpringForce().apply {
+                                    dampingRatio =
+                                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                                    stiffness =
+                                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                                }
+                            }
+                        val horizontalSpringAnimationY =
+                            SpringAnimation(longPressView, SpringAnimation.Y).apply {
+                                spring = SpringForce().apply {
+                                    dampingRatio =
+                                        SpringForce.DAMPING_RATIO_NO_BOUNCY // Adjust bounce (0 = bouncy, 1 = smooth)
+                                    stiffness =
+                                        SpringForce.STIFFNESS_LOW // Lower = smoother motion
+                                }
+                            }
+
+
+                        val params = longPressView.layoutParams
+                        //this is animating its width
+                        val newLongPressWidth = (webView.width * 0.35).toInt()
+                        ValueAnimator.ofInt(params.width, newLongPressWidth).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val longPressViewParams = longPressView.layoutParams
+                                longPressViewParams.width = animator.animatedValue as Int
+                                longPressView.layoutParams = longPressViewParams
+                            }
+
+                            start()
+                        }
+                        val windowManager =
+                            context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                        val metrics = windowManager.currentWindowMetrics
+                        //CHAT HEIGHT
+                        val screenHeightTesting = metrics.bounds.height()
+
+
+                        Log.d("TestingChatHeight", "heightTesting-->${screenHeightTesting}")
+
+                        ValueAnimator.ofInt(params.height, screenHeightTesting).apply {
+                            duration = 300 // Adjust duration for the animation
+                            addUpdateListener { animator ->
+                                val longPressViewParams = longPressView.layoutParams
+                                longPressViewParams.height = animator.animatedValue as Int
+                                longPressView.layoutParams = longPressViewParams
+                            }
+                            doOnEnd {
+                                // animation done inside of doOnEnd to make sure we get the proper values
+                                val width = webView.width.toFloat()
+                                Log.d("TESTINGWEBVIEWwIDTH", "WIDTH-->$width")
+                                horizontalSpringAnimationX.animateToFinalPosition(0f)//need to delete this magic number
+                                horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
+                            }
+
+                            start()
+                        }
+                        longPressView.visibility = View.VISIBLE
+
+
+
+
+                    }else{
+                        Log.d("testingTheLongPress","OUT NEW FEATURE")
+
+                    }
+
+
+
+
+                }
+                super.onLongPress(e)
+            }
+
             @RequiresApi(Build.VERSION_CODES.R)
             override fun onDoubleTap(e: MotionEvent): Boolean {
+                binding.composeViewLongPress.visibility = View.GONE
                 val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                 Log.d("testinghorizontalfullscreen","horizontalFullScreenTap -->${horizontalFullScreenTap}")
                 Log.d("testinghorizontalfullscreen","isLandscape -->${isLandscape}")
                 if(!smallHeightPositioned) {
 
                     if (isLandscape) {
+
                         if (!horizontalFullScreenTap) {
                             //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
                             //BUT HAVE NOT DOUBLE TAPPED IT YET
-                            Log.d("horizontalFullScreenTaptesting","DOUBLETAP")
+                            Log.d("horizontalFullScreenTaptesting","NOT horizontalFullScreenTap")
                             streamViewModel.setImmersiveMode(false)
 
 
@@ -975,13 +1133,13 @@ class HomeFragment : Fragment(){
                                 webView=webView
                             )
 
-
-
                             horizontalFullScreenTap = true
 
 
                         } else {
+                            Log.d("horizontalFullScreenTaptesting","horizontalFullScreenTap")
                             streamViewModel.setImmersiveMode(true)
+                            longPressView = false
 
                             //I want to make the chat invisible
                             val chatView =
@@ -1023,16 +1181,22 @@ class HomeFragment : Fragment(){
 
                     if(!smallHeightPositioned){
                         //todo:THIS NEEDS TO BE FIXED
-                        val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
-                        composeView.visibility = View.VISIBLE
 
-                        //sets the overlay good enough
-                        composeView.x = 0f
-                        //this is to animate the overlay and show it
-                        horizontalAnimateSingleTap(
-                            webView
-                        )
-                        Log.d("ORIENTATIONtESTIN","HORIZONTAL SINGLE TAP big view")
+                            val composeView = binding.root.findViewById<ComposeView>(R.id.horizontal_overlay)
+                            composeView.visibility = View.VISIBLE
+
+                            //sets the overlay good enough
+                        if(!longPressView){
+                            composeView.x = 0f
+                        }
+
+                            //this is to animate the overlay and show it
+                            horizontalAnimateSingleTap(
+                                webView
+                            )
+                            Log.d("ORIENTATIONtESTIN","HORIZONTAL SINGLE TAP big view")
+
+
 
                     }else{
                         streamViewModel.setImmersiveMode(true)
@@ -1182,6 +1346,7 @@ class HomeFragment : Fragment(){
                         val testing =streamToBeMoved.y
                         if(testing==0f && smallHeightPositioned){
                             streamViewModel.setImmersiveMode(false)
+                            binding.composeViewLongPress.visibility = View.GONE
                             animateContainerToScreenTop(
                                 containerViewToBeMoved=streamToBeMoved,
                                 startY=0,
@@ -1300,6 +1465,38 @@ class HomeFragment : Fragment(){
 
 
 
+        }
+    }
+
+
+    fun longPressWebViewAnimation(
+        webView:WebView
+    ){
+        horizontalFullScreenTap = true
+        longPressView = true
+        val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
+        chatView.visibility = View.INVISIBLE
+        val newWidth = (webView.width * 0.65).toInt()
+        val webParams = webView.layoutParams
+        ValueAnimator.ofInt(webParams.width, newWidth).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                webParams.width = animator.animatedValue as Int
+                webView.layoutParams = webParams
+            }
+
+
+            start()
+        }
+        val totalScreenWidth =Resources.getSystem().displayMetrics.widthPixels
+        ValueAnimator.ofInt(webView.x.toInt(),totalScreenWidth-newWidth ).apply {
+            duration = 300 // Adjust duration for the animation
+            addUpdateListener { animator ->
+                val value = animator.animatedValue as Int
+                webView.x = value.toFloat()
+                binding.horizontalOverlay.x = (animator.animatedValue as Int).toFloat()
+            }
+            start()
         }
     }
 
@@ -1798,6 +1995,8 @@ class HomeFragment : Fragment(){
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         //safe guard agains the situations where no stream has been clicked
+
+        binding.composeViewLongPress.visibility = View.GONE
 
 
 
