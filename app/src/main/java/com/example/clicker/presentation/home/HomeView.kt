@@ -1,23 +1,29 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
 import android.util.Log
 import android.view.HapticFeedbackConstants
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
@@ -38,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.fragment.findNavController
 import com.example.clicker.R
 
@@ -57,6 +64,7 @@ import com.example.clicker.presentation.streamInfo.StreamInfoViewModel
 import com.example.clicker.util.Response
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.IOException
 import kotlin.coroutines.coroutineContext
 
 
@@ -318,24 +326,149 @@ fun Modifier.disableClickAndRipple(): Modifier = composed {
 fun TestingRecordService(
     startService: () -> Unit,
     stopService:()->Unit,
+    showRecording:Boolean,
+    filePath: String
 ){
     //needs to start a service and stop one
+    if(showRecording){
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Red)){
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.Center)){
-            Button(onClick = { startService()}) {
-                Text("START")
+       SurfaceViewInCompose(filePath=filePath)
+    }else{
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Red)){
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)){
+                Button(onClick = { startService()}) {
+                    Text("START")
 
-            }
-            Button(onClick = { stopService() }) {
-                Text("END")
+                }
+                Button(onClick = { stopService() }) {
+                    Text("END")
+                }
+
             }
 
         }
+    }
+
+
+}
+
+
+@Composable
+fun SurfaceViewInCompose(
+    filePath:String,
+) {
+    // Wrapping SurfaceView inside AndroidView
+    Box(){
+        val mediaPlayer = remember{MediaPlayer()}
+        var currentTime by remember { mutableStateOf(0) }
+        var isPlaying by remember { mutableStateOf(false) }
+
+        LaunchedEffect(mediaPlayer.currentPosition) {
+            while (true) {
+                isPlaying = mediaPlayer.isPlaying // Track play state
+                if (mediaPlayer.isPlaying) {
+                    currentTime = mediaPlayer.currentPosition
+                }
+                delay(1000) // Update every 1 seconds
+            }
+        }
+        AndroidView(
+            factory = { context ->
+                SurfaceView(context).apply {
+                    // You can set up the SurfaceView (e.g., for video rendering) here
+                    // Example: set up a MediaPlayer or SurfaceHolder
+
+
+                    // Set up SurfaceHolder
+                    val holder: SurfaceHolder = this.holder
+
+                    holder.addCallback(object : SurfaceHolder.Callback {
+                        override fun surfaceCreated(holder: SurfaceHolder) {
+                            // Set the surface of MediaPlayer
+                            mediaPlayer.setDisplay(holder)
+
+                            try {
+                                // Path to your video file
+                                val videoPath =filePath
+                                mediaPlayer.setDataSource(videoPath) // Load the video file
+                                mediaPlayer.prepare() // Prepare MediaPlayer for playback
+                                mediaPlayer.start() // Start playback
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+
+                            }
+                        }
+
+                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+
+                        override fun surfaceDestroyed(holder: SurfaceHolder) {
+                            // Release the MediaPlayer when the surface is destroyed
+                            mediaPlayer.release()
+                        }
+                    })
+                }
+            },
+            modifier = Modifier.fillMaxSize() // You can modify its size as needed
+        )
+        Row(modifier=Modifier.fillMaxSize().align(Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround,
+
+        ){
+
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_fast_rewind_24 ),
+                contentDescription ="play button",tint=Color.Green,
+                modifier = Modifier.size(45.dp).clickable {
+                    val currentPos = mediaPlayer.currentPosition
+                    val newPos = (currentPos - 1000).coerceAtLeast(0) // Rewind 1 second
+                    mediaPlayer.seekTo(newPos)
+
+                }
+            )
+            if (isPlaying){
+                Icon(
+                    painter = painterResource(id =R.drawable.baseline_pause_24 ),
+                    contentDescription ="pause button" ,tint=Color.Green,
+                    modifier = Modifier.size(45.dp).clickable{
+                        mediaPlayer.pause()
+                    }
+                )
+
+            }else{
+                Icon(
+                    painter = painterResource(id =R.drawable.baseline_play_arrow_24 ),
+                    contentDescription ="play button" ,tint=Color.Green,
+                    modifier = Modifier.size(45.dp).clickable{
+                        mediaPlayer.start()
+
+                    }
+                )
+
+            }
+
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_fast_forward_24),
+                contentDescription ="play button" ,tint=Color.Green,
+                modifier = Modifier.size(45.dp).clickable{
+                    val currentPos = mediaPlayer.currentPosition
+                    val newPos = (currentPos + 1000).coerceAtMost(mediaPlayer.duration) // Forward 1 second
+                    mediaPlayer.seekTo(newPos)
+                }
+            )
+
+        }
+        Text("$currentTime",
+            fontSize = 40.sp,
+            modifier = Modifier.align(Alignment.BottomCenter), color = Color.Magenta)
+
 
     }
+
 }
 
 
