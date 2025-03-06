@@ -73,8 +73,8 @@ class HomeViewModel @Inject constructor(
     private var _showHomeChat: MutableState<Boolean> = mutableStateOf(false)
     val showHomeChat: State<Boolean> = _showHomeChat
 
-    private var _webViewIsLoading: MutableState<Boolean> = mutableStateOf(false)
-    val webViewIsLoading: State<Boolean> = _webViewIsLoading
+    private var _showRecording: MutableState<Boolean> = mutableStateOf(false)
+    val showRecording: State<Boolean> = _showRecording
 
     /**
      * A list representing all the channels that are live
@@ -83,8 +83,8 @@ class HomeViewModel @Inject constructor(
 
 
 
-    fun setWebViewIsLoading(value:Boolean){
-        _webViewIsLoading.value = value
+    fun setShowRecording(value:Boolean){
+        _showRecording.value = value
     }
     fun setShowHomeChat(value:Boolean){
         _showHomeChat.value = value

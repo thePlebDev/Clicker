@@ -404,40 +404,9 @@ class HomeFragment : Fragment(){
                                         null
                                     )
                                     Log.d("stopStreamEncoding", "Recording stopped. Output file: $outputFile")
-                                    //TODO: BELOW IS THE SURFACE VIEW SHOWN TO THE USER
-                                    val surfaceView = binding.root.findViewById<SurfaceView>(R.id.surface_view_testing)
-                                    surfaceView.visibility = View.VISIBLE
+                                    homeViewModel.setShowRecording(true)
 
-                                    // Initialize MediaPlayer
-                                    val mediaPlayer = MediaPlayer()
 
-                                    // Set up SurfaceHolder
-                                    val holder: SurfaceHolder = surfaceView.holder
-
-                                    holder.addCallback(object : SurfaceHolder.Callback {
-                                        override fun surfaceCreated(holder: SurfaceHolder) {
-                                            // Set the surface of MediaPlayer
-                                            mediaPlayer.setDisplay(holder)
-
-                                            try {
-                                                // Path to your video file
-                                                val videoPath = outputFile.absolutePath
-                                                mediaPlayer.setDataSource(videoPath) // Load the video file
-                                                mediaPlayer.prepare() // Prepare MediaPlayer for playback
-                                                mediaPlayer.start() // Start playback
-                                            } catch (e: IOException) {
-                                                e.printStackTrace()
-
-                                            }
-                                        }
-
-                                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
-
-                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
-                                            // Release the MediaPlayer when the surface is destroyed
-                                            mediaPlayer.release()
-                                        }
-                                    })
 
 
                                     //TODO: BELOW IS SHOWING IT TO THE USER
@@ -460,7 +429,9 @@ class HomeFragment : Fragment(){
 //                                    }
                                 }
 
-                            }
+                            },
+                            showRecording = homeViewModel.showRecording.value,
+                            filePath = outputFile.absolutePath
                         )
 //                        ValidationView(
 //                            homeViewModel = homeViewModel,
