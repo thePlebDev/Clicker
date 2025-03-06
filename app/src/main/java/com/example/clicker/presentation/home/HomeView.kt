@@ -1,7 +1,9 @@
 package com.example.clicker.presentation.home
 
 import android.annotation.SuppressLint
+import android.hardware.display.DisplayManager
 import android.media.MediaPlayer
+import android.media.projection.MediaProjection
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.SurfaceHolder
@@ -327,31 +329,35 @@ fun TestingRecordService(
     startService: () -> Unit,
     stopService:()->Unit,
     showRecording:Boolean,
-    filePath: String
+    filePath: String,
+    mediaProjection: MediaProjection?
 ){
     //needs to start a service and stop one
-    if(showRecording){
-
-       SurfaceViewInCompose(filePath=filePath)
-    }else{
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Red)){
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center)){
-                Button(onClick = { startService()}) {
-                    Text("START")
-
-                }
-                Button(onClick = { stopService() }) {
-                    Text("END")
-                }
-
-            }
-
-        }
-    }
+    ScreenProjectionView(
+        mediaProjection=mediaProjection
+    )
+//    if(showRecording){
+//
+//       SurfaceViewInCompose(filePath=filePath)
+//    }else{
+//        Box(modifier = Modifier
+//            .fillMaxSize()
+//            .background(Color.Red)){
+//            Row(modifier = Modifier
+//                .fillMaxWidth()
+//                .align(Alignment.Center)){
+//                Button(onClick = { startService()}) {
+//                    Text("START")
+//
+//                }
+//                Button(onClick = { stopService() }) {
+//                    Text("END")
+//                }
+//
+//            }
+//
+//        }
+//    }
 
 
 }
@@ -466,6 +472,49 @@ fun SurfaceViewInCompose(
             fontSize = 40.sp,
             modifier = Modifier.align(Alignment.BottomCenter), color = Color.Magenta)
 
+
+    }
+
+}
+
+@Composable
+fun ScreenProjectionView(
+    mediaProjection: MediaProjection?
+) {
+    Box(modifier=Modifier.fillMaxSize()){
+        if(mediaProjection !=null){
+            AndroidView(
+                modifier = Modifier.height(500.dp).width(500.dp),
+                factory = { context ->
+                    SurfaceView(context).apply {
+                        val surface = this.holder.surface
+
+                        val displayMetrics = context.resources.displayMetrics
+                        val width = displayMetrics.widthPixels
+                        val height = displayMetrics.heightPixels
+                        val density = displayMetrics.densityDpi
+
+                        // Create VirtualDisplay for screen mirroring
+                        val virtualDisplay = mediaProjection.createVirtualDisplay(
+                            "ScreenProjection",
+                            width, height, density,
+                            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+                            surface, null, null
+                        )
+
+                        // Stop projection when SurfaceView is destroyed
+                        this.holder.addCallback(object : SurfaceHolder.Callback {
+                            override fun surfaceCreated(holder: SurfaceHolder) {}
+                            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+                            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                virtualDisplay.release()
+                                mediaProjection.stop()
+                            }
+                        })
+                    }
+                },
+            )
+        }
 
     }
 
