@@ -1,5 +1,6 @@
 package com.example.clicker.presentation.home
 
+import android.media.projection.MediaProjection
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -82,6 +83,13 @@ class HomeViewModel @Inject constructor(
     val liveUserNames = mutableStateListOf<String>()
 
 
+    private var _mediaProjectionState = mutableStateOf<MediaProjection?>(null)
+    val mediaProjectionState: State<MediaProjection?> = _mediaProjectionState
+
+
+    fun setMediaProjectionState(value:MediaProjection){
+        _mediaProjectionState.value = value
+    }
 
     fun setShowRecording(value:Boolean){
         _showRecording.value = value
