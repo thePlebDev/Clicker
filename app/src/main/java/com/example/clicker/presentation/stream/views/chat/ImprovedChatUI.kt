@@ -2096,7 +2096,7 @@ fun EnterChatColumn(
         filteredRow()
         Row(modifier = Modifier.background(MaterialTheme.colorScheme.primary),
             verticalAlignment = Alignment.CenterVertically){
-            showModStatus()
+           // showModStatus()
             stylizedTextField(modifier = Modifier.weight(2f))
             showIconBasedOnTextLength()
         }
