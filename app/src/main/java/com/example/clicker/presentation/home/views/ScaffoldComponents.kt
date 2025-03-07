@@ -15,6 +15,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,6 +73,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -320,7 +322,17 @@ import kotlinx.coroutines.launch
 
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            Log.d("TESTINGoNUPTHINGERS","HorizontalPager-->onpress")
+                        },
+                        onTap = {
+
+                            Log.d("TESTINGoNUPTHINGERS","HorizontalPager-->TAP")
+                        }
+                    )
+                }
             ) { page ->
 
                 // Our page content

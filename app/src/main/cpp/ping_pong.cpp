@@ -116,33 +116,9 @@ bool setupGraphics(int w, int h){
     glViewport(0, 0, w, h);
     return true;
 }
-// the X coordinates are 0,3,6,9,12,15
-// the Y coordinates are 1,4,7,10,13,16
- GLfloat triangleVerticesPractice[] = {
-        // First paddle half
-        -0.5f,  0.95f, 0.0f,  // Top right
-        -0.5f, 1.0f, 0.0f,  // Bottom right
-        -1.0f,  1.0f, 0.0f,  // Top left
 
-        // Second paddle half
-        -0.5f,  0.95f, 0.0f,  // Top right
-        -1.00f, 0.95f, 0.0f,  // Bottom right
-        -1.00f,  1.0f, 0.0f,  // Top left
-
-
-
-};
 //This is the paddles
 GLfloat triangleVertices[] = {
-        // First triangle (original rectangle)
-        0.08f,  0.04f, 0.0f,  // Top right
-        0.08f, -0.04f, 0.0f,  // Bottom right
-        -0.08f,  0.04f, 0.0f,  // Top left
-
-        // Second triangle (original rectangle)
-        0.08f, -0.04f, 0.0f,  // Bottom right
-        -0.08f, -0.04f, 0.0f,  // Bottom left
-        -0.08f,  0.04f, 0.0f,  // Top left
 
         // First TOP paddle half
         -0.5f,  0.95f, 0.0f,  // Top right
@@ -154,12 +130,31 @@ GLfloat triangleVertices[] = {
         -1.00f, 0.95f, 0.0f,  // Bottom right
         -1.00f,  1.0f, 0.0f,  // Top left
 
-        // SECOND TOP paddle half
+
+
+
+
+        // First BALL HALF (THE BALL)
+        0.08f,  0.04f, 0.0f,  // Top right
+        0.08f, -0.04f, 0.0f,  // Bottom right
+        -0.08f,  0.04f, 0.0f,  // Top left
+
+        // Second BALL HALF  (THE BALL)
+        0.08f, -0.04f, 0.0f,  // Bottom right
+        -0.08f, -0.04f, 0.0f,  // Bottom left
+        -0.08f,  0.04f, 0.0f,  // Top left
+
+
+
+
+
+
+        // FIRST BOTTOM paddle half
         0.5f,  -0.95f, 0.0f,  // Top right
         0.5f, -1.0f, 0.0f,  // Bottom right
         1.0f,  -1.0f, 0.0f,  // Top left
 
-        // SECOND TOP paddle half
+        // SECOND BOTTOM paddle half
         0.5f,  -0.95f, 0.0f,  // Top right
         1.00f, -0.95f, 0.0f,  // Bottom right
         1.00f,  -1.0f, 0.0f,  // Top left
@@ -195,18 +190,25 @@ void updateTriangle(
             triangleVertices[i] = fmaxf(-1.0f, fminf(1.0f, newX));
         }
     }
-
-
     // Update the X coordinates
-
-
-//    //this only updates the Y COORDINATES
-//    for (int i = 1; i < 18; i += 3) {
-//        LOGI("RENDERFRAMECHECK",  "i ==> %d",i);
-//        triangleVertices[i] += 0.01f;
-//    }
+    //this only updates the Y COORDINATES
+    for (int i = 1; i < 18; i += 3) {
+        LOGI("RENDERFRAMECHECK",  "i ==> %d",i);
+        triangleVertices[i] += 0.01f;
+    }
 
 }
+void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
+    // Indices of y-coordinates for bottom paddle
+    int indices[] = {36, 39, 42, 45, 48, 51};
+    float newX = dx/40;
+    LOGI("NEWXCHECK",  "newX ==> %f",newX);
+
+    for (int i = 0; i < 6; i++) {
+        vertices[indices[i]] += newX;  // Apply translation
+    }
+}
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -220,6 +222,8 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,
                                                                           jfloat x_value,
                                                                           jfloat y_value) {
-    updateTriangle(x_value,y_value);
+    //updateTriangle(x_value,y_value);
+    moveBottomPaddleXAxis(triangleVertices,x_value);
+    glFlush();  // Force OpenGL to process commands immediately
     renderFrame();
 }
