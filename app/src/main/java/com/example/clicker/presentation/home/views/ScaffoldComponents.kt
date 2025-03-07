@@ -201,7 +201,7 @@ import kotlinx.coroutines.launch
         val scope = rememberCoroutineScope()
         val pagerState = rememberPagerState(
             initialPage = 0,
-            pageCount = { 4 }
+            pageCount = { 5 }
         )
 
         val titleText = when(pagerState.currentPage){
@@ -209,6 +209,7 @@ import kotlinx.coroutines.launch
             1->"Mod Channels"
             2->"Categories"
             3->"Settings"
+            4->"Mini Game"
             else->""
         }
 
@@ -224,7 +225,7 @@ import kotlinx.coroutines.launch
             bottomBar = {
 
 
-                this.FourButtonNavigationBottomBarRow(
+                this.FiveButtonNavigationBottomBarRow(
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                     horizontalArrangement = Arrangement.SpaceAround,
                     firstButton = {
@@ -246,7 +247,7 @@ import kotlinx.coroutines.launch
                     secondButton = {
                         PainterResourceIconOverTextColumn(
                             iconColor = if(pagerState.currentPage ==1)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
-                            text = "Mod Channels",
+                            text = "Mod",
                             painter = painterResource(R.drawable.moderator_white),
                             iconContentDescription = "Navigate to mod channel page",
                             onClick = {
@@ -279,12 +280,27 @@ import kotlinx.coroutines.launch
                         this.PainterResourceIconOverTextColumn(
                             iconColor = if(pagerState.currentPage ==3)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
                             painter = painterResource(id = R.drawable.baseline_settings_24),
-                            iconContentDescription = "Navigate to Settings pag",
+                            iconContentDescription = "Navigate to Settings page",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
                             text = "Settings",
                             onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(3)
+                                }
+
+                            },
+                        )
+                    },
+                    fiveButton = {
+                        this.PainterResourceIconOverTextColumn(
+                            iconColor = if(pagerState.currentPage ==4)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
+                            painter = painterResource(id = R.drawable.videogame_asset),
+                            iconContentDescription = "Navigate to Mini game page",
+                            fontColor = MaterialTheme.colorScheme.onPrimary,
+                            text = "Mini game",
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(4)
                                 }
 
                             },
@@ -471,6 +487,9 @@ import kotlinx.coroutines.launch
                             contentPadding = contentPadding
 
                         )
+                    }
+                    4->{
+
                     }
             }
         }
