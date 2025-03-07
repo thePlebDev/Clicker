@@ -72,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -92,6 +93,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.minigames.views.PingPongViewGLSurfaceViewComposable
 import com.example.clicker.presentation.moderatedChannelsHome.views.ModChannelView
 import com.example.clicker.presentation.search.SearchViewModel
 import com.example.clicker.presentation.search.views.SearchView
@@ -212,6 +214,7 @@ import kotlinx.coroutines.launch
             4->"Mini Game"
             else->""
         }
+        val context = LocalContext.current
 
 
         NoDrawerScaffold(
@@ -490,6 +493,12 @@ import kotlinx.coroutines.launch
                     }
                     4->{
 
+                        PingPongViewGLSurfaceViewComposable(
+                            context = context,
+                            modifier = Modifier
+                                .padding(contentPadding)
+                                .fillMaxSize()
+                        )
                     }
             }
         }
