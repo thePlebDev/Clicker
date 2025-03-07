@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -126,7 +128,17 @@ fun PingPongViewGLSurfaceViewComposable(
         factory = {
             PingPongView(context)
         },
-        modifier = modifier
+        modifier = modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onPress = {
+                    Log.d("TESTINGoNUPTHINGERS","onpress")
+                          },
+                onTap = {
+
+                    Log.d("TESTINGoNUPTHINGERS","TAP")
+                }
+            )
+        }
     )
 }
 
@@ -148,6 +160,7 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         event ?: return false
+        v?.parent?.requestDisallowInterceptTouchEvent(true)
         // Get screen dimensions
         val width = width.toFloat()
         val height = height.toFloat()
@@ -164,12 +177,6 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                val testing =(glX*100).roundToInt()
-                val testing3 =(glX*100).roundToInt()
-                val testing5 =((glX%5)*100).roundToInt()
-                Log.d("TESTINGACtionMove", "2 -->$testing: ${(testing%2) ==0 }, GL Y: $glY")
-//                Log.d("TESTINGACtionMove", "3 -->$testing3: ${(testing3%3) ==0}")
-//                Log.d("TESTINGACtionMove", "5 -->$testing5: ${(testing5%5) ==0 }")
 
                 renderer.setXValue(glX)
                 renderer.setYValue(glY)
@@ -219,6 +226,7 @@ class Renderer : GLSurfaceView.Renderer {
         //   NativeSquareLoading.step() // this is the checker board
 
         //  NativeBlurEffect.step() // this is the blur effect
+        Log.d("actiontesting","move -->${move.name}")
         when(move){
             Movement.INIT ->{
                 PingPongSystem.move(xValue,yValue)
