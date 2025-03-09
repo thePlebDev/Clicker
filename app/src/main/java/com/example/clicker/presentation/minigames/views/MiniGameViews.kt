@@ -175,16 +175,8 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
             MotionEvent.ACTION_DOWN -> {
 
                 Log.d("TESTINGACtionMoveTouch","glX->$glX glY->$glY")
+                renderer.checkIfPaddleClicked(glX,glY)
 
-              //  renderer.onTouch(event.x, event.y, isDragging = false)
-                if (glX in 0.5..1.0 && glY in -1.0..-0.95) {
-                    Log.d("TESTINGACtionMoveTouch","PADDLE CLICKED")
-
-                    renderer.setClicked(true)
-
-                }else{
-                    Log.d("TESTINGACtionMoveTouch","PADDLE MISSED")
-                }
                 return true
             }
 
@@ -234,6 +226,10 @@ class Renderer : GLSurfaceView.Renderer {
     fun setClicked(value:Boolean){
         PingPongSystem.bottomPaddleClicked(value)
     }
+    fun checkIfPaddleClicked(xValue:Float,yValue: Float){
+        PingPongSystem.checkIfPaddleClicked(xValue, yValue)
+
+    }
 
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
@@ -277,6 +273,8 @@ object PingPongSystem{
     external fun move(xValue:Float,yValue:Float)
 
     external fun bottomPaddleClicked(clicked:Boolean)
+
+    external fun checkIfPaddleClicked(xValue:Float,yValue:Float)
 
 
 }
