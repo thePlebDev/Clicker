@@ -17,6 +17,7 @@
 enum Movement {INIT, MOVE, STOP};
 
 Movement bottomPaddleMovementState = INIT;
+float initialClick =0.0f;
 
 //source code for the vertex shade
 // we define, attribute vec4 vPosition; as the input for the shader
@@ -172,33 +173,10 @@ void renderFrame(){
     glDrawArrays(GL_TRIANGLES, 0, 18);
    // glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-void updateTriangle(
-        float xValue,
-        float yValue
-        ){
 
-    float newX = triangleVertices[6] + xValue/40;
-    float newXRight = triangleVertices[0] + xValue/40;
-    LOGI("RENDERFRAMECHECK", "triangleVertices[6]newX ==> %f", newX);
-    if(newX>-1 && newXRight<1){
-        for (int i = 0; i < 18; i += 3) {
-            // LOGI("RENDERFRAMECHECK", "currentXValue  ==> %f", triangleVertices[i]);
-
-            // Calculate new position
-            float newX = triangleVertices[i] + xValue/40;
-
-            // Clamp between -1.0 and 1.0
-            triangleVertices[i] = fmaxf(-1.0f, fminf(1.0f, newX));
-        }
-    }
-    // Update the X coordinates
-    //this only updates the Y COORDINATES
-    for (int i = 1; i < 18; i += 3) {
-        LOGI("RENDERFRAMECHECK",  "i ==> %d",i);
-        triangleVertices[i] += 0.01f;
-    }
-
-}
+/**
+ * moveBottomPaddleXAxis is moving the paddle acrosse the screen
+ * */
 void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
     // Indices of y-coordinates for bottom paddle
     int indices[] = {36, 39, 42, 45, 48, 51};
@@ -209,6 +187,20 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
         vertices[indices[i]] += newX;  // Apply translation
     }
 }
+void moveBall(GLfloat *vertices, GLfloat dy){
+
+    // todo: make this move the ball up
+    float newY = (dy/80)*-1;
+    
+    if(vertices[19] <1){
+        for (int i = 19; i < 36; i+=3){
+            vertices[i] += newY;
+        }
+    }
+
+
+
+}
 
 
 extern "C"
@@ -218,6 +210,9 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv
 }
 
 
+/**
+ * TODO: THIS SHOULD NOT BE CALLED CONSTANTLY LIKE IT IS. WILL CHANGE LATER
+ * */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,jfloat x_value,jfloat y_value) {
@@ -228,7 +223,8 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv
         }
         case MOVE:{
             LOGI("bottomPaddleMovementState",  "MOVE");
-           // moveBottomPaddleXAxis(triangleVertices,x_value);
+           moveBottomPaddleXAxis(triangleVertices,x_value);
+
             break;
         }
         case STOP:{
@@ -237,6 +233,7 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv
         }
 
     }
+    moveBall(triangleVertices,y_value);
 
     glFlush();  // Force OpenGL to process commands immediately
     renderFrame();
@@ -263,6 +260,7 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_checkIfPadd
     //this type of movement based on bottomPaddleMovementState = MOVE; should be changed eventualy to
     //create smoother movement
     if (triangleVertices[36] && x_value <= triangleVertices[51]  && y_value >= triangleVertices[52] && y_value <= triangleVertices[37]) {
+        initialClick = x_value;
         bottomPaddleMovementState = MOVE;
     } else {
 
