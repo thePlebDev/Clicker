@@ -173,23 +173,27 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                renderer.setMoveValue(Movement.MOVE)
+
+                Log.d("TESTINGACtionMoveTouch","glX->$glX glY->$glY")
 
               //  renderer.onTouch(event.x, event.y, isDragging = false)
-                if (glX in 0.5..1.0 || glY in -1.0..-0.95) {
+                if (glX in 0.5..1.0 && glY in -1.0..-0.95) {
                     Log.d("TESTINGACtionMoveTouch","PADDLE CLICKED")
+                    renderer.setMoveValue(Movement.MOVE)
 
                 }else{
                     Log.d("TESTINGACtionMoveTouch","PADDLE MISSED")
                 }
                 return true
             }
+
+
             MotionEvent.ACTION_MOVE -> {
 
 
                 renderer.setXValue(glX)
                 renderer.setYValue(glY)
-                //renderer.onTouch(event.x, event.y, isDragging = true)
+
                 return true
             }
             MotionEvent.ACTION_UP -> {
@@ -239,7 +243,7 @@ class Renderer : GLSurfaceView.Renderer {
         Log.d("actiontesting","move -->${move.name}")
         when(move){
             Movement.INIT ->{
-                PingPongSystem.move(xValue,yValue)
+                PingPongSystem.move(0f,0f)
             }
             Movement.MOVE->{
                 PingPongSystem.move(xValue,yValue)
