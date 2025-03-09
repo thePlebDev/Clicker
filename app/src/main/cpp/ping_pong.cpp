@@ -150,9 +150,6 @@ GLfloat triangleVertices[] = {
 
 
 
-
-
-
         // FIRST BOTTOM paddle half
         0.5f,  -0.95f, 0.0f,  // Top right
         0.5f, -1.0f, 0.0f,  // Bottom right
@@ -231,7 +228,7 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv
         }
         case MOVE:{
             LOGI("bottomPaddleMovementState",  "MOVE");
-            moveBottomPaddleXAxis(triangleVertices,x_value);
+           // moveBottomPaddleXAxis(triangleVertices,x_value);
             break;
         }
         case STOP:{
@@ -253,6 +250,21 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_bottomPaddl
 
     }else{
         bottomPaddleMovementState = STOP;
+
+    }
+
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_checkIfPaddleClicked(
+        JNIEnv *env, jobject thiz, jfloat x_value, jfloat y_value) {
+
+    //this type of movement based on bottomPaddleMovementState = MOVE; should be changed eventualy to
+    //create smoother movement
+    if (triangleVertices[36] && x_value <= triangleVertices[51]  && y_value >= triangleVertices[52] && y_value <= triangleVertices[37]) {
+        bottomPaddleMovementState = MOVE;
+    } else {
 
     }
 
