@@ -14,6 +14,10 @@
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+enum Movement {INIT, MOVE, STOP};
+
+Movement bottomPaddleMovementState = INIT;
+
 //source code for the vertex shade
 // we define, attribute vec4 vPosition; as the input for the shader
 // we set gl_Position = vPosition meaning we hook up the input to the output
@@ -219,11 +223,38 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,
-                                                                          jfloat x_value,
-                                                                          jfloat y_value) {
-    //updateTriangle(x_value,y_value);
-    moveBottomPaddleXAxis(triangleVertices,x_value);
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,jfloat x_value,jfloat y_value) {
+    switch (bottomPaddleMovementState) {
+        case INIT:{
+            LOGI("bottomPaddleMovementState",  "INIT");
+            break;
+        }
+        case MOVE:{
+            LOGI("bottomPaddleMovementState",  "MOVE");
+            moveBottomPaddleXAxis(triangleVertices,x_value);
+            break;
+        }
+        case STOP:{
+            LOGI("bottomPaddleMovementState",  "STOP");
+            break;
+        }
+
+    }
+
     glFlush();  // Force OpenGL to process commands immediately
     renderFrame();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_bottomPaddleClicked(
+        JNIEnv *env, jobject thiz, jboolean clicked) {
+    if(clicked){
+        bottomPaddleMovementState = MOVE;
+
+    }else{
+        bottomPaddleMovementState = STOP;
+
+    }
+
+
 }

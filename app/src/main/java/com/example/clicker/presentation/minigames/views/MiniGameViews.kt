@@ -179,7 +179,8 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
               //  renderer.onTouch(event.x, event.y, isDragging = false)
                 if (glX in 0.5..1.0 && glY in -1.0..-0.95) {
                     Log.d("TESTINGACtionMoveTouch","PADDLE CLICKED")
-                    renderer.setMoveValue(Movement.MOVE)
+
+                    renderer.setClicked(true)
 
                 }else{
                     Log.d("TESTINGACtionMoveTouch","PADDLE MISSED")
@@ -199,7 +200,8 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
             MotionEvent.ACTION_UP -> {
                 Log.d("TESTINGACtionMove","UPP")
                // renderer.onTouch(event.x, event.y, isDragging = false)
-                renderer.setMoveValue(Movement.STOP)
+
+                renderer.setClicked(false)
                 return true
             }
         }
@@ -208,15 +210,13 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
 
 }
-enum class Movement{
-    INIT,MOVE,STOP
-}
+
 
 class Renderer : GLSurfaceView.Renderer {
 
     private var xValue =0f
     private var yValue =0f
-    private var move = Movement.INIT
+
 
 
     fun setXValue(value: Float) {
@@ -230,8 +230,9 @@ class Renderer : GLSurfaceView.Renderer {
     fun setYValue(value:Float){
         yValue =value
     }
-    fun setMoveValue(value:Movement){
-        move = value
+
+    fun setClicked(value:Boolean){
+        PingPongSystem.bottomPaddleClicked(value)
     }
 
     override fun onDrawFrame(gl: GL10) {
@@ -240,18 +241,7 @@ class Renderer : GLSurfaceView.Renderer {
         //   NativeSquareLoading.step() // this is the checker board
 
         //  NativeBlurEffect.step() // this is the blur effect
-        Log.d("actiontesting","move -->${move.name}")
-        when(move){
-            Movement.INIT ->{
-                PingPongSystem.move(0f,0f)
-            }
-            Movement.MOVE->{
-                PingPongSystem.move(xValue,yValue)
-            }
-            Movement.STOP ->{
-                PingPongSystem.move(0f,0f)
-            }
-        }
+        PingPongSystem.move(xValue,yValue)
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
@@ -285,6 +275,8 @@ object PingPongSystem{
     external fun init(width: Int, height: Int)
 
     external fun move(xValue:Float,yValue:Float)
+
+    external fun bottomPaddleClicked(clicked:Boolean)
 
 
 }
