@@ -169,14 +169,23 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
         val glX = (2.0f * event.x / width) - 1.0f
         val glY = 1.0f - (2.0f * event.y / height)
 
+
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 renderer.setMoveValue(Movement.MOVE)
-                Log.d("TESTINGACtionMove","CLICKED")
+
               //  renderer.onTouch(event.x, event.y, isDragging = false)
+                if (glX in 0.5..1.0 || glY in -1.0..-0.95) {
+                    Log.d("TESTINGACtionMoveTouch","PADDLE CLICKED")
+
+                }else{
+                    Log.d("TESTINGACtionMoveTouch","PADDLE MISSED")
+                }
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
+
 
                 renderer.setXValue(glX)
                 renderer.setYValue(glY)
@@ -204,6 +213,7 @@ class Renderer : GLSurfaceView.Renderer {
     private var xValue =0f
     private var yValue =0f
     private var move = Movement.INIT
+
 
     fun setXValue(value: Float) {
         val newX = xValue + value
