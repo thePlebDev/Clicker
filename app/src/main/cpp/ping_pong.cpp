@@ -227,19 +227,41 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat x) {
 
 bool topHit = false;
 bool gameOver = false;
+float dx = 0.007f;
 
 void moveBall(GLfloat *vertices, GLfloat dy) {
     if (!gameOver) {
         float newY = (dy / 80) * -1;
         float heightBoundary = 1.0f;
         float paddleHeight = 0.05f;
+        LOGI("sidehittesting", "SIDE HIT! Reversing direction");
+
         float newPaddleHeightBoundary = heightBoundary-paddleHeight;
+        float ballWidth = 0.16f;
 
         if (!topHit) {
             // Ball moving upwards
             if (vertices[19] < newPaddleHeightBoundary) {
+                // Move the ball vertically
                 for (int i = 19; i < 36; i += 3) {
                     vertices[i] += newY;
+                }
+
+                
+                for (int i = 18; i < 36; i += 3) {
+
+                    float newX = vertices[i] + dx;
+
+                    if ((newX + ballWidth/2) >= 1.0f || (newX - ballWidth/2) <= -1.0f) {
+                        dx =dx*-1; // Reverse direction
+                        LOGI("sidehittesting", "SIDE HIT! Reversing direction");
+                        break; // Exit loop once a hit is detected
+                    }
+                }
+
+                //  horizontal movement after collision check
+                for (int i = 18; i < 36; i += 3) {
+                    vertices[i] += dx;
                 }
             } else {
 
@@ -278,7 +300,7 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
                 float paddleLeft = vertices[36];
                 float paddleRight = vertices[42];
 
-                // Check if the ball's left or right side is within the paddle
+
                 if ((ballRight >= paddleLeft && ballRight <= paddleRight) ||  // Right edge of ball inside paddle
                     (ballLeft >= paddleLeft && ballLeft <= paddleRight)) {    // Left edge of ball inside paddle
 
