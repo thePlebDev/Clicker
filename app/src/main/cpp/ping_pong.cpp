@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 
+
 // 1) CREATE A SINGLE RED TRIANGLE                       (DONE)
 // 2) CREATE TO TRIANGLES AND HAVE THEM FORM A SQUARE    (DONE)
 
@@ -179,58 +180,69 @@ void renderFrame(){
 /**
  * moveBottomPaddleXAxis is moving the paddle acrosse the screen
  * */
-void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
-    // Indices of y-coordinates for bottom paddle
+void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat x) {
+    // Indices of X-coordinates for the bottom paddle
     int indices[] = {36, 39, 42, 45, 48, 51};
-    float newX = dx/40;
-    LOGI("NEWXCHECK",  "newX ==> %f",newX);
 
+    // Compute current paddle center
+    float currentCenterX = (vertices[36] + vertices[42]) / 2.0f;
+
+    // Compute how much to move (delta)
+    float deltaX = x - currentCenterX;
+
+    // Apply movement to all X coordinates of the paddle
     for (int i = 0; i < 6; i++) {
-        vertices[indices[i]] += newX;  // Apply translation
+        vertices[indices[i]] += deltaX;
     }
 }
+
 bool topHit = false;
 bool gameOver = false;
 
-void moveBall(GLfloat *vertices, GLfloat dy){
-    if(!gameOver){
+void moveBall(GLfloat *vertices, GLfloat dy) {
+    if (!gameOver) {
+        float newY = (dy / 80) * -1;
 
-
-        float newY = (dy/80)*-1;
-        if(!topHit){
-            //this is when the ball is moving upwards
-            if(vertices[19] <1){
-                for (int i = 19; i < 36; i+=3){
+        if (!topHit) {
+            // Ball moving upwards
+            if (vertices[19] < 1) {
+                for (int i = 19; i < 36; i += 3) {
                     vertices[i] += newY;
                 }
-            }else{
+            } else {
                 topHit = true;
             }
-        }else{
-            //this is when the ball is moving downwards
-            if(vertices[19] > -0.87){ //as long as it has not hit the bottom keep moving
-                //todo: make all below work
-                // I should just have it move down
-                //if it its any of its bottom vertices hit the bottom vertices of the paddle bound up
-                //other wise stop
-                for (int i = 19; i < 36; i+=3){
-                    vertices[i] += (newY*-1);
+        } else {
+            // Ball moving downwards
+            //todo: THE MAGIC NUMBER OF -0.87 NEEDS TO BE CHANGED EVENTUALLY
+            if (vertices[19] > -0.87) {
+                for (int i = 19; i < 36; i += 3) {
+                    vertices[i] += (newY * -1);
                 }
-            }else{ //THIS MEANS THE Y-AXIS IS ASSUMED TO BE CROSSED AND THE PADDLE CAN BE HIT NOW
+            } else {
 
-                if(vertices[27]>=vertices[36] && vertices[27]<= vertices[42]){
-                    LOGI("bottomhittesting",  "HIT");
-                }else{
-                    gameOver = true;
+                //bottom sections of the ball
+                float ballLeft = vertices[33];
+                float ballRight = vertices[27];
+
+                // boundaries of the paddle
+                float paddleLeft = vertices[36];
+                float paddleRight = vertices[42];
+
+                // Check if the ball's left or right side is within the paddle
+                if ((ballRight >= paddleLeft && ballRight <= paddleRight) ||  // Right edge of ball inside paddle
+                    (ballLeft >= paddleLeft && ballLeft <= paddleRight)) {    // Left edge of ball inside paddle
+
+                    LOGI("bottomhittesting", "HIT! Ball bounced");
+                    topHit = false; // move ball up
+                } else {
+                    gameOver = true; // the game is over, try again
                 }
-
-                topHit = false;
             }
-
         }
     }
-
 }
+
 
 
 
@@ -248,23 +260,7 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_init(JNIEnv
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,jfloat x_value,jfloat y_value) {
-    switch (bottomPaddleMovementState) {
-        case INIT:{
-            LOGI("bottomPaddleMovementState",  "INIT");
-            break;
-        }
-        case MOVE:{
-            LOGI("bottomPaddleMovementState",  "MOVE");
-           moveBottomPaddleXAxis(triangleVertices,x_value);
 
-            break;
-        }
-        case STOP:{
-            LOGI("bottomPaddleMovementState",  "STOP");
-            break;
-        }
-
-    }
     moveBall(triangleVertices,y_value);
 
     glFlush();  // Force OpenGL to process commands immediately
@@ -297,5 +293,33 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_checkIfPadd
 
     }
 
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_moveBottomPaddle(JNIEnv *env,
+                                                                                      jobject thiz,
+                                                                                      jfloat x_value) {
+    //check if the paddle is clicked
+    //run the moving code if it is
+    switch (bottomPaddleMovementState) {
+        case INIT:{
+            LOGI("movingPaddle",  "INIT");
+            break;
+        }
+        case MOVE:{
+            LOGI("movingPaddle",  "MOVE");
+            moveBottomPaddleXAxis(triangleVertices,x_value);
+
+            break;
+        }
+        case STOP:{
+            LOGI("movingPaddle",  "STOP");
+            break;
+        }
+
+    }
+
+    //LOGI("movingPaddle",  "x_value ==> %f",x_value);
 
 }

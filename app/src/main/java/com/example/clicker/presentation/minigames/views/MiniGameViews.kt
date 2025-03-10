@@ -182,6 +182,7 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
 
 
             MotionEvent.ACTION_MOVE -> {
+                renderer.moveBottomPaddle(glX)
 
 
                 renderer.setXValue(glX)
@@ -230,6 +231,10 @@ class Renderer : GLSurfaceView.Renderer {
         PingPongSystem.checkIfPaddleClicked(xValue, yValue)
 
     }
+    fun moveBottomPaddle(xValue: Float){
+
+        PingPongSystem.moveBottomPaddle(xValue)
+    }
 
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
@@ -275,6 +280,7 @@ object PingPongSystem{
     external fun bottomPaddleClicked(clicked:Boolean)
 
     external fun checkIfPaddleClicked(xValue:Float,yValue:Float)
+    external fun moveBottomPaddle(xValue:Float)
 
 
 }
