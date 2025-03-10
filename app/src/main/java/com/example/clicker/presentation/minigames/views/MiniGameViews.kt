@@ -161,6 +161,7 @@ fun PingPongViewGLSurfaceViewComposable(
         )
 
         //todo: this is to be used on final release
+        //THIS DEFINETLY NEEDS HAPTIC FEED BACK ON THE CLICK
 //        Box(
 //            modifier = Modifier.align(Alignment.Center)
 //        ){
