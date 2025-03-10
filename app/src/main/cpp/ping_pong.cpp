@@ -190,37 +190,49 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
     }
 }
 bool topHit = false;
-bool bottomHit = false;
+bool gameOver = false;
 
 void moveBall(GLfloat *vertices, GLfloat dy){
+    if(!gameOver){
 
-    // todo: make this move the ball up
-    float newY = (dy/80)*-1;
-    if(!topHit){
-        if(vertices[19] <1){
-            for (int i = 19; i < 36; i+=3){
-                vertices[i] += newY;
+
+        float newY = (dy/80)*-1;
+        if(!topHit){
+            //this is when the ball is moving upwards
+            if(vertices[19] <1){
+                for (int i = 19; i < 36; i+=3){
+                    vertices[i] += newY;
+                }
+            }else{
+                topHit = true;
             }
         }else{
-            topHit = true;
-        }
-    }else{
-        if(vertices[19] > -0.87){
-            for (int i = 19; i < 36; i+=3){
-                vertices[i] += (newY*-1);
-            }
-        }else{
-            topHit = false;
-        }
+            //this is when the ball is moving downwards
+            if(vertices[19] > -0.87){ //as long as it has not hit the bottom keep moving
+                //todo: make all below work
+                // I should just have it move down
+                //if it its any of its bottom vertices hit the bottom vertices of the paddle bound up
+                //other wise stop
+                for (int i = 19; i < 36; i+=3){
+                    vertices[i] += (newY*-1);
+                }
+            }else{ //THIS MEANS THE Y-AXIS IS ASSUMED TO BE CROSSED AND THE PADDLE CAN BE HIT NOW
 
+                if(vertices[27]>=vertices[36] && vertices[27]<= vertices[42]){
+                    LOGI("bottomhittesting",  "HIT");
+                }else{
+                    gameOver = true;
+                }
+
+                topHit = false;
+            }
+
+        }
     }
 
-
-
-
-
-
 }
+
+
 
 
 extern "C"
@@ -277,8 +289,7 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_views_PingPongSystem_checkIfPaddleClicked(
         JNIEnv *env, jobject thiz, jfloat x_value, jfloat y_value) {
 
-    //this type of movement based on bottomPaddleMovementState = MOVE; should be changed eventualy to
-    //create smoother movement
+    //if anywhere is clicked on the paddle
     if (triangleVertices[36] && x_value <= triangleVertices[51]  && y_value >= triangleVertices[52] && y_value <= triangleVertices[37]) {
         initialClick = x_value;
         bottomPaddleMovementState = MOVE;
