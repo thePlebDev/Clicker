@@ -231,15 +231,35 @@ bool gameOver = false;
 void moveBall(GLfloat *vertices, GLfloat dy) {
     if (!gameOver) {
         float newY = (dy / 80) * -1;
+        float heightBoundary = 1.0f;
+        float paddleHeight = 0.05f;
+        float newPaddleHeightBoundary = heightBoundary-paddleHeight;
 
         if (!topHit) {
             // Ball moving upwards
-            if (vertices[19] < 1) {
+            if (vertices[19] < newPaddleHeightBoundary) {
                 for (int i = 19; i < 36; i += 3) {
                     vertices[i] += newY;
                 }
             } else {
-                topHit = true;
+
+                // SO THESE DEFINETLY WORK
+                float ballTopLeft = vertices[18];
+                float ballTopRight = vertices[24];
+                float paddleTopLeft = vertices[9];
+                float paddleTopRight = vertices[15];
+
+                //literally the same logic, just flip the signs
+                if ((ballTopRight <= paddleTopLeft && ballTopRight >= paddleTopRight) ||
+                    (ballTopLeft <= paddleTopLeft && ballTopLeft >= paddleTopRight)) {
+                    LOGI("tophitTesting", "HIT!");
+                    topHit = true;
+                }else{
+                    LOGI("tophitTesting", "MISS");
+                    gameOver = true;
+                }
+
+
             }
         } else {
             // Ball moving downwards
@@ -271,6 +291,8 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
         }
     }
 }
+
+
 
 
 
