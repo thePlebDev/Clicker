@@ -174,6 +174,8 @@ void renderFrame(){
    // glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+
+
 /**
  * moveBottomPaddleXAxis is moving the paddle acrosse the screen
  * */
@@ -187,16 +189,34 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat dx) {
         vertices[indices[i]] += newX;  // Apply translation
     }
 }
+bool topHit = false;
+bool bottomHit = false;
+
 void moveBall(GLfloat *vertices, GLfloat dy){
 
     // todo: make this move the ball up
     float newY = (dy/80)*-1;
-    
-    if(vertices[19] <1){
-        for (int i = 19; i < 36; i+=3){
-            vertices[i] += newY;
+    if(!topHit){
+        if(vertices[19] <1){
+            for (int i = 19; i < 36; i+=3){
+                vertices[i] += newY;
+            }
+        }else{
+            topHit = true;
         }
+    }else{
+        if(vertices[19] > -0.87){
+            for (int i = 19; i < 36; i+=3){
+                vertices[i] += (newY*-1);
+            }
+        }else{
+            topHit = false;
+        }
+
     }
+
+
+
 
 
 
