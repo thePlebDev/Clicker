@@ -50,7 +50,9 @@ add_library(camera_stream SHARED
         camera_stream.cpp)
 
 add_library(ping_pong SHARED
-        ping_pong.cpp)
+        ping_pong/ping_pong.cpp)
+add_library(ping_pong_movement SHARED
+        ping_pong/ping_pong_movement.cpp)
 
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
@@ -70,6 +72,8 @@ add_library(
 
 #added to the INCLUDE_DIRECTORIES directory for preproccessing
 include_directories(rtmp_client.h)
+include_directories(ping_pong/ping_pong_movement.h)
+
 
 # Link libraries for rtmp_client
 target_link_libraries(rtmp_client
@@ -89,11 +93,18 @@ target_link_libraries(amf_encoding
         log
         EGL
         GLESv2)
-target_link_libraries(ping_pong
+target_link_libraries(ping_pong_movement
         android
         log
         EGL
         GLESv2)
+target_link_libraries(ping_pong
+        ping_pong_movement
+        android
+        log
+        EGL
+        GLESv2)
+
 
 
 find_library( camera-lib camera2ndk )
