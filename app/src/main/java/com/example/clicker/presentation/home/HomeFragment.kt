@@ -1114,24 +1114,29 @@ class HomeFragment : Fragment(){
                         if (!horizontalFullScreenTap) {
                             //THIS CONDITIONAL MEANS THAT WE HAVE JUST ROTATED AND ARE IN THE FULL SCREEN
                             //BUT HAVE NOT DOUBLE TAPPED IT YET
-                            Log.d("horizontalFullScreenTaptesting","NOT horizontalFullScreenTap")
-                            streamViewModel.setImmersiveMode(false)
+                            Log.d("horizontalFullScreenTaptesting","FIRST DOUBLE TAP")
+                            //I changed this
+                            streamViewModel.setImmersiveMode(true)
 
 
                             val newWidth = (webView.width * 0.65).toInt()
+                            val fullWebViewWidth = webView.width
                             val chatView = binding.root.findViewById<ComposeView>(R.id.stream_compose_view)
                             // TODO: ANIMATE THE WIDTH,X and y
                             chatView.visibility = View.VISIBLE
                             animateWidthToIncludeChatHorizontalDoubleTap(
                                 webView = webView,
                                 width=newWidth,
-                                chatView = chatView
                             )
-                            // TODO: ANIMATE THE CHAT
+
+
+
                             chatAnimateWidthToIncludeChatHorizontalDoubleTap(
                                 chatView = chatView,
-                                webView=webView
-                            )
+                                fullWebViewWidth=fullWebViewWidth,
+                                threeQuartersWidth = newWidth.toFloat()
+                                    )
+
 
                             horizontalFullScreenTap = true
 
@@ -1512,7 +1517,6 @@ class HomeFragment : Fragment(){
     fun animateWidthToIncludeChatHorizontalDoubleTap(
         webView: WebView,
         width:Int,
-        chatView: ComposeView
     ){
         ValueAnimator.ofInt(webView.y.toInt(), 0).apply {
             duration = 300 // Adjust duration for the animation
@@ -1557,7 +1561,9 @@ class HomeFragment : Fragment(){
     @RequiresApi(Build.VERSION_CODES.R)
     fun chatAnimateWidthToIncludeChatHorizontalDoubleTap(
         chatView: ComposeView,
-        webView: WebView
+        fullWebViewWidth:Int,
+        threeQuartersWidth:Float,
+
     ){
 
 
@@ -1589,7 +1595,7 @@ class HomeFragment : Fragment(){
 
         val params = chatView.layoutParams
         //this is animating its width
-        val newChatWidth = (webView.width * 0.35).toInt()
+        val newChatWidth = (fullWebViewWidth * 0.35).toInt()
         ValueAnimator.ofInt(params.width, newChatWidth).apply {
             duration = 300 // Adjust duration for the animation
             addUpdateListener { animator ->
@@ -1615,9 +1621,9 @@ class HomeFragment : Fragment(){
             }
             doOnEnd {
                 // animation done inside of doOnEnd to make sure we get the proper values
-                val width = webView.width.toFloat()
-                Log.d("TESTINGWEBVIEWwIDTH", "WIDTH-->$width")
-                horizontalSpringAnimationX.animateToFinalPosition(width)//need to delete this magic number
+              //  val width = webView.width.toFloat()
+                //Log.d("TESTINGWEBVIEWwIDTH", "WIDTH-->$width")
+                horizontalSpringAnimationX.animateToFinalPosition(threeQuartersWidth)//need to delete this magic number
                 horizontalSpringAnimationY.animateToFinalPosition(0f)//this one is good
             }
 
