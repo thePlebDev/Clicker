@@ -223,6 +223,25 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat x) {
     }
 
 }
+void resetBall(GLfloat *vertices){
+    //x-values
+    vertices[18] = 0.08f;
+    vertices[21] = 0.08f;
+    vertices[24]= -0.08f;
+    vertices[27] = 0.08f;
+    vertices[30] =-0.08f;
+    vertices[33] =-0.08f;
+
+    //y-values
+    vertices[19] = 0.04f;
+    vertices[22] = -0.04f;
+    vertices[25] = 0.04f;
+    vertices[28] = -0.04f;
+    vertices[31] = -0.04f;
+    vertices[34] = 0.04f;
+
+
+}
 
 
 bool topHit = false;
@@ -280,7 +299,7 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
                     topHit = true;
                 }else{
                     LOGI("tophitTesting", "MISS");
-                    gameOver = true;
+                    resetBall(vertices);
                 }
 
 
@@ -309,12 +328,13 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
                     LOGI("bottomhittesting", "HIT! Ball bounced");
                     topHit = false; // move ball up
                 } else {
-                    gameOver = true; // the game is over, try again
+                    resetBall(vertices); // the game is over, try again
                 }
             }
         }
     }
 }
+
 
 
 
@@ -406,7 +426,15 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_moveBottomP
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_views_PingPongSystem_start(JNIEnv *env,
-                                                                           jobject thiz) {
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_start(JNIEnv *env,jobject thiz) {
+    resetBall(triangleVertices);
     start = true;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_restart(JNIEnv *env,
+                                                                             jobject thiz) {
+    start = false;
+    resetBall(triangleVertices);
+
 }
