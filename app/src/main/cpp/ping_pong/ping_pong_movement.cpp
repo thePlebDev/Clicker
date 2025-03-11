@@ -112,7 +112,7 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
                 if ((newX + ballWidth/2) >= 1.0f || (newX - ballWidth/2) <= -1.0f) {
                     dx =dx*-1; // Reverse direction
                     LOGI("sidehittesting", "SIDE HIT! Reversing direction");
-                    break; // Exit loop once a hit is detected
+                    break; // break the loop and update with the new inversed dx
                 }
             }
 
