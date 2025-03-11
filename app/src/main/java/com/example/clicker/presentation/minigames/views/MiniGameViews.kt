@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -165,6 +166,12 @@ fun PingPongViewGLSurfaceViewComposable(
             },
             modifier = modifier
         )
+        // Run only once when showStartBox becomes true
+        LaunchedEffect(showStartBox.value) {
+            if (showStartBox.value) {
+                pingPongViewRef.value?.restart()
+            }
+        }
 
         //todo: this is to be used on final release
         //THIS DEFINETLY NEEDS HAPTIC FEED BACK ON THE CLICK
@@ -210,6 +217,9 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
     }
     fun start(){
         renderer.start()
+    }
+    fun restart(){
+        renderer.restart()
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -292,6 +302,9 @@ class Renderer : GLSurfaceView.Renderer {
     fun start(){
         PingPongSystem.start()
     }
+    fun restart(){
+        PingPongSystem.restart()
+    }
 
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
@@ -340,6 +353,7 @@ object PingPongSystem{
     external fun moveBottomPaddle(xValue:Float)
 
     external fun start()
+    external fun restart()
 
 
 }
