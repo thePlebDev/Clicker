@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.example.clicker.R
 
 
 @Composable
@@ -33,6 +35,42 @@ fun SwitchWithIcon(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.secondary,
+            uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+            checkedTrackColor = Color.DarkGray,
+            uncheckedTrackColor = Color.DarkGray,
+        )
+    )
+}
+
+@Composable
+fun SwitchWithPainterResourceIcon(
+    checkedValue:Boolean,
+    changeCheckedValue:(Boolean)->Unit,
+    painterResource: Int,
+    switchEnabled:Boolean = true
+) {
+
+
+    Switch(
+        enabled =switchEnabled,
+        checked = checkedValue,
+        onCheckedChange = {
+            changeCheckedValue(it)
+        },
+        thumbContent = if (checkedValue) {
+            {
+
+                Icon(
+                    painter = painterResource(id = painterResource),
+                    contentDescription = "miniGame",
                     modifier = Modifier.size(SwitchDefaults.IconSize),
                 )
             }

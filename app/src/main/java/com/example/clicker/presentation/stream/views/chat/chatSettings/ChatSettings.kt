@@ -55,6 +55,7 @@ import com.example.clicker.presentation.enhancedModView.ImmutableModeList
 import com.example.clicker.presentation.enhancedModView.ListTitleValue
 
 import com.example.clicker.presentation.sharedViews.SwitchWithIcon
+import com.example.clicker.presentation.sharedViews.SwitchWithPainterResourceIcon
 import com.example.clicker.presentation.stream.models.AdvancedChatSettings
 import com.example.clicker.presentation.stream.views.chat.ExampleText
 import com.example.clicker.presentation.stream.views.chat.SliderAdvanced
@@ -207,6 +208,7 @@ fun ChatSettingsLazyColumn(
             )
         }
 
+
         item{
             SubscriberOnlySwitch(
                 setExpanded ={newValue -> },
@@ -312,6 +314,11 @@ fun AdvancedChatSettings(
             advancedChatSettings=advancedChatSettings,
             changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)}
         )
+        //todo: everything inside of MiniGameChatSwitch needs to be replaced
+//        MiniGameChatSwitch(
+//            advancedChatSettings=advancedChatSettings,
+//            changeAdvancedChatSettings = {newValue ->changeAdvancedChatSettings(newValue)}
+//        )
 
        ReSubsSwitch(
             advancedChatSettings=advancedChatSettings,
@@ -821,6 +828,33 @@ fun ClearHorizontalChatSwitch(
                 changeAdvancedChatSettings(value)
             },
             icon = Icons.Filled.Check,
+        )
+    }
+}
+@Composable
+fun MiniGameChatSwitch(
+    advancedChatSettings: AdvancedChatSettings,
+    changeAdvancedChatSettings: (AdvancedChatSettings) -> Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Mini Game",
+            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+        //todo: change this to the an Icon that allows a drawable
+        SwitchWithPainterResourceIcon(
+            checkedValue = advancedChatSettings.horizontalClearChat,
+            changeCheckedValue = {newValue->
+                val value =advancedChatSettings.copy(horizontalClearChat = newValue)
+                changeAdvancedChatSettings(value)
+            },
+            painterResource = R.drawable.videogame_asset
         )
     }
 }

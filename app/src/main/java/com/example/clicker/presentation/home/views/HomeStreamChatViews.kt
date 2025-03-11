@@ -36,6 +36,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
+import com.example.clicker.presentation.minigames.views.PingPongViewGLSurfaceViewComposable
 import com.example.clicker.presentation.stream.AutoModViewModel
 import com.example.clicker.presentation.stream.StreamView
 import com.example.clicker.presentation.stream.StreamViewModel
@@ -59,6 +60,7 @@ fun HomeStreamChatViews(
     streamInfoViewModel: StreamInfoViewModel,
     showHomeChat:Boolean
 ){
+    val context = LocalContext.current
 
     if(showHomeChat){
         StreamView(
@@ -71,8 +73,15 @@ fun HomeStreamChatViews(
             showModView={showModView()},
             modViewIsVisible=modViewIsVisible,
         )
+
     }
 }
+//PingPongViewGLSurfaceViewComposable(
+//context = context,
+//modifier = Modifier
+////                .padding(contentPadding)
+//.fillMaxSize()
+//)
 
 
 @Composable
