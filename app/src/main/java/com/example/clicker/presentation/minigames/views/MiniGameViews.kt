@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -152,28 +153,39 @@ fun PingPongViewGLSurfaceViewComposable(
     context: Context,
     modifier: Modifier
 ) {
+    // Store a reference to PingPongView
+    val pingPongViewRef = remember { mutableStateOf<PingPongView?>(null) }
+    val showStartBox = remember { mutableStateOf<Boolean>(true) }
     Box(){
         AndroidView(
             factory = {
-                PingPongView(context)
+                PingPongView(context).apply {
+                    pingPongViewRef.value = this // Store reference
+                }
             },
             modifier = modifier
         )
 
         //todo: this is to be used on final release
         //THIS DEFINETLY NEEDS HAPTIC FEED BACK ON THE CLICK
-//        Box(
-//            modifier = Modifier.align(Alignment.Center)
-//        ){
-//            PixelContainer(
-//                true,true,
-//                onClick = {},
-//                cornerSize = 4,
-//            ){
-//                TextShadow()
-//               // RetroTextShadow()
-//            }
-//        }
+        if(showStartBox.value){
+            Box(
+                modifier = Modifier.align(Alignment.Center)
+            ){
+                PixelContainer(
+                    true,true,
+                    onClick = {
+                        pingPongViewRef.value?.start()
+                        showStartBox.value = false
+                    },
+                    cornerSize = 4,
+                ){
+                    TextShadow()
+
+                }
+            }
+        }
+
 
 
     }
@@ -195,6 +207,9 @@ class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchList
         setEGLContextClientVersion(2)
         setRenderer(renderer)
 
+    }
+    fun start(){
+        renderer.start()
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -274,6 +289,9 @@ class Renderer : GLSurfaceView.Renderer {
 
         PingPongSystem.moveBottomPaddle(xValue)
     }
+    fun start(){
+        PingPongSystem.start()
+    }
 
     override fun onDrawFrame(gl: GL10) {
         // The system calls this method on each redraw of the GLSurfaceView
@@ -320,6 +338,8 @@ object PingPongSystem{
 
     external fun checkIfPaddleClicked(xValue:Float,yValue:Float)
     external fun moveBottomPaddle(xValue:Float)
+
+    external fun start()
 
 
 }
