@@ -228,13 +228,15 @@ void moveBottomPaddleXAxis(GLfloat *vertices, GLfloat x) {
 bool topHit = false;
 bool gameOver = false;
 float dx = 0.007f;
+float newDy = -0.886735f;
 
 void moveBall(GLfloat *vertices, GLfloat dy) {
-    if (!gameOver) {
-        float newY = (dy / 80) * -1;
+    LOGI("checkingTheValuesagain", "dy -->%f",dy );
+    if (!gameOver ) {
+        float newY = (newDy / 80) * -1;
         float heightBoundary = 1.0f;
         float paddleHeight = 0.05f;
-        LOGI("sidehittesting", "SIDE HIT! Reversing direction");
+        LOGI("sidehittesting", "dy -->%f",dy);
 
         float newPaddleHeightBoundary = heightBoundary-paddleHeight;
         float ballWidth = 0.16f;
@@ -247,7 +249,7 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
                     vertices[i] += newY;
                 }
 
-                
+
                 for (int i = 18; i < 36; i += 3) {
 
                     float newX = vertices[i] + dx;
@@ -318,6 +320,7 @@ void moveBall(GLfloat *vertices, GLfloat dy) {
 
 
 
+bool start = false;
 
 
 
@@ -337,7 +340,9 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_views_PingPongSystem_move(JNIEnv *env, jobject thiz,jfloat x_value,jfloat y_value) {
 
-    moveBall(triangleVertices,y_value);
+    if(start){
+        moveBall(triangleVertices,y_value);
+    }
 
     glFlush();  // Force OpenGL to process commands immediately
     renderFrame();
@@ -398,4 +403,10 @@ Java_com_example_clicker_presentation_minigames_views_PingPongSystem_moveBottomP
 
     //LOGI("movingPaddle",  "x_value ==> %f",x_value);
 
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_views_PingPongSystem_start(JNIEnv *env,
+                                                                           jobject thiz) {
+    start = true;
 }
