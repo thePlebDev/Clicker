@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,8 +15,15 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -178,7 +187,7 @@ fun PingPongViewGLSurfaceViewComposable(
         if(showStartBox.value){
             Box(
                 modifier = Modifier.align(Alignment.Center)
-            ){
+            ) {
                 PixelContainer(
                     true,true,
                     onClick = {
@@ -187,9 +196,11 @@ fun PingPongViewGLSurfaceViewComposable(
                     },
                     cornerSize = 4,
                 ){
-                    TextShadow()
+
+                    TextShadowTitle("START GAME")
 
                 }
+
             }
         }
 
@@ -199,6 +210,7 @@ fun PingPongViewGLSurfaceViewComposable(
 
 
 }
+
 
 class PingPongView(context: Context?) : GLSurfaceView(context), View.OnTouchListener{
     val renderer = Renderer()
@@ -360,15 +372,107 @@ object PingPongSystem{
 /**----------------------RETRO BUTTON STYLES BELOW----------------------*/
 
 
+@Composable
+fun GameStartingScreen(){
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        PixelContainer(
+            true, true,
+            onClick = {
+
+            },
+            cornerSize = 4,
+        ) {
+
+            TextShadowTitle("SELECT A GAME!!")
+
+        }
+        Spacer(
+            modifier = Modifier
+                .height(20.dp)
+                .background(Color.Transparent)
+        )
+
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            PixelContainer2(
+                true, true,
+                onClick = {
+
+                },
+                cornerSize = 4,
+            ) {
+
+                TextShadow("Ping Pong")
+
+            }
+            Spacer(
+                modifier = Modifier
+                    .width(10.dp)
+                    .background(Color.Transparent)
+            )
+            PixelContainer2(
+                true, true,
+                onClick = {
+
+                },
+                cornerSize = 4,
+            ) {
+
+                TextShadow("Dino Run")
+
+            }
+
+        }
+    }
+
+}
+
 
 @Composable
-fun TextShadow() {
+fun TextShadow(
+    text:String
+) {
     val offset = Offset(5.0f, 10.0f)
 
     // Applying retro blocky text style with multiple shadows and custom styling
     Column {
         Text(
-            text = "Start Game",
+
+
+            text = text,
+            style = TextStyle(
+                fontSize = 20.sp,  // Larger font size for retro impact
+                fontWeight = FontWeight.Bold,  // Bold font for blocky look
+                color = Color.Cyan,  // Bright color for a retro feel
+                letterSpacing = 3.sp,  // Increased letter spacing for a blocky, spaced out look
+                shadow = Shadow(
+                    color = Color.Red,  // Red shadow for a retro 3D effect
+                    offset = Offset(4f, 4f),  // Shadow offset for depth
+                    blurRadius = 6f  // Blur radius to create a more retro 3D effect
+                ),
+            ),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+@Composable
+fun TextShadowTitle(
+    text:String
+) {
+    val offset = Offset(5.0f, 10.0f)
+
+    // Applying retro blocky text style with multiple shadows and custom styling
+    Column {
+        Text(
+
+
+            text = text,
             style = TextStyle(
                 fontSize = 32.sp,  // Larger font size for retro impact
                 fontWeight = FontWeight.Bold,  // Bold font for blocky look
@@ -379,8 +483,48 @@ fun TextShadow() {
                     offset = Offset(4f, 4f),  // Shadow offset for depth
                     blurRadius = 6f  // Blur radius to create a more retro 3D effect
                 ),
-            )
+            ),
+            textAlign = TextAlign.Center
         )
+    }
+}
+@Composable
+fun PixelContainer2(
+    enabled: Boolean = true,
+    clickable: Boolean = false,
+    onClick: (() -> Unit)? = null,
+    cornerSize: Int,
+    pixelSize: Dp = 4.dp,
+    colors: ContainerColors = NintendoContainerColors,
+    content: @Composable () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    Box(
+        modifier = Modifier
+            .size(100.dp, 100.dp)
+            .aspectRatio(1f) // Makes the container a square
+            .clickable(
+                enabled = clickable,
+                onClick = { onClick?.invoke() },
+                indication = null,
+                interactionSource = interactionSource
+            )
+            .drawBehind {
+                drawContainer(
+                    colors = if (enabled) colors else ContainerColors.GreyContainerColors,
+                    pressedState = isPressed,
+                    cornerSize = cornerSize,
+                    pixelSize = pixelSize
+                )
+            }
+            .padding(
+                horizontal = (cornerSize.coerceAtLeast(1) + 1).toFloat() * pixelSize,
+                vertical = (cornerSize.coerceAtLeast(1) + 1).toFloat() * pixelSize // Ensuring vertical padding matches horizontal
+            )
+    ) {
+        content()
     }
 }
 @Composable
@@ -407,7 +551,7 @@ fun PixelContainer(
                 )
                 .drawBehind {
                     drawContainer(
-                        colors = if(enabled)colors else GreyContainerColors,
+                        colors = if (enabled) colors else GreyContainerColors,
                         pressedState = isPressed,
                         cornerSize = cornerSize,
                         pixelSize = pixelSize
