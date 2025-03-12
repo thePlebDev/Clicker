@@ -53,6 +53,8 @@ add_library(ping_pong SHARED
         ping_pong/ping_pong.cpp)
 add_library(ping_pong_movement SHARED
         ping_pong/ping_pong_movement.cpp)
+add_library(dino_run SHARED
+        dino_run/dino_run.cpp)
 
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
@@ -104,6 +106,12 @@ target_link_libraries(ping_pong
         log
         EGL
         GLESv2)
+target_link_libraries(dino_run
+        android
+        log
+        EGL
+        GLESv2)
+
 
 
 
