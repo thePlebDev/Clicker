@@ -115,19 +115,26 @@ bool setupGraphics(int w, int h)
     return true;
 }
 
-const GLfloat triangleVertices[] = {
-        0.0f, 1.0f,
-        -1.0f, -1.0f,
-        1.0f, -1.0f
+const GLfloat squareVertices[] = {
+        -0.075f, -0.0375f,   // Bottom-left corner
+        0.075f, -0.0375f,    // Bottom-right corner
+        0.075f,  0.0375f,    // Top-right corner (First triangle)
+
+        -0.075f, -0.0375f,   // Bottom-left corner
+        0.075f,  0.0375f,    // Top-right corner
+        -0.075f,  0.0375f    // Top-left corner (Second triangle)
 };
-void renderFrame()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glUseProgram(simpleTriangleProgram);
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0 ,triangleVertices);
+
+void renderFrame(){
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear screen with black
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(simpleTriangleProgram); // Use our shader program
+
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, squareVertices);
     glEnableVertexAttribArray(vPosition);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6); // Draw the two triangles that make up the square
 }
 
 
