@@ -95,6 +95,7 @@ import com.example.clicker.network.models.twitchRepo.StreamData
 import com.example.clicker.presentation.authentication.logout.LogoutViewModel
 import com.example.clicker.presentation.enhancedModView.viewModels.ModViewViewModel
 import com.example.clicker.presentation.home.HomeViewModel
+import com.example.clicker.presentation.minigames.dinoRun.ComposeDinoRunViews
 import com.example.clicker.presentation.minigames.views.PingPongViewGLSurfaceViewComposable
 import com.example.clicker.presentation.moderatedChannelsHome.views.ModChannelView
 import com.example.clicker.presentation.search.SearchViewModel
@@ -504,13 +505,19 @@ import kotlinx.coroutines.launch
                         )
                     }
                     4->{
-
-                        PingPongViewGLSurfaceViewComposable(
+                        ComposeDinoRunViews(
                             context = context,
                             modifier = Modifier
                                 .padding(contentPadding)
                                 .fillMaxSize()
                         )
+
+//                        PingPongViewGLSurfaceViewComposable(
+//                            context = context,
+//                            modifier = Modifier
+//                                .padding(contentPadding)
+//                                .fillMaxSize()
+//                        )
                     }
             }
         }

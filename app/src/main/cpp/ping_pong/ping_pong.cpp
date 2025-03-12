@@ -150,7 +150,7 @@ GLfloat triangleVertices[] = {
         // Second BALL HALF  (THE BALL)
         0.08f, -0.04f, 0.0f,  // Bottom right
         -0.08f, -0.04f, 0.0f,  // Bottom left
-        -0.08f,  0.04f, 0.0f,  // Top left
+        0.08f,  -0.04f, 0.0f,  // Top left
 
 
 

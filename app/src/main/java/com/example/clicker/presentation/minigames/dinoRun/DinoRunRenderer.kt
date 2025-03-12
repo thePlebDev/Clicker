@@ -34,6 +34,7 @@ class DinoRunRenderer : GLSurfaceView.Renderer {
     }
 
     override fun onDrawFrame(p0: GL10?) {
+        DinoRunJNI.step()
 
     }
 
