@@ -142,40 +142,47 @@ void renderFrame(){
 bool startJump = false;
 bool hitTop = false;
 
-void jump(GLfloat *vertices){
 
-    float upMovement = 0.01;
-    float downMovement = -0.01;
-    float lowestPosition =-0.0375f;
-    float highestPosition = 1.0f;
+//todo: THERE IS A MINOR POSITIONING BUG  
+void jump(GLfloat *vertices) {
+    float highestPosition = 0.4f;
+    float lowestPosition = -0.0375f;
 
-    float verticesHighPoint =vertices[5];
-    float verticesLowPoint =vertices[1];
-    if(startJump){
-        if(verticesHighPoint<highestPosition&& !hitTop){
-            //move up
-            for(int i =1;i<=12;i+=2){
-                vertices[i] +=upMovement;
-            }
-        }else{
-            hitTop = true;
+    // highest and lowest points on the square
+    float verticesHighPoint = vertices[5]; // top-right Y position
+    float verticesLowPoint = vertices[1];  // bottom-left Y position
 
-            if(verticesLowPoint>lowestPosition){
-                for(int i =1;i<=12;i+=2){
-                    vertices[i] +=downMovement;
+    if (startJump) {
+        if (!hitTop) {
+
+            if (verticesHighPoint < highestPosition) {
+                for (int i = 1; i <= 12; i += 2) {
+                    if (vertices[i] < highestPosition) {
+                        vertices[i] += 0.025f; // Move up
+                    } else {
+                        vertices[i] = highestPosition; // Stop at highest position
+                    }
                 }
-            }else{
+            } else {
+                hitTop = true;
+            }
+        } else {
+
+            if (verticesLowPoint > lowestPosition) {
+                for (int i = 1; i <= 12; i += 2) {
+
+                    if (vertices[i] > lowestPosition) {
+                        vertices[i] += (-0.035f); // Move down
+                    } else {
+                        vertices[i] = lowestPosition; // Stop at lowest position
+                    }
+                }
+            } else {
                 hitTop = false;
                 startJump = false;
             }
-
-
-
         }
     }
-
-
-
 }
 
 
