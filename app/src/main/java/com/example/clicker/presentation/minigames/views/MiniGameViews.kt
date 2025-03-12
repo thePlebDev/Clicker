@@ -57,6 +57,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.clicker.R
 import com.example.clicker.presentation.minigames.PixelContainer
 import com.example.clicker.presentation.minigames.TextShadowTitle
+import com.example.clicker.presentation.minigames.dinoRun.ComposeDinoRunViews
 
 import com.example.clicker.presentation.sharedViews.NoDrawerScaffold
 import javax.microedition.khronos.egl.EGLConfig
@@ -69,32 +70,13 @@ import kotlin.math.roundToInt
 fun MiniGameViews(
     onNavigate: (Int) -> Unit,
 ){
-    MiniGameScaffold(
-        onNavigate={destination -> onNavigate(destination)}
-    )
+
 }
 
 @Composable
 fun MiniGameScaffold(
     onNavigate: (Int) -> Unit,
-){
-    val context = LocalContext.current
-    NoDrawerScaffold(
-        topBar = {
-            TopBarTextRow("Mini games")
-        },
-        bottomBar = {},
-        content = { contentPadding ->
-            PingPongViewGLSurfaceViewComposable(
-                context = context,
-                modifier = Modifier
-                    .padding(contentPadding)
-                    .fillMaxSize()
-            )
-
-        },
-    )
-}
+){}
 
 //this is how we are going to show the openGLCode
 @Composable

@@ -15,6 +15,7 @@ object DinoRunJNI{
      * @param height the current view height
      */
     external fun init(width: Int, height: Int)
+    external fun step()
 
 
 
