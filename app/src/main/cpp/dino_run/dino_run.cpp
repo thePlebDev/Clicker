@@ -115,17 +115,20 @@ bool setupGraphics(int w, int h)
     return true;
 }
 
-const GLfloat squareVertices[] = {
-        -0.075f, -0.0375f,   // Bottom-left corner
+ GLfloat squareVertices[] = {
+        //this triangle is actually the lowest
+        -0.075f, -0.0375f,   // Bottom-left corner. this  Y POSITION will act as the lowest point
         0.075f, -0.0375f,    // Bottom-right corner
-        0.075f,  0.0375f,    // Top-right corner (First triangle)
+        0.075f,  0.0375f,    // Top-right corner (First triangle) //this Y POSITION will act as the highest point
 
+        //this triangle is the top one
         -0.075f, -0.0375f,   // Bottom-left corner
         0.075f,  0.0375f,    // Top-right corner
         -0.075f,  0.0375f    // Top-left corner (Second triangle)
 };
 
 void renderFrame(){
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear screen with black
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -136,6 +139,45 @@ void renderFrame(){
 
     glDrawArrays(GL_TRIANGLES, 0, 6); // Draw the two triangles that make up the square
 }
+bool startJump = false;
+bool hitTop = false;
+
+void jump(GLfloat *vertices){
+
+    float upMovement = 0.01;
+    float downMovement = -0.01;
+    float lowestPosition =-0.0375f;
+    float highestPosition = 1.0f;
+
+    float verticesHighPoint =vertices[5];
+    float verticesLowPoint =vertices[1];
+    if(startJump){
+        if(verticesHighPoint<highestPosition&& !hitTop){
+            //move up
+            for(int i =1;i<=12;i+=2){
+                vertices[i] +=upMovement;
+            }
+        }else{
+            hitTop = true;
+
+            if(verticesLowPoint>lowestPosition){
+                for(int i =1;i<=12;i+=2){
+                    vertices[i] +=downMovement;
+                }
+            }else{
+                hitTop = false;
+                startJump = false;
+            }
+
+
+
+        }
+    }
+
+
+
+}
+
 
 
 extern "C"
@@ -149,5 +191,12 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *env, jobject thiz) {
+    jump(squareVertices);
     renderFrame();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_jump(JNIEnv *env, jobject thiz) {
+    startJump = true;
+
 }
