@@ -115,17 +115,26 @@ bool setupGraphics(int w, int h)
     return true;
 }
 
- GLfloat squareVertices[] = {
-        //this triangle is actually the lowest
-        -0.075f, -0.0375f,   // Bottom-left corner. this  Y POSITION will act as the lowest point
-        0.075f, -0.0375f,    // Bottom-right corner
-        0.075f,  0.0375f,    // Top-right corner (First triangle) //this Y POSITION will act as the highest point
-
-        //this triangle is the top one
+GLfloat squareVertices[] = {
+        // First square (unchanged)
         -0.075f, -0.0375f,   // Bottom-left corner
-        0.075f,  0.0375f,    // Top-right corner
-        -0.075f,  0.0375f    // Top-left corner (Second triangle)
+        0.075f, -0.0375f,   // Bottom-right corner
+        0.075f,  0.0375f,   // Top-right corner
+
+        -0.075f, -0.0375f,
+        0.075f,  0.0375f,
+        -0.075f,  0.0375f,
+
+        // Second square (moved to x = 1)
+        0.85f, -0.0375f,   // Bottom-left corner (moved right by 1.0)
+        1.0f, -0.0375f,    // Bottom-right corner
+        1.0f,  0.0375f,    // Top-right corner
+
+        0.85f, -0.0375f,
+        1.0f,  0.0375f,
+        0.85f,  0.0375f
 };
+
 
 void renderFrame(){
 
@@ -137,13 +146,13 @@ void renderFrame(){
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, squareVertices);
     glEnableVertexAttribArray(vPosition);
 
-    glDrawArrays(GL_TRIANGLES, 0, 6); // Draw the two triangles that make up the square
+    glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
 }
 bool startJump = false;
 bool hitTop = false;
 
 
-//todo: THERE IS A MINOR POSITIONING BUG  
+//todo: THERE IS A MINOR POSITIONING BUG
 void jump(GLfloat *vertices) {
     float highestPosition = 0.4f;
     float lowestPosition = -0.0375f;
