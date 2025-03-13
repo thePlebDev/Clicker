@@ -134,6 +134,16 @@ GLfloat squareVertices[] = {
         1.0f,  0.0375f,
         0.85f,  0.0375f
 };
+void resetSquare(GLfloat *vertices){
+
+    vertices[1] = -0.0375f;
+    vertices[3] =-0.0375f;
+    vertices[5] =0.0375f;
+    vertices[7] = -0.0375f;
+    vertices[9] = 0.0375f;
+    vertices[11] =0.0375f;
+
+}
 
 
 void renderFrame(){
@@ -150,10 +160,14 @@ void renderFrame(){
 }
 bool startJump = false;
 bool hitTop = false;
+//todo: velocity is causing some deformation issues
+// by I have created a temporary fix with resetSquare()
+float velocity = 0.0f;
+
 
 
 //todo: THERE IS A MINOR POSITIONING BUG
-void jump(GLfloat *vertices) {
+void jumpWithDeforms(GLfloat *vertices) {
     float highestPosition = 0.4f;
     float lowestPosition = -0.0375f;
 
@@ -164,34 +178,110 @@ void jump(GLfloat *vertices) {
     if (startJump) {
         if (!hitTop) {
 
-            if (verticesHighPoint < highestPosition) {
+            if (verticesHighPoint < highestPosition+velocity) {
                 for (int i = 1; i <= 12; i += 2) {
                     if (vertices[i] < highestPosition) {
-                        vertices[i] += 0.025f; // Move up
+                        velocity += -0.0001f;
+                        vertices[i] += 0.025f+velocity;
                     } else {
                         vertices[i] = highestPosition; // Stop at highest position
                     }
                 }
             } else {
+                velocity=0.0f;
                 hitTop = true;
             }
         } else {
+             // Simulate downward acceleration
+
 
             if (verticesLowPoint > lowestPosition) {
                 for (int i = 1; i <= 12; i += 2) {
 
                     if (vertices[i] > lowestPosition) {
+                       // velocity += -0.0001f;
                         vertices[i] += (-0.035f); // Move down
                     } else {
                         vertices[i] = lowestPosition; // Stop at lowest position
                     }
                 }
             } else {
+
+                resetSquare(vertices);
                 hitTop = false;
                 startJump = false;
+                velocity =0.0f;
             }
         }
+
     }
+}
+float testingthinger=0.0f;
+
+void jump(GLfloat *vertices) {
+    float highestPosition = 0.4f;
+    float lowestPosition = -0.0375f;
+
+    // highest and lowest points on the square
+    float verticesHighPoint = vertices[5]; // top-right Y position
+    float verticesLowPoint = vertices[1];  // bottom-left Y position
+
+
+    if (startJump) {
+        if (!hitTop) {
+
+            if (verticesHighPoint < highestPosition) {
+                float distanceToTop = highestPosition - verticesHighPoint;
+                testingthinger += (-0.001f * distanceToTop);
+
+                LOGI("velocity", "velocity -->%f",testingthinger);
+                velocity += -0.002f * distanceToTop; // Loss of momentum as it gets closer
+                // Apply the movement to all vertices
+                for (int i = 1; i <= 12; i += 2) {
+                    if (vertices[i] < highestPosition) {
+                        vertices[i] += 0.025f + velocity;  // Apply velocity
+                    } else {
+                        vertices[i] = highestPosition; // Stop at the highest position
+                    }
+                }
+
+            } else {
+                velocity=0.0f;
+                hitTop = true;
+            }
+        } else {
+            // Simulate downward acceleration
+
+
+            if (verticesLowPoint > lowestPosition) {
+                for (int i = 1; i <= 12; i += 2) {
+
+                    if (vertices[i] > lowestPosition) {
+                        // velocity += -0.0001f;
+                        vertices[i] += (-0.035f); // Move down
+                    } else {
+                        vertices[i] = lowestPosition; // Stop at lowest position
+                    }
+                }
+            } else {
+
+                // resetSquare(vertices);
+                hitTop = false;
+                startJump = false;
+                velocity =0.0f;
+            }
+        }
+
+    }
+}
+
+
+void moveSecondSquare(GLfloat *vertices){
+
+    for(int i =12; i <23; i +=2){
+        vertices[i] += (-0.02f);
+    }
+
 }
 
 
@@ -208,6 +298,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *env, jobject thiz) {
     jump(squareVertices);
+    moveSecondSquare(squareVertices);
     renderFrame();
 }
 extern "C"
