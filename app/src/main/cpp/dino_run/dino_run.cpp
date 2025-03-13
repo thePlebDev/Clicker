@@ -116,17 +116,18 @@ bool setupGraphics(int w, int h)
 }
 
 GLfloat squareVertices[] = {
-        // First square (unchanged)
-        -0.075f, -0.0375f,   // Bottom-left corner
-        0.075f, -0.0375f,   // Bottom-right corner
-        0.075f,  0.0375f,   // Top-right corner
+        // First square
 
-        -0.075f, -0.0375f,
-        0.075f,  0.0375f,
-        -0.075f,  0.0375f,
+        -0.800f, -0.0375f,   // Bottom-left corner
+        -0.650f, -0.0375f,   // Bottom-right corner
+        -0.650f,  0.0375f,   // Top-right corner
 
-        // Second square (moved to x = 1)
-        0.85f, -0.0375f,   // Bottom-left corner (moved right by 1.0)
+        -0.800f, -0.0375f,
+        -0.650f,  0.0375f,
+        -0.800f,  0.0375f,
+
+        // Second square
+        0.85f, -0.0375f,   // Bottom-left corner
         1.0f, -0.0375f,    // Bottom-right corner
         1.0f,  0.0375f,    // Top-right corner
 
@@ -137,6 +138,7 @@ GLfloat squareVertices[] = {
 void resetSquare(GLfloat *vertices){
 
 
+    //this is a reset on the y-values
     vertices[1] = -0.0375f;
     vertices[3] =-0.0375f;
     vertices[5] =0.0375f;
@@ -266,28 +268,55 @@ void jump(GLfloat *vertices) {
                 }
             } else {
 
-                // resetSquare(vertices);
+
                 hitTop = false;
                 startJump = false;
                 velocity =0.0f;
+                resetSquare(vertices); // this is preventing the positioning issue that needs to be tackled
             }
         }
 
     }
 }
 
+void resetSecondSquare(GLfloat *vertices){
+    vertices[12] = 0.85f;
+    vertices[14] =1.0f;
+    vertices[16] =1.0f;
+    vertices[18] = 0.85f;
+    vertices[20] = 1.0f;
+    vertices[22] =0.85f;
+}
 
 void moveSecondSquare(GLfloat *vertices){
-    float farthestRight = vertices[14];
+    //these are the x-axis boudaries for the second square
+    float rightBoundarySquareOne = vertices[14];
+    float leftBoundarySquareOne = vertices[12];
+    float topBoundarySquareOne = vertices[5];
+    float bottomBoundarySquareOne = vertices[3];
 
-    if(farthestRight <= -1){
+    //boundary for the second box
+    float rightBoundarySquareTwo = vertices[2];
+    float leftBoundarySquareTwo = vertices[0];
+    float topBoundarySquareTwo = vertices[17];
+    float bottomBoundarySquareTwo = vertices[15];
+
+    //if(secondFarthestRight<=farthestLeft)
+    // Corrected hit detection logic (checks for overlap)
+    if (!(rightBoundarySquareOne < leftBoundarySquareTwo || leftBoundarySquareOne > rightBoundarySquareTwo)) {
+       // LOGI("farthestLeftTesting", "HIT!!!! RESET");
+
+        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
+            LOGI("farthestLeftTesting", "Y-RANGE HIT");
+            resetSecondSquare(vertices);
+            return;
+        }
+
+    }
+
+    if(rightBoundarySquareOne <= -1){
         LOGI("farthestLeftTesting", "off screen");
-        vertices[12] = 0.85f;
-        vertices[14] =1.0f;
-        vertices[16] =1.0f;
-        vertices[18] = 0.85f;
-        vertices[20] = 1.0f;
-        vertices[22] =0.85f;
+        resetSecondSquare(vertices);
     }else{
         for(int i =12; i <23; i +=2){
             vertices[i] += (-0.02f);
@@ -298,6 +327,7 @@ void moveSecondSquare(GLfloat *vertices){
 
 
 }
+
 
 
 
