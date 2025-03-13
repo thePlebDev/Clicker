@@ -136,6 +136,7 @@ GLfloat squareVertices[] = {
 };
 void resetSquare(GLfloat *vertices){
 
+
     vertices[1] = -0.0375f;
     vertices[3] =-0.0375f;
     vertices[5] =0.0375f;
@@ -235,7 +236,7 @@ void jump(GLfloat *vertices) {
                 testingthinger += (-0.001f * distanceToTop);
 
                 LOGI("velocity", "velocity -->%f",testingthinger);
-                velocity += -0.002f * distanceToTop; // Loss of momentum as it gets closer
+                velocity += -0.0025f * distanceToTop; // Loss of momentum as it gets closer
                 // Apply the movement to all vertices
                 for (int i = 1; i <= 12; i += 2) {
                     if (vertices[i] < highestPosition) {
@@ -277,10 +278,24 @@ void jump(GLfloat *vertices) {
 
 
 void moveSecondSquare(GLfloat *vertices){
+    float farthestRight = vertices[14];
 
-    for(int i =12; i <23; i +=2){
-        vertices[i] += (-0.02f);
+    if(farthestRight <= -1){
+        LOGI("farthestLeftTesting", "off screen");
+        vertices[12] = 0.85f;
+        vertices[14] =1.0f;
+        vertices[16] =1.0f;
+        vertices[18] = 0.85f;
+        vertices[20] = 1.0f;
+        vertices[22] =0.85f;
+    }else{
+        for(int i =12; i <23; i +=2){
+            vertices[i] += (-0.02f);
+        }
+
     }
+
+
 
 }
 
