@@ -149,6 +149,7 @@ void resetSquare(GLfloat *vertices){
 }
 
 
+
 void renderFrame(){
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear screen with black
@@ -328,13 +329,68 @@ void moveSecondSquare(GLfloat *vertices){
 
 }
 
+//this is not working as I expected
+void updateVerticesForAspectRatio(GLfloat* vertices, float aspectRatio) {
+    for (int i = 0; i < 12 * 2; i += 2) { // Iterate over each pair (X, Y)
+        vertices[i] /= aspectRatio;  // Correct X scaling
+      //  vertices[i + 1] *= 2.5f;     // Increase Y by 10%
+    }
+}
 
+int horizontalAspectRatio = 99;
+static int finalWidth = 0;
+static int finalHeight = 0;
 
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *env, jobject thiz,jint width, jint height) {
+    LOGI("APSECTrATIOtESTINGaGAIN", "INIT");
+
     setupGraphics(width, height);
+
+    // Now this check will work as expected
+//    if (width != finalWidth || height != finalHeight) {
+//
+//        if(width==finalWidth){
+//            LOGI("horizontalAspectRatio", "SECOND CALL DO NOTHING");
+//        }
+//        else{
+//            if(horizontalAspectRatio== 99){
+//                //this is the initial call, so do nothing
+//                // decreaseVerticesForAspectRatio(squareVertices,2.000000f);
+//                LOGI("horizontalAspectRatio", "initial call");
+//                //todo: JUST GET THE INITIAL VALUES AND ASSIGN THEM TO A GLOBAL VALUE
+//                for(int i =0; i<24;i++){
+//                    LOGI("horizontalAspectRatio", "verticie -->%f",squareVertices[i]);
+//                }
+//                horizontalAspectRatio=0;
+//            }else{
+//                if(horizontalAspectRatio == width/height){
+//                    //this is the weird second call that I am ignoring
+//                    LOGI("horizontalAspectRatio", "horizontalAspectRatio == width/height");
+//                }else{
+//                    horizontalAspectRatio=  width / height;
+//                    if(horizontalAspectRatio ==0){
+//                        LOGI("horizontalAspectRatio", "VERTICAL UPDATE");
+//                        //todo: update the verticies to the
+//                    }else{
+//                        LOGI("horizontalAspectRatio", "HORIZONTAL UPDATE");
+//                        updateVerticesForAspectRatio(squareVertices,horizontalAspectRatio);
+//                    }
+//
+//                }
+//
+//
+//            }
+//
+//        }
+//
+//    }
+
+
+
+
 
 }
 
