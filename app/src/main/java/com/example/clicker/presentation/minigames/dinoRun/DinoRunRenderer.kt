@@ -62,6 +62,7 @@ class DinoRunView(context: Context?) : GLSurfaceView(context), View.OnTouchListe
 
 
 class DinoRunRenderer : GLSurfaceView.Renderer {
+
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
 
     }
