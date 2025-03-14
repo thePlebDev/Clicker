@@ -12,6 +12,7 @@ import javax.microedition.khronos.opengles.GL10
 class DinoRunView(context: Context?) : GLSurfaceView(context), View.OnTouchListener{
     private val renderer = DinoRunRenderer()
 
+
     init{
         init()
         setOnTouchListener(this)
@@ -23,6 +24,8 @@ class DinoRunView(context: Context?) : GLSurfaceView(context), View.OnTouchListe
         setRenderer(renderer)
 
     }
+
+
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         event ?: return false

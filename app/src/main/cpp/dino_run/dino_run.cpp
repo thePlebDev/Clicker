@@ -288,6 +288,51 @@ void resetSecondSquare(GLfloat *vertices){
     vertices[20] = 1.0f;
     vertices[22] =0.85f;
 }
+static JavaVM *javaVM = nullptr;
+
+
+// Store JVM reference when the game initializes
+extern "C"
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    javaVM = vm;
+    return JNI_VERSION_1_6;
+}
+
+//todo: we should be able to just pass in a JNIEnv *env instance
+//by just passing it to moveSecondSquare()
+void updateTextFromNative(const char *message) {
+    if (!javaVM) return;
+
+
+    //----------IGNORE BELOW------------
+    JNIEnv *env;
+    bool didAttach = false;
+
+    // Attach current thread if needed
+    if (javaVM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        javaVM->AttachCurrentThread(&env, nullptr);
+        didAttach = true;
+    }
+    //----------IGNORE ABOVE------------
+
+
+    //todo: need to figure out more about this
+        jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+        jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateTextFromNative", "(Ljava/lang/String;)V");
+
+        if (updateTextMethod) {
+            LOGI("dinoRunJNIClass", "main stuff! 22222");
+            jstring jMessage = env->NewStringUTF(message);
+            env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod, jMessage);
+            env->DeleteLocalRef(jMessage);
+        }
+
+
+
+    if (didAttach) {
+        javaVM->DetachCurrentThread();
+    }
+}
 
 void moveSecondSquare(GLfloat *vertices){
     //these are the x-axis boudaries for the second square
@@ -309,6 +354,7 @@ void moveSecondSquare(GLfloat *vertices){
 
         if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
             LOGI("farthestLeftTesting", "Y-RANGE HIT");
+            updateTextFromNative("HIT");
             resetSecondSquare(vertices);
             return;
         }
@@ -331,9 +377,14 @@ void moveSecondSquare(GLfloat *vertices){
 
 //this is not working as I expected
 void updateVerticesForAspectRatio(GLfloat* vertices, float aspectRatio) {
-    for (int i = 0; i < 12 * 2; i += 2) { // Iterate over each pair (X, Y)
-        vertices[i] /= aspectRatio;  // Correct X scaling
+    for (int i = 0; i < 13; i += 2) { // Iterate over each pair (X, Y)
+        vertices[i] /= 4.0f;  // Correct X scaling
       //  vertices[i + 1] *= 2.5f;     // Increase Y by 10%
+    }
+    //todo: this final half is being negated by the reset function
+    for (int i = 12; i < 24; i += 2) { // Iterate over each pair (X, Y)
+        vertices[i] /= 4.0f;  // Correct X scaling
+        //  vertices[i + 1] *= 2.5f;     // Increase Y by 10%
     }
 }
 
@@ -349,7 +400,7 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 
     setupGraphics(width, height);
 
-    // Now this check will work as expected
+//    // Now this check will work as expected
 //    if (width != finalWidth || height != finalHeight) {
 //
 //        if(width==finalWidth){
@@ -404,7 +455,28 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_jump(JNIEnv *env, jobject thiz) {
+Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_jump(JNIEnv *env,jobject thiz) {
     startJump = true;
 
+
 }
+//extern "C"
+//JNIEXPORT void JNICALL
+//Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_triggerUpdate(JNIEnv *env,
+//                                                                                 jobject thiz) {
+//    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+//
+//    if (dinoRunJNIClass == nullptr) {
+//        return;
+//    }
+//
+//    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateTextFromNative", "(Ljava/lang/String;)V");
+//
+//    if (updateTextMethod == nullptr) {
+//        return;
+//    }
+//
+//    jstring newText = env->NewStringUTF("MEATBALL");
+//    env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod, newText);
+//    env->DeleteLocalRef(newText);
+//}
