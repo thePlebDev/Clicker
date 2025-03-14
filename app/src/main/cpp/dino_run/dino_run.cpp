@@ -135,6 +135,8 @@ GLfloat squareVertices[] = {
         1.0f,  0.0375f,
         0.85f,  0.0375f
 };
+
+
 void resetSquare(GLfloat *vertices){
 
 
@@ -334,7 +336,24 @@ void updateTextFromNative(const char *message) {
     }
 }
 
-void moveSecondSquare(GLfloat *vertices){
+void showSpeedIncrease(JNIEnv *env){
+    LOGI("showSpeedIncreaseTest",  "INCREASE THE SPEED");
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateOnSpeedIncreaseFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+
+
+}
+float secondSquareMovementSpeed = -0.02f;
+int successfulJumps = 0;
+
+void moveSecondSquare(GLfloat *vertices,JNIEnv *env){
     //these are the x-axis boudaries for the second square
     float rightBoundarySquareOne = vertices[14];
     float leftBoundarySquareOne = vertices[12];
@@ -354,6 +373,8 @@ void moveSecondSquare(GLfloat *vertices){
 
         if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
             LOGI("farthestLeftTesting", "Y-RANGE HIT");
+            successfulJumps=0;
+            secondSquareMovementSpeed = -0.02f;
             updateTextFromNative("HIT");
             resetSecondSquare(vertices);
             return;
@@ -364,9 +385,16 @@ void moveSecondSquare(GLfloat *vertices){
     if(rightBoundarySquareOne <= -1){
         LOGI("farthestLeftTesting", "off screen");
         resetSecondSquare(vertices);
+        successfulJumps+=1;
+  LOGI("speedUpdateTesting", "increase speed--->%d",(successfulJumps%5 ==0));
+  if((successfulJumps%5 ==0)){
+      showSpeedIncrease(env);
+      secondSquareMovementSpeed += -0.005f;
+  }
+
     }else{
         for(int i =12; i <23; i +=2){
-            vertices[i] += (-0.02f);
+            vertices[i] += (secondSquareMovementSpeed);
         }
 
     }
@@ -450,7 +478,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *env, jobject thiz) {
     jump(squareVertices);
-    moveSecondSquare(squareVertices);
+    moveSecondSquare(squareVertices,env);
     renderFrame();
 }
 extern "C"
