@@ -14,6 +14,8 @@ object DinoRunJNI{
 
     private var onTextUpdate: ((String) -> Unit)? = null
 
+    private var onSpeedIncrease: (() -> Unit)? = null
+
     @JvmStatic
     fun setOnTextUpdateCallback(callback: (String) -> Unit) {
         onTextUpdate = callback
@@ -22,6 +24,15 @@ object DinoRunJNI{
     @JvmStatic
     fun updateTextFromNative(newText: String) {
         onTextUpdate?.invoke(newText)
+    }
+    @JvmStatic
+    fun setOnSpeedIncreaseCallback(callback: () -> Unit) {
+        onSpeedIncrease = callback
+    }
+
+    @JvmStatic
+    fun updateOnSpeedIncreaseFromNative() {
+        onSpeedIncrease?.invoke()
     }
 
 
