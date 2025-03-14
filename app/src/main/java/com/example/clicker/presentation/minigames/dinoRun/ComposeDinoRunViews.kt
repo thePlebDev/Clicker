@@ -68,24 +68,46 @@ fun ComposeDinoRunViews(
         mutableStateOf(0)
     }
     val timerBoolean = remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
     var imageVisible = remember { mutableStateOf(false) }
+
+    var startGame = remember { mutableStateOf(true) }
+    var gameOver = remember { mutableStateOf(false) }
 
 
     LaunchedEffect(Unit) {
         DinoRunJNI.setOnTextUpdateCallback { newText ->
             value.value = newText
             timerClock.value =0
-        }
-        DinoRunJNI.setOnSpeedIncreaseCallback {
-            imageVisible.value = true
+            timerBoolean.value = false
         }
     }
     LaunchedEffect(Unit) {
 
         DinoRunJNI.setOnSpeedIncreaseCallback {
             imageVisible.value = true
+        }
+    }
+
+    //I need a function that when called will start the timer and remove the start game
+    LaunchedEffect(Unit) {
+
+        DinoRunJNI.setRemoveStartGameCallback{
+            timerClock.value =0
+            timerBoolean.value = true
+            startGame.value = false
+            gameOver.value = false
+        }
+    }
+    //todo:working on this
+    //I need a function that just shows the game over sign
+    LaunchedEffect(Unit) {
+
+        DinoRunJNI.setShowGameOverCallback{
+            startGame.value = false
+            gameOver.value = true
+
         }
     }
 
@@ -138,13 +160,18 @@ fun ComposeDinoRunViews(
                 TextShadowTitle2("SPEED ↑")
             }
         }
-//        StartGameText(
-//            modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
-//        )
+        if(startGame.value){
+            StartGameText(
+                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
+            )
+        }
+        if(gameOver.value){
+            GameOverText(
+                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
+            )
+        }
 
-//        GameOverText(
-//            modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
-//        )
+
 
 
 
