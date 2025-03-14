@@ -15,6 +15,8 @@ object DinoRunJNI{
     private var onTextUpdate: ((String) -> Unit)? = null
 
     private var onSpeedIncrease: (() -> Unit)? = null
+    private var removeStartGame: (() -> Unit)? = null
+    private var showGameOver: (() -> Unit)? = null
 
     @JvmStatic
     fun setOnTextUpdateCallback(callback: (String) -> Unit) {
@@ -33,6 +35,27 @@ object DinoRunJNI{
     @JvmStatic
     fun updateOnSpeedIncreaseFromNative() {
         onSpeedIncrease?.invoke()
+    }
+
+
+    @JvmStatic
+    fun setRemoveStartGameCallback(callback: () -> Unit) {
+        removeStartGame = callback
+    }
+
+    @JvmStatic
+    fun updateRemoveStartGameFromNative() {
+        removeStartGame?.invoke()
+    }
+    //below is new
+    @JvmStatic
+    fun setShowGameOverCallback(callback: () -> Unit) {
+        showGameOver = callback
+    }
+
+    @JvmStatic
+    fun updateShowGameOverFromNative() {
+        showGameOver?.invoke()
     }
 
 

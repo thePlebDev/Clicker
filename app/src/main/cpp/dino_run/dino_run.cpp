@@ -223,6 +223,37 @@ void jumpWithDeforms(GLfloat *vertices) {
     }
 }
 float testingthinger=0.0f;
+bool startGame = false;
+enum GameStatus { init, start, stop };
+GameStatus gameValue = init;
+
+void removeStartUI(JNIEnv *env){
+    gameValue = start;
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateRemoveStartGameFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+
+
+
+}
+void showGameOverUI(JNIEnv *env){
+    gameValue = stop;
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateShowGameOverFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+}
 
 void jump(GLfloat *vertices) {
     float highestPosition = 0.4f;
@@ -231,6 +262,8 @@ void jump(GLfloat *vertices) {
     // highest and lowest points on the square
     float verticesHighPoint = vertices[5]; // top-right Y position
     float verticesLowPoint = vertices[1];  // bottom-left Y position
+
+
 
 
     if (startJump) {
@@ -353,6 +386,7 @@ void showSpeedIncrease(JNIEnv *env){
 float secondSquareMovementSpeed = -0.02f;
 int successfulJumps = 0;
 
+
 void moveSecondSquare(GLfloat *vertices,JNIEnv *env){
     //these are the x-axis boudaries for the second square
     float rightBoundarySquareOne = vertices[14];
@@ -376,7 +410,10 @@ void moveSecondSquare(GLfloat *vertices,JNIEnv *env){
             successfulJumps=0;
             secondSquareMovementSpeed = -0.02f;
             updateTextFromNative("HIT");
+            //todo: this needs to set gamestatus to over and show the game overUI
+            showGameOverUI(env);
             resetSecondSquare(vertices);
+
             return;
         }
 
@@ -478,13 +515,27 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *env, jobject thiz) {
     jump(squareVertices);
-    moveSecondSquare(squareVertices,env);
+    LOGI("JUMPINGCHECK", "STEP!!!!!!!!!");
+
+    switch(gameValue){
+        case init  : break;
+        case start: moveSecondSquare(squareVertices,env); break;
+        case stop :break;
+    }
+
     renderFrame();
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_jump(JNIEnv *env,jobject thiz) {
     startJump = true;
+    LOGI("JUMPINGCHECK", "JUMP");
+    switch(gameValue){
+        case init  : removeStartUI(env);   break;
+        case start: break;
+        case stop : removeStartUI(env); break;
+    }
+
 
 
 }
