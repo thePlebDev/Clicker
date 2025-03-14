@@ -321,7 +321,7 @@ void updateTextFromNative(const char *message) {
         jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateTextFromNative", "(Ljava/lang/String;)V");
 
         if (updateTextMethod) {
-            LOGI("dinoRunJNIClass", "main stuff! 22222");
+
             jstring jMessage = env->NewStringUTF(message);
             env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod, jMessage);
             env->DeleteLocalRef(jMessage);
