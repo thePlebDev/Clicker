@@ -29,7 +29,7 @@ class DinoRunView(context: Context?) : GLSurfaceView(context), View.OnTouchListe
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         event ?: return false
-        v?.parent?.requestDisallowInterceptTouchEvent(true) // this remove the swiping from the horizontal pager
+        //v?.parent?.requestDisallowInterceptTouchEvent(true) // this remove the swiping from the horizontal pager
 
 
 
