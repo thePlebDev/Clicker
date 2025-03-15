@@ -115,7 +115,7 @@ class BackgroundStreamService: Service() {
         channelName:String
     ) {
 
-        startForeground(100, createNotification("Timer: 0s",channelName))
+        startForeground(100, createNotification("",channelName))
         startTimer(channelName)
         testLoadWebViewURL(channelName)
 
@@ -145,10 +145,12 @@ class BackgroundStreamService: Service() {
 
                 // Update notification with formatted time
                 val formattedTime = String.format("%02d:%02d:%02d", timeInHours, timeInMinutes, timeInSeconds)
-                updateNotification("Active: $formattedTime",channelName)
+             //   updateNotification("Active: $formattedTime",channelName)
             }
         }
     }
+    //TODO: I THINK THE CONSTANT AUDIO UPDATE IS DO TO THE NOTIFICATION CHANNELS
+    //TODO: FIX LATER
     private fun updateNotification(contentText: String,channelName: String) {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify( 100, createNotification(contentText,channelName))
