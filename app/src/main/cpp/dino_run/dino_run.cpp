@@ -426,7 +426,7 @@ void moveSecondSquare(GLfloat *vertices,JNIEnv *env){
   LOGI("speedUpdateTesting", "increase speed--->%d",(successfulJumps%5 ==0));
   if((successfulJumps%5 ==0)){
       showSpeedIncrease(env);
-      secondSquareMovementSpeed += -0.005f;
+      secondSquareMovementSpeed += -0.0025f;
   }
 
     }else{

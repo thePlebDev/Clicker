@@ -213,8 +213,8 @@ import kotlinx.coroutines.launch
             0 ->"Live Channels"
             1->"Mod Channels"
             2->"Categories"
-            3->"Settings"
-            4->"Mini Game"
+            3->"Mini Game (Beta)"
+            4->"Settings"
             else->""
         }
         val context = LocalContext.current
@@ -285,10 +285,10 @@ import kotlinx.coroutines.launch
                     fourthButton={
                         this.PainterResourceIconOverTextColumn(
                             iconColor = if(pagerState.currentPage ==3)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
-                            painter = painterResource(id = R.drawable.baseline_settings_24),
-                            iconContentDescription = "Navigate to Settings page",
+                            painter = painterResource(id = R.drawable.videogame_asset),
+                            iconContentDescription = "Navigate to Mini game page",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Settings",
+                            text = "Mini game",
                             onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(3)
@@ -296,14 +296,16 @@ import kotlinx.coroutines.launch
 
                             },
                         )
+
                     },
                     fiveButton = {
+
                         this.PainterResourceIconOverTextColumn(
                             iconColor = if(pagerState.currentPage ==4)MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary,
-                            painter = painterResource(id = R.drawable.videogame_asset),
-                            iconContentDescription = "Navigate to Mini game page",
+                            painter = painterResource(id = R.drawable.baseline_settings_24),
+                            iconContentDescription = "Navigate to Settings page",
                             fontColor = MaterialTheme.colorScheme.onPrimary,
-                            text = "Mini game",
+                            text = "Settings",
                             onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(4)
@@ -482,6 +484,23 @@ import kotlinx.coroutines.launch
 
                      }// END OF THE CATEGORIES
                     3->{
+                        ComposeDinoRunViews(
+                            context = context,
+                            modifier = Modifier
+                                .padding(contentPadding)
+                                .fillMaxSize()
+                        )
+
+                    }
+                    4->{
+
+
+//                        PingPongViewGLSurfaceViewComposable(
+//                            context = context,
+//                            modifier = Modifier
+//                                .padding(contentPadding)
+//                                .fillMaxSize()
+//                        )
                         LoginLogoutScaffoldDrawerBox(
                             showLogoutDialog = {
                                 showLogoutDialog()
@@ -503,21 +522,6 @@ import kotlinx.coroutines.launch
                             contentPadding = contentPadding
 
                         )
-                    }
-                    4->{
-                        ComposeDinoRunViews(
-                            context = context,
-                            modifier = Modifier
-                                .padding(contentPadding)
-                                .fillMaxSize()
-                        )
-
-//                        PingPongViewGLSurfaceViewComposable(
-//                            context = context,
-//                            modifier = Modifier
-//                                .padding(contentPadding)
-//                                .fillMaxSize()
-//                        )
                     }
             }
         }
