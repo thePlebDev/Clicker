@@ -390,7 +390,7 @@ class HomeFragment : Fragment(){
 
 
         if(value !=UserTypes.NEW){
-       
+
 
             binding.composeView.apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
