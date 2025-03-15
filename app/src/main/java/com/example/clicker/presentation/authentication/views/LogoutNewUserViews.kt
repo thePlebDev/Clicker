@@ -85,9 +85,9 @@ fun ModderzTagLine(
         Text(text ="Modderz",color = Color.White, fontSize = 40.sp)
         Spacer(modifier = Modifier.height(10.dp))
         if(showLoginWithTwitchButton){
-            Text(text ="Because mobile moderators deserve love too",color = Color.White, fontSize = 30.sp)
+            Text(text ="A unique modded experience",color = Color.White, fontSize = 30.sp)
         }else{
-            Text(text ="You must verify the link before you can login with Twitch",color = Color.White, fontSize = 30.sp)
+            Text(text ="You must verify the redirect link to allow Modderz to login with Twitch",color = Color.White, fontSize = 30.sp)
             VisualDescriptionOfAddingLinks()
         }
     }
