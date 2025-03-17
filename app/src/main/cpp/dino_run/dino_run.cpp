@@ -10,53 +10,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "dino_run.h"
+#include "dino_run_setup.h"
 
 #define LOG_TAG "DINORUN"
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-//todo: MOVE THIS IMPLEMENTATION TO ITS OWN FILE CALLED SETUP
-TransformShader::TransformShader() {
-    m_glVertexShader ="attribute vec4 vPosition;\n"
-                      "void main()\n"
-                      "{\n"
-                      "  gl_Position = vPosition;\n"
-                      "}\n";
 
-    m_glFragmentShader ="precision mediump float;\n"
-                        "void main()\n"
-                        "{\n"
-                        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-                        "}\n";
-
-}
-
-TransformShader::~TransformShader() {
-
-}
 
 //todo: READ UP ON POINTERS
 TransformShader* shaders = new TransformShader();
 
 
-
-//static const char glVertexShader[] =
-//        "attribute vec4 vPosition;\n"
-//        "void main()\n"
-//        "{\n"
-//        "  gl_Position = vPosition;\n"
-//        "}\n";
-//
-//
-//static const char glFragmentShader[] =
-//        "precision mediump float;\n"
-//        "void main()\n"
-//        "{\n"
-//        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-//        "}\n";
-
-GLuint loadShader(GLenum shaderType, std::string shaderSource)
-{
+GLuint loadShader(GLenum shaderType, std::string shaderSource){
     GLuint shader = glCreateShader(shaderType);
     if (shader){
         const GLchar* pCode = shaderSource.c_str();
@@ -87,8 +53,7 @@ GLuint loadShader(GLenum shaderType, std::string shaderSource)
     return shader;
 }
 
-GLuint createProgram(std::string vertexSource, std::string fragmentSource)
-{
+GLuint createProgram(std::string vertexSource, std::string fragmentSource){
     GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
     if (!vertexShader)
     {
@@ -128,10 +93,10 @@ GLuint createProgram(std::string vertexSource, std::string fragmentSource)
     return program;
 }
 
+//TODO: THIS IS WHAT I NEED TO CHANGE OVER NEXT
 GLuint simpleTriangleProgram;
 GLuint vPosition;
-bool setupGraphics(int w, int h)
-{
+bool setupGraphics(int w, int h){
     simpleTriangleProgram = createProgram(shaders->m_glVertexShader, shaders->m_glFragmentShader);
     if (!simpleTriangleProgram)
     {
@@ -143,29 +108,29 @@ bool setupGraphics(int w, int h)
     return true;
 }
 
-GLfloat squareVertices[] = {
-        // First square
+//GLfloat squareVertices[] = {
+//        // First square
+//
+//        -0.800f, -0.0375f,   // Bottom-left corner
+//        -0.650f, -0.0375f,   // Bottom-right corner
+//        -0.650f,  0.0375f,   // Top-right corner
+//
+//        -0.800f, -0.0375f,
+//        -0.650f,  0.0375f,
+//        -0.800f,  0.0375f,
+//
+//        // Second square
+//        0.85f, -0.0375f,   // Bottom-left corner
+//        1.0f, -0.0375f,    // Bottom-right corner
+//        1.0f,  0.0375f,    // Top-right corner
+//
+//        0.85f, -0.0375f,
+//        1.0f,  0.0375f,
+//        0.85f,  0.0375f
+//};
 
-        -0.800f, -0.0375f,   // Bottom-left corner
-        -0.650f, -0.0375f,   // Bottom-right corner
-        -0.650f,  0.0375f,   // Top-right corner
 
-        -0.800f, -0.0375f,
-        -0.650f,  0.0375f,
-        -0.800f,  0.0375f,
-
-        // Second square
-        0.85f, -0.0375f,   // Bottom-left corner
-        1.0f, -0.0375f,    // Bottom-right corner
-        1.0f,  0.0375f,    // Top-right corner
-
-        0.85f, -0.0375f,
-        1.0f,  0.0375f,
-        0.85f,  0.0375f
-};
-
-
-void resetSquare(GLfloat *vertices){
+void resetSquare(std::vector<GLfloat>& vertices){
 
 
     //this is a reset on the y-values
@@ -187,7 +152,10 @@ void renderFrame(){
 
     glUseProgram(simpleTriangleProgram); // Use our shader program
 
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, squareVertices);
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, shaders->m_squareVertices.data());
+
+
+
     glEnableVertexAttribArray(vPosition);
 
     glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
@@ -241,7 +209,7 @@ void jumpWithDeforms(GLfloat *vertices) {
                 }
             } else {
 
-                resetSquare(vertices);
+                //resetSquare(vertices);
                 hitTop = false;
                 startJump = false;
                 velocity =0.0f;
@@ -283,7 +251,7 @@ void showGameOverUI(JNIEnv *env){
     }
 }
 
-void jump(GLfloat *vertices) {
+void jump(std::vector<GLfloat>& vertices) {
     float highestPosition = 0.4f;
     float lowestPosition = -0.0375f;
 
@@ -343,7 +311,7 @@ void jump(GLfloat *vertices) {
     }
 }
 
-void resetSecondSquare(GLfloat *vertices){
+void resetSecondSquare(std::vector<GLfloat>& vertices){
     vertices[12] = 0.85f;
     vertices[14] =1.0f;
     vertices[16] =1.0f;
@@ -415,7 +383,7 @@ float secondSquareMovementSpeed = -0.02f;
 int successfulJumps = 0;
 
 
-void moveSecondSquare(GLfloat *vertices,JNIEnv *env){
+void moveSecondSquare(std::vector<GLfloat>& vertices,JNIEnv *env){
     //these are the x-axis boudaries for the second square
     float rightBoundarySquareOne = vertices[14];
     float leftBoundarySquareOne = vertices[12];
@@ -542,12 +510,13 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *env, jobject thiz) {
-    jump(squareVertices);
+    std::vector<GLfloat>& vertices = shaders->getSquareVertices();
+    jump(shaders->getSquareVertices());
     LOGI("JUMPINGCHECK", "STEP!!!!!!!!!");
 
     switch(gameValue){
         case init  : break;
-        case start: moveSecondSquare(squareVertices,env); break;
+        case start: moveSecondSquare(shaders->getSquareVertices(),env); break;
         case stop :break;
     }
 

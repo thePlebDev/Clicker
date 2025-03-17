@@ -2,6 +2,8 @@
 
 package com.example.clicker.presentation.home.views
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
@@ -87,6 +89,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.fragment.findNavController
 import coil.compose.SubcomposeAsyncImage
 import com.example.clicker.BuildConfig
@@ -325,17 +328,19 @@ import kotlinx.coroutines.launch
 
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            Log.d("TESTINGoNUPTHINGERS","HorizontalPager-->onpress")
-                        },
-                        onTap = {
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                Log.d("TESTINGoNUPTHINGERS", "HorizontalPager-->onpress")
+                            },
+                            onTap = {
 
-                            Log.d("TESTINGoNUPTHINGERS","HorizontalPager-->TAP")
-                        }
-                    )
-                }
+                                Log.d("TESTINGoNUPTHINGERS", "HorizontalPager-->TAP")
+                            }
+                        )
+                    }
             ) { page ->
 
                 // Our page content
@@ -719,6 +724,7 @@ fun LoginWithTwitchBottomModalButtonColumn(
         openAppSettings:() ->Unit,
         contentPadding: PaddingValues,
     ) {
+        val context = LocalContext.current
 
         Box(modifier = Modifier
             .padding(contentPadding)
@@ -766,6 +772,13 @@ fun LoginWithTwitchBottomModalButtonColumn(
                         openAppSettings={openAppSettings()}
                     )
                 }
+                PrivacyPolicyActionCard(
+                    onCardClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/thePlebDev/Modderz-privacy-policy/blob/main/README.md"))
+                        startActivity(context,intent,null)
+                    },
+                    title="Privacy policy"
+                )
 
 
             }//end of the column
@@ -1025,6 +1038,41 @@ fun CreatingBackgroundServiceSwitch(
             }
         }
     }
+
+@Composable
+fun PrivacyPolicyActionCard(
+    onCardClick: () -> Unit,
+    title:String,
+) {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp)
+            .clickable {
+
+                onCardClick()
+            },
+        elevation = 10.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondary),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Text(title, fontSize = MaterialTheme.typography.headlineMedium.fontSize,color = MaterialTheme.colorScheme.onSecondary)
+
+            Icon(
+                painter = painterResource(id =R.drawable.baseline_privacy_policy),
+                contentDescription ="Privacy policy",
+                modifier = Modifier.size(35.dp),
+                tint =  MaterialTheme.colorScheme.onSecondary
+            )
+        }
+    }
+}
 
 
 

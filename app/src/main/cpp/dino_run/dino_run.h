@@ -17,19 +17,3 @@
 
 
 
-/**
- * basic TransformShader
- */
-class TransformShader {
-
-
-
-
-public:
-    TransformShader();
-    ~TransformShader();
-    //todo: make these protected
-    std::string  m_glVertexShader;
-    std::string m_glFragmentShader;
-
-};
