@@ -9,32 +9,60 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "dino_run.h"
 
 #define LOG_TAG "DINORUN"
 #define LOGI(TAG, ...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-static const char glVertexShader[] =
-        "attribute vec4 vPosition;\n"
-        "void main()\n"
-        "{\n"
-        "  gl_Position = vPosition;\n"
-        "}\n";
+//todo: MOVE THIS IMPLEMENTATION TO ITS OWN FILE CALLED SETUP
+TransformShader::TransformShader() {
+    m_glVertexShader ="attribute vec4 vPosition;\n"
+                      "void main()\n"
+                      "{\n"
+                      "  gl_Position = vPosition;\n"
+                      "}\n";
+
+    m_glFragmentShader ="precision mediump float;\n"
+                        "void main()\n"
+                        "{\n"
+                        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+                        "}\n";
+
+}
+
+TransformShader::~TransformShader() {
+
+}
+
+//todo: READ UP ON POINTERS
+TransformShader* shaders = new TransformShader();
 
 
-static const char glFragmentShader[] =
-        "precision mediump float;\n"
-        "void main()\n"
-        "{\n"
-        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-        "}\n";
 
-GLuint loadShader(GLenum shaderType, const char* shaderSource)
+//static const char glVertexShader[] =
+//        "attribute vec4 vPosition;\n"
+//        "void main()\n"
+//        "{\n"
+//        "  gl_Position = vPosition;\n"
+//        "}\n";
+//
+//
+//static const char glFragmentShader[] =
+//        "precision mediump float;\n"
+//        "void main()\n"
+//        "{\n"
+//        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+//        "}\n";
+
+GLuint loadShader(GLenum shaderType, std::string shaderSource)
 {
     GLuint shader = glCreateShader(shaderType);
-    if (shader)
-    {
-        glShaderSource(shader, 1, &shaderSource, NULL);
+    if (shader){
+        const GLchar* pCode = shaderSource.c_str();
+        GLint length = shaderSource.length();
+
+        glShaderSource(shader, 1, &pCode, &length);
         glCompileShader(shader);
         GLint compiled = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
@@ -59,7 +87,7 @@ GLuint loadShader(GLenum shaderType, const char* shaderSource)
     return shader;
 }
 
-GLuint createProgram(const char* vertexSource, const char * fragmentSource)
+GLuint createProgram(std::string vertexSource, std::string fragmentSource)
 {
     GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
     if (!vertexShader)
@@ -104,7 +132,7 @@ GLuint simpleTriangleProgram;
 GLuint vPosition;
 bool setupGraphics(int w, int h)
 {
-    simpleTriangleProgram = createProgram(glVertexShader, glFragmentShader);
+    simpleTriangleProgram = createProgram(shaders->m_glVertexShader, shaders->m_glFragmentShader);
     if (!simpleTriangleProgram)
     {
         LOGE ("Could not create program");
@@ -559,3 +587,4 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_jump(JNIEnv *
 //    env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod, newText);
 //    env->DeleteLocalRef(newText);
 //}
+
