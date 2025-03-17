@@ -75,6 +75,7 @@ add_library(
 #added to the INCLUDE_DIRECTORIES directory for preproccessing
 include_directories(rtmp_client.h)
 include_directories(ping_pong/ping_pong_movement.h)
+include_directories(dino_run/dino_run.h)
 
 
 # Link libraries for rtmp_client
