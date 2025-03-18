@@ -24,21 +24,29 @@
  */
 class TransformShader {
 
-
-public:
-    TransformShader();
-    ~TransformShader();
-    std::string  m_glVertexShader;
-    std::string m_glFragmentShader;
+private:
     std::vector<GLfloat> m_squareVertices = {
             -0.800f, -0.0375f, -0.650f, -0.0375f, -0.650f,  0.0375f,
             -0.800f, -0.0375f, -0.650f,  0.0375f, -0.800f,  0.0375f,
             0.85f, -0.0375f, 1.0f, -0.0375f, 1.0f,  0.0375f,
             0.85f, -0.0375f, 1.0f,  0.0375f, 0.85f,  0.0375f
     };
+
+
+
+public:
+    TransformShader();
+    ~TransformShader();
+    std::string  m_glVertexShader;
+    std::string m_glFragmentShader;
+    GLuint createProgram(std::string vertexSource, std::string fragmentSource);
+    GLuint loadShader(GLenum shaderType, std::string shaderSource);
     std::vector<GLfloat>& getSquareVertices() {
         return m_squareVertices;  // Returns a reference
     }
+
+
+
 
 
 };

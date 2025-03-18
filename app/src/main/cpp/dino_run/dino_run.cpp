@@ -22,82 +22,12 @@
 TransformShader* shaders = new TransformShader();
 
 
-GLuint loadShader(GLenum shaderType, std::string shaderSource){
-    GLuint shader = glCreateShader(shaderType);
-    if (shader){
-        const GLchar* pCode = shaderSource.c_str();
-        GLint length = shaderSource.length();
-
-        glShaderSource(shader, 1, &pCode, &length);
-        glCompileShader(shader);
-        GLint compiled = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        if (!compiled)
-        {
-            GLint infoLen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-            if (infoLen)
-            {
-                char * buf = (char*) malloc(infoLen);
-                if (buf)
-                {
-                    glGetShaderInfoLog(shader, infoLen, NULL, buf);
-                    LOGE("Could not Compile Shader %d:\n%s\n", shaderType, buf);
-                    free(buf);
-                }
-                glDeleteShader(shader);
-                shader = 0;
-            }
-        }
-    }
-    return shader;
-}
-
-GLuint createProgram(std::string vertexSource, std::string fragmentSource){
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
-    if (!vertexShader)
-    {
-        return 0;
-    }
-    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSource);
-    if (!fragmentShader)
-    {
-        return 0;
-    }
-    GLuint program = glCreateProgram();
-    if (program)
-    {
-        glAttachShader(program , vertexShader);
-        glAttachShader(program, fragmentShader);
-        glLinkProgram(program);
-        GLint linkStatus = GL_FALSE;
-        glGetProgramiv(program , GL_LINK_STATUS, &linkStatus);
-        if( linkStatus != GL_TRUE)
-        {
-            GLint bufLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-            if (bufLength)
-            {
-                char* buf = (char*) malloc(bufLength);
-                if (buf)
-                {
-                    glGetProgramInfoLog(program, bufLength, NULL, buf);
-                    LOGE("Could not link program:\n%s\n", buf);
-                    free(buf);
-                }
-            }
-            glDeleteProgram(program);
-            program = 0;
-        }
-    }
-    return program;
-}
 
 //TODO: THIS IS WHAT I NEED TO CHANGE OVER NEXT
 GLuint simpleTriangleProgram;
 GLuint vPosition;
 bool setupGraphics(int w, int h){
-    simpleTriangleProgram = createProgram(shaders->m_glVertexShader, shaders->m_glFragmentShader);
+    simpleTriangleProgram = shaders->createProgram(shaders->m_glVertexShader, shaders->m_glFragmentShader);
     if (!simpleTriangleProgram)
     {
         LOGE ("Could not create program");
@@ -108,29 +38,11 @@ bool setupGraphics(int w, int h){
     return true;
 }
 
-//GLfloat squareVertices[] = {
-//        // First square
-//
-//        -0.800f, -0.0375f,   // Bottom-left corner
-//        -0.650f, -0.0375f,   // Bottom-right corner
-//        -0.650f,  0.0375f,   // Top-right corner
-//
-//        -0.800f, -0.0375f,
-//        -0.650f,  0.0375f,
-//        -0.800f,  0.0375f,
-//
-//        // Second square
-//        0.85f, -0.0375f,   // Bottom-left corner
-//        1.0f, -0.0375f,    // Bottom-right corner
-//        1.0f,  0.0375f,    // Top-right corner
-//
-//        0.85f, -0.0375f,
-//        1.0f,  0.0375f,
-//        0.85f,  0.0375f
-//};
+
 
 
 void resetSquare(std::vector<GLfloat>& vertices){
+
 
 
     //this is a reset on the y-values
@@ -152,7 +64,7 @@ void renderFrame(){
 
     glUseProgram(simpleTriangleProgram); // Use our shader program
 
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, shaders->m_squareVertices.data());
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, shaders->getSquareVertices().data());
 
 
 
@@ -166,60 +78,6 @@ bool hitTop = false;
 // by I have created a temporary fix with resetSquare()
 float velocity = 0.0f;
 
-
-
-//todo: THERE IS A MINOR POSITIONING BUG
-void jumpWithDeforms(GLfloat *vertices) {
-    float highestPosition = 0.4f;
-    float lowestPosition = -0.0375f;
-
-    // highest and lowest points on the square
-    float verticesHighPoint = vertices[5]; // top-right Y position
-    float verticesLowPoint = vertices[1];  // bottom-left Y position
-
-    if (startJump) {
-        if (!hitTop) {
-
-            if (verticesHighPoint < highestPosition+velocity) {
-                for (int i = 1; i <= 12; i += 2) {
-                    if (vertices[i] < highestPosition) {
-                        velocity += -0.0001f;
-                        vertices[i] += 0.025f+velocity;
-                    } else {
-                        vertices[i] = highestPosition; // Stop at highest position
-                    }
-                }
-            } else {
-                velocity=0.0f;
-                hitTop = true;
-            }
-        } else {
-             // Simulate downward acceleration
-
-
-            if (verticesLowPoint > lowestPosition) {
-                for (int i = 1; i <= 12; i += 2) {
-
-                    if (vertices[i] > lowestPosition) {
-                       // velocity += -0.0001f;
-                        vertices[i] += (-0.035f); // Move down
-                    } else {
-                        vertices[i] = lowestPosition; // Stop at lowest position
-                    }
-                }
-            } else {
-
-                //resetSquare(vertices);
-                hitTop = false;
-                startJump = false;
-                velocity =0.0f;
-            }
-        }
-
-    }
-}
-float testingthinger=0.0f;
-bool startGame = false;
 enum GameStatus { init, start, stop };
 GameStatus gameValue = init;
 
@@ -267,9 +125,7 @@ void jump(std::vector<GLfloat>& vertices) {
 
             if (verticesHighPoint < highestPosition) {
                 float distanceToTop = highestPosition - verticesHighPoint;
-                testingthinger += (-0.001f * distanceToTop);
 
-                LOGI("velocity", "velocity -->%f",testingthinger);
                 velocity += -0.0025f * distanceToTop; // Loss of momentum as it gets closer
                 // Apply the movement to all vertices
                 for (int i = 1; i <= 12; i += 2) {
