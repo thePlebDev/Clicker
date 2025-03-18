@@ -110,6 +110,34 @@ GLuint TransformShader::loadShader(GLenum shaderType, std::string shaderSource) 
     return shader;
 }
 
+bool TransformShader::setupGraphics(int w, int h) {
+    simpleTriangleProgram = createProgram(m_glVertexShader, m_glFragmentShader);
+    if (!simpleTriangleProgram)
+    {
+        LOGE ("Could not create program");
+        return false;
+    }
+    vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
+    glViewport(0, 0, w, h);
+    return true;
+}
+
+void TransformShader::renderFrame() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear screen with black
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(simpleTriangleProgram); // Use our shader program
+
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, getSquareVertices().data());
+
+
+
+    glEnableVertexAttribArray(vPosition);
+
+    glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
+
+}
+
 
 
 
