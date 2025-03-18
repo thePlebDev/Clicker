@@ -31,6 +31,8 @@ private:
             0.85f, -0.0375f, 1.0f, -0.0375f, 1.0f,  0.0375f,
             0.85f, -0.0375f, 1.0f,  0.0375f, 0.85f,  0.0375f
     };
+    GLuint simpleTriangleProgram;
+    GLuint vPosition;
 
 
 
@@ -44,6 +46,8 @@ public:
     std::vector<GLfloat>& getSquareVertices() {
         return m_squareVertices;  // Returns a reference
     }
+    bool setupGraphics(int w, int h);
+    void renderFrame();
 
 
 

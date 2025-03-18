@@ -23,61 +23,8 @@ TransformShader* shaders = new TransformShader();
 
 
 
-//TODO: THIS IS WHAT I NEED TO CHANGE OVER NEXT
-GLuint simpleTriangleProgram;
-GLuint vPosition;
-bool setupGraphics(int w, int h){
-    simpleTriangleProgram = shaders->createProgram(shaders->m_glVertexShader, shaders->m_glFragmentShader);
-    if (!simpleTriangleProgram)
-    {
-        LOGE ("Could not create program");
-        return false;
-    }
-    vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
-    glViewport(0, 0, w, h);
-    return true;
-}
 
-
-
-
-void resetSquare(std::vector<GLfloat>& vertices){
-
-
-
-    //this is a reset on the y-values
-    vertices[1] = -0.0375f;
-    vertices[3] =-0.0375f;
-    vertices[5] =0.0375f;
-    vertices[7] = -0.0375f;
-    vertices[9] = 0.0375f;
-    vertices[11] =0.0375f;
-
-}
-
-
-
-void renderFrame(){
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear screen with black
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(simpleTriangleProgram); // Use our shader program
-
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, shaders->getSquareVertices().data());
-
-
-
-    glEnableVertexAttribArray(vPosition);
-
-    glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
-}
-bool startJump = false;
-bool hitTop = false;
-//todo: velocity is causing some deformation issues
-// by I have created a temporary fix with resetSquare()
-float velocity = 0.0f;
-
+// This should probably be its own class
 enum GameStatus { init, start, stop };
 GameStatus gameValue = init;
 
@@ -108,6 +55,25 @@ void showGameOverUI(JNIEnv *env){
 
     }
 }
+
+
+void resetSquare(std::vector<GLfloat>& vertices){
+
+    //this is a reset on the y-values
+    vertices[1] = -0.0375f;
+    vertices[3] =-0.0375f;
+    vertices[5] =0.0375f;
+    vertices[7] = -0.0375f;
+    vertices[9] = 0.0375f;
+    vertices[11] =0.0375f;
+
+}
+
+bool startJump = false;
+bool hitTop = false;
+//todo: velocity is causing some deformation issues
+// by I have created a temporary fix with resetSquare()
+float velocity = 0.0f;
 
 void jump(std::vector<GLfloat>& vertices) {
     float highestPosition = 0.4f;
@@ -315,7 +281,7 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *env, jobject thiz,jint width, jint height) {
     LOGI("APSECTrATIOtESTINGaGAIN", "INIT");
 
-    setupGraphics(width, height);
+    shaders->setupGraphics(width, height);
 
 //    // Now this check will work as expected
 //    if (width != finalWidth || height != finalHeight) {
@@ -376,7 +342,7 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_step(JNIEnv *
         case stop :break;
     }
 
-    renderFrame();
+    shaders->renderFrame();
 }
 extern "C"
 JNIEXPORT void JNICALL
