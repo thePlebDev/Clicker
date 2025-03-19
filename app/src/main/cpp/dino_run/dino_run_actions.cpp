@@ -99,3 +99,124 @@ void Actions::resetSquare(std::vector<GLfloat> &vertices) {
     vertices[11] =0.0375f;
 
 }
+
+void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
+    //these are the x-axis boudaries for the second square
+    float rightBoundarySquareOne = vertices[14];
+    float leftBoundarySquareOne = vertices[12];
+    float topBoundarySquareOne = vertices[5];
+    float bottomBoundarySquareOne = vertices[3];
+
+    //boundary for the second box
+    float rightBoundarySquareTwo = vertices[2];
+    float leftBoundarySquareTwo = vertices[0];
+    float topBoundarySquareTwo = vertices[17];
+    float bottomBoundarySquareTwo = vertices[15];
+
+    //if(secondFarthestRight<=farthestLeft)
+    // Corrected hit detection logic (checks for overlap)
+    if (!(rightBoundarySquareOne < leftBoundarySquareTwo || leftBoundarySquareOne > rightBoundarySquareTwo)) {
+        // LOGI("farthestLeftTesting", "HIT!!!! RESET");
+
+        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
+            LOGI("farthestLeftTesting", "Y-RANGE HIT");
+            successfulJumps=0;
+            secondSquareMovementSpeed = -0.02f;
+            updateTextFromNative("HIT",env);
+            //todo: this needs to set gamestatus to over and show the game overUI
+            showGameOverUI(env);
+            resetSecondSquare(vertices);
+
+            return;
+        }
+
+    }
+
+    if(rightBoundarySquareOne <= -1){
+        LOGI("farthestLeftTesting", "off screen");
+        resetSecondSquare(vertices);
+        successfulJumps+=1;
+        LOGI("speedUpdateTesting", "increase speed--->%d",(successfulJumps%5 ==0));
+        if((successfulJumps%5 ==0)){
+            showSpeedIncrease(env);
+            secondSquareMovementSpeed += -0.0025f;
+        }
+
+    }else{
+        for(int i =12; i <23; i +=2){
+            vertices[i] += (secondSquareMovementSpeed);
+        }
+
+    }
+
+
+
+}
+
+void Actions::updateTextFromNative(const char *message, JNIEnv *env) {
+
+
+    //todo: need to figure out more about this
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateTextFromNative", "(Ljava/lang/String;)V");
+
+    if (updateTextMethod) {
+
+        jstring jMessage = env->NewStringUTF(message);
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod, jMessage);
+        env->DeleteLocalRef(jMessage);
+    }
+
+}
+
+void Actions::showGameOverUI(JNIEnv *env) {
+    gameValue = stop;
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateShowGameOverFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+
+}
+
+void Actions::resetSecondSquare(std::vector<GLfloat> &vertices) {
+    vertices[12] = 0.85f;
+    vertices[14] =1.0f;
+    vertices[16] =1.0f;
+    vertices[18] = 0.85f;
+    vertices[20] = 1.0f;
+    vertices[22] =0.85f;
+
+}
+
+void Actions::showSpeedIncrease(JNIEnv *env) {
+    LOGI("showSpeedIncreaseTest",  "INCREASE THE SPEED");
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateOnSpeedIncreaseFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+
+
+}
+
+void Actions::removeStartUI(JNIEnv *env) {
+    gameValue = start;
+    jclass dinoRunJNIClass = env->FindClass("com/example/clicker/presentation/minigames/dinoRun/DinoRunJNI");
+    jmethodID updateTextMethod = env->GetStaticMethodID(dinoRunJNIClass, "updateRemoveStartGameFromNative",
+                                                        "()V");
+
+    if (updateTextMethod) {
+
+        env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
+
+    }
+}
