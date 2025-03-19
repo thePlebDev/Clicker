@@ -57,6 +57,8 @@ add_library(dino_run SHARED
         dino_run/dino_run.cpp)
 add_library(dino_run_setup SHARED
         dino_run/dino_run_setup.cpp)
+add_library(dino_run_actions SHARED
+        dino_run/dino_run_actions.cpp)
 
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
@@ -79,6 +81,7 @@ include_directories(rtmp_client.h)
 include_directories(ping_pong/ping_pong_movement.h)
 include_directories(dino_run/dino_run.h)
 include_directories(dino_run/dino_run_setup.h)
+include_directories(dino_run/dino_run_actions.h)
 
 
 # Link libraries for rtmp_client
@@ -117,6 +120,13 @@ target_link_libraries(dino_run_setup
         GLESv2)
 
 target_link_libraries(dino_run
+        dino_run_setup
+        dino_run_actions
+        android
+        log
+        EGL
+        GLESv2)
+target_link_libraries(dino_run_actions
         dino_run_setup
         android
         log
