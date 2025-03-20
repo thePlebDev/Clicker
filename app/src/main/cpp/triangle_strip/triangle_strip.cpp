@@ -17,11 +17,19 @@
 
 
 
-static const char glVertexShader[] =
+static const char glVertexShader2[] =
         "attribute vec4 vPosition;\n"
         "void main()\n"
         "{\n"
         "  gl_Position = vPosition;\n"
+        "}\n";
+
+static const char glVertexShader[] =
+        "attribute vec4 vPosition;\n"
+        "uniform mat4 uRotationMatrix;\n"
+        "void main()\n"
+        "{\n"
+        "  gl_Position = uRotationMatrix * vPosition;\n"
         "}\n";
 
 static const char glFragmentShader[] =
@@ -104,6 +112,8 @@ GLuint createProgram(const char* vertexSource, const char * fragmentSource)
 }
 GLuint simpleTriangleProgram;
 GLuint vPosition;
+GLuint uRotationMatrix;
+float angle = 0.0f;
 bool setupGraphics(int w, int h)
 {
     simpleTriangleProgram = createProgram(glVertexShader, glFragmentShader);
@@ -113,13 +123,15 @@ bool setupGraphics(int w, int h)
         return false;
     }
     vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
+    // Get the uniform location once after linking the program
+    uRotationMatrix = glGetUniformLocation(simpleTriangleProgram, "uRotationMatrix");
     glViewport(0, 0, w, h);
     return true;
 }
 
 
 const int NUM_SEGMENTS = 100;  // More segments = smoother circle
-const float RADIUS = 0.3f;
+const float RADIUS = 0.1f;
 GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
 
 
@@ -149,7 +161,8 @@ void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, fl
 
 
 
-void renderFrame() {
+
+void renderFrame2() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
@@ -157,6 +170,33 @@ void renderFrame() {
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, circleVertices);
     glEnableVertexAttribArray(vPosition);
 
+    glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_SEGMENTS + 2);
+}
+
+
+void renderFrame() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glUseProgram(simpleTriangleProgram);
+
+    // Update the rotation angle
+    angle += 0.05f;  // Adjust speed as needed
+    if (angle > 2.0f * M_PI) angle -= 2.0f * M_PI;
+
+    // Compute rotation matrix
+    GLfloat rotationMatrix[16] = {
+            cosf(angle),  0.0f, sinf(angle), 0.0f,
+            0.0f,         1.0f, 0.0f,        0.0f,
+            -sinf(angle), 0.0f, cosf(angle), 0.0f,
+            0.0f,         0.0f, 0.0f,        1.0f
+    };
+
+    // Pass matrix to shader
+    glUniformMatrix4fv(uRotationMatrix, 1, GL_FALSE, rotationMatrix);
+
+    // Bind vertex data and draw
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, circleVertices);
+    glEnableVertexAttribArray(vPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_SEGMENTS + 2);
 }
 
@@ -168,12 +208,12 @@ Java_com_example_clicker_presentation_minigames_dinoRun_TriangleStripJNI_init(JN
                                                                               jint height) {
     setupGraphics(width, height);
 
-    generateCircleVertices(RADIUS, NUM_SEGMENTS);
+    //generateCircleVertices(RADIUS, NUM_SEGMENTS);
 
     float aspectRatio = (float)width / (float)height;
 
     LOGI("APSECTrATIOtESTINGaGAIN", "ratio -->%f",aspectRatio);
-//    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS,aspectRatio);
+    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS,aspectRatio);
 }
 extern "C"
 JNIEXPORT void JNICALL
