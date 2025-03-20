@@ -116,33 +116,50 @@ bool setupGraphics(int w, int h)
     glViewport(0, 0, w, h);
     return true;
 }
-const GLfloat triangleVertices[] = {
-        0.0f, 1.0f,
-        -1.0f, -1.0f,
-        1.0f, -1.0f
-};
-const GLfloat triangleStripVertices[] = {
-        0.5f, -0.6f,  // 1 (Left-top)
-        -0.5f, -0.6f,  // 2 (Left-bottom)
-        0.5f, -0.3f,  // 3
-        -0.5f, -0.3f,  // 4
-        0.5f,  0.0f,  // 5
-        -0.5f,  0.0f,  // 6
-        0.5f,  0.3f,  // 7
-        -0.5f,  0.3f   // 8
-};
 
 
-void renderFrame()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glUseProgram(simpleTriangleProgram);
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0 ,triangleStripVertices);
-    glEnableVertexAttribArray(vPosition);
-   // glDrawArrays(GL_TRIANGLES, 0, 4);
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
+const int NUM_SEGMENTS = 100;  // More segments = smoother circle
+const float RADIUS = 0.3f;
+GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
+
+
+
+void generateCircleVertices(float radius, int numSegments) {
+    circleVertices[0] = 0.0f;  // Center X
+    circleVertices[1] = 0.0f;  // Center Y
+
+    for (int i = 0; i <= numSegments; i++) {
+        float theta = (2.0f * M_PI * i) / numSegments;
+        circleVertices[(i + 1) * 2] = radius * cosf(theta);
+        circleVertices[(i + 1) * 2 + 1] = radius * sinf(theta);
+    }
 }
+void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, float aspectRatio) {
+    circleVertices[0] = 0.0f;  // Center X
+    circleVertices[1] = 0.0f;  // Center Y
+
+    for (int i = 0; i <= numSegments; i++) {
+        float theta = (2.0f * M_PI * i) / numSegments;
+        float x = radius * cosf(theta) / aspectRatio;  // Adjust x by aspect ratio
+        float y = radius * sinf(theta);  // y remains unchanged
+        circleVertices[(i + 1) * 2] = x;
+        circleVertices[(i + 1) * 2 + 1] = y;
+    }
+}
+
+
+
+void renderFrame() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glUseProgram(simpleTriangleProgram);
+
+    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, circleVertices);
+    glEnableVertexAttribArray(vPosition);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_SEGMENTS + 2);
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_TriangleStripJNI_init(JNIEnv *env,
@@ -150,6 +167,13 @@ Java_com_example_clicker_presentation_minigames_dinoRun_TriangleStripJNI_init(JN
                                                                               jint width,
                                                                               jint height) {
     setupGraphics(width, height);
+
+    generateCircleVertices(RADIUS, NUM_SEGMENTS);
+
+    float aspectRatio = (float)width / (float)height;
+
+    LOGI("APSECTrATIOtESTINGaGAIN", "ratio -->%f",aspectRatio);
+//    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS,aspectRatio);
 }
 extern "C"
 JNIEXPORT void JNICALL
