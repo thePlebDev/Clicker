@@ -59,123 +59,129 @@ fun ComposeDinoRunViews(
     context: Context,
     modifier: Modifier
 ) {
+
+    TriangleStripTesting(
+        modifier = modifier,
+        context=context
+    )
+
     // Store a reference to PingPongView
-    val dinoRunViewRef = remember { mutableStateOf<DinoRunView?>(null) }
-    val value = remember {
-        mutableStateOf("START GAME")
-    }
-    val timerClock = remember {
-        mutableStateOf(0)
-    }
-    val timerBoolean = remember {
-        mutableStateOf(false)
-    }
-    var imageVisible = remember { mutableStateOf(false) }
+//    val dinoRunViewRef = remember { mutableStateOf<DinoRunView?>(null) }
+//    val value = remember {
+//        mutableStateOf("START GAME")
+//    }
+//    val timerClock = remember {
+//        mutableStateOf(0)
+//    }
+//    val timerBoolean = remember {
+//        mutableStateOf(false)
+//    }
+//    var imageVisible = remember { mutableStateOf(false) }
+//
+//    var startGame = remember { mutableStateOf(true) }
+//    var gameOver = remember { mutableStateOf(false) }
+//
+//
+//    LaunchedEffect(Unit) {
+//        DinoRunJNI.setOnTextUpdateCallback { newText ->
+//            value.value = newText
+//            timerClock.value =0
+//            timerBoolean.value = false
+//        }
+//    }
+//    LaunchedEffect(Unit) {
+//
+//        DinoRunJNI.setOnSpeedIncreaseCallback {
+//            imageVisible.value = true
+//        }
+//    }
+//
+//    //I need a function that when called will start the timer and remove the start game
+//    LaunchedEffect(Unit) {
+//
+//        DinoRunJNI.setRemoveStartGameCallback{
+//            timerClock.value =0
+//            timerBoolean.value = true
+//            startGame.value = false
+//            gameOver.value = false
+//        }
+//    }
+//    //todo:working on this
+//    //I need a function that just shows the game over sign
+//    LaunchedEffect(Unit) {
+//
+//        DinoRunJNI.setShowGameOverCallback{
+//            startGame.value = false
+//            gameOver.value = true
+//
+//        }
+//    }
+//
+//
+//    LaunchedEffect(timerBoolean.value) {
+//        while (timerBoolean.value) {
+//            timerClock.value += 1
+//            delay(200L)
+//        }
+//    }
+//    LaunchedEffect(imageVisible.value) {
+//        if(imageVisible.value){
+//            delay(1200)
+//            imageVisible.value = false
+//        }
+//    }
 
-    var startGame = remember { mutableStateOf(true) }
-    var gameOver = remember { mutableStateOf(false) }
-
-
-    LaunchedEffect(Unit) {
-        DinoRunJNI.setOnTextUpdateCallback { newText ->
-            value.value = newText
-            timerClock.value =0
-            timerBoolean.value = false
-        }
-    }
-    LaunchedEffect(Unit) {
-
-        DinoRunJNI.setOnSpeedIncreaseCallback {
-            imageVisible.value = true
-        }
-    }
-
-    //I need a function that when called will start the timer and remove the start game
-    LaunchedEffect(Unit) {
-
-        DinoRunJNI.setRemoveStartGameCallback{
-            timerClock.value =0
-            timerBoolean.value = true
-            startGame.value = false
-            gameOver.value = false
-        }
-    }
-    //todo:working on this
-    //I need a function that just shows the game over sign
-    LaunchedEffect(Unit) {
-
-        DinoRunJNI.setShowGameOverCallback{
-            startGame.value = false
-            gameOver.value = true
-
-        }
-    }
-
-
-    LaunchedEffect(timerBoolean.value) {
-        while (timerBoolean.value) {
-            timerClock.value += 1
-            delay(200L)
-        }
-    }
-    LaunchedEffect(imageVisible.value) {
-        if(imageVisible.value){
-            delay(1200)
-            imageVisible.value = false
-        }
-    }
-
-
-    Box(
-        modifier = modifier
-    ){
-        AndroidView(
-            factory = {
-                DinoRunView(context).apply {
-                    dinoRunViewRef.value = this // Store reference
-                }
-
-            },
-
-        )
-
-
-        Box(modifier= Modifier
-            .align(Alignment.TopCenter)
-            .padding(top = 30.dp)
-            .clickable {
-                imageVisible.value = !imageVisible.value
-            }) {
-            TextShadowTitle("Score: ${timerClock.value}")
-        }
-        AnimatedVisibility(
-            modifier= Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 20.dp, bottom = 130.dp),
-            visible = imageVisible.value,
-            enter = fadeIn(animationSpec = tween(1000)),
-            exit = fadeOut(animationSpec = tween(1000))
-        ) {
-            Box() {
-                TextShadowTitle2("SPEED ↑")
-            }
-        }
-        if(startGame.value){
-            StartGameText(
-                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
-            )
-        }
-        if(gameOver.value){
-            GameOverText(
-                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
-            )
-        }
-
-
-
-
-
-    }
+//
+//    Box(
+//        modifier = modifier
+//    ){
+//        AndroidView(
+//            factory = {
+//                DinoRunView(context).apply {
+//                    dinoRunViewRef.value = this // Store reference
+//                }
+//
+//            },
+//
+//        )
+//
+//
+//        Box(modifier= Modifier
+//            .align(Alignment.TopCenter)
+//            .padding(top = 30.dp)
+//            .clickable {
+//                imageVisible.value = !imageVisible.value
+//            }) {
+//            TextShadowTitle("Score: ${timerClock.value}")
+//        }
+//        AnimatedVisibility(
+//            modifier= Modifier
+//                .align(Alignment.CenterStart)
+//                .padding(start = 20.dp, bottom = 130.dp),
+//            visible = imageVisible.value,
+//            enter = fadeIn(animationSpec = tween(1000)),
+//            exit = fadeOut(animationSpec = tween(1000))
+//        ) {
+//            Box() {
+//                TextShadowTitle2("SPEED ↑")
+//            }
+//        }
+//        if(startGame.value){
+//            StartGameText(
+//                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
+//            )
+//        }
+//        if(gameOver.value){
+//            GameOverText(
+//                modifier = Modifier.align(Alignment.Center).padding(bottom = 70.dp)
+//            )
+//        }
+//
+//
+//
+//
+//
+//    }
 
 
 }

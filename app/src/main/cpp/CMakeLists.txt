@@ -59,6 +59,8 @@ add_library(dino_run_setup SHARED
         dino_run/dino_run_setup.cpp)
 add_library(dino_run_actions SHARED
         dino_run/dino_run_actions.cpp)
+add_library(triangle_strip SHARED
+        triangle_strip/triangle_strip.cpp)
 
 add_library(parse_url SHARED
         parsing/parse_url.cpp)
@@ -128,6 +130,12 @@ target_link_libraries(dino_run
         GLESv2)
 target_link_libraries(dino_run_actions
         dino_run_setup
+        android
+        log
+        EGL
+        GLESv2)
+
+target_link_libraries(triangle_strip
         android
         log
         EGL
