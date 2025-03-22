@@ -52,6 +52,7 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 
     shaders->setupGraphics(width, height);
 
+    shaders->addToVector(aspectRatio);
 //    // Now this check will work as expected
 //    if (width != finalWidth || height != finalHeight) {
 //

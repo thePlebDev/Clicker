@@ -140,6 +140,8 @@ void TransformShader::renderFrame() {
     glEnableVertexAttribArray(vPosition);
 
     glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
+    glDrawArrays(GL_TRIANGLE_FAN, 13, 18); // Draw the two triangles that make up the square
+
 
 }
 //TODO: technically this works for the horizontal reset
@@ -154,6 +156,28 @@ void TransformShader::aspectUpdate(float aspectRatio) {
        // LOGI("setupGraphicsTesting","setupGraphics -->%f",m_squareVertices[i]);
     }
 
+}
+
+void TransformShader::addToVector(float aspectRatio) {
+
+
+    const int NUM_SEGMENTS = 16;
+    const float RADIUS = 0.05f;
+    GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
+    circleVertices[0] = 0.0f;  // Center X with horizontal offset
+    circleVertices[1] = 0.0f;  // Center Y
+
+    // Create the circle vertices
+    for (int i = 0; i <= NUM_SEGMENTS; i++) {
+        float theta = (2.0f * M_PI * i) / NUM_SEGMENTS;
+        float x = (RADIUS * cosf(theta) / aspectRatio);  // Add horizontal offset
+        float y = RADIUS * sinf(theta);  // Y remains unchanged
+        circleVertices[(i + 1) * 2] = x;
+        circleVertices[(i + 1) * 2 + 1] = y;
+    }
+
+    // Insert circleVertices into m_squareVertices
+    m_squareVertices.insert(m_squareVertices.end(), circleVertices, circleVertices + (NUM_SEGMENTS + 2) * 2);
 }
 
 
