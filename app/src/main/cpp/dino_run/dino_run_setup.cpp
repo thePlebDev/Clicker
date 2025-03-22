@@ -111,7 +111,9 @@ GLuint TransformShader::loadShader(GLenum shaderType, std::string shaderSource) 
 }
 
 bool TransformShader::setupGraphics(int w, int h) {
+
     simpleTriangleProgram = createProgram(m_glVertexShader, m_glFragmentShader);
+
     if (!simpleTriangleProgram)
     {
         LOGE ("Could not create program");
@@ -119,6 +121,9 @@ bool TransformShader::setupGraphics(int w, int h) {
     }
     vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
     glViewport(0, 0, w, h);
+
+
+    LOGI("setupGraphicsTesting","-----------------------END-----------------------------");
     return true;
 }
 
@@ -135,6 +140,19 @@ void TransformShader::renderFrame() {
     glEnableVertexAttribArray(vPosition);
 
     glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
+
+}
+//TODO: technically this works for the horizontal reset
+void TransformShader::aspectUpdate(float aspectRatio) {
+
+   // LOGI("setupGraphicsTesting","ratio -->%f",aspectRatio);
+    float newRatio = aspectRatio * 2.0f;
+    LOGI("setupGraphicsTesting","ratio -->%f",newRatio);
+
+    for(int i =0; i<m_squareVertices.size();i+=2){
+        m_squareVertices[i]  /=newRatio;
+       // LOGI("setupGraphicsTesting","setupGraphics -->%f",m_squareVertices[i]);
+    }
 
 }
 
