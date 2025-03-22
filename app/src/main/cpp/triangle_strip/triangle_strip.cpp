@@ -25,13 +25,6 @@ static const char glVertexShader[] =
         "  gl_Position = vPosition;\n"
         "}\n";
 
-//static const char glVertexShader[] =
-//        "attribute vec4 vPosition;\n"
-//        "uniform mat4 uRotationMatrix;\n"
-//        "void main()\n"
-//        "{\n"
-//        "  gl_Position = uRotationMatrix * vPosition;\n"
-//        "}\n";
 
 
 
@@ -134,16 +127,16 @@ bool setupGraphics(int w, int h)
 
 
 const int NUM_SEGMENTS = 16;
-const float RADIUS = 0.05f;
+const float RADIUS = 0.2f;
 GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
 
 void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, float aspectRatio, float offsetX) {
-    circleVertices[0] = 0.0f + offsetX;  // Center X with horizontal offset
+    circleVertices[0] = 0.0f;  // Center X with horizontal offset
     circleVertices[1] = 0.0f;           // Center Y
 
     for (int i = 0; i <= numSegments; i++) {
         float theta = (2.0f * M_PI * i) / numSegments;
-        float x = (radius * cosf(theta) / aspectRatio) + offsetX;  // Add horizontal offset
+        float x = (radius * cosf(theta) / aspectRatio);  // Add horizontal offset
         float y = radius * sinf(theta);  // Y remains unchanged
         circleVertices[(i + 1) * 2] = x;
         circleVertices[(i + 1) * 2 + 1] = y;
