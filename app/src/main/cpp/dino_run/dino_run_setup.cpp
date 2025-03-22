@@ -111,19 +111,22 @@ GLuint TransformShader::loadShader(GLenum shaderType, std::string shaderSource) 
 }
 
 bool TransformShader::setupGraphics(int w, int h) {
-
     simpleTriangleProgram = createProgram(m_glVertexShader, m_glFragmentShader);
-
-    if (!simpleTriangleProgram)
-    {
-        LOGE ("Could not create program");
+    if (!simpleTriangleProgram) {
+        LOGE("Could not create program");
         return false;
     }
+
     vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
     glViewport(0, 0, w, h);
 
+    // Set up orthographic projection matrix
+    float aspectRatio = (float)w / (float)h;
 
-    LOGI("setupGraphicsTesting","-----------------------END-----------------------------");
+    glUseProgram(simpleTriangleProgram);
+
+
+    LOGI("setupGraphicsTesting", "-----------------------END-----------------------------");
     return true;
 }
 
@@ -159,24 +162,25 @@ void TransformShader::aspectUpdate(float aspectRatio) {
 }
 
 void TransformShader::addToVector(float aspectRatio) {
-
-
     const int NUM_SEGMENTS = 16;
     const float RADIUS = 0.05f;
     GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
-    circleVertices[0] = 0.0f;  // Center X with horizontal offset
+    circleVertices[0] = 0.0f;  // Center X
     circleVertices[1] = 0.0f;  // Center Y
 
-    // Create the circle vertices
     for (int i = 0; i <= NUM_SEGMENTS; i++) {
         float theta = (2.0f * M_PI * i) / NUM_SEGMENTS;
-        float x = (RADIUS * cosf(theta) / aspectRatio);  // Add horizontal offset
+        float x = (RADIUS * cosf(theta) / aspectRatio);  // Adjust for aspect ratio
         float y = RADIUS * sinf(theta);  // Y remains unchanged
         circleVertices[(i + 1) * 2] = x;
         circleVertices[(i + 1) * 2 + 1] = y;
     }
+    if (m_squareVertices.size() > 24) {
+        LOGI("addToVectorTesting","greater -->%u",m_squareVertices.size());
+        LOGI("addToVectorTesting","greater");
+        m_squareVertices.erase(m_squareVertices.begin() + 24, m_squareVertices.end());
+    }
 
-    // Insert circleVertices into m_squareVertices
     m_squareVertices.insert(m_squareVertices.end(), circleVertices, circleVertices + (NUM_SEGMENTS + 2) * 2);
 }
 

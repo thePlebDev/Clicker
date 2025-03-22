@@ -49,6 +49,7 @@ JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *env, jobject thiz,jint width, jint height) {
     LOGI("APSECTrATIOtESTINGaGAIN", "INIT");
     float aspectRatio = (float)width / (float)height;
+    LOGI("APSECTrATIOtESTINGaGAIN", "ratio -->%f",aspectRatio);
 
     shaders->setupGraphics(width, height);
 
