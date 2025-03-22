@@ -109,8 +109,10 @@ GLuint simpleTriangleProgram;
 GLuint vPosition;
 GLuint uRotationMatrix;
 float angle = 0.0f;
-bool setupGraphics(int w, int h)
-{
+float time = 0.0f;  // Global time variable
+float globalHeight = 0.0f;
+float globalWidth = 0.0f;
+bool setupGraphics(int w, int h) {
     simpleTriangleProgram = createProgram(glVertexShader, glFragmentShader);
     if (!simpleTriangleProgram)
     {
@@ -121,22 +123,27 @@ bool setupGraphics(int w, int h)
     // Get the uniform location once after linking the program
     uRotationMatrix = glGetUniformLocation(simpleTriangleProgram, "uRotationMatrix");
     glViewport(0, 0, w, h);
+
+    // Initialize time
+    time = 0.0f;
+
     return true;
 }
 
 
-const int NUM_SEGMENTS = 16;
-const float RADIUS = 0.2f;
+const int NUM_SEGMENTS = 26;
+const float RADIUS = 0.08f;
 GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
 
-void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, float aspectRatio) {
+
+void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, float aspectRatio, float time) {
     circleVertices[0] = 0.0f;  // Center X
     circleVertices[1] = 0.0f;  // Center Y
 
     for (int i = 0; i <= numSegments; i++) {
         float theta = (2.0f * M_PI * i) / numSegments;
         float x = radius * cosf(theta) / aspectRatio;  // Adjust x by aspect ratio
-        float y = radius * sinf(theta);  // y remains unchanged
+        float y = radius * sinf(theta) + 0.02f * sinf(time);  // Add up-and-down motion
         circleVertices[(i + 1) * 2] = x;
         circleVertices[(i + 1) * 2 + 1] = y;
     }
@@ -150,11 +157,19 @@ void renderFrame() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
 
-    // Update the rotation angle for more speed
-    angle += 0.025f;
+    // Update the rotation angle
+    angle += 0.03f;  // Adjust speed as needed
     if (angle > 2.0f * M_PI) angle -= 2.0f * M_PI;
 
-    // this is a standard rotation matrix
+    // Update time for up-and-down motion
+    time += 0.05f;  // Adjust speed as needed
+    if (time > 2.0f * M_PI) time -= 2.0f * M_PI;
+
+    // Regenerate circle vertices with up-and-down motion
+    float aspectRatio = (float)globalWidth / (float)globalHeight;  // Assuming width and height are global or accessible
+    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS, aspectRatio, time);
+
+    // Compute rotation matrix
     GLfloat rotationMatrix[16] = {
             cosf(angle),  0.0f, sinf(angle), 0.0f,
             0.0f,         1.0f, 0.0f,        0.0f,
@@ -177,6 +192,8 @@ Java_com_example_clicker_presentation_minigames_dinoRun_TriangleStripJNI_init(JN
                                                                               jobject thiz,
                                                                               jint width,
                                                                               jint height) {
+    globalWidth = width;
+    globalHeight = height;
     setupGraphics(width, height);
 
     //generateCircleVertices(RADIUS, NUM_SEGMENTS);
@@ -184,7 +201,7 @@ Java_com_example_clicker_presentation_minigames_dinoRun_TriangleStripJNI_init(JN
     float aspectRatio = (float)width / (float)height;
 
     LOGI("APSECTrATIOtESTINGaGAIN", "ratio -->%f",aspectRatio);
-    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS,aspectRatio);
+    generateCircleVerticesAspectRatioAdjusted(RADIUS, NUM_SEGMENTS,aspectRatio,time);
 }
 extern "C"
 JNIEXPORT void JNICALL
