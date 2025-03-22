@@ -48,6 +48,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *env, jobject thiz,jint width, jint height) {
     LOGI("APSECTrATIOtESTINGaGAIN", "INIT");
+    float aspectRatio = (float)width / (float)height;
 
     shaders->setupGraphics(width, height);
 
@@ -63,9 +64,7 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 //                // decreaseVerticesForAspectRatio(squareVertices,2.000000f);
 //                LOGI("horizontalAspectRatio", "initial call");
 //                //todo: JUST GET THE INITIAL VALUES AND ASSIGN THEM TO A GLOBAL VALUE
-//                for(int i =0; i<24;i++){
-//                    LOGI("horizontalAspectRatio", "verticie -->%f",squareVertices[i]);
-//                }
+//
 //                horizontalAspectRatio=0;
 //            }else{
 //                if(horizontalAspectRatio == width/height){
@@ -75,16 +74,19 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
 //                    horizontalAspectRatio=  width / height;
 //                    if(horizontalAspectRatio ==0){
 //                        LOGI("horizontalAspectRatio", "VERTICAL UPDATE");
+//                        //shaders->aspectUpdate(aspectRatio);
 //                        //todo: update the verticies to the
 //                    }else{
 //                        LOGI("horizontalAspectRatio", "HORIZONTAL UPDATE");
-//                        updateVerticesForAspectRatio(squareVertices,horizontalAspectRatio);
+//                        shaders->aspectUpdate(aspectRatio);
+//
 //                    }
 //
 //                }
 //
 //
 //            }
+//
 //
 //        }
 //

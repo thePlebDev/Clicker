@@ -48,6 +48,7 @@ public:
     }
     bool setupGraphics(int w, int h);
     void renderFrame();
+    void aspectUpdate(float aspectRatio);
 
 
 

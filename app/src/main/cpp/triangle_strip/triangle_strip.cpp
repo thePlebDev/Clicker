@@ -17,13 +17,6 @@
 
 
 
-static const char glVertexShader2[] =
-        "attribute vec4 vPosition;\n"
-        "void main()\n"
-        "{\n"
-        "  gl_Position = vPosition;\n"
-        "}\n";
-
 static const char glVertexShader[] =
         "attribute vec4 vPosition;\n"
         "uniform mat4 uRotationMatrix;\n"
@@ -31,6 +24,8 @@ static const char glVertexShader[] =
         "{\n"
         "  gl_Position = uRotationMatrix * vPosition;\n"
         "}\n";
+
+
 
 static const char glFragmentShader[] =
         "precision mediump float;\n"
@@ -130,22 +125,10 @@ bool setupGraphics(int w, int h)
 }
 
 
-const int NUM_SEGMENTS = 100;  // More segments = smoother circle
-const float RADIUS = 0.1f;
+const int NUM_SEGMENTS = 16;
+const float RADIUS = 0.2f;
 GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
 
-
-
-void generateCircleVertices(float radius, int numSegments) {
-    circleVertices[0] = 0.0f;  // Center X
-    circleVertices[1] = 0.0f;  // Center Y
-
-    for (int i = 0; i <= numSegments; i++) {
-        float theta = (2.0f * M_PI * i) / numSegments;
-        circleVertices[(i + 1) * 2] = radius * cosf(theta);
-        circleVertices[(i + 1) * 2 + 1] = radius * sinf(theta);
-    }
-}
 void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, float aspectRatio) {
     circleVertices[0] = 0.0f;  // Center X
     circleVertices[1] = 0.0f;  // Center Y
@@ -162,28 +145,16 @@ void generateCircleVerticesAspectRatioAdjusted(float radius, int numSegments, fl
 
 
 
-void renderFrame2() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glUseProgram(simpleTriangleProgram);
-
-    glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, circleVertices);
-    glEnableVertexAttribArray(vPosition);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_SEGMENTS + 2);
-}
-
-
 void renderFrame() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(simpleTriangleProgram);
 
-    // Update the rotation angle
-    angle += 0.05f;  // Adjust speed as needed
+    // Update the rotation angle for more speed
+    angle += 0.025f;
     if (angle > 2.0f * M_PI) angle -= 2.0f * M_PI;
 
-    // Compute rotation matrix
+    // this is a standard rotation matrix
     GLfloat rotationMatrix[16] = {
             cosf(angle),  0.0f, sinf(angle), 0.0f,
             0.0f,         1.0f, 0.0f,        0.0f,
