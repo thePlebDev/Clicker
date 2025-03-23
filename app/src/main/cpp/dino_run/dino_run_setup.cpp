@@ -116,12 +116,60 @@ bool TransformShader::setupGraphics(int w, int h) {
         LOGE("Could not create program");
         return false;
     }
+    float aspectRatio = (float)w / (float)h;
+    LOGI("setupGraphicsTestingRatio", "aspectRatio--> %f",aspectRatio);
+    //todo: I NEED TO ERASE THE OLD VERTICES AND loops through this one add the aspectWidth
+    //TODO: TECHNICALLY THIS WORKS BUT i JUST NEED TO READJUST FOR THE ASPECT RATIO
+    //when I get back I should adjust everything with the aspect ratio
+    if(w>h){
+        float scaleFactor = 0.5f; // 0.25% reduction
+// Calculate the width of the first square
+        float squareWidth = (-0.650f - (-0.800f)) / aspectRatio * scaleFactor;
+
+// Shift the first square to the left boundary (-1.0) initially
+        float leftBoundary = -1.0f;
+        float newLeftX = leftBoundary;
+        float newRightX = leftBoundary + squareWidth;
+
+// Move the square 20% to the right (20% of screen width = 0.4)
+        float shiftAmount = 0.4f;
+        newLeftX += shiftAmount;
+        newRightX += shiftAmount;
+
+        std::vector<GLfloat> newOneToEdit = {
+                // First square (shifted 20% to the right)
+                newLeftX, (-0.0375f), // Bottom-left vertex
+                newRightX, (-0.0375f), // Bottom-right vertex
+                newRightX, (0.0375f), // Top-right vertex
+                newLeftX, (-0.0375f), // Bottom-left vertex (repeated for the second triangle)
+                newRightX, (0.0375f), // Top-right vertex
+                newLeftX, (0.0375f), // Top-left vertex
+
+                // Second square (unchanged)
+                (0.85f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor, ( 0.0375f),
+                (0.85f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor,  (0.0375f), ( 0.85f/aspectRatio) * scaleFactor,  (0.0375f)
+        };
+        m_squareVertices.clear();
+        m_squareVertices.insert(m_squareVertices.end(), newOneToEdit.begin(), newOneToEdit.end());
+
+    }else{
+        //this is the vertical display
+        std::vector<GLfloat> newOneToEdit = {
+                -0.800f, (-0.0375f) , -0.650f, (-0.0375f), -0.650f,  (0.0375f) ,
+                -0.800f, (-0.0375f) , -0.650f,  (0.0375f) , -0.800f,  (0.0375f) ,
+                0.85f, (-0.0375f) , 1.0f, (-0.0375f), 1.0f, ( 0.0375f) ,
+                0.85f, (-0.0375f) , 1.0f,  (0.0375f), 0.85f,  (0.0375f)
+        };
+        m_squareVertices.clear();
+        m_squareVertices.insert(m_squareVertices.end(), newOneToEdit.begin(), newOneToEdit.end());
+    }
+
 
     vPosition = glGetAttribLocation(simpleTriangleProgram, "vPosition");
     glViewport(0, 0, w, h);
 
     // Set up orthographic projection matrix
-    float aspectRatio = (float)w / (float)h;
+
 
     glUseProgram(simpleTriangleProgram);
 
@@ -143,21 +191,14 @@ void TransformShader::renderFrame() {
     glEnableVertexAttribArray(vPosition);
 
     glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
-    glDrawArrays(GL_TRIANGLE_FAN, 13, 18); // Draw the two triangles that make up the square
+   // glDrawArrays(GL_TRIANGLE_FAN, 13, 18); // Draw the two triangles that make up the square
 
 
 }
-//TODO: technically this works for the horizontal reset
+//TODO:  DO NOT NEED SO ANY MORE
 void TransformShader::aspectUpdate(float aspectRatio) {
 
-   // LOGI("setupGraphicsTesting","ratio -->%f",aspectRatio);
-    float newRatio = aspectRatio * 2.0f;
-    LOGI("setupGraphicsTesting","ratio -->%f",newRatio);
 
-    for(int i =0; i<m_squareVertices.size();i+=2){
-        m_squareVertices[i]  /=newRatio;
-       // LOGI("setupGraphicsTesting","setupGraphics -->%f",m_squareVertices[i]);
-    }
 
 }
 

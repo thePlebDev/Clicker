@@ -1,6 +1,7 @@
 package com.example.clicker.presentation.minigames.dinoRun
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.camera.video.VideoRecordEvent.Start
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -144,6 +146,15 @@ fun ComposeDinoRunViews(
             },
 
         )
+        val configuration = LocalConfiguration.current
+
+        // Determine if the orientation is landscape
+        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val padding = if (isLandscape) {
+            100.dp
+        } else {
+            10.dp // Default alignment for portrait
+        }
 
 
         Box(modifier= Modifier
@@ -162,7 +173,9 @@ fun ComposeDinoRunViews(
             enter = fadeIn(animationSpec = tween(1000)),
             exit = fadeOut(animationSpec = tween(1000))
         ) {
-            Box() {
+            Box(
+                modifier = Modifier.padding(start=padding)
+            ) {
                 TextShadowTitle2("SPEED ↑")
             }
         }
