@@ -33,6 +33,9 @@ private:
     };
     GLuint simpleTriangleProgram;
     GLuint vPosition;
+    bool showCoin = false;
+    int width = 0.0f;
+    int height = 0.0f;
 
 
 
@@ -48,11 +51,17 @@ public:
     }
     bool setupGraphics(int w, int h);
     void renderFrame();
-    void aspectUpdate(float aspectRatio);
     void addToVector(float aspectRatio);
-
-
-
+    void setShowCoin(bool value){
+        showCoin =value;
+    }
+    bool getShowCoin(){
+        return showCoin;
+    }
+    void resetCircle(){
+        float aspectRatio = (float)width / (float)height;
+        addToVector(aspectRatio);
+    }
 
 
 };

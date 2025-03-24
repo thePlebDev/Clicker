@@ -19,12 +19,6 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 
-Actions::Actions() {
-    startJump = false;
-    hitTop = false;
-    velocity = 0.0f;
-
-}
 
 void Actions::jump(std::vector<GLfloat> &vertices) {
     float highestPosition = 0.4f;
@@ -118,6 +112,7 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
     if (!(rightBoundarySquareOne < leftBoundarySquareTwo || leftBoundarySquareOne > rightBoundarySquareTwo)) {
         // LOGI("farthestLeftTesting", "HIT!!!! RESET");
 
+        //this triggering represents a hit
         if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
             LOGI("farthestLeftTesting", "Y-RANGE HIT");
             successfulJumps=0;
@@ -126,10 +121,24 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
             //todo: this needs to set gamestatus to over and show the game overUI
             showGameOverUI(env);
             resetSecondSquare(vertices);
+            setShowCoin(false);
+            resetCoin();
 
             return;
         }
 
+    }
+    if(getShowCoin()){
+        for(int i = 24; i <vertices.size(); i+=2){
+            vertices[i] += -0.01f;
+            if(vertices[28]<=-1){
+                //TODO: DON'T setShowCoin(false); YET, WE SHOULD GET A LOOP GOING FIRST
+               // setShowCoin(false);
+                resetCoin();
+
+                break;
+            }
+        }
     }
 
     if(rightBoundarySquareOne <= -1){
@@ -140,6 +149,8 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
         if((successfulJumps%5 ==0)){
             showSpeedIncrease(env);
             secondSquareMovementSpeed += -0.0025f;
+            setShowCoin(true);
+
         }
 
     }else{
@@ -219,4 +230,12 @@ void Actions::removeStartUI(JNIEnv *env) {
         env->CallStaticVoidMethod(dinoRunJNIClass, updateTextMethod);
 
     }
+}
+
+Actions::Actions(TransformShader *shader) {
+    transformShader = shader;
+    startJump = false;
+    hitTop = false;
+    velocity = 0.0f;
+
 }
