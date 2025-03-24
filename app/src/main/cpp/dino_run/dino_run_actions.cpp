@@ -101,7 +101,7 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
     float topBoundarySquareOne = vertices[5];
     float bottomBoundarySquareOne = vertices[3];
 
-    //boundary for the second box
+    //boundary for the second box. THE BOX THAT JUMPS
     float rightBoundarySquareTwo = vertices[2];
     float leftBoundarySquareTwo = vertices[0];
     float topBoundarySquareTwo = vertices[17];
@@ -113,22 +113,36 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
         // LOGI("farthestLeftTesting", "HIT!!!! RESET");
 
         //this triggering represents a hit
-        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
-            LOGI("farthestLeftTesting", "Y-RANGE HIT");
-            successfulJumps=0;
-            secondSquareMovementSpeed = -0.02f;
-            updateTextFromNative("HIT",env);
-            //todo: this needs to set gamestatus to over and show the game overUI
-            showGameOverUI(env);
-            resetSecondSquare(vertices);
-            setShowCoin(false);
-            resetCoin();
-
-            return;
-        }
+//        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
+//            LOGI("farthestLeftTesting", "Y-RANGE HIT");
+//            successfulJumps=0;
+//            secondSquareMovementSpeed = -0.02f;
+//            updateTextFromNative("HIT",env);
+//            //todo: this needs to set gamestatus to over and show the game overUI
+//            showGameOverUI(env);
+//            resetSecondSquare(vertices);
+//            setShowCoin(false);
+//            resetCoin();
+//
+//            return;
+//        }
 
     }
+
+
     if(getShowCoin()){
+        float circleLeft   = vertices[42];   // Min X (θ = π, i=8 → index 24 + 2 + 16 = 42)
+        float circleRight  = vertices[28];   // Max X (θ = 0, i=0 → index 24 + 2 = 26)
+        float circleTop    = vertices[35];   // Max Y (θ = π/2, i=4 → index 24 + 11 = 35)
+        float circleBottom = vertices[47];
+
+
+        bool isYOverlap = (circleBottom < topBoundarySquareOne) ;
+        //not sure why leftBoundarySquareTwo is registering the hit and not ONE but it works
+        bool isXOverlap = !(circleRight < leftBoundarySquareTwo || circleLeft > rightBoundarySquareTwo);
+        if(isXOverlap && isYOverlap){
+            resetCoin();
+        }
         for(int i = 24; i <vertices.size(); i+=2){
             vertices[i] += -0.01f;
             if(vertices[28]<=-1){
