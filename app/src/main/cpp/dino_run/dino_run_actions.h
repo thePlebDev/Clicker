@@ -22,6 +22,7 @@ enum GameStatus { init, start, stop };
 
 class Actions {
 private:
+
     bool startJump;
     bool hitTop;
     float velocity;
@@ -30,8 +31,11 @@ private:
     int successfulJumps = 0;
     GameStatus gameValue = init;
 
+    // Add a pointer to TransformShader
+    TransformShader* transformShader;
+
 public:
-    Actions();
+    Actions(TransformShader* shader);
     void jump(std::vector<GLfloat>& vertices);
     void setStartJumpTrue();
     void moveSecondSquare(std::vector<GLfloat>& vertices,JNIEnv *env);
@@ -44,6 +48,15 @@ public:
     //todo: this needs to be looked into
     GameStatus getGameValue() {
         return gameValue;
+    }
+    void setShowCoin(bool value){
+        transformShader->setShowCoin(value);
+    }
+    bool getShowCoin(){
+        return transformShader->getShowCoin();
+    }
+    void resetCoin(){
+        transformShader->resetCircle();
     }
 
 

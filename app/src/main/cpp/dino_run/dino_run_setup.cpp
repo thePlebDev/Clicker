@@ -111,6 +111,8 @@ GLuint TransformShader::loadShader(GLenum shaderType, std::string shaderSource) 
 }
 
 bool TransformShader::setupGraphics(int w, int h) {
+    width = w;
+    height = h;
     simpleTriangleProgram = createProgram(m_glVertexShader, m_glFragmentShader);
     if (!simpleTriangleProgram) {
         LOGE("Could not create program");
@@ -118,26 +120,24 @@ bool TransformShader::setupGraphics(int w, int h) {
     }
     float aspectRatio = (float)w / (float)h;
     LOGI("setupGraphicsTestingRatio", "aspectRatio--> %f",aspectRatio);
-    //todo: I NEED TO ERASE THE OLD VERTICES AND loops through this one add the aspectWidth
-    //TODO: TECHNICALLY THIS WORKS BUT i JUST NEED TO READJUST FOR THE ASPECT RATIO
-    //when I get back I should adjust everything with the aspect ratio
-    if(w>h){
-        float scaleFactor = 0.5f; // 0.25% reduction
-// Calculate the width of the first square
+
+    if(w>h){//determine if portrait or landscape
+        float scaleFactor = 0.5f; // reduction
+        // width of the first square
         float squareWidth = (-0.650f - (-0.800f)) / aspectRatio * scaleFactor;
 
-// Shift the first square to the left boundary (-1.0) initially
+        // Shift the first square to the left boundary (-1.0)y
         float leftBoundary = -1.0f;
         float newLeftX = leftBoundary;
         float newRightX = leftBoundary + squareWidth;
 
-// Move the square 20% to the right (20% of screen width = 0.4)
+        // Move the square 20% to the right
         float shiftAmount = 0.4f;
         newLeftX += shiftAmount;
         newRightX += shiftAmount;
 
         std::vector<GLfloat> newOneToEdit = {
-                // First square (shifted 20% to the right)
+                // First square shifted 20% to the right
                 newLeftX, (-0.0375f), // Bottom-left vertex
                 newRightX, (-0.0375f), // Bottom-right vertex
                 newRightX, (0.0375f), // Top-right vertex
@@ -145,7 +145,7 @@ bool TransformShader::setupGraphics(int w, int h) {
                 newRightX, (0.0375f), // Top-right vertex
                 newLeftX, (0.0375f), // Top-left vertex
 
-                // Second square (unchanged)
+                // Second square not shifted
                 (0.85f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor, ( 0.0375f),
                 (0.85f/aspectRatio) * scaleFactor, (-0.0375f), (1.0f/aspectRatio) * scaleFactor,  (0.0375f), ( 0.85f/aspectRatio) * scaleFactor,  (0.0375f)
         };
@@ -153,7 +153,7 @@ bool TransformShader::setupGraphics(int w, int h) {
         m_squareVertices.insert(m_squareVertices.end(), newOneToEdit.begin(), newOneToEdit.end());
 
     }else{
-        //this is the vertical display
+        // vertical display
         std::vector<GLfloat> newOneToEdit = {
                 -0.800f, (-0.0375f) , -0.650f, (-0.0375f), -0.650f,  (0.0375f) ,
                 -0.800f, (-0.0375f) , -0.650f,  (0.0375f) , -0.800f,  (0.0375f) ,
@@ -191,34 +191,36 @@ void TransformShader::renderFrame() {
     glEnableVertexAttribArray(vPosition);
 
     glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
-   // glDrawArrays(GL_TRIANGLE_FAN, 13, 18); // Draw the two triangles that make up the square
-
-
-}
-//TODO:  DO NOT NEED SO ANY MORE
-void TransformShader::aspectUpdate(float aspectRatio) {
+    if(showCoin){
+        glDrawArrays(GL_TRIANGLE_FAN, 13, 18);
+    }
 
 
 
 }
+
 
 void TransformShader::addToVector(float aspectRatio) {
     const int NUM_SEGMENTS = 16;
     const float RADIUS = 0.05f;
+    const float SCREEN_RIGHT_EDGE = 1.0f;  // Assuming the screen width ranges from -1 to 1 in OpenGL coordinates
     GLfloat circleVertices[(NUM_SEGMENTS + 2) * 2];  // (x, y) pairs
-    circleVertices[0] = 0.0f;  // Center X
+
+    // Center the circle just beyond the right edge of the screen
+    circleVertices[0] = SCREEN_RIGHT_EDGE + RADIUS;  // Center X
     circleVertices[1] = 0.0f;  // Center Y
 
     for (int i = 0; i <= NUM_SEGMENTS; i++) {
         float theta = (2.0f * M_PI * i) / NUM_SEGMENTS;
-        float x = (RADIUS * cosf(theta) / aspectRatio);  // Adjust for aspect ratio
-        float y = RADIUS * sinf(theta);  // Y remains unchanged
+        float x = (RADIUS * cosf(theta) / aspectRatio) + (SCREEN_RIGHT_EDGE + RADIUS);  // Adjust for aspect ratio and shift right
+        float y = RADIUS * sinf(theta) + 0.3f;  // Y remains unchanged
         circleVertices[(i + 1) * 2] = x;
         circleVertices[(i + 1) * 2 + 1] = y;
     }
+
     if (m_squareVertices.size() > 24) {
-        LOGI("addToVectorTesting","greater -->%u",m_squareVertices.size());
-        LOGI("addToVectorTesting","greater");
+        LOGI("addToVectorTesting", "greater -->%u", m_squareVertices.size());
+        LOGI("addToVectorTesting", "greater");
         m_squareVertices.erase(m_squareVertices.begin() + 24, m_squareVertices.end());
     }
 

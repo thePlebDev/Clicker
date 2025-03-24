@@ -21,27 +21,9 @@
 
 //todo: these two should be part of a larger GAME-OBJECT
 TransformShader* shaders = new TransformShader();
-Actions* actions = new Actions();
+Actions* actions = new Actions(shaders);
 
 
-
-
-//this is not working as I expected
-void updateVerticesForAspectRatio(GLfloat* vertices, float aspectRatio) {
-    for (int i = 0; i < 13; i += 2) { // Iterate over each pair (X, Y)
-        vertices[i] /= 4.0f;  // Correct X scaling
-      //  vertices[i + 1] *= 2.5f;     // Increase Y by 10%
-    }
-    //todo: this final half is being negated by the reset function
-    for (int i = 12; i < 24; i += 2) { // Iterate over each pair (X, Y)
-        vertices[i] /= 4.0f;  // Correct X scaling
-        //  vertices[i + 1] *= 2.5f;     // Increase Y by 10%
-    }
-}
-
-int horizontalAspectRatio = 99;
-static int finalWidth = 0;
-static int finalHeight = 0;
 
 
 extern "C"
@@ -54,51 +36,13 @@ Java_com_example_clicker_presentation_minigames_dinoRun_DinoRunJNI_init(JNIEnv *
     shaders->setupGraphics(width, height);
 
     shaders->addToVector(aspectRatio);
-//    // Now this check will work as expected
-//    if (width != finalWidth || height != finalHeight) {
-//
-//        if(width==finalWidth){
-//            LOGI("horizontalAspectRatio", "SECOND CALL DO NOTHING");
-//        }
-//        else{
-//            if(horizontalAspectRatio== 99){
-//                //this is the initial call, so do nothing
-//                // decreaseVerticesForAspectRatio(squareVertices,2.000000f);
-//                LOGI("horizontalAspectRatio", "initial call");
-//                //todo: JUST GET THE INITIAL VALUES AND ASSIGN THEM TO A GLOBAL VALUE
-//
-//                horizontalAspectRatio=0;
-//            }else{
-//                if(horizontalAspectRatio == width/height){
-//                    //this is the weird second call that I am ignoring
-//                    LOGI("horizontalAspectRatio", "horizontalAspectRatio == width/height");
-//                }else{
-//                    horizontalAspectRatio=  width / height;
-//                    if(horizontalAspectRatio ==0){
-//                        LOGI("horizontalAspectRatio", "VERTICAL UPDATE");
-//                        //shaders->aspectUpdate(aspectRatio);
-//                        //todo: update the verticies to the
-//                    }else{
-//                        LOGI("horizontalAspectRatio", "HORIZONTAL UPDATE");
-//                        shaders->aspectUpdate(aspectRatio);
-//
-//                    }
-//
-//                }
-//
-//
-//            }
-//
-//
-//        }
-//
-//    }
-
-
-
-
 
 }
+
+
+
+
+
 
 //need a function called set to call `renderFrame();`
 extern "C"
