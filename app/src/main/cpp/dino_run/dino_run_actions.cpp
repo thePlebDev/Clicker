@@ -113,19 +113,19 @@ void Actions::moveSecondSquare(std::vector<GLfloat> &vertices, JNIEnv *env) {
         // LOGI("farthestLeftTesting", "HIT!!!! RESET");
 
         //this triggering represents a hit
-//        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
-//            LOGI("farthestLeftTesting", "Y-RANGE HIT");
-//            successfulJumps=0;
-//            secondSquareMovementSpeed = -0.02f;
-//            updateTextFromNative("HIT",env);
-//            //todo: this needs to set gamestatus to over and show the game overUI
-//            showGameOverUI(env);
-//            resetSecondSquare(vertices);
-//            setShowCoin(false);
-//            resetCoin();
-//
-//            return;
-//        }
+        if (!(topBoundarySquareOne < bottomBoundarySquareTwo || bottomBoundarySquareOne > topBoundarySquareTwo)){
+            LOGI("farthestLeftTesting", "Y-RANGE HIT");
+            successfulJumps=0;
+            secondSquareMovementSpeed = -0.02f;
+            updateTextFromNative("HIT",env);
+            //todo: this needs to set gamestatus to over and show the game overUI
+            showGameOverUI(env);
+            resetSecondSquare(vertices);
+            setShowCoin(false);
+            resetCoin();
+
+            return;
+        }
 
     }
 
