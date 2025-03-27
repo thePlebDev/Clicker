@@ -24,11 +24,12 @@ TransformShader::TransformShader() {
                       "  gl_Position = vPosition;\n"
                       "}\n";
 
-    m_glFragmentShader ="precision mediump float;\n"
-                        "void main()\n"
-                        "{\n"
-                        "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-                        "}\n";
+    m_glFragmentShader = "precision mediump float;\n"
+                         "uniform vec4 uColor;\n"  // Uniform color
+                         "void main()\n"
+                         "{\n"
+                         "  gl_FragColor = uColor;\n"
+                         "}\n";
 
 
 
@@ -183,20 +184,19 @@ void TransformShader::renderFrame() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     glUseProgram(simpleTriangleProgram); // Use our shader program
-
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, getSquareVertices().data());
-
-
-
     glEnableVertexAttribArray(vPosition);
 
-    glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the two triangles that make up the square
-    if(showCoin){
-        glDrawArrays(GL_TRIANGLE_FAN, 13, 18);
+    // 1. Set color to RED and draw the square
+    GLint colorLoc = glGetUniformLocation(simpleTriangleProgram, "uColor");
+    glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f); // Red
+    glDrawArrays(GL_TRIANGLES, 0, 12); // Draw the square
+
+    // 2. Only if the coin should be shown, set color to YELLOW and draw it
+    if (showCoin) {
+        glUniform4f(colorLoc, 1.0f, 1.0f, 0.0f, 1.0f); // Yellow
+        glDrawArrays(GL_TRIANGLE_FAN, 13, 18); // Draw the coin
     }
-
-
-
 }
 
 
