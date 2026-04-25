@@ -651,8 +651,6 @@ class StreamFragment : Fragment() {
             }else{
                 autoModViewModel.setVerticalOverlayToVisible()
             }
-            verticalClickableWebView.evaluateJavascript("(function() { const button = document.querySelector('[data-a-target=\"content-classification-gate-overlay-start-watching-button\"]'); button && button.click(); })();", null);
-
 
             val jsCode2 = """
                  function printClickedToAndroid(quantities) {
@@ -661,6 +659,27 @@ class StreamFragment : Fragment() {
     printClickedToAndroid("Log to the console from Javascript")
  """
             verticalClickableWebView.evaluateJavascript(jsCode2, null)
+        }
+        // Issue #838: only forward the tap to the content-classification
+        // gate button when the user actually tapped inside its bounding
+        // rect. Previously every tap on the WebView click-through layer
+        // would auto-click the button.
+        verticalClickableWebView.singleTapWithCoordsMethod = { x, y ->
+            val js = """
+                (function(){
+                  var sel = '[data-a-target="content-classification-gate-overlay-start-watching-button"]';
+                  var btn = document.querySelector(sel);
+                  if (!btn) return false;
+                  var r = btn.getBoundingClientRect();
+                  var x = ${x}, y = ${y};
+                  if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                    btn.click();
+                    return true;
+                  }
+                  return false;
+                })();
+            """
+            verticalClickableWebView.evaluateJavascript(js, null)
         }
     }
 
