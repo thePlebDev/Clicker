@@ -29,10 +29,6 @@ class VerticalWebView: WebView {
     var expandedMethod ={}
     var collapsedMethod={}
     var singleTapMethod={}
-    // Issue #838: optional callback fired with the tap location in CSS
-    // pixels so the page can decide whether the tap actually landed on
-    // the content-classification gate button before clicking it.
-    var singleTapWithCoordsMethod: (Float, Float) -> Unit = { _, _ -> }
 
 
 
@@ -62,6 +58,8 @@ class VerticalWebView: WebView {
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             Log.d("onSingleTapConfirmed","TAPPING")
             singleTapMethod()
+            val density = context.resources.displayMetrics.density
+            singleTapWithCoordsMethod(e.x / density, e.y / density)
             return super.onSingleTapConfirmed(e)
         }
 
