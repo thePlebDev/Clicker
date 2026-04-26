@@ -1,6 +1,9 @@
 <h1 align="center">
   Modderz for Android (this project is no longer maintained)
   </h1>
+  <h1 align="center">
+  Has been removed from the Playstore
+  </h1>
 <a >
     <img src="https://github.com/thePlebDev/Modderz-style-guide/assets/47083513/264372d7-3802-4a75-b7f5-0d1b29bf40f9" alt="Modderz logo" title="Modderz " align="right" height="60" />
 </a>
